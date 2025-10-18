@@ -18,23 +18,32 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { LanguageCreateDto, LanguageUpdateDto } from '../dto/language.dto';
+import {
+  Language,
+  LanguageCreateDto,
+  LanguageDto,
+  LanguageTransformerDto,
+  LanguageUpdateDto,
+} from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 
 @Controller('language')
-export class LanguageController {
-  constructor(
-    private readonly languageService: LanguageService,
-    private readonly logger: LoggerService,
-  ) {}
+export class LanguageController extends BaseOrmController<
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDto
+> {
+  constructor(protected readonly languageService: LanguageService) {
+    super(languageService);
+  }
 
   /**
    * Retrieves a paginated list of languages based on provided filters and pagination settings.
@@ -68,7 +77,7 @@ export class LanguageController {
     )
     filters?: TFilterQuery<LanguageOrmEntity>,
   ) {
-    return { count: await this.languageService.count(filters) };
+    return await super.count(filters);
   }
 
   /**
@@ -77,7 +86,7 @@ export class LanguageController {
    * @returns A Promise that resolves to the found language.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<LanguageOrmEntity> {
+  async findOne(@Param('id') id: string): Promise<Language> {
     const language = await this.languageService.findOne(id);
     if (!language) {
       this.logger.warn(`Unable to find Language by id ${id}`);
@@ -92,9 +101,7 @@ export class LanguageController {
    * @returns A Promise that resolves to the created language.
    */
   @Post()
-  async create(
-    @Body() language: LanguageCreateDto,
-  ): Promise<LanguageOrmEntity> {
+  async create(@Body() language: LanguageCreateDto): Promise<Language> {
     return await this.languageService.create(language);
   }
 
@@ -108,7 +115,7 @@ export class LanguageController {
   async updateOne(
     @Param('id') id: string,
     @Body() languageUpdate: LanguageUpdateDto,
-  ): Promise<LanguageOrmEntity> {
+  ): Promise<Language> {
     if ('isDefault' in languageUpdate && !languageUpdate.isDefault) {
       throw new BadRequestException('Should not be able to disable default');
     }

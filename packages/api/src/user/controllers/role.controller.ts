@@ -20,29 +20,35 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
+import {
+  RoleCreateDto,
+  RoleDtoConfig,
+  RoleTransformerDto,
+  RoleUpdateDto,
+} from '../dto/role.dto';
 import { User } from '../dto/user.dto';
 import { RoleOrmEntity } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
 @Controller('role')
-export class RoleController {
+export class RoleController extends BaseOrmController<
+  RoleOrmEntity,
+  RoleTransformerDto,
+  RoleDtoConfig
+> {
   constructor(
-    private readonly roleService: RoleService,
+    protected readonly roleService: RoleService,
     private readonly userService: UserService,
-    private readonly logger: LoggerService,
-  ) {}
-
-  private canPopulate(populate: string[]): boolean {
-    return this.roleService.canPopulate(populate);
+  ) {
+    super(roleService);
   }
 
   /**
@@ -74,7 +80,7 @@ export class RoleController {
     @Query(new SearchFilterPipe<RoleOrmEntity>({ allowedFields: ['name'] }))
     filters?: TFilterQuery<RoleOrmEntity>,
   ) {
-    return { count: await this.roleService.count(filters) };
+    return super.count(filters);
   }
 
   /**

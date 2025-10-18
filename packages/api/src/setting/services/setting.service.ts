@@ -43,7 +43,7 @@ export class SettingService extends BaseOrmService<
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventBus: EventEmitter2,
   ) {
     super(repository);
   }
@@ -141,7 +141,7 @@ export class SettingService extends BaseOrmService<
     const group = updated.group;
     const label = updated.label;
     const eventName = `hook:${group}:${label}`;
-    (this.eventEmitter as any).emit(eventName, updated);
+    (this.eventBus as any).emit(eventName, updated);
 
     return updated;
   }

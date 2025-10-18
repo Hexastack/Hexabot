@@ -27,7 +27,7 @@ import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -37,19 +37,27 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   Attachment,
   AttachmentContextParamDto,
+  AttachmentDtoConfig,
   AttachmentDownloadDto,
+  AttachmentTransformerDto,
 } from '../dto/attachment.dto';
+import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
 @Controller('attachment')
 @UseGuards(AttachmentGuard)
-export class AttachmentController {
+export class AttachmentController extends BaseOrmController<
+  AttachmentOrmEntity,
+  AttachmentTransformerDto,
+  AttachmentDtoConfig
+> {
   constructor(
-    private readonly attachmentService: AttachmentService,
-    private readonly logger: LoggerService,
-  ) {}
+    protected readonly attachmentService: AttachmentService,
+  ) {
+    super(attachmentService);
+  }
 
   /**
    * Counts the filtered number of attachments.
@@ -59,14 +67,13 @@ export class AttachmentController {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Attachment>({
+      new SearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    filters?: TFilterQuery<Attachment>,
+    filters?: TFilterQuery<AttachmentOrmEntity>,
   ) {
-    const count = await this.attachmentService.count(filters);
-    return { count };
+    return super.count(filters);
   }
 
   @Get(':id')
@@ -88,13 +95,13 @@ export class AttachmentController {
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<AttachmentOrmEntity>,
     @Query(
-      new SearchFilterPipe<Attachment>({
+      new SearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    filters: TFilterQuery<Attachment>,
+    filters: TFilterQuery<AttachmentOrmEntity>,
   ) {
     return await this.attachmentService.find(filters, pageQuery);
   }

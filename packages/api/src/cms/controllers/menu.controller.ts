@@ -17,7 +17,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -26,18 +26,25 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   Menu,
   MenuCreateDto,
+  MenuDtoConfig,
   MenuQueryDto,
   MenuUpdateDto,
+  MenuTransformerDto,
 } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 
 @Controller('menu')
-export class MenuController {
+export class MenuController extends BaseOrmController<
+  MenuOrmEntity,
+  MenuTransformerDto,
+  MenuDtoConfig
+> {
   constructor(
-    private readonly menuService: MenuService,
-    private readonly logger: LoggerService,
-  ) {}
+    protected readonly menuService: MenuService,
+  ) {
+    super(menuService);
+  }
 
   /**
    * Counts the filtered number of menu items.
@@ -51,7 +58,7 @@ export class MenuController {
     @Query(new SearchFilterPipe<MenuOrmEntity>({ allowedFields: ['parent'] }))
     filters: TFilterQuery<MenuOrmEntity>,
   ) {
-    return { count: await this.menuService.count(filters) };
+    return super.count(filters);
   }
 
   /**

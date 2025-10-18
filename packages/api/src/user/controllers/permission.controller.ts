@@ -16,27 +16,34 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { Permission, PermissionCreateDto } from '../dto/permission.dto';
+import {
+  Permission,
+  PermissionActionDto,
+  PermissionCreateDto,
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { PermissionOrmEntity } from '../entities/permission.entity';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 
 @Controller('permission')
-export class PermissionController {
+export class PermissionController extends BaseOrmController<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionActionDto
+> {
   constructor(
-    private readonly permissionService: PermissionService,
+    protected readonly permissionService: PermissionService,
     private readonly roleService: RoleService,
     private readonly modelService: ModelService,
-    private readonly logger: LoggerService,
-  ) {}
-
-  private canPopulate(populate: string[]): boolean {
-    return this.permissionService.canPopulate(populate);
+  ) {
+    super(permissionService);
   }
 
   /**
@@ -111,9 +118,9 @@ export class PermissionController {
 
   private normalizeFilters(
     filters: TFilterQuery<Permission>,
-  ): TFilterQuery<Permission> {
+  ): TFilterQuery<PermissionOrmEntity> {
     if (!filters || typeof filters !== 'object') {
-      return filters;
+      return filters as TFilterQuery<PermissionOrmEntity>;
     }
 
     const normalized: Record<string, unknown> = { ...filters };
@@ -125,6 +132,6 @@ export class PermissionController {
       normalized.roleId = normalized.role;
       delete normalized.role;
     }
-    return normalized as TFilterQuery<Permission>;
+    return normalized as TFilterQuery<PermissionOrmEntity>;
   }
 }

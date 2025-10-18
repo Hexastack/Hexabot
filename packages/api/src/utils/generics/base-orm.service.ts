@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { PageQueryDto } from '../pagination/pagination-query.dto';
@@ -35,10 +36,18 @@ export abstract class BaseOrmService<
     ActionDto
   > = BaseOrmRepository<Entity, TransformerDto, ActionDto>,
 > {
-  protected constructor(protected readonly repository: OrmRepository) {}
+  readonly eventEmitter: EventEmitter2 | undefined;
+
+  protected constructor(protected readonly repository: OrmRepository) {
+    this.eventEmitter = repository.getEventEmitter();
+  }
 
   getRepository(): OrmRepository {
     return this.repository;
+  }
+
+  canPopulate(populate: string[]): boolean {
+    return this.repository.canPopulate(populate);
   }
 
   /**

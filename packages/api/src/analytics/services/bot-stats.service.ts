@@ -25,7 +25,7 @@ export class BotStatsService extends BaseOrmService<
 > {
   constructor(
     readonly repository: BotStatsRepository,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventBus: EventEmitter2,
     private readonly logger: LoggerService,
   ) {
     super(repository);
@@ -77,7 +77,7 @@ export class BotStatsService extends BaseOrmService<
     if (subscriber.lastvisit) {
       // A loyal subscriber is a subscriber that comes back after some inactivity
       if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
-        this.eventEmitter.emit(
+        this.eventBus.emit(
           'hook:stats:entry',
           BotStatsType.returning_users,
           'Loyalty',
@@ -87,7 +87,7 @@ export class BotStatsService extends BaseOrmService<
 
       // Returning subscriber is a subscriber that comes back after some inactivity
       if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
-        this.eventEmitter.emit(
+        this.eventBus.emit(
           'hook:stats:entry',
           BotStatsType.returning_users,
           'Returning users',
@@ -100,7 +100,7 @@ export class BotStatsService extends BaseOrmService<
       subscriber.retainedFrom &&
       now - +subscriber.retainedFrom > config.analytics.thresholds.retention
     ) {
-      this.eventEmitter.emit(
+      this.eventBus.emit(
         'hook:stats:entry',
         BotStatsType.retention,
         'Retentioned users',

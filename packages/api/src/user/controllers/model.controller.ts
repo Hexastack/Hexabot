@@ -6,15 +6,25 @@
 
 import { Controller, Get, Query } from '@nestjs/common';
 
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { ModelDtoConfig, ModelTransformerDto } from '../dto/model.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { ModelService } from '../services/model.service';
 
 @Controller('model')
-export class ModelController {
-  constructor(private readonly modelService: ModelService) {}
+export class ModelController extends BaseOrmController<
+  ModelOrmEntity,
+  ModelTransformerDto,
+  ModelDtoConfig
+> {
+  constructor(
+    protected readonly modelService: ModelService,
+  ) {
+    super(modelService);
+  }
 
   /**
    * Handles GET requests to retrieve `Model` entities.
@@ -33,7 +43,7 @@ export class ModelController {
     populate: string[],
     filters: TFilterQuery<ModelOrmEntity>,
   ) {
-    return this.modelService.canPopulate(populate)
+    return this.canPopulate(populate)
       ? await this.modelService.findAndPopulate(filters)
       : await this.modelService.find(filters);
   }

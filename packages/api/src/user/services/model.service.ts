@@ -18,13 +18,7 @@ export class ModelService extends BaseOrmService<
   ModelTransformerDto,
   ModelDtoConfig
 > {
-  private readonly allowedPopulate = ['permissions'];
-
   constructor(readonly repository: ModelRepository) {
     super(repository);
-  }
-
-  canPopulate(populate: string[]): boolean {
-    return populate.every((field) => this.allowedPopulate.includes(field));
   }
 }

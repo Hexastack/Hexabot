@@ -74,9 +74,11 @@ export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: Omit<
-    TAllowedKeys<T, TStub, null | undefined | string | string[]>,
-    keyof TVirtualFields<T>
+  allowedIds: Partial<
+    Omit<
+      TAllowedKeys<T, TStub, null | undefined | string | string[]>,
+      keyof TVirtualFields<T>
+    >
   >;
 };
 

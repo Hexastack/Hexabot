@@ -66,6 +66,24 @@ export abstract class BaseOrmRepository<
     );
   }
 
+  getPopulateRelations(): readonly string[] {
+    return this.populateRelations;
+  }
+
+  canPopulate(populate: string[]): boolean {
+    if (!Array.isArray(populate) || populate.length === 0) {
+      return false;
+    }
+
+    return populate.every((relation) =>
+      this.populateRelations.includes(relation),
+    );
+  }
+
+  getEventEmitter(): EventEmitter2 | undefined {
+    return this.eventEmitter;
+  }
+
   @Inject(EventEmitter2)
   protected readonly eventEmitter: EventEmitter2;
 

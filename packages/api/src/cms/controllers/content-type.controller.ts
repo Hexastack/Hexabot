@@ -17,7 +17,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -26,17 +26,24 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   ContentType,
   ContentTypeCreateDto,
+  ContentTypeDtoConfig,
+  ContentTypeTransformerDto,
   ContentTypeUpdateDto,
 } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeService } from '../services/content-type.service';
 
 @Controller('contenttype')
-export class ContentTypeController {
+export class ContentTypeController extends BaseOrmController<
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig
+> {
   constructor(
-    private readonly contentTypeService: ContentTypeService,
-    private readonly logger: LoggerService,
-  ) {}
+    protected readonly contentTypeService: ContentTypeService,
+  ) {
+    super(contentTypeService);
+  }
 
   /**
    * Creates a new content type.
@@ -85,7 +92,7 @@ export class ContentTypeController {
     )
     filters: TFilterQuery<ContentTypeOrmEntity>,
   ) {
-    return { count: await this.contentTypeService.count(filters) };
+    return super.count(filters);
   }
 
   /**

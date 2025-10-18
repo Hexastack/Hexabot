@@ -18,25 +18,34 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { TranslationUpdateDto } from '../dto/translation.dto';
+import {
+  TranslationDto,
+  TranslationTransformerDto,
+  TranslationUpdateDto,
+} from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 @Controller('translation')
-export class TranslationController {
+export class TranslationController extends BaseOrmController<
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDto
+> {
   constructor(
     private readonly languageService: LanguageService,
-    private readonly translationService: TranslationService,
-    private readonly logger: LoggerService,
-  ) {}
+    protected readonly translationService: TranslationService,
+  ) {
+    super(translationService);
+  }
 
   @Get()
   async findPage(
@@ -62,7 +71,7 @@ export class TranslationController {
     )
     filters?: TFilterQuery<TranslationOrmEntity>,
   ) {
-    return { count: await this.translationService.count(filters) };
+    return await super.count(filters);
   }
 
   @Get(':id')

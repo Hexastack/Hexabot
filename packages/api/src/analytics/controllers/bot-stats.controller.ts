@@ -6,7 +6,14 @@
 
 import { Controller, Get, Query } from '@nestjs/common';
 
-import { BotStatsFindDatumDto, BotStatsFindDto } from '../dto/bot-stats.dto';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+
+import {
+  BotStatsDto,
+  BotStatsFindDatumDto,
+  BotStatsFindDto,
+  BotStatsTransformerDto,
+} from '../dto/bot-stats.dto';
 import {
   BotStatsOrmEntity,
   BotStatsType,
@@ -16,8 +23,14 @@ import { BotStatsService } from '../services/bot-stats.service';
 import { aMonthAgo } from '../utilities';
 
 @Controller('botstats')
-export class BotStatsController {
-  constructor(private readonly botStatsService: BotStatsService) {}
+export class BotStatsController extends BaseOrmController<
+  BotStatsOrmEntity,
+  BotStatsTransformerDto,
+  BotStatsDto
+> {
+  constructor(protected readonly botStatsService: BotStatsService) {
+    super(botStatsService);
+  }
 
   /**
    * Retrieves message stats within a specified time range.

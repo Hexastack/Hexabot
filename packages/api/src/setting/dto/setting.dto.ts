@@ -110,7 +110,8 @@ export class SettingCreateDto {
       'Defines the display order of the setting in the user interface',
     type: Number,
   })
-  weight: number;
+  @IsOptional()
+  weight?: number;
 
   @ApiPropertyOptional({
     description: 'Indicates whether this setting supports translation',
@@ -125,6 +126,14 @@ export class SettingUpdateDto {
   @ApiProperty({ description: 'value of the setting' })
   @IsDefined()
   value: null | string | number | boolean | string[] | Record<string, any>;
+
+  @ApiPropertyOptional({
+    description:
+      'Defines the display order of the setting in the user interface',
+    type: Number,
+  })
+  @IsOptional()
+  weight?: number;
 }
 
 export type SettingTransformerDto = DtoTransformerConfig<{

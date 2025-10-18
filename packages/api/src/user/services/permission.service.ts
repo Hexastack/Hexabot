@@ -28,17 +28,11 @@ export class PermissionService extends BaseOrmService<
   PermissionTransformerDto,
   PermissionActionDto
 > {
-  private readonly allowedPopulate = ['model', 'role'];
-
   constructor(
     readonly repository: PermissionRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(repository);
-  }
-
-  canPopulate(populate: string[]): boolean {
-    return populate.every((field) => this.allowedPopulate.includes(field));
   }
 
   /**

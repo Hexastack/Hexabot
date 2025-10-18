@@ -32,7 +32,7 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -45,8 +45,10 @@ import { InvitationCreateDto } from '../dto/invitation.dto';
 import {
   UserCreateDto,
   UserEditProfileDto,
+  UserDtoConfig,
   UserRequestResetDto,
   UserResetPasswordDto,
+  UserTransformerDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
@@ -59,7 +61,11 @@ import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
 
 @Controller('user')
-export class ReadOnlyUserController {
+export class ReadOnlyUserController extends BaseOrmController<
+  UserOrmEntity,
+  UserTransformerDto,
+  UserDtoConfig
+> {
   constructor(
     protected readonly userService: UserService,
     protected readonly roleService: RoleService,
@@ -68,11 +74,8 @@ export class ReadOnlyUserController {
     protected readonly attachmentService: AttachmentService,
     protected readonly passwordResetService: PasswordResetService,
     protected readonly validateAccountService: ValidateAccountService,
-    protected readonly logger: LoggerService,
-  ) {}
-
-  protected canPopulate(populate: string[]): boolean {
-    return this.userService.canPopulate(populate);
+  ) {
+    super(userService);
   }
 
   protected async validateRelations(dto: {
@@ -230,7 +233,7 @@ export class ReadOnlyUserController {
     )
     filters?: TFilterQuery<UserOrmEntity>,
   ) {
-    return { count: await this.userService.count(filters) };
+    return super.count(filters);
   }
 
   /**
@@ -270,7 +273,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     attachmentService: AttachmentService,
     passwordResetService: PasswordResetService,
     validateAccountService: ValidateAccountService,
-    logger: LoggerService,
   ) {
     super(
       userService,
@@ -280,7 +282,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       attachmentService,
       passwordResetService,
       validateAccountService,
-      logger,
     );
   }
 

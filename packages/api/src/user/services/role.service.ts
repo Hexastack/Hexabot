@@ -18,13 +18,7 @@ export class RoleService extends BaseOrmService<
   RoleTransformerDto,
   RoleDtoConfig
 > {
-  private readonly allowedPopulate = ['permissions', 'users'];
-
   constructor(readonly repository: RoleRepository) {
     super(repository);
-  }
-
-  canPopulate(populate: string[]): boolean {
-    return populate.every((field) => this.allowedPopulate.includes(field));
   }
 }

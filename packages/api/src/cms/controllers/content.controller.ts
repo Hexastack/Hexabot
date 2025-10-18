@@ -20,7 +20,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -30,6 +30,8 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   Content,
   ContentCreateDto,
+  ContentDtoConfig,
+  ContentTransformerDto,
   ContentUpdateDto,
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
@@ -38,42 +40,16 @@ import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
 @Controller('content')
-export class ContentController {
+export class ContentController extends BaseOrmController<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig
+> {
   constructor(
-    private readonly contentService: ContentService,
+    protected readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
-    private readonly logger: LoggerService,
-  ) {}
-
-  private validateAllowedIds(
-    dto: Record<string, any>,
-    allowedIds: Partial<Record<string, string | string[] | undefined>>,
-  ): void {
-    const exceptions: string[] = [];
-
-    Object.entries(allowedIds).forEach(([field, allowed]) => {
-      if (!(field in dto) || allowed === undefined) {
-        return;
-      }
-
-      const incoming = Array.isArray(dto[field]) ? dto[field] : [dto[field]];
-      const allowedValues = Array.isArray(allowed) ? allowed : [allowed];
-      const invalidIds = incoming.filter(
-        (id) => !allowedValues.includes(id as string),
-      );
-
-      if (invalidIds.length) {
-        exceptions.push(
-          `${field} with ID${
-            invalidIds.length > 1 ? 's' : ''
-          } '${invalidIds}' not found`,
-        );
-      }
-    });
-
-    if (exceptions.length) {
-      throw new NotFoundException(exceptions.join('; '));
-    }
+  ) {
+    super(contentService);
   }
 
   /**
@@ -96,8 +72,9 @@ export class ContentController {
       );
       throw new NotFoundException('Content type not found');
     }
-    this.validateAllowedIds(contentDto, {
-      entity: contentType?.id,
+    this.validate({
+      dto: contentDto,
+      allowedIds: { entity: contentType?.id },
     });
     return await this.contentService.create(contentDto);
   }
@@ -156,7 +133,7 @@ export class ContentController {
     )
     filters: TFilterQuery<ContentOrmEntity>,
   ) {
-    return this.contentService.canPopulate(populate)
+    return this.canPopulate(populate)
       ? await this.contentService.findAndPopulate(filters, pageQuery)
       : await this.contentService.find(filters, pageQuery);
   }
@@ -177,7 +154,7 @@ export class ContentController {
     )
     filters?: TFilterQuery<ContentOrmEntity>,
   ) {
-    return { count: await this.contentService.count(filters) };
+    return super.count(filters);
   }
 
   /**
@@ -193,7 +170,7 @@ export class ContentController {
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.contentService.canPopulate(populate)
+    const doc = this.canPopulate(populate)
       ? await this.contentService.findOneAndPopulate(id)
       : await this.contentService.findOne(id);
 

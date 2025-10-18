@@ -8,8 +8,8 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingType } from '@/setting/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { SettingType } from '@/setting/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Block } from '../../chat/schemas/block.schema';
@@ -30,6 +30,8 @@ describe('TranslationService', () => {
         {
           provide: TranslationRepository,
           useValue: {
+            isFindOptions: jest.fn().mockReturnValue(false),
+            getEventEmitter: jest.fn().mockReturnValue(undefined),
             findAll: jest.fn().mockResolvedValue([
               {
                 key: 'test',

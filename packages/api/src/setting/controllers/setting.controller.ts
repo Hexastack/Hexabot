@@ -6,18 +6,30 @@
 
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { Setting, SettingUpdateDto } from '../dto/setting.dto';
+import {
+  Setting,
+  SettingDtoConfig,
+  SettingTransformerDto,
+  SettingUpdateDto,
+} from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
 @Controller('setting')
-export class SettingController {
-  constructor(private readonly settingService: SettingService) {}
+export class SettingController extends BaseOrmController<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig
+> {
+  constructor(protected readonly settingService: SettingService) {
+    super(settingService);
+  }
 
   /**
    * Finds settings that match the provided filters and sorting options.
