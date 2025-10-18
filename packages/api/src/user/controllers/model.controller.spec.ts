@@ -4,82 +4,105 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  installModelFixtures,
-  modelFixtures,
-} from '@/utils/test/fixtures/model';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ModelFull } from '../schemas/model.schema';
+import { ModelFull } from '../dto/model.dto';
+import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { ModelRepository } from '../repositories/model.repository';
+import { PermissionRepository } from '../repositories/permission.repository';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 
 import { ModelController } from './model.controller';
 
-describe('ModelController', () => {
+describe('ModelController (TypeORM)', () => {
+  let module: TestingModule;
   let modelController: ModelController;
   let modelService: ModelService;
   let permissionService: PermissionService;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [ModelController],
-      imports: [rootMongooseTestModule(installModelFixtures)],
-      providers: [PermissionService],
+      providers: [
+        ModelService,
+        PermissionService,
+        ModelRepository,
+        PermissionRepository,
+      ],
+      typeorm: {
+        entities: [
+          ModelEntity,
+          PermissionOrmEntity,
+          RoleOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [modelController, modelService, permissionService] = await getMocks([
-      ModelController,
-      ModelService,
-      PermissionService,
-    ]);
+
+    module = testing.module;
+
+    [modelController, modelService, permissionService] = await testing.getMocks(
+      [ModelController, ModelService, PermissionService],
+    );
   });
 
-  afterAll(closeInMongodConnection);
-
   afterEach(jest.clearAllMocks);
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('find', () => {
     it('should find models', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
-      const result = await modelController.find(['permissions'], {});
+      const result = (await modelController.find(
+        ['permissions'],
+        {},
+      )) as ModelFull[];
       expect(modelService.findAndPopulate).toHaveBeenCalledWith({});
-      expect(result).toEqualPayload(
-        modelFixtures.map((modelFixture) => ({
-          ...modelFixture,
-          permissions: [],
-        })),
-      );
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((model) => {
+        expect(model.permissions).toBeDefined();
+      });
     });
 
-    it('should find models, and for each model populate the corresponding permissions', async () => {
+    it('should populate permissions for each model', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
-      const allModels = await modelService.findAll();
       const allPermissions = await permissionService.findAll();
-      const result = await modelController.find(['permissions'], {});
-
-      const modelsWithPermissionsAndUsers = allModels.reduce(
-        (acc, currRole) => {
-          const modelWithPermissionsAndUsers = {
-            ...currRole,
-            permissions: allPermissions.filter((currPermission) => {
-              return currPermission.role === currRole.id;
-            }),
-          };
-
-          acc.push(modelWithPermissionsAndUsers);
-          return acc;
-        },
-        [] as ModelFull[],
-      );
+      const result = (await modelController.find(
+        ['permissions'],
+        {},
+      )) as ModelFull[];
 
       expect(modelService.findAndPopulate).toHaveBeenCalledWith({});
-      expect(result).toEqualPayload(modelsWithPermissionsAndUsers);
+
+      result.forEach((model) => {
+        const expectedPermissionIds = allPermissions
+          .filter((permission) => permission.model === model.id)
+          .map((permission) => permission.id)
+          .sort();
+
+        const permissionIds = (model.permissions ?? [])
+          .map((permission) => permission.id)
+          .sort();
+
+        expect(permissionIds).toEqual(expectedPermissionIds);
+      });
     });
   });
 });

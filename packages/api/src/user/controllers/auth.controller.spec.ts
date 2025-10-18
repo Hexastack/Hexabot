@@ -4,66 +4,79 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
-import { JwtService } from '@nestjs/jwt';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 import { SentMessageInfo } from 'nodemailer';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
-import {
-  installLanguageFixtures,
-  installLanguageFixturesTypeOrm,
-} from '@/utils/test/fixtures/language';
-import { installUserFixtures } from '@/utils/test/fixtures/user';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { roleFixtureIds } from '@/utils/test/fixtures/role';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { InvitationCreateDto } from '../dto/invitation.dto';
+import { Role } from '../dto/role.dto';
 import { UserCreateDto } from '../dto/user.dto';
-import { Role } from '../schemas/role.schema';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { InvitationRepository } from '../repositories/invitation.repository';
+import { RoleRepository } from '../repositories/role.repository';
+import { UserRepository } from '../repositories/user.repository';
 import { InvitationService } from '../services/invitation.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
 import { LocalAuthController } from './auth.controller';
 
-describe('AuthController', () => {
+describe('AuthController (TypeORM)', () => {
+  let module: TestingModule;
   let authController: LocalAuthController;
   let userService: UserService;
   let invitationService: InvitationService;
   let roleService: RoleService;
   let jwtService: JwtService;
-  let role: Role | null;
+  let role: Role;
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel'],
+    const mailerMock = {
+      sendMail(_options: ISendMailOptions): Promise<SentMessageInfo> {
+        return Promise.resolve('Mail sent successfully');
+      },
+    };
+
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installLanguageFixtures();
-          await installUserFixtures();
-        }),
-      ],
+      imports: [JwtModule.register({})],
       providers: [
         RoleService,
+        InvitationService,
+        UserService,
+        RoleRepository,
+        InvitationRepository,
+        UserRepository,
+        LanguageService,
+        LanguageRepository,
         {
           provide: MailerService,
-          useValue: {
-            sendMail(_options: ISendMailOptions): Promise<SentMessageInfo> {
-              return Promise.resolve('Mail sent successfully');
-            },
-          },
+          useValue: mailerMock,
         },
         {
           provide: I18nService,
@@ -73,37 +86,68 @@ describe('AuthController', () => {
         },
       ],
       typeorm: {
-        fixtures: installLanguageFixturesTypeOrm,
+        entities: [
+          InvitationOrmEntity,
+          RoleOrmEntity,
+          UserOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+          LanguageOrmEntity,
+        ],
+        fixtures: [
+          installLanguageFixturesTypeOrm,
+          installPermissionFixturesTypeOrm,
+        ],
       },
     });
+
+    module = testing.module;
+
     [authController, userService, invitationService, roleService, jwtService] =
-      await getMocks([
+      await testing.getMocks([
         LocalAuthController,
         UserService,
         InvitationService,
         RoleService,
         JwtService,
       ]);
-    role = await roleService.findOne({});
+
+    const foundRole = await roleService.findOne(roleFixtureIds.admin);
+    if (!foundRole) {
+      throw new Error('Expected admin role fixture to be available');
+    }
+    role = foundRole;
     baseUser = {
       email: 'test@testing.com',
       password: getRandom().toString(),
       username: 'test',
       first_name: 'test',
       last_name: 'test',
-      roles: [role!.id],
+      roles: [role.id],
       avatar: null,
     };
-    await invitationService.create(baseUser);
+    const invitationPayload: InvitationCreateDto = {
+      email: baseUser.email,
+      roles: baseUser.roles,
+    };
+    await invitationService.create(invitationPayload);
   });
-
-  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
   describe('signup', () => {
     it('should throw a BadRequestException', async () => {
-      jest.spyOn(userService, 'create');
+      jest
+        .spyOn(userService, 'create')
+        .mockRejectedValueOnce(new Error('invalid role'));
       const userCreateDto: UserCreateDto = {
         username: 'test',
         first_name: 'test',
@@ -128,7 +172,7 @@ describe('AuthController', () => {
         last_name: 'test',
         email: 'test@test.test',
         password: 'test',
-        roles: ['659564cb4aa383c0d0dbc688'],
+        roles: [roleFixtureIds.admin],
         avatar: null,
       };
       const result = await authController.signup(userCreateDto);
@@ -136,6 +180,7 @@ describe('AuthController', () => {
       expect(result).toEqual({ success: true });
     });
   });
+
   describe('acceptInvite', () => {
     it('should throw a BadRequestException because token is invalid', async () => {
       jest.spyOn(authController, 'signup');
@@ -144,7 +189,7 @@ describe('AuthController', () => {
       expect(authController.signup).not.toHaveBeenCalled();
     });
 
-    it('should throw a UnauthorizedException because token is expired', async () => {
+    it('should throw an UnauthorizedException because token is expired', async () => {
       const token = await jwtService.sign(baseUser, {
         ...invitationService.jwtSignOptions,
         expiresIn: '0s',

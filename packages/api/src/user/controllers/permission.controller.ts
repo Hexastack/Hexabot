@@ -16,35 +16,27 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { LoggerService } from '@/logger/logger.service';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { PermissionCreateDto } from '../dto/permission.dto';
-import {
-  Permission,
-  PermissionFull,
-  PermissionPopulate,
-  PermissionStub,
-} from '../schemas/permission.schema';
+import { Permission, PermissionCreateDto } from '../dto/permission.dto';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 
 @Controller('permission')
-export class PermissionController extends BaseController<
-  Permission,
-  PermissionStub,
-  PermissionPopulate,
-  PermissionFull
-> {
+export class PermissionController {
   constructor(
     private readonly permissionService: PermissionService,
     private readonly roleService: RoleService,
     private readonly modelService: ModelService,
-  ) {
-    super(permissionService);
+    private readonly logger: LoggerService,
+  ) {}
+
+  private canPopulate(populate: string[]): boolean {
+    return this.permissionService.canPopulate(populate);
   }
 
   /**
@@ -66,22 +58,22 @@ export class PermissionController extends BaseController<
     )
     filters: TFilterQuery<Permission>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.permissionService.findAndPopulate(filters)
-      : await this.permissionService.find(filters);
+    const normalizedFilters = this.normalizeFilters(filters);
+    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
+    return shouldPopulate
+      ? await this.permissionService.findAndPopulate(normalizedFilters)
+      : await this.permissionService.find(normalizedFilters);
   }
 
   /**
    * Creates a new permission entity.
    *
    * Validates the input data and ensures the role and model exist before creation.
-   * CSRF protection is applied to prevent unauthorized requests.
    *
    * @param permission - The data transfer object (DTO) containing the details for the new permission.
    *
    * @returns The created permission.
    */
-
   @Post()
   async create(@Body() permission: PermissionCreateDto) {
     const role = await this.roleService.findOne(permission.role);
@@ -101,13 +93,11 @@ export class PermissionController extends BaseController<
    * Deletes a permission entity by its ID.
    *
    * Attempts to delete the permission and logs a warning if the permission is not found.
-   * CSRF protection is applied, and a 204 HTTP response is returned upon successful deletion.
    *
    * @param id - The ID of the permission to delete.
    *
    * @returns The result of the deletion operation.
    */
-
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -117,5 +107,24 @@ export class PermissionController extends BaseController<
       throw new NotFoundException(`Permission with ID ${id} not found`);
     }
     return result;
+  }
+
+  private normalizeFilters(
+    filters: TFilterQuery<Permission>,
+  ): TFilterQuery<Permission> {
+    if (!filters || typeof filters !== 'object') {
+      return filters;
+    }
+
+    const normalized: Record<string, unknown> = { ...filters };
+    if ('model' in normalized) {
+      normalized.modelId = normalized.model;
+      delete normalized.model;
+    }
+    if ('role' in normalized) {
+      normalized.roleId = normalized.role;
+      delete normalized.role;
+    }
+    return normalized as TFilterQuery<Permission>;
   }
 }

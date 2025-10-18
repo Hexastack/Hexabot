@@ -5,93 +5,112 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { UserDto, UserEditProfileDto } from '../dto/user.dto';
 import {
   User,
-  USER_POPULATE,
-  UserDocument,
+  UserDtoConfig,
   UserFull,
-  UserPopulate,
-} from '../schemas/user.schema';
+  UserTransformerDto,
+} from '../dto/user.dto';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { hash } from '../utilities/bcryptjs';
 
 @Injectable()
-export class UserRepository extends BaseRepository<
-  User,
-  UserPopulate,
-  UserFull,
-  UserDto
+export class UserRepository extends BaseOrmRepository<
+  UserOrmEntity,
+  UserTransformerDto,
+  UserDtoConfig
 > {
-  constructor(@InjectModel(User.name) readonly model: Model<User>) {
-    super(model, User, USER_POPULATE, UserFull);
+  constructor(
+    @InjectRepository(UserOrmEntity)
+    repository: Repository<UserOrmEntity>,
+  ) {
+    super(repository, ['roles', 'avatarAttachment'], {
+      PlainCls: User,
+      FullCls: UserFull,
+    });
   }
 
-  /**
-   * Pre-processing hook that hashes the password and resetToken before creating a user document.
-   * Throws an error if no password is provided.
-   *
-   * @param _doc The user document being created.
-   */
-  async preCreate(_doc: UserDocument) {
-    if (_doc?.password) {
-      _doc.password = hash(_doc.password);
-    } else {
+  protected override async preCreate(
+    entity: DeepPartial<UserOrmEntity> | UserOrmEntity,
+  ): Promise<void> {
+    this.ensurePassword(entity);
+    this.ensureResetToken(entity);
+    this.normalizeRoles(entity);
+  }
+
+  protected override async preUpdate(
+    _current: UserOrmEntity,
+    changes: DeepPartial<UserOrmEntity>,
+  ): Promise<void> {
+    if ('password' in changes && typeof changes.password === 'string') {
+      changes.password = hash(changes.password);
+    }
+
+    if ('resetToken' in changes && changes.resetToken) {
+      changes.resetToken = hash(changes.resetToken);
+    }
+
+    this.normalizeRoles(changes);
+  }
+
+  private ensurePassword(
+    entity: DeepPartial<UserOrmEntity> | UserOrmEntity,
+  ): void {
+    if (!entity.password) {
       throw new Error('No password provided');
     }
-    if (_doc?.resetToken) _doc.resetToken = hash(_doc.resetToken);
+
+    if (typeof entity.password === 'string') {
+      entity.password = hash(entity.password);
+    }
   }
 
-  /**
-   * Pre-processing hook that hashes the password and resetToken when updating a user document.
-   *
-   * @param _query The query object used for the update.
-   * @param _criteria The criteria used to filter the user documents to update.
-   * @param _updates The update object that may contain password or resetToken to be hashed.
-   */
-  async preUpdate(
-    _query: Query<
-      Document<User, any, any>,
-      Document<User, any, any>,
-      unknown,
-      User,
-      'findOneAndUpdate'
-    >,
-    _criteria: TFilterQuery<User>,
-    _updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<User, any, any>>,
-  ) {
-    const updates: UserEditProfileDto & {
-      resetToken?: string;
-    } = _updates?.['$set'];
+  private ensureResetToken(
+    entity: DeepPartial<UserOrmEntity> | UserOrmEntity,
+  ): void {
+    if (!entity.resetToken) {
+      return;
+    }
 
-    if (updates?.password) {
-      _query.setUpdate({
-        $set: {
-          ...updates,
-          password: hash(updates.password),
-        },
-      });
+    if (typeof entity.resetToken === 'string') {
+      entity.resetToken = hash(entity.resetToken);
     }
-    if (updates?.resetToken) {
-      _query.setUpdate({
-        $set: {
-          ...updates,
-          resetToken: hash(updates.resetToken),
-        },
-      });
+  }
+
+  private normalizeRoles(
+    entity: DeepPartial<UserOrmEntity> | UserOrmEntity,
+  ): void {
+    if (!('roles' in entity) || !entity.roles) {
+      return;
     }
+
+    const roles = entity.roles as Array<
+      string | RoleOrmEntity | DeepPartial<RoleOrmEntity>
+    >;
+    entity.roles = roles.map((role) => {
+      if (typeof role === 'string') {
+        return { id: role } as RoleOrmEntity;
+      }
+
+      if ('id' in role && role.id) {
+        return { id: role.id } as RoleOrmEntity;
+      }
+
+      return role as RoleOrmEntity;
+    });
+  }
+
+  async findOneByEmailWithPassword(
+    email: string,
+  ): Promise<UserOrmEntity | null> {
+    return await this.repository.findOne({
+      where: { email } as FindOptionsWhere<UserOrmEntity>,
+    });
   }
 }

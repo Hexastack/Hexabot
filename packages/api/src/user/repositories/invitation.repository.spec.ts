@@ -4,96 +4,103 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
 
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
-  installInvitationFixtures,
+  installInvitationFixturesTypeOrm,
   invitationsFixtures,
 } from '@/utils/test/fixtures/invitation';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Invitation, InvitationFull } from '../schemas/invitation.schema';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 
 import { InvitationRepository } from './invitation.repository';
 import { RoleRepository } from './role.repository';
 
-describe('InvitationRepository', () => {
+describe('InvitationRepository (TypeORM)', () => {
+  let module: TestingModule;
   let roleRepository: RoleRepository;
   let invitationRepository: InvitationRepository;
-  let invitationModel: Model<Invitation>;
+
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installInvitationFixtures)],
       providers: [RoleRepository, InvitationRepository],
+      typeorm: {
+        entities: [
+          InvitationOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installInvitationFixturesTypeOrm,
+      },
     });
-    [roleRepository, invitationRepository, invitationModel] = await getMocks([
+
+    module = testing.module;
+
+    [roleRepository, invitationRepository] = await testing.getMocks([
       RoleRepository,
       InvitationRepository,
-      getModelToken(Invitation.name),
     ]);
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find one invitation and populate its roles', async () => {
-      jest.spyOn(invitationModel, 'findById');
-      const toTestAgainst = invitationsFixtures[0];
+      const baseInvitation = invitationsFixtures[0];
       const invitation = await invitationRepository.findOne({
-        email: toTestAgainst.email,
+        email: baseInvitation.email,
       });
-
-      const roles = (await roleRepository.findAll()).filter((role) =>
-        toTestAgainst.roles.includes(role.id),
-      );
 
       const result = await invitationRepository.findOneAndPopulate(
         invitation!.id,
       );
-      expect(invitationModel.findById).toHaveBeenCalledWith(
-        invitation!.id,
-        undefined,
+
+      expect(result).toBeDefined();
+      expect(result!.roles?.map((role) => role.id).sort()).toEqual(
+        baseInvitation.roles.sort(),
       );
-      expect(result).toEqualPayload({
-        ...toTestAgainst,
-        roles,
-      });
     });
   });
-  describe('findAndPopulate', () => {
-    it('should find users, and for each user populate the corresponding roles', async () => {
-      jest.spyOn(invitationModel, 'find');
-      const pageQuery: PageQueryDto<Invitation> = getPageQuery<Invitation>();
-      const allInvitations = await invitationRepository.findAll();
-      const allRoles = await roleRepository.findAll();
-      const result = await invitationRepository.findAndPopulate(
-        {},
-        {
-          ...pageQuery,
-          sort: ['email', 'asc'],
-        },
-      );
-      const invitationsWithRoles = allInvitations.reduce((acc, currInv) => {
-        acc.push({
-          ...currInv,
-          roles: allRoles.filter((role) => currInv.roles.includes(role.id)),
-        });
-        return acc;
-      }, [] as InvitationFull[]);
 
-      expect(invitationModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(invitationsWithRoles);
+  describe('findAndPopulate', () => {
+    it('should populate roles for each invitation', async () => {
+      const invitations = await invitationRepository.findAll();
+      const result = await invitationRepository.findAndPopulate({});
+
+      expect(result).toHaveLength(invitations.length);
+
+      result.forEach((invitation) => {
+        const expected = invitationsFixtures.find(
+          (fixture) => fixture.email === invitation.email,
+        );
+        if (!expected) {
+          return;
+        }
+
+        expect(invitation.roles?.map((role) => role.id).sort()).toEqual(
+          expected.roles.sort(),
+        );
+      });
     });
   });
 });

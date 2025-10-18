@@ -4,78 +4,93 @@
  * Full terms: see LICENSE.md.
  */
 
-import { installUserFixtures } from '@/utils/test/fixtures/user';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { User } from '../dto/user.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 
 import { AuthService } from './auth.service';
+import { UserService } from './user.service';
 
-describe('AuthService', () => {
+describe('AuthService (TypeORM)', () => {
+  let module: TestingModule;
   let authService: AuthService;
   let userRepository: UserRepository;
+  let adminUser: User | null;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installUserFixtures)],
-      providers: [AuthService],
+      providers: [AuthService, UserService, UserRepository, RoleRepository],
+      typeorm: {
+        entities: [
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [authService, userRepository] = await getMocks([
+
+    module = testing.module;
+
+    [authService, userRepository] = await testing.getMocks([
       AuthService,
       UserRepository,
     ]);
-    jest.spyOn(userRepository, 'findOne');
-  });
 
-  afterAll(closeInMongodConnection);
+    adminUser = await userRepository.findOne({ username: 'admin' });
+    jest.spyOn(userRepository, 'findOneByEmailWithPassword');
+  });
 
   afterEach(jest.clearAllMocks);
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
   describe('validateUser', () => {
-    const searchCriteria = { email: 'admin@admin.admin' };
+    const adminEmail = 'admin@admin.admin';
 
     it('should successfully validate user with the correct password', async () => {
-      const user = await userRepository.findOne(searchCriteria);
-      const result = await authService.validateUser(
-        'admin@admin.admin',
-        'adminadmin',
+      const result = await authService.validateUser(adminEmail, 'adminadmin');
+      expect(userRepository.findOneByEmailWithPassword).toHaveBeenCalledWith(
+        adminEmail,
       );
-      expect(userRepository.findOne).toHaveBeenCalledWith(
-        searchCriteria,
-        {},
-        undefined,
-      );
-      expect(result!.id).toBe(user!.id);
+      expect(result!.id).toBe(adminUser!.id);
     });
+
     it('should not validate user if the provided password is incorrect', async () => {
       const result = await authService.validateUser(
-        'admin@admin.admin',
+        adminEmail,
         'randomPassword',
       );
-      expect(userRepository.findOne).toHaveBeenCalledWith(
-        searchCriteria,
-        {},
-        undefined,
+      expect(userRepository.findOneByEmailWithPassword).toHaveBeenCalledWith(
+        adminEmail,
       );
       expect(result).toBeNull();
     });
 
     it("should not validate user's password if the user does not exist", async () => {
-      const result = await authService.validateUser(
-        'admin2@admin.admin',
-        'admin',
-      );
-      expect(userRepository.findOne).toHaveBeenCalledWith(
-        {
-          email: 'admin2@admin.admin',
-        },
-        {},
-        undefined,
+      const missingEmail = 'admin2@admin.admin';
+      const result = await authService.validateUser(missingEmail, 'admin');
+      expect(userRepository.findOneByEmailWithPassword).toHaveBeenCalledWith(
+        missingEmail,
       );
       expect(result).toBeNull();
     });

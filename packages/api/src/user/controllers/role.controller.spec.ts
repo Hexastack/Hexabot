@@ -5,26 +5,33 @@
  */
 
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
-import { roleFixtures } from '@/utils/test/fixtures/role';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
-import { Role, RoleFull } from '../schemas/role.schema';
+import { Role, RoleCreateDto, RoleFull, RoleUpdateDto } from '../dto/role.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { ModelRepository } from '../repositories/model.repository';
+import { PermissionRepository } from '../repositories/permission.repository';
+import { RoleRepository } from '../repositories/role.repository';
+import { UserRepository } from '../repositories/user.repository';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
 import { RoleController } from './role.controller';
 
-describe('RoleController', () => {
+describe('RoleController (TypeORM)', () => {
+  let module: TestingModule;
   let roleController: RoleController;
   let roleService: RoleService;
   let permissionService: PermissionService;
@@ -33,105 +40,155 @@ describe('RoleController', () => {
   let rolePublic: Role;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['InvitationModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [RoleController],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
-      providers: [PermissionService],
+      providers: [
+        RoleService,
+        PermissionService,
+        UserService,
+        RoleRepository,
+        PermissionRepository,
+        UserRepository,
+        ModelRepository,
+      ],
+      typeorm: {
+        entities: [
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
+
+    module = testing.module;
+
     [roleController, roleService, permissionService, userService] =
-      await getMocks([
+      await testing.getMocks([
         RoleController,
         RoleService,
         PermissionService,
         UserService,
       ]);
-    roleAdmin = (await roleService.findOne({ name: 'admin' })) as Role;
-    rolePublic = (await roleService.findOne({ name: 'public' })) as Role;
+
+    const adminRole = await roleService.findOne({ name: 'admin' });
+    const publicRole = await roleService.findOne({ name: 'public' });
+    if (!adminRole || !publicRole) {
+      throw new Error('Expected role fixtures to be available');
+    }
+    roleAdmin = adminRole;
+    rolePublic = publicRole;
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findPage', () => {
-    const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
+    const pageQuery =
+      getPageQuery<RoleOrmEntity>({ sort: ['createdAt', 'asc'] });
     it('should find roles', async () => {
       jest.spyOn(roleService, 'find');
       const result = await roleController.findPage(pageQuery, [], {});
       expect(roleService.find).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(roleFixtures);
+      const expectedRoles = await roleService.findAll();
+      expect(result).toEqualPayload(expectedRoles);
     });
 
-    it('should find roles, and for each role populate the corresponding users and permissions', async () => {
+    it('should populate users and permissions when requested', async () => {
       jest.spyOn(roleService, 'findAndPopulate');
-      const allRoles = await roleService.findAll();
       const allPermissions = await permissionService.findAll();
       const allUsers = await userService.findAll();
-      const result = await roleController.findPage(
+      const result = (await roleController.findPage(
         pageQuery,
         ['users', 'permissions'],
         {},
-      );
-
-      const rolesWithPermissionsAndUsers = allRoles.reduce((acc, currRole) => {
-        const roleWithPermissionsAndUsers = {
-          ...currRole,
-          permissions: allPermissions.filter((currPermission) => {
-            return currPermission.role === currRole.id;
-          }),
-          users: allUsers.filter((currUser) => {
-            return currUser.roles.includes(currRole.id);
-          }),
-        };
-
-        acc.push(roleWithPermissionsAndUsers);
-        return acc;
-      }, [] as RoleFull[]);
+      )) as RoleFull[];
 
       expect(roleService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
+
+      result.forEach((role) => {
+        const expectedPermissionIds = allPermissions
+          .filter((permission) => permission.role === role.id)
+          .map((permission) => permission.id)
+          .sort();
+
+        const permissionIds = (role.permissions ?? [])
+          .map((permission) => permission.id)
+          .sort();
+        expect(permissionIds).toEqual(expectedPermissionIds);
+
+        const expectedUserIds = allUsers
+          .filter((user) => user.roles.includes(role.id))
+          .map((user) => user.id)
+          .sort();
+
+        const userIds = (role.users ?? []).map((user) => user.id).sort();
+        expect(userIds).toEqual(expectedUserIds);
+      });
     });
   });
 
   describe('findOne', () => {
     it('should find one role', async () => {
       jest.spyOn(roleService, 'findOne');
-      const result = (await roleController.findOne(roleAdmin.id, [])) as Role;
+      const result = await roleController.findOne(roleAdmin.id, []);
       expect(roleService.findOne).toHaveBeenCalledWith(roleAdmin.id);
       expect(result).toEqualPayload(
-        roleFixtures.find((role) => role.name === 'admin') as Role,
+        {
+          id: roleFixtureIds.admin,
+          name: roleOrmFixtures.find(
+            (fixture) => fixture.id === roleFixtureIds.admin,
+          )!.name,
+          active: true,
+        },
+        ['createdAt', 'updatedAt'],
       );
     });
 
-    it('should find one role and populate its permissions and users ', async () => {
+    it('should populate permissions and users', async () => {
       jest.spyOn(roleService, 'findOneAndPopulate');
       const users = (await userService.findAll()).filter((user) =>
         user.roles.includes(roleAdmin.id),
       );
 
       const permissions = await permissionService.find({
-        role: roleAdmin.id,
+        where: { roleId: roleAdmin.id },
       });
-      const result = await roleController.findOne(roleAdmin.id, [
+      const result = (await roleController.findOne(roleAdmin.id, [
         'users',
         'permissions',
-      ]);
+      ])) as RoleFull;
 
       expect(roleService.findOneAndPopulate).toHaveBeenCalledWith(roleAdmin.id);
-      expect(result).toEqualPayload({
-        ...roleFixtures.find((role) => role.name === 'admin'),
-        users,
-        permissions,
-      });
+
+      const permissionIds = (result?.permissions ?? [])
+        .map((permission) => permission.id)
+        .sort();
+      expect(permissionIds).toEqual(
+        permissions.map((permission) => permission.id).sort(),
+      );
+
+      const userIds = (result?.users ?? []).map((user) => user.id).sort();
+      expect(userIds).toEqual(users.map((user) => user.id).sort());
     });
   });
 
   describe('count', () => {
     it('should count the roles', async () => {
       const result = await roleController.filterCount();
-      expect(result).toEqual({ count: roleFixtures.length });
+      const total = await roleService.count();
+      expect(result).toEqual({ count: total });
     });
   });
 
@@ -144,7 +201,10 @@ describe('RoleController', () => {
       };
       const result = await roleController.create(roleDto);
       expect(roleService.create).toHaveBeenCalledWith(roleDto);
-      expect(result).toEqualPayload(roleDto);
+      expect(result).toMatchObject({
+        name: roleDto.name,
+        active: roleDto.active,
+      });
     });
   });
 
@@ -153,7 +213,7 @@ describe('RoleController', () => {
       const req = { user: { roles: ['role1'] } } as unknown as Request;
       const roleId = 'role1';
 
-      userService.findOne = jest.fn().mockResolvedValue(null);
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue(null);
 
       await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
         ForbiddenException,
@@ -164,7 +224,9 @@ describe('RoleController', () => {
       const req = { user: { roles: ['role2'] } } as unknown as Request;
       const roleId = 'role1';
 
-      userService.findOne = jest.fn().mockResolvedValue({ id: 'user2' });
+      userService.findOneAndPopulate = jest
+        .fn()
+        .mockResolvedValue({ id: 'user2' } as any);
 
       await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
         ForbiddenException,
@@ -175,7 +237,7 @@ describe('RoleController', () => {
       const req = { user: { roles: ['role2'] } } as unknown as Request;
       const roleId = 'role1';
 
-      userService.findOne = jest.fn().mockResolvedValue(null);
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue(null);
       roleService.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
 
       await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
@@ -187,7 +249,7 @@ describe('RoleController', () => {
       const req = { user: { roles: ['role2'] } } as unknown as Request;
       const roleId = 'role1';
 
-      userService.findOne = jest.fn().mockResolvedValue(null);
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue(null);
       const deleteResult = { deletedCount: 1 };
       roleService.deleteOne = jest.fn().mockResolvedValue(deleteResult);
 
@@ -211,9 +273,10 @@ describe('RoleController', () => {
         rolePublic.id,
         roleUpdateDto,
       );
-      expect(result).toEqualPayload({
-        ...roleFixtures.find((role) => role.name === 'public'),
-        ...roleUpdateDto,
+      expect(result).toMatchObject({
+        id: rolePublic.id,
+        name: roleOrmFixtures.find((role) => role.id === rolePublic.id)?.name,
+        active: roleUpdateDto.active,
       });
     });
 

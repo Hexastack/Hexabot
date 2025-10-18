@@ -4,29 +4,33 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { userFixtures } from '@/utils/test/fixtures/user';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { User as UserDto } from '../dto/user.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
-import { Role } from '../schemas/role.schema';
-import { User, UserFull } from '../schemas/user.schema';
 
 import { UserService } from './user.service';
 
-describe('UserService', () => {
+describe('UserService (TypeORM)', () => {
+  let module: TestingModule;
   let userService: UserService;
   let roleRepository: RoleRepository;
   let userRepository: UserRepository;
-  let user: User | null;
-  let allRoles: Role[];
+  let user: UserDto | null;
+
   const FIELDS_TO_IGNORE: string[] = [
     ...IGNORED_TEST_FIELDS,
     'password',
@@ -37,70 +41,97 @@ describe('UserService', () => {
     'timezone',
     'resetToken',
     'provider',
+    'avatarAttachment',
+    'roleIds',
   ];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel', 'InvitationModel', 'AttachmentModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
-      providers: [UserService, RoleRepository],
+      providers: [UserService, RoleRepository, UserRepository],
+      typeorm: {
+        entities: [
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [userService, roleRepository, userRepository] = await getMocks([
+
+    module = testing.module;
+
+    [userService, roleRepository, userRepository] = await testing.getMocks([
       UserService,
       RoleRepository,
       UserRepository,
     ]);
-    user = await userRepository.findOne({ username: 'admin' });
-    allRoles = await roleRepository.findAll();
-  });
 
-  afterAll(closeInMongodConnection);
+    user = await userRepository.findOne({ username: 'admin' });
+  });
 
   afterEach(jest.clearAllMocks);
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
   describe('findOneAndPopulate', () => {
-    it('should find one user and populate its role', async () => {
+    it('should find one user and populate its roles', async () => {
       jest.spyOn(userRepository, 'findOneAndPopulate');
       const result = await userService.findOneAndPopulate(user!.id);
-      expect(userRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        user!.id,
-        undefined,
+      expect(userRepository.findOneAndPopulate).toHaveBeenCalledWith(user!.id);
+
+      const expected = userFixtures.find(
+        ({ username }) => username === 'admin',
       );
       expect(result).toEqualPayload(
         {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: allRoles.filter(({ id }) => user!.roles.includes(id)),
+          ...expected,
+          id: user!.id,
+          roles: undefined,
         },
-        FIELDS_TO_IGNORE,
+        [...FIELDS_TO_IGNORE, 'roles'],
       );
+
+      const roleIds = (result?.roles ?? []).map((role) => role.id).sort();
+      expect(roleIds).toEqual((user!.roles ?? []).sort());
     });
   });
 
   describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
-      const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
+      const pageQuery =
+        getPageQuery<UserOrmEntity>({ sort: ['createdAt', 'asc'] });
       jest.spyOn(userRepository, 'findAndPopulate');
-      const allUsers = await userRepository.findAll();
+      const users = await userRepository.findAll();
       const result = await userService.findAndPopulate({}, pageQuery);
-      const usersWithRoles = allUsers.reduce(
-        (acc, { avatar: _avatar, roles: _roles, ...rest }) => {
-          acc.push({
-            ...rest,
-            roles: allRoles.filter(({ id }) => user?.roles?.includes(id)),
-            avatar: null,
-          });
-          return acc;
-        },
-        [] as UserFull[],
-      );
 
       expect(userRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
-        undefined,
       );
-      expect(result).toEqualPayload(usersWithRoles);
+
+      expect(result).toHaveLength(users.length);
+
+      const roleMap = new Map<string, string[]>();
+      result.forEach((userFull) => {
+        roleMap.set(
+          userFull.id,
+          (userFull.roles ?? []).map((role) => role.id).sort(),
+        );
+      });
+
+      users.forEach((plainUser) => {
+        const expectedRoles = (plainUser.roles ?? []).sort();
+        const actualRoles = roleMap.get(plainUser.id) ?? [];
+        expect(actualRoles).toEqual(expectedRoles);
+      });
     });
   });
 });

@@ -4,30 +4,30 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { roleFixtureIds } from '@/utils/test/fixtures/role';
 import { userFixtures } from '@/utils/test/fixtures/user';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { Role } from '../schemas/role.schema';
-import { User, UserFull } from '../schemas/user.schema';
+import { User } from '../dto/user.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 
-describe('UserRepository', () => {
+import { RoleRepository } from './role.repository';
+import { UserRepository } from './user.repository';
+
+describe('UserRepository (TypeORM)', () => {
+  let module: TestingModule;
   let roleRepository: RoleRepository;
   let userRepository: UserRepository;
-  let userModel: Model<User>;
   let user: User | null;
-  let allRoles: Role[];
 
   const FIELDS_TO_IGNORE: string[] = [
     ...IGNORED_TEST_FIELDS,
@@ -39,61 +39,89 @@ describe('UserRepository', () => {
     'timezone',
     'resetToken',
     'provider',
+    'avatarAttachment',
   ];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel', 'InvitationModel', 'AttachmentModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
       providers: [UserRepository, RoleRepository],
+      typeorm: {
+        entities: [
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [roleRepository, userRepository, userModel] = await getMocks([
-      RoleRepository,
+
+    module = testing.module;
+
+    [userRepository, roleRepository] = await testing.getMocks([
       UserRepository,
-      getModelToken(User.name),
+      RoleRepository,
     ]);
+
     user = await userRepository.findOne({ username: 'admin' });
-    allRoles = await roleRepository.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
-    it('should find one user and populate its role', async () => {
-      jest.spyOn(userModel, 'findById');
+    it('should find one user and populate roles', async () => {
       const result = await userRepository.findOneAndPopulate(user!.id);
-      expect(userModel.findById).toHaveBeenCalledWith(user!.id, undefined);
+
+      expect(result).toBeDefined();
+      expect(result!.id).toBe(user!.id);
+      expect(result!.username).toBe(user!.username);
+
+      const expectedRoleIds = [
+        roleFixtureIds.admin,
+        roleFixtureIds.manager,
+      ].sort();
+
+      const roleIds = (result!.roles ?? []).map((role) => role.id).sort();
+      expect(roleIds).toEqual(expectedRoleIds);
+
+      const expected = userFixtures.find(
+        ({ username }) => username === 'admin',
+      );
+      if (!expected) {
+        throw new Error('Expected admin user fixture to be available');
+      }
       expect(result).toEqualPayload(
-        {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: allRoles.filter(({ id }) => user!.roles.includes(id)),
-        },
-        FIELDS_TO_IGNORE,
+        { ...expected, roles: undefined },
+        [...FIELDS_TO_IGNORE, 'roles'],
       );
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should find users, and for each user populate the corresponding roles', async () => {
-      jest.spyOn(userModel, 'find');
-      const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
-      const allUsers = await userRepository.findAll();
-      const allRoles = await roleRepository.findAll();
-      const result = await userRepository.findAndPopulate({}, pageQuery);
-      const usersWithRoles = allUsers.reduce((acc, currUser) => {
-        acc.push({
-          ...currUser,
-          roles: allRoles.filter(({ id }) => user?.roles.includes(id)),
-          avatar: null,
-        });
-        return acc;
-      }, [] as UserFull[]);
+    it('should populate roles for every user', async () => {
+      const users = await userRepository.findAll();
+      const result = await userRepository.findAndPopulate({});
 
-      expect(userModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(usersWithRoles);
+      expect(result).toHaveLength(users.length);
+
+      result.forEach((userFull) => {
+        const plain = users.find((candidate) => candidate.id === userFull.id);
+        expect(plain).toBeDefined();
+        expect(userFull.roles.map((role) => role.id).sort()).toEqual(
+          (plain!.roles ?? []).sort(),
+        );
+      });
     });
   });
 });

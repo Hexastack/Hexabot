@@ -11,17 +11,87 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { Attachment } from '@/attachment/dto/attachment.dto';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+import { UserProvider } from '../types/user-provider.type';
+
+import { Role } from './role.dto';
+
+@Exclude()
+export class UserStub extends BaseStub {
+  @Expose()
+  username!: string;
+
+  @Expose()
+  first_name!: string;
+
+  @Expose()
+  last_name!: string;
+
+  @Expose()
+  email!: string;
+
+  @Expose()
+  sendEmail!: boolean;
+
+  @Expose()
+  state!: boolean;
+
+  @Expose()
+  language!: string;
+
+  @Expose()
+  timezone!: string;
+
+  @Expose()
+  resetCount!: number;
+
+  @Expose()
+  resetToken!: string | null;
+
+  @Expose()
+  provider?: UserProvider;
+
+  @Expose()
+  password?: string;
+}
+
+@Exclude()
+export class User extends UserStub {
+  @Expose({ name: 'roleIds' })
+  roles: string[];
+
+  @Expose()
+  avatar: string;
+}
+
+@Exclude()
+export class UserFull extends UserStub {
+  @Expose()
+  @Type(() => Role)
+  roles: Role[];
+
+@Expose({ name: 'avatarAttachment' })
+@Type(() => Attachment)
+  avatar: Attachment | null;
+}
 
 export class UserCreateDto {
   @ApiProperty({ description: 'User username', type: String })
@@ -52,13 +122,13 @@ export class UserCreateDto {
   @ApiProperty({ description: 'User roles', type: String })
   @IsNotEmpty()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Role must be a valid ObjectId' })
+  @IsUUID('4', { each: true, message: 'Role must be a valid UUID' })
   roles: string[];
 
   @ApiPropertyOptional({ description: 'Avatar', type: String })
   @IsOptional()
   @IsString()
-  @IsObjectId({ message: 'Avatar must be a valid ObjectId' })
+  @IsUUID('4', { message: 'Avatar must be a valid UUID' })
   avatar: string | null = null;
 
   @ApiPropertyOptional({
@@ -70,17 +140,60 @@ export class UserCreateDto {
   state?: boolean;
 }
 
-export class UserEditProfileDto extends OmitType(PartialType(UserCreateDto), [
-  'username',
-  'roles',
-  'avatar',
-  'state',
-]) {
+export class UserUpdateDto extends PartialType(UserCreateDto) {
   @ApiPropertyOptional({ description: 'User language', type: String })
   @IsOptional()
   @IsString()
   language?: string;
+
+  @ApiPropertyOptional({ description: 'User timezone', type: String })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Send automated emails to the user',
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  sendEmail?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Password reset token',
+    type: String,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  resetToken?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Password reset counter',
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  resetCount?: number;
+
+  @ApiPropertyOptional({
+    description: 'Authentication provider metadata',
+    type: Object,
+  })
+  @IsOptional()
+  provider?: UserProvider;
 }
+
+export class UserEditProfileDto extends OmitType(UserUpdateDto, [
+  'username',
+  'roles',
+  'avatar',
+  'state',
+  'sendEmail',
+  'resetToken',
+  'resetCount',
+  'provider',
+]) {}
 
 export class UserUpdateStateAndRolesDto {
   @ApiPropertyOptional({
@@ -97,7 +210,7 @@ export class UserUpdateStateAndRolesDto {
   })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Role must be a valid ObjectId' })
+  @IsUUID('4', { each: true, message: 'Role must be a valid UUID' })
   roles?: string[];
 }
 
@@ -107,6 +220,12 @@ export class UserResetPasswordDto extends PickType(UserCreateDto, [
 
 export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
 
-export type UserDto = DtoConfig<{
+export type UserTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof User;
+  FullCls: typeof UserFull;
+}>;
+
+export type UserDtoConfig = DtoActionConfig<{
   create: UserCreateDto;
+  update: UserUpdateDto;
 }>;

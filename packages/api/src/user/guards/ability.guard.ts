@@ -18,8 +18,8 @@ import { Request } from 'express';
 
 import { config } from '@/config';
 
-import { TRole } from '../schemas/role.schema';
-import { User } from '../schemas/user.schema';
+import { TRole } from '../entities/role.entity';
+import { User } from '../dto/user.dto';
 import { PermissionService } from '../services/permission.service';
 import { MethodToAction } from '../types/action.type';
 import { TModel } from '../types/model.type';
@@ -52,7 +52,9 @@ export class Ability implements CanActivate {
       throw new UnauthorizedException('Session expired');
     }
 
-    if (user?.roles?.length) {
+    const roleIds = Array.isArray(user.roles) ? user.roles : [];
+
+    if (roleIds.length) {
       const pathname =
         config.mode === 'monolith'
           ? _parsedUrl.pathname?.replace(`/${config.apiPrefix}`, '')
@@ -83,7 +85,7 @@ export class Ability implements CanActivate {
 
       if (permissions) {
         const permissionsFromRoles = Object.entries(permissions)
-          .filter(([key, _]) => user.roles.includes(key))
+          .filter(([key, _]) => roleIds.includes(key))
           .map(([_, value]) => value);
 
         if (

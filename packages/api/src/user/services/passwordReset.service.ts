@@ -80,7 +80,6 @@ export class PasswordResetService {
       throw new InternalServerErrorException('Could not send email');
     }
 
-    // TODO: hash the token before saving it
     await this.userService.updateOne({ email: dto.email }, { resetToken: jwt });
   }
 
@@ -101,18 +100,15 @@ export class PasswordResetService {
     // first step is to check if the token has been used
     const user = await this.userService.findOne({ email: payload.email });
 
-    if (!user?.resetToken || compareSync(user.resetToken, token)) {
+    if (!user?.resetToken || !compareSync(token, user.resetToken)) {
       throw new UnauthorizedException('Invalid token');
     }
 
     // invalidate the token and update password
-    await this.userService.updateOne(
-      { _id: user.id },
-      {
-        password: dto.password,
-        resetToken: null,
-      },
-    );
+    await this.userService.updateOne(user.id, {
+      password: dto.password,
+      resetToken: null,
+    });
   }
 
   /**

@@ -5,51 +5,54 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { RoleDto } from '../dto/role.dto';
-import { Invitation } from '../schemas/invitation.schema';
-import { Permission } from '../schemas/permission.schema';
 import {
   Role,
-  ROLE_POPULATE,
+  RoleDtoConfig,
   RoleFull,
-  RolePopulate,
-} from '../schemas/role.schema';
+  RoleTransformerDto,
+} from '../dto/role.dto';
+import { RoleOrmEntity } from '../entities/role.entity';
 
 @Injectable()
-export class RoleRepository extends BaseRepository<
-  Role,
-  RolePopulate,
-  RoleFull,
-  RoleDto
+export class RoleRepository extends BaseOrmRepository<
+  RoleOrmEntity,
+  RoleTransformerDto,
+  RoleDtoConfig
 > {
   constructor(
-    @InjectModel(Role.name) readonly model: Model<Role>,
-    @InjectModel(Permission.name)
-    private readonly permissionModel: Model<Permission>,
-    @InjectModel(Invitation.name)
-    private readonly invitationModel: Model<Invitation>,
+    @InjectRepository(RoleOrmEntity)
+    repository: Repository<RoleOrmEntity>,
   ) {
-    super(model, Role, ROLE_POPULATE, RoleFull);
+    super(repository, ['permissions', 'users'], {
+      PlainCls: Role,
+      FullCls: RoleFull,
+    });
   }
 
-  /**
-   * Deletes a single Role entity by its ID, and also deletes all related Permission entities.
-   *
-   * @param id The ID of the Role to delete.
-   *
-   * @returns The result of the delete operation.
-   */
-  async deleteOne(id: string): Promise<DeleteResult> {
-    const result = await this.model.deleteOne({ _id: id }).exec();
-    if (result.deletedCount > 0) {
-      await this.permissionModel.deleteMany({ role: id });
-      await this.invitationModel.deleteMany({ roles: id });
+  protected override async preDelete(
+    entities: RoleOrmEntity[],
+    _filter: TFilterQuery<RoleOrmEntity>,
+  ): Promise<void> {
+    for (const entity of entities) {
+      const users = await this.repository
+        .createQueryBuilder()
+        .relation(RoleOrmEntity, 'users')
+        .of(entity)
+        .loadMany();
+
+      if (users.length > 0) {
+        await this.repository
+          .createQueryBuilder()
+          .relation(RoleOrmEntity, 'users')
+          .of(entity)
+          .remove(users);
+      }
     }
-    return result;
   }
 }

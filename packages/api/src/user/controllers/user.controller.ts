@@ -32,8 +32,8 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
-import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -49,7 +49,8 @@ import {
   UserResetPasswordDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { User, UserFull, UserPopulate, UserStub } from '../schemas/user.schema';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationService } from '../services/invitation.service';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
@@ -58,12 +59,7 @@ import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
 
 @Controller('user')
-export class ReadOnlyUserController extends BaseController<
-  User,
-  UserStub,
-  UserPopulate,
-  UserFull
-> {
+export class ReadOnlyUserController {
   constructor(
     protected readonly userService: UserService,
     protected readonly roleService: RoleService,
@@ -72,8 +68,43 @@ export class ReadOnlyUserController extends BaseController<
     protected readonly attachmentService: AttachmentService,
     protected readonly passwordResetService: PasswordResetService,
     protected readonly validateAccountService: ValidateAccountService,
-  ) {
-    super(userService);
+    protected readonly logger: LoggerService,
+  ) {}
+
+  protected canPopulate(populate: string[]): boolean {
+    return this.userService.canPopulate(populate);
+  }
+
+  protected async validateRelations(dto: {
+    roles: string[];
+    avatar: string | null;
+  }): Promise<void> {
+    const exceptions: string[] = [];
+
+    if (dto.roles?.length) {
+      const availableRoles = await this.roleService.findAll();
+      const allowedRoleIds = new Set(availableRoles.map((role) => role.id));
+      const invalidRoles = dto.roles.filter(
+        (roleId) => !allowedRoleIds.has(roleId),
+      );
+
+      if (invalidRoles.length) {
+        exceptions.push(
+          `roles with ID${invalidRoles.length > 1 ? 's' : ''} '${invalidRoles}' not found`,
+        );
+      }
+    }
+
+    if (dto.avatar) {
+      const avatar = await this.attachmentService.findOne(dto.avatar);
+      if (!avatar) {
+        exceptions.push(`avatar with ID '${dto.avatar}' not found`);
+      }
+    }
+
+    if (exceptions.length) {
+      throw new NotFoundException(exceptions.join('; '));
+    }
   }
 
   /**
@@ -133,23 +164,27 @@ export class ReadOnlyUserController extends BaseController<
     const currentUser = await this.userService.findOneAndPopulate(
       req.user.id as string,
     );
+
+    const roleIds = currentUser?.roles?.map(({ id }) => id) ?? [];
+
     const currentPermissions = await this.permissionService.findAndPopulate({
-      role: {
-        $in: currentUser?.roles.map(({ id }) => id),
-      },
-    });
+      roleId: { $in: roleIds },
+    } as TFilterQuery<PermissionOrmEntity>);
 
     return {
-      roles: currentUser?.roles,
-      permissions: currentPermissions.map((permission) => {
-        if (permission.model) {
-          return {
-            model: permission.model.name,
-            action: permission.action,
-            relation: permission.relation,
-          };
-        }
-      }),
+      roles: currentUser?.roles ?? [],
+      permissions: currentPermissions
+        .map((permission) => {
+          if (permission.model) {
+            return {
+              model: permission.model.name ?? permission.model.identity,
+              action: permission.action,
+              relation: permission.relation,
+            };
+          }
+          return undefined;
+        })
+        .filter(Boolean),
     };
   }
 
@@ -164,19 +199,21 @@ export class ReadOnlyUserController extends BaseController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<User>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<UserOrmEntity>,
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<User>({
+      new SearchFilterPipe<UserOrmEntity>({
         allowedFields: ['first_name', 'last_name'],
       }),
     )
-    filters: TFilterQuery<User>,
+    filters: TFilterQuery<UserOrmEntity>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.userService.findAndPopulate(filters, pageQuery)
-      : await this.userService.find(filters, pageQuery);
+    const shouldPopulate = this.canPopulate(populate);
+    if (shouldPopulate) {
+      return await this.userService.findAndPopulate(filters, pageQuery);
+    }
+    return await this.userService.find(filters, pageQuery);
   }
 
   /**
@@ -187,13 +224,13 @@ export class ReadOnlyUserController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<User>({
+      new SearchFilterPipe<UserOrmEntity>({
         allowedFields: ['first_name', 'last_name'],
       }),
     )
-    filters?: TFilterQuery<User>,
+    filters?: TFilterQuery<UserOrmEntity>,
   ) {
-    return await this.count(filters);
+    return { count: await this.userService.count(filters) };
   }
 
   /**
@@ -210,7 +247,8 @@ export class ReadOnlyUserController extends BaseController<
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const shouldPopulate = this.canPopulate(populate);
+    const doc = shouldPopulate
       ? await this.userService.findOneAndPopulate(id)
       : await this.userService.findOne(id);
 
@@ -224,6 +262,28 @@ export class ReadOnlyUserController extends BaseController<
 
 @Controller('user')
 export class ReadWriteUserController extends ReadOnlyUserController {
+  constructor(
+    userService: UserService,
+    roleService: RoleService,
+    invitationService: InvitationService,
+    permissionService: PermissionService,
+    attachmentService: AttachmentService,
+    passwordResetService: PasswordResetService,
+    validateAccountService: ValidateAccountService,
+    logger: LoggerService,
+  ) {
+    super(
+      userService,
+      roleService,
+      invitationService,
+      permissionService,
+      attachmentService,
+      passwordResetService,
+      validateAccountService,
+      logger,
+    );
+  }
+
   /**
    * Creates a new user.
    *
@@ -231,19 +291,11 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns A promise that resolves to the created user.
    */
-
   @Post()
   async create(@Body() user: UserCreateDto) {
-    this.validate({
-      dto: user,
-      allowedIds: {
-        roles: (await this.roleService.findAll())
-          .filter((role) => user.roles.includes(role.id))
-          .map((role) => role.id),
-        avatar: user.avatar
-          ? (await this.attachmentService.findOne(user.avatar))?.id
-          : null,
-      },
+    await this.validateRelations({
+      roles: user.roles,
+      avatar: user.avatar ?? null,
     });
     return await this.userService.create(user);
   }
@@ -257,7 +309,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns A promise that resolves to the updated user.
    */
-
   @UseInterceptors(
     FileInterceptor('avatar', {
       limits: {
@@ -283,7 +334,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       throw new ForbiddenException();
     }
 
-    // Upload Avatar if provided
     const avatar = avatarFile
       ? await this.attachmentService.store(avatarFile, {
           name: avatarFile.originalname,
@@ -316,34 +366,39 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @param id - The ID of the user to update.
    * @param body - The new state and roles of the user.
-   * @param session - The current session of the user performing the update.
+   * @param req - The current request containing session information.
    *
    * @returns The updated user data.
    */
-
   @Patch(':id')
   async updateStateAndRoles(
     @Param('id') id: string,
     @Body() body: UserUpdateStateAndRolesDto,
     @Req() req: Request,
   ) {
-    const oldRoles = (await this.userService.findOne(id))?.roles;
+    const existingUser = await this.userService.findOne(id);
+    const oldRoleIds = existingUser?.roles ?? [];
     const newRoles = body.roles;
-    const { id: adminRoleId } =
+
+    const adminRole =
       (await this.roleService.findOne({
         name: 'admin',
-      })) || {};
+      })) ?? null;
+    const adminRoleId = adminRole?.id;
+
     if (id === req.session.passport?.user?.id && body.state === false) {
       throw new ForbiddenException('Your account state is protected');
     }
     if (
       adminRoleId &&
       req.session.passport?.user?.id === id &&
-      oldRoles?.includes(adminRoleId) &&
-      !newRoles?.includes(adminRoleId)
+      oldRoleIds.includes(adminRoleId) &&
+      newRoles &&
+      !newRoles.includes(adminRoleId)
     ) {
       throw new ForbiddenException('Admin privileges are protected');
     }
+
     const result = await this.userService.updateOne(id, body);
     if (!result) {
       this.logger.warn(`Unable to update User by id ${id}`);
@@ -362,7 +417,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns Nothing (HTTP 204 on success).
    */
-
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -384,7 +438,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The created invitation record.
    */
-
   @Post('invite')
   async invite(@Body() invitationCreateDto: InvitationCreateDto) {
     return await this.invitationService.create(invitationCreateDto);

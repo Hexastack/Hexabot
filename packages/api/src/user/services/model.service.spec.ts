@@ -4,78 +4,123 @@
  * Full terms: see LICENSE.md.
  */
 
-import { modelFixtures } from '@/utils/test/fixtures/model';
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { modelFixtureIds, modelOrmFixtures } from '@/utils/test/fixtures/model';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Permission } from '../dto/permission.dto';
+import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
-import { Model, ModelFull } from '../schemas/model.schema';
-import { Permission } from '../schemas/permission.schema';
 
 import { ModelService } from './model.service';
 
-describe('ModelService', () => {
+describe('ModelService (TypeORM)', () => {
+  let module: TestingModule;
   let modelService: ModelService;
   let modelRepository: ModelRepository;
   let permissionRepository: PermissionRepository;
-  let model: Model | null;
+  let model: ModelEntity;
   let permissions: Permission[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
-      providers: [ModelService, PermissionRepository],
+      providers: [ModelService, PermissionRepository, ModelRepository],
+      typeorm: {
+        entities: [
+          ModelEntity,
+          PermissionOrmEntity,
+          RoleOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [modelService, permissionRepository, modelRepository] = await getMocks([
-      ModelService,
-      PermissionRepository,
-      ModelRepository,
-    ]);
-    model = await modelRepository.findOne({ name: 'ContentType' });
-    permissions = await permissionRepository.find({ model: model!.id });
-  });
 
-  afterAll(closeInMongodConnection);
+    module = testing.module;
+
+    [modelService, permissionRepository, modelRepository] =
+      await testing.getMocks([
+        ModelService,
+        PermissionRepository,
+        ModelRepository,
+      ]);
+
+    model = (await modelRepository.findOne(
+      modelFixtureIds.contentType,
+    )) as ModelEntity;
+    permissions = await permissionRepository.find({
+      where: { modelId: modelFixtureIds.contentType },
+    });
+  });
 
   afterEach(jest.clearAllMocks);
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
   describe('findOneAndPopulate', () => {
     it('should find a model and populate its permissions', async () => {
-      const result = await modelService.findOneAndPopulate(model!.id);
-      expect(result).toEqualPayload({
-        ...modelFixtures.find(({ name }) => name === 'ContentType'),
-        permissions,
-      });
+      const result = await modelService.findOneAndPopulate(model.id);
+
+      const expectedFixture = modelOrmFixtures.find(
+        ({ id }) => id === modelFixtureIds.contentType,
+      )!;
+
+      expect(result).toEqualPayload(
+        {
+          id: expectedFixture.id,
+          name: expectedFixture.name,
+          identity: expectedFixture.identity,
+          relation: expectedFixture.relation,
+        },
+        ['permissions', 'attributes', 'createdAt', 'updatedAt'],
+      );
+
+      expect(
+        (result?.permissions ?? []).map((permission) => permission.id).sort(),
+      ).toEqual(permissions.map((permission) => permission.id).sort());
     });
   });
+
   describe('findAndPopulate', () => {
     it('should find models, and for each model populate the corresponding permissions', async () => {
       jest.spyOn(modelRepository, 'findAndPopulate');
       const models = await modelRepository.findAll();
-      const permissions = await permissionRepository.findAll();
+      const allPermissions = await permissionRepository.findAll();
       const result = await modelService.findAndPopulate({});
-      const modelsWithPermissions = models.reduce((acc, currModel) => {
-        acc.push({
-          ...currModel,
-          permissions: permissions.filter(
-            (permission) => permission.model === currModel.id,
-          ),
-        });
-        return acc;
-      }, [] as ModelFull[]);
+
       expect(modelRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         undefined,
-        undefined,
       );
-      expect(result).toEqualPayload(modelsWithPermissions);
+
+      expect(result).toHaveLength(models.length);
+
+      result.forEach((modelResult) => {
+        const expectedPermissions = allPermissions.filter(
+          (permission) => permission.model === modelResult.id,
+        );
+        const permissionIds = (modelResult.permissions ?? [])
+          .map((permission) => permission.id)
+          .sort();
+        expect(permissionIds).toEqual(
+          expectedPermissions.map((permission) => permission.id).sort(),
+        );
+      });
     });
   });
 });

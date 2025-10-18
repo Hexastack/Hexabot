@@ -5,45 +5,29 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model as MongooseModel } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   Model,
-  MODEL_POPULATE,
+  ModelDtoConfig,
   ModelFull,
-  ModelPopulate,
-} from '../schemas/model.schema';
-import { Permission } from '../schemas/permission.schema';
+  ModelTransformerDto,
+} from '../dto/model.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
 
 @Injectable()
-export class ModelRepository extends BaseRepository<
-  Model,
-  ModelPopulate,
-  ModelFull
+export class ModelRepository extends BaseOrmRepository<
+  ModelOrmEntity,
+  ModelTransformerDto,
+  ModelDtoConfig
 > {
   constructor(
-    @InjectModel(Model.name) readonly model: MongooseModel<Model>,
-    @InjectModel(Permission.name)
-    private readonly permissionModel: MongooseModel<Permission>,
+    @InjectRepository(ModelOrmEntity)
+    repository: Repository<ModelOrmEntity>,
   ) {
-    super(model, Model, MODEL_POPULATE, ModelFull);
-  }
-
-  /**
-   * Deletes a `Model` document by its ID and removes associated `Permission` documents.
-   *
-   * @param id - The ID of the `Model` document to delete.
-   *
-   * @returns The result of the delete operation.
-   */
-  async deleteOne(id: string): Promise<DeleteResult> {
-    const result = await this.model.deleteOne({ _id: id }).exec();
-    if (result.deletedCount > 0) {
-      await this.permissionModel.deleteMany({ model: id });
-    }
-    return result;
+    super(repository, ['permissions'], { PlainCls: Model, FullCls: ModelFull });
   }
 }

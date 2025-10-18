@@ -7,11 +7,17 @@
 import { Injectable } from '@nestjs/common';
 import { compareSync } from 'bcryptjs';
 
+import { User } from '../dto/user.dto';
+import { hash } from '../utilities/bcryptjs';
+import { UserRepository } from '../repositories/user.repository';
 import { UserService } from './user.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   /**
    * Validates a user by checking if the provided email and password are correct.
@@ -23,15 +29,42 @@ export class AuthService {
    * @returns The user object if the credentials are valid, or null if they are invalid.
    */
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findOne(
-      {
-        email,
-      },
-      {},
-    );
+    const entity = await this.userRepository.findOneByEmailWithPassword(email);
 
-    if (user && compareSync(password, user.password)) {
-      return user;
+    if (entity) {
+      const isValid =
+        compareSync(password, entity.password) ||
+        hash(password) === entity.password;
+      if (!isValid) {
+        return null;
+      }
+
+      const dto =
+        (await this.userService.findOne(entity.id)) ??
+        ((await this.userRepository.findOne(entity.id)) as User | null);
+      if (dto) {
+        return dto;
+      }
+
+      return {
+        id: entity.id,
+        username: entity.username,
+        first_name: entity.first_name,
+        last_name: entity.last_name,
+        email: entity.email,
+        roles: entity.roleIds ?? [],
+        avatar: entity.avatar ?? null,
+        sendEmail: entity.sendEmail,
+        state: entity.state,
+        language: entity.language,
+        timezone: entity.timezone,
+        resetCount: entity.resetCount,
+        resetToken: entity.resetToken ?? null,
+        provider: entity.provider,
+        password: undefined,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt,
+      } as User;
     }
     return null;
   }

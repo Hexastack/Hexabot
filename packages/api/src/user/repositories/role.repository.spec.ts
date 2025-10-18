@@ -4,123 +4,169 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
 
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
-import { getPageQuery } from '@/utils/test/pagination';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+  installPermissionFixturesTypeOrm,
+  permissionOrmFixtures,
+} from '@/utils/test/fixtures/permission';
+import { roleFixtureIds } from '@/utils/test/fixtures/role';
+import { userFixtureIds } from '@/utils/test/fixtures/user';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { Role, RoleFull } from '../schemas/role.schema';
-import { User } from '../schemas/user.schema';
+import { Role } from '../dto/role.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { PermissionRepository } from './permission.repository';
+import { RoleRepository } from './role.repository';
+import { UserRepository } from './user.repository';
 
-import { roleFixtures } from './../../utils/test/fixtures/role';
-
-describe('RoleRepository', () => {
+describe('RoleRepository (TypeORM)', () => {
+  let module: TestingModule;
   let roleRepository: RoleRepository;
   let permissionRepository: PermissionRepository;
   let userRepository: UserRepository;
-  let roleModel: Model<Role>;
-  let role: Role;
-  let users: User[];
-  let roleToDelete: Role;
+
+  let adminRole: Role;
+  let managerRole: Role;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['UserModel', 'InvitationModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
       providers: [UserRepository, RoleRepository, PermissionRepository],
+      typeorm: {
+        entities: [
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [roleRepository, userRepository, permissionRepository, roleModel] =
-      await getMocks([
+
+    module = testing.module;
+
+    [roleRepository, userRepository, permissionRepository] =
+      await testing.getMocks([
         RoleRepository,
         UserRepository,
         PermissionRepository,
-        getModelToken(Role.name),
       ]);
-    role = (await roleRepository.findOne({ name: 'admin' })) as Role;
-    users = (await userRepository.findAll()).filter((user) =>
-      user.roles.includes(role.id),
-    );
-    roleToDelete = (await roleRepository.findOne({
+
+    adminRole = (await roleRepository.findOne({
+      name: 'admin',
+    })) as Role;
+    managerRole = (await roleRepository.findOne({
       name: 'manager',
     })) as Role;
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find one role and populate its permissions and users', async () => {
-      jest.spyOn(roleModel, 'findById');
-      const permissions = await permissionRepository.find({ role: role.id });
-      const result = await roleRepository.findOneAndPopulate(role.id);
-      expect(roleModel.findById).toHaveBeenCalledWith(role.id, undefined);
-      expect(result).toEqualPayload({
-        ...roleFixtures.find(({ name }) => name === 'admin'),
-        users,
-        permissions,
+      const permissions = await permissionRepository.find({
+        where: { roleId: adminRole.id },
       });
+
+      const result = await roleRepository.findOneAndPopulate(adminRole.id);
+
+      expect(result).toBeDefined();
+      expect(result!.id).toBe(adminRole.id);
+      expect(result!.name).toBe(adminRole.name);
+      expect(result!.permissions?.length).toBe(permissions.length);
+
+      const expectedActions = permissionOrmFixtures
+        .filter((fixture) => fixture.role === roleFixtureIds.admin)
+        .map((fixture) => fixture.action)
+        .sort();
+
+      const actions = (result!.permissions ?? [])
+        .map((permission) => permission.action)
+        .sort();
+      expect(actions).toEqual(expectedActions);
+
+      const expectedUserIds = [userFixtureIds.admin];
+      const userIds = (result!.users ?? []).map((user) => user.id).sort();
+
+      expect(userIds).toEqual(expectedUserIds);
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should find roles, and for each role populate the corresponding permissions and users', async () => {
-      const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
-      jest.spyOn(roleModel, 'find');
-      const allRoles = await roleRepository.findAll();
-      const allPermissions = await permissionRepository.findAll();
-      const allUsers = await userRepository.findAll();
-      const result = await roleRepository.findAndPopulate({}, pageQuery);
-      const rolesWithPermissionsAndUsers = allRoles.reduce((acc, currRole) => {
-        const roleWithPermissionsAndUsers = {
-          ...currRole,
-          permissions: allPermissions.filter((currPermission) => {
-            return currPermission.role === currRole.id;
-          }),
-          users: allUsers.filter((currUser) => {
-            return currUser.roles.includes(currRole.id);
-          }),
-        };
-        acc.push(roleWithPermissionsAndUsers);
-        return acc;
-      }, [] as RoleFull[]);
+    it('should find roles and populate permissions and users', async () => {
+      const [roles, permissions, allUsers] = await Promise.all([
+        roleRepository.findAll(),
+        permissionRepository.findAll(),
+        userRepository.findAll(),
+      ]);
 
-      expect(roleModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
+      const result = await roleRepository.findAndPopulate({});
+
+      expect(result).toHaveLength(roles.length);
+
+      result.forEach((role) => {
+        const expectedPermissions = permissions.filter(
+          (permission) => permission.role === role.id,
+        );
+        const expectedUsers = allUsers.filter((user) =>
+          user.roles.includes(role.id),
+        );
+
+        const resultPermissionIds = (role.permissions ?? []).map(
+          (permission) => permission.id,
+        );
+        const expectedPermissionIds = expectedPermissions.map(
+          (permission) => permission.id,
+        );
+        expect(resultPermissionIds.sort()).toEqual(
+          expectedPermissionIds.sort(),
+        );
+
+        const resultUserIds = (role.users ?? []).map((user) => user.id).sort();
+        const expectedUserIds = expectedUsers.map((user) => user.id).sort();
+        expect(resultUserIds).toEqual(expectedUserIds);
+      });
     });
   });
 
   describe('deleteOne', () => {
     it('should delete a role by id', async () => {
-      jest.spyOn(roleModel, 'deleteOne');
-      const result = await roleRepository.deleteOne(roleToDelete.id);
-
-      expect(roleModel.deleteOne).toHaveBeenCalledWith({
-        _id: roleToDelete.id,
+      const permissionsBefore = await permissionRepository.find({
+        where: { roleId: managerRole.id },
       });
+      expect(permissionsBefore.length).toBeGreaterThan(0);
+
+      const result = await roleRepository.deleteOne(managerRole.id);
+
       expect(result).toEqual({
         acknowledged: true,
         deletedCount: 1,
       });
 
-      const permissions = await permissionRepository.find({
-        role: roleToDelete.id,
+      const permissionsAfter = await permissionRepository.find({
+        where: { roleId: managerRole.id },
       });
-      expect(permissions.length).toEqual(0);
+      expect(permissionsAfter.length).toEqual(0);
     });
 
     it('should fail to delete a role that does not exist', async () => {
-      expect(await roleRepository.deleteOne(roleToDelete.id)).toEqual({
+      expect(await roleRepository.deleteOne(managerRole.id)).toEqual({
         acknowledged: true,
         deletedCount: 0,
       });

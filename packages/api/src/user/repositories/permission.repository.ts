@@ -5,27 +5,75 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { PermissionDto } from '../dto/permission.dto';
 import {
   Permission,
-  PERMISSION_POPULATE,
+  PermissionActionDto,
   PermissionFull,
-  PermissionPopulate,
-} from '../schemas/permission.schema';
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
 
 @Injectable()
-export class PermissionRepository extends BaseRepository<
-  Permission,
-  PermissionPopulate,
-  PermissionFull,
-  PermissionDto
+export class PermissionRepository extends BaseOrmRepository<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionActionDto
 > {
-  constructor(@InjectModel(Permission.name) readonly model: Model<Permission>) {
-    super(model, Permission, PERMISSION_POPULATE, PermissionFull);
+  constructor(
+    @InjectRepository(PermissionOrmEntity)
+    repository: Repository<PermissionOrmEntity>,
+  ) {
+    super(repository, ['model', 'role'], {
+      PlainCls: Permission,
+      FullCls: PermissionFull,
+    });
+  }
+
+  protected override async preCreate(
+    entity: DeepPartial<PermissionOrmEntity> | PermissionOrmEntity,
+  ): Promise<void> {
+    this.normalizeRelations(entity);
+  }
+
+  protected override async preUpdate(
+    _current: PermissionOrmEntity,
+    changes: DeepPartial<PermissionOrmEntity>,
+  ): Promise<void> {
+    this.normalizeRelations(changes);
+  }
+
+  private normalizeRelations(
+    entity: DeepPartial<PermissionOrmEntity> | PermissionOrmEntity,
+  ): void {
+    if ('model' in entity && entity.model) {
+      const model = entity.model as any;
+      if (typeof model === 'string') {
+        entity.model = { id: model } as ModelOrmEntity;
+        entity.modelId = model;
+      } else if (model && typeof model === 'object' && 'id' in model) {
+        entity.modelId = model.id;
+      }
+    }
+
+    if ('role' in entity && entity.role) {
+      const role = entity.role as any;
+      if (typeof role === 'string') {
+        entity.role = { id: role } as RoleOrmEntity;
+        entity.roleId = role;
+      } else if (role && typeof role === 'object' && 'id' in role) {
+        entity.roleId = role.id;
+      }
+    }
+
+    if (!entity.relation) {
+      entity.relation = 'role';
+    }
   }
 }

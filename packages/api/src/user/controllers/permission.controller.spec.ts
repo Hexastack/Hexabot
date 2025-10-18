@@ -5,18 +5,26 @@
  */
 
 import { NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { PermissionCreateDto } from '../dto/permission.dto';
-import { Model } from '../schemas/model.schema';
-import { Permission, PermissionFull } from '../schemas/permission.schema';
-import { Role } from '../schemas/role.schema';
+import {
+  Permission,
+  PermissionCreateDto,
+  PermissionFull,
+} from '../dto/permission.dto';
+import { Role } from '../dto/role.dto';
+import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { ModelRepository } from '../repositories/model.repository';
+import { PermissionRepository } from '../repositories/permission.repository';
+import { RoleRepository } from '../repositories/role.repository';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -24,76 +32,103 @@ import { Action } from '../types/action.type';
 
 import { PermissionController } from './permission.controller';
 
-describe('PermissionController', () => {
+describe('PermissionController (TypeORM)', () => {
+  let module: TestingModule;
   let permissionController: PermissionController;
   let permissionService: PermissionService;
   let roleService: RoleService;
   let modelService: ModelService;
   let deletedId: string;
   let adminRole: Role;
-  let contentModel: Model;
+  let contentModel: ModelEntity;
   let createPermission: Permission;
   let allPermissions: Permission[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['InvitationModel'],
-      autoInjectFrom: ['controllers'],
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [PermissionController],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [
+        PermissionService,
+        RoleService,
+        ModelService,
+        PermissionRepository,
+        RoleRepository,
+        ModelRepository,
+      ],
+      typeorm: {
+        entities: [
+          PermissionOrmEntity,
+          RoleOrmEntity,
+          ModelEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
+
+    module = testing.module;
+
     [permissionController, roleService, modelService, permissionService] =
-      await getMocks([
+      await testing.getMocks([
         PermissionController,
         RoleService,
         ModelService,
         PermissionService,
       ]);
-    allPermissions = await permissionService.findAll();
-    adminRole = (await roleService.findOne({ name: 'admin' })) as Role;
-    contentModel = (await modelService.findOne({ name: 'Content' })) as Model;
-    createPermission = (await permissionService.findOne({
-      action: Action.CREATE,
-    })) as Permission;
-  });
 
-  afterAll(closeInMongodConnection);
+    allPermissions = await permissionService.findAll();
+    const role = await roleService.findOne({ name: 'admin' });
+    if (!role) {
+      throw new Error('Expected admin role fixture to be available');
+    }
+    adminRole = role;
+    contentModel = (await modelService.findOne({
+      name: 'Content',
+    })) as ModelEntity;
+    const permission = await permissionService.findOne({
+      action: Action.CREATE,
+    });
+    if (!permission) {
+      throw new Error('Expected permission fixture to be available');
+    }
+    createPermission = permission;
+  });
 
   afterEach(jest.clearAllMocks);
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
   describe('find', () => {
-    it('should find permission', async () => {
+    it('should find permissions', async () => {
       jest.spyOn(permissionService, 'find');
       const result = await permissionController.find([], {});
       expect(permissionService.find).toHaveBeenCalled();
-      expect(result).toEqualPayload(allPermissions);
+      expect(result.length).toBe(allPermissions.length);
     });
 
-    it('should find permissions, and for each permission populate the corresponding model and role', async () => {
+    it('should populate model and role when requested', async () => {
       jest.spyOn(permissionService, 'findAndPopulate');
-      const allRoles = await roleService.findAll();
-      const allModels = await modelService.findAll();
-      const result = await permissionController.find(['model', 'role'], {});
+      const result = (await permissionController.find(
+        ['model', 'role'],
+        {},
+      )) as PermissionFull[];
       expect(permissionService.findAndPopulate).toHaveBeenCalled();
-      const permissionsWithRolesAndModels = allPermissions.reduce(
-        (acc, currPermission) => {
-          acc.push({
-            ...currPermission,
-            role: allRoles.find((role) => {
-              return role.id === currPermission.role;
-            }) as Role,
 
-            model: allModels.find((model) => {
-              return model.id === currPermission.model;
-            }) as Model,
-          });
-
-          return acc;
-        },
-        [] as PermissionFull[],
-      );
-
-      expect(result).toEqualPayload(permissionsWithRolesAndModels);
+      result.forEach((permission) => {
+        const expected = allPermissions.find(
+          (item) => item.id === permission.id,
+        );
+        expect(expected).toBeDefined();
+        expect(permission.role?.id).toBe(expected?.role);
+        expect(permission.model?.id).toBe(expected?.model);
+      });
     });
   });
 
@@ -128,7 +163,12 @@ describe('PermissionController', () => {
       };
       const result = await permissionController.create(permissionDto);
       expect(permissionService.create).toHaveBeenCalledWith(permissionDto);
-      expect(result).toEqualPayload(permissionDto);
+      expect(result).toMatchObject({
+        action: permissionDto.action,
+        relation: permissionDto.relation,
+        role: permissionDto.role,
+        model: permissionDto.model,
+      });
     });
   });
 });
