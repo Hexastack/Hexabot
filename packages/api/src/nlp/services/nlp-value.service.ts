@@ -7,30 +7,30 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
-import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
-import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpSampleEntityValue } from '..//types';
+import { NlpEntity } from '../dto/nlp-entity.dto';
 import {
   NlpValue,
-  NlpValueFull,
-  NlpValuePopulate,
+  NlpValueCreateDto,
+  NlpValueDto,
+  NlpValueTransformerDto,
   TNlpValueCount,
-} from '../schemas/nlp-value.schema';
-import { NlpSampleEntityValue } from '../schemas/types';
+} from '../dto/nlp-value.dto';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
+import { NlpValueRepository } from '../repositories/nlp-value.repository';
 
 import { NlpEntityService } from './nlp-entity.service';
 
 @Injectable()
-export class NlpValueService extends BaseService<
-  NlpValue,
-  NlpValuePopulate,
-  NlpValueFull,
+export class NlpValueService extends BaseOrmService<
+  NlpValueOrmEntity,
+  NlpValueTransformerDto,
   NlpValueDto
 > {
   constructor(
@@ -147,11 +147,10 @@ export class NlpValueService extends BaseService<
         return false;
       })
       .map((e) => {
-        return this.updateOne(vMap[e.value].id, {
-          ...vMap[e.value],
-          expressions: vMap[e.value].expressions?.concat([
-            sampleText.slice(e.start, e.end),
-          ]),
+        const value = vMap[e.value];
+        const expression = sampleText.slice(e.start, e.end);
+        return this.updateOne(value.id, {
+          expressions: [...(value.expressions ?? []), expression],
         });
       });
 
@@ -190,32 +189,51 @@ export class NlpValueService extends BaseService<
     });
 
     // Prepare values objects for storage
-    const valuesToAdd: NlpValueCreateDto[] = sampleEntities.map((e) => {
+    const valuesToAddMap = new Map<string, NlpValueCreateDto>();
+    for (const entityValue of sampleEntities) {
       let expressions: string[] = [];
-      // Deal with synonym case
       if (
-        'start' in e &&
-        e.start &&
-        e.start >= 0 &&
-        'end' in e &&
-        e.end &&
-        e.end > 0
+        'start' in entityValue &&
+        entityValue.start &&
+        entityValue.start >= 0 &&
+        'end' in entityValue &&
+        entityValue.end &&
+        entityValue.end > 0
       ) {
-        const word = sampleText.slice(e.start, e.end);
-        if (word !== e.value) {
+        const word = sampleText.slice(entityValue.start, entityValue.end);
+        if (word !== entityValue.value) {
           expressions = [word];
         }
       }
-      const storedEntity = storedEntities.find((se) => se.name === e.entity);
+
+      const storedEntity = storedEntities.find(
+        (se) => se.name === entityValue.entity,
+      );
       if (!storedEntity) {
-        throw new Error(`Unable to find the stored entity ${e.entity}`);
+        throw new Error(
+          `Unable to find the stored entity ${entityValue.entity}`,
+        );
       }
-      return {
-        entity: storedEntity.id,
-        value: e.value,
-        expressions,
-      };
-    });
+
+      const existing = valuesToAddMap.get(entityValue.value);
+      if (existing) {
+        const mergedExpressions = new Set([
+          ...(existing.expressions ?? []),
+          ...expressions,
+        ]);
+        existing.expressions = mergedExpressions.size
+          ? Array.from(mergedExpressions)
+          : undefined;
+      } else {
+        valuesToAddMap.set(entityValue.value, {
+          entity: storedEntity.id,
+          value: entityValue.value,
+          expressions: expressions.length ? expressions : undefined,
+        });
+      }
+    }
+
+    const valuesToAdd = Array.from(valuesToAddMap.values());
     // Find or create values
     const promises = valuesToAdd.map(async (v) => {
       const createdOrFound = await this.findOneOrCreate({ value: v.value }, v);
@@ -250,6 +268,10 @@ export class NlpValueService extends BaseService<
     pageQuery: PageQueryDto<NlpValue>,
     filters: TFilterQuery<NlpValue>,
   ): Promise<TNlpValueCount<F>[]> {
-    return await this.repository.findWithCount(format, pageQuery, filters);
+    return await this.repository.findWithCount(
+      format,
+      pageQuery as unknown as PageQueryDto<NlpValueOrmEntity>,
+      filters as unknown as TFilterQuery<NlpValueOrmEntity>,
+    );
   }
 }

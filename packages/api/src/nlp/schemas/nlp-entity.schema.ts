@@ -14,8 +14,9 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { Lookup, LookupStrategy, NlpEntityMap } from '../types';
+
 import { NlpValue } from './nlp-value.schema';
-import { Lookup, LookupStrategy, NlpEntityMap } from './types';
 
 @Schema({ timestamps: true })
 export class NlpEntityStub extends BaseSchema {
@@ -80,7 +81,6 @@ export class NlpEntityStub extends BaseSchema {
    * Returns a map object for entities
    * @param entities - Array of entities
    * @returns {NlpEntityMap} - Object that contains entities identified by key=entity.id
-   
    */
   static getEntityMap<T extends NlpEntityStub>(entities: T[]) {
     return entities.reduce((acc, curr: T) => {

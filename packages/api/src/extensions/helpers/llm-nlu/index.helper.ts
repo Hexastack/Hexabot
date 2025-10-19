@@ -14,7 +14,7 @@ import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
 import { HelperType, LLM, NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
-import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
+import { NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { SettingService } from '@/setting/services/setting.service';
 
@@ -70,9 +70,9 @@ export default class LlmNluHelper
   async buildClassifiersPrompt() {
     try {
       const settings = await this.getSettings();
-      const traitEntities = await this.nlpEntityService.findAndPopulate({
-        lookups: 'trait',
-      });
+      const traitEntities = (
+        await this.nlpEntityService.findAllAndPopulate()
+      ).filter((entity) => entity.lookups?.includes('trait'));
       this.traitClassifierPrompts = traitEntities.map((entity) => ({
         ...entity,
         prompt: Handlebars.compile(settings.trait_classifier_prompt_template)({

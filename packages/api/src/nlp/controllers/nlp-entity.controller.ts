@@ -21,7 +21,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -29,21 +29,24 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpEntityCreateDto, NlpEntityUpdateDto } from '../dto/nlp-entity.dto';
 import {
   NlpEntity,
+  NlpEntityCreateDto,
+  NlpEntityDto,
   NlpEntityFull,
-  NlpEntityPopulate,
   NlpEntityStub,
-} from '../schemas/nlp-entity.schema';
+  NlpEntityTransformerDto,
+  NlpEntityUpdateDto,
+} from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 
 @Controller('nlpentity')
-export class NlpEntityController extends BaseController<
-  NlpEntity,
-  NlpEntityStub,
-  NlpEntityPopulate,
-  NlpEntityFull
+export class NlpEntityController extends BaseOrmController<
+  NlpEntityOrmEntity,
+  NlpEntityTransformerDto,
+  NlpEntityDto,
+  NlpEntity
 > {
   constructor(private readonly nlpEntityService: NlpEntityService) {
     super(nlpEntityService);
@@ -76,8 +79,12 @@ export class NlpEntityController extends BaseController<
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
-    filters?: TFilterQuery<NlpEntity>,
+    @Query(
+      new SearchFilterPipe<NlpEntityOrmEntity>({
+        allowedFields: ['name', 'doc'],
+      }),
+    )
+    filters?: TFilterQuery<NlpEntityOrmEntity>,
   ) {
     return await this.count(filters);
   }
@@ -120,10 +127,14 @@ export class NlpEntityController extends BaseController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpEntity>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpEntityOrmEntity>,
     @Query(PopulatePipe) populate: string[],
-    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
-    filters: TFilterQuery<NlpEntity>,
+    @Query(
+      new SearchFilterPipe<NlpEntityOrmEntity>({
+        allowedFields: ['name', 'doc'],
+      }),
+    )
+    filters: TFilterQuery<NlpEntityOrmEntity>,
   ) {
     return this.canPopulate(populate)
       ? await this.nlpEntityService.findAndPopulate(filters, pageQuery)
@@ -214,7 +225,7 @@ export class NlpEntityController extends BaseController<
     }
 
     const deleteResult = await this.nlpEntityService.deleteMany({
-      _id: { $in: ids },
+      id: { $in: ids },
     });
 
     if (deleteResult.deletedCount === 0) {

@@ -1,0 +1,55 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Column, Entity, Index, OneToMany } from 'typeorm';
+
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
+import { Lookup, LookupStrategy } from '..//types';
+
+import { NlpValueOrmEntity } from './nlp-value.entity';
+
+import { NlpSampleEntityOrmEntity } from './nlp-sample-entity.entity';
+
+@Entity({ name: 'nlp_entities' })
+@Index(['name'], { unique: true })
+export class NlpEntityOrmEntity extends BaseOrmEntity {
+  @Column({ name: 'foreign_id', type: 'text', nullable: true })
+  foreignId?: string | null;
+
+  @Column()
+  name!: string;
+
+  @Column({ type: 'simple-json', nullable: false })
+  lookups: Lookup[] = [LookupStrategy.keywords as Lookup];
+
+  @Column({ type: 'text', nullable: true })
+  doc?: string | null;
+
+  @Column({ default: false })
+  builtin!: boolean;
+
+  @Column({ type: 'integer', default: 1 })
+  weight!: number;
+
+  @OneToMany(() => NlpValueOrmEntity, (value) => value.entity)
+  values?: NlpValueOrmEntity[];
+
+  @OneToMany(
+    () => NlpSampleEntityOrmEntity,
+    (sampleEntity) => sampleEntity.entity,
+  )
+  sampleEntities?: NlpSampleEntityOrmEntity[];
+
+  static getEntityMap<T extends { id: string }>(entities: T[]) {
+    return entities.reduce((acc, entity) => {
+      if (entity.id) {
+        acc[entity.id] = entity;
+      }
+      return acc;
+    }, {} as Record<string, T>);
+  }
+}

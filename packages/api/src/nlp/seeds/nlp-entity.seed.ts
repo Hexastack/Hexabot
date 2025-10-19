@@ -6,23 +6,14 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseSeeder } from '@/utils/generics/base-seeder';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
 import { NlpEntityDto } from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import {
-  NlpEntity,
-  NlpEntityFull,
-  NlpEntityPopulate,
-} from '../schemas/nlp-entity.schema';
 
 @Injectable()
-export class NlpEntitySeeder extends BaseSeeder<
-  NlpEntity,
-  NlpEntityPopulate,
-  NlpEntityFull,
-  NlpEntityDto
-> {
+export class NlpEntitySeeder extends BaseOrmSeeder<NlpEntityOrmEntity> {
   constructor(nlpEntityRepository: NlpEntityRepository) {
     super(nlpEntityRepository);
   }

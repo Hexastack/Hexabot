@@ -4,38 +4,44 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestingModule } from '@nestjs/testing';
+import { In } from 'typeorm';
+
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
-import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
+import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity } from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpService } from '../services/nlp.service';
 
 import { NlpEntityRepository } from './nlp-entity.repository';
 import { NlpValueRepository } from './nlp-value.repository';
 
-describe('NlpEntityRepository', () => {
+describe('NlpEntityRepository (TypeORM)', () => {
+  let module: TestingModule;
   let nlpEntityRepository: NlpEntityRepository;
   let nlpValueRepository: NlpValueRepository;
-  let firstNameNlpEntity: NlpEntity | null;
   let nlpService: NlpService;
   let llmNluHelper: LlmNluHelper;
   let nlpEntityService: NlpEntityService;
+  let firstNameNlpEntity: NlpEntity | null;
+  let valueEventEmitter: EventEmitter2;
+  let entityEventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const { getMocks, module } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installNlpValueFixtures)],
       providers: [
         NlpService,
         LlmNluHelper,
@@ -50,162 +56,219 @@ describe('NlpEntityRepository', () => {
           },
         },
       ],
+      typeorm: {
+        entities: [
+          NlpEntityOrmEntity,
+          NlpValueOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+        ],
+        fixtures: installNlpValueFixturesTypeOrm,
+      },
     });
 
+    module = testing.module;
+
     [nlpEntityRepository, nlpValueRepository, nlpService, nlpEntityService] =
-      await getMocks([
+      await testing.getMocks([
         NlpEntityRepository,
         NlpValueRepository,
         NlpService,
         NlpEntityService,
       ]);
+
+    const valueEmitter = nlpValueRepository.getEventEmitter();
+    const entityEmitter = nlpEntityRepository.getEventEmitter();
+    if (!valueEmitter || !entityEmitter) {
+      throw new Error('Event emitters must be defined for repository tests');
+    }
+    valueEventEmitter = valueEmitter;
+    entityEventEmitter = entityEmitter;
+
     firstNameNlpEntity = await nlpEntityRepository.findOne({
       name: 'firstname',
     });
+
     llmNluHelper = module.get(LlmNluHelper);
     module.get(HelperService).register(llmNluHelper);
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  describe('The deleteCascadeOne function', () => {
-    it('should delete a nlp entity', async () => {
-      nlpValueRepository.eventEmitter.once(
-        'hook:nlpEntity:preDelete',
-        async (...[query, criteria]) => {
-          await nlpService.handleEntityDelete(query, criteria);
-        },
-      );
-      const intentNlpEntity = await nlpEntityRepository.findOne({
+  describe('deleteOne cascade', () => {
+    it('should delete a nlp entity and its values', async () => {
+      valueEventEmitter.once('hook:nlpEntity:preDelete', async (payload) => {
+        if (payload && typeof payload === 'object' && 'entities' in payload) {
+          await nlpService.handleEntityDelete(payload);
+        }
+      });
+
+      const intentEntity = await nlpEntityRepository.findOne({
         name: 'intent',
       });
-      const result = await nlpEntityRepository.deleteOne(intentNlpEntity!.id);
+
+      const result = await nlpEntityRepository.deleteOne(intentEntity!.id);
 
       expect(result.deletedCount).toEqual(1);
 
-      const intentNlpValues = await nlpValueRepository.find({
-        entity: intentNlpEntity!.id,
+      const intentValues = await nlpValueRepository.find({
+        where: { entity: { id: intentEntity!.id } },
       });
 
-      expect(intentNlpValues.length).toEqual(0);
+      expect(intentValues.length).toEqual(0);
     });
   });
 
   describe('findOneAndPopulate', () => {
-    it('should return a nlp entity with populate', async () => {
+    it('should return a nlp entity with populated values', async () => {
       const firstNameValues = await nlpValueRepository.find({
-        entity: firstNameNlpEntity!.id,
+        where: { entity: { id: firstNameNlpEntity!.id } },
       });
       const result = await nlpEntityRepository.findOneAndPopulate(
         firstNameNlpEntity!.id,
       );
-      expect(result).toEqualPayload({
-        ...nlpEntityFixtures[1],
-        values: firstNameValues,
-      });
+      expect(result).toEqualPayload(
+        {
+          ...firstNameNlpEntity!,
+          values: firstNameValues,
+        },
+        Array.from(IGNORED_TEST_FIELDS),
+      );
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should return all nlp entities with populate', async () => {
-      const pageQuery = getPageQuery<NlpEntity>({
-        sort: ['name', 'desc'],
-      });
+    it('should return filtered nlp entities with populated values', async () => {
+      const pageQuery = getPageQuery<NlpEntity>({ sort: ['name', 'desc'] });
       const firstNameValues = await nlpValueRepository.find({
-        entity: firstNameNlpEntity!.id,
+        where: { entity: { id: firstNameNlpEntity!.id } },
       });
       const result = await nlpEntityRepository.findAndPopulate(
-        { _id: firstNameNlpEntity!.id },
+        { id: firstNameNlpEntity!.id },
         pageQuery,
       );
       expect(result).toEqualPayload([
         {
-          id: firstNameNlpEntity!.id,
-          ...nlpEntityFixtures[1],
+          ...firstNameNlpEntity!,
           values: firstNameValues,
         },
       ]);
     });
   });
 
-  describe('postCreate', () => {
-    it('should create and attach a foreign_id to the newly created nlp entity', async () => {
-      nlpEntityRepository.eventEmitter.once(
-        'hook:nlpEntity:postCreate',
-        async (...[created]) => {
-          const helperSpy = jest.spyOn(llmNluHelper, 'addEntity');
-          jest.spyOn(nlpEntityService, 'updateOne');
-          await nlpService.handleEntityPostCreate(created);
+  describe('postCreate hook', () => {
+    it('should attach a foreignId to the newly created nlp entity', async () => {
+      const helperSpy = jest.spyOn(llmNluHelper, 'addEntity');
+      const updateSpy = jest.spyOn(nlpEntityService, 'updateOne');
 
-          expect(helperSpy).toHaveBeenCalledWith(created);
-          expect(nlpEntityService.updateOne).toHaveBeenCalledWith(
-            {
-              _id: created._id,
-            },
-            { foreign_id: await helperSpy.mock.results[0].value },
-          );
-        },
-      );
+      entityEventEmitter.once('hook:nlpEntity:postCreate', async (created) => {
+        if (created && typeof created === 'object' && 'id' in created) {
+          await nlpService.handleEntityPostCreate(created);
+        }
+      });
 
       const result = await nlpEntityRepository.create({
-        name: 'test1',
+        name: 'test-entity',
+        lookups: ['keywords'],
       });
-      const intentNlpEntity = await nlpEntityRepository.findOne(result.id);
 
-      expect(intentNlpEntity?.foreign_id).toBeDefined();
-      expect(intentNlpEntity).toEqualPayload(result, [
+      const createdEntity = await nlpEntityRepository.findOne(result.id);
+
+      expect(helperSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith(result.id, {
+        foreignId: await helperSpy.mock.results[0].value,
+      });
+      expect(createdEntity?.foreignId).toBeDefined();
+      expect(createdEntity).toEqualPayload(result, [
         ...IGNORED_TEST_FIELDS,
-        'foreign_id',
+        'foreignId',
       ]);
     });
 
-    it('should not create and attach a foreign_id to the newly created nlp entity with builtin set to true', async () => {
-      nlpEntityRepository.eventEmitter.once(
-        'hook:nlpEntity:postCreate',
-        async (...[created]) => {
+    it('should not attach a foreignId when builtin is true', async () => {
+      const helperSpy = jest.spyOn(llmNluHelper, 'addEntity');
+
+      entityEventEmitter.once('hook:nlpEntity:postCreate', async (created) => {
+        if (created && typeof created === 'object' && 'id' in created) {
           await nlpService.handleEntityPostCreate(created);
-        },
-      );
+        }
+      });
 
       const result = await nlpEntityRepository.create({
-        name: 'test2',
+        name: 'builtin-entity',
         builtin: true,
       });
-      const nlpEntity = await nlpEntityRepository.findOne(result.id);
 
-      expect(nlpEntity?.foreign_id).toBeUndefined();
-      expect(nlpEntity).toEqualPayload(result);
+      const createdEntity = await nlpEntityRepository.findOne(result.id);
+
+      expect(helperSpy).not.toHaveBeenCalled();
+      expect(createdEntity?.foreignId).toBeUndefined();
+      expect(createdEntity).toEqualPayload(result);
     });
   });
 
-  describe('postUpdate', () => {
-    it('should update an NlpEntity and trigger a postUpdate event', async () => {
-      jest.spyOn(nlpService, 'handleEntityPostUpdate');
-      jest.spyOn(llmNluHelper, 'updateEntity');
+  describe('postUpdate hook', () => {
+    it('should update a nlp entity and trigger postUpdate', async () => {
+      const handleSpy = jest.spyOn(nlpService, 'handleEntityPostUpdate');
+      const helperSpy = jest.spyOn(llmNluHelper, 'updateEntity');
 
-      nlpEntityRepository.eventEmitter.once(
-        'hook:nlpEntity:postUpdate',
-        async (...[query, updated]) => {
-          await nlpService.handleEntityPostUpdate(query, updated);
-          expect(llmNluHelper.updateEntity).toHaveBeenCalledWith(updated);
-        },
+      entityEventEmitter.once('hook:nlpEntity:postUpdate', async (payload) => {
+        if (
+          payload &&
+          typeof payload === 'object' &&
+          'entity' in payload &&
+          'previous' in payload
+        ) {
+          await nlpService.handleEntityPostUpdate(
+            payload as {
+              entity: NlpEntity;
+              previous: NlpEntity;
+            },
+          );
+        }
+      });
+
+      const updated = await nlpEntityRepository.updateOne(
+        firstNameNlpEntity!.id,
+        { doc: 'Updated doc' },
       );
 
-      const updatedNlpEntity = await nlpEntityRepository.updateOne(
-        {
-          name: 'test2',
-        },
-        { value: 'test3' },
+      expect(handleSpy).toHaveBeenCalledTimes(1);
+      expect(helperSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: updated.name,
+        }),
       );
+    });
+  });
 
-      expect(nlpService.handleEntityPostUpdate).toHaveBeenCalledTimes(1);
-      expect(llmNluHelper.updateEntity).toHaveBeenCalledTimes(1);
+  describe('deleteMany', () => {
+    it('should delete multiple nlp entities', async () => {
+      const sentiment = await nlpEntityRepository.create({
+        name: 'sentiment-test',
+      });
+      const subject = await nlpEntityRepository.create({
+        name: 'subject-test',
+      });
 
-      const result = await nlpEntityRepository.findOne(updatedNlpEntity.id);
+      const result = await nlpEntityRepository.deleteMany({
+        where: { id: In([sentiment.id, subject.id]) },
+      });
 
-      expect(result).toEqualPayload(updatedNlpEntity);
+      expect(result.deletedCount).toBe(2);
+      const remaining = await nlpEntityRepository.find({
+        where: { id: In([sentiment.id, subject.id]) },
+      });
+      expect(remaining.length).toBe(0);
     });
   });
 });

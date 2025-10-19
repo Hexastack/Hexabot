@@ -11,39 +11,38 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
+import { FindOperator } from 'typeorm';
 
 import { Message } from '@/chat/schemas/message.schema';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import {
-  TFilterQuery,
-  THydratedDocument,
-  TProjectionType,
-} from '@/utils/types/filter.types';
+import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
 
+import { NlpSampleEntityValue, NlpSampleState } from '..//types';
+import { NlpEntityFull } from '../dto/nlp-entity.dto';
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
-import { NlpSampleCreateDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
-import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
-import { NlpEntityFull } from '../schemas/nlp-entity.schema';
 import {
   NlpSample,
+  NlpSampleCreateDto,
   NlpSampleFull,
-  NlpSamplePopulate,
-} from '../schemas/nlp-sample.schema';
-import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
+  NlpSampleTransformerDto,
+  TNlpSampleDto,
+} from '../dto/nlp-sample.dto';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
+import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
 import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
-export class NlpSampleService extends BaseService<
-  NlpSample,
-  NlpSamplePopulate,
-  NlpSampleFull,
+export class NlpSampleService extends BaseOrmService<
+  NlpSampleOrmEntity,
+  NlpSampleTransformerDto,
   TNlpSampleDto
 > {
   constructor(
@@ -52,6 +51,7 @@ export class NlpSampleService extends BaseService<
     private readonly nlpEntityService: NlpEntityService,
     private readonly nlpValueService: NlpValueService,
     private readonly languageService: LanguageService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -74,14 +74,15 @@ export class NlpSampleService extends BaseService<
       filters,
       patterns,
     }: {
-      filters: TFilterQuery<NlpSample>;
+      filters: TFilterQuery<NlpSampleOrmEntity>;
       patterns: NlpValueMatchPattern[];
     },
-    page?: PageQueryDto<NlpSample>,
-    projection?: TProjectionType<NlpSample>,
+    page?: PageQueryDto<NlpSampleOrmEntity>,
   ): Promise<NlpSample[]> {
+    const normalizedFilters = this.normalizeFilters(filters);
+
     if (!patterns.length) {
-      return await this.repository.find(filters, page, projection);
+      return await this.repository.find(normalizedFilters, page);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -92,11 +93,10 @@ export class NlpSampleService extends BaseService<
 
     return await this.repository.findByEntities(
       {
-        filters,
+        filters: normalizedFilters,
         values,
       },
       page,
-      projection,
     );
   }
 
@@ -114,14 +114,15 @@ export class NlpSampleService extends BaseService<
       filters,
       patterns,
     }: {
-      filters: TFilterQuery<NlpSample>;
+      filters: TFilterQuery<NlpSampleOrmEntity>;
       patterns: NlpValueMatchPattern[];
     },
-    page?: PageQueryDto<NlpSample>,
-    projection?: TProjectionType<NlpSample>,
+    page?: PageQueryDto<NlpSampleOrmEntity>,
   ): Promise<NlpSampleFull[]> {
+    const normalizedFilters = this.normalizeFilters(filters);
+
     if (!patterns.length) {
-      return await this.repository.findAndPopulate(filters, page, projection);
+      return await this.repository.findAndPopulate(normalizedFilters, page);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -132,11 +133,10 @@ export class NlpSampleService extends BaseService<
 
     return await this.repository.findByEntitiesAndPopulate(
       {
-        filters,
+        filters: normalizedFilters,
         values,
       },
       page,
-      projection,
     );
   }
 
@@ -151,11 +151,13 @@ export class NlpSampleService extends BaseService<
     filters,
     patterns,
   }: {
-    filters: TFilterQuery<NlpSample>;
+    filters: TFilterQuery<NlpSampleOrmEntity>;
     patterns: NlpValueMatchPattern[];
   }): Promise<number> {
+    const normalizedFilters = this.normalizeFilters(filters);
+
     if (!patterns.length) {
-      return await this.repository.count(filters);
+      return await this.repository.count(normalizedFilters);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -165,9 +167,64 @@ export class NlpSampleService extends BaseService<
     }
 
     return await this.repository.countByEntities({
-      filters,
+      filters: normalizedFilters,
       values,
     });
+  }
+
+  private normalizeFilters(
+    filters: TFilterQuery<NlpSampleOrmEntity>,
+  ): TFilterQuery<NlpSampleOrmEntity> {
+    if (!filters || typeof filters !== 'object') {
+      return {};
+    }
+
+    return this.renameLanguageKeys(filters) as TFilterQuery<NlpSampleOrmEntity>;
+  }
+
+  private renameLanguageKeys<T>(value: T): T {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.renameLanguageKeys(item)) as any;
+    }
+
+    if (
+      value === null ||
+      typeof value !== 'object' ||
+      value instanceof Date ||
+      value instanceof FindOperator
+    ) {
+      return value;
+    }
+
+    return Object.entries(value as Record<string, unknown>).reduce(
+      (acc, [key, current]) => {
+        if (key === 'language') {
+          acc.language = this.buildLanguageFilter(current);
+          return acc;
+        }
+
+        acc[key] = this.renameLanguageKeys(current);
+        return acc;
+      },
+      {} as Record<string, unknown>,
+    ) as T;
+  }
+
+  private buildLanguageFilter(value: unknown): unknown {
+    if (
+      value === null ||
+      typeof value !== 'object' ||
+      value instanceof Date ||
+      value instanceof FindOperator
+    ) {
+      return { id: value };
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.buildLanguageFilter(item));
+    }
+
+    return { id: this.renameLanguageKeys(value) };
   }
 
   /**
@@ -311,11 +368,18 @@ export class NlpSampleService extends BaseService<
   async annotateWithKeywordEntity(entity: NlpEntityFull) {
     for (const value of entity.values) {
       // For each value, get any sample that may contain the keyword or any of it's synonyms
-      const keywords = [value.value, ...value.expressions];
-      const samples = await this.find({
-        text: { $regex: `\\b(${keywords.join('|')})\\b`, $options: 'i' },
-        type: ['train', 'test'],
-      });
+      const keywords = [value.value, ...value.expressions]
+        .map((keyword) => keyword?.trim())
+        .filter((keyword): keyword is string => Boolean(keyword));
+
+      if (!keywords.length) {
+        continue;
+      }
+
+      const samples = await this.repository.findContainingKeywords(keywords, [
+        NlpSampleState.train,
+        NlpSampleState.test,
+      ]);
 
       if (samples.length > 0) {
         this.logger.debug(
@@ -378,20 +442,9 @@ export class NlpSampleService extends BaseService<
     );
 
     if (deletedLanguagesIds.length > 0) {
-      await this.updateMany(
-        {
-          language: {
-            $in: deletedLanguagesIds,
-          },
-        },
-        {
-          language: null,
-        },
-      ).then((result) => {
-        this.logger.debug(
-          `Cleaned up languageId from ${result.modifiedCount} NLP samples`,
-        );
-      });
+      const affected =
+        await this.repository.clearLanguages(deletedLanguagesIds);
+      this.logger.debug(`Cleaned up languageId from ${affected} NLP samples`);
     }
   }
 

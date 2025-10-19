@@ -4,20 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ObjectId } from 'bson';
-
 import { LoggerService } from '@/logger/logger.service';
-import {
-  NlpEntity,
-  NlpEntityDocument,
-  NlpEntityFull,
-} from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
-import {
-  NlpValue,
-  NlpValueDocument,
-  NlpValueFull,
-} from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
+import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
+import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../../helper.service';
@@ -72,7 +64,7 @@ describe('BaseNlpHelper', () => {
 
   describe('addEntity', () => {
     it('should return a new UUID', async () => {
-      const result = await helper.addEntity({} as NlpEntityDocument);
+      const result = await helper.addEntity({} as NlpEntity);
       expect(result).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
@@ -97,7 +89,7 @@ describe('BaseNlpHelper', () => {
 
   describe('addValue', () => {
     it('should return a new UUID', async () => {
-      const result = await helper.addValue({} as NlpValueDocument);
+      const result = await helper.addValue({} as NlpValue);
       expect(result).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
@@ -115,8 +107,8 @@ describe('BaseNlpHelper', () => {
   describe('format', () => {
     it('should format the samples and entities into NLP training data', async () => {
       const entities: NlpEntityFull[] = [
-        { _id: 'entity1', name: 'intent' },
-        { _id: 'entity2', name: 'test-entity' },
+        { id: 'entity1-id', name: 'intent' },
+        { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
 
       const samples: NlpSampleFull[] = [
@@ -130,46 +122,50 @@ describe('BaseNlpHelper', () => {
         },
       ] as unknown as NlpSampleFull[];
 
-      jest.spyOn(NlpEntity, 'getEntityMap').mockReturnValue({
+      jest.spyOn(NlpEntityOrmEntity, 'getEntityMap').mockReturnValue({
         entity1: {
-          id: new ObjectId().toString(),
+          id: 'entity1-id',
           name: 'intent',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
         entity2: {
-          id: new ObjectId().toString(),
+          id: 'entity2-id',
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
       });
-      jest.spyOn(NlpValue, 'getValueMap').mockReturnValue({
+      jest.spyOn(NlpValueOrmEntity, 'getValueMap').mockReturnValue({
         intent1: {
-          id: new ObjectId().toString(),
+          id: 'value1-id',
           value: 'test-intent',
-          entity: 'entity1', // Add the required entity field
+          entity: 'entity1-id',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
           metadata: {},
+          foreignId: null,
         },
         value2: {
-          id: new ObjectId().toString(),
+          id: 'value2-id',
           value: 'test-value',
-          entity: 'entity2', // Add the required entity field
+          entity: 'entity2-id',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
           metadata: {},
+          foreignId: null,
         },
       });
 
@@ -189,7 +185,7 @@ describe('BaseNlpHelper', () => {
 
     it('should throw an error if intent entity is missing', async () => {
       const entities: NlpEntityFull[] = [
-        { _id: 'entity2', name: 'test-entity' },
+        { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
 
       const samples: NlpSampleFull[] = [
@@ -200,15 +196,16 @@ describe('BaseNlpHelper', () => {
         },
       ] as unknown as NlpSampleFull[];
 
-      jest.spyOn(NlpEntity, 'getEntityMap').mockReturnValue({
+      jest.spyOn(NlpEntityOrmEntity, 'getEntityMap').mockReturnValue({
         entity2: {
-          id: new ObjectId().toString(),
+          id: 'entity2-id',
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
       });
 

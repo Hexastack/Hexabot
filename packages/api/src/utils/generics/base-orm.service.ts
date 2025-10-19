@@ -219,6 +219,28 @@ export abstract class BaseOrmService<
   }
 
   /**
+   * @deprecated Use updateMany(options, payload) with TypeORM FindManyOptions instead.
+   */
+  async updateMany(
+    filter: TFilterQuery<Entity>,
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
+
+  async updateMany(
+    options: FindManyOptions<Entity>,
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
+
+  async updateMany(
+    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity>,
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+    return this.repository.isFindOptions(filterOrOptions)
+      ? await this.repository.updateMany(filterOrOptions, payload)
+      : await this.repository.updateMany(filterOrOptions, payload);
+  }
+
+  /**
    * @deprecated Use findOneOrCreate(options, payload) with TypeORM FindOneOptions instead.
    */
   async findOneOrCreate(

@@ -128,7 +128,7 @@ export type TTransformFieldProps = {
 
 /* mongoose */
 type TOmitId<T> = Omit<T, 'id'>;
-type TReplaceId<T> = TOmitId<T> & { _id?: string };
+type TReplaceId<T> = TOmitId<T> & { id?: string; _id?: string };
 
 // Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
 export type TFilterQuery<T, S = TReplaceId<T>> = (

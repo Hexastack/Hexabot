@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { NlpEntityFull, NlpEntityStub } from './nlp-entity.schema';
-import { NlpValueStub } from './nlp-value.schema';
+import { NlpEntityFull, NlpEntityStub } from './dto/nlp-entity.dto';
+import { NlpValueStub } from './dto/nlp-value.dto';
 
 export enum LookupStrategy {
   keywords = 'keywords',

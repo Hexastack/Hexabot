@@ -9,8 +9,8 @@ import { type Session as ExpressSession } from 'express-session';
 import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
-import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
-import { type AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import type { BotStats } from '@/analytics/dto/bot-stats.dto';
+import type { Attachment } from '@/attachment/dto/attachment.dto';
 import type EventWrapper from '@/channel/lib/EventWrapper';
 import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import type { Block, BlockFull } from '@/chat/schemas/block.schema';
@@ -20,21 +20,22 @@ import { type Conversation } from '@/chat/schemas/conversation.schema';
 import type { Label } from '@/chat/schemas/label.schema';
 import { type Message } from '@/chat/schemas/message.schema';
 import { type Subscriber } from '@/chat/schemas/subscriber.schema';
-import { type ContentType } from '@/cms/schemas/content-type.schema';
-import { type Content } from '@/cms/schemas/content.schema';
-import { type Menu } from '@/cms/schemas/menu.schema';
-import { type LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { type TranslationOrmEntity } from '@/i18n/entities/translation.entity';
-import type { NlpEntity } from '@/nlp/schemas/nlp-entity.schema';
-import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
-import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
-import type { NlpValue } from '@/nlp/schemas/nlp-value.schema';
-import { type Setting } from '@/setting/schemas/setting.schema';
+import type { Content } from '@/cms/dto/content.dto';
+import type { ContentType } from '@/cms/dto/contentType.dto';
+import type { Menu } from '@/cms/dto/menu.dto';
+import type { Language } from '@/i18n/dto/language.dto';
+import type { Translation } from '@/i18n/dto/translation.dto';
+import type { NlpEntity } from '@/nlp/dto/nlp-entity.dto';
+import type { NlpSampleEntity } from '@/nlp/dto/nlp-sample-entity.dto';
+import type { NlpSample } from '@/nlp/dto/nlp-sample.dto';
+import type { NlpValue } from '@/nlp/dto/nlp-value.dto';
+import type { Metadata } from '@/setting/dto/metadata.dto';
+import type { Setting } from '@/setting/dto/setting.dto';
+import type { Invitation } from '@/user/dto/invitation.dto';
+import type { Model } from '@/user/dto/model.dto';
+import type { Permission } from '@/user/dto/permission.dto';
+import type { Role } from '@/user/dto/role.dto';
 import { type User } from '@/user/dto/user.dto';
-import { type InvitationOrmEntity } from '@/user/entities/invitation.entity';
-import { type ModelOrmEntity } from '@/user/entities/model.entity';
-import { type PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { type RoleOrmEntity } from '@/user/entities/role.entity';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
 import type {
   TFilterQuery,
@@ -120,7 +121,7 @@ declare module '@nestjs/event-emitter' {
   /* hooks */
   interface IHookEntityOperationMap extends IHookOperationMap {
     stats: TDefinition<BotStats, { entry: string }>;
-    attachment: TDefinition<AttachmentOrmEntity>;
+    attachment: TDefinition<Attachment>;
     block: TDefinition<Block>;
     category: TDefinition<Category>;
     contextVar: TDefinition<ContextVar>;
@@ -131,17 +132,18 @@ declare module '@nestjs/event-emitter' {
     contentType: TDefinition<ContentType>;
     content: TDefinition<Content>;
     menu: TDefinition<Menu>;
-    language: TDefinition<LanguageOrmEntity>;
-    translation: TDefinition<TranslationOrmEntity>;
+    language: TDefinition<Language>;
+    translation: TDefinition<Translation>;
     nlpEntity: TDefinition<NlpEntity>;
     nlpSampleEntity: TDefinition<NlpSampleEntity>;
     nlpSample: TDefinition<NlpSample>;
     nlpValue: TDefinition<NlpValue>;
     setting: TDefinition<Setting>;
-    invitation: TDefinition<InvitationOrmEntity>;
-    model: TDefinition<ModelOrmEntity>;
-    permission: TDefinition<PermissionOrmEntity>;
-    role: TDefinition<RoleOrmEntity>;
+    metadata: TDefinition<Metadata>;
+    invitation: TDefinition<Invitation>;
+    model: TDefinition<Model>;
+    permission: TDefinition<Permission>;
+    role: TDefinition<Role>;
     user: TDefinition<User, { lastvisit: Subscriber; logout: ExpressSession }>;
   }
 

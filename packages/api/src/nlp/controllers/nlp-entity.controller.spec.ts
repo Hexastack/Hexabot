@@ -10,23 +10,29 @@ import {
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
+import { In } from 'typeorm';
 
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
-  installNlpValueFixtures,
+  installNlpValueFixturesTypeOrm,
   nlpValueFixtures,
 } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntityCreateDto, NlpEntityUpdateDto } from '../dto/nlp-entity.dto';
-import { NlpEntity, NlpEntityFull } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityCreateDto,
+  NlpEntityFull,
+  NlpEntityUpdateDto,
+} from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
@@ -40,16 +46,29 @@ describe('NlpEntityController', () => {
   let buitInEntityId: string | null;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [NlpEntityController],
-      imports: [rootMongooseTestModule(installNlpValueFixtures)],
+      providers: [NlpEntityService, NlpValueService],
+      typeorm: {
+        entities: [
+          NlpEntityOrmEntity,
+          NlpValueOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+        ],
+        fixtures: async (dataSource) => {
+          await installNlpValueFixturesTypeOrm(dataSource);
+        },
+      },
     });
-    [nlpEntityController, nlpValueService, nlpEntityService] = await getMocks([
-      NlpEntityController,
-      NlpValueService,
-      NlpEntityService,
-    ]);
+
+    [nlpEntityController, nlpValueService, nlpEntityService] =
+      await testing.getMocks([
+        NlpEntityController,
+        NlpValueService,
+        NlpEntityService,
+      ]);
     intentEntityId =
       (
         await nlpEntityService.findOne({
@@ -64,7 +83,9 @@ describe('NlpEntityController', () => {
       )?.id || null;
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 
@@ -78,11 +99,18 @@ describe('NlpEntityController', () => {
       );
       const entitiesWithValues = nlpEntityFixtures.reduce(
         (acc, curr, index) => {
+          const values = nlpValueFixtures
+            .filter(({ entity }) => parseInt(entity!) === index)
+            .map((fixture) => ({
+              ...fixture,
+              foreignId: undefined,
+              metadata: fixture.metadata ?? null,
+            }))
+            .sort((a, b) => a.value.localeCompare(b.value));
+
           acc.push({
             ...curr,
-            values: nlpValueFixtures.filter(
-              ({ entity }) => parseInt(entity!) === index,
-            ) as NlpEntityFull['values'],
+            values: values as NlpEntityFull['values'],
             lookups: curr.lookups!,
             builtin: curr.builtin!,
             weight: curr.weight!,
@@ -91,8 +119,10 @@ describe('NlpEntityController', () => {
         },
         [] as TFixtures<NlpEntityFull>[],
       );
-      expect(result).toEqualPayload(
-        entitiesWithValues.sort((a, b) => {
+      const sortEntitiesByNameDesc = <T extends { name: string }>(
+        collection: T[],
+      ) =>
+        [...collection].sort((a, b) => {
           if (a.name > b.name) {
             return -1;
           }
@@ -100,9 +130,28 @@ describe('NlpEntityController', () => {
             return 1;
           }
           return 0;
-        }),
-        [...IGNORED_TEST_FIELDS, 'entity'],
-      );
+        });
+
+      const normalizeValues = <T extends { values?: { value: string }[] }>(
+        entity: T,
+      ) => ({
+        ...entity,
+        values: entity.values
+          ? [...entity.values].sort((a, b) => a.value.localeCompare(b.value))
+          : entity.values,
+      });
+
+      const normalizedResult = sortEntitiesByNameDesc(
+        result as NlpEntityFull[],
+      ).map(normalizeValues);
+      const normalizedExpected = sortEntitiesByNameDesc(
+        entitiesWithValues as NlpEntityFull[],
+      ).map(normalizeValues);
+
+      expect(normalizedResult).toEqualPayload(normalizedExpected, [
+        ...IGNORED_TEST_FIELDS,
+        'entity',
+      ]);
     });
 
     it('should find nlp entities', async () => {
@@ -311,7 +360,7 @@ describe('NlpEntityController', () => {
 
       expect(result.deletedCount).toEqual(entitiesToDelete.length);
       const remainingEntities = await nlpEntityService.find({
-        _id: { $in: entitiesToDelete },
+        id: In(entitiesToDelete),
       });
       expect(remainingEntities.length).toBe(0);
     });

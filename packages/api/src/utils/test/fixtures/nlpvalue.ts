@@ -5,11 +5,18 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
 import { NlpValueCreateDto } from '@/nlp/dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
 
-import { installNlpEntityFixtures, nlpEntityFixtures } from './nlpentity';
+import {
+  installNlpEntityFixtures,
+  installNlpEntityFixturesTypeOrm,
+  nlpEntityFixtures,
+} from './nlpentity';
 
 export const nlpValueFixtures: NlpValueCreateDto[] = [
   {
@@ -87,4 +94,44 @@ export const installNlpValueFixtures = async () => {
     })),
   );
   return { nlpEntities, nlpValues };
+};
+
+export const installNlpValueFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const nlpEntities = await installNlpEntityFixturesTypeOrm(dataSource);
+  const repository = dataSource.getRepository(NlpValueOrmEntity);
+  const existing = await repository.find();
+  if (existing.length) {
+    return existing;
+  }
+
+  const entitiesByName = nlpEntities.reduce<Record<string, NlpEntityOrmEntity>>(
+    (acc, entity) => {
+      acc[entity.name] = entity;
+      return acc;
+    },
+    {},
+  );
+
+  const values: DeepPartial<NlpValueOrmEntity>[] = nlpValueFixtures.map(
+    (fixture) => {
+      const entityIndex = parseInt(fixture.entity as string, 10);
+      const entityName = nlpEntityFixtures[entityIndex]?.name;
+      const entity = entityName ? entitiesByName[entityName] : undefined;
+
+      if (!entity) {
+        throw new Error(`Unable to resolve entity for value ${fixture.value}`);
+      }
+
+      return {
+        ...fixture,
+        entity: { id: entity.id },
+        foreignId: null,
+      };
+    },
+  );
+
+  const records = repository.create(values);
+  return await repository.save(records);
 };

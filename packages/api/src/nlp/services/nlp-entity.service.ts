@@ -8,33 +8,36 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { In } from 'typeorm';
 
+import { LoggerService } from '@/logger/logger.service';
 import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { NlpEntityDto } from '../dto/nlp-entity.dto';
-import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
+import { Lookup, NlpCacheMap, NlpSampleEntityValue } from '..//types';
 import {
   NlpEntity,
+  NlpEntityDto,
   NlpEntityFull,
-  NlpEntityPopulate,
-} from '../schemas/nlp-entity.schema';
-import { Lookup, NlpCacheMap, NlpSampleEntityValue } from '../schemas/types';
+  NlpEntityTransformerDto,
+} from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
+import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 
 import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
-export class NlpEntityService extends BaseService<
-  NlpEntity,
-  NlpEntityPopulate,
-  NlpEntityFull,
+export class NlpEntityService extends BaseOrmService<
+  NlpEntityOrmEntity,
+  NlpEntityTransformerDto,
   NlpEntityDto
 > {
   constructor(
     readonly repository: NlpEntityRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly nlpValueService: NlpValueService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -88,9 +91,12 @@ export class NlpEntityService extends BaseService<
   ) {
     // Extract entity names from sampleEntities
     const entities = sampleEntities.map((e) => e.entity);
+    const uniqueEntities = Array.from(new Set(entities));
 
     // Retrieve stored entities
-    let storedEntities = (await this.find({ name: { $in: entities } })) || [];
+    let storedEntities = uniqueEntities.length
+      ? await this.find({ name: In(uniqueEntities) })
+      : [];
     // Find newly added entities
     const entitiesToAdd = entities
       .filter((e) => storedEntities.findIndex((se) => se.name === e) === -1)
@@ -116,8 +122,11 @@ export class NlpEntityService extends BaseService<
    * @returns A promise that resolves with the list of stored entities, including their IDs.
    */
   storeEntities(sampleEntities: NlpSampleEntityValue[]): Promise<NlpEntity[]> {
-    const findOrCreate = sampleEntities.map((e: NlpSampleEntityValue) =>
-      this.findOneOrCreate({ name: e.entity }, { name: e.entity }),
+    const uniqueEntities = Array.from(
+      new Set(sampleEntities.map((entity) => entity.entity)),
+    );
+    const findOrCreate = uniqueEntities.map((entityName) =>
+      this.findOneOrCreate({ name: entityName }, { name: entityName }),
     );
     return Promise.all(findOrCreate);
   }

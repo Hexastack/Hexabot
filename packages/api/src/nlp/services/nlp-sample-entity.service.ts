@@ -6,27 +6,28 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
+import { NlpSampleEntityValue } from '..//types';
 import {
   NlpSampleEntity,
-  NlpSampleEntityFull,
-  NlpSampleEntityPopulate,
-} from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleStub } from '../schemas/nlp-sample.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
-import { NlpSampleEntityValue } from '../schemas/types';
+  NlpSampleEntityCreateDto,
+  NlpSampleEntityDto,
+  NlpSampleEntityTransformerDto,
+} from '../dto/nlp-sample-entity.dto';
+import { NlpSample, NlpSampleStub } from '../dto/nlp-sample.dto';
+import { NlpValue } from '../dto/nlp-value.dto';
+import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
+import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
-export class NlpSampleEntityService extends BaseService<
-  NlpSampleEntity,
-  NlpSampleEntityPopulate,
-  NlpSampleEntityFull
+export class NlpSampleEntityService extends BaseOrmService<
+  NlpSampleEntityOrmEntity,
+  NlpSampleEntityTransformerDto,
+  NlpSampleEntityDto
 > {
   constructor(
     readonly repository: NlpSampleEntityRepository,
@@ -71,7 +72,7 @@ export class NlpSampleEntityService extends BaseService<
         value: storedValue.id, // replace value by id
         start: 'start' in e ? e.start : undefined,
         end: 'end' in e ? e.end : undefined,
-      } as NlpSampleEntity;
+      } satisfies NlpSampleEntityCreateDto;
     });
 
     return await this.createMany(sampleEntities);

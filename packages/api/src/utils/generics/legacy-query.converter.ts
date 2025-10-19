@@ -264,6 +264,22 @@ export class LegacyQueryConverter<T> {
         return normalized === undefined ? undefined : Not(normalized);
       }
 
+      if (this.isPlainObject(value)) {
+        const normalizedObject: Record<string, unknown> = {};
+        for (const [nestedKey, nestedValue] of Object.entries(value)) {
+          const normalizedNested = this.normalizeFilterValue(
+            nestedValue,
+            tracker,
+          );
+          if (normalizedNested === undefined && nestedValue !== undefined) {
+            tracker.unsupported = true;
+            return undefined;
+          }
+          normalizedObject[nestedKey] = normalizedNested;
+        }
+        return normalizedObject;
+      }
+
       tracker.unsupported = true;
       return undefined;
     }

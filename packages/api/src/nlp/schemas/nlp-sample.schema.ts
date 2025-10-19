@@ -16,8 +16,9 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { NlpSampleState } from '../types';
+
 import { NlpSampleEntity } from './nlp-sample-entity.schema';
-import { NlpSampleState } from './types';
 
 @Schema({ timestamps: true })
 export class NlpSampleStub extends BaseSchema {

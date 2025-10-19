@@ -6,12 +6,7 @@
 
 import { SortOrder } from 'mongoose';
 
-import { BaseSchema } from '../generics/base-schema';
-
-export type QuerySortDto<T> = [
-  Exclude<keyof T | keyof BaseSchema | '_id', 'id'>,
-  SortOrder,
-];
+export type QuerySortDto<T> = [string, SortOrder];
 
 export type PageQueryDto<T> = {
   skip: number | undefined;

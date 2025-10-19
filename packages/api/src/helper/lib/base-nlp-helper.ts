@@ -8,17 +8,11 @@ import { escapeRegExp } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
-import {
-  NlpEntity,
-  NlpEntityDocument,
-  NlpEntityFull,
-} from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSample, NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
-import {
-  NlpValue,
-  NlpValueDocument,
-  NlpValueFull,
-} from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
+import { NlpSample, NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
+import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
@@ -57,7 +51,7 @@ export default abstract class BaseNlpHelper<
    * @param entity - The entity to add
    * @returns The added entity otherwise an error
    */
-  addEntity(_entity: NlpEntityDocument): Promise<string> {
+  addEntity(_entity: NlpEntity): Promise<string> {
     return new Promise((resolve, _reject) => {
       return resolve(uuidv4());
     });
@@ -92,7 +86,7 @@ export default abstract class BaseNlpHelper<
    *
    * @returns The added value otherwise it should throw an error
    */
-  addValue(_value: NlpValueDocument): Promise<string> {
+  addValue(_value: NlpValue): Promise<string> {
     return new Promise((resolve, _reject) => {
       return resolve(uuidv4());
     });
@@ -122,9 +116,11 @@ export default abstract class BaseNlpHelper<
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
   ): Promise<Record<string, any>[] | Record<string, any>> {
-    const entityMap = NlpEntity.getEntityMap(entities);
-    const valueMap = NlpValue.getValueMap(
-      NlpValue.getValuesFromEntities(entities),
+    const entityMap = NlpEntityOrmEntity.getEntityMap(entities);
+    const valueMap = NlpValueOrmEntity.getValueMap(
+      NlpValueOrmEntity.getValuesFromEntities<NlpEntityFull, NlpValue>(
+        entities,
+      ),
     );
     const examples = samples
       .filter((s) => s.entities.length > 0)

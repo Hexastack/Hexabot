@@ -449,6 +449,84 @@ export abstract class BaseOrmRepository<
   }
 
   /**
+   * @deprecated Use updateMany(options, payload) with TypeORM FindManyOptions instead.
+   */
+  async updateMany(
+    filter: TFilterQuery<Entity>,
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
+
+  async updateMany(
+    options: FindManyOptions<Entity>,
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
+
+  async updateMany(
+    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity> = {},
+    payload: InferActionDto<DtoAction.Update, ActionDto>,
+  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+    const entities = await this.findEntities(filterOrOptions);
+
+    if (!entities.length) {
+      return [];
+    }
+
+    const filter = this.isFindOptions(filterOrOptions)
+      ? (((filterOrOptions as FindManyOptions<Entity>).where ??
+          {}) as TFilterQuery<Entity>)
+      : (filterOrOptions as TFilterQuery<Entity>);
+    const changes = payload as DeepPartial<Entity>;
+
+    const snapshots = entities.map(
+      (entity) =>
+        Object.assign(
+          Object.create(Object.getPrototypeOf(entity)),
+          entity,
+        ) as Entity,
+    );
+
+    await this.preUpdateMany(snapshots, filter, changes);
+    await this.emitHook(EHook.preUpdateMany, {
+      entities: snapshots,
+      filter,
+      changes,
+    });
+
+    for (let index = 0; index < entities.length; index++) {
+      const snapshot = snapshots[index];
+      await this.preUpdate(snapshot, changes);
+      await this.emitHook(EHook.preUpdate, {
+        entity: snapshot,
+        changes,
+      });
+      Object.assign(entities[index], payload);
+    }
+
+    const updatedEntities = await this.repository.save(entities);
+
+    for (let index = 0; index < updatedEntities.length; index++) {
+      const updated = updatedEntities[index];
+      const previous = snapshots[index];
+      await this.postUpdate(updated);
+      await this.emitHook(EHook.postUpdate, {
+        entity: updated,
+        previous,
+      });
+    }
+
+    await this.postUpdateMany(updatedEntities, filter, changes);
+    await this.emitHook(EHook.postUpdateMany, {
+      entities: updatedEntities,
+      previous: snapshots,
+      filter,
+      changes,
+    });
+
+    const toDto = this.getTransformer(DtoTransformer.PlainCls);
+    return updatedEntities.map(toDto);
+  }
+
+  /**
    * @deprecated Use findOneOrCreate(options, payload) with TypeORM FindOneOptions instead.
    */
   async findOneOrCreate(
@@ -688,7 +766,9 @@ export abstract class BaseOrmRepository<
     suffix: EHook,
   ): `hook:${IHookEntities}:${TNormalizedEvents}` {
     const entityName =
-      camelCase(this.repository.metadata.name ?? 'entity') || 'entity';
+      camelCase(
+        (this.repository.metadata.name ?? 'entity').replace(/OrmEntity$/, ''),
+      ) || 'entity';
     return `hook:${entityName}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
@@ -716,6 +796,18 @@ export abstract class BaseOrmRepository<
   ): Promise<void> {}
 
   protected async postUpdate(_updated: Entity): Promise<void> {}
+
+  protected async preUpdateMany(
+    _entities: Entity[],
+    _filter: TFilterQuery<Entity>,
+    _changes: DeepPartial<Entity>,
+  ): Promise<void> {}
+
+  protected async postUpdateMany(
+    _entities: Entity[],
+    _filter: TFilterQuery<Entity>,
+    _changes: DeepPartial<Entity>,
+  ): Promise<void> {}
 
   protected async preDelete(
     _entities: Entity[],

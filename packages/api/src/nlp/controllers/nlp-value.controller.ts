@@ -18,7 +18,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -27,25 +27,26 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
-import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
 import {
   NlpValue,
-  NlpValueFull,
-  NlpValuePopulate,
-  NlpValueStub,
-} from '../schemas/nlp-value.schema';
+  NlpValueCreateDto,
+  NlpValueDto,
+  NlpValueTransformerDto,
+  NlpValueUpdateDto,
+} from '../dto/nlp-value.dto';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
 @Controller('nlpvalue')
-export class NlpValueController extends BaseController<
-  NlpValue,
-  NlpValueStub,
-  NlpValuePopulate,
-  NlpValueFull
+export class NlpValueController extends BaseOrmController<
+  NlpValueOrmEntity,
+  NlpValueTransformerDto,
+  NlpValueDto,
+  NlpValue
 > {
   constructor(
-    private readonly nlpValueService: NlpValueService,
+    protected readonly nlpValueService: NlpValueService,
     private readonly nlpEntityService: NlpEntityService,
   ) {
     super(nlpValueService);
@@ -69,13 +70,17 @@ export class NlpValueController extends BaseController<
       ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
       : null;
 
+    const dtoToValidate = {
+      ...createNlpValueDto,
+      entityId: createNlpValueDto.entity,
+    };
+
     this.validate({
-      dto: createNlpValueDto,
+      dto: dtoToValidate,
       allowedIds: {
-        entity: nlpEntity?.id,
+        entityId: nlpEntity?.id,
       },
     });
-
     return await this.nlpValueService.create(createNlpValueDto);
   }
 
@@ -89,11 +94,11 @@ export class NlpValueController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<NlpValue>({
-        allowedFields: ['entity', 'value', 'doc'],
+      new SearchFilterPipe<NlpValueOrmEntity>({
+        allowedFields: ['entityId', 'value', 'doc'],
       }),
     )
-    filters?: TFilterQuery<NlpValue>,
+    filters?: TFilterQuery<NlpValueOrmEntity>,
   ) {
     return await this.count(filters);
   }
@@ -113,14 +118,14 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const result = this.canPopulate(populate)
       ? await this.nlpValueService.findOneAndPopulate(id)
       : await this.nlpValueService.findOne(id);
-    if (!doc) {
+    if (!result) {
       this.logger.warn(`Unable to find NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
     }
-    return doc;
+    return result;
   }
 
   /**
@@ -136,14 +141,14 @@ export class NlpValueController extends BaseController<
    */
   @Get()
   async findWithCount(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValueOrmEntity>,
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<NlpValue>({
-        allowedFields: ['entity', 'value', 'doc'],
+      new SearchFilterPipe<NlpValueOrmEntity>({
+        allowedFields: ['entityId', 'value', 'doc'],
       }),
     )
-    filters: TFilterQuery<NlpValue>,
+    filters: TFilterQuery<NlpValueOrmEntity>,
   ) {
     return await this.nlpValueService.findWithCount(
       this.canPopulate(populate) ? Format.FULL : Format.STUB,
@@ -172,10 +177,15 @@ export class NlpValueController extends BaseController<
       ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
       : null;
 
+    const dtoToValidate = {
+      ...updateNlpValueDto,
+      entityId: updateNlpValueDto.entity,
+    };
+
     this.validate({
-      dto: updateNlpValueDto,
+      dto: dtoToValidate,
       allowedIds: {
-        entity: nlpEntity?.id,
+        entityId: nlpEntity?.id,
       },
     });
 
@@ -216,7 +226,7 @@ export class NlpValueController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.nlpValueService.deleteMany({
-      _id: { $in: ids },
+      id: { $in: ids },
     });
 
     if (deleteResult.deletedCount === 0) {
