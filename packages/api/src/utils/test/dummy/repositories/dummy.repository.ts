@@ -5,16 +5,23 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Dummy } from '../schemas/dummy.schema';
+import { Dummy, DummyDtoConfig, DummyTransformerDto } from '../dto/dummy.dto';
+import { DummyOrmEntity } from '../entities/dummy.entity';
 
 @Injectable()
-export class DummyRepository extends BaseRepository<Dummy> {
-  constructor(@InjectModel(Dummy.name) readonly model: Model<Dummy>) {
-    super(model, Dummy);
+export class DummyRepository extends BaseOrmRepository<
+  DummyOrmEntity,
+  DummyTransformerDto,
+  DummyDtoConfig
+> {
+  constructor(dataSource: DataSource) {
+    super(dataSource.getRepository(DummyOrmEntity), [], {
+      PlainCls: Dummy,
+      FullCls: Dummy,
+    });
   }
 }

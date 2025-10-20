@@ -7,7 +7,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
-import { PageQueryDto } from '../pagination/pagination-query.dto';
 import {
   DtoAction,
   DtoActionConfig,
@@ -16,12 +15,10 @@ import {
   InferActionDto,
   InferTransformDto,
 } from '../types/dto.types';
-import { TFilterQuery } from '../types/filter.types';
 
 import {
   BaseOrmRepository,
   FindAllOptions,
-  SortTuple,
   UpdateOneOptions,
 } from './base-orm.repository';
 import { DeleteResult } from './base-repository';
@@ -50,135 +47,47 @@ export abstract class BaseOrmService<
     return this.repository.canPopulate(populate);
   }
 
-  /**
-   * @deprecated Use find(options) with TypeORM FindManyOptions instead.
-   */
-  async find(
-    filter: TFilterQuery<Entity>,
-    pageQuery?: PageQueryDto<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
-
   async find(
     options?: FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
-
-  async find(
-    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity> = {},
-    pageQuery?: PageQueryDto<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
-    return this.repository.isFindOptions(filterOrOptions)
-      ? await this.repository.find(filterOrOptions)
-      : await this.repository.find(filterOrOptions, pageQuery);
+    return await this.repository.find(options);
   }
 
-  /**
-   * @deprecated Use findOneAndPopulate(options) with TypeORM FindOneOptions instead.
-   */
   async findAndPopulate(
-    criteria: TFilterQuery<Entity>,
-    pageQuery?: PageQueryDto<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]>;
-
-  async findAndPopulate(
-    options: FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]>;
-
-  async findAndPopulate(
-    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity> = {},
-    pageQuery?: PageQueryDto<Entity>,
+    options?: FindManyOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
-    return this.repository.isFindOptions(filterOrOptions)
-      ? await this.repository.findAndPopulate(filterOrOptions)
-      : await this.repository.findAndPopulate(filterOrOptions, pageQuery);
+    return await this.repository.findAndPopulate(options);
   }
-
-  /**
-   * @deprecated Use findAll(options) with TypeORM FindManyOptions (without `where`) instead.
-   */
-  async findAll(
-    sort?: SortTuple<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
 
   async findAll(
     options?: FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
-
-  async findAll(
-    sortOrOptions?: SortTuple<Entity> | FindAllOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
-    return this.repository.isFindOptions(sortOrOptions as any)
-      ? await this.repository.findAll(sortOrOptions as FindAllOptions<Entity>)
-      : await this.repository.findAll(sortOrOptions as SortTuple<Entity>);
+    return await this.repository.findAll(options);
   }
 
-  /**
-   * @deprecated Use findAllAndPopulate(options) with TypeORM FindManyOptions instead.
-   */
   async findAllAndPopulate(
-    sortOrOptions?: SortTuple<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]>;
-
-  async findAllAndPopulate(
-    sortOrOptions?: FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]>;
-
-  async findAllAndPopulate(
-    sortOrOptions?: SortTuple<Entity> | FindAllOptions<Entity>,
+    options?: FindAllOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
-    return this.repository.isFindOptions(sortOrOptions as any)
-      ? await this.repository.findAllAndPopulate(
-          sortOrOptions as FindAllOptions<Entity>,
-        )
-      : await this.repository.findAllAndPopulate(
-          sortOrOptions as SortTuple<Entity>,
-        );
+    return await this.repository.findAllAndPopulate(options);
   }
 
-  async count(filter: TFilterQuery<Entity> = {}): Promise<number> {
-    return await this.repository.count(filter);
+  async count(options?: FindManyOptions<Entity>): Promise<number> {
+    return await this.repository.count(options);
   }
 
-  /**
-   * @deprecated Use findOne(options) with TypeORM FindOneOptions instead.
-   */
   async findOne(
-    criteria: string | TFilterQuery<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto> | null>;
-
-  async findOne(
-    options: FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto> | null>;
-
-  async findOne(
-    criteriaOrOptions: string | TFilterQuery<Entity> | FindOneOptions<Entity>,
+    idOrOptions: string | FindOneOptions<Entity>,
   ): Promise<InferTransformDto<
     DtoTransformer.PlainCls,
     TransformerDto
   > | null> {
-    return typeof criteriaOrOptions === 'string' ||
-      !this.repository.isFindOptions(criteriaOrOptions)
-      ? await this.repository.findOne(criteriaOrOptions)
-      : await this.repository.findOne(criteriaOrOptions);
+    return await this.repository.findOne(idOrOptions);
   }
 
-  /**
-   * @deprecated Use findOneAndPopulate(options) with TypeORM FindOneOptions instead.
-   */
   async findOneAndPopulate(
-    criteria: string | TFilterQuery<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null>;
-
-  async findOneAndPopulate(
-    options: FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null>;
-
-  async findOneAndPopulate(
-    criteria: string | TFilterQuery<Entity> | FindOneOptions<Entity>,
+    idOrOptions: string | FindOneOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null> {
-    return typeof criteria === 'string' ||
-      !this.repository.isFindOptions(criteria)
-      ? await this.repository.findOneAndPopulate(criteria)
-      : await this.repository.findOneAndPopulate(criteria);
+    return await this.repository.findOneAndPopulate(idOrOptions);
   }
 
   async create(
@@ -193,106 +102,35 @@ export abstract class BaseOrmService<
     return await this.repository.createMany(payloads);
   }
 
-  /**
-   * @deprecated Use updateOne(options, payload) with TypeORM FindOneOptions instead.
-   */
   async updateOne(
-    criteria: string | TFilterQuery<Entity>,
+    idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>>;
-
-  async updateOne(
-    options: FindOneOptions<Entity>,
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
-    opt?: UpdateOneOptions,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>>;
-
-  async updateOne(
-    criteriaOrOptions: string | TFilterQuery<Entity> | FindOneOptions<Entity>,
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
-    opts?: UpdateOneOptions,
+    options?: UpdateOneOptions,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
-    return typeof criteriaOrOptions === 'string' ||
-      !this.repository.isFindOptions(criteriaOrOptions)
-      ? await this.repository.updateOne(criteriaOrOptions, payload, opts)
-      : await this.repository.updateOne(criteriaOrOptions, payload);
+    return await this.repository.updateOne(idOrOptions, payload, options);
   }
-
-  /**
-   * @deprecated Use updateMany(options, payload) with TypeORM FindManyOptions instead.
-   */
-  async updateMany(
-    filter: TFilterQuery<Entity>,
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
 
   async updateMany(
     options: FindManyOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]>;
-
-  async updateMany(
-    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity>,
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
-    return this.repository.isFindOptions(filterOrOptions)
-      ? await this.repository.updateMany(filterOrOptions, payload)
-      : await this.repository.updateMany(filterOrOptions, payload);
+    return await this.repository.updateMany(options, payload);
   }
 
-  /**
-   * @deprecated Use findOneOrCreate(options, payload) with TypeORM FindOneOptions instead.
-   */
   async findOneOrCreate(
-    criteria: string | TFilterQuery<Entity>,
-    payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>>;
-
-  async findOneOrCreate(
-    options: FindOneOptions<Entity>,
-    payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>>;
-
-  async findOneOrCreate(
-    criteriaOrOptions: string | TFilterQuery<Entity> | FindOneOptions<Entity>,
+    idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Create, ActionDto>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
-    return typeof criteriaOrOptions === 'string' ||
-      !this.repository.isFindOptions(criteriaOrOptions)
-      ? await this.repository.findOneOrCreate(criteriaOrOptions, payload)
-      : await this.repository.findOneOrCreate(criteriaOrOptions, payload);
+    return await this.repository.findOneOrCreate(idOrOptions, payload);
   }
 
-  /**
-   * @deprecated Use deleteMany(options) with TypeORM FindManyOptions instead.
-   */
-  async deleteMany(filter: TFilterQuery<Entity>): Promise<DeleteResult>;
-
-  async deleteMany(options?: FindManyOptions<Entity>): Promise<DeleteResult>;
-
-  async deleteMany(
-    filterOrOptions: TFilterQuery<Entity> | FindManyOptions<Entity> = {},
-  ): Promise<DeleteResult> {
-    return this.repository.isFindOptions(filterOrOptions)
-      ? await this.repository.deleteMany(filterOrOptions)
-      : await this.repository.deleteMany(filterOrOptions);
+  async deleteMany(options?: FindManyOptions<Entity>): Promise<DeleteResult> {
+    return await this.repository.deleteMany(options);
   }
 
-  /**
-   * @deprecated Use deleteOne(options) with TypeORM FindOneOptions instead.
-   */
   async deleteOne(
-    criteria: string | TFilterQuery<Entity>,
-  ): Promise<DeleteResult>;
-
-  async deleteOne(options: FindOneOptions<Entity>): Promise<DeleteResult>;
-
-  async deleteOne(
-    criteriaOrOptions: string | TFilterQuery<Entity> | FindOneOptions<Entity>,
+    idOrOptions: string | FindOneOptions<Entity>,
   ): Promise<DeleteResult> {
-    return typeof criteriaOrOptions === 'string' ||
-      !this.repository.isFindOptions(criteriaOrOptions)
-      ? await this.repository.deleteOne(criteriaOrOptions)
-      : await this.repository.deleteOne(criteriaOrOptions);
+    return await this.repository.deleteOne(idOrOptions);
   }
 }

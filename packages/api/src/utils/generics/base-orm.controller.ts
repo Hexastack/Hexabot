@@ -5,9 +5,9 @@
  */
 
 import { Inject, NotFoundException } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { DtoActionConfig, DtoTransformerConfig } from '../types/dto.types';
 import { TValidateProps } from '../types/filter.types';
@@ -67,7 +67,7 @@ export abstract class BaseOrmController<
     if (exceptions.length) throw new NotFoundException(exceptions.join('; '));
   }
 
-  async count(filters?: TFilterQuery<Entity>): Promise<{ count: number }> {
-    return { count: await this.service.count(filters) };
+  async count(options?: FindManyOptions<Entity>): Promise<{ count: number }> {
+    return { count: await this.service.count(options) };
   }
 }

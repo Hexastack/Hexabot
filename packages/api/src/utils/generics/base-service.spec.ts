@@ -4,16 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
+import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
+import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
-import { closeInMongodConnection } from '@/utils/test/test';
+import { installDummyFixturesTypeOrm } from '@/utils/test/fixtures/dummy';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
-import { DummyModule } from '../test/dummy/dummy.module';
-import { DummyRepository } from '../test/dummy/repositories/dummy.repository';
-import { buildTestingMocks } from '../test/utils';
-
-describe('BaseService', () => {
+describe('BaseOrmService', () => {
   let dummyRepository: DummyRepository;
   let dummyService: DummyService;
+  let module: TestingModule;
   let createdId: string;
   const createdPayload = {
     dummy: 'dummy test 5',
@@ -27,16 +30,29 @@ describe('BaseService', () => {
   };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      imports: [DummyModule],
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
+      providers: [DummyService],
+      typeorm: {
+        entities: [DummyOrmEntity],
+        fixtures: installDummyFixturesTypeOrm,
+      },
     });
+    module = testingModule;
     [dummyRepository, dummyService] = await getMocks([
       DummyRepository,
       DummyService,
     ]);
   });
+
   afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('create', () => {
     it('should create one dummy', async () => {
@@ -54,29 +70,26 @@ describe('BaseService', () => {
       jest.spyOn(dummyRepository, 'findOne');
       const result = await dummyService.findOne(createdId);
 
-      expect(dummyRepository.findOne).toHaveBeenCalledWith(
-        createdId,
-        undefined,
-        undefined,
-      );
-      expect(result).toEqualPayload(createdPayload);
+      expect(dummyRepository.findOne).toHaveBeenCalledWith(createdId);
+      expect(result).not.toBeNull();
+      const { id, createdAt, updatedAt, ...rest } = result!;
+      expect(rest).toEqualPayload(createdPayload);
     });
 
-    it('should find by criteria and return one dummy data', async () => {
+    it('should find by options and return one dummy data', async () => {
       jest.spyOn(dummyRepository, 'findOne');
-      const result = await dummyService.findOne(createdPayload);
+      const findOptions = { where: { dummy: createdPayload.dummy } };
+      const result = await dummyService.findOne(findOptions);
 
-      expect(dummyRepository.findOne).toHaveBeenCalledWith(
-        createdPayload,
-        undefined,
-        undefined,
-      );
-      expect(result).toEqualPayload(createdPayload);
+      expect(dummyRepository.findOne).toHaveBeenCalledWith(findOptions);
+      expect(result).not.toBeNull();
+      const { id, createdAt, updatedAt, ...rest } = result!;
+      expect(rest).toEqualPayload(createdPayload);
     });
   });
 
   describe('updateOne', () => {
-    it('should updated by id and return one dummy data', async () => {
+    it('should update by id and return one dummy data', async () => {
       jest.spyOn(dummyRepository, 'updateOne');
       const result = await dummyService.updateOne(createdId, updatedPayload);
 
@@ -85,22 +98,25 @@ describe('BaseService', () => {
         updatedPayload,
         undefined,
       );
-      expect(result).toEqualPayload(updatedPayload);
+      const { id, createdAt, updatedAt, ...rest } = result;
+      expect(rest).toEqualPayload(updatedPayload);
     });
 
-    it('should updated by criteria and return one dummy data', async () => {
+    it('should update by options and return one dummy data', async () => {
       jest.spyOn(dummyRepository, 'updateOne');
+      const findOptions = { where: { dummy: updatedPayload.dummy } };
       const result = await dummyService.updateOne(
-        updatedPayload,
+        findOptions,
         updatedCriteriaPayload,
       );
 
       expect(dummyRepository.updateOne).toHaveBeenCalledWith(
-        updatedPayload,
+        findOptions,
         updatedCriteriaPayload,
         undefined,
       );
-      expect(result).toEqualPayload(updatedCriteriaPayload);
+      const { id, createdAt, updatedAt, ...rest } = result;
+      expect(rest).toEqualPayload(updatedCriteriaPayload);
     });
   });
 
@@ -113,13 +129,12 @@ describe('BaseService', () => {
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
     });
 
-    it('should delete by id one dummy data', async () => {
+    it('should delete by options one dummy data', async () => {
       jest.spyOn(dummyRepository, 'deleteOne');
-      const result = await dummyService.deleteOne(deletedCriteriaPayload);
+      const findOptions = { where: deletedCriteriaPayload };
+      const result = await dummyService.deleteOne(findOptions);
 
-      expect(dummyRepository.deleteOne).toHaveBeenCalledWith(
-        deletedCriteriaPayload,
-      );
+      expect(dummyRepository.deleteOne).toHaveBeenCalledWith(findOptions);
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
     });
   });

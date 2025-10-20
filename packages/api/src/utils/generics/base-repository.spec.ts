@@ -4,355 +4,230 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { randomUUID } from 'crypto';
 
+import { TestingModule } from '@nestjs/testing';
+import { In, Repository } from 'typeorm';
+
+import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
-import { closeInMongodConnection } from '@/utils/test/test';
+import {
+  dummyFixtures,
+  installDummyFixturesTypeOrm,
+} from '@/utils/test/fixtures/dummy';
+import {
+  closeTypeOrmConnections,
+  getLastTypeOrmDataSource,
+} from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
-import { flatten } from '../helpers/flatten';
-import { DummyModule } from '../test/dummy/dummy.module';
-import { Dummy } from '../test/dummy/schemas/dummy.schema';
-import { buildTestingMocks } from '../test/utils';
-
-import { BaseSchema } from './base-schema';
-
-const FLATTEN_PAYLOAD = {
-  dummy: 'updated dummy text',
-  dynamicField: { field1: 'value1', field2: 'value2' },
-} as const satisfies Omit<Dummy, keyof BaseSchema>;
-
-describe('BaseRepository', () => {
-  let dummyModel: Model<Dummy>;
+describe('BaseOrmRepository', () => {
   let dummyRepository: DummyRepository;
-  let createdId: string;
+  let module: TestingModule;
+  let ormRepository: Repository<DummyOrmEntity>;
+  let baselineEntities: DummyOrmEntity[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      imports: [DummyModule],
-    });
-    [dummyRepository, dummyModel] = await getMocks([
-      DummyRepository,
-      getModelToken(Dummy.name),
-    ]);
-  });
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
-
-  describe('create', () => {
-    it('should create one dummy', async () => {
-      jest.spyOn(dummyModel, 'create');
-      const { id, ...rest } = await dummyRepository.create({
-        dummy: 'dummy test 5',
-      });
-      createdId = id;
-
-      expect(dummyModel.create).toHaveBeenCalledWith({
-        dummy: 'dummy test 5',
-      });
-      expect(rest).toEqualPayload({
-        dummy: 'dummy test 5',
-      });
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
+      providers: [DummyRepository],
+      typeorm: {
+        entities: [DummyOrmEntity],
+        fixtures: installDummyFixturesTypeOrm,
+      },
     });
 
-    it('should create one dummy and invoke lifecycle hooks', async () => {
-      const mockDto = { dummy: 'dummy test 5' };
-      const spyBeforeCreate = jest
-        .spyOn(dummyRepository, 'preCreate')
-        .mockResolvedValue();
-      const spyAfterCreate = jest
-        .spyOn(dummyRepository, 'postCreate')
-        .mockResolvedValue();
+    module = testingModule;
+    [dummyRepository] = await getMocks([DummyRepository]);
 
-      await dummyRepository.create(mockDto);
-
-      expect(spyBeforeCreate).toHaveBeenCalledWith(
-        expect.objectContaining(mockDto),
-      );
-      expect(spyAfterCreate).toHaveBeenCalledWith(
-        expect.objectContaining(mockDto),
-      );
-    });
+    const dataSource = getLastTypeOrmDataSource();
+    ormRepository = dataSource.getRepository(DummyOrmEntity);
   });
 
-  describe('findOne', () => {
-    it('should find by id and return one dummy data', async () => {
-      jest.spyOn(dummyModel, 'findById');
-      const result = await dummyRepository.findOne(createdId);
-
-      expect(dummyModel.findById).toHaveBeenCalledWith(createdId, undefined);
-      expect(result).toEqualPayload({
-        dummy: 'dummy test 5',
-      });
-    });
-
-    it('should find by criteria and return one dummy data', async () => {
-      jest.spyOn(dummyModel, 'findOne');
-      const result = await dummyRepository.findOne({ dummy: 'dummy test 5' });
-
-      expect(dummyModel.findOne).toHaveBeenCalledWith(
-        {
-          dummy: 'dummy test 5',
-        },
-        undefined,
-      );
-      expect(result).toEqualPayload({
-        dummy: 'dummy test 5',
-      });
-    });
+  beforeEach(async () => {
+    await ormRepository.clear();
+    baselineEntities = await ormRepository.save(
+      ormRepository.create(dummyFixtures),
+    );
   });
 
-  describe('updateOne', () => {
-    it('should updated by id and return one dummy data', async () => {
-      jest.spyOn(dummyModel, 'findOneAndUpdate');
-      const result = await dummyRepository.updateOne(createdId, {
-        dummy: 'updated dummy text',
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  describe('find operations', () => {
+    it('should return all dummy entities', async () => {
+      const results = await dummyRepository.findAll();
+
+      expect(results).toHaveLength(dummyFixtures.length);
+      const names = results.map((entity) => entity.dummy).sort();
+      expect(names).toEqual(
+        dummyFixtures.map((fixture) => fixture.dummy).sort(),
+      );
+    });
+
+    it('should return all dummy entities when populating', async () => {
+      const results = await dummyRepository.findAllAndPopulate();
+
+      expect(results).toHaveLength(dummyFixtures.length);
+    });
+
+    it('should find one entity by id', async () => {
+      const target = baselineEntities[0];
+      const result = await dummyRepository.findOne(target.id);
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(target.id);
+      expect(result!.dummy).toBe(target.dummy);
+    });
+
+    it('should find one entity by options', async () => {
+      const target = baselineEntities[1];
+      const options = { where: { id: target.id } };
+      const result = await dummyRepository.findOne(options);
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(target.id);
+    });
+
+    it('should count matching entities', async () => {
+      const total = await dummyRepository.count();
+      expect(total).toBe(dummyFixtures.length);
+
+      const count = await dummyRepository.count({
+        where: { dummy: baselineEntities[0].dummy },
       });
-
-      expect(dummyModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: createdId },
-        {
-          $set: { dummy: 'updated dummy text' },
-        },
-        {
-          new: true,
-        },
-      );
-      expect(result).toEqualPayload({
-        dummy: 'updated dummy text',
-      });
-    });
-
-    it('should updated by criteria and return one dummy data', async () => {
-      jest.spyOn(dummyModel, 'findOneAndUpdate');
-      const result = await dummyRepository.updateOne(
-        { dummy: 'updated dummy text' },
-        {
-          dummy: 'updated dummy text 2',
-        },
-      );
-
-      expect(dummyModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { dummy: 'updated dummy text' },
-        {
-          $set: { dummy: 'updated dummy text 2' },
-        },
-        {
-          new: true,
-        },
-      );
-      expect(result).toEqualPayload({
-        dummy: 'updated dummy text 2',
-      });
-    });
-
-    it('should update and flatten by id and return one dummy data', async () => {
-      jest.spyOn(dummyModel, 'findOneAndUpdate');
-      const result = await dummyRepository.updateOne(
-        createdId,
-        FLATTEN_PAYLOAD,
-        {
-          new: true,
-          shouldFlatten: true,
-        },
-      );
-
-      expect(dummyModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: createdId },
-        {
-          $set: flatten(FLATTEN_PAYLOAD),
-        },
-        {
-          new: true,
-        },
-      );
-      expect(result).toEqualPayload({
-        dummy: 'updated dummy text',
-        dynamicField: { field1: 'value1', field2: 'value2' },
-      });
-    });
-
-    it('should update by id and invoke lifecycle hooks', async () => {
-      const created = await dummyRepository.create({ dummy: 'initial text' });
-      const mockUpdate = { dummy: 'updated dummy text' };
-      const spyBeforeUpdate = jest
-        .spyOn(dummyRepository, 'preUpdate')
-        .mockResolvedValue();
-      const spyAfterUpdate = jest
-        .spyOn(dummyRepository, 'postUpdate')
-        .mockResolvedValue();
-
-      await dummyRepository.updateOne(created.id, mockUpdate);
-
-      expect(spyBeforeUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ $useProjection: true }),
-        {
-          _id: new Types.ObjectId(created.id),
-        },
-        expect.objectContaining({ $set: expect.objectContaining(mockUpdate) }),
-      );
-      expect(spyAfterUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ $useProjection: true }),
-        expect.objectContaining({ dummy: 'updated dummy text' }),
-      );
-    });
-
-    it('should updateOne by id and trigger preUpdateValidate and postUpdateValidate methods', async () => {
-      const created = await dummyRepository.create({ dummy: 'initial text' });
-      const mockGetFilterValue = { _id: created.id };
-      const mockedGetFilter = jest.fn().mockReturnValue(mockGetFilterValue);
-
-      const mockGetUpdateValue = {
-        $set: {
-          value: 'updated dummy text',
-        },
-      };
-
-      const mockedGetUpdate = jest.fn().mockReturnValue(mockGetUpdateValue);
-      const mockQueryValue = {
-        getFilter: mockedGetFilter,
-        getUpdate: mockedGetUpdate,
-        lean: jest.fn(() => {
-          return {
-            exec: jest.fn(),
-          };
-        }),
-      };
-
-      jest
-        .spyOn(dummyModel, 'findOneAndUpdate')
-        .mockReturnValue(mockQueryValue as any);
-
-      const mockUpdate = { dummy: 'updated dummy text' };
-      const spyPreUpdateValidate = jest
-        .spyOn(dummyRepository, 'preUpdateValidate')
-        .mockResolvedValue();
-      const spyPostUpdateValidate = jest
-        .spyOn(dummyRepository, 'postUpdateValidate')
-        .mockResolvedValue();
-
-      const spyExecutoneOne = jest
-        .spyOn(
-          dummyRepository as DummyRepository & {
-            executeOne: () => Promise<{ dummy: string }>;
-          },
-          'executeOne',
-        )
-        .mockResolvedValue({ dummy: 'updated dummy text' });
-
-      await dummyRepository.updateOne(created.id, mockUpdate);
-
-      expect(spyPreUpdateValidate).toHaveBeenCalledWith(
-        mockGetFilterValue,
-        mockGetUpdateValue,
-      );
-      expect(spyPostUpdateValidate).toHaveBeenCalledWith(
-        mockGetFilterValue,
-        mockGetUpdateValue,
-      );
-      expect(spyExecutoneOne).toHaveBeenCalledWith(mockQueryValue, Dummy);
-    });
-
-    it('should throw an error while trying to updateOne when calling preUpdateValidate', async () => {
-      const created = await dummyRepository.create({ dummy: 'initial text' });
-      const mockGetFilterValue = { _id: created.id };
-      const mockedGetFilter = jest.fn().mockReturnValue(mockGetFilterValue);
-
-      const mockGetUpdateValue = {
-        $set: {
-          value: 10,
-        },
-      };
-
-      const mockedGetUpdate = jest.fn().mockReturnValue(mockGetUpdateValue);
-      const mockQueryValue = {
-        getFilter: mockedGetFilter,
-        getUpdate: mockedGetUpdate,
-        lean: jest.fn(() => {
-          return {
-            exec: jest.fn(),
-          };
-        }),
-      };
-
-      jest
-        .spyOn(dummyModel, 'findOneAndUpdate')
-        .mockReturnValue(mockQueryValue as any);
-
-      const mockUpdate = { dummy: 10 };
-      const spyPreUpdateValidate = jest
-        .spyOn(dummyRepository, 'preUpdateValidate')
-        .mockImplementation(() => {
-          throw new Error('Mocked error while validating dummy');
-        });
-
-      await expect(
-        dummyRepository.updateOne(created.id, mockUpdate),
-      ).rejects.toThrow('Mocked error while validating dummy');
-
-      expect(spyPreUpdateValidate).toHaveBeenCalledWith(
-        mockGetFilterValue,
-        mockGetUpdateValue,
-      );
+      expect(count).toBe(1);
     });
   });
 
-  describe('deleteOne', () => {
-    it('should delete by id one dummy data', async () => {
-      jest.spyOn(dummyModel, 'deleteOne');
-      const result = await dummyRepository.deleteOne(createdId);
+  describe('create operations', () => {
+    it('should create one entity', async () => {
+      const payload = { dummy: 'dummy test 5' };
+      const result = await dummyRepository.create(payload);
 
-      expect(dummyModel.deleteOne).toHaveBeenCalledWith({
-        _id: createdId,
-        builtin: { $ne: true },
+      expect(result.dummy).toBe(payload.dummy);
+      const stored = await ormRepository.findOne({ where: { id: result.id } });
+      expect(stored).not.toBeNull();
+      expect(stored!.dummy).toBe(payload.dummy);
+    });
+
+    it('should create many entities', async () => {
+      const payloads = [
+        { dummy: 'bulk 1' },
+        { dummy: 'bulk 2', dynamicField: { foo: 'bar' } },
+      ];
+      const results = await dummyRepository.createMany(payloads);
+
+      expect(results).toHaveLength(payloads.length);
+      const stored = await ormRepository.find({
+        where: { dummy: In(payloads.map((payload) => payload.dummy)) },
       });
+      expect(stored).toHaveLength(payloads.length);
+    });
+  });
+
+  describe('update operations', () => {
+    it('should update an entity by id', async () => {
+      const target = baselineEntities[0];
+      const payload = { dummy: 'updated dummy text' };
+      const result = await dummyRepository.update(target.id, payload);
+
+      expect(result).not.toBeNull();
+      expect(result!.dummy).toBe(payload.dummy);
+      const stored = await ormRepository.findOne({ where: { id: target.id } });
+      expect(stored!.dummy).toBe(payload.dummy);
+    });
+
+    it('should update one entity matching options', async () => {
+      const target = baselineEntities[1];
+      const payload = { dummy: 'updated from options' };
+      const options = { where: { id: target.id } };
+      const result = await dummyRepository.updateOne(options, payload);
+
+      expect(result.dummy).toBe(payload.dummy);
+      const stored = await ormRepository.findOne({ where: { id: target.id } });
+      expect(stored!.dummy).toBe(payload.dummy);
+    });
+
+    it('should upsert when updateOne cannot find a match and upsert is enabled', async () => {
+      const payload = { dummy: 'upserted dummy' };
+      const options = { where: { id: randomUUID() } };
+      const result = await dummyRepository.updateOne(options, payload, {
+        upsert: true,
+      });
+
+      expect(result.dummy).toBe(payload.dummy);
+      const stored = await ormRepository.findOne({ where: { id: result.id } });
+      expect(stored!.dummy).toBe(payload.dummy);
+    });
+
+    it('should update many entities', async () => {
+      const payload = { dummy: 'bulk updated' };
+      const results = await dummyRepository.updateMany({}, payload);
+
+      expect(results).toHaveLength(dummyFixtures.length);
+      const stored = await ormRepository.find();
+      stored.forEach((entity) => expect(entity.dummy).toBe(payload.dummy));
+    });
+  });
+
+  describe('findOrCreate operations', () => {
+    it('should return existing entity when found', async () => {
+      const target = baselineEntities[0];
+      const result = await dummyRepository.findOneOrCreate(target.id, {
+        dummy: 'should not override',
+      });
+
+      expect(result.id).toBe(target.id);
+      expect(result.dummy).toBe(target.dummy);
+    });
+
+    it('should create a new entity when none match', async () => {
+      const payload = { dummy: 'new dummy' };
+      const result = await dummyRepository.findOneOrCreate(
+        { where: { dummy: 'non-existing' } },
+        payload,
+      );
+
+      expect(result.dummy).toBe(payload.dummy);
+      const stored = await ormRepository.findOne({ where: { id: result.id } });
+      expect(stored!.dummy).toBe(payload.dummy);
+    });
+  });
+
+  describe('delete operations', () => {
+    it('should delete one entity by id', async () => {
+      const target = baselineEntities[0];
+      const result = await dummyRepository.deleteOne(target.id);
+
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      const stored = await ormRepository.findOne({ where: { id: target.id } });
+      expect(stored).toBeNull();
     });
 
-    it('should delete by criteria one dummy data', async () => {
-      jest.spyOn(dummyModel, 'deleteOne');
-      const result = await dummyRepository.deleteOne({
-        dummy: 'dummy test 2',
-      });
+    it('should delete one entity by options', async () => {
+      const target = baselineEntities[1];
+      const options = { where: { id: target.id } };
+      const result = await dummyRepository.deleteOne(options);
 
-      expect(dummyModel.deleteOne).toHaveBeenCalledWith({
-        dummy: 'dummy test 2',
-        builtin: { $ne: true },
-      });
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      const stored = await ormRepository.findOne({ where: { id: target.id } });
+      expect(stored).toBeNull();
     });
 
-    it('should call lifecycle hooks appropriately when deleting by id', async () => {
-      jest.spyOn(dummyModel, 'deleteOne');
-
-      // Spies for lifecycle hooks
-      const spyBeforeDelete = jest
-        .spyOn(dummyRepository, 'preDelete')
-        .mockResolvedValue();
-      const spyAfterDelete = jest
-        .spyOn(dummyRepository, 'postDelete')
-        .mockResolvedValue();
-
-      await dummyRepository.deleteOne(createdId);
-
-      expect(dummyModel.deleteOne).toHaveBeenCalledWith({
-        _id: createdId,
-        builtin: { $ne: true },
+    it('should delete many entities', async () => {
+      const targetIds = baselineEntities.slice(0, 2).map((entity) => entity.id);
+      const result = await dummyRepository.deleteMany({
+        where: { id: In(targetIds) },
       });
 
-      // Verifying that lifecycle hooks are called with correct parameters
-      expect(spyBeforeDelete).toHaveBeenCalledTimes(1);
-      expect(spyBeforeDelete).toHaveBeenCalledWith(
-        expect.objectContaining({ $useProjection: true }),
-        {
-          _id: new Types.ObjectId(createdId),
-          builtin: { $ne: true },
-        },
-      );
-      expect(spyAfterDelete).toHaveBeenCalledWith(
-        expect.objectContaining({ $useProjection: true }),
-        { acknowledged: true, deletedCount: 0 },
-      );
+      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 2 });
+      const remaining = await ormRepository.find();
+      expect(remaining).toHaveLength(dummyFixtures.length - 2);
     });
   });
 });
