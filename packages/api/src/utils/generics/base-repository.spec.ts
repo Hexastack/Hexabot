@@ -6,6 +6,8 @@
 
 import { randomUUID } from 'crypto';
 
+import { NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { In, Repository } from 'typeorm';
 
@@ -20,6 +22,8 @@ import {
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+
+import { EHook } from './base-repository';
 
 describe('BaseOrmRepository', () => {
   let dummyRepository: DummyRepository;
@@ -58,6 +62,21 @@ describe('BaseOrmRepository', () => {
     await closeTypeOrmConnections();
   });
 
+  describe('utility methods', () => {
+    it('should expose the configured populate relations', () => {
+      expect(dummyRepository.getPopulateRelations()).toEqual([]);
+    });
+
+    it('should report inability to populate unsupported relations', () => {
+      expect(dummyRepository.canPopulate(['unrelated'])).toBe(false);
+    });
+
+    it('should provide access to the event emitter instance', () => {
+      const emitter = dummyRepository.getEventEmitter();
+      expect(emitter).toBeInstanceOf(EventEmitter2);
+    });
+  });
+
   describe('find operations', () => {
     it('should return all dummy entities', async () => {
       const results = await dummyRepository.findAll();
@@ -91,6 +110,22 @@ describe('BaseOrmRepository', () => {
 
       expect(result).not.toBeNull();
       expect(result!.id).toBe(target.id);
+    });
+
+    it('should find entities using options', async () => {
+      const target = baselineEntities[2];
+      const results = await dummyRepository.find({
+        where: { id: target.id },
+      });
+
+      expect(results).toHaveLength(1);
+      expect(results[0]!.id).toBe(target.id);
+    });
+
+    it('should find and populate entities', async () => {
+      const results = await dummyRepository.findAndPopulate();
+
+      expect(results).toHaveLength(dummyFixtures.length);
     });
 
     it('should count matching entities', async () => {
@@ -165,6 +200,15 @@ describe('BaseOrmRepository', () => {
       expect(stored!.dummy).toBe(payload.dummy);
     });
 
+    it('should throw when updateOne cannot find a match and upsert is disabled', async () => {
+      const payload = { dummy: 'no updates' };
+      const options = { where: { id: randomUUID() } };
+
+      await expect(
+        dummyRepository.updateOne(options, payload),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
     it('should update many entities', async () => {
       const payload = { dummy: 'bulk updated' };
       const results = await dummyRepository.updateMany({}, payload);
@@ -228,6 +272,243 @@ describe('BaseOrmRepository', () => {
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 2 });
       const remaining = await ormRepository.find();
       expect(remaining).toHaveLength(dummyFixtures.length - 2);
+    });
+  });
+
+  describe('event emission', () => {
+    let eventEmitter: EventEmitter2;
+    const hookEvent = (suffix: EHook) => `hook:dummy:${suffix}`;
+
+    beforeEach(() => {
+      eventEmitter = dummyRepository.getEventEmitter()!;
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should emit hooks when creating an entity', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const payload = { dummy: 'event create' };
+
+      const result = await dummyRepository.create(payload);
+
+      expect(emitSpy).toHaveBeenNthCalledWith(
+        1,
+        hookEvent(EHook.preCreate),
+        expect.objectContaining({ dummy: payload.dummy }),
+      );
+      expect(emitSpy).toHaveBeenNthCalledWith(
+        2,
+        hookEvent(EHook.postCreate),
+        expect.objectContaining({ id: result.id, dummy: payload.dummy }),
+      );
+    });
+
+    it('should emit hooks when creating many entities', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const payloads = [
+        { dummy: 'event bulk 1' },
+        { dummy: 'event bulk 2', dynamicField: { key: 'value' } },
+      ];
+
+      await dummyRepository.createMany(payloads);
+
+      const preCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.preCreate),
+      );
+      const postCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.postCreate),
+      );
+
+      expect(preCalls).toHaveLength(payloads.length);
+      expect(postCalls).toHaveLength(payloads.length);
+      expect(
+        preCalls.map(([, entity]) => (entity as DummyOrmEntity).dummy),
+      ).toEqual(payloads.map((payload) => payload.dummy));
+      postCalls.forEach(([, entity]) =>
+        expect((entity as DummyOrmEntity).id).toBeDefined(),
+      );
+    });
+
+    it('should emit hooks when updating an entity', async () => {
+      const target = baselineEntities[0];
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const payload = { dummy: 'event update' };
+
+      await dummyRepository.update(target.id, payload);
+
+      const preCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.preUpdate),
+      );
+      const postCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.postUpdate),
+      );
+
+      expect(preCall).toBeDefined();
+      const prePayload = preCall![1] as {
+        entity: DummyOrmEntity;
+        changes: Record<string, unknown>;
+      };
+      expect(prePayload.entity.id).toBe(target.id);
+      expect(prePayload.changes).toEqualPayload(payload);
+
+      expect(postCall).toBeDefined();
+      const postPayload = postCall![1] as {
+        entity: DummyOrmEntity;
+        previous: DummyOrmEntity;
+      };
+      expect(postPayload.entity.dummy).toBe(payload.dummy);
+      expect(postPayload.previous.dummy).toBe(target.dummy);
+    });
+
+    it('should emit hooks when updating many entities', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const payload = { dummy: 'event update many' };
+
+      await dummyRepository.updateMany({}, payload);
+
+      const preManyCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.preUpdateMany),
+      );
+      const preCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.preUpdate),
+      );
+      const postCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.postUpdate),
+      );
+      const postManyCalls = emitSpy.mock.calls.filter(
+        ([event]) => event === hookEvent(EHook.postUpdateMany),
+      );
+
+      expect(preManyCalls).toHaveLength(1);
+      expect(preCalls).toHaveLength(dummyFixtures.length);
+      expect(postCalls).toHaveLength(dummyFixtures.length);
+      expect(postManyCalls).toHaveLength(1);
+
+      const preManyPayload = preManyCalls[0]![1] as {
+        entities: DummyOrmEntity[];
+      };
+      expect(preManyPayload.entities).toHaveLength(dummyFixtures.length);
+
+      const postManyPayload = postManyCalls[0]![1] as {
+        entities: DummyOrmEntity[];
+        previous: DummyOrmEntity[];
+      };
+      expect(postManyPayload.entities).toHaveLength(dummyFixtures.length);
+      expect(postManyPayload.previous).toHaveLength(dummyFixtures.length);
+    });
+
+    it('should emit hooks when deleting one entity', async () => {
+      const target = baselineEntities[0];
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+
+      await dummyRepository.deleteOne(target.id);
+
+      const preCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.preDelete),
+      );
+      const postCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.postDelete),
+      );
+
+      expect(preCall).toBeDefined();
+      const prePayload = preCall![1] as {
+        entities: DummyOrmEntity[];
+        filter: Record<string, unknown>;
+      };
+      expect(prePayload.entities[0].id).toBe(target.id);
+      expect(prePayload.filter).toEqual({ id: target.id });
+
+      expect(postCall).toBeDefined();
+      const postPayload = postCall![1] as {
+        result: { acknowledged: boolean; deletedCount: number };
+      };
+      expect(postPayload.result).toEqualPayload({
+        acknowledged: true,
+        deletedCount: 1,
+      });
+    });
+
+    it('should emit hooks when deleting many entities', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const targetIds = baselineEntities.slice(0, 2).map(({ id }) => id);
+
+      await dummyRepository.deleteMany({ where: { id: In(targetIds) } });
+
+      const preCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.preDelete),
+      );
+      const postCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.postDelete),
+      );
+
+      expect(preCall).toBeDefined();
+      const prePayload = preCall![1] as {
+        entities: DummyOrmEntity[];
+      };
+      expect(prePayload.entities).toHaveLength(2);
+
+      expect(postCall).toBeDefined();
+      const postPayload = postCall![1] as {
+        result: { acknowledged: boolean; deletedCount: number };
+      };
+      expect(postPayload.result).toEqualPayload({
+        acknowledged: true,
+        deletedCount: 2,
+      });
+    });
+
+    it('should not emit hooks when findOneOrCreate reuses an existing entity', async () => {
+      const target = baselineEntities[0];
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+
+      await dummyRepository.findOneOrCreate(target.id, {
+        dummy: 'no-op',
+      });
+
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not emit hooks when updateMany does not match any entity', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+
+      const result = await dummyRepository.updateMany(
+        { where: { id: In([randomUUID()]) } },
+        { dummy: 'no-op' },
+      );
+
+      expect(result).toEqual([]);
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not emit hooks when deleteMany finds no matching entities', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+
+      const result = await dummyRepository.deleteMany({
+        where: { id: In([randomUUID()]) },
+      });
+
+      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 0 });
+      expect(emitSpy).not.toHaveBeenCalled();
     });
   });
 });
