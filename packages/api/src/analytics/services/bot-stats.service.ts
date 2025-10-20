@@ -124,7 +124,7 @@ export class BotStatsService extends BaseOrmService<
 
     try {
       const insight = await this.findOneOrCreate(
-        { day, type, name },
+        { where: { day, type, name } },
         { day, type, name, value: 0 },
       );
 

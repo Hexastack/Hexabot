@@ -89,11 +89,8 @@ export class BotStatsRepository extends BaseOrmRepository<
       .groupBy('stats.name')
       .orderBy('value', 'DESC')
       .limit(limit)
-      .getRawMany<{ id: string; value: string | number }>();
+      .getRawMany<{ id: string; value: number }>();
 
-    return results.map(({ id, value }) => ({
-      id,
-      value: typeof value === 'number' ? value : Number(value ?? 0),
-    }));
+    return results;
   }
 }
