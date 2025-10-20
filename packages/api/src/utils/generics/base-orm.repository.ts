@@ -84,9 +84,11 @@ export abstract class BaseOrmRepository<
   @Inject(LoggerService)
   protected readonly logger: LoggerService;
 
-  private getTransformer<D extends DtoTransformer>(t: D) {
+  public getTransformer<D extends DtoTransformer>(t: D) {
     return (entity: Entity): InferTransformDto<D, TransformerDto> => {
-      return plainToInstance(this.transformers[t] as any, entity);
+      return plainToInstance(this.transformers[t] as any, entity, {
+        exposeUnsetFields: false,
+      });
     };
   }
 

@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -30,6 +30,7 @@ export class SettingStub extends BaseStub {
   group!: string;
 
   @Expose()
+  @Transform(({ obj }) => obj.options || undefined)
   subgroup?: string;
 
   @Expose()
@@ -42,16 +43,18 @@ export class SettingStub extends BaseStub {
   value!: null | string | number | boolean | string[] | Record<string, any>;
 
   @Expose()
+  @Transform(({ obj }) => obj.options || undefined)
   options?: string[];
 
   @Expose()
+  @Transform(({ obj }) => obj.config || undefined)
   config?: Record<string, any>;
 
   @Expose()
   weight?: number;
 
   @Expose()
-  translatable?: boolean;
+  translatable: boolean;
 }
 
 @Exclude()

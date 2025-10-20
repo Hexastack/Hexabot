@@ -118,6 +118,7 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '',
     type: SettingType.text,
     weight: 14,
+    translatable: true,
   },
   {
     group: 'local_storage_helper',

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BadRequestException } from '@nestjs/common';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -54,42 +55,48 @@ export class SettingOrmEntity extends BaseOrmEntity {
       case SettingType.text:
       case SettingType.textarea:
         if (typeof value !== 'string' && value !== null) {
-          throw new Error('Setting value must be a string.');
+          throw new BadRequestException('Setting value must be a string.');
         }
         break;
       case SettingType.multiple_text:
         if (!this.isArrayOfString(value)) {
-          throw new Error('Setting value must be an array of strings.');
+          throw new BadRequestException(
+            'Setting value must be an array of strings.',
+          );
         }
         break;
       case SettingType.checkbox:
         if (typeof value !== 'boolean' && value !== null) {
-          throw new Error('Setting value must be a boolean.');
+          throw new BadRequestException('Setting value must be a boolean.');
         }
         break;
       case SettingType.number:
         if (typeof value !== 'number' && value !== null) {
-          throw new Error('Setting value must be a number.');
+          throw new BadRequestException('Setting value must be a number.');
         }
         break;
       case SettingType.multiple_attachment:
         if (!this.isArrayOfString(value)) {
-          throw new Error('Setting value must be an array of attachment ids.');
+          throw new BadRequestException(
+            'Setting value must be an array of attachment ids.',
+          );
         }
         break;
       case SettingType.attachment:
         if (typeof value !== 'string' && value !== null) {
-          throw new Error('Setting value must be a string or null.');
+          throw new BadRequestException(
+            'Setting value must be a string or null.',
+          );
         }
         break;
       case SettingType.secret:
         if (typeof value !== 'string') {
-          throw new Error('Setting value must be a string.');
+          throw new BadRequestException('Setting value must be a string.');
         }
         break;
       case SettingType.select:
         if (typeof value !== 'string') {
-          throw new Error('Setting value must be a string.');
+          throw new BadRequestException('Setting value must be a string.');
         }
         break;
       default:

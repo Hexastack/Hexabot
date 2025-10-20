@@ -38,7 +38,7 @@ describe('SettingService', () => {
       options: undefined,
       config: undefined,
       weight: undefined,
-      translatable: undefined,
+      translatable: false,
       ...overrides,
     });
     return setting;
@@ -89,15 +89,7 @@ describe('SettingService', () => {
         settingService.group(
           settingFixtures.map((fixture) => makeSetting(fixture)),
         ),
-        [
-          'id',
-          'createdAt',
-          'updatedAt',
-          'subgroup',
-          'translatable',
-          'options',
-          'config',
-        ],
+        ['id', 'createdAt', 'updatedAt'],
       );
     });
   });
@@ -142,11 +134,26 @@ describe('SettingService', () => {
       ].map((s) => makeSetting(s));
       expect(settingService.group(settings)).toEqualPayload({
         group1: [
-          { group: 'group1', label: 'setting1', type: 'text', value: 'value1' },
-          { group: 'group1', label: 'setting2', type: 'text', value: 'value2' },
+          makeSetting({
+            group: 'group1',
+            label: 'setting1',
+            type: SettingType.text,
+            value: 'value1',
+          }),
+          makeSetting({
+            group: 'group1',
+            label: 'setting2',
+            type: SettingType.text,
+            value: 'value2',
+          }),
         ],
         group2: [
-          { group: 'group2', label: 'setting1', type: 'text', value: 'value3' },
+          makeSetting({
+            group: 'group2',
+            label: 'setting1',
+            type: SettingType.text,
+            value: 'value3',
+          }),
         ],
       });
     });

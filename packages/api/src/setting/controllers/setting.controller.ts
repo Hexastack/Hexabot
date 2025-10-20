@@ -58,7 +58,6 @@ export class SettingController extends BaseOrmController<
    *
    * @returns The updated setting.
    */
-
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,

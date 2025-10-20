@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, UpdateEvent } from 'typeorm';
 
 import { getRandom } from '@/utils/helpers/safeRandom';
 import {
@@ -18,6 +18,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Setting } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingType } from '../types';
 
@@ -257,6 +258,50 @@ describe('SettingRepository (TypeORM)', () => {
       await expect(
         settingRepository.update(created.id, { value: 123 as any }),
       ).rejects.toThrow('Setting value must be a string.');
+    });
+  });
+
+  describe('afterUpdate', () => {
+    it('emits hook events with the transformed setting payload', () => {
+      const eventEmitter = settingRepository.getEventEmitter();
+      expect(eventEmitter).toBeDefined();
+
+      const emitSpy = jest.spyOn(eventEmitter!, 'emit');
+      try {
+        const databaseEntity = Object.assign(new SettingOrmEntity(), {
+          group: 'chatbot_settings',
+          label: 'locale',
+          type: SettingType.text,
+          value: 'en',
+          options: ['en'],
+          config: { featureFlag: true },
+          weight: 10,
+          translatable: true,
+        });
+
+        const updateEvent = {
+          databaseEntity,
+        } as unknown as UpdateEvent<SettingOrmEntity>;
+
+        settingRepository.afterUpdate(updateEvent);
+
+        expect(emitSpy).toHaveBeenCalledTimes(1);
+        const [eventName, payload] = emitSpy.mock.calls[0];
+        expect(eventName).toBe('hook:chatbot_settings:locale');
+        expect(payload).toBeInstanceOf(Setting);
+        expect(payload).toMatchObject({
+          group: 'chatbot_settings',
+          label: 'locale',
+          type: SettingType.text,
+          value: 'en',
+          options: ['en'],
+          config: { featureFlag: true },
+          weight: 10,
+          translatable: true,
+        });
+      } finally {
+        emitSpy.mockRestore();
+      }
     });
   });
 
