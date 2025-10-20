@@ -39,10 +39,7 @@ export class SettingSeeder extends BaseOrmSeeder<
     );
 
     for (const [group, settings] of Object.entries(grouped)) {
-      if (await this.isEmpty({ group })) {
-        settings.forEach((setting) =>
-          this.repository.validateSettingValue(setting.type, setting.value),
-        );
+      if (await this.isEmpty({ where: { group } })) {
         await this.repository.createMany(settings);
       }
     }

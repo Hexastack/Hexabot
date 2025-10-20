@@ -59,16 +59,13 @@ describe('SettingController', () => {
   describe('find', () => {
     it('Should return an array of ordered by group Settings', async () => {
       jest.spyOn(settingService, 'find');
-      const result = await settingController.find(
-        {},
-        {
-          sort: ['weight', 'asc'],
-          limit: undefined,
-          skip: undefined,
-        },
-      );
+      const options = {
+        where: {},
+        order: { weight: 'ASC' as any },
+      };
+      const result = await settingController.find(options);
 
-      expect(settingService.find).toHaveBeenCalled();
+      expect(settingService.find).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(settingFixtures, [
         'id',
         'createdAt',
@@ -88,7 +85,7 @@ describe('SettingController', () => {
         value: 'updated setting value',
       };
       const { id } = (await settingService.findOne({
-        label: 'contact_email_recipient',
+        where: { label: 'contact_email_recipient' },
       })) as Setting;
       const result = await settingController.updateOne(id, payload);
 

@@ -208,7 +208,7 @@ module.exports = {
     if (!this.isCLI) {
       if (isAutoMigrate) {
         const metadata = await this.metadataService.findOne({
-          name: 'db-version',
+          where: { name: 'db-version' },
         });
         const version = metadata ? metadata.value : INITIAL_DB_VERSION;
         await this.runUpgrades(action, version);
@@ -526,7 +526,7 @@ module.exports = {
     this.logger.log(`"${migrationDisplayName}" migration done`);
     // Create or Update DB version
     await this.metadataService.updateOne(
-      { name: 'db-version' },
+      { where: { name: 'db-version' } },
       {
         value: version,
       },

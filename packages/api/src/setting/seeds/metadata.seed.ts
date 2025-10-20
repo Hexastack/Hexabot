@@ -24,7 +24,7 @@ export class MetadataSeeder extends BaseOrmSeeder<
   async seed(models: MetadataCreateDto[]): Promise<boolean> {
     for (const model of models) {
       await this.repository.updateOne(
-        { name: model.name },
+        { where: { name: model.name } },
         { value: model.value },
         { upsert: true },
       );

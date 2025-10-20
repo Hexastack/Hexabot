@@ -5,10 +5,9 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { FindOneOptions } from 'typeorm';
+import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Metadata,
@@ -29,11 +28,20 @@ export class MetadataService extends BaseOrmService<
     super(repository);
   }
 
+  async findOne(
+    criteriaOrOptions:
+      | string
+      | FindOptionsWhere<MetadataOrmEntity>
+      | FindOneOptions<MetadataOrmEntity>,
+  ): Promise<Metadata | null> {
+    return await super.findOne(this.toFindOneOptions(criteriaOrOptions));
+  }
+
   /**
    * @deprecated Use updateOne(options, payload) with TypeORM FindOneOptions instead.
    */
   async updateOne(
-    criteria: string | TFilterQuery<MetadataOrmEntity>,
+    criteria: string | FindOptionsWhere<MetadataOrmEntity>,
     payload: MetadataUpdateDto,
   ): Promise<Metadata>;
 
@@ -45,13 +53,38 @@ export class MetadataService extends BaseOrmService<
   async updateOne(
     criteriaOrOptions:
       | string
-      | TFilterQuery<MetadataOrmEntity>
+      | FindOptionsWhere<MetadataOrmEntity>
       | FindOneOptions<MetadataOrmEntity>,
     payload: MetadataUpdateDto,
   ): Promise<Metadata> {
-    return typeof criteriaOrOptions === 'string' ||
-      !this.repository.isFindOptions(criteriaOrOptions)
-      ? await super.updateOne(criteriaOrOptions, payload)
-      : await super.updateOne(criteriaOrOptions, payload, { upsert: true });
+    const normalized = this.toFindOneOptions(criteriaOrOptions);
+    const isUpsert =
+      typeof criteriaOrOptions !== 'string' &&
+      'where' in (criteriaOrOptions as FindOneOptions<MetadataOrmEntity>);
+
+    return await super.updateOne(
+      normalized,
+      payload,
+      isUpsert ? { upsert: true } : undefined,
+    );
+  }
+
+  private toFindOneOptions(
+    criteriaOrOptions:
+      | string
+      | FindOptionsWhere<MetadataOrmEntity>
+      | FindOneOptions<MetadataOrmEntity>,
+  ): string | FindOneOptions<MetadataOrmEntity> {
+    if (typeof criteriaOrOptions === 'string') {
+      return criteriaOrOptions;
+    }
+
+    if ('where' in criteriaOrOptions) {
+      return criteriaOrOptions as FindOneOptions<MetadataOrmEntity>;
+    }
+
+    return {
+      where: criteriaOrOptions as FindOptionsWhere<MetadataOrmEntity>,
+    };
   }
 }

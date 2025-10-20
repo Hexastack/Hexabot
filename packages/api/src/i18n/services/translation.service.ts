@@ -190,7 +190,7 @@ export class TranslationService extends BaseOrmService<
    */
   async getSettingStrings(): Promise<string[]> {
     const translatableSettings = await this.settingService.find({
-      translatable: true,
+      where: { translatable: true },
     });
     const settings = await this.settingService.getSettings();
     return Object.values(settings)

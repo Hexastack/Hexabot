@@ -5,12 +5,10 @@
  */
 
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Setting,
@@ -42,14 +40,14 @@ export class SettingController extends BaseOrmController<
   @Get()
   async find(
     @Query(
-      new SearchFilterPipe<SettingOrmEntity>({
+      new TypeOrmSearchFilterPipe<SettingOrmEntity>({
         allowedFields: ['group'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<SettingOrmEntity>,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<SettingOrmEntity>,
+    options: FindManyOptions<SettingOrmEntity>,
   ) {
-    return await this.settingService.find(filters, pageQuery);
+    return await this.settingService.find(options);
   }
 
   /**

@@ -5,10 +5,9 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
-import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
@@ -17,17 +16,13 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Setting,
   SettingCreateDto,
   SettingDtoConfig,
   SettingTransformerDto,
-  SettingUpdateDto,
 } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
@@ -43,7 +38,6 @@ export class SettingService extends BaseOrmService<
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly eventBus: EventEmitter2,
   ) {
     super(repository);
   }
@@ -52,7 +46,7 @@ export class SettingService extends BaseOrmService<
     group: string,
     data: readonly SettingSeed[],
   ): Promise<void> {
-    const count = await this.count({ group });
+    const count = await this.count({ where: { group } });
     if (count === 0) {
       const prepared = data.map(
         (item, index): SettingCreateDto => ({
@@ -65,109 +59,10 @@ export class SettingService extends BaseOrmService<
   }
 
   async load(): Promise<Record<string, Setting[]>> {
-    const settings = await this.findAll(['weight', 'asc']);
+    const settings = await this.findAll({
+      order: { weight: 'ASC' },
+    });
     return this.group(settings);
-  }
-
-  async create(dto: SettingCreateDto): Promise<Setting> {
-    this.repository.validateSettingValue(dto.type, dto.value);
-    const created = await super.create(dto);
-    await this.clearCache();
-    return created;
-  }
-
-  async createMany(dtos: SettingCreateDto[]): Promise<Setting[]> {
-    dtos.forEach((dto) =>
-      this.repository.validateSettingValue(dto.type, dto.value),
-    );
-    const created = await super.createMany(dtos);
-    await this.clearCache();
-    return created;
-  }
-
-  /**
-   * @deprecated Use updateOne(options, payload) with TypeORM FindOneOptions instead.
-   */
-  async updateOne(
-    criteria: string | TFilterQuery<SettingOrmEntity>,
-    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
-  ): Promise<Setting>;
-
-  async updateOne(
-    options: FindOneOptions<SettingOrmEntity>,
-    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
-    opts?: UpdateOneOptions,
-  ): Promise<Setting>;
-
-  async updateOne(
-    criteriaOrOptions:
-      | string
-      | TFilterQuery<SettingOrmEntity>
-      | FindOneOptions<SettingOrmEntity>,
-    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
-    opts?: UpdateOneOptions,
-  ): Promise<Setting> {
-    const existing = await this.findOne(criteriaOrOptions as any);
-    if (!existing) {
-      throw new NotFoundException('Setting not found');
-    }
-
-    if ('value' in dto) {
-      this.repository.validateSettingValue(existing.type, dto.value);
-    }
-
-    const isFindOptions =
-      typeof criteriaOrOptions !== 'string' &&
-      this.repository.isFindOptions(criteriaOrOptions);
-
-    const payload = dto as SettingUpdateDto;
-
-    const updated = isFindOptions
-      ? await super.updateOne(
-          criteriaOrOptions as FindOneOptions<SettingOrmEntity>,
-          payload,
-          opts,
-        )
-      : await super.updateOne(
-          criteriaOrOptions as string | TFilterQuery<SettingOrmEntity>,
-          payload,
-        );
-    if (!updated) {
-      throw new NotFoundException('Unable to update setting');
-    }
-
-    await this.clearCache();
-
-    const group = updated.group;
-    const label = updated.label;
-    const eventName = `hook:${group}:${label}`;
-    (this.eventBus as any).emit(eventName, updated);
-
-    return updated;
-  }
-
-  /**
-   * @deprecated Use deleteMany(options) with TypeORM FindManyOptions instead.
-   */
-  async deleteMany(
-    filter: TFilterQuery<SettingOrmEntity>,
-  ): Promise<DeleteResult>;
-
-  async deleteMany(
-    options?: FindManyOptions<SettingOrmEntity>,
-  ): Promise<DeleteResult>;
-
-  async deleteMany(
-    filterOrOptions:
-      | TFilterQuery<SettingOrmEntity>
-      | FindManyOptions<SettingOrmEntity>
-      | undefined = {},
-  ): Promise<DeleteResult> {
-    const result = await super.deleteMany(filterOrOptions as any);
-    if (result.deletedCount > 0) {
-      await this.clearCache();
-    }
-    return result;
   }
 
   public buildTree(settings: Setting[]): Settings {
@@ -210,7 +105,7 @@ export class SettingService extends BaseOrmService<
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
   async getAllowedOrigins(): Promise<string[]> {
     const settings = (await this.find({
-      label: 'allowed_domains',
+      where: { label: 'allowed_domains' },
     })) as TextSetting[];
 
     const allowedDomains = settings.flatMap((setting) =>

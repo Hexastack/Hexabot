@@ -5,6 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { Raw } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
@@ -34,11 +35,25 @@ export class CleanupService {
   private async deleteManyBySuffixAndNamespaces(
     criteria: TCriteria[],
   ): Promise<DeleteResult> {
-    return await this.settingService.deleteMany({
-      $or: criteria.map(({ suffix, namespaces }) => ({
-        group: { $regex: new RegExp(`${suffix}$`), $nin: namespaces },
-      })),
+    const where = criteria.map(({ suffix, namespaces }) => {
+      const pattern = `%${suffix}`;
+
+      if (!namespaces.length) {
+        return {
+          group: Raw((alias) => `${alias} LIKE :pattern`, { pattern }),
+        };
+      }
+
+      return {
+        group: Raw(
+          (alias) =>
+            `${alias} LIKE :pattern AND ${alias} NOT IN (:...namespaces)`,
+          { pattern, namespaces },
+        ),
+      };
     });
+
+    return await this.settingService.deleteMany({ where });
   }
 
   /**

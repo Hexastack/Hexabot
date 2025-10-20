@@ -170,7 +170,7 @@ describe('SettingService', () => {
       const result = await settingService.getAllowedOrigins();
 
       expect(settingService.find).toHaveBeenCalledWith({
-        label: 'allowed_domains',
+        where: { label: 'allowed_domains' },
       });
       expect(result).toEqual([
         '*',
@@ -186,7 +186,7 @@ describe('SettingService', () => {
       const result = await settingService.getAllowedOrigins();
 
       expect(settingService.find).toHaveBeenCalledWith({
-        label: 'allowed_domains',
+        where: { label: 'allowed_domains' },
       });
       expect(result).toEqual(['*']);
     });
@@ -205,7 +205,7 @@ describe('SettingService', () => {
       const result = await settingService.getAllowedOrigins();
 
       expect(settingService.find).toHaveBeenCalledWith({
-        label: 'allowed_domains',
+        where: { label: 'allowed_domains' },
       });
       expect(result).toEqual(['*', 'https://example.com']);
     });
