@@ -93,9 +93,9 @@ describe('ContentTypeController (TypeORM)', () => {
     });
   });
 
-  describe('findPage', () => {
-    it('returns paginated content types', async () => {
-      const result = await controller.findPage({ limit: 5, skip: 0 }, {});
+  describe('find', () => {
+    it('returns content types using find options', async () => {
+      const result = await controller.find({ take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });

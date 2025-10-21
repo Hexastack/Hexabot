@@ -6,12 +6,12 @@
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
+import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
 import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   ContentCreateDto,
@@ -68,30 +68,33 @@ export class ContentService extends BaseOrmService<
     options: ContentOptions,
     skip: number,
   ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
-    let query: TFilterQuery<ContentOrmEntity> = { status: true };
+    const where: FindOptionsWhere<ContentOrmEntity> = {
+      status: true,
+      ...(options.query as FindOptionsWhere<ContentOrmEntity> | undefined),
+    };
     const limit = options.limit;
 
-    if (options.query) {
-      query = { ...query, ...options.query };
-    }
     if (typeof options.entity === 'string') {
-      query = { ...query, entity: options.entity };
+      where.entity = options.entity;
     }
 
     try {
-      const total = await this.count(query);
+      const countOptions: FindManyOptions<ContentOrmEntity> = { where };
+      const total = await this.count(countOptions);
 
       if (total === 0) {
-        this.logger.warn('No content found', query);
+        this.logger.warn('No content found', where);
         throw new Error('No content found');
       }
 
       try {
-        const contents = await this.find(query, {
+        const findOptions: FindManyOptions<ContentOrmEntity> = {
+          where,
           skip,
-          limit,
-          sort: ['createdAt', 'desc'],
-        });
+          take: limit,
+          order: { createdAt: 'DESC' },
+        };
+        const contents = await this.find(findOptions);
         const elements = contents.map(ContentOrmEntity.toElement);
         return {
           elements,
@@ -102,11 +105,11 @@ export class ContentService extends BaseOrmService<
           },
         };
       } catch (err) {
-        this.logger.error('Unable to retrieve content', err, query);
+        this.logger.error('Unable to retrieve content', err, where);
         throw err;
       }
     } catch (err) {
-      this.logger.error('Unable to count content', err, query);
+      this.logger.error('Unable to count content', err, where);
       throw err;
     }
   }

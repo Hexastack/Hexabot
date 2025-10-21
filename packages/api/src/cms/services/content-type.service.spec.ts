@@ -25,7 +25,6 @@ import { ContentTypeService } from './content-type.service';
 describe('ContentTypeService (TypeORM)', () => {
   let module: TestingModule;
   let service: ContentTypeService;
-  let repository: ContentTypeRepository;
   const createdIds: string[] = [];
   const blockServiceMock = {
     findOne: jest.fn().mockResolvedValue(null),
@@ -47,10 +46,7 @@ describe('ContentTypeService (TypeORM)', () => {
       },
     });
     module = testingModule;
-    [service, repository] = await getMocks([
-      ContentTypeService,
-      ContentTypeRepository,
-    ]);
+    [service] = await getMocks([ContentTypeService]);
   });
 
   afterAll(async () => {

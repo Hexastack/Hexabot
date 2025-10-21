@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Column, Entity, Index } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -15,7 +22,7 @@ export enum MenuType {
 }
 
 @Entity({ name: 'menus' })
-@Index(['parent'])
+@Index(['parentId'])
 export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * The displayed title of the menu.
@@ -26,8 +33,15 @@ export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * If this menu item is part of another nested menu (parent), this will indicate that parent.
    */
+  @ManyToOne(() => MenuOrmEntity, (menu) => menu.children, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'parent_id' })
+  parent?: MenuOrmEntity | null;
+
   @Column({ name: 'parent_id', type: 'varchar', nullable: true })
-  parent?: string | null;
+  parentId?: string | null;
 
   /**
    * Type of the menu item, one of: web_url, postback, nested.
@@ -46,4 +60,7 @@ export class MenuOrmEntity extends BaseOrmEntity {
    */
   @Column({ nullable: true, type: 'varchar' })
   url?: string | null;
+
+  @OneToMany(() => MenuOrmEntity, (menu) => menu.parent)
+  children?: MenuOrmEntity[];
 }

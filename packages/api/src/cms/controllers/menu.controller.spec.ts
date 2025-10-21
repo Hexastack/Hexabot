@@ -71,38 +71,28 @@ describe('MenuController (TypeORM)', () => {
 
   describe('find', () => {
     it('returns paginated menus when pagination provided', async () => {
-      const result = await controller.find(
-        { limit: 5, skip: 0 },
-        {},
-        undefined,
-      );
+      const result = await controller.find({ take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it('returns raw query results when no pagination', async () => {
+    it('returns filtered results when where is provided', async () => {
       const [parent] = await menuService.find({
         where: { title: offerMenuFixture.title },
         take: 1,
       });
       expect(parent).toBeDefined();
 
-      const result = await controller.find(
-        { limit: undefined, skip: undefined },
-        {},
-        { parent: parent!.id },
-      );
+      const result = await controller.find({
+        where: { parentId: parent!.id },
+      });
 
       expect(result.length).toBeGreaterThan(0);
       expect(result.every((menu) => menu.parent === parent!.id)).toBe(true);
     });
 
     it('returns all menus when no pagination or filters', async () => {
-      const result = await controller.find(
-        { limit: undefined, skip: undefined },
-        {},
-        undefined,
-      );
+      const result = await controller.find({});
 
       expect(result.length).toBeGreaterThan(rootMenuFixtures.length);
     });
@@ -209,7 +199,9 @@ describe('MenuController (TypeORM)', () => {
 
       expect(result).toBe('');
       const found = await menuService.findOne(root.id);
+      const orphan = await menuService.findOne(child.id);
       expect(found).toBeNull();
+      expect(orphan).toBeNull();
     });
 
     it('wraps not found deletion in InternalServerErrorException', async () => {

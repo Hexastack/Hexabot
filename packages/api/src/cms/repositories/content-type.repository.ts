@@ -6,11 +6,15 @@
 
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import {
+  EntitySubscriberInterface,
+  EventSubscriber,
+  RemoveEvent,
+  Repository,
+} from 'typeorm';
 
 import { BlockService } from '@/chat/services/block.service';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   ContentType,
@@ -19,19 +23,20 @@ import {
   ContentTypeTransformerDto,
 } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
-import { ContentOrmEntity } from '../entities/content.entity';
 
+@EventSubscriber()
 @Injectable()
-export class ContentTypeRepository extends BaseOrmRepository<
-  ContentTypeOrmEntity,
-  ContentTypeTransformerDto,
-  ContentTypeDtoConfig
-> {
+export class ContentTypeRepository
+  extends BaseOrmRepository<
+    ContentTypeOrmEntity,
+    ContentTypeTransformerDto,
+    ContentTypeDtoConfig
+  >
+  implements EntitySubscriberInterface<ContentTypeOrmEntity>
+{
   constructor(
     @InjectRepository(ContentTypeOrmEntity)
     repository: Repository<ContentTypeOrmEntity>,
-    @InjectRepository(ContentOrmEntity)
-    private readonly contentRepository: Repository<ContentOrmEntity>,
     private readonly blockService: BlockService,
   ) {
     super(repository, [], {
@@ -40,13 +45,54 @@ export class ContentTypeRepository extends BaseOrmRepository<
     });
   }
 
+  listenTo() {
+    return ContentTypeOrmEntity;
+  }
+
   protected override async preDelete(
     entities: ContentTypeOrmEntity[],
-    _filter: TFilterQuery<ContentTypeOrmEntity>,
+    _filter: unknown,
   ): Promise<void> {
-    for (const entity of entities) {
+    await this.ensureContentTypeHasNoAssociatedBlocks(
+      entities.map((entity) => entity.id),
+    );
+  }
+
+  async beforeRemove(event: RemoveEvent<ContentTypeOrmEntity>): Promise<void> {
+    const identifiers: string[] = [];
+
+    if (event.entity) {
+      identifiers.push(event.entity.id);
+    } else if (event.entityId) {
+      const entityId = event.entityId;
+
+      if (typeof entityId === 'string') {
+        identifiers.push(entityId);
+      } else if (
+        typeof entityId === 'object' &&
+        entityId !== null &&
+        'id' in entityId
+      ) {
+        const value = (entityId as Record<string, unknown>).id;
+        if (typeof value === 'string') {
+          identifiers.push(value);
+        }
+      }
+    }
+
+    await this.ensureContentTypeHasNoAssociatedBlocks(identifiers);
+  }
+
+  private async ensureContentTypeHasNoAssociatedBlocks(
+    contentTypeIds: readonly string[],
+  ): Promise<void> {
+    const uniqueContentTypeIds = Array.from(new Set(contentTypeIds));
+
+    for (const contentTypeId of uniqueContentTypeIds) {
+      if (!contentTypeId) continue;
+
       const associatedBlock = await this.blockService.findOne({
-        'options.content.entity': entity.id,
+        'options.content.entity': contentTypeId,
       });
 
       if (associatedBlock) {
@@ -54,11 +100,6 @@ export class ContentTypeRepository extends BaseOrmRepository<
           'Content type have blocks associated to it',
         );
       }
-    }
-
-    if (entities.length > 0) {
-      const ids = entities.map((entity) => entity.id);
-      await this.contentRepository.delete({ entity: In(ids) });
     }
   }
 }

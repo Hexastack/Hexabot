@@ -132,7 +132,7 @@ describe('ContentService (TypeORM)', () => {
     };
 
     it('returns paginated content list ordered by creation date', async () => {
-      const total = await contentService.count({ status: true });
+      const total = await contentService.count({ where: { status: true } });
       const result = await contentService.getContent(baseOptions, 0);
 
       expect(result.elements.length).toBeGreaterThan(0);

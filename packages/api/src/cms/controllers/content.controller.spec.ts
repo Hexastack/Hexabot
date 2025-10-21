@@ -122,9 +122,9 @@ describe('ContentController (TypeORM)', () => {
     });
   });
 
-  describe('findPage', () => {
-    it('retrieves paginated content without populate', async () => {
-      const result = await controller.findPage({ limit: 5, skip: 0 }, [], {});
+  describe('find', () => {
+    it('retrieves content without populate', async () => {
+      const result = await controller.find([], { take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
@@ -132,23 +132,24 @@ describe('ContentController (TypeORM)', () => {
     it('retrieves populated content when requested', async () => {
       const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
 
-      const result = await controller.findPage(
-        { limit: 5, skip: 0 },
-        ['entity'],
-        {},
-      );
+      const result = await controller.find(['entity'], { take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
       expect(findAndPopulateSpy).toHaveBeenCalledWith(
-        {},
-        { limit: 5, skip: 0 },
+        expect.objectContaining({ take: 5, skip: 0 }),
       );
+      expect(findAndPopulateSpy).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('filterCount', () => {
     it('returns count of matching contents', async () => {
-      const result = await controller.filterCount({ status: true });
+      const [existing] = await contentService.find({ take: 1 });
+      expect(existing).toBeDefined();
+
+      const result = await controller.filterCount({
+        where: { entity: existing.entity },
+      });
 
       expect(result.count).toBeGreaterThan(0);
     });
@@ -199,7 +200,7 @@ describe('ContentController (TypeORM)', () => {
       expect(type).toBeDefined();
 
       const result = await controller.findByType(type!.id, {
-        limit: 10,
+        take: 10,
         skip: 0,
       });
 
@@ -214,7 +215,7 @@ describe('ContentController (TypeORM)', () => {
 
       await expect(
         controller.findByType('00000000-0000-4000-8000-000000000001', {
-          limit: 10,
+          take: 10,
           skip: 0,
         }),
       ).rejects.toThrow(NotFoundException);

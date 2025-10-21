@@ -19,13 +19,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Content,
@@ -114,47 +112,46 @@ export class ContentController extends BaseOrmController<
   }
 
   /**
-   * Retrieves paginated content based on filters and optional population of related entities.
+   * Retrieves content based on query options with optional population of related entities.
    *
-   * @param pageQuery - Pagination parameters.
    * @param populate - Fields to populate in the query.
-   * @param filters - Filters for content retrieval.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
-   * @returns Paginated content list.
+   * @returns Content list.
    */
   @Get()
-  async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentOrmEntity>,
+  async find(
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<ContentOrmEntity>({
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
         allowedFields: ['entity', 'title'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<ContentOrmEntity>,
+    options: FindManyOptions<ContentOrmEntity>,
   ) {
     return this.canPopulate(populate)
-      ? await this.contentService.findAndPopulate(filters, pageQuery)
-      : await this.contentService.find(filters, pageQuery);
+      ? await this.contentService.findAndPopulate(options)
+      : await this.contentService.find(options);
   }
 
   /**
-   * Counts the filtered number of contents based on the provided filters.
+   * Counts the filtered number of contents based on the provided options.
    *
-   * @param filters - Optional filters for counting content.
+   * @param options - Filters applied to the count query.
    *
    * @returns The count of content matching the filters.
    */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<ContentOrmEntity>({
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
         allowedFields: ['entity', 'title'],
       }),
     )
-    filters?: TFilterQuery<ContentOrmEntity>,
+    options?: FindManyOptions<ContentOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   /**
@@ -207,14 +204,20 @@ export class ContentController extends BaseOrmController<
    * Retrieves content based on content type ID with optional pagination.
    *
    * @param contentType - The content type ID to filter by.
-   * @param pageQuery - Pagination parameters.
+   * @param options - Query options applied to the lookup.
    *
    * @returns List of content documents matching the content type.
    */
   @Get('/type/:id')
   async findByType(
     @Param('id') contentType: string,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentOrmEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
+        allowedFields: ['entity', 'title'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<ContentOrmEntity>,
   ): Promise<Content[]> {
     const type = await this.contentTypeService.findOne(contentType);
     if (!type) {
@@ -223,7 +226,37 @@ export class ContentController extends BaseOrmController<
       );
       throw new NotFoundException(`ContentType of id ${contentType} not found`);
     }
-    return await this.contentService.find({ entity: contentType }, pageQuery);
+    const mergeEntityConstraint = (
+      incoming:
+        | FindOptionsWhere<ContentOrmEntity>
+        | FindOptionsWhere<ContentOrmEntity>[]
+        | undefined,
+    ):
+      | FindOptionsWhere<ContentOrmEntity>
+      | FindOptionsWhere<ContentOrmEntity>[] => {
+      if (Array.isArray(incoming) && incoming.length) {
+        return incoming.map((clause) => ({
+          ...(clause ?? {}),
+          entity: contentType,
+        }));
+      }
+
+      return {
+        ...(incoming ?? {}),
+        entity: contentType,
+      };
+    };
+
+    const nextOptions: FindManyOptions<ContentOrmEntity> = {
+      ...options,
+      where: mergeEntityConstraint(
+        options.where as
+          | FindOptionsWhere<ContentOrmEntity>
+          | FindOptionsWhere<ContentOrmEntity>[]
+          | undefined,
+      ),
+    };
+    return await this.contentService.find(nextOptions);
   }
 
   /**

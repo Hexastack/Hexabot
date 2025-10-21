@@ -167,8 +167,8 @@ describe('MenuService (TypeORM)', () => {
     });
   });
 
-  describe('deepDelete', () => {
-    it('removes a menu and its descendants', async () => {
+  describe('deleteOne', () => {
+    it('removes a menu and its descendants using cascade', async () => {
       const root = await menuService.create({
         title: 'Root to delete',
         type: MenuType.nested,
@@ -186,11 +186,15 @@ describe('MenuService (TypeORM)', () => {
       });
       [root.id, child.id, leaf.id].forEach((id) => createdIds.add(id));
 
-      const deletedCount = await menuService.deepDelete(root.id);
+      const result = await menuService.deleteOne(root.id);
       const foundRoot = await menuService.findOne(root.id);
+      const childMenus = await menuService.find({
+        where: { parentId: root.id },
+      });
 
-      expect(deletedCount).toBe(3);
+      expect(result.deletedCount).toBe(1);
       expect(foundRoot).toBeNull();
+      expect(childMenus).toHaveLength(0);
     });
   });
 

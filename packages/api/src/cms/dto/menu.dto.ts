@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -30,9 +30,6 @@ export class MenuStub extends BaseStub {
   title!: string;
 
   @Expose()
-  parent?: string | null;
-
-  @Expose()
   type!: MenuType;
 
   @Expose()
@@ -43,10 +40,21 @@ export class MenuStub extends BaseStub {
 }
 
 @Exclude()
-export class Menu extends MenuStub {}
+export class Menu extends MenuStub {
+  @Expose({ name: 'parentId' })
+  parent?: string | null;
+}
 
 @Exclude()
-export class MenuFull extends Menu {}
+export class MenuFull extends MenuStub {
+  @Expose()
+  @Type(() => Menu)
+  parent?: Menu | null;
+
+  @Expose()
+  @Type(() => Menu)
+  children?: Menu[];
+}
 
 export class MenuCreateDto {
   @ApiProperty({ description: 'Menu title', type: String })

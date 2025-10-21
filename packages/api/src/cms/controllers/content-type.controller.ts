@@ -16,12 +16,10 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   ContentType,
@@ -39,9 +37,7 @@ export class ContentTypeController extends BaseOrmController<
   ContentTypeTransformerDto,
   ContentTypeDtoConfig
 > {
-  constructor(
-    protected readonly contentTypeService: ContentTypeService,
-  ) {
+  constructor(protected readonly contentTypeService: ContentTypeService) {
     super(contentTypeService);
   }
 
@@ -60,39 +56,42 @@ export class ContentTypeController extends BaseOrmController<
   }
 
   /**
-   * Retrieves a paginated list of content types based on query parameters.
+   * Retrieves a list of content types based on TypeORM query options.
    *
-   * @param pageQuery - The pagination options for the query.
-   * @param filters - The query filters applied to the content types (e.g., by name).
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
-   * @returns A paginated list of content types matching the provided filters.
+   * @returns Content types matching the provided query options.
    */
   @Get()
-  async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentTypeOrmEntity>,
+  async find(
     @Query(
-      new SearchFilterPipe<ContentTypeOrmEntity>({ allowedFields: ['name'] }),
+      new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
+        allowedFields: ['name'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
     )
-    filters: TFilterQuery<ContentTypeOrmEntity>,
+    options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return await this.contentTypeService.find(filters, pageQuery);
+    return await this.contentTypeService.find(options);
   }
 
   /**
-   * Retrieves the count of content types matching the provided filters.
+   * Retrieves the count of content types matching the provided options.
    *
-   * @param filters - The filters applied to the count query.
+   * @param options - Filters applied to the count query.
    *
    * @returns The number of content types matching the filters.
    */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<ContentTypeOrmEntity>({ allowedFields: ['name'] }),
+      new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
+        allowedFields: ['name'],
+      }),
     )
-    filters: TFilterQuery<ContentTypeOrmEntity>,
+    options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   /**

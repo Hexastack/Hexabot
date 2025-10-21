@@ -16,20 +16,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Menu,
   MenuCreateDto,
   MenuDtoConfig,
-  MenuQueryDto,
-  MenuUpdateDto,
   MenuTransformerDto,
+  MenuUpdateDto,
 } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
@@ -40,9 +37,7 @@ export class MenuController extends BaseOrmController<
   MenuTransformerDto,
   MenuDtoConfig
 > {
-  constructor(
-    protected readonly menuService: MenuService,
-  ) {
+  constructor(protected readonly menuService: MenuService) {
     super(menuService);
   }
 
@@ -55,10 +50,14 @@ export class MenuController extends BaseOrmController<
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<MenuOrmEntity>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<MenuOrmEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: ['parentId', 'type', 'title', 'payload', 'url'],
+      }),
+    )
+    options?: FindManyOptions<MenuOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   /**
@@ -69,22 +68,24 @@ export class MenuController extends BaseOrmController<
    */
   @Get()
   async find(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<MenuOrmEntity>,
-    @Query(new SearchFilterPipe<MenuOrmEntity>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<MenuOrmEntity>,
-    @Query() rawQuery?: MenuQueryDto,
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: ['parentId', 'type', 'title', 'payload', 'url'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<MenuOrmEntity>,
   ) {
-    const hasPagination = typeof pageQuery.limit !== 'undefined';
-    const hasFilters = filters && Object.keys(filters).length > 0;
+    const hasWhere = Array.isArray(options.where)
+      ? options.where.length > 0
+      : !!(options.where && Object.keys(options.where).length > 0);
+    const hasPagingOrSort =
+      options.skip !== undefined ||
+      options.take !== undefined ||
+      (options.order && Object.keys(options.order).length > 0);
 
-    if (hasPagination || hasFilters) {
-      return await this.menuService.find(filters ?? {}, pageQuery);
-    }
-
-    if (rawQuery && Object.keys(rawQuery).length > 0) {
-      return await this.menuService.find(
-        rawQuery as TFilterQuery<MenuOrmEntity>,
-      );
+    if (hasWhere || hasPagingOrSort) {
+      return await this.menuService.find(options);
     }
 
     return await this.menuService.findAll();
@@ -173,8 +174,8 @@ export class MenuController extends BaseOrmController<
   @Delete(':id')
   async delete(@Param('id') id: string) {
     try {
-      const deletedCount = await this.menuService.deepDelete(id);
-      if (deletedCount === 0) {
+      const result = await this.menuService.deleteOne(id);
+      if (!result.deletedCount) {
         this.logger.warn(`Unable to delete menu with id: ${id}`);
         throw new NotFoundException();
       }

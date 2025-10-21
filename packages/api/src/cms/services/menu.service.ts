@@ -5,29 +5,15 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import {
-  ConflictException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
-import { FindOneOptions } from 'typeorm';
 
 import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
-import {
-  Menu,
-  MenuCreateDto,
-  MenuDtoConfig,
-  MenuTransformerDto,
-  MenuUpdateDto,
-} from '../dto/menu.dto';
+import { MenuDtoConfig, MenuTransformerDto } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
 import { AnyMenu, MenuTree, MenuType } from '../types/menu';
@@ -46,97 +32,6 @@ export class MenuService extends BaseOrmService<
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(repository);
-  }
-
-  /**
-   * Creates a new menu item. Validates whether the parent exists and if it's a nested menu.
-   * If the parent menu is not of type 'nested', a conflict exception is thrown.
-   *
-   * @param dto - The data transfer object containing the menu details to create.
-   *
-   * @returns The newly created menu entity.
-   */
-  public async create(dto: MenuCreateDto): Promise<Menu> {
-    if (dto.parent) {
-      // check if parent exists in database
-      const parent = await this.findOne(dto.parent);
-      if (!parent) {
-        throw new NotFoundException('The parent of this object does not exist');
-      }
-      // Check if that parent is nested
-      if (parent.type !== MenuType.nested) {
-        throw new ConflictException("Cant't nest non nested menu");
-      }
-    }
-    return await super.create(dto);
-  }
-
-  public async updateOne(
-    criteria: string | TFilterQuery<MenuOrmEntity>,
-    payload: MenuUpdateDto,
-  ): Promise<Menu>;
-
-  public async updateOne(
-    options: FindOneOptions<MenuOrmEntity>,
-    payload: MenuUpdateDto,
-    opt?: UpdateOneOptions,
-  ): Promise<Menu>;
-
-  public async updateOne(
-    criteriaOrOptions:
-      | string
-      | TFilterQuery<MenuOrmEntity>
-      | FindOneOptions<MenuOrmEntity>,
-    payload: MenuUpdateDto,
-    options?: UpdateOneOptions,
-  ): Promise<Menu> {
-    if (payload.parent) {
-      const parent = await this.findOne(payload.parent);
-      if (!parent) {
-        throw new NotFoundException('The parent of this object does not exist');
-      }
-      if (parent.type !== MenuType.nested) {
-        throw new ConflictException("Cant't nest non nested menu");
-      }
-    }
-
-    const isFindOptions =
-      typeof criteriaOrOptions !== 'string' &&
-      this.repository.isFindOptions(criteriaOrOptions);
-
-    return isFindOptions
-      ? await super.updateOne(
-          criteriaOrOptions as FindOneOptions<MenuOrmEntity>,
-          payload,
-          options,
-        )
-      : await super.updateOne(
-          criteriaOrOptions as string | TFilterQuery<MenuOrmEntity>,
-          payload,
-        );
-  }
-
-  /**
-   * Recursively deletes a menu node and its descendants. This ensures all children of the node
-   * are deleted before the node itself.
-   *
-   * @param id - The ID of the menu node to be deleted.
-   *
-   * @returns The count of deleted nodes including the node and its descendants.
-   */
-  public async deepDelete(id: string) {
-    const node = await this.findOne(id);
-    if (node) {
-      const children = await this.find({ parent: node.id });
-      // count is the number of deleted nodes, at least the current node would be deleted + number of nodes in deleted subtrees
-      const count = (
-        await Promise.all(children.map((child) => this.deepDelete(child.id)))
-      ).reduce((prev, curr) => prev + curr, 1);
-
-      // finally delete the current node
-      await this.deleteOne(id);
-      return count;
-    } else return 0;
   }
 
   /**
