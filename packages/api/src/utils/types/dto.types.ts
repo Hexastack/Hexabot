@@ -16,7 +16,13 @@ type InstanceOf<C> = C extends abstract new (...args: any[]) => infer R
     : never;
 
 @Exclude()
-export class BaseStub {
+export class BaseIdStub {
+  @Expose()
+  id!: string;
+}
+
+@Exclude()
+export class BaseStub extends BaseIdStub {
   @Expose()
   id!: string;
 

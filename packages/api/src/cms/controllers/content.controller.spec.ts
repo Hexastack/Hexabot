@@ -87,32 +87,35 @@ describe('ContentController (TypeORM)', () => {
   });
 
   describe('create', () => {
-    it('creates content when entity exists', async () => {
+    it('creates content when content type exists', async () => {
       const contentType = await contentTypeService.findOne({
         where: { name: 'Product' },
       });
       expect(contentType).toBeDefined();
 
-      const payload = {
+      const created = await controller.create({
         title: 'New content',
-        entity: contentType!.id,
+        contentTypeId: contentType!.id,
         status: true,
         dynamicFields: { subtitle: 'Test' },
-      };
-
-      const created = await controller.create(payload);
+      });
       createdContentIds.add(created.id);
 
-      expect(created).toMatchObject(payload);
+      expect(created).toMatchObject({
+        title: 'New content',
+        contentType: contentType!.id,
+        status: true,
+        dynamicFields: { subtitle: 'Test' },
+      });
     });
 
-    it('throws when entity is invalid', async () => {
+    it('throws when content type is invalid', async () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
         controller.create({
           title: 'Invalid',
-          entity: randomUUID(),
+          contentTypeId: randomUUID(),
           status: true,
           dynamicFields: {},
         }),
@@ -148,7 +151,7 @@ describe('ContentController (TypeORM)', () => {
       expect(existing).toBeDefined();
 
       const result = await controller.filterCount({
-        where: { entity: existing.entity },
+        where: { contentType: { id: existing.contentType } },
       });
 
       expect(result.count).toBeGreaterThan(0);
@@ -231,7 +234,7 @@ describe('ContentController (TypeORM)', () => {
       });
       const created = await controller.create({
         title: 'To update',
-        entity: contentType!.id,
+        contentTypeId: contentType!.id,
         status: true,
         dynamicFields: {},
       });
@@ -253,7 +256,7 @@ describe('ContentController (TypeORM)', () => {
       });
       const created = await controller.create({
         title: 'To delete',
-        entity: contentType!.id,
+        contentTypeId: contentType!.id,
         status: true,
         dynamicFields: {},
       });

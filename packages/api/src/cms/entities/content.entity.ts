@@ -4,11 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 
 import { ContentElement } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+
+import { Content } from '../dto/content.dto';
 
 import { ContentTypeOrmEntity } from './content-type.entity';
 
@@ -19,18 +28,16 @@ export class ContentOrmEntity extends BaseOrmEntity {
   /**
    * The content type of this content.
    */
-  @Column({ name: 'entity' })
-  entity!: string;
+  @ManyToOne(() => ContentTypeOrmEntity, (entity) => entity.contents, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'content_type_id' })
+  contentType!: ContentTypeOrmEntity;
 
-  @ManyToOne(
-    () => ContentTypeOrmEntity,
-    (contentType) => contentType.contents,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  @JoinColumn({ name: 'entity' })
-  contentType?: ContentTypeOrmEntity;
+  @Column({ name: 'content_type_id' })
+  @RelationId((value: ContentOrmEntity) => value.contentType)
+  contentTypeId!: string;
 
   /**
    * The title of the content.
@@ -70,7 +77,7 @@ export class ContentOrmEntity extends BaseOrmEntity {
    * @param content
    * @returns An object that has all dynamic fields accessible at top level
    */
-  static toElement(content: ContentOrmEntity): ContentElement {
+  static toElement(content: Content): ContentElement {
     return {
       id: content.id,
       title: content.title,

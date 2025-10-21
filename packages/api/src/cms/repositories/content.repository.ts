@@ -6,7 +6,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  EntitySubscriberInterface,
+  EventSubscriber,
+  InsertEvent,
+  Repository,
+  UpdateEvent,
+} from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
@@ -18,12 +25,16 @@ import {
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 
+@EventSubscriber()
 @Injectable()
-export class ContentRepository extends BaseOrmRepository<
-  ContentOrmEntity,
-  ContentTransformerDto,
-  ContentDtoConfig
-> {
+export class ContentRepository
+  extends BaseOrmRepository<
+    ContentOrmEntity,
+    ContentTransformerDto,
+    ContentDtoConfig
+  >
+  implements EntitySubscriberInterface<ContentOrmEntity>
+{
   constructor(
     @InjectRepository(ContentOrmEntity)
     repository: Repository<ContentOrmEntity>,
@@ -34,29 +45,26 @@ export class ContentRepository extends BaseOrmRepository<
     });
   }
 
-  protected override async preCreate(
-    entity: DeepPartial<ContentOrmEntity> | ContentOrmEntity,
-  ): Promise<void> {
-    const parsedEntity = entity as DeepPartial<ContentOrmEntity>;
-    const dynamicFields =
-      (parsedEntity.dynamicFields as Record<string, any> | undefined) ?? {};
-
-    if (typeof dynamicFields === 'object') {
-      parsedEntity.dynamicFields = dynamicFields;
-      parsedEntity.rag = this.stringify(dynamicFields);
-    }
+  listenTo() {
+    return ContentOrmEntity;
   }
 
-  protected override async preUpdate(
-    _current: ContentOrmEntity,
-    changes: DeepPartial<ContentOrmEntity>,
-  ): Promise<void> {
-    if ('dynamicFields' in changes) {
-      const dynamicFields =
-        (changes.dynamicFields as Record<string, any> | undefined) ?? {};
-      changes.dynamicFields = dynamicFields;
-      changes.rag = this.stringify(dynamicFields);
+  async beforeInsert(event: InsertEvent<ContentOrmEntity>): Promise<void> {
+    if (!event.entity) {
+      return;
     }
+
+    this.applyDynamicFieldsTransformation(event.entity);
+  }
+
+  async beforeUpdate(event: UpdateEvent<ContentOrmEntity>): Promise<void> {
+    const entity = event.entity as DeepPartial<ContentOrmEntity> | undefined;
+
+    if (!entity) {
+      return;
+    }
+
+    this.applyDynamicFieldsTransformation(entity);
   }
 
   /**
@@ -89,5 +97,12 @@ export class ContentRepository extends BaseOrmRepository<
       (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
       '',
     );
+  }
+
+  private applyDynamicFieldsTransformation(
+    target: DeepPartial<ContentOrmEntity>,
+  ): void {
+    const dynamicFields = target.dynamicFields ?? {};
+    target.rag = this.stringify(dynamicFields);
   }
 }

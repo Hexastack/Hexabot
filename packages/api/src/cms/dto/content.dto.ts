@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -20,11 +20,10 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
+import { ContentType } from './contentType.dto';
+
 @Exclude()
 export class ContentStub extends BaseStub {
-  @Expose()
-  entity!: string;
-
   @Expose()
   title!: string;
 
@@ -39,17 +38,24 @@ export class ContentStub extends BaseStub {
 }
 
 @Exclude()
-export class Content extends ContentStub {}
+export class Content extends ContentStub {
+  @Expose({ name: 'contentTypeId' })
+  contentType!: string;
+}
 
 @Exclude()
-export class ContentFull extends Content {}
+export class ContentFull extends ContentStub {
+  @Expose()
+  @Type(() => ContentType)
+  contentType!: ContentType;
+}
 
 export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })
   @IsString()
   @IsNotEmpty()
   @IsUUID('4', { message: 'Entity must be a valid UUID' })
-  entity: string;
+  contentTypeId: string;
 
   @ApiProperty({ description: 'Content title', type: String })
   @IsNotEmpty()

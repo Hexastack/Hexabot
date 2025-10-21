@@ -19,6 +19,7 @@ import {
 import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { FindAllOptions } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
@@ -76,19 +77,7 @@ export class MenuController extends BaseOrmController<
     )
     options: FindManyOptions<MenuOrmEntity>,
   ) {
-    const hasWhere = Array.isArray(options.where)
-      ? options.where.length > 0
-      : !!(options.where && Object.keys(options.where).length > 0);
-    const hasPagingOrSort =
-      options.skip !== undefined ||
-      options.take !== undefined ||
-      (options.order && Object.keys(options.order).length > 0);
-
-    if (hasWhere || hasPagingOrSort) {
-      return await this.menuService.find(options);
-    }
-
-    return await this.menuService.findAll();
+    return await this.menuService.find(options);
   }
 
   /**
@@ -102,7 +91,37 @@ export class MenuController extends BaseOrmController<
    */
   @Post()
   async create(@Body() body: MenuCreateDto): Promise<Menu> {
+    this.validate({
+      dto: body,
+      allowedIds: {
+        parentId: body?.parent
+          ? (await this.menuService.findOne(body.parent))?.id
+          : undefined,
+      },
+    });
     return await this.menuService.create(body);
+  }
+
+  /**
+   * Retrieves all menu items or filters menus based on query parameters.
+   *
+   * If query parameters are provided, it applies filters and returns matching menus.
+   *
+   * @param query - Optional DTO for filtering menus.
+   *
+   * @returns A promise that resolves to an array of menu items.
+   */
+  @Get()
+  async findAll(
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: [],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindAllOptions<MenuOrmEntity>,
+  ) {
+    return await this.menuService.findAll(options);
   }
 
   /**

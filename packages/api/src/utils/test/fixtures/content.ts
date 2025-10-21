@@ -168,17 +168,18 @@ export const installContentFixtures = async () => {
       }
       return {
         ...contentFixture,
-        entity: contentTypes[parseInt(contentFixture.entity)].id,
+        entity: contentTypes[parseInt(contentFixture.entity!)].id,
       };
     }),
   );
 };
 
-export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] =
-  contentFixtures.map(({ entity, ...fixture }) => ({
+export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] = contentFixtures.map(
+  ({ entity, ...fixture }) => ({
     ...fixture,
-    entity,
-  }));
+    contentTypeId: entity,
+  }),
+);
 
 export const installContentFixturesTypeOrm = async (
   dataSource: DataSource,
@@ -195,30 +196,33 @@ export const installContentFixturesTypeOrm = async (
   const contentTypes = await contentTypeRepository.find({
     order: { name: 'ASC' },
   });
-  const entities = contentOrmFixtures.map(({ entity, ...fixture }) => {
-    const index = Number(entity);
-    const fallbackName =
-      !Number.isNaN(index) && contentTypeOrmFixtures[index]
-        ? contentTypeOrmFixtures[index].name
-        : undefined;
-    const target = contentTypes.find(
-      (type) =>
-        type.id === entity ||
-        type.name === entity ||
-        (fallbackName ? type.name === fallbackName : false),
-    );
-
-    if (!target) {
-      throw new Error(
-        `Unable to resolve content type for fixture entity: ${entity}`,
+  const entities = contentOrmFixtures.map(
+    ({ contentTypeId: entity, ...fixture }) => {
+      const index = Number(entity);
+      const fallbackName =
+        !Number.isNaN(index) && contentTypeOrmFixtures[index]
+          ? contentTypeOrmFixtures[index].name
+          : undefined;
+      const target = contentTypes.find(
+        (type) =>
+          type.id === entity ||
+          type.name === entity ||
+          (fallbackName ? type.name === fallbackName : false),
       );
-    }
 
-    return contentRepository.create({
-      ...fixture,
-      entity: target.id,
-    });
-  });
+      if (!target) {
+        throw new Error(
+          `Unable to resolve content type for fixture entity: ${entity}`,
+        );
+      }
+
+      return contentRepository.create({
+        ...fixture,
+        contentType: target,
+        contentTypeId: target.id,
+      });
+    },
+  );
 
   await contentRepository.save(entities);
 };

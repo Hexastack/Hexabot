@@ -75,7 +75,9 @@ export class ContentService extends BaseOrmService<
     const limit = options.limit;
 
     if (typeof options.entity === 'string') {
-      where.entity = options.entity;
+      where.contentType = {
+        id: options.entity,
+      };
     }
 
     try {
@@ -118,15 +120,10 @@ export class ContentService extends BaseOrmService<
    * Parses a CSV dataset and saves the content in the repository.
    *
    * @param data - The CSV data as a string to be parsed.
-   * @param targetContentType - The content type to associate with the parsed data.
    * @param contentType - The content type metadata, including fields to validate the parsed data.
    * @return A promise resolving to the created content objects.
    */
-  async parseAndSaveDataset(
-    data: string,
-    targetContentType: string,
-    contentType: ContentType,
-  ) {
+  async parseAndSaveDataset(data: string, contentType: ContentType) {
     // Parse local CSV file
     const result: {
       errors: any[];
@@ -154,13 +151,14 @@ export class ContentService extends BaseOrmService<
         },
       );
     }
+
     const contentsDto: ContentCreateDto[] = result.data.reduce(
       (acc, { title, status, ...rest }) => [
         ...acc,
         {
           title: String(title),
           status: status.trim().toLowerCase() === 'true',
-          entity: targetContentType,
+          contentTypeId: contentType.id,
           dynamicFields: Object.keys(rest)
             .filter((key) =>
               contentType.fields?.map((field) => field.name).includes(key),

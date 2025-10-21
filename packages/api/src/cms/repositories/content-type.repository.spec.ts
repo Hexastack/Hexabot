@@ -108,13 +108,13 @@ describe('ContentTypeRepository (TypeORM)', () => {
 
       await contentRepository.create({
         title: 'related-content-a',
-        entity: created.id,
+        contentTypeId: created.id,
         status: true,
         dynamicFields: {},
       });
       await contentRepository.create({
         title: 'related-content-b',
-        entity: created.id,
+        contentTypeId: created.id,
         status: true,
         dynamicFields: {},
       });
@@ -127,7 +127,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
       });
 
       const remainingContents = await contentRepository.find({
-        where: { entity: created.id },
+        where: { contentType: { id: created.id } },
       });
       expect(remainingContents).toHaveLength(0);
 

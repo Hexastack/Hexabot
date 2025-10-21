@@ -19,7 +19,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FindManyOptions, FindOptionsWhere } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -62,17 +62,17 @@ export class ContentController extends BaseOrmController<
   async create(@Body() contentDto: ContentCreateDto): Promise<Content> {
     // Find the content type that corresponds to the given content
     const contentType = await this.contentTypeService.findOne(
-      contentDto.entity,
+      contentDto.contentTypeId,
     );
     if (!contentType) {
       this.logger.warn(
-        `Failed to fetch content type with id ${contentDto.entity}. Content type not found.`,
+        `Failed to fetch content type with id ${contentDto.contentTypeId}. Content type not found.`,
       );
       throw new NotFoundException('Content type not found');
     }
     this.validate({
       dto: contentDto,
-      allowedIds: { entity: contentType?.id },
+      allowedIds: { contentType: contentType?.id } as any,
     });
     return await this.contentService.create(contentDto);
   }
@@ -106,7 +106,6 @@ export class ContentController extends BaseOrmController<
 
     return await this.contentService.parseAndSaveDataset(
       datasetContent,
-      targetContentType,
       contentType,
     );
   }
@@ -124,7 +123,7 @@ export class ContentController extends BaseOrmController<
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
-        allowedFields: ['entity', 'title'],
+        allowedFields: ['contentType.id', 'title'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -146,7 +145,7 @@ export class ContentController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
-        allowedFields: ['entity', 'title'],
+        allowedFields: ['contentType.id', 'title'],
       }),
     )
     options?: FindManyOptions<ContentOrmEntity>,
@@ -213,7 +212,7 @@ export class ContentController extends BaseOrmController<
     @Param('id') contentType: string,
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
-        allowedFields: ['entity', 'title'],
+        allowedFields: ['contentType.id'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -226,37 +225,14 @@ export class ContentController extends BaseOrmController<
       );
       throw new NotFoundException(`ContentType of id ${contentType} not found`);
     }
-    const mergeEntityConstraint = (
-      incoming:
-        | FindOptionsWhere<ContentOrmEntity>
-        | FindOptionsWhere<ContentOrmEntity>[]
-        | undefined,
-    ):
-      | FindOptionsWhere<ContentOrmEntity>
-      | FindOptionsWhere<ContentOrmEntity>[] => {
-      if (Array.isArray(incoming) && incoming.length) {
-        return incoming.map((clause) => ({
-          ...(clause ?? {}),
-          entity: contentType,
-        }));
-      }
 
-      return {
-        ...(incoming ?? {}),
-        entity: contentType,
-      };
-    };
-
-    const nextOptions: FindManyOptions<ContentOrmEntity> = {
+    return await this.contentService.find({
       ...options,
-      where: mergeEntityConstraint(
-        options.where as
-          | FindOptionsWhere<ContentOrmEntity>
-          | FindOptionsWhere<ContentOrmEntity>[]
-          | undefined,
-      ),
-    };
-    return await this.contentService.find(nextOptions);
+      where: {
+        ...((options?.where ?? {}) as Record<string, unknown>),
+        contentType: { id: contentType },
+      } as FindManyOptions<ContentOrmEntity>['where'],
+    });
   }
 
   /**

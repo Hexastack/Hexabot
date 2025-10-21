@@ -8,8 +8,8 @@ import { TestingModule } from '@nestjs/testing';
 
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
+import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
-import { FieldType } from '@/setting/types';
 import {
   contentFixtures,
   installContentFixturesTypeOrm,
@@ -18,22 +18,35 @@ import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/content
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentType } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentOrmEntity } from '../entities/content.entity';
+import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
 
+import { ContentTypeService } from './content-type.service';
 import { ContentService } from './content.service';
 
 describe('ContentService (TypeORM)', () => {
   let module: TestingModule;
   let contentService: ContentService;
+  let contentTypeService: ContentTypeService;
   let logger: LoggerService;
   const createdContentIds: string[] = [];
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
-      providers: [ContentService, ContentRepository],
+      providers: [
+        ContentService,
+        ContentRepository,
+        ContentTypeService,
+        ContentTypeRepository,
+        {
+          provide: BlockService,
+          useValue: {
+            findOne: jest.fn(() => null),
+          },
+        },
+      ],
       typeorm: [
         {
           entities: [ContentOrmEntity, ContentTypeOrmEntity],
@@ -45,7 +58,10 @@ describe('ContentService (TypeORM)', () => {
       ],
     });
     module = testingModule;
-    [contentService] = await getMocks([ContentService]);
+    [contentService, contentTypeService] = await getMocks([
+      ContentService,
+      ContentTypeService,
+    ]);
     logger = (contentService as any).logger as LoggerService;
   });
 
@@ -81,7 +97,7 @@ describe('ContentService (TypeORM)', () => {
 
       expect(result).toBeDefined();
       expect(result?.title).toBe(targetTitle);
-      expect(result?.entity).toBe(target.entity);
+      expect(result?.contentType?.id).toBe(target.contentType);
     });
 
     it('returns null when content is missing', async () => {
@@ -102,7 +118,12 @@ describe('ContentService (TypeORM)', () => {
 
       expect(results.length).toBeGreaterThan(0);
       expect(
-        results.every((content) => typeof content.entity === 'string'),
+        results.every(
+          (content) =>
+            typeof content.contentType === 'object' &&
+            content.contentType !== null &&
+            typeof content.contentType.id === 'string',
+        ),
       ).toBe(true);
     });
   });
@@ -159,7 +180,7 @@ describe('ContentService (TypeORM)', () => {
 
       expect(warnSpy).toHaveBeenCalledWith('No content found', {
         status: true,
-        entity: '00000000-0000-4000-8000-000000000001',
+        contentType: { id: '00000000-0000-4000-8000-000000000001' },
       });
       expect(errorSpy).toHaveBeenCalled();
     });
@@ -167,30 +188,15 @@ describe('ContentService (TypeORM)', () => {
 
   describe('parseAndSaveDataset', () => {
     it('stores rows parsed from CSV as content records', async () => {
-      const [existingContent] = await contentService.find({ take: 1 });
-      expect(existingContent).toBeDefined();
+      const [existingContentType] = await contentTypeService.find({ take: 1 });
+      expect(existingContentType).toBeDefined();
 
       const csv =
         'title,status,description,subtitle\nDemo,true,Description,Subtitle';
-      const dtoContentType = {
-        fields: [
-          {
-            name: 'description',
-            label: 'Description',
-            type: FieldType.text,
-          },
-          {
-            name: 'subtitle',
-            label: 'Subtitle',
-            type: FieldType.text,
-          },
-        ],
-      } as unknown as ContentType;
 
       const created = await contentService.parseAndSaveDataset(
         csv,
-        existingContent!.entity,
-        dtoContentType,
+        existingContentType,
       );
 
       expect(created).toBeDefined();
@@ -202,7 +208,7 @@ describe('ContentService (TypeORM)', () => {
       expect(created).toHaveLength(1);
       expect(created[0]).toMatchObject({
         title: 'Demo',
-        entity: existingContent!.entity,
+        contentType: existingContentType.id,
         status: true,
         dynamicFields: {
           description: 'Description',
