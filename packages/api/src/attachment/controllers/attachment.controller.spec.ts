@@ -80,7 +80,9 @@ describe('AttachmentController', () => {
     const [loggerService] = await resolveMocks([LoggerService]);
 
     attachmentToDelete = (await attachmentService.findOne({
-      name: 'store1.jpg',
+      where: {
+        name: 'store1.jpg',
+      },
     }))!;
 
     helperService.register(
@@ -97,13 +99,44 @@ describe('AttachmentController', () => {
     jest.restoreAllMocks();
   });
 
+  describe('findPage', () => {
+    it('should forward TypeORM options to the service', async () => {
+      const findSpy = jest.spyOn(attachmentService, 'find');
+      const name = attachmentFixtures[0].name;
+
+      const options = {
+        where: { name },
+        take: 5,
+        skip: 0,
+      };
+      const result = await attachmentController.findPage(options);
+
+      expect(findSpy).toHaveBeenCalledWith(options);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        name,
+        type: attachmentFixtures[0].type,
+        resourceRef: attachmentFixtures[0].resourceRef,
+        access: attachmentFixtures[0].access,
+      });
+    });
+  });
+
   describe('count', () => {
     it('should count attachments', async () => {
-      jest.spyOn(attachmentService, 'count');
-      const result = await attachmentController.filterCount();
+      const countSpy = jest.spyOn(attachmentService, 'count');
+      const name = attachmentFixtures[0].name;
 
-      expect(attachmentService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: attachmentFixtures.length });
+      const result = await attachmentController.filterCount({
+        where: { name },
+      });
+
+      expect(countSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { name },
+        }),
+      );
+      expect(result.count).toBe(1);
     });
   });
 
@@ -172,7 +205,9 @@ describe('AttachmentController', () => {
     it('should download the attachment by id', async () => {
       jest.spyOn(attachmentService, 'findOne');
       const storedAttachment = (await attachmentService.findOne({
-        name: 'store1.jpg',
+        where: {
+          name: 'store1.jpg',
+        },
       }))!;
       const result = await attachmentController.download({
         id: storedAttachment.id,

@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, ExecutionContext } from '@nestjs/common';
+import {
+  BadRequestException,
+  ExecutionContext,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Model } from '@/user/schemas/model.schema';
@@ -59,13 +63,13 @@ describe('AttachmentGuard', () => {
       const mockUser = { roles: ['admin-id'] } as any;
       const mockRef = [AttachmentResourceRef.UserAvatar];
 
-      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
-        return typeof criteria === 'string' ||
-          !['user', 'attachment'].includes(criteria.identity)
+      jest.spyOn(modelService, 'findOne').mockImplementation((({ where }) => {
+        return typeof where === 'string' ||
+          !['user', 'attachment'].includes(where.identity)
           ? Promise.reject('Invalid #1')
           : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
+              identity: where.identity,
+              id: `${where.identity}-id`,
             } as Model);
       }) as any);
 
@@ -129,13 +133,13 @@ describe('AttachmentGuard', () => {
             } as AttachmentOrmEntity);
       }) as any);
 
-      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
-        return typeof criteria === 'string' ||
-          !['user', 'attachment'].includes(criteria.identity)
+      jest.spyOn(modelService, 'findOne').mockImplementation((({ where }) => {
+        return typeof where === 'string' ||
+          !['user', 'attachment'].includes(where.identity)
           ? Promise.reject('Invalid #1')
           : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
+              identity: where.identity,
+              id: `${where.identity}-id`,
             } as Model);
       }) as any);
 
@@ -173,13 +177,13 @@ describe('AttachmentGuard', () => {
     it('should allow POST requests with a valid ref', async () => {
       const mockUser = { roles: ['editor-id'] } as any;
 
-      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
-        return typeof criteria === 'string' ||
-          !['block', 'attachment'].includes(criteria.identity)
+      jest.spyOn(modelService, 'findOne').mockImplementation((({ where }) => {
+        return typeof where === 'string' ||
+          !['block', 'attachment'].includes(where.identity)
           ? Promise.reject()
           : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
+              identity: where.identity,
+              id: `${where.identity}-id`,
             } as Model);
       }) as any);
 
@@ -226,13 +230,13 @@ describe('AttachmentGuard', () => {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue({
             method: 'DELETE',
-            params: { id: 'invalid-id' },
+            params: { id: '9'.repeat(24) },
           }),
         }),
       } as unknown as ExecutionContext;
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        BadRequestException,
+        NotFoundException,
       );
     });
 
@@ -241,13 +245,13 @@ describe('AttachmentGuard', () => {
 
       jest.spyOn(attachmentService, 'findOne').mockResolvedValue(attachment);
 
-      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
-        return typeof criteria === 'string' ||
-          !['block', 'attachment'].includes(criteria.identity)
+      jest.spyOn(modelService, 'findOne').mockImplementation((({ where }) => {
+        return typeof where === 'string' ||
+          !['block', 'attachment'].includes(where.identity)
           ? Promise.reject('Invalid X')
           : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
+              identity: where.identity,
+              id: `${where.identity}-id`,
             } as Model);
       }) as any);
 

@@ -145,7 +145,7 @@ export class AttachmentGuard implements CanActivate {
       return false;
     }
 
-    const model = await this.modelService.findOne({ identity });
+    const model = await this.modelService.findOne({ where: { identity } });
     if (!model) {
       return false;
     }

@@ -25,20 +25,18 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
+import { FindManyOptions } from 'typeorm';
 
 import { config } from '@/config';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { Roles } from '@/utils/decorators/roles.decorator';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Attachment,
   AttachmentContextParamDto,
-  AttachmentDtoConfig,
   AttachmentDownloadDto,
+  AttachmentDtoConfig,
   AttachmentTransformerDto,
 } from '../dto/attachment.dto';
 import { AttachmentOrmEntity } from '../entities/attachment.entity';
@@ -53,9 +51,7 @@ export class AttachmentController extends BaseOrmController<
   AttachmentTransformerDto,
   AttachmentDtoConfig
 > {
-  constructor(
-    protected readonly attachmentService: AttachmentService,
-  ) {
+  constructor(protected readonly attachmentService: AttachmentService) {
     super(attachmentService);
   }
 
@@ -67,13 +63,13 @@ export class AttachmentController extends BaseOrmController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<AttachmentOrmEntity>({
+      new TypeOrmSearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    filters?: TFilterQuery<AttachmentOrmEntity>,
+    options?: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   @Get(':id')
@@ -89,21 +85,20 @@ export class AttachmentController extends BaseOrmController<
   /**
    * Retrieves all attachments based on specified filters.
    *
-   * @param pageQuery - The pagination to apply when retrieving attachments.
-   * @param filters - The filters to apply when retrieving attachments.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A promise that resolves to an array of attachments matching the filters.
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<AttachmentOrmEntity>,
     @Query(
-      new SearchFilterPipe<AttachmentOrmEntity>({
+      new TypeOrmSearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<AttachmentOrmEntity>,
+    options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return await this.attachmentService.find(filters, pageQuery);
+    return await this.attachmentService.find(options);
   }
 
   /**
