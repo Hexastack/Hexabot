@@ -44,11 +44,6 @@ export class TypeormConfigService implements TypeOrmOptionsFactory {
         } as TypeOrmModuleOptions;
       case 'sqlite':
       default:
-        console.log('====', {
-          ...base,
-          type: 'sqlite',
-          database: db.sqlitePath ?? 'hexabot.sqlite',
-        });
         // @ts-expect-error type mismatch)
         return {
           ...base,

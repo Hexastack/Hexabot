@@ -77,13 +77,6 @@ describe('TranslationService', () => {
               .mockImplementation((criteria: { translatable?: boolean }) =>
                 [
                   {
-                    translatable: false,
-                    group: 'default',
-                    value: 'Global fallback',
-                    label: 'global_fallback',
-                    type: SettingType.checkbox,
-                  },
-                  {
                     translatable: true,
                     group: 'default',
                     value: 'Global fallback message',

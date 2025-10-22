@@ -17,13 +17,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Language,
@@ -46,38 +44,37 @@ export class LanguageController extends BaseOrmController<
   }
 
   /**
-   * Retrieves a paginated list of languages based on provided filters and pagination settings.
-   * @param pageQuery - The pagination settings.
-   * @param filters - The filters to apply to the language search.
+   * Retrieves languages that match the provided filters, pagination, and sorting options.
+   * @param options - Query options applied to the TypeORM repository.
    * @returns A Promise that resolves to a paginated list of languages.
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<LanguageOrmEntity>,
     @Query(
-      new SearchFilterPipe<LanguageOrmEntity>({
+      new TypeOrmSearchFilterPipe<LanguageOrmEntity>({
         allowedFields: ['title', 'code'],
       }),
     )
-    filters: TFilterQuery<LanguageOrmEntity>,
+    options: FindManyOptions<LanguageOrmEntity>,
   ) {
-    return await this.languageService.find(filters, pageQuery);
+    return await this.languageService.find(options);
   }
 
   /**
    * Counts the filtered number of languages.
+   * @param options - Query options applied to the TypeORM repository.
    * @returns A promise that resolves to an object representing the filtered number of languages.
    */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<LanguageOrmEntity>({
+      new TypeOrmSearchFilterPipe<LanguageOrmEntity>({
         allowedFields: ['title', 'code'],
       }),
     )
-    filters?: TFilterQuery<LanguageOrmEntity>,
+    options?: FindManyOptions<LanguageOrmEntity>,
   ) {
-    return await super.count(filters);
+    return await super.count(options);
   }
 
   /**

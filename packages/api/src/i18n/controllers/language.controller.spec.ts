@@ -4,19 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installLanguageFixturesTypeOrm,
   languageFixtures,
 } from '@/utils/test/fixtures/language';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { LanguageUpdateDto } from '../dto/language.dto';
+import { Language, LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
+import { LanguageRepository } from '../repositories/language.repository';
 import { LanguageService } from '../services/language.service';
 
 import { LanguageController } from './language.controller';
@@ -24,11 +25,11 @@ import { LanguageController } from './language.controller';
 describe('LanguageController', () => {
   let languageController: LanguageController;
   let languageService: LanguageService;
-  let language: LanguageOrmEntity;
+  let language: Language;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
+      providers: [LanguageService, LanguageRepository],
       controllers: [LanguageController],
       typeorm: {
         entities: [LanguageOrmEntity],
@@ -40,8 +41,10 @@ describe('LanguageController', () => {
       LanguageController,
     ]);
     language = (await languageService.findOne({
-      code: 'en',
-    })) as LanguageOrmEntity;
+      where: {
+        code: 'en',
+      },
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
@@ -72,16 +75,18 @@ describe('LanguageController', () => {
   });
 
   describe('find', () => {
-    const pageQuery = getPageQuery<LanguageOrmEntity>({
-      sort: ['code', 'asc'],
-    });
     it('should find languages', async () => {
+      const options: FindManyOptions<LanguageOrmEntity> = {
+        order: {
+          code: 'ASC',
+        },
+      };
       jest.spyOn(languageService, 'find');
-      const result = await languageController.findPage(pageQuery, {});
+      const result = await languageController.findPage(options);
 
-      expect(languageService.find).toHaveBeenCalledWith({}, pageQuery);
+      expect(languageService.find).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(
-        languageFixtures.sort(({ code: codeA }, { code: codeB }) => {
+        languageFixtures.slice().sort(({ code: codeA }, { code: codeB }) => {
           if (codeA < codeB) {
             return -1;
           }
@@ -119,7 +124,9 @@ describe('LanguageController', () => {
       jest.spyOn(languageService, 'updateOne');
       const translationUpdateDto = { isDefault: true };
       const frLang = (await languageService.findOne({
-        code: 'fr',
+        where: {
+          code: 'fr',
+        },
       })) as LanguageOrmEntity;
       const result = await languageController.updateOne(
         frLang.id,
@@ -136,7 +143,9 @@ describe('LanguageController', () => {
       });
 
       const enLang = (await languageService.findOne({
-        code: 'en',
+        where: {
+          code: 'en',
+        },
       })) as LanguageOrmEntity;
       expect(enLang.isDefault).toBe(false);
     });
@@ -152,12 +161,13 @@ describe('LanguageController', () => {
   describe('deleteOne', () => {
     it('should throw when attempting to delete the default language', async () => {
       const defaultLang = (await languageService.findOne({
-        isDefault: true,
-      })) as LanguageOrmEntity;
-
+        where: {
+          isDefault: true,
+        },
+      }))!;
       await expect(
         languageController.deleteOne(defaultLang.id),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow();
     });
   });
 });

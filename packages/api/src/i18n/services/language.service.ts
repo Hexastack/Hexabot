@@ -64,7 +64,7 @@ export class LanguageService extends BaseOrmService<
    */
   @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getDefaultLanguage() {
-    const defaultLanguage = await this.findOne({ isDefault: true });
+    const defaultLanguage = await this.findOne({ where: { isDefault: true } });
     if (!defaultLanguage) {
       throw new InternalServerErrorException(
         'Default language not found: getDefaultLanguage()',
@@ -79,7 +79,7 @@ export class LanguageService extends BaseOrmService<
    * @returns A promise that resolves to the `Language` object.
    */
   async getLanguageByCode(code: string) {
-    const language = await this.findOne({ code });
+    const language = await this.findOne({ where: { code } });
 
     if (!language) {
       this.logger.warn(`Unable to Language by languageCode ${code}`);

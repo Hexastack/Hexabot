@@ -5,18 +5,8 @@
  */
 
 import { NotFoundException } from '@nestjs/common';
-
-import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
-import {
-  installTranslationFixturesTypeOrm,
-  translationFixtures,
-} from '@/utils/test/fixtures/translation';
-import { getPageQuery } from '@/utils/test/pagination';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
-
 import { getModelToken } from '@nestjs/mongoose';
+import { FindManyOptions } from 'typeorm';
 
 import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
@@ -25,6 +15,14 @@ import { Conversation } from '@/chat/schemas/conversation.schema';
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { NOT_FOUND_ID } from '@/utils/constants/mock';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import {
+  installTranslationFixturesTypeOrm,
+  translationFixtures,
+} from '@/utils/test/fixtures/translation';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
@@ -114,7 +112,7 @@ describe('TranslationController', () => {
       TranslationController,
     ]);
     translation = (await translationService.findOne({
-      str: 'Welcome',
+      where: { str: 'Welcome' },
     })) as TranslationOrmEntity;
   });
 
@@ -146,12 +144,12 @@ describe('TranslationController', () => {
   });
 
   describe('find', () => {
-    const pageQuery = getPageQuery<TranslationOrmEntity>();
     it('should find translations', async () => {
       jest.spyOn(translationService, 'find');
-      const result = await translationController.findPage(pageQuery, {});
+      const options: FindManyOptions<TranslationOrmEntity> = {};
+      const result = await translationController.findPage(options);
 
-      expect(translationService.find).toHaveBeenCalledWith({}, pageQuery);
+      expect(translationService.find).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(translationFixtures);
     });
   });

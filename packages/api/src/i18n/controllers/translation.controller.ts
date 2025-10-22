@@ -17,13 +17,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In, Not } from 'typeorm';
 
-import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { DeleteResult } from '@/utils/generics/base-repository';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   TranslationDto,
@@ -49,13 +47,14 @@ export class TranslationController extends BaseOrmController<
 
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<TranslationOrmEntity>,
     @Query(
-      new SearchFilterPipe<TranslationOrmEntity>({ allowedFields: ['str'] }),
+      new TypeOrmSearchFilterPipe<TranslationOrmEntity>({
+        allowedFields: ['str'],
+      }),
     )
-    filters: TFilterQuery<TranslationOrmEntity>,
+    options: FindManyOptions<TranslationOrmEntity>,
   ) {
-    return await this.translationService.find(filters, pageQuery);
+    return await this.translationService.find(options);
   }
 
   /**
@@ -65,13 +64,13 @@ export class TranslationController extends BaseOrmController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<TranslationOrmEntity>({
+      new TypeOrmSearchFilterPipe<TranslationOrmEntity>({
         allowedFields: ['str'],
       }),
     )
-    filters?: TFilterQuery<TranslationOrmEntity>,
+    options?: FindManyOptions<TranslationOrmEntity>,
   ) {
-    return await super.count(filters);
+    return await super.count(options);
   }
 
   @Get(':id')
@@ -123,15 +122,15 @@ export class TranslationController extends BaseOrmController<
     // Perform refresh
     const queue = strings.map((str) =>
       this.translationService.findOneOrCreate(
-        { str },
+        { where: { str } },
         { str, translations: defaultTrans },
       ),
     );
     await Promise.all(queue);
     // Purge non existing translations
-    return await this.translationService.deleteMany({
-      str: { $nin: strings },
-    });
+    const deleteOptions: FindManyOptions<TranslationOrmEntity> =
+      strings.length > 0 ? { where: { str: Not(In(strings)) } } : {};
+    return await this.translationService.deleteMany(deleteOptions);
   }
 
   /**

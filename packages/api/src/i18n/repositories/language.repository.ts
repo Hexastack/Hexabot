@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Language,
@@ -32,35 +31,6 @@ export class LanguageRepository extends BaseOrmRepository<
       PlainCls: Language,
       FullCls: Language,
     });
-  }
-
-  async unsetDefaultLanguages(): Promise<void> {
-    await this.repository.update({ isDefault: true }, { isDefault: false });
-  }
-
-  protected override async preCreate(
-    entity: DeepPartial<LanguageOrmEntity> | LanguageOrmEntity,
-  ): Promise<void> {
-    if (entity && 'isDefault' in entity && entity.isDefault) {
-      await this.unsetDefaultLanguages();
-    }
-  }
-
-  protected override async preDelete(
-    entities: LanguageOrmEntity[],
-    _filter: TFilterQuery<LanguageOrmEntity>,
-  ): Promise<void> {
-    if (entities.some((e) => e.isDefault)) {
-      throw new BadRequestException('Should not be able to delete default');
-    }
-  }
-
-  protected override async preUpdate(
-    _current: LanguageOrmEntity,
-    changes: DeepPartial<LanguageOrmEntity>,
-  ): Promise<void> {
-    if (changes.isDefault) {
-      await this.unsetDefaultLanguages();
-    }
+    LanguageOrmEntity.registerEntityManagerProvider(() => repository.manager);
   }
 }
