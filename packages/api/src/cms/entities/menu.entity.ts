@@ -5,12 +5,16 @@
  */
 
 import {
+  BeforeInsert,
+  BeforeUpdate,
+  Check,
   Column,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  RelationId,
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -23,6 +27,17 @@ export enum MenuType {
 
 @Entity({ name: 'menus' })
 @Index(['parentId'])
+@Check(
+  'Menu value and type mismatch',
+  `
+  (
+    ("type" = 'postback' AND "payload" IS NOT NULL AND "url" IS NULL) OR
+    ("type" = 'web_url'  AND "url"     IS NOT NULL AND "payload" IS NULL) OR
+    ("type" = 'nested'   AND "payload" IS NULL     AND "url"     IS NULL)
+  )
+`,
+)
+@Check(`"parent_id" IS NULL OR "id" <> "parent_id"`)
 export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * The displayed title of the menu.
@@ -40,7 +55,8 @@ export class MenuOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'parent_id' })
   parent?: MenuOrmEntity | null;
 
-  @Column({ name: 'parent_id', type: 'varchar', nullable: true })
+  @Column({ name: 'parent_id', nullable: true })
+  @RelationId((value: MenuOrmEntity) => value.parent)
   parentId?: string | null;
 
   /**
@@ -63,4 +79,31 @@ export class MenuOrmEntity extends BaseOrmEntity {
 
   @OneToMany(() => MenuOrmEntity, (menu) => menu.parent)
   children?: MenuOrmEntity[];
+
+  @BeforeInsert()
+  async handleBeforeInsert(): Promise<void> {
+    await this.ensureValidParent();
+  }
+
+  @BeforeUpdate()
+  async handleBeforeUpdate(): Promise<void> {
+    await this.ensureValidParent();
+  }
+
+  private async ensureValidParent(): Promise<void> {
+    const parentId = this.parentId;
+    if (parentId) {
+      // Ensure parent is nested
+      const manager = MenuOrmEntity.getEntityManager();
+      const parent = await manager.findOne(MenuOrmEntity, {
+        where: { id: parentId },
+      });
+
+      if (parent?.type !== MenuType.nested) {
+        throw new Error(
+          'Menu Validation Error: parent should be of type "nested"',
+        );
+      }
+    }
+  }
 }

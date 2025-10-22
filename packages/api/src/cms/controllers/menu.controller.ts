@@ -94,8 +94,8 @@ export class MenuController extends BaseOrmController<
     this.validate({
       dto: body,
       allowedIds: {
-        parentId: body?.parent
-          ? (await this.menuService.findOne(body.parent))?.id
+        parentId: body?.parentId
+          ? (await this.menuService.findOne(body.parentId))?.id
           : undefined,
       },
     });

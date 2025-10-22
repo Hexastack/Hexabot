@@ -68,7 +68,7 @@ describe('ContentTypeController (TypeORM)', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     for (const id of Array.from(createdIds)) {
-      await service.deleteCascadeOne(id);
+      await service.deleteOne(id);
       createdIds.delete(id);
     }
   });

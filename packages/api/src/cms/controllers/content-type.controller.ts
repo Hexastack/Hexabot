@@ -123,7 +123,7 @@ export class ContentTypeController extends BaseOrmController<
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const removedType = await this.contentTypeService.deleteCascadeOne(id);
+    const removedType = await this.contentTypeService.deleteOne(id);
 
     if (removedType.deletedCount === 0) {
       this.logger.warn(

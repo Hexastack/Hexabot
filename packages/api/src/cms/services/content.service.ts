@@ -39,12 +39,6 @@ export class ContentService extends BaseOrmService<
     super(repository);
   }
 
-  canPopulate(populate: string[]): boolean {
-    return populate.every((field) =>
-      this.allowedPopulate.includes(field as ContentPopulate),
-    );
-  }
-
   /**
    * Performs a text search on the content repository.
    *

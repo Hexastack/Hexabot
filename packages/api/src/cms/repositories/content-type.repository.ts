@@ -7,6 +7,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  DataSource,
   EntitySubscriberInterface,
   EventSubscriber,
   RemoveEvent,
@@ -35,6 +36,7 @@ export class ContentTypeRepository
   implements EntitySubscriberInterface<ContentTypeOrmEntity>
 {
   constructor(
+    dataSource: DataSource,
     @InjectRepository(ContentTypeOrmEntity)
     repository: Repository<ContentTypeOrmEntity>,
     private readonly blockService: BlockService,
@@ -43,63 +45,32 @@ export class ContentTypeRepository
       PlainCls: ContentType,
       FullCls: ContentTypeFull,
     });
+    dataSource.subscribers.push(this);
   }
 
   listenTo() {
     return ContentTypeOrmEntity;
   }
 
-  protected override async preDelete(
-    entities: ContentTypeOrmEntity[],
-    _filter: unknown,
-  ): Promise<void> {
-    await this.ensureContentTypeHasNoAssociatedBlocks(
-      entities.map((entity) => entity.id),
-    );
-  }
-
   async beforeRemove(event: RemoveEvent<ContentTypeOrmEntity>): Promise<void> {
-    const identifiers: string[] = [];
+    const contentTypeId = event.entityId;
 
-    if (event.entity) {
-      identifiers.push(event.entity.id);
-    } else if (event.entityId) {
-      const entityId = event.entityId;
-
-      if (typeof entityId === 'string') {
-        identifiers.push(entityId);
-      } else if (
-        typeof entityId === 'object' &&
-        entityId !== null &&
-        'id' in entityId
-      ) {
-        const value = (entityId as Record<string, unknown>).id;
-        if (typeof value === 'string') {
-          identifiers.push(value);
-        }
-      }
+    if (!contentTypeId) {
+      return;
     }
 
-    await this.ensureContentTypeHasNoAssociatedBlocks(identifiers);
+    await this.ensureContentTypeHasNoAssociatedBlocks(contentTypeId);
   }
 
   private async ensureContentTypeHasNoAssociatedBlocks(
-    contentTypeIds: readonly string[],
+    contentTypeId: string,
   ): Promise<void> {
-    const uniqueContentTypeIds = Array.from(new Set(contentTypeIds));
+    const associatedBlock = await this.blockService.findOne({
+      'options.content.entity': contentTypeId,
+    });
 
-    for (const contentTypeId of uniqueContentTypeIds) {
-      if (!contentTypeId) continue;
-
-      const associatedBlock = await this.blockService.findOne({
-        'options.content.entity': contentTypeId,
-      });
-
-      if (associatedBlock) {
-        throw new ForbiddenException(
-          'Content type have blocks associated to it',
-        );
-      }
+    if (associatedBlock) {
+      throw new ForbiddenException('Content type have blocks associated to it');
     }
   }
 }

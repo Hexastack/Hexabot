@@ -6,14 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  EntitySubscriberInterface,
-  EventSubscriber,
-  InsertEvent,
-  Repository,
-  UpdateEvent,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
@@ -25,16 +18,12 @@ import {
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 
-@EventSubscriber()
 @Injectable()
-export class ContentRepository
-  extends BaseOrmRepository<
-    ContentOrmEntity,
-    ContentTransformerDto,
-    ContentDtoConfig
-  >
-  implements EntitySubscriberInterface<ContentOrmEntity>
-{
+export class ContentRepository extends BaseOrmRepository<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig
+> {
   constructor(
     @InjectRepository(ContentOrmEntity)
     repository: Repository<ContentOrmEntity>,
@@ -43,28 +32,6 @@ export class ContentRepository
       PlainCls: Content,
       FullCls: ContentFull,
     });
-  }
-
-  listenTo() {
-    return ContentOrmEntity;
-  }
-
-  async beforeInsert(event: InsertEvent<ContentOrmEntity>): Promise<void> {
-    if (!event.entity) {
-      return;
-    }
-
-    this.applyDynamicFieldsTransformation(event.entity);
-  }
-
-  async beforeUpdate(event: UpdateEvent<ContentOrmEntity>): Promise<void> {
-    const entity = event.entity as DeepPartial<ContentOrmEntity> | undefined;
-
-    if (!entity) {
-      return;
-    }
-
-    this.applyDynamicFieldsTransformation(entity);
   }
 
   /**
@@ -82,27 +49,5 @@ export class ContentRepository
       .where('LOWER(content.title) LIKE LOWER(:pattern)', { pattern })
       .orWhere('LOWER(content.rag) LIKE LOWER(:pattern)', { pattern })
       .getMany();
-  }
-
-  /**
-   * Converts the provided object to a string representation, joining each key-value pair
-   * with a newline character.
-   *
-   * @param obj - The object to be stringified.
-   *
-   * @returns The string representation of the object.
-   */
-  private stringify(obj: Record<string, any>): string {
-    return Object.entries(obj).reduce(
-      (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
-      '',
-    );
-  }
-
-  private applyDynamicFieldsTransformation(
-    target: DeepPartial<ContentOrmEntity>,
-  ): void {
-    const dynamicFields = target.dynamicFields ?? {};
-    target.rag = this.stringify(dynamicFields);
   }
 }

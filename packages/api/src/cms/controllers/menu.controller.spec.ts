@@ -191,7 +191,7 @@ describe('MenuController (TypeORM)', () => {
         title: 'Child Delete',
         type: MenuType.postback,
         payload: 'child',
-        parent: root.id,
+        parentId: root.id,
       });
       createdMenuIds.add(child.id);
 

@@ -6,9 +6,17 @@
 
 import { randomUUID } from 'crypto';
 
-import { BeforeInsert, BeforeUpdate, Column, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  EntityManager,
+  PrimaryColumn,
+} from 'typeorm';
 
 export abstract class BaseOrmEntity {
+  private static entityManagerProvider?: () => EntityManager;
+
   @PrimaryColumn()
   id!: string;
 
@@ -31,5 +39,30 @@ export abstract class BaseOrmEntity {
   @BeforeUpdate()
   protected touchUpdatedAt(): void {
     this.updatedAt = new Date();
+  }
+
+  static registerEntityManagerProvider(provider: () => EntityManager): void {
+    this.entityManagerProvider = provider;
+  }
+
+  protected static getEntityManager(): EntityManager {
+    if (!this.entityManagerProvider) {
+      throw new Error(
+        `Entity manager provider not registered for ${this.name}`,
+      );
+    }
+
+    try {
+      const manager = this.entityManagerProvider();
+      if (!manager) {
+        throw new Error('Entity manager provider returned no manager');
+      }
+      return manager;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Unable to resolve entity manager for ${this.name}: ${reason}`,
+      );
+    }
   }
 }

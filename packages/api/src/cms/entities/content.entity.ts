@@ -5,6 +5,8 @@
  */
 
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -83,5 +85,19 @@ export class ContentOrmEntity extends BaseOrmEntity {
       title: content.title,
       ...(content.dynamicFields ?? {}),
     };
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  applyDynamicFieldsTransformation(): void {
+    const dynamicFields = this.dynamicFields ?? {};
+    this.rag = this.stringifyDynamicFields(dynamicFields);
+  }
+
+  private stringifyDynamicFields(obj: Record<string, any>): string {
+    return Object.entries(obj).reduce(
+      (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
+      '',
+    );
   }
 }

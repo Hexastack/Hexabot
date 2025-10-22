@@ -61,7 +61,7 @@ describe('ContentTypeService (TypeORM)', () => {
     if (createdIds.length > 0) {
       await Promise.all(
         createdIds.map(async (id) => {
-          await service.deleteCascadeOne(id);
+          await service.deleteOne(id);
         }),
       );
       createdIds.length = 0;
@@ -107,7 +107,7 @@ describe('ContentTypeService (TypeORM)', () => {
       });
       createdIds.push(created.id);
 
-      const deleted = await service.deleteCascadeOne(created.id);
+      const deleted = await service.deleteOne(created.id);
       createdIds.splice(createdIds.indexOf(created.id), 1);
       const found = await service.findOne(created.id);
 

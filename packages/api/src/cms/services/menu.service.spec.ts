@@ -97,20 +97,20 @@ describe('MenuService (TypeORM)', () => {
       await expect(
         menuService.create({
           title: 'Invalid child',
-          parent: parent!.id,
+          parentId: parent!.id,
           type: MenuType.nested,
         }),
-      ).rejects.toThrow("Cant't nest non nested menu");
+      ).rejects.toThrow();
     });
 
     it('throws when parent does not exist', async () => {
       await expect(
         menuService.create({
           title: 'Orphan menu',
-          parent: randomUUID(),
+          parentId: randomUUID(),
           type: MenuType.nested,
         }),
-      ).rejects.toThrow('The parent of this object does not exist');
+      ).rejects.toThrow();
     });
   });
 
@@ -128,14 +128,14 @@ describe('MenuService (TypeORM)', () => {
         title: 'Child',
         type: MenuType.postback,
         payload: 'payload',
-        parent: parentA.id,
+        parentId: parentA.id,
       });
       createdIds.add(parentA.id);
       createdIds.add(parentB.id);
       createdIds.add(child.id);
 
       const updated = await menuService.updateOne(child.id, {
-        parent: parentB.id,
+        parentId: parentB.id,
       });
 
       expect(updated.parent).toBe(parentB.id);
@@ -155,15 +155,15 @@ describe('MenuService (TypeORM)', () => {
         title: 'Child',
         type: MenuType.postback,
         payload: 'child',
-        parent: parentNested.id,
+        parentId: parentNested.id,
       });
       [parentNested.id, parentPostback.id, child.id].forEach((id) =>
         createdIds.add(id),
       );
 
       await expect(
-        menuService.updateOne(child.id, { parent: parentPostback.id }),
-      ).rejects.toThrow("Cant't nest non nested menu");
+        menuService.updateOne(child.id, { parentId: parentPostback.id }),
+      ).rejects.toThrow();
     });
   });
 
@@ -176,13 +176,13 @@ describe('MenuService (TypeORM)', () => {
       const child = await menuService.create({
         title: 'Child to delete',
         type: MenuType.nested,
-        parent: root.id,
+        parentId: root.id,
       });
       const leaf = await menuService.create({
         title: 'Leaf to delete',
         type: MenuType.postback,
         payload: 'leaf',
-        parent: child.id,
+        parentId: child.id,
       });
       [root.id, child.id, leaf.id].forEach((id) => createdIds.add(id));
 

@@ -169,7 +169,7 @@ describe('BaseOrmRepository', () => {
     it('should update an entity by id', async () => {
       const target = baselineEntities[0];
       const payload = { dummy: 'updated dummy text' };
-      const result = await dummyRepository.update(target.id, payload);
+      const result = await dummyRepository.updateOne(target.id, payload);
 
       expect(result).not.toBeNull();
       expect(result!.dummy).toBe(payload.dummy);
@@ -342,7 +342,7 @@ describe('BaseOrmRepository', () => {
         .mockResolvedValue([]);
       const payload = { dummy: 'event update' };
 
-      await dummyRepository.update(target.id, payload);
+      await dummyRepository.updateOne(target.id, payload);
 
       const preCall = emitSpy.mock.calls.find(
         ([event]) => event === hookEvent(EHook.preUpdate),

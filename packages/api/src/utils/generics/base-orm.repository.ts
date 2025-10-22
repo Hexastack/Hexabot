@@ -229,37 +229,6 @@ export abstract class BaseOrmRepository<
     return created.map(this.getTransformer(DtoTransformer.PlainCls));
   }
 
-  async update(
-    id: string,
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<
-    DtoTransformer.PlainCls,
-    TransformerDto
-  > | null> {
-    const entity = await this.repository.findOne({
-      where: { id } as FindOptionsWhere<Entity>,
-    });
-
-    if (!entity) {
-      return null;
-    }
-
-    const snapshot = { ...entity };
-    await this.preUpdate(snapshot, payload as DeepPartial<Entity>);
-    await this.emitHook(EHook.preUpdate, {
-      entity: snapshot,
-      changes: payload,
-    });
-    Object.assign(entity, payload);
-    const updated = await this.repository.save(entity);
-    await this.postUpdate(updated);
-    await this.emitHook(EHook.postUpdate, {
-      entity: updated,
-      previous: snapshot,
-    });
-    return this.getTransformer(DtoTransformer.PlainCls)(updated);
-  }
-
   async updateOne(
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
@@ -267,9 +236,21 @@ export abstract class BaseOrmRepository<
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
     const entity = await this.findOneEntity(idOrOptions);
     if (entity) {
-      const result = await this.update(entity.id, payload);
-      if (result) {
-        return result;
+      const snapshot = { ...entity };
+      await this.preUpdate(snapshot, payload as DeepPartial<Entity>);
+      await this.emitHook(EHook.preUpdate, {
+        entity: snapshot,
+        changes: payload,
+      });
+      Object.assign(entity, payload);
+      const updated = await this.repository.save(entity);
+      await this.postUpdate(updated);
+      await this.emitHook(EHook.postUpdate, {
+        entity: updated,
+        previous: snapshot,
+      });
+      if (updated) {
+        return this.getTransformer(DtoTransformer.PlainCls)(updated);
       } else {
         throw new NotFoundException(
           'Unable to execute updateOne() - No updates',
@@ -380,7 +361,7 @@ export abstract class BaseOrmRepository<
       options.where as RepositoryWhere<Entity>;
     await this.preDelete(deletable, filter);
     await this.emitHook(EHook.preDelete, { entities: deletable, filter });
-    await this.repository.delete(deletable.map((entity) => entity.id));
+    await this.repository.remove(deletable);
     const result: DeleteResult = {
       acknowledged: true,
       deletedCount: deletable.length,
@@ -406,7 +387,7 @@ export abstract class BaseOrmRepository<
 
     await this.preDelete([entity], filter);
     await this.emitHook(EHook.preDelete, { entities: [entity], filter });
-    await this.repository.delete(entity.id);
+    await this.repository.remove(entity);
     const result: DeleteResult = {
       acknowledged: true,
       deletedCount: 1,
