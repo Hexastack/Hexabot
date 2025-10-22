@@ -8,9 +8,9 @@ import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
+import { NlpSample, NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import { NlpSample, NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
+import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -64,7 +64,7 @@ export const installNlpSampleFixtures = async () => {
     nlpSampleFixtures.map((v) => {
       return {
         ...v,
-        language: v.language ? languages[parseInt(v.language)].id : null,
+        language: v.language ? languages[parseInt(v.language as any)].id : null,
       };
     }),
   );
@@ -99,7 +99,7 @@ export const installNlpSampleFixturesTypeOrm = async (
         text: fixture.text,
         trained: fixture.trained ?? false,
         type: (fixture.type ?? NlpSampleState.train) as NlpSampleState,
-        language: language ? { id: language?.id } : null,
+        languageId: language?.id || null,
       };
     },
   );

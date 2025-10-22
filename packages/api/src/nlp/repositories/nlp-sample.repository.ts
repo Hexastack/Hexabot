@@ -7,12 +7,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DeepPartial, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  DeepPartial,
+  FindManyOptions,
+  FindOptionsWhere,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { LegacyQueryConverter } from '@/utils/generics/legacy-query.converter';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpSampleState } from '..//types';
 import {
@@ -31,11 +34,6 @@ export class NlpSampleRepository extends BaseOrmRepository<
   NlpSampleTransformerDto,
   TNlpSampleDto
 > {
-  private readonly legacyConverter =
-    new LegacyQueryConverter<NlpSampleOrmEntity>((sort) =>
-      this.normalizeSort(sort as any),
-    );
-
   constructor(
     @InjectRepository(NlpSampleOrmEntity)
     repository: Repository<NlpSampleOrmEntity>,
@@ -48,31 +46,22 @@ export class NlpSampleRepository extends BaseOrmRepository<
     });
   }
 
-  async findByEntities(
-    criterias: {
-      filters: TFilterQuery<NlpSampleOrmEntity>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSampleOrmEntity>,
-  ): Promise<NlpSample[]> {
-    const entities = await this.buildFindByEntitiesQuery(
-      criterias,
-      page,
-    ).getMany();
+  async findByEntities(criterias: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    values: NlpValue[];
+  }): Promise<NlpSample[]> {
+    const entities = await this.buildFindByEntitiesQuery(criterias).getMany();
 
     return entities.map((entity) =>
       plainToInstance(NlpSample, entity as DeepPartial<NlpSampleOrmEntity>),
     );
   }
 
-  async findByEntitiesAndPopulate(
-    criterias: {
-      filters: TFilterQuery<NlpSampleOrmEntity>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSampleOrmEntity>,
-  ): Promise<NlpSampleFull[]> {
-    const entities = await this.buildFindByEntitiesQuery(criterias, page)
+  async findByEntitiesAndPopulate(criterias: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    values: NlpValue[];
+  }): Promise<NlpSampleFull[]> {
+    const entities = await this.buildFindByEntitiesQuery(criterias)
       .leftJoinAndSelect('sample.language', 'language')
       .leftJoinAndSelect('sample.entities', 'sampleEntities')
       .leftJoinAndSelect('sampleEntities.entity', 'entity')
@@ -85,7 +74,7 @@ export class NlpSampleRepository extends BaseOrmRepository<
   }
 
   async countByEntities(criterias: {
-    filters: TFilterQuery<NlpSampleOrmEntity>;
+    options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
   }): Promise<number> {
     const qb = this.buildFindByEntitiesQuery(criterias);
@@ -95,7 +84,10 @@ export class NlpSampleRepository extends BaseOrmRepository<
 
   protected override async preDelete(
     entities: NlpSampleOrmEntity[],
-    _filter: TFilterQuery<NlpSampleOrmEntity>,
+    _filter:
+      | FindOptionsWhere<NlpSampleOrmEntity>
+      | FindOptionsWhere<NlpSampleOrmEntity>[]
+      | undefined,
   ): Promise<void> {
     if (!entities.length) {
       return;
@@ -110,56 +102,44 @@ export class NlpSampleRepository extends BaseOrmRepository<
       .execute();
   }
 
-  private buildFindByEntitiesQuery(
-    {
-      filters,
-      values,
-    }: {
-      filters: TFilterQuery<NlpSampleOrmEntity>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSampleOrmEntity>,
-  ): SelectQueryBuilder<NlpSampleOrmEntity> {
+  private buildFindByEntitiesQuery({
+    options = {},
+    values,
+  }: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    values: NlpValue[];
+  }): SelectQueryBuilder<NlpSampleOrmEntity> {
     const qb = this.repository.createQueryBuilder('sample');
 
-    const { options, fullyHandled } =
-      this.legacyConverter.buildFindOptionsFromLegacyArgs(
-        filters ?? {},
-        page,
-        {},
-      );
+    const findOptions: FindManyOptions<NlpSampleOrmEntity> = {};
 
-    if (!fullyHandled) {
-      throw new Error(
-        'Unsupported legacy filter. Please use TypeORM FindManyOptions instead.',
-      );
+    const hasWhere = options.where !== undefined;
+    const hasOrder =
+      options.order !== undefined &&
+      Object.keys(options.order as Record<string, unknown>).length > 0;
+
+    if (hasWhere) {
+      findOptions.where = options.where;
     }
 
-    if (options.where) {
-      qb.setFindOptions({ where: options.where });
+    if (hasOrder) {
+      findOptions.order = options.order;
     }
 
-    if (options.order) {
-      for (const [property, direction] of Object.entries(options.order)) {
-        qb.addOrderBy(
-          `sample.${property as keyof NlpSampleOrmEntity}`,
-          direction as 'ASC' | 'DESC',
-        );
-      }
-    } else {
+    if (Object.keys(findOptions).length > 0) {
+      qb.setFindOptions(findOptions);
+    }
+
+    if (!hasOrder) {
       qb.addOrderBy('sample.createdAt', 'DESC');
     }
 
-    if (typeof options.skip === 'number') {
+    if (typeof options?.skip === 'number') {
       qb.skip(options.skip);
-    } else if (typeof page?.skip === 'number') {
-      qb.skip(page.skip);
     }
 
-    if (typeof options.take === 'number') {
+    if (typeof options?.take === 'number') {
       qb.take(options.take);
-    } else if (typeof page?.limit === 'number') {
-      qb.take(page.limit);
     }
 
     this.applyValueConstraints(qb, values);

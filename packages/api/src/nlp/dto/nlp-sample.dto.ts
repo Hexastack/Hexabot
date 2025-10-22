@@ -45,6 +45,9 @@ export class NlpSampleStub extends BaseStub {
 
 @Exclude()
 export class NlpSample extends NlpSampleStub {
+  @Expose({ name: 'languageId' })
+  language?: string | null;
+
   @Exclude()
   entities?: never;
 }
@@ -89,10 +92,39 @@ export class NlpSampleCreateDto {
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Language must be a valid UUID' })
-  language: string;
+  languageId: string;
 }
 
-export class NlpSampleDto extends NlpSampleCreateDto {
+export class NlpSampleDto {
+  @ApiProperty({ description: 'NLP sample text', type: String })
+  @IsNotEmpty()
+  @IsString()
+  text: string;
+
+  @ApiPropertyOptional({
+    description: 'If the sample has already been used for training',
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  trained?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'NLP sample origin',
+    enum: NlpSampleState,
+  })
+  @IsOptional()
+  @IsEnum(NlpSampleState)
+  type?: NlpSampleState;
+
+  @ApiProperty({
+    description: 'Language code associated to the sample',
+    type: String,
+  })
+  @IsNotEmpty()
+  @IsString()
+  languageCode: string;
+
   @ApiPropertyOptional({
     description: 'Entities tagged in the sample text',
     isArray: true,

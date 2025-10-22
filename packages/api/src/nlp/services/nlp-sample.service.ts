@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
-import { FindOperator } from 'typeorm';
+import { FindManyOptions, FindOptionsOrder } from 'typeorm';
 
 import { Message } from '@/chat/schemas/message.schema';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
@@ -19,7 +19,6 @@ import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
@@ -64,25 +63,21 @@ export class NlpSampleService extends BaseOrmService<
    * and `NlpValueService.findByPatterns`, then delegated to
    * `repository.findByEntities`.
    *
-   * @param criterias      `{ filters, patterns }`
-   * @param page        Optional paging / sorting descriptor.
-   * @param projection  Optional Mongo projection.
+   * @param options    Pagination, sorting, and filter options.
+   * @param patterns   Value match constraints used to resolve related entities.
    * @returns Promise resolving to the matching samples.
    */
-  async findByPatterns(
-    {
-      filters,
-      patterns,
-    }: {
-      filters: TFilterQuery<NlpSampleOrmEntity>;
-      patterns: NlpValueMatchPattern[];
-    },
-    page?: PageQueryDto<NlpSampleOrmEntity>,
-  ): Promise<NlpSample[]> {
-    const normalizedFilters = this.normalizeFilters(filters);
+  async findByPatterns({
+    options,
+    patterns,
+  }: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    patterns: NlpValueMatchPattern[];
+  }): Promise<NlpSample[]> {
+    const normalizedOptions = this.normalizeOptions(options);
 
     if (!patterns.length) {
-      return await this.repository.find(normalizedFilters, page);
+      return await this.repository.find(normalizedOptions);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -91,38 +86,31 @@ export class NlpSampleService extends BaseOrmService<
       return [];
     }
 
-    return await this.repository.findByEntities(
-      {
-        filters: normalizedFilters,
-        values,
-      },
-      page,
-    );
+    return await this.repository.findByEntities({
+      options: normalizedOptions,
+      values,
+    });
   }
 
   /**
    * Same as `findByPatterns`, but also populates all relations declared
    * in the repository (`populatePaths`).
    *
-   * @param criteria      `{ filters, patterns }`
-   * @param page        Optional paging / sorting descriptor.
-   * @param projection  Optional Mongo projection.
+   * @param options    Pagination, sorting, and filter options.
+   * @param patterns   Value match constraints used to resolve related entities.
    * @returns Promise resolving to the populated samples.
    */
-  async findByPatternsAndPopulate(
-    {
-      filters,
-      patterns,
-    }: {
-      filters: TFilterQuery<NlpSampleOrmEntity>;
-      patterns: NlpValueMatchPattern[];
-    },
-    page?: PageQueryDto<NlpSampleOrmEntity>,
-  ): Promise<NlpSampleFull[]> {
-    const normalizedFilters = this.normalizeFilters(filters);
+  async findByPatternsAndPopulate({
+    options,
+    patterns,
+  }: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    patterns: NlpValueMatchPattern[];
+  }): Promise<NlpSampleFull[]> {
+    const normalizedOptions = this.normalizeOptions(options);
 
     if (!patterns.length) {
-      return await this.repository.findAndPopulate(normalizedFilters, page);
+      return await this.repository.findAndPopulate(normalizedOptions);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -131,33 +119,30 @@ export class NlpSampleService extends BaseOrmService<
       return [];
     }
 
-    return await this.repository.findByEntitiesAndPopulate(
-      {
-        filters: normalizedFilters,
-        values,
-      },
-      page,
-    );
+    return await this.repository.findByEntitiesAndPopulate({
+      options: normalizedOptions,
+      values,
+    });
   }
 
   /**
-   * Count how many samples satisfy `filters` and reference any entity / value
+   * Count how many samples satisfy `options.where` and reference any entity / value
    * present in `patterns`.
    *
-   * @param param0 `{ filters, patterns }`
+   * @param param0 `{ options, patterns }`
    * @returns Promise resolving to the count.
    */
   async countByPatterns({
-    filters,
+    options,
     patterns,
   }: {
-    filters: TFilterQuery<NlpSampleOrmEntity>;
+    options?: FindManyOptions<NlpSampleOrmEntity>;
     patterns: NlpValueMatchPattern[];
   }): Promise<number> {
-    const normalizedFilters = this.normalizeFilters(filters);
+    const normalizedOptions = this.normalizeOptions(options);
 
     if (!patterns.length) {
-      return await this.repository.count(normalizedFilters);
+      return await this.repository.count(normalizedOptions);
     }
 
     const values = await this.nlpValueService.findByPatterns(patterns);
@@ -167,64 +152,29 @@ export class NlpSampleService extends BaseOrmService<
     }
 
     return await this.repository.countByEntities({
-      filters: normalizedFilters,
+      options: normalizedOptions,
       values,
     });
   }
 
-  private normalizeFilters(
-    filters: TFilterQuery<NlpSampleOrmEntity>,
-  ): TFilterQuery<NlpSampleOrmEntity> {
-    if (!filters || typeof filters !== 'object') {
-      return {};
+  private normalizeOptions(
+    options?: FindManyOptions<NlpSampleOrmEntity>,
+  ): FindManyOptions<NlpSampleOrmEntity> {
+    const normalized: FindManyOptions<NlpSampleOrmEntity> = {
+      ...(options ?? {}),
+    };
+
+    const hasOrder =
+      normalized.order &&
+      Object.keys(normalized.order as Record<string, unknown>).length > 0;
+
+    if (!hasOrder) {
+      normalized.order = {
+        createdAt: 'DESC',
+      } as FindOptionsOrder<NlpSampleOrmEntity>;
     }
 
-    return this.renameLanguageKeys(filters) as TFilterQuery<NlpSampleOrmEntity>;
-  }
-
-  private renameLanguageKeys<T>(value: T): T {
-    if (Array.isArray(value)) {
-      return value.map((item) => this.renameLanguageKeys(item)) as any;
-    }
-
-    if (
-      value === null ||
-      typeof value !== 'object' ||
-      value instanceof Date ||
-      value instanceof FindOperator
-    ) {
-      return value;
-    }
-
-    return Object.entries(value as Record<string, unknown>).reduce(
-      (acc, [key, current]) => {
-        if (key === 'language') {
-          acc.language = this.buildLanguageFilter(current);
-          return acc;
-        }
-
-        acc[key] = this.renameLanguageKeys(current);
-        return acc;
-      },
-      {} as Record<string, unknown>,
-    ) as T;
-  }
-
-  private buildLanguageFilter(value: unknown): unknown {
-    if (
-      value === null ||
-      typeof value !== 'object' ||
-      value instanceof Date ||
-      value instanceof FindOperator
-    ) {
-      return { id: value };
-    }
-
-    if (Array.isArray(value)) {
-      return value.map((item) => this.buildLanguageFilter(item));
-    }
-
-    return { id: this.renameLanguageKeys(value) };
+    return normalized;
   }
 
   /**
@@ -235,7 +185,7 @@ export class NlpSampleService extends BaseOrmService<
    */
   public async getAllSamplesAndEntitiesByType(type: NlpSample['type']) {
     const samples = await this.findAndPopulate({
-      type,
+      where: { type },
     });
 
     const entities = await this.nlpEntityService.findAllAndPopulate();
@@ -299,7 +249,9 @@ export class NlpSampleService extends BaseOrmService<
       try {
         // Check if a sample with the same text already exists
         const existingSamples = await this.find({
-          text: d.text,
+          where: {
+            text: d.text,
+          },
         });
 
         // Skip if sample already exists
@@ -321,7 +273,7 @@ export class NlpSampleService extends BaseOrmService<
         const sample: NlpSampleCreateDto = {
           text: d.text,
           trained: false,
-          language: languages[d.language].id,
+          languageId: languages[d.language].id,
         };
 
         // Create a new sample entity dto
@@ -343,10 +295,15 @@ export class NlpSampleService extends BaseOrmService<
         const createdSample = await this.create(sample);
         nlpSamples.push(createdSample);
         // Map and assign the sample ID to each stored entity
-        const sampleEntities = storedEntities.map((storedEntity) => ({
-          ...storedEntity,
-          sample: createdSample?.id,
-        }));
+        const sampleEntities: NlpSampleEntityCreateDto[] = storedEntities.map(
+          ({ entity, value, start, end }) => ({
+            sampleId: createdSample?.id,
+            entityId: entity,
+            valueId: value,
+            start,
+            end,
+          }),
+        );
 
         // Store sample entities
         await this.nlpSampleEntityService.createMany(sampleEntities);
@@ -396,7 +353,10 @@ export class NlpSampleService extends BaseOrmService<
             }
 
             const updates = matches.map((dto) =>
-              this.nlpSampleEntityService.findOneOrCreate(dto, dto),
+              this.nlpSampleEntityService.findOneOrCreate(
+                { where: { ...dto } },
+                dto,
+              ),
             );
 
             await Promise.all(updates);
@@ -462,11 +422,10 @@ export class NlpSampleService extends BaseOrmService<
         text: doc.message.text,
         type: NlpSampleState.inbox,
         trained: false,
-        // @TODO : We need to define the language in the message entity
-        language: defaultLang.id,
+        languageId: defaultLang.id,
       };
       try {
-        await this.findOneOrCreate(record, record);
+        await this.findOneOrCreate({ where: { ...record } }, record);
         this.logger.debug('User message saved as a inbox sample !');
       } catch (err) {
         this.logger.warn('Unable to add message as a new inbox sample!', err);

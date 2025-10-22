@@ -13,7 +13,6 @@ import { HelperService } from '@/helper/helper.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -86,7 +85,7 @@ describe('NlpEntityRepository (TypeORM)', () => {
     entityEventEmitter = entityEmitter;
 
     firstNameNlpEntity = await nlpEntityRepository.findOne({
-      name: 'firstname',
+      where: { name: 'firstname' },
     });
 
     llmNluHelper = module.get(LlmNluHelper);
@@ -112,16 +111,16 @@ describe('NlpEntityRepository (TypeORM)', () => {
         }
       });
 
-      const intentEntity = await nlpEntityRepository.findOne({
-        name: 'intent',
-      });
+      const intentEntity = (await nlpEntityRepository.findOne({
+        where: { name: 'intent' },
+      }))!;
 
-      const result = await nlpEntityRepository.deleteOne(intentEntity!.id);
+      const result = await nlpEntityRepository.deleteOne(intentEntity.id);
 
       expect(result.deletedCount).toEqual(1);
 
       const intentValues = await nlpValueRepository.find({
-        where: { entity: { id: intentEntity!.id } },
+        where: { entity: { id: intentEntity.id } },
       });
 
       expect(intentValues.length).toEqual(0);
@@ -148,14 +147,13 @@ describe('NlpEntityRepository (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return filtered nlp entities with populated values', async () => {
-      const pageQuery = getPageQuery<NlpEntity>({ sort: ['name', 'desc'] });
       const firstNameValues = await nlpValueRepository.find({
         where: { entity: { id: firstNameNlpEntity!.id } },
       });
-      const result = await nlpEntityRepository.findAndPopulate(
-        { id: firstNameNlpEntity!.id },
-        pageQuery,
-      );
+      const result = await nlpEntityRepository.findAndPopulate({
+        where: { id: firstNameNlpEntity!.id },
+        order: { name: 'DESC' },
+      });
       expect(result).toEqualPayload([
         {
           ...firstNameNlpEntity!,

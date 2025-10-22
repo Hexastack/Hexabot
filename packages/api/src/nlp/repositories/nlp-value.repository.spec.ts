@@ -11,9 +11,7 @@ import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { SettingService } from '@/setting/services/setting.service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { Format } from '@/utils/types/format.types';
@@ -126,10 +124,9 @@ describe('NlpValueRepository (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return all nlp values with entities populated', async () => {
-      const pageQuery = getPageQuery<NlpValueOrmEntity>({
-        sort: ['createdAt', 'asc'],
+      const result = await nlpValueRepository.findAndPopulate({
+        order: { createdAt: 'ASC' },
       });
-      const result = await nlpValueRepository.findAndPopulate({}, pageQuery);
 
       expect(result.length).toBe(storedValues.length);
       result.forEach((value) => {
@@ -177,7 +174,7 @@ describe('NlpValueRepository (TypeORM)', () => {
       });
 
       const createdValue = await nlpValueRepository.create({
-        entity: parentEntity.id,
+        entityId: parentEntity.id,
         value: 'type-orm-created',
       });
 
@@ -204,7 +201,7 @@ describe('NlpValueRepository (TypeORM)', () => {
       });
 
       const createdValue = await nlpValueRepository.create({
-        entity: parentEntity.id,
+        entityId: parentEntity.id,
         value: 'builtin-value',
         builtin: true,
       });
@@ -244,15 +241,14 @@ describe('NlpValueRepository (TypeORM)', () => {
 
   describe('findWithCount', () => {
     it('should return values with sample counts (STUB)', async () => {
-      const pageQuery: PageQueryDto<NlpValueOrmEntity> = {
-        limit: 10,
+      const options = {
         skip: 0,
-        sort: ['value', 'asc'],
+        take: 10,
+        order: { value: 'ASC' as const },
       };
       const values = await nlpValueRepository.findWithCount(
         Format.STUB,
-        pageQuery,
-        {},
+        options,
       );
 
       expect(values.length).toBeGreaterThan(0);
@@ -262,15 +258,14 @@ describe('NlpValueRepository (TypeORM)', () => {
     });
 
     it('should return values with sample counts (FULL)', async () => {
-      const pageQuery: PageQueryDto<NlpValueOrmEntity> = {
-        limit: 5,
+      const options = {
         skip: 0,
-        sort: ['value', 'asc'],
+        take: 5,
+        order: { value: 'ASC' as const },
       };
       const values = await nlpValueRepository.findWithCount(
         Format.FULL,
-        pageQuery,
-        {},
+        options,
       );
 
       expect(values.length).toBeGreaterThan(0);

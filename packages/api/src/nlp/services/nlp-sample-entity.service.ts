@@ -67,9 +67,9 @@ export class NlpSampleEntityService extends BaseOrmService<
         throw new Error('Unable to find the stored entity or value');
       }
       return {
-        sample: sample.id,
-        entity: storedEntity.id, // replace entity name by id
-        value: storedValue.id, // replace value by id
+        sampleId: sample.id,
+        entityId: storedEntity.id, // replace entity name by id
+        valueId: storedValue.id, // replace value by id
         start: 'start' in e ? e.start : undefined,
         end: 'end' in e ? e.end : undefined,
       } satisfies NlpSampleEntityCreateDto;
@@ -99,9 +99,9 @@ export class NlpSampleEntityService extends BaseOrmService<
     // Find all matches in the text using the regex pattern
     while ((match = regexPattern.exec(sample.text)) !== null) {
       matches.push({
-        sample: sample.id,
-        entity: value.entity,
-        value: value.id,
+        sampleId: sample.id,
+        entityId: value.entity,
+        valueId: value.id,
         start: match.index,
         end: match.index + match[0].length,
       });

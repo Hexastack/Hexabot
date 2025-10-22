@@ -17,14 +17,12 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 import { Format } from '@/utils/types/format.types';
 
 import {
@@ -66,13 +64,13 @@ export class NlpValueController extends BaseOrmController<
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = createNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
+    const nlpEntity = createNlpValueDto.entityId
+      ? await this.nlpEntityService.findOne(createNlpValueDto.entityId!)
       : null;
 
     const dtoToValidate = {
       ...createNlpValueDto,
-      entityId: createNlpValueDto.entity,
+      entityId: createNlpValueDto.entityId,
     };
 
     this.validate({
@@ -94,13 +92,13 @@ export class NlpValueController extends BaseOrmController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<NlpValueOrmEntity>({
+      new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
         allowedFields: ['entityId', 'value', 'doc'],
       }),
     )
-    filters?: TFilterQuery<NlpValueOrmEntity>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ) {
-    return await this.count(filters);
+    return await this.count(options);
   }
 
   /**
@@ -133,27 +131,25 @@ export class NlpValueController extends BaseOrmController<
    *
    * Supports filtering, pagination, and optional population of related entities.
    *
-   * @param pageQuery - The pagination query parameters.
    * @param populate - An array of related entities to populate.
-   * @param filters - Filters to apply when retrieving the NLP values.
+   * @param options - TypeORM find options for filtering, sorting, and pagination.
    *
    * @returns A promise resolving to a paginated list of NLP values with NLP Samples count.
    */
   @Get()
   async findWithCount(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValueOrmEntity>,
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<NlpValueOrmEntity>({
+      new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
         allowedFields: ['entityId', 'value', 'doc'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<NlpValueOrmEntity>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ) {
     return await this.nlpValueService.findWithCount(
       this.canPopulate(populate) ? Format.FULL : Format.STUB,
-      pageQuery,
-      filters,
+      options,
     );
   }
 
@@ -173,13 +169,13 @@ export class NlpValueController extends BaseOrmController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = updateNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
+    const nlpEntity = updateNlpValueDto.entityId
+      ? await this.nlpEntityService.findOne(updateNlpValueDto.entityId!)
       : null;
 
     const dtoToValidate = {
       ...updateNlpValueDto,
-      entityId: updateNlpValueDto.entity,
+      entityId: updateNlpValueDto.entityId,
     };
 
     this.validate({
@@ -226,7 +222,7 @@ export class NlpValueController extends BaseOrmController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.nlpValueService.deleteMany({
-      id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {

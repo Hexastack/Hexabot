@@ -141,7 +141,7 @@ export class NlpValueCreateDto {
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Entity must be a valid UUID' })
-  entity: string;
+  entityId: string;
 }
 
 export class NlpValueUpdateDto extends PartialType(NlpValueCreateDto) {}

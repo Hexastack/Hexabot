@@ -6,12 +6,11 @@
 
 import { randomUUID } from 'crypto';
 
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { FindManyOptions } from 'typeorm';
+
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpEntity } from '../dto/nlp-entity.dto';
@@ -90,10 +89,9 @@ describe('NlpValueService (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return all values with populate', async () => {
-      const pageQuery = getPageQuery<NlpValueOrmEntity>({
-        sort: ['createdAt', 'asc'],
+      const result = await nlpValueService.findAndPopulate({
+        order: { createdAt: 'ASC' as const },
       });
-      const result = await nlpValueService.findAndPopulate({}, pageQuery);
       const expected = storedValues.map((value) =>
         mapToValueWithEntity(value, entitiesById),
       );
@@ -109,7 +107,7 @@ describe('NlpValueService (TypeORM)', () => {
         name: `value-parent-${randomUUID()}`,
       });
       const removable = await nlpValueRepository.create({
-        entity: parent.id,
+        entityId: parent.id,
         value: `delete-${randomUUID()}`,
       });
 
@@ -130,8 +128,12 @@ describe('NlpValueService (TypeORM)', () => {
         storedEntities,
       );
 
-      const greeting = await nlpValueRepository.findOne({ value: 'greeting' });
-      const jhon = await nlpValueRepository.findOne({ value: 'jhon' });
+      const greeting = await nlpValueRepository.findOne({
+        where: { value: 'greeting' },
+      });
+      const jhon = await nlpValueRepository.findOne({
+        where: { value: 'jhon' },
+      });
 
       expect(result).toEqualPayload([
         { entity: greeting!.entity, value: greeting!.id },
@@ -169,35 +171,30 @@ describe('NlpValueService (TypeORM)', () => {
     it('should call repository with stub format', async () => {
       const spy = jest.spyOn(nlpValueRepository, 'findWithCount');
 
-      const pageQuery: PageQueryDto<NlpValue> = {
-        limit: 10,
+      const options: FindManyOptions<NlpValueOrmEntity> = {
         skip: 0,
-        sort: ['value', 'asc'],
+        take: 10,
+        order: { value: 'ASC' },
       };
-      const filters: TFilterQuery<NlpValue> = {};
 
-      const results = await nlpValueService.findWithCount(
-        Format.STUB,
-        pageQuery,
-        filters,
-      );
+      const results = await nlpValueService.findWithCount(Format.STUB, options);
 
       expect(results.length).toBeGreaterThan(0);
       expect(results[0]).toHaveProperty('nlpSamplesCount');
-      expect(spy).toHaveBeenCalledWith(Format.STUB, pageQuery, filters);
+      expect(spy).toHaveBeenCalledWith(Format.STUB, options);
     });
 
     it('should call repository with full format', async () => {
       const spy = jest.spyOn(nlpValueRepository, 'findWithCount');
-      const pageQuery: PageQueryDto<NlpValue> = {
-        limit: 10,
+      const options: FindManyOptions<NlpValueOrmEntity> = {
         skip: 0,
-        sort: ['value', 'asc'],
+        take: 10,
+        order: { value: 'ASC' },
       };
 
-      await nlpValueService.findWithCount(Format.FULL, pageQuery, {});
+      await nlpValueService.findWithCount(Format.FULL, options);
 
-      expect(spy).toHaveBeenCalledWith(Format.FULL, pageQuery, {});
+      expect(spy).toHaveBeenCalledWith(Format.FULL, options);
     });
   });
 });

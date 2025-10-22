@@ -54,7 +54,7 @@ export class SettingStub extends BaseStub {
   weight?: number;
 
   @Expose()
-  translatable: boolean;
+  translatable?: boolean;
 }
 
 @Exclude()

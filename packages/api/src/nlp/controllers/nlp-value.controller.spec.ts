@@ -5,19 +5,17 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { In } from 'typeorm';
+import { FindManyOptions, In } from 'typeorm';
 
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
   installNlpValueFixturesTypeOrm,
   nlpValueFixtures,
 } from '@/utils/test/fixtures/nlpvalue';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
-import { NlpValue, NlpValueCreateDto } from '../dto/nlp-value.dto';
+import { NlpValue } from '../dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
 import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
@@ -56,9 +54,13 @@ describe('NlpValueController', () => {
         NlpValueService,
         NlpEntityService,
       ]);
-    jhonNlpValue = await nlpValueService.findOne({ value: 'jhon' });
-    positiveValue = await nlpValueService.findOne({ value: 'positive' });
-    negativeValue = await nlpValueService.findOne({ value: 'negative' });
+    jhonNlpValue = await nlpValueService.findOne({ where: { value: 'jhon' } });
+    positiveValue = await nlpValueService.findOne({
+      where: { value: 'positive' },
+    });
+    negativeValue = await nlpValueService.findOne({
+      where: { value: 'negative' },
+    });
   });
 
   afterAll(async () => {
@@ -78,22 +80,25 @@ describe('NlpValueController', () => {
   describe('create', () => {
     it('should create nlp Value', async () => {
       const nlpEntities = await nlpEntityService.findAll();
-      const value: NlpValueCreateDto = {
-        entity: nlpEntities[0].id,
+      const result = await nlpValueController.create({
+        entityId: nlpEntities[0].id,
         value: 'valuetest',
         expressions: ['synonym1', 'synonym2'],
         metadata: {},
         builtin: false,
         doc: '',
-      };
-      const result = await nlpValueController.create(value);
-      expect(result).toEqualPayload(value, [
-        'id',
-        'createdAt',
-        'updatedAt',
-        'foreignId',
-        'metadata',
-      ]);
+      });
+      expect(result).toEqualPayload(
+        {
+          entity: nlpEntities[0].id,
+          value: 'valuetest',
+          expressions: ['synonym1', 'synonym2'],
+          metadata: {},
+          builtin: false,
+          doc: '',
+        },
+        ['id', 'createdAt', 'updatedAt', 'foreignId', 'metadata'],
+      );
     });
   });
 
@@ -116,25 +121,20 @@ describe('NlpValueController', () => {
         'invalidCreteria',
       ]);
       const intentNlpEntity = await nlpEntityService.findOne({
-        name: 'intent',
+        where: { name: 'intent' },
       });
-      const valueWithEntity = {
-        ...nlpValueFixtures[0],
-        entity: intentNlpEntity!.id,
-      };
-
-      expect(result).toEqualPayload(valueWithEntity, [
-        'id',
-        'createdAt',
-        'updatedAt',
-        'foreignId',
-        'metadata',
-      ]);
+      expect(result).toEqualPayload(
+        {
+          ...nlpValueFixtures[0],
+          entity: intentNlpEntity!.id,
+        },
+        ['id', 'createdAt', 'updatedAt', 'entityId', 'foreignId', 'metadata'],
+      );
     });
 
     it('should get a nlp Value with populate', async () => {
       const intentNlpEntity = await nlpEntityService.findOne({
-        name: 'intent',
+        where: { name: 'intent' },
       });
       const result = await nlpValueController.findOne(positiveValue!.id, [
         'entity',
@@ -147,6 +147,7 @@ describe('NlpValueController', () => {
         'id',
         'createdAt',
         'updatedAt',
+        'entityId',
         'foreignId',
         'metadata',
       ]);
@@ -161,36 +162,35 @@ describe('NlpValueController', () => {
 
   describe('updateOne', () => {
     it('should update a nlp Value', async () => {
-      const intentNlpEntity = await nlpEntityService.findOne({
-        name: 'intent',
-      });
-      const updatedValue = {
-        entity: intentNlpEntity!.id,
+      const intentNlpEntity = (await nlpEntityService.findOne({
+        where: { name: 'intent' },
+      }))!;
+      const result = await nlpValueController.updateOne(positiveValue!.id, {
+        entityId: intentNlpEntity!.id,
         value: 'updated',
         expressions: [],
         builtin: false,
         doc: '',
-      };
-      const result = await nlpValueController.updateOne(
-        positiveValue!.id,
-        updatedValue,
+      });
+      expect(result).toEqualPayload(
+        {
+          entity: intentNlpEntity!.id,
+          value: 'updated',
+          expressions: [],
+          builtin: false,
+          doc: '',
+        },
+        ['id', 'createdAt', 'updatedAt', 'foreignId', 'metadata'],
       );
-      expect(result).toEqualPayload(updatedValue, [
-        'id',
-        'createdAt',
-        'updatedAt',
-        'foreignId',
-        'metadata',
-      ]);
     });
 
     it('should throw exception when nlp value id not found', async () => {
       const intentNlpEntity = await nlpEntityService.findOne({
-        name: 'intent',
+        where: { name: 'intent' },
       });
       await expect(
         nlpValueController.updateOne(jhonNlpValue!.id, {
-          entity: intentNlpEntity!.id,
+          entityId: intentNlpEntity!.id,
           value: 'updated',
           expressions: [],
           builtin: true,
@@ -206,7 +206,7 @@ describe('NlpValueController', () => {
 
       expect(result.deletedCount).toEqual(valuesToDelete.length);
       const remainingValues = await nlpValueService.find({
-        id: In(valuesToDelete),
+        where: { id: In(valuesToDelete) },
       });
       expect(remainingValues.length).toBe(0);
     });
@@ -232,19 +232,17 @@ describe('NlpValueController', () => {
     it('should call service with correct format based on populate', async () => {
       jest.spyOn(nlpValueService, 'findWithCount');
 
-      const filters: TFilterQuery<NlpValue> = {};
-      const pageQuery: PageQueryDto<NlpValue> = {
-        limit: 10,
+      const options: FindManyOptions<NlpValueOrmEntity> = {
         skip: 0,
-        sort: ['value', 'asc'],
+        take: 10,
+        order: { value: 'ASC' },
       };
 
-      await nlpValueController.findWithCount(pageQuery, ['entity'], filters);
+      await nlpValueController.findWithCount(['entity'], options);
 
       expect(nlpValueService.findWithCount).toHaveBeenCalledWith(
         Format.FULL,
-        pageQuery,
-        filters,
+        options,
       );
     });
   });

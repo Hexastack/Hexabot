@@ -49,6 +49,7 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'entity_id' })
   entity!: NlpEntityOrmEntity;
 
+  @Column({ name: 'entity_id' })
   @RelationId((value: NlpValueOrmEntity) => value.entity)
   entityId!: string;
 

@@ -11,7 +11,6 @@ import {
   installNlpSampleEntityFixturesTypeOrm,
   nlpSampleEntityFixtures,
 } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -77,13 +76,9 @@ describe('NlpSampleEntityRepository (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return populated sample entities', async () => {
-      const pageQuery = getPageQuery<NlpSampleEntityOrmEntity>({
-        sort: ['createdAt', 'asc'],
+      const result = await nlpSampleEntityRepository.findAndPopulate({
+        order: { createdAt: 'ASC' },
       });
-      const result = await nlpSampleEntityRepository.findAndPopulate(
-        {},
-        pageQuery,
-      );
 
       expect(result.length).toBe(nlpSampleEntityFixtures.length);
       result.forEach((entity) => {

@@ -177,10 +177,10 @@ export class NlpService {
 
     await Promise.all([
       this.nlpValueService.deleteMany({
-        entity: In(entityIds),
+        where: { entity: In(entityIds) },
       }),
       this.nlpSampleEntityService.deleteMany({
-        entity: In(entityIds),
+        where: { entity: In(entityIds) },
       }),
     ]);
 
@@ -292,7 +292,7 @@ export class NlpService {
     const valueIds = entities.map((value) => value.id);
 
     await this.nlpSampleEntityService.deleteMany({
-      value: In(valueIds),
+      where: { value: In(valueIds) },
     });
 
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);

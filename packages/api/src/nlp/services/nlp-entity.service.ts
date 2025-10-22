@@ -95,7 +95,7 @@ export class NlpEntityService extends BaseOrmService<
 
     // Retrieve stored entities
     let storedEntities = uniqueEntities.length
-      ? await this.find({ name: In(uniqueEntities) })
+      ? await this.find({ where: { name: In(uniqueEntities) } })
       : [];
     // Find newly added entities
     const entitiesToAdd = entities
@@ -126,7 +126,10 @@ export class NlpEntityService extends BaseOrmService<
       new Set(sampleEntities.map((entity) => entity.entity)),
     );
     const findOrCreate = uniqueEntities.map((entityName) =>
-      this.findOneOrCreate({ name: entityName }, { name: entityName }),
+      this.findOneOrCreate(
+        { where: { name: entityName } },
+        { name: entityName },
+      ),
     );
     return Promise.all(findOrCreate);
   }

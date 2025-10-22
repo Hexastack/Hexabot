@@ -10,9 +10,8 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Lookup, LookupStrategy } from '..//types';
 
-import { NlpValueOrmEntity } from './nlp-value.entity';
-
 import { NlpSampleEntityOrmEntity } from './nlp-sample-entity.entity';
+import { NlpValueOrmEntity } from './nlp-value.entity';
 
 @Entity({ name: 'nlp_entities' })
 @Index(['name'], { unique: true })
@@ -45,11 +44,14 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
   sampleEntities?: NlpSampleEntityOrmEntity[];
 
   static getEntityMap<T extends { id: string }>(entities: T[]) {
-    return entities.reduce((acc, entity) => {
-      if (entity.id) {
-        acc[entity.id] = entity;
-      }
-      return acc;
-    }, {} as Record<string, T>);
+    return entities.reduce(
+      (acc, entity) => {
+        if (entity.id) {
+          acc[entity.id] = entity;
+        }
+        return acc;
+      },
+      {} as Record<string, T>,
+    );
   }
 }

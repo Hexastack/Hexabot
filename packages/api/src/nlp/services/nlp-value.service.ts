@@ -5,12 +5,11 @@
  */
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpSampleEntityValue } from '..//types';
@@ -49,8 +48,8 @@ export class NlpValueService extends BaseOrmService<
    */
   async findByPatterns(patterns: NlpValueMatchPattern[]) {
     return await this.find({
-      value: {
-        $in: patterns.map((p) => p.value),
+      where: {
+        value: In(patterns.map((p) => p.value)),
       },
     });
   }
@@ -94,9 +93,7 @@ export class NlpValueService extends BaseOrmService<
 
     // Retrieve stored values
     let storedValues = await this.find({
-      value: {
-        $in: values,
-      },
+      where: { value: In(values) },
     });
 
     // Compute the values to be added
@@ -111,7 +108,7 @@ export class NlpValueService extends BaseOrmService<
       // Build the value dto object
       .map((e) => {
         const newValue: NlpValueCreateDto = {
-          entity: eMap[e.entity].id,
+          entityId: eMap[e.entity].id,
           value: e.value,
           expressions: [],
         };
@@ -185,7 +182,7 @@ export class NlpValueService extends BaseOrmService<
     const entities = sampleEntities.map((e) => e.entity);
     // Get all used entities from database
     const storedEntities = await this.nlpEntityService.find({
-      name: { $in: entities },
+      where: { name: In(entities) },
     });
 
     // Prepare values objects for storage
@@ -226,7 +223,7 @@ export class NlpValueService extends BaseOrmService<
           : undefined;
       } else {
         valuesToAddMap.set(entityValue.value, {
-          entity: storedEntity.id,
+          entityId: storedEntity.id,
           value: entityValue.value,
           expressions: expressions.length ? expressions : undefined,
         });
@@ -236,7 +233,10 @@ export class NlpValueService extends BaseOrmService<
     const valuesToAdd = Array.from(valuesToAddMap.values());
     // Find or create values
     const promises = valuesToAdd.map(async (v) => {
-      const createdOrFound = await this.findOneOrCreate({ value: v.value }, v);
+      const createdOrFound = await this.findOneOrCreate(
+        { where: { value: v.value } },
+        v,
+      );
       // If value is found in database, then update it's synonyms
       const expressions = v.expressions
         ? createdOrFound.expressions
@@ -245,7 +245,10 @@ export class NlpValueService extends BaseOrmService<
         : createdOrFound.expressions?.filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
 
       // Update expressions
-      const result = await this.updateOne({ value: v.value }, { expressions });
+      const result = await this.updateOne(
+        { where: { value: v.value } },
+        { expressions },
+      );
 
       if (!result) throw new Error(`Unable to update NLP value ${v.value}`);
 
@@ -258,20 +261,14 @@ export class NlpValueService extends BaseOrmService<
    * Retrieves NLP values with their training sample counts from the repository,
    * applying pagination, filters, and formatting.
    * @param format - Desired result format: FULL or STUB.
-   * @param pageQuery - Pagination parameters (limit, skip, sort).
-   * @param filters - Filtering criteria for NLP values.
+   * @param options - TypeORM find options to control filtering, sorting, and pagination.
    * @returns A promise that resolves to a list of NLP values with their training sample counts,
    *          typed according to the requested format.
    */
   async findWithCount<F extends Format>(
     format: F,
-    pageQuery: PageQueryDto<NlpValue>,
-    filters: TFilterQuery<NlpValue>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ): Promise<TNlpValueCount<F>[]> {
-    return await this.repository.findWithCount(
-      format,
-      pageQuery as unknown as PageQueryDto<NlpValueOrmEntity>,
-      filters as unknown as TFilterQuery<NlpValueOrmEntity>,
-    );
+    return await this.repository.findWithCount(format, options);
   }
 }

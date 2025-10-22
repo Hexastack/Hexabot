@@ -39,9 +39,10 @@ export class NlpSampleOrmEntity extends BaseOrmEntity {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'language' })
+  @JoinColumn({ name: 'language_id' })
   language?: LanguageOrmEntity | null;
 
+  @Column({ name: 'language_id' })
   @RelationId((sample: NlpSampleOrmEntity) => sample.language)
   languageId?: string | null;
 

@@ -9,7 +9,6 @@ import { TestingModule } from '@nestjs/testing';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -71,7 +70,9 @@ describe('NlpSampleService (TypeORM)', () => {
 
   describe('findOneAndPopulate', () => {
     it('should return a populated sample', async () => {
-      const sample = await nlpSampleRepository.findOne({ text: 'Hello' });
+      const sample = await nlpSampleRepository.findOne({
+        where: { text: 'Hello' },
+      });
       const result = await nlpSampleService.findOneAndPopulate(sample!.id);
       expect(result).toBeDefined();
       expect(result?.entities).toBeDefined();
@@ -80,10 +81,9 @@ describe('NlpSampleService (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return all samples with relations', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
+      const result = await nlpSampleService.findAndPopulate({
+        order: { text: 'DESC' },
       });
-      const result = await nlpSampleService.findAndPopulate({}, pageQuery);
       expect(result.length).toBeGreaterThan(0);
       result.forEach((sample) => {
         expect(Array.isArray(sample.entities)).toBe(true);
@@ -93,7 +93,9 @@ describe('NlpSampleService (TypeORM)', () => {
 
   describe('deleteCascadeOne', () => {
     it('should delete a sample and cascade entities', async () => {
-      const sample = await nlpSampleRepository.findOne({ text: 'Bye Jhon' });
+      const sample = await nlpSampleRepository.findOne({
+        where: { text: 'Bye Jhon' },
+      });
       const result = await nlpSampleService.deleteCascadeOne(sample!.id);
       expect(result.deletedCount).toBe(1);
     });
@@ -106,7 +108,6 @@ describe('NlpSampleService (TypeORM)', () => {
       ];
 
       const result = await nlpSampleService.findByPatterns({
-        filters: {},
         patterns,
       });
 
@@ -121,7 +122,6 @@ describe('NlpSampleService (TypeORM)', () => {
       ];
 
       const count = await nlpSampleService.countByPatterns({
-        filters: {},
         patterns,
       });
 
@@ -130,7 +130,6 @@ describe('NlpSampleService (TypeORM)', () => {
 
     it('should return zero when no matches', async () => {
       const count = await nlpSampleService.countByPatterns({
-        filters: {},
         patterns: [{ entity: 'intent', match: 'value', value: 'nonexistent' }],
       });
 

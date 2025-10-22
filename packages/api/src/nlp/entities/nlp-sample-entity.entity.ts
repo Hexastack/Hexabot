@@ -35,6 +35,7 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'entity_id' })
   entity!: NlpEntityOrmEntity;
 
+  @Column({ name: 'entity_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.entity)
   entityId!: string;
 
@@ -45,6 +46,7 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'value_id' })
   value!: NlpValueOrmEntity;
 
+  @Column({ name: 'value_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.value)
   valueId!: string;
 
@@ -55,6 +57,7 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'sample_id' })
   sample!: NlpSampleOrmEntity;
 
+  @Column({ name: 'sample_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.sample)
   sampleId!: string;
 }

@@ -9,7 +9,6 @@ import { randomUUID } from 'crypto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -79,7 +78,7 @@ describe('NlpEntityService (TypeORM)', () => {
   describe('deleteCascadeOne', () => {
     it('should delete an entity and cascade values', async () => {
       const intentEntity = await nlpEntityRepository.findOne({
-        name: 'intent',
+        where: { name: 'intent' },
       });
 
       const result = await nlpEntityService.deleteCascadeOne(intentEntity!.id);
@@ -95,7 +94,7 @@ describe('NlpEntityService (TypeORM)', () => {
   describe('findOneAndPopulate', () => {
     it('should return a populated entity', async () => {
       const firstNameEntity = await nlpEntityRepository.findOne({
-        name: 'firstname',
+        where: { name: 'firstname' },
       });
       const result = await nlpEntityService.findOneAndPopulate(
         firstNameEntity!.id,
@@ -116,23 +115,20 @@ describe('NlpEntityService (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return entities with populated values', async () => {
-      const pageQuery = getPageQuery<NlpEntityOrmEntity>({
-        sort: ['name', 'desc'],
+      const firstNameEntity = (await nlpEntityRepository.findOne({
+        where: { name: 'firstname' },
+      }))!;
+      const result = await nlpEntityService.findAndPopulate({
+        where: { name: firstNameEntity.name },
+        order: { name: 'DESC' },
       });
-      const firstNameEntity = await nlpEntityRepository.findOne({
-        name: 'firstname',
-      });
-      const result = await nlpEntityService.findAndPopulate(
-        { name: { $eq: firstNameEntity!.name } },
-        pageQuery,
-      );
       const expectedValues = await nlpValueRepository.find({
-        where: { entity: { id: firstNameEntity!.id } },
+        where: { entity: { id: firstNameEntity.id } },
       });
 
       expect(result).toEqualPayload([
         {
-          ...firstNameEntity!,
+          ...firstNameEntity,
           values: expectedValues,
         },
       ]);
@@ -194,8 +190,12 @@ describe('NlpEntityService (TypeORM)', () => {
         ['trait'],
       );
 
-      const nameValue = await nlpValueRepository.findOne({ value: 'Name' });
-      const deValue = await nlpValueRepository.findOne({ value: 'de' });
+      const nameValue = await nlpValueRepository.findOne({
+        where: { value: 'Name' },
+      });
+      const deValue = await nlpValueRepository.findOne({
+        where: { value: 'de' },
+      });
 
       expect(result).toHaveLength(2);
       expect(result).toEqualPayload([

@@ -11,10 +11,8 @@ import { TestingModule } from '@nestjs/testing';
 import { Language } from '@/i18n/dto/language.dto';
 import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -89,7 +87,9 @@ describe('NlpSampleRepository (TypeORM)', () => {
 
   describe('findOneAndPopulate', () => {
     it('should return a populated sample', async () => {
-      const noSample = await nlpSampleRepository.findOne({ text: 'No' });
+      const noSample = await nlpSampleRepository.findOne({
+        where: { text: 'No' },
+      });
       const result = await nlpSampleRepository.findOneAndPopulate(noSample!.id);
 
       expect(result).toBeDefined();
@@ -103,10 +103,9 @@ describe('NlpSampleRepository (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should return paginated samples with relations', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
+      const result = await nlpSampleRepository.findAndPopulate({
+        order: { text: 'DESC' },
       });
-      const result = await nlpSampleRepository.findAndPopulate({}, pageQuery);
 
       result.forEach((sample) => {
         const fixture = nlpSampleFixtures.find((s) => s.text === sample.text);
@@ -122,17 +121,17 @@ describe('NlpSampleRepository (TypeORM)', () => {
         text: 'sample-to-delete',
         trained: false,
         type: NlpSampleState.train,
-        language: languages[0]?.id ?? null,
+        languageId: languages[0]?.id ?? null,
       });
 
       const greetingValue = await nlpValueRepository.findOne({
-        value: 'greeting',
+        where: { value: 'greeting' },
       });
 
       await nlpSampleEntityRepository.create({
-        sample: createdSample.id,
-        entity: greetingValue?.entity ?? '',
-        value: greetingValue!.id,
+        sampleId: createdSample.id,
+        entityId: greetingValue?.entity ?? '',
+        valueId: greetingValue!.id,
       });
 
       const result = await nlpSampleRepository.deleteOne(createdSample.id);
@@ -147,9 +146,11 @@ describe('NlpSampleRepository (TypeORM)', () => {
 
   describe('findByEntities', () => {
     it('should return samples matching values', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const result = await nlpSampleRepository.findByEntities({
-        filters: {},
+        options: {},
         values,
       });
 
@@ -166,10 +167,7 @@ describe('NlpSampleRepository (TypeORM)', () => {
         },
       ] as unknown as NlpValue[];
 
-      const result = await nlpSampleRepository.findByEntities({
-        filters: {},
-        values,
-      });
+      const result = await nlpSampleRepository.findByEntities({ values });
 
       expect(result).toHaveLength(0);
     });
@@ -177,9 +175,11 @@ describe('NlpSampleRepository (TypeORM)', () => {
 
   describe('findByEntitiesAndPopulate', () => {
     it('should return populated samples', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const result = await nlpSampleRepository.findByEntitiesAndPopulate({
-        filters: {},
+        options: {},
         values,
       });
 
@@ -191,16 +191,18 @@ describe('NlpSampleRepository (TypeORM)', () => {
     });
 
     it('should respect pagination parameters', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
-      const page: PageQueryDto<NlpSampleOrmEntity> = {
-        limit: 1,
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
+      const options = {
+        take: 1,
         skip: 0,
-        sort: ['text', 'asc'],
+        order: { text: 'ASC' as const },
       };
-      const result = await nlpSampleRepository.findByEntitiesAndPopulate(
-        { filters: {}, values },
-        page,
-      );
+      const result = await nlpSampleRepository.findByEntitiesAndPopulate({
+        options,
+        values,
+      });
 
       expect(result.length).toBeLessThanOrEqual(1);
       if (result.length) {
@@ -218,7 +220,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
       ] as unknown as NlpValue[];
 
       const result = await nlpSampleRepository.findByEntitiesAndPopulate({
-        filters: {},
         values,
       });
 
@@ -228,10 +229,12 @@ describe('NlpSampleRepository (TypeORM)', () => {
 
   describe('countByEntities', () => {
     it('should count samples matching values', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
 
       const count = await nlpSampleRepository.countByEntities({
-        filters: {},
+        options: {},
         values,
       });
 
@@ -239,11 +242,13 @@ describe('NlpSampleRepository (TypeORM)', () => {
     });
 
     it('should respect filters (e.g. language)', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const language = languages[0];
 
       const count = await nlpSampleRepository.countByEntities({
-        filters: { languageId: language.id },
+        options: { where: { language: { id: language.id } } },
         values,
       });
 
@@ -259,10 +264,7 @@ describe('NlpSampleRepository (TypeORM)', () => {
         },
       ] as unknown as NlpValue[];
 
-      const count = await nlpSampleRepository.countByEntities({
-        filters: {},
-        values,
-      });
+      const count = await nlpSampleRepository.countByEntities({ values });
 
       expect(count).toBe(0);
     });

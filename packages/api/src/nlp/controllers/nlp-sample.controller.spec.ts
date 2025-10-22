@@ -13,7 +13,6 @@ import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.en
 import { LanguageService } from '@/i18n/services/language.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -77,7 +76,7 @@ describe('NlpSampleController (TypeORM)', () => {
     byeJhonSampleId =
       (
         await nlpSampleService.findOne({
-          text: 'Bye Jhon',
+          where: { text: 'Bye Jhon' },
         })
       )?.id || null;
     languages = await languageService.findAll();
@@ -93,13 +92,11 @@ describe('NlpSampleController (TypeORM)', () => {
 
   describe('findPage', () => {
     it('should find nlp samples and populate requested relations', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
-      });
       const result = await nlpSampleController.findPage(
-        pageQuery,
         ['language', 'entities'],
-        {},
+        {
+          order: { text: 'DESC' },
+        },
       );
 
       const samples = await nlpSampleService.findAll();
@@ -121,54 +118,47 @@ describe('NlpSampleController (TypeORM)', () => {
     });
 
     it('should find nlp samples without populating', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
+      const result = await nlpSampleController.findPage(['invalid'], {
+        order: { text: 'DESC' },
       });
-      const result = await nlpSampleController.findPage(
-        pageQuery,
-        ['invalid'],
-        {},
-      );
 
-      const expected = await nlpSampleService.find({}, pageQuery);
+      const expected = await nlpSampleService.find({
+        order: { text: 'DESC' },
+      });
       expect(result).toEqualPayload(expected);
     });
 
     it('should find nlp samples with patterns', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
-      });
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'greeting' },
       ];
 
       const result = await nlpSampleController.findPage(
-        pageQuery,
         ['language', 'entities'],
-        {},
+        {
+          order: { text: 'DESC' },
+        },
         patterns,
       );
 
-      const expected = await nlpSampleService.findByPatternsAndPopulate(
-        { filters: {}, patterns },
-        pageQuery,
-      );
+      const expected = await nlpSampleService.findByPatternsAndPopulate({
+        options: { order: { text: 'DESC' } },
+        patterns,
+      });
       expect(result).toEqualPayload(expected);
     });
 
     it('should return empty array if no samples match the patterns', async () => {
-      const pageQuery = getPageQuery<NlpSampleOrmEntity>({
-        sort: ['text', 'desc'],
-      });
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'nonexistent' },
       ];
       jest.spyOn(nlpSampleService, 'findByPatternsAndPopulate');
 
       const result = await nlpSampleController.findPage(
-        pageQuery,
         ['language', 'entities'],
-        {},
+        {
+          order: { text: 'DESC' },
+        },
         patterns,
       );
 
@@ -191,18 +181,22 @@ describe('NlpSampleController (TypeORM)', () => {
 
   describe('create', () => {
     it('should create nlp sample', async () => {
-      const enLang = await languageService.findOne({ code: 'en' });
-      const nlSample: NlpSampleDto = {
+      const enLang = (await languageService.findOne({
+        where: { code: 'en' },
+      }))!;
+      const result = await nlpSampleController.create({
         text: 'text1',
         trained: true,
         type: NlpSampleState.test,
         entities: [],
-        language: 'en',
-      };
-      const result = await nlpSampleController.create(nlSample);
+        languageCode: enLang.code,
+      });
       expect(result).toEqualPayload(
         {
-          ...nlSample,
+          text: 'text1',
+          trained: true,
+          type: NlpSampleState.test,
+          entities: [],
           language: enLang,
         },
         ['id', 'createdAt', 'updatedAt'],
@@ -226,7 +220,7 @@ describe('NlpSampleController (TypeORM)', () => {
   describe('findOne', () => {
     it('should find a nlp sample', async () => {
       const sample = await nlpSampleService.findOne({
-        text: 'Hello',
+        where: { text: 'Hello' },
       });
       if (!sample) {
         throw new Error('Expected sample to exist');
@@ -238,7 +232,7 @@ describe('NlpSampleController (TypeORM)', () => {
 
     it('should find a nlp sample with populated relations', async () => {
       const sample = await nlpSampleService.findOne({
-        text: 'Hello',
+        where: { text: 'Hello' },
       });
       if (!sample) {
         throw new Error('Expected sample to exist');
@@ -264,7 +258,7 @@ describe('NlpSampleController (TypeORM)', () => {
   describe('updateOne', () => {
     it('should update a nlp sample', async () => {
       const sample = await nlpSampleService.findOne({
-        text: 'Hello',
+        where: { text: 'Hello' },
       });
       if (!sample) {
         throw new Error('Expected sample to exist');
@@ -274,13 +268,15 @@ describe('NlpSampleController (TypeORM)', () => {
         trained: sample.trained,
         type: sample.type,
         entities: [],
-        language: languages[0]?.code ?? 'en',
+        languageCode: languages[0]?.code,
       };
 
       const result = await nlpSampleController.updateOne(sample.id, updateDto);
       expect(result.text).toEqual(updateDto.text);
       expect(result.language).toBeDefined();
-      expect((result.language as Language).code).toEqual(updateDto.language);
+      expect((result.language as Language).code).toEqual(
+        updateDto.languageCode,
+      );
     });
 
     it('should throw exception when nlp sample id not found', async () => {
@@ -289,7 +285,7 @@ describe('NlpSampleController (TypeORM)', () => {
         trained: false,
         type: NlpSampleState.test,
         entities: [],
-        language: languages[0]?.code ?? 'en',
+        languageCode: languages[0]?.code,
       };
       await expect(
         nlpSampleController.updateOne('non-existing-id', updateDto),
@@ -305,7 +301,7 @@ describe('NlpSampleController (TypeORM)', () => {
 
       expect(result.deletedCount).toEqual(ids.length);
       const remaining = await nlpSampleService.find({
-        id: In(ids),
+        where: { id: In(ids) },
       });
       expect(remaining.length).toBe(0);
     });
