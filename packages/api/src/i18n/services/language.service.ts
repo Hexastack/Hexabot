@@ -91,15 +91,9 @@ export class LanguageService extends BaseOrmService<
     return language;
   }
 
-  async clearCache(): Promise<void> {
+  @OnEvent('hook:language:*')
+  async handleLanguageMutated(): Promise<void> {
     await this.cacheManager.del(LANGUAGES_CACHE_KEY);
     await this.cacheManager.del(DEFAULT_LANGUAGE_CACHE_KEY);
-  }
-
-  @OnEvent('hook:language:postCreate')
-  @OnEvent('hook:language:postUpdate')
-  @OnEvent('hook:language:postDelete')
-  async handleLanguageMutated(): Promise<void> {
-    await this.clearCache();
   }
 }
