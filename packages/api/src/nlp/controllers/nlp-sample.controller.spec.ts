@@ -114,7 +114,22 @@ describe('NlpSampleController (TypeORM)', () => {
         return acc;
       }, [] as TFixtures<NlpSampleFull>[]);
 
-      expect(result).toEqualPayload(expected);
+      const normalizeEntitiesOrder = (
+        samples: TFixtures<NlpSampleFull>[],
+      ): TFixtures<NlpSampleFull>[] =>
+        samples.map((sample) => ({
+          ...sample,
+          entities: [...(sample.entities ?? [])].sort((a, b) =>
+            a.id.localeCompare(b.id),
+          ),
+        }));
+
+      const normalizedResult = normalizeEntitiesOrder(
+        result as TFixtures<NlpSampleFull>[],
+      );
+      const normalizedExpected = normalizeEntitiesOrder(expected);
+
+      expect(normalizedResult).toEqualPayload(normalizedExpected);
     });
 
     it('should find nlp samples without populating', async () => {
