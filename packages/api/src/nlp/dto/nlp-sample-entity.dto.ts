@@ -75,19 +75,19 @@ export class NlpSampleEntityCreateDto {
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Entity must be a valid UUID' })
-  entityId: string;
+  entity: string;
 
   @ApiProperty({ type: String })
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Value must be a valid UUID' })
-  valueId: string;
+  value: string;
 
   @ApiProperty({ type: String })
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Sample must be a valid UUID' })
-  sampleId: string;
+  sample: string;
 }
 
 export type NlpSampleEntityTransformerDto = DtoTransformerConfig<{

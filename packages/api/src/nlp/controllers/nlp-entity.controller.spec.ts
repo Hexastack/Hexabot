@@ -99,7 +99,7 @@ describe('NlpEntityController', () => {
           acc.push({
             name,
             values: nlpValueFixtures.filter(
-              ({ entityId }) => parseInt(entityId!) === index,
+              ({ entity }) => parseInt(entity) === index,
             ) as unknown as NlpValue[],
             lookups: lookups!,
             builtin: builtin!,
@@ -124,7 +124,6 @@ describe('NlpEntityController', () => {
         normalizeEntities(result as TFixtures<NlpEntityFull>[]),
       ).toEqualPayload(normalizeEntities(entitiesWithValues), [
         ...IGNORED_TEST_FIELDS,
-        'entityId',
         'entity',
         'metadata',
       ]);

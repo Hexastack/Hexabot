@@ -273,7 +273,7 @@ export class NlpSampleService extends BaseOrmService<
         const sample: NlpSampleCreateDto = {
           text: d.text,
           trained: false,
-          languageId: languages[d.language].id,
+          language: languages[d.language].id,
         };
 
         // Create a new sample entity dto
@@ -297,9 +297,9 @@ export class NlpSampleService extends BaseOrmService<
         // Map and assign the sample ID to each stored entity
         const sampleEntities: NlpSampleEntityCreateDto[] = storedEntities.map(
           ({ entity, value, start, end }) => ({
-            sampleId: createdSample?.id,
-            entityId: entity,
-            valueId: value,
+            sample: createdSample?.id,
+            entity,
+            value,
             start,
             end,
           }),
@@ -354,7 +354,13 @@ export class NlpSampleService extends BaseOrmService<
 
             const updates = matches.map((dto) =>
               this.nlpSampleEntityService.findOneOrCreate(
-                { where: { ...dto } },
+                {
+                  where: {
+                    sample: { id: dto.sample },
+                    entity: { id: dto.entity },
+                    value: { id: dto.value },
+                  },
+                },
                 dto,
               ),
             );
@@ -422,10 +428,10 @@ export class NlpSampleService extends BaseOrmService<
         text: doc.message.text,
         type: NlpSampleState.inbox,
         trained: false,
-        languageId: defaultLang.id,
+        language: defaultLang.id,
       };
       try {
-        await this.findOneOrCreate({ where: { ...record } }, record);
+        await this.findOneOrCreate({ where: { text: record.text } }, record);
         this.logger.debug('User message saved as a inbox sample !');
       } catch (err) {
         this.logger.warn('Unable to add message as a new inbox sample!', err);

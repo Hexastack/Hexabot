@@ -121,7 +121,7 @@ describe('NlpSampleRepository (TypeORM)', () => {
         text: 'sample-to-delete',
         trained: false,
         type: NlpSampleState.train,
-        languageId: languages[0]?.id ?? null,
+        language: languages[0]?.id ?? null,
       });
 
       const greetingValue = await nlpValueRepository.findOne({
@@ -129,9 +129,9 @@ describe('NlpSampleRepository (TypeORM)', () => {
       });
 
       await nlpSampleEntityRepository.create({
-        sampleId: createdSample.id,
-        entityId: greetingValue?.entity ?? '',
-        valueId: greetingValue!.id,
+        sample: createdSample.id,
+        entity: greetingValue?.entity ?? '',
+        value: greetingValue!.id,
       });
 
       const result = await nlpSampleRepository.deleteOne(createdSample.id);

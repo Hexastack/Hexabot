@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { NlpMetadata } from '..//types';
 
@@ -47,11 +48,11 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'entity_id' })
+  @AsRelation()
   entity!: NlpEntityOrmEntity;
 
-  @Column({ name: 'entity_id' })
   @RelationId((value: NlpValueOrmEntity) => value.entity)
-  entityId!: string;
+  readonly entityId!: string;
 
   @OneToMany(
     () => NlpSampleEntityOrmEntity,

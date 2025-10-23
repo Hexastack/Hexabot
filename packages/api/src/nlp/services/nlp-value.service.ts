@@ -108,7 +108,7 @@ export class NlpValueService extends BaseOrmService<
       // Build the value dto object
       .map((e) => {
         const newValue: NlpValueCreateDto = {
-          entityId: eMap[e.entity].id,
+          entity: eMap[e.entity].id,
           value: e.value,
           expressions: [],
         };
@@ -223,7 +223,7 @@ export class NlpValueService extends BaseOrmService<
           : undefined;
       } else {
         valuesToAddMap.set(entityValue.value, {
-          entityId: storedEntity.id,
+          entity: storedEntity.id,
           value: entityValue.value,
           expressions: expressions.length ? expressions : undefined,
         });

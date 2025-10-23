@@ -107,9 +107,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
       };
       expect(result).toEqualPayload(sampleEntityWithPopulate, [
         ...IGNORED_TEST_FIELDS,
-        'entityId',
-        'sampleId',
-        'valueId',
         'metadata',
       ]);
     });
@@ -134,18 +131,18 @@ describe('NlpSampleEntityService (TypeORM)', () => {
       );
       nlpValueFixturesWithEntities[2] = {
         ...nlpValueFixturesWithEntities[2],
-        entityId: nlpEntities[1].id,
+        entity: nlpEntities[1].id,
       };
 
       const nlpSampleEntityFixturesWithPopulate =
         nlpSampleEntityFixtures.reduce((acc, curr) => {
           const sampleEntityWithPopulate = {
             ...curr,
-            entity: nlpEntities[curr.entityId],
-            value: nlpValueFixturesWithEntities[curr.valueId],
+            entity: nlpEntities[curr.entity],
+            value: nlpValueFixturesWithEntities[curr.value],
             sample: {
-              ...nlpSampleFixtures[curr.sampleId],
-              language: languages[nlpSampleFixtures[curr.sampleId].language].id,
+              ...nlpSampleFixtures[curr.sample],
+              language: languages[nlpSampleFixtures[curr.sample].language].id,
             },
             start: curr.start || null,
             end: curr.end || null,
@@ -155,9 +152,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         }, [] as TFixtures<NlpSampleEntityFull>[]);
       expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate, [
         ...IGNORED_TEST_FIELDS,
-        'entityId',
-        'sampleId',
-        'valueId',
         'metadata',
       ]);
     });
@@ -194,9 +188,9 @@ describe('NlpSampleEntityService (TypeORM)', () => {
       );
       expect(nlpSampleEntityService.createMany).toHaveBeenCalledWith([
         {
-          sampleId: sample.id,
-          entityId: '10',
-          valueId: '20',
+          sample: sample.id,
+          entity: '10',
+          value: '20',
           start: 0,
           end: 5,
         },
@@ -242,16 +236,16 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's1',
-          entityId: 'e1',
-          valueId: 'v1',
+          sample: 's1',
+          entity: 'e1',
+          value: 'v1',
           start: 13,
           end: 15,
         },
         {
-          sampleId: 's1',
-          entityId: 'e1',
-          valueId: 'v1',
+          sample: 's1',
+          entity: 'e1',
+          value: 'v1',
           start: 19,
           end: 26,
         },
@@ -276,9 +270,9 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's2',
-          entityId: 'e2',
-          valueId: 'v2',
+          sample: 's2',
+          entity: 'e2',
+          value: 'v2',
           start: 7,
           end: 9,
         },
@@ -303,23 +297,23 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's3',
-          entityId: 'e3',
-          valueId: 'v3',
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
           start: 0,
           end: 2,
         },
         {
-          sampleId: 's3',
-          entityId: 'e3',
-          valueId: 'v3',
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
           start: 3,
           end: 5,
         },
         {
-          sampleId: 's3',
-          entityId: 'e3',
-          valueId: 'v3',
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
           start: 6,
           end: 8,
         },
@@ -344,9 +338,9 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's4',
-          entityId: 'e4',
-          valueId: 'v4',
+          sample: 's4',
+          entity: 'e4',
+          value: 'v4',
           start: 5,
           end: 12,
         },
@@ -402,23 +396,23 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's7',
-          entityId: 'e7',
-          valueId: 'v7',
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
           start: 7,
           end: 9,
         },
         {
-          sampleId: 's7',
-          entityId: 'e7',
-          valueId: 'v7',
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
           start: 11,
           end: 13,
         },
         {
-          sampleId: 's7',
-          entityId: 'e7',
-          valueId: 'v7',
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
           start: 15,
           end: 17,
         },
@@ -444,9 +438,9 @@ describe('NlpSampleEntityService (TypeORM)', () => {
 
       const expected: NlpSampleEntityCreateDto[] = [
         {
-          sampleId: 's10',
-          entityId: 'e10',
-          valueId: 'v10',
+          sample: 's10',
+          entity: 'e10',
+          value: 'v10',
           start: 9,
           end: 11,
         },

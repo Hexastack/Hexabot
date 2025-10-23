@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { NlpEntityOrmEntity } from './nlp-entity.entity';
 import { NlpSampleOrmEntity } from './nlp-sample.entity';
@@ -33,31 +34,31 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'entity_id' })
+  @AsRelation()
   entity!: NlpEntityOrmEntity;
 
-  @Column({ name: 'entity_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.entity)
-  entityId!: string;
+  readonly entityId!: string;
 
   @ManyToOne(() => NlpValueOrmEntity, (value) => value.sampleEntities, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'value_id' })
+  @AsRelation()
   value!: NlpValueOrmEntity;
 
-  @Column({ name: 'value_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.value)
-  valueId!: string;
+  readonly valueId!: string;
 
   @ManyToOne(() => NlpSampleOrmEntity, (sample) => sample.entities, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'sample_id' })
+  @AsRelation()
   sample!: NlpSampleOrmEntity;
 
-  @Column({ name: 'sample_id' })
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.sample)
-  sampleId!: string;
+  readonly sampleId!: string;
 }

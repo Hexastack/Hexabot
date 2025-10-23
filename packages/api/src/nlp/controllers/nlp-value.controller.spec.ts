@@ -81,7 +81,7 @@ describe('NlpValueController', () => {
     it('should create nlp Value', async () => {
       const nlpEntities = await nlpEntityService.findAll();
       const result = await nlpValueController.create({
-        entityId: nlpEntities[0].id,
+        entity: nlpEntities[0].id,
         value: 'valuetest',
         expressions: ['synonym1', 'synonym2'],
         metadata: {},
@@ -128,7 +128,7 @@ describe('NlpValueController', () => {
           ...nlpValueFixtures[0],
           entity: intentNlpEntity!.id,
         },
-        ['id', 'createdAt', 'updatedAt', 'entityId', 'foreignId', 'metadata'],
+        ['id', 'createdAt', 'updatedAt', 'foreignId', 'metadata'],
       );
     });
 
@@ -147,7 +147,6 @@ describe('NlpValueController', () => {
         'id',
         'createdAt',
         'updatedAt',
-        'entityId',
         'foreignId',
         'metadata',
       ]);
@@ -166,7 +165,7 @@ describe('NlpValueController', () => {
         where: { name: 'intent' },
       }))!;
       const result = await nlpValueController.updateOne(positiveValue!.id, {
-        entityId: intentNlpEntity!.id,
+        entity: intentNlpEntity!.id,
         value: 'updated',
         expressions: [],
         builtin: false,
@@ -190,7 +189,7 @@ describe('NlpValueController', () => {
       });
       await expect(
         nlpValueController.updateOne(jhonNlpValue!.id, {
-          entityId: intentNlpEntity!.id,
+          entity: intentNlpEntity!.id,
           value: 'updated',
           expressions: [],
           builtin: true,

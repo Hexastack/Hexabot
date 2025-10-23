@@ -64,17 +64,12 @@ export class NlpValueController extends BaseOrmController<
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = createNlpValueDto.entityId
-      ? await this.nlpEntityService.findOne(createNlpValueDto.entityId!)
+    const nlpEntity = createNlpValueDto.entity
+      ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
       : null;
 
-    const dtoToValidate = {
-      ...createNlpValueDto,
-      entityId: createNlpValueDto.entityId,
-    };
-
     this.validate({
-      dto: dtoToValidate,
+      dto: createNlpValueDto,
       allowedIds: {
         entityId: nlpEntity?.id,
       },
@@ -93,7 +88,7 @@ export class NlpValueController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
-        allowedFields: ['entityId', 'value', 'doc'],
+        allowedFields: ['entity.id', 'value', 'doc'],
       }),
     )
     options: FindManyOptions<NlpValueOrmEntity> = {},
@@ -141,7 +136,7 @@ export class NlpValueController extends BaseOrmController<
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
-        allowedFields: ['entityId', 'value', 'doc'],
+        allowedFields: ['entity.id', 'value', 'doc'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -169,13 +164,13 @@ export class NlpValueController extends BaseOrmController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = updateNlpValueDto.entityId
-      ? await this.nlpEntityService.findOne(updateNlpValueDto.entityId!)
+    const nlpEntity = updateNlpValueDto.entity
+      ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
       : null;
 
     const dtoToValidate = {
       ...updateNlpValueDto,
-      entityId: updateNlpValueDto.entityId,
+      entityId: updateNlpValueDto.entity,
     };
 
     this.validate({

@@ -92,7 +92,7 @@ export class NlpSampleCreateDto {
   @IsNotEmpty()
   @IsString()
   @IsUUID('4', { message: 'Language must be a valid UUID' })
-  languageId: string;
+  language: string;
 }
 
 export class NlpSampleDto {

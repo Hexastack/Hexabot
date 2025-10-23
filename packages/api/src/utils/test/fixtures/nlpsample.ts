@@ -99,7 +99,7 @@ export const installNlpSampleFixturesTypeOrm = async (
         text: fixture.text,
         trained: fixture.trained ?? false,
         type: (fixture.type ?? NlpSampleState.train) as NlpSampleState,
-        languageId: language?.id || null,
+        language: language ? { id: language?.id } : null,
       };
     },
   );

@@ -27,29 +27,29 @@ import {
 
 export const nlpSampleEntityFixtures: NlpSampleEntityCreateDto[] = [
   {
-    sampleId: '0',
-    entityId: '0',
-    valueId: '0',
+    sample: '0',
+    entity: '0',
+    value: '0',
   },
   {
-    sampleId: '1',
-    entityId: '0',
-    valueId: '1',
+    sample: '1',
+    entity: '0',
+    value: '1',
   },
   {
-    sampleId: '2',
-    entityId: '0',
-    valueId: '3',
+    sample: '2',
+    entity: '0',
+    value: '3',
   },
   {
-    sampleId: '3',
-    entityId: '0',
-    valueId: '3',
+    sample: '3',
+    entity: '0',
+    value: '3',
   },
   {
-    sampleId: '3',
-    entityId: '1',
-    valueId: '4',
+    sample: '3',
+    entity: '1',
+    value: '4',
   },
 ];
 
@@ -65,9 +65,9 @@ export const installNlpSampleEntityFixtures = async () => {
     nlpSampleEntityFixtures.map((s) => {
       return {
         ...s,
-        sample: nlpSamples[parseInt(s.sampleId)].id,
-        entity: nlpEntities[parseInt(s.entityId)].id,
-        value: nlpValues[parseInt(s.valueId)].id,
+        sample: nlpSamples[parseInt(s.sample)].id,
+        entity: nlpEntities[parseInt(s.entity)].id,
+        value: nlpValues[parseInt(s.value)].id,
       };
     }),
   );
@@ -105,9 +105,9 @@ export const installNlpSampleEntityFixturesTypeOrm = async (
 
   const records: DeepPartial<NlpSampleEntityOrmEntity>[] =
     nlpSampleEntityFixtures.map((fixture) => {
-      const sample = sampleRecords[parseInt(fixture.sampleId, 10)];
-      const entity = entityRecords[parseInt(fixture.entityId, 10)];
-      const valueFixture = nlpValueFixtures[parseInt(fixture.valueId, 10)];
+      const sample = sampleRecords[parseInt(fixture.sample, 10)];
+      const entity = entityRecords[parseInt(fixture.entity, 10)];
+      const valueFixture = nlpValueFixtures[parseInt(fixture.value, 10)];
       const value = valueFixture ? valueMap[valueFixture.value] : undefined;
 
       if (!sample || !entity || !value) {
@@ -117,9 +117,9 @@ export const installNlpSampleEntityFixturesTypeOrm = async (
       }
 
       return {
-        sampleId: sample.id,
-        entityId: entity.id,
-        valueId: value.id,
+        sample: { id: sample.id },
+        entity: { id: entity.id },
+        value: { id: value.id },
         start: fixture.start ?? null,
         end: fixture.end ?? null,
       };

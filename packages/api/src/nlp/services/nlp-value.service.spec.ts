@@ -107,7 +107,7 @@ describe('NlpValueService (TypeORM)', () => {
         name: `value-parent-${randomUUID()}`,
       });
       const removable = await nlpValueRepository.create({
-        entityId: parent.id,
+        entity: parent.id,
         value: `delete-${randomUUID()}`,
       });
 

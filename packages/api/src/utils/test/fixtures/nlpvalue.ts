@@ -20,56 +20,56 @@ import {
 
 export const nlpValueFixtures: NlpValueCreateDto[] = [
   {
-    entityId: '0',
+    entity: '0',
     value: 'positive',
     expressions: [],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '0',
+    entity: '0',
     value: 'negative',
     expressions: [],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '1',
+    entity: '1',
     value: 'jhon',
     expressions: ['john', 'joohn', 'jhonny'],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '0',
+    entity: '0',
     value: 'greeting',
     expressions: ['heello', 'Hello', 'hi', 'heyy'],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '0',
+    entity: '0',
     value: 'goodbye',
     expressions: ['bye', 'bye bye'],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '0',
+    entity: '0',
     value: 'affirmation',
     expressions: ['yes', 'oui', 'yeah'],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '3',
+    entity: '3',
     value: 'product',
     expressions: [],
     builtin: false,
     doc: '',
   },
   {
-    entityId: '3',
+    entity: '3',
     value: 'claim',
     expressions: [],
     builtin: false,
@@ -85,10 +85,10 @@ export const installNlpValueFixtures = async () => {
   const nlpValues = await NlpValue.insertMany(
     nlpValueFixtures.map((v) => ({
       ...v,
-      entity: v?.entityId
+      entity: v?.entity
         ? nlpEntities.find(
             (e) =>
-              e.name === nlpEntityFixtures[parseInt(v.entityId as string)].name,
+              e.name === nlpEntityFixtures[parseInt(v.entity as string)].name,
           ).id
         : null,
     })),
@@ -116,7 +116,7 @@ export const installNlpValueFixturesTypeOrm = async (
 
   const values: DeepPartial<NlpValueOrmEntity>[] = nlpValueFixtures.map(
     (fixture) => {
-      const entityIndex = parseInt(fixture.entityId, 10);
+      const entityIndex = parseInt(fixture.entity, 10);
       const entityName = nlpEntityFixtures[entityIndex]?.name;
       const entity = entityName ? entitiesByName[entityName] : undefined;
 
@@ -126,7 +126,7 @@ export const installNlpValueFixturesTypeOrm = async (
 
       return {
         ...fixture,
-        entityId: entity.id,
+        entity: { id: entity.id },
         foreignId: null,
       };
     },

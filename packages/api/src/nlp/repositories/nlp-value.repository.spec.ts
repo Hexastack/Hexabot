@@ -174,7 +174,7 @@ describe('NlpValueRepository (TypeORM)', () => {
       });
 
       const createdValue = await nlpValueRepository.create({
-        entityId: parentEntity.id,
+        entity: parentEntity.id,
         value: 'type-orm-created',
       });
 
@@ -201,7 +201,7 @@ describe('NlpValueRepository (TypeORM)', () => {
       });
 
       const createdValue = await nlpValueRepository.create({
-        entityId: parentEntity.id,
+        entity: parentEntity.id,
         value: 'builtin-value',
         builtin: true,
       });

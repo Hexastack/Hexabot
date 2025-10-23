@@ -15,6 +15,7 @@ import {
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { NlpSampleState } from '..//types';
 
@@ -40,11 +41,11 @@ export class NlpSampleOrmEntity extends BaseOrmEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'language_id' })
+  @AsRelation()
   language?: LanguageOrmEntity | null;
 
-  @Column({ name: 'language_id' })
   @RelationId((sample: NlpSampleOrmEntity) => sample.language)
-  languageId?: string | null;
+  readonly languageId?: string | null;
 
   @OneToMany(() => NlpSampleEntityOrmEntity, (entity) => entity.sample)
   entities?: NlpSampleEntityOrmEntity[];

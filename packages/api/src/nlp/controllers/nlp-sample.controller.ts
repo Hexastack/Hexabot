@@ -145,7 +145,7 @@ export class NlpSampleController extends BaseOrmController<
 
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
-      languageId: language.id,
+      language: language.id,
     });
 
     const entities = nlpEntities
@@ -333,7 +333,7 @@ export class NlpSampleController extends BaseOrmController<
 
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
-      languageId: language.id,
+      language: language.id,
       trained: false,
     });
 
