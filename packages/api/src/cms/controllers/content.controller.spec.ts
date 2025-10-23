@@ -135,7 +135,10 @@ describe('ContentController (TypeORM)', () => {
     it('retrieves populated content when requested', async () => {
       const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
 
-      const result = await controller.find(['entity'], { take: 5, skip: 0 });
+      const result = await controller.find(['contentType'], {
+        take: 5,
+        skip: 0,
+      });
 
       expect(result.length).toBeGreaterThan(0);
       expect(findAndPopulateSpy).toHaveBeenCalledWith(
@@ -177,7 +180,7 @@ describe('ContentController (TypeORM)', () => {
         'findOneAndPopulate',
       );
 
-      const found = await controller.findOne(existing.id, ['entity']);
+      const found = await controller.findOne(existing.id, ['contentType']);
 
       expect(found).toMatchObject({ id: existing.id });
       expect(findOneAndPopulateSpy).toHaveBeenCalledWith(existing.id);
