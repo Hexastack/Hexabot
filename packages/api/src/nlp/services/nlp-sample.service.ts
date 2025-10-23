@@ -15,11 +15,10 @@ import { FindManyOptions, FindOptionsOrder } from 'typeorm';
 
 import { Message } from '@/chat/schemas/message.schema';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
+import { THydratedDocument } from '@/utils/types/filter.types';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
 import { NlpEntityFull } from '../dto/nlp-entity.dto';
@@ -375,42 +374,6 @@ export class NlpSampleService extends BaseOrmService<
           }
         }
       }
-    }
-  }
-
-  /**
-   * When a language gets deleted, we need to set related samples to null
-   *
-   * @param language The language that has been deleted.
-   */
-  @OnEvent('hook:language:preDelete')
-  async handleLanguageDelete(
-    payload:
-      | {
-          entities: LanguageOrmEntity[];
-          filter: TFilterQuery<LanguageOrmEntity>;
-        }
-      | unknown,
-  ) {
-    if (!payload || typeof payload !== 'object' || !('entities' in payload)) {
-      return;
-    }
-
-    const { entities } = payload as {
-      entities: LanguageOrmEntity[];
-    };
-    const deletedLanguagesIds = entities.map(
-      (deletedLanguage) => deletedLanguage.id,
-    );
-
-    this.logger.debug(
-      `Found ${deletedLanguagesIds.length} languages to clean up`,
-    );
-
-    if (deletedLanguagesIds.length > 0) {
-      const affected =
-        await this.repository.clearLanguages(deletedLanguagesIds);
-      this.logger.debug(`Cleaned up languageId from ${affected} NLP samples`);
     }
   }
 

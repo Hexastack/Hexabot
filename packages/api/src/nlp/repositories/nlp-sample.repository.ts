@@ -10,7 +10,6 @@ import { plainToInstance } from 'class-transformer';
 import {
   DeepPartial,
   FindManyOptions,
-  FindOptionsWhere,
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
@@ -25,7 +24,6 @@ import {
   TNlpSampleDto,
 } from '../dto/nlp-sample.dto';
 import { NlpValue } from '../dto/nlp-value.dto';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
 import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
 
 @Injectable()
@@ -37,8 +35,6 @@ export class NlpSampleRepository extends BaseOrmRepository<
   constructor(
     @InjectRepository(NlpSampleOrmEntity)
     repository: Repository<NlpSampleOrmEntity>,
-    @InjectRepository(NlpSampleEntityOrmEntity)
-    private readonly nlpSampleEntityRepository: Repository<NlpSampleEntityOrmEntity>,
   ) {
     super(repository, ['language', 'entities'], {
       PlainCls: NlpSample,
@@ -76,26 +72,6 @@ export class NlpSampleRepository extends BaseOrmRepository<
     const qb = this.buildFindByEntitiesQuery(criterias);
 
     return await qb.getCount();
-  }
-
-  protected override async preDelete(
-    entities: NlpSampleOrmEntity[],
-    _filter:
-      | FindOptionsWhere<NlpSampleOrmEntity>
-      | FindOptionsWhere<NlpSampleOrmEntity>[]
-      | undefined,
-  ): Promise<void> {
-    if (!entities.length) {
-      return;
-    }
-
-    await this.nlpSampleEntityRepository
-      .createQueryBuilder()
-      .delete()
-      .where('sample_id IN (:...ids)', {
-        ids: entities.map((sample) => sample.id),
-      })
-      .execute();
   }
 
   private buildFindByEntitiesQuery({
@@ -199,20 +175,5 @@ export class NlpSampleRepository extends BaseOrmRepository<
     return entities.map((entity) =>
       plainToInstance(NlpSample, entity as DeepPartial<NlpSampleOrmEntity>),
     );
-  }
-
-  async clearLanguages(languageIds: string[]): Promise<number> {
-    if (!languageIds.length) {
-      return 0;
-    }
-
-    const result = await this.repository
-      .createQueryBuilder()
-      .update()
-      .set({ language: null })
-      .where('language_id IN (:...languageIds)', { languageIds })
-      .execute();
-
-    return result.affected ?? 0;
   }
 }
