@@ -29,14 +29,14 @@ export class PermissionOrmEntity extends BaseOrmEntity {
   @Column({ type: 'varchar' })
   action!: Action;
 
-  @Column({ name: 'role_id' })
-  roleId!: string;
-
   @ManyToOne(() => RoleOrmEntity, (role) => role.permissions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'role_id' })
   role!: RoleOrmEntity;
+
+  @Column({ name: 'role_id' })
+  roleId!: string;
 
   @Column({ default: 'role' })
   relation!: TRelation;

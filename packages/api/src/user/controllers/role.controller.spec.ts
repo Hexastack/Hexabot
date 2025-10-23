@@ -11,7 +11,6 @@ import { Request } from 'express';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -74,8 +73,8 @@ describe('RoleController (TypeORM)', () => {
         UserService,
       ]);
 
-    const adminRole = await roleService.findOne({ name: 'admin' });
-    const publicRole = await roleService.findOne({ name: 'public' });
+    const adminRole = await roleService.findOne({ where: { name: 'admin' } });
+    const publicRole = await roleService.findOne({ where: { name: 'public' } });
     if (!adminRole || !publicRole) {
       throw new Error('Expected role fixtures to be available');
     }
@@ -95,12 +94,14 @@ describe('RoleController (TypeORM)', () => {
   });
 
   describe('findPage', () => {
-    const pageQuery =
-      getPageQuery<RoleOrmEntity>({ sort: ['createdAt', 'asc'] });
     it('should find roles', async () => {
       jest.spyOn(roleService, 'find');
-      const result = await roleController.findPage(pageQuery, [], {});
-      expect(roleService.find).toHaveBeenCalledWith({}, pageQuery);
+      const result = await roleController.findPage([], {
+        order: { createdAt: 'ASC' },
+      });
+      expect(roleService.find).toHaveBeenCalledWith({
+        order: { createdAt: 'ASC' },
+      });
       const expectedRoles = await roleService.findAll();
       expect(result).toEqualPayload(expectedRoles);
     });
@@ -109,13 +110,13 @@ describe('RoleController (TypeORM)', () => {
       jest.spyOn(roleService, 'findAndPopulate');
       const allPermissions = await permissionService.findAll();
       const allUsers = await userService.findAll();
-      const result = (await roleController.findPage(
-        pageQuery,
-        ['users', 'permissions'],
-        {},
-      )) as RoleFull[];
+      const result = (await roleController.findPage(['users', 'permissions'], {
+        order: { createdAt: 'ASC' },
+      })) as RoleFull[];
 
-      expect(roleService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
+      expect(roleService.findAndPopulate).toHaveBeenCalledWith({
+        order: { createdAt: 'ASC' },
+      });
 
       result.forEach((role) => {
         const expectedPermissionIds = allPermissions

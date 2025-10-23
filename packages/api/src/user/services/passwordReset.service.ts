@@ -50,7 +50,9 @@ export class PasswordResetService {
    */
   async requestReset(dto: UserRequestResetDto): Promise<void> {
     // verify if the user exists
-    const user = await this.userService.findOne({ email: dto.email });
+    const user = await this.userService.findOne({
+      where: { email: dto.email },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -80,7 +82,10 @@ export class PasswordResetService {
       throw new InternalServerErrorException('Could not send email');
     }
 
-    await this.userService.updateOne({ email: dto.email }, { resetToken: jwt });
+    await this.userService.updateOne(
+      { where: { email: dto.email } },
+      { resetToken: jwt },
+    );
   }
 
   /**
@@ -98,7 +103,9 @@ export class PasswordResetService {
     });
 
     // first step is to check if the token has been used
-    const user = await this.userService.findOne({ email: payload.email });
+    const user = await this.userService.findOne({
+      where: { email: payload.email },
+    });
 
     if (!user?.resetToken || !compareSync(token, user.resetToken)) {
       throw new UnauthorizedException('Invalid token');

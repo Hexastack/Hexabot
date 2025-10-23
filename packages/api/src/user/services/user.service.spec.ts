@@ -10,7 +10,6 @@ import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { userFixtures } from '@/utils/test/fixtures/user';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -27,7 +26,6 @@ import { UserService } from './user.service';
 describe('UserService (TypeORM)', () => {
   let module: TestingModule;
   let userService: UserService;
-  let roleRepository: RoleRepository;
   let userRepository: UserRepository;
   let user: UserDto | null;
 
@@ -63,13 +61,12 @@ describe('UserService (TypeORM)', () => {
 
     module = testing.module;
 
-    [userService, roleRepository, userRepository] = await testing.getMocks([
+    [userService, userRepository] = await testing.getMocks([
       UserService,
-      RoleRepository,
       UserRepository,
     ]);
 
-    user = await userRepository.findOne({ username: 'admin' });
+    user = await userRepository.findOne({ where: { username: 'admin' } });
   });
 
   afterEach(jest.clearAllMocks);
@@ -106,16 +103,15 @@ describe('UserService (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
-      const pageQuery =
-        getPageQuery<UserOrmEntity>({ sort: ['createdAt', 'asc'] });
       jest.spyOn(userRepository, 'findAndPopulate');
       const users = await userRepository.findAll();
-      const result = await userService.findAndPopulate({}, pageQuery);
+      const result = await userService.findAndPopulate({
+        order: { createdAt: 'ASC' },
+      });
 
-      expect(userRepository.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(userRepository.findAndPopulate).toHaveBeenCalledWith({
+        order: { createdAt: 'ASC' },
+      });
 
       expect(result).toHaveLength(users.length);
 

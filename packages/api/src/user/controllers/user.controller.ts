@@ -24,6 +24,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
+import { FindManyOptions, In } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -32,26 +33,22 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { Roles } from '@/utils/decorators/roles.decorator';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import {
   UserCreateDto,
-  UserEditProfileDto,
   UserDtoConfig,
+  UserEditProfileDto,
   UserRequestResetDto,
   UserResetPasswordDto,
   UserTransformerDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { PermissionOrmEntity } from '../entities/permission.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationService } from '../services/invitation.service';
 import { PasswordResetService } from '../services/passwordReset.service';
@@ -171,8 +168,8 @@ export class ReadOnlyUserController extends BaseOrmController<
     const roleIds = currentUser?.roles?.map(({ id }) => id) ?? [];
 
     const currentPermissions = await this.permissionService.findAndPopulate({
-      roleId: { $in: roleIds },
-    } as TFilterQuery<PermissionOrmEntity>);
+      where: { roleId: In(roleIds) },
+    });
 
     return {
       roles: currentUser?.roles ?? [],
@@ -202,21 +199,19 @@ export class ReadOnlyUserController extends BaseOrmController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<UserOrmEntity>,
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<UserOrmEntity>({
+      new TypeOrmSearchFilterPipe<UserOrmEntity>({
         allowedFields: ['first_name', 'last_name'],
       }),
     )
-    filters: TFilterQuery<UserOrmEntity>,
+    options?: FindManyOptions<UserOrmEntity>,
   ) {
     const shouldPopulate = this.canPopulate(populate);
-    if (shouldPopulate) {
-      return await this.userService.findAndPopulate(filters, pageQuery);
-    }
-    return await this.userService.find(filters, pageQuery);
+    return shouldPopulate
+      ? await this.userService.findAndPopulate(options)
+      : await this.userService.find(options);
   }
 
   /**
@@ -227,13 +222,13 @@ export class ReadOnlyUserController extends BaseOrmController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<UserOrmEntity>({
+      new TypeOrmSearchFilterPipe<UserOrmEntity>({
         allowedFields: ['first_name', 'last_name'],
       }),
     )
-    filters?: TFilterQuery<UserOrmEntity>,
+    options?: FindManyOptions<UserOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   /**
@@ -381,10 +376,9 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     const oldRoleIds = existingUser?.roles ?? [];
     const newRoles = body.roles;
 
-    const adminRole =
-      (await this.roleService.findOne({
-        name: 'admin',
-      })) ?? null;
+    const adminRole = await this.roleService.findOne({
+      where: { name: 'admin' },
+    });
     const adminRoleId = adminRole?.id;
 
     if (id === req.session.passport?.user?.id && body.state === false) {

@@ -21,6 +21,7 @@ import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
 import { UserOrmEntity } from '../entities/user.entity';
+
 import { PermissionRepository } from './permission.repository';
 import { RoleRepository } from './role.repository';
 import { UserRepository } from './user.repository';
@@ -60,11 +61,11 @@ describe('RoleRepository (TypeORM)', () => {
       ]);
 
     adminRole = (await roleRepository.findOne({
-      name: 'admin',
-    })) as Role;
+      where: { name: 'admin' },
+    }))!;
     managerRole = (await roleRepository.findOne({
-      name: 'manager',
-    })) as Role;
+      where: { name: 'manager' },
+    }))!;
   });
 
   afterEach(() => {

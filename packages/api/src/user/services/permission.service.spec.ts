@@ -66,7 +66,7 @@ describe('PermissionService (TypeORM)', () => {
       ]);
 
     const foundPermission = await permissionRepository.findOne({
-      action: Action.CREATE,
+      where: { action: Action.CREATE },
     });
     if (!foundPermission) {
       throw new Error('Expected permission fixture to be available');

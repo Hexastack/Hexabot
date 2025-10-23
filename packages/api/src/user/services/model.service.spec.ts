@@ -103,10 +103,7 @@ describe('ModelService (TypeORM)', () => {
       const allPermissions = await permissionRepository.findAll();
       const result = await modelService.findAndPopulate({});
 
-      expect(modelRepository.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        undefined,
-      );
+      expect(modelRepository.findAndPopulate).toHaveBeenCalledWith({});
 
       expect(result).toHaveLength(models.length);
 

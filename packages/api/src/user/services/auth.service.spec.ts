@@ -51,7 +51,7 @@ describe('AuthService (TypeORM)', () => {
       UserRepository,
     ]);
 
-    adminUser = await userRepository.findOne({ username: 'admin' });
+    adminUser = await userRepository.findOne({ where: { username: 'admin' } });
     jest.spyOn(userRepository, 'findOneByEmailWithPassword');
   });
 

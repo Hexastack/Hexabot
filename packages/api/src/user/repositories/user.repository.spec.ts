@@ -25,7 +25,6 @@ import { UserRepository } from './user.repository';
 
 describe('UserRepository (TypeORM)', () => {
   let module: TestingModule;
-  let roleRepository: RoleRepository;
   let userRepository: UserRepository;
   let user: User | null;
 
@@ -60,12 +59,9 @@ describe('UserRepository (TypeORM)', () => {
 
     module = testing.module;
 
-    [userRepository, roleRepository] = await testing.getMocks([
-      UserRepository,
-      RoleRepository,
-    ]);
+    [userRepository] = await testing.getMocks([UserRepository]);
 
-    user = await userRepository.findOne({ username: 'admin' });
+    user = await userRepository.findOne({ where: { username: 'admin' } });
   });
 
   afterEach(() => {
@@ -101,10 +97,10 @@ describe('UserRepository (TypeORM)', () => {
       if (!expected) {
         throw new Error('Expected admin user fixture to be available');
       }
-      expect(result).toEqualPayload(
-        { ...expected, roles: undefined },
-        [...FIELDS_TO_IGNORE, 'roles'],
-      );
+      expect(result).toEqualPayload({ ...expected, roles: undefined }, [
+        ...FIELDS_TO_IGNORE,
+        'roles',
+      ]);
     });
   });
 

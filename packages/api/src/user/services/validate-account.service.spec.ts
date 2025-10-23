@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+// eslint-disable-next-line import/order
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
@@ -92,7 +93,7 @@ describe('ValidateAccountService (TypeORM)', () => {
 
     const userService = await testing.getMocks([UserService]);
     const foundUser = await (userService[0] as UserService).findOne({
-      email: users[0].email,
+      where: { email: users[0].email },
     });
     if (!foundUser) {
       throw new Error('Expected admin user fixture to be available');

@@ -15,14 +15,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  Permission,
   PermissionActionDto,
   PermissionCreateDto,
   PermissionTransformerDto,
@@ -50,7 +49,7 @@ export class PermissionController extends BaseOrmController<
    * Retrieves permissions based on optional filters and populates relationships if requested.
    *
    * @param populate - List of related entities to populate ('model', 'role').
-   * @param filters - Filter conditions to apply when fetching permissions.
+   * @param options - TypeORM query options to apply when fetching permissions.
    *
    * @returns A list of permissions, potentially populated with related entities.
    */
@@ -59,17 +58,16 @@ export class PermissionController extends BaseOrmController<
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<Permission>({
-        allowedFields: ['model', 'role'],
+      new TypeOrmSearchFilterPipe<PermissionOrmEntity>({
+        allowedFields: ['modelId', 'roleId', 'relation'],
       }),
     )
-    filters: TFilterQuery<Permission>,
+    options?: FindManyOptions<PermissionOrmEntity>,
   ) {
-    const normalizedFilters = this.normalizeFilters(filters);
     const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
     return shouldPopulate
-      ? await this.permissionService.findAndPopulate(normalizedFilters)
-      : await this.permissionService.find(normalizedFilters);
+      ? await this.permissionService.findAndPopulate(options)
+      : await this.permissionService.find(options);
   }
 
   /**
@@ -114,24 +112,5 @@ export class PermissionController extends BaseOrmController<
       throw new NotFoundException(`Permission with ID ${id} not found`);
     }
     return result;
-  }
-
-  private normalizeFilters(
-    filters: TFilterQuery<Permission>,
-  ): TFilterQuery<PermissionOrmEntity> {
-    if (!filters || typeof filters !== 'object') {
-      return filters as TFilterQuery<PermissionOrmEntity>;
-    }
-
-    const normalized: Record<string, unknown> = { ...filters };
-    if ('model' in normalized) {
-      normalized.modelId = normalized.model;
-      delete normalized.model;
-    }
-    if ('role' in normalized) {
-      normalized.roleId = normalized.role;
-      delete normalized.role;
-    }
-    return normalized as TFilterQuery<PermissionOrmEntity>;
   }
 }

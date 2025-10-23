@@ -9,7 +9,6 @@ import { TestingModule } from '@nestjs/testing';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -22,6 +21,7 @@ import { UserOrmEntity } from '../entities/user.entity';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+
 import { RoleService } from './role.service';
 
 describe('RoleService (TypeORM)', () => {
@@ -122,16 +122,15 @@ describe('RoleService (TypeORM)', () => {
 
   describe('findAndPopulate', () => {
     it('should find roles, and for each role populate the corresponding permissions and users', async () => {
-      const pageQuery =
-        getPageQuery<RoleOrmEntity>({ sort: ['createdAt', 'asc'] });
       jest.spyOn(roleRepository, 'findAndPopulate');
       const allRoles = await roleRepository.findAll();
-      const result = await roleService.findAndPopulate({}, pageQuery);
+      const result = await roleService.findAndPopulate({
+        order: { createdAt: 'ASC' },
+      });
 
-      expect(roleRepository.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(roleRepository.findAndPopulate).toHaveBeenCalledWith({
+        order: { createdAt: 'ASC' },
+      });
 
       expect(result).toHaveLength(allRoles.length);
 

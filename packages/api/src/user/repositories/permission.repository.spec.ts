@@ -20,6 +20,7 @@ import { PermissionOrmEntity as PermissionEntity } from '../entities/permission.
 import { RoleOrmEntity as RoleEntity } from '../entities/role.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { Action } from '../types/action.type';
+
 import { ModelRepository } from './model.repository';
 import { PermissionRepository } from './permission.repository';
 import { RoleRepository } from './role.repository';
@@ -57,15 +58,12 @@ describe('PermissionRepository (TypeORM)', () => {
         PermissionRepository,
       ]);
 
-    const created = await permissionRepository.findOne({
-      action: Action.CREATE,
-    });
-    const updated = await permissionRepository.findOne({
-      action: Action.UPDATE,
-    });
-    if (!created || !updated) {
-      throw new Error('Expected permission fixtures to be available');
-    }
+    const created = (await permissionRepository.findOne({
+      where: { action: Action.CREATE },
+    }))!;
+    const updated = (await permissionRepository.findOne({
+      where: { action: Action.UPDATE },
+    }))!;
 
     createPermission = created;
     updatePermission = updated;

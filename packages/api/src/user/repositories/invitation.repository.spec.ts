@@ -6,6 +6,7 @@
 
 import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   installInvitationFixturesTypeOrm,
   invitationsFixtures,
@@ -13,7 +14,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
@@ -25,7 +25,6 @@ import { RoleRepository } from './role.repository';
 
 describe('InvitationRepository (TypeORM)', () => {
   let module: TestingModule;
-  let roleRepository: RoleRepository;
   let invitationRepository: InvitationRepository;
 
   beforeAll(async () => {
@@ -47,10 +46,7 @@ describe('InvitationRepository (TypeORM)', () => {
 
     module = testing.module;
 
-    [roleRepository, invitationRepository] = await testing.getMocks([
-      RoleRepository,
-      InvitationRepository,
-    ]);
+    [invitationRepository] = await testing.getMocks([InvitationRepository]);
   });
 
   afterEach(() => {
@@ -68,7 +64,7 @@ describe('InvitationRepository (TypeORM)', () => {
     it('should find one invitation and populate its roles', async () => {
       const baseInvitation = invitationsFixtures[0];
       const invitation = await invitationRepository.findOne({
-        email: baseInvitation.email,
+        where: { email: baseInvitation.email },
       });
 
       const result = await invitationRepository.findOneAndPopulate(

@@ -12,6 +12,7 @@ import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permissi
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Model } from '../dto/model.dto';
 import {
   Permission,
   PermissionCreateDto,
@@ -40,7 +41,7 @@ describe('PermissionController (TypeORM)', () => {
   let modelService: ModelService;
   let deletedId: string;
   let adminRole: Role;
-  let contentModel: ModelEntity;
+  let contentModel: Model;
   let createPermission: Permission;
   let allPermissions: Permission[];
 
@@ -79,21 +80,13 @@ describe('PermissionController (TypeORM)', () => {
       ]);
 
     allPermissions = await permissionService.findAll();
-    const role = await roleService.findOne({ name: 'admin' });
-    if (!role) {
-      throw new Error('Expected admin role fixture to be available');
-    }
-    adminRole = role;
+    adminRole = (await roleService.findOne({ where: { name: 'admin' } }))!;
     contentModel = (await modelService.findOne({
-      name: 'Content',
-    })) as ModelEntity;
-    const permission = await permissionService.findOne({
-      action: Action.CREATE,
-    });
-    if (!permission) {
-      throw new Error('Expected permission fixture to be available');
-    }
-    createPermission = permission;
+      where: { name: 'Content' },
+    }))!;
+    createPermission = (await permissionService.findOne({
+      where: { action: Action.CREATE },
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);

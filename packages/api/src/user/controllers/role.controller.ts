@@ -19,13 +19,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   RoleCreateDto,
@@ -58,16 +56,19 @@ export class RoleController extends BaseOrmController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<RoleOrmEntity>,
     @Query(PopulatePipe)
     populate: string[],
-    @Query(new SearchFilterPipe<RoleOrmEntity>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<RoleOrmEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<RoleOrmEntity>({
+        allowedFields: ['name'],
+      }),
+    )
+    options?: FindManyOptions<RoleOrmEntity>,
   ) {
     const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
     return shouldPopulate
-      ? await this.roleService.findAndPopulate(filters, pageQuery)
-      : await this.roleService.find(filters, pageQuery);
+      ? await this.roleService.findAndPopulate(options)
+      : await this.roleService.find(options);
   }
 
   /**
@@ -77,10 +78,14 @@ export class RoleController extends BaseOrmController<
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<RoleOrmEntity>({ allowedFields: ['name'] }))
-    filters?: TFilterQuery<RoleOrmEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<RoleOrmEntity>({
+        allowedFields: ['name'],
+      }),
+    )
+    options?: FindManyOptions<RoleOrmEntity>,
   ) {
-    return super.count(filters);
+    return super.count(options);
   }
 
   /**

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+// eslint-disable-next-line import/order
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -104,7 +105,7 @@ describe('PasswordResetService (TypeORM)', () => {
       UserRepository,
     ]);
 
-    adminUser = await userService.findOne({ email: users[0].email });
+    adminUser = await userService.findOne({ where: { email: users[0].email } });
   });
 
   afterEach(jest.clearAllMocks);

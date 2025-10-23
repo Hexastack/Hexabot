@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Role,
@@ -33,26 +32,5 @@ export class RoleRepository extends BaseOrmRepository<
       PlainCls: Role,
       FullCls: RoleFull,
     });
-  }
-
-  protected override async preDelete(
-    entities: RoleOrmEntity[],
-    _filter: TFilterQuery<RoleOrmEntity>,
-  ): Promise<void> {
-    for (const entity of entities) {
-      const users = await this.repository
-        .createQueryBuilder()
-        .relation(RoleOrmEntity, 'users')
-        .of(entity)
-        .loadMany();
-
-      if (users.length > 0) {
-        await this.repository
-          .createQueryBuilder()
-          .relation(RoleOrmEntity, 'users')
-          .of(entity)
-          .remove(users);
-      }
-    }
   }
 }

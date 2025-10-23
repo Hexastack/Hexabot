@@ -12,6 +12,8 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 import { SentMessageInfo } from 'nodemailer';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -20,20 +22,17 @@ import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { getPageQuery } from '@/utils/test/pagination';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { InvitationCreateDto } from '../dto/invitation.dto';
+import { Role } from '../dto/role.dto';
 import {
   User,
   UserCreateDto,
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { Role } from '../dto/role.dto';
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
@@ -143,12 +142,12 @@ describe('UserController (TypeORM)', () => {
       JwtService,
       PasswordResetService,
     ]);
-    role = await roleService.findOne({ name: 'admin' });
+    role = await roleService.findOne({ where: { name: 'admin' } });
     if (!role) {
       throw new Error('Expected admin role fixture to be available');
     }
     roles = await roleService.findAll();
-    user = await userService.findOne({ username: 'admin' });
+    user = await userService.findOne({ where: { username: 'admin' } });
   });
 
   const IGNORED_FIELDS = [...IGNORED_TEST_FIELDS, 'resetToken'];
@@ -185,15 +184,42 @@ describe('UserController (TypeORM)', () => {
     });
   });
 
-  describe('findAll', () => {
-    const pageQuery =
-      getPageQuery<UserOrmEntity>({ sort: ['createdAt', 'asc'] });
+  describe('findPage', () => {
+    it('should find users without populating relations when none requested', async () => {
+      const options = { order: { createdAt: 'ASC' as const } };
+      const findSpy = jest.spyOn(userService, 'find');
+      const findAndPopulateSpy = jest.spyOn(userService, 'findAndPopulate');
 
-    it('should find users, and for each user populate the corresponding roles', async () => {
+      const result = await userController.findPage([], options);
+
+      expect(findSpy).toHaveBeenCalledWith(options);
+      expect(findAndPopulateSpy).not.toHaveBeenCalled();
+
+      const usersPlain = await userService.findAll();
+      expect(result).toHaveLength(usersPlain.length);
+
+      const adminPlain = usersPlain.find(
+        (candidate) => candidate.id === user!.id,
+      );
+      const adminResult = result.find((candidate) => candidate.id === user!.id);
+      expect(adminPlain).toBeDefined();
+      expect(adminResult).toMatchObject({
+        id: adminPlain!.id,
+        email: adminPlain!.email,
+        username: adminPlain!.username,
+      });
+    });
+
+    it('should find users, and for each user populate the corresponding roles when requested', async () => {
+      const options = { order: { createdAt: 'ASC' as const } };
       jest.spyOn(userService, 'findAndPopulate');
-      const result = await userService.findAndPopulate({}, pageQuery);
+      const findSpy = jest.spyOn(userService, 'find');
 
-      expect(userService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
+      const result = await userController.findPage(['roles'], options);
+
+      expect(userService.findAndPopulate).toHaveBeenCalledWith(options);
+      expect(findSpy).not.toHaveBeenCalled();
+
       const usersPlain = await userService.findAll();
       expect(result).toHaveLength(usersPlain.length);
 

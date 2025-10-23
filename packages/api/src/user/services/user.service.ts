@@ -18,17 +18,7 @@ export class UserService extends BaseOrmService<
   UserTransformerDto,
   UserDtoConfig
 > {
-  private readonly populateMap: Record<string, string> = {
-    roles: 'roles',
-    avatar: 'avatarAttachment',
-    avatarAttachment: 'avatarAttachment',
-  };
-
   constructor(readonly repository: UserRepository) {
     super(repository);
-  }
-
-  canPopulate(populate: string[]): boolean {
-    return populate.every((field) => field in this.populateMap);
   }
 }
