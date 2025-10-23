@@ -12,7 +12,7 @@ import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   Translation,
-  TranslationDto,
+  TranslationDtoConfig,
   TranslationTransformerDto,
 } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
@@ -21,7 +21,7 @@ import { TranslationOrmEntity } from '../entities/translation.entity';
 export class TranslationRepository extends BaseOrmRepository<
   TranslationOrmEntity,
   TranslationTransformerDto,
-  TranslationDto
+  TranslationDtoConfig
 > {
   constructor(
     @InjectRepository(TranslationOrmEntity)

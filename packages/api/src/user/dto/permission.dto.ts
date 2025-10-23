@@ -87,6 +87,6 @@ export type PermissionTransformerDto = DtoTransformerConfig<{
   FullCls: typeof PermissionFull;
 }>;
 
-export type PermissionActionDto = DtoActionConfig<{
+export type PermissionDtoConfig = DtoActionConfig<{
   create: PermissionCreateDto;
 }>;

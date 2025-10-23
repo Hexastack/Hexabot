@@ -8,16 +8,14 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { User, UserDtoConfig, UserFull } from '../dto/user.dto';
+import { UserDtoConfig, UserTransformerDto } from '../dto/user.dto';
 import { UserOrmEntity } from '../entities/user.entity';
 import { UserRepository } from '../repositories/user.repository';
 
 @Injectable()
 export class UserSeeder extends BaseOrmSeeder<
   UserOrmEntity,
-  UserRepository,
-  User,
-  UserFull,
+  UserTransformerDto,
   UserDtoConfig
 > {
   constructor(private readonly userRepository: UserRepository) {

@@ -17,7 +17,7 @@ import { NlpEntity } from '../dto/nlp-entity.dto';
 import {
   NlpValue,
   NlpValueCreateDto,
-  NlpValueDto,
+  NlpValueDtoConfig,
   NlpValueTransformerDto,
   TNlpValueCount,
 } from '../dto/nlp-value.dto';
@@ -30,7 +30,7 @@ import { NlpEntityService } from './nlp-entity.service';
 export class NlpValueService extends BaseOrmService<
   NlpValueOrmEntity,
   NlpValueTransformerDto,
-  NlpValueDto
+  NlpValueDtoConfig
 > {
   constructor(
     readonly repository: NlpValueRepository,

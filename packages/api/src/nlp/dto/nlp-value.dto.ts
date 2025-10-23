@@ -151,7 +151,7 @@ export type NlpValueTransformerDto = DtoTransformerConfig<{
   FullCls: typeof NlpValueFull;
 }>;
 
-export type NlpValueDto = DtoActionConfig<{
+export type NlpValueDtoConfig = DtoActionConfig<{
   create: NlpValueCreateDto;
   update: NlpValueUpdateDto;
 }>;

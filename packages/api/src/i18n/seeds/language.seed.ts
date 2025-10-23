@@ -14,15 +14,19 @@ import {
 } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
+import {
+  LanguageCreateDto,
+  LanguageDtoConfig,
+  LanguageTransformerDto,
+} from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
-
-type SeedLanguage = Omit<LanguageOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Injectable()
 export class LanguageSeeder extends BaseOrmSeeder<
   LanguageOrmEntity,
-  LanguageRepository
+  LanguageTransformerDto,
+  LanguageDtoConfig
 > {
   constructor(
     languageRepository: LanguageRepository,
@@ -31,7 +35,7 @@ export class LanguageSeeder extends BaseOrmSeeder<
     super(languageRepository);
   }
 
-  async seed(models: SeedLanguage[]): Promise<boolean> {
+  async seed(models: LanguageCreateDto[]): Promise<boolean> {
     const seeded = await super.seed(models);
     if (seeded) {
       await this.cacheManager.del(LANGUAGES_CACHE_KEY);

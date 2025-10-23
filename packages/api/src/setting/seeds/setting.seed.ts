@@ -11,6 +11,7 @@ import { Cache } from 'cache-manager';
 import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
+import { SettingDtoConfig, SettingTransformerDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 
@@ -19,7 +20,8 @@ type SeedSetting = Omit<SettingOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 @Injectable()
 export class SettingSeeder extends BaseOrmSeeder<
   SettingOrmEntity,
-  SettingRepository
+  SettingTransformerDto,
+  SettingDtoConfig
 > {
   constructor(
     settingRepository: SettingRepository,

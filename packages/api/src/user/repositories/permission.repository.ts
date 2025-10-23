@@ -12,7 +12,7 @@ import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   Permission,
-  PermissionActionDto,
+  PermissionDtoConfig,
   PermissionFull,
   PermissionTransformerDto,
 } from '../dto/permission.dto';
@@ -22,7 +22,7 @@ import { PermissionOrmEntity } from '../entities/permission.entity';
 export class PermissionRepository extends BaseOrmRepository<
   PermissionOrmEntity,
   PermissionTransformerDto,
-  PermissionActionDto
+  PermissionDtoConfig
 > {
   constructor(
     @InjectRepository(PermissionOrmEntity)

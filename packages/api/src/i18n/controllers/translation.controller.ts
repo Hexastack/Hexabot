@@ -24,7 +24,7 @@ import { DeleteResult } from '@/utils/generics/base-repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  TranslationDto,
+  TranslationDtoConfig,
   TranslationTransformerDto,
   TranslationUpdateDto,
 } from '../dto/translation.dto';
@@ -36,7 +36,7 @@ import { TranslationService } from '../services/translation.service';
 export class TranslationController extends BaseOrmController<
   TranslationOrmEntity,
   TranslationTransformerDto,
-  TranslationDto
+  TranslationDtoConfig
 > {
   constructor(
     private readonly languageService: LanguageService,

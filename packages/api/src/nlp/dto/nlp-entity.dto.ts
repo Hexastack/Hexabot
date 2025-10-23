@@ -130,7 +130,7 @@ export type NlpEntityTransformerDto = DtoTransformerConfig<{
   FullCls: typeof NlpEntityFull;
 }>;
 
-export type NlpEntityDto = DtoActionConfig<{
+export type NlpEntityDtoConfig = DtoActionConfig<{
   create: NlpEntityCreateDto;
   update: NlpEntityUpdateDto;
 }>;

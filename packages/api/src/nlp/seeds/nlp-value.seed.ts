@@ -8,13 +8,21 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { NlpValueCreateDto } from '../dto/nlp-value.dto';
+import {
+  NlpValueCreateDto,
+  NlpValueDtoConfig,
+  NlpValueTransformerDto,
+} from '../dto/nlp-value.dto';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 
 @Injectable()
-export class NlpValueSeeder extends BaseOrmSeeder<NlpValueOrmEntity> {
+export class NlpValueSeeder extends BaseOrmSeeder<
+  NlpValueOrmEntity,
+  NlpValueTransformerDto,
+  NlpValueDtoConfig
+> {
   constructor(
     nlpValueRepository: NlpValueRepository,
     private readonly nlpEntityRepository: NlpEntityRepository,
@@ -27,7 +35,7 @@ export class NlpValueSeeder extends BaseOrmSeeder<NlpValueOrmEntity> {
       const entities = await this.nlpEntityRepository.findAll();
       const modelDtos = models.map((v) => ({
         ...v,
-        entity: entities.find(({ name }) => name === v.entity)?.id || null,
+        entity: entities.find(({ name }) => name === v.entity)?.id as string,
       }));
       await this.repository.createMany(modelDtos);
       return true;

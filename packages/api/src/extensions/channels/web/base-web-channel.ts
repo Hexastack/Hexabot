@@ -66,6 +66,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
@@ -637,9 +638,7 @@ export default abstract class BaseWebChannelHandler<
    * @throws Error if the max upload size is exceeded.
    * @throws Error when storing the uploaded file fails.
    */
-  async handleWsUpload(
-    req: SocketRequest,
-  ): Promise<AttachmentOrmEntity | null> {
+  async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
@@ -691,7 +690,7 @@ export default abstract class BaseWebChannelHandler<
   async handleWebUpload(
     req: Request,
     _res: Response,
-  ): Promise<AttachmentOrmEntity | null | undefined> {
+  ): Promise<Attachment | null | undefined> {
     try {
       if (!req.session.web?.profile?.id) {
         this.logger.debug('Upload denied, no session is defined');
@@ -730,7 +729,7 @@ export default abstract class BaseWebChannelHandler<
   async handleUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-  ): Promise<AttachmentOrmEntity | null | undefined> {
+  ): Promise<Attachment | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('No session provided');

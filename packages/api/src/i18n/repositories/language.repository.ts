@@ -12,7 +12,7 @@ import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   Language,
-  LanguageDto,
+  LanguageDtoConfig,
   LanguageTransformerDto,
 } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
@@ -21,7 +21,7 @@ import { LanguageOrmEntity } from '../entities/language.entity';
 export class LanguageRepository extends BaseOrmRepository<
   LanguageOrmEntity,
   LanguageTransformerDto,
-  LanguageDto
+  LanguageDtoConfig
 > {
   constructor(
     @InjectRepository(LanguageOrmEntity)

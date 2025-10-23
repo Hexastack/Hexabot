@@ -18,7 +18,7 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { Block } from '../../chat/schemas/block.schema';
 import { BlockService } from '../../chat/services/block.service';
 import {
-  TranslationDto,
+  TranslationDtoConfig,
   TranslationTransformerDto,
 } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
@@ -28,7 +28,7 @@ import { TranslationRepository } from '../repositories/translation.repository';
 export class TranslationService extends BaseOrmService<
   TranslationOrmEntity,
   TranslationTransformerDto,
-  TranslationDto
+  TranslationDtoConfig
 > {
   constructor(
     repository: TranslationRepository,

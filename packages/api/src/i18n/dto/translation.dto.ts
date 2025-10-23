@@ -46,7 +46,7 @@ export type TranslationTransformerDto = DtoTransformerConfig<{
   FullCls: typeof Translation;
 }>;
 
-export type TranslationDto = DtoActionConfig<{
+export type TranslationDtoConfig = DtoActionConfig<{
   create: TranslationCreateDto;
   update: TranslationUpdateDto;
 }>;

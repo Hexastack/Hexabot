@@ -12,7 +12,7 @@ import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   NlpEntity,
-  NlpEntityDto,
+  NlpEntityDtoConfig,
   NlpEntityFull,
   NlpEntityTransformerDto,
 } from '../dto/nlp-entity.dto';
@@ -22,7 +22,7 @@ import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 export class NlpEntityRepository extends BaseOrmRepository<
   NlpEntityOrmEntity,
   NlpEntityTransformerDto,
-  NlpEntityDto
+  NlpEntityDtoConfig
 > {
   constructor(
     @InjectRepository(NlpEntityOrmEntity)

@@ -15,6 +15,7 @@ import {
 } from '@/chat/schemas/types/message';
 import { Payload } from '@/chat/schemas/types/quick-reply';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import BaseWebChannelHandler from './base-web-channel';
 import { WEB_CHANNEL_NAME } from './settings';
 import { Web } from './types';
@@ -68,7 +69,7 @@ type WebEventAdapter =
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
-      attachment: AttachmentOrmEntity | null;
+      attachment: Attachment | null;
     };
 
 export default class WebEventWrapper<

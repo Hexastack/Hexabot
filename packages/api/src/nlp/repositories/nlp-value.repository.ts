@@ -15,7 +15,7 @@ import { Format } from '@/utils/types/format.types';
 import { NlpSampleState } from '..//types';
 import {
   NlpValue,
-  NlpValueDto,
+  NlpValueDtoConfig,
   NlpValueFull,
   NlpValueFullWithCount,
   NlpValueTransformerDto,
@@ -28,7 +28,7 @@ import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 export class NlpValueRepository extends BaseOrmRepository<
   NlpValueOrmEntity,
   NlpValueTransformerDto,
-  NlpValueDto
+  NlpValueDtoConfig
 > {
   constructor(
     @InjectRepository(NlpValueOrmEntity)

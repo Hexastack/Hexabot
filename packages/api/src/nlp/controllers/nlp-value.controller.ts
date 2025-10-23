@@ -28,7 +28,7 @@ import { Format } from '@/utils/types/format.types';
 import {
   NlpValue,
   NlpValueCreateDto,
-  NlpValueDto,
+  NlpValueDtoConfig,
   NlpValueTransformerDto,
   NlpValueUpdateDto,
 } from '../dto/nlp-value.dto';
@@ -40,7 +40,7 @@ import { NlpValueService } from '../services/nlp-value.service';
 export class NlpValueController extends BaseOrmController<
   NlpValueOrmEntity,
   NlpValueTransformerDto,
-  NlpValueDto,
+  NlpValueDtoConfig,
   NlpValue
 > {
   constructor(

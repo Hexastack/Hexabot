@@ -14,7 +14,7 @@ import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
-  PermissionActionDto,
+  PermissionDtoConfig,
   PermissionFull,
   PermissionTransformerDto,
 } from '../dto/permission.dto';
@@ -26,7 +26,7 @@ import { PermissionsTree } from '../types/permission.type';
 export class PermissionService extends BaseOrmService<
   PermissionOrmEntity,
   PermissionTransformerDto,
-  PermissionActionDto
+  PermissionDtoConfig
 > {
   constructor(
     readonly repository: PermissionRepository,

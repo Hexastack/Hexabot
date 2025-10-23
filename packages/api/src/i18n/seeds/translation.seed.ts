@@ -8,13 +8,18 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
+import {
+  TranslationDtoConfig,
+  TranslationTransformerDto,
+} from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
 
 @Injectable()
 export class TranslationSeeder extends BaseOrmSeeder<
   TranslationOrmEntity,
-  TranslationRepository
+  TranslationTransformerDto,
+  TranslationDtoConfig
 > {
   constructor(translationRepository: TranslationRepository) {
     super(translationRepository);

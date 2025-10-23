@@ -26,7 +26,7 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   Language,
   LanguageCreateDto,
-  LanguageDto,
+  LanguageDtoConfig,
   LanguageTransformerDto,
   LanguageUpdateDto,
 } from '../dto/language.dto';
@@ -37,7 +37,7 @@ import { LanguageService } from '../services/language.service';
 export class LanguageController extends BaseOrmController<
   LanguageOrmEntity,
   LanguageTransformerDto,
-  LanguageDto
+  LanguageDtoConfig
 > {
   constructor(protected readonly languageService: LanguageService) {
     super(languageService);

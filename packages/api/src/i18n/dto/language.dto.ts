@@ -61,7 +61,7 @@ export type LanguageTransformerDto = DtoTransformerConfig<{
   FullCls: typeof Language;
 }>;
 
-export type LanguageDto = DtoActionConfig<{
+export type LanguageDtoConfig = DtoActionConfig<{
   create: LanguageCreateDto;
   update: LanguageUpdateDto;
 }>;

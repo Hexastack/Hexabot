@@ -22,7 +22,7 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LanguageDto, LanguageTransformerDto } from '../dto/language.dto';
+import { LanguageDtoConfig, LanguageTransformerDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 
@@ -30,7 +30,7 @@ import { LanguageRepository } from '../repositories/language.repository';
 export class LanguageService extends BaseOrmService<
   LanguageOrmEntity,
   LanguageTransformerDto,
-  LanguageDto
+  LanguageDtoConfig
 > {
   constructor(
     repository: LanguageRepository,

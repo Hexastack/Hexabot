@@ -8,14 +8,19 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { MetadataCreateDto } from '../dto/metadata.dto';
+import {
+  MetadataCreateDto,
+  MetadataDtoConfig,
+  MetadataTransformerDto,
+} from '../dto/metadata.dto';
 import { MetadataOrmEntity } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 
 @Injectable()
 export class MetadataSeeder extends BaseOrmSeeder<
   MetadataOrmEntity,
-  MetadataRepository
+  MetadataTransformerDto,
+  MetadataDtoConfig
 > {
   constructor(repository: MetadataRepository) {
     super(repository);

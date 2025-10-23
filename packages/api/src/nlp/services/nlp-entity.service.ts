@@ -18,7 +18,7 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { Lookup, NlpCacheMap, NlpSampleEntityValue } from '..//types';
 import {
   NlpEntity,
-  NlpEntityDto,
+  NlpEntityDtoConfig,
   NlpEntityFull,
   NlpEntityTransformerDto,
 } from '../dto/nlp-entity.dto';
@@ -31,7 +31,7 @@ import { NlpValueService } from './nlp-value.service';
 export class NlpEntityService extends BaseOrmService<
   NlpEntityOrmEntity,
   NlpEntityTransformerDto,
-  NlpEntityDto
+  NlpEntityDtoConfig
 > {
   constructor(
     readonly repository: NlpEntityRepository,

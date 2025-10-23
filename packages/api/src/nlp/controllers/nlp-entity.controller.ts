@@ -30,7 +30,7 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   NlpEntity,
   NlpEntityCreateDto,
-  NlpEntityDto,
+  NlpEntityDtoConfig,
   NlpEntityTransformerDto,
   NlpEntityUpdateDto,
 } from '../dto/nlp-entity.dto';
@@ -41,7 +41,7 @@ import { NlpEntityService } from '../services/nlp-entity.service';
 export class NlpEntityController extends BaseOrmController<
   NlpEntityOrmEntity,
   NlpEntityTransformerDto,
-  NlpEntityDto,
+  NlpEntityDtoConfig,
   NlpEntity
 > {
   constructor(private readonly nlpEntityService: NlpEntityService) {
