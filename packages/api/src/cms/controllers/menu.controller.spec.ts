@@ -84,7 +84,7 @@ describe('MenuController (TypeORM)', () => {
       expect(parent).toBeDefined();
 
       const result = await controller.find({
-        where: { parentId: parent!.id },
+        where: { parent: { id: parent!.id } },
       });
 
       expect(result.length).toBeGreaterThan(0);
@@ -191,7 +191,7 @@ describe('MenuController (TypeORM)', () => {
         title: 'Child Delete',
         type: MenuType.postback,
         payload: 'child',
-        parentId: root.id,
+        parent: root.id,
       });
       createdMenuIds.add(child.id);
 

@@ -62,11 +62,11 @@ export class ContentController extends BaseOrmController<
   async create(@Body() contentDto: ContentCreateDto): Promise<Content> {
     // Find the content type that corresponds to the given content
     const contentType = await this.contentTypeService.findOne(
-      contentDto.contentTypeId,
+      contentDto.contentType,
     );
     if (!contentType) {
       this.logger.warn(
-        `Failed to fetch content type with id ${contentDto.contentTypeId}. Content type not found.`,
+        `Failed to fetch content type with id ${contentDto.contentType}. Content type not found.`,
       );
       throw new NotFoundException('Content type not found');
     }
@@ -123,7 +123,7 @@ export class ContentController extends BaseOrmController<
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
-        allowedFields: ['contentTypeId', 'title'],
+        allowedFields: ['contentType.id', 'title'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -212,7 +212,7 @@ export class ContentController extends BaseOrmController<
     @Param('id') contentTypeId: string,
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
-        allowedFields: ['contentTypeId'],
+        allowedFields: [],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -232,7 +232,7 @@ export class ContentController extends BaseOrmController<
       ...options,
       where: {
         ...(options?.where ?? {}),
-        contentTypeId,
+        contentType: { id: contentTypeId },
       },
     });
   }

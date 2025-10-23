@@ -97,7 +97,7 @@ describe('MenuService (TypeORM)', () => {
       await expect(
         menuService.create({
           title: 'Invalid child',
-          parentId: parent!.id,
+          parent: parent!.id,
           type: MenuType.nested,
         }),
       ).rejects.toThrow();
@@ -107,7 +107,7 @@ describe('MenuService (TypeORM)', () => {
       await expect(
         menuService.create({
           title: 'Orphan menu',
-          parentId: randomUUID(),
+          parent: randomUUID(),
           type: MenuType.nested,
         }),
       ).rejects.toThrow();
@@ -128,14 +128,14 @@ describe('MenuService (TypeORM)', () => {
         title: 'Child',
         type: MenuType.postback,
         payload: 'payload',
-        parentId: parentA.id,
+        parent: parentA.id,
       });
       createdIds.add(parentA.id);
       createdIds.add(parentB.id);
       createdIds.add(child.id);
 
       const updated = await menuService.updateOne(child.id, {
-        parentId: parentB.id,
+        parent: parentB.id,
       });
 
       expect(updated.parent).toBe(parentB.id);
@@ -155,14 +155,14 @@ describe('MenuService (TypeORM)', () => {
         title: 'Child',
         type: MenuType.postback,
         payload: 'child',
-        parentId: parentNested.id,
+        parent: parentNested.id,
       });
       [parentNested.id, parentPostback.id, child.id].forEach((id) =>
         createdIds.add(id),
       );
 
       await expect(
-        menuService.updateOne(child.id, { parentId: parentPostback.id }),
+        menuService.updateOne(child.id, { parent: parentPostback.id }),
       ).rejects.toThrow();
     });
   });
@@ -176,20 +176,20 @@ describe('MenuService (TypeORM)', () => {
       const child = await menuService.create({
         title: 'Child to delete',
         type: MenuType.nested,
-        parentId: root.id,
+        parent: root.id,
       });
       const leaf = await menuService.create({
         title: 'Leaf to delete',
         type: MenuType.postback,
         payload: 'leaf',
-        parentId: child.id,
+        parent: child.id,
       });
       [root.id, child.id, leaf.id].forEach((id) => createdIds.add(id));
 
       const result = await menuService.deleteOne(root.id);
       const foundRoot = await menuService.findOne(root.id);
       const childMenus = await menuService.find({
-        where: { parentId: root.id },
+        where: { parent: { id: root.id } },
       });
 
       expect(result.deletedCount).toBe(1);

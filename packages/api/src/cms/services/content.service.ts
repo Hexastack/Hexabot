@@ -152,7 +152,7 @@ export class ContentService extends BaseOrmService<
         {
           title: String(title),
           status: status.trim().toLowerCase() === 'true',
-          contentTypeId: contentType.id,
+          contentType: contentType.id,
           dynamicFields: Object.keys(rest)
             .filter((key) =>
               contentType.fields?.map((field) => field.name).includes(key),

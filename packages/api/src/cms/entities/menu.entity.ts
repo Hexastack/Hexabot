@@ -18,6 +18,7 @@ import {
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 export enum MenuType {
   web_url = 'web_url',
@@ -26,7 +27,7 @@ export enum MenuType {
 }
 
 @Entity({ name: 'menus' })
-@Index(['parentId'])
+@Index(['parent'])
 @Check(
   'Menu value and type mismatch',
   `
@@ -53,11 +54,11 @@ export class MenuOrmEntity extends BaseOrmEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'parent_id' })
+  @AsRelation()
   parent?: MenuOrmEntity | null;
 
-  @Column({ name: 'parent_id', nullable: true })
   @RelationId((value: MenuOrmEntity) => value.parent)
-  parentId?: string | null;
+  readonly parentId?: string | null;
 
   /**
    * Type of the menu item, one of: web_url, postback, nested.
@@ -91,7 +92,7 @@ export class MenuOrmEntity extends BaseOrmEntity {
   }
 
   private async ensureValidParent(): Promise<void> {
-    const parentId = this.parentId;
+    const parentId = this.parent?.id;
     if (parentId) {
       // Ensure parent is nested
       const manager = MenuOrmEntity.getEntityManager();

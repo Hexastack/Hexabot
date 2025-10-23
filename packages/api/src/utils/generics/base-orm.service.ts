@@ -7,6 +7,8 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
 import {
   DtoAction,
   DtoActionConfig,
@@ -24,7 +26,7 @@ import {
 import { DeleteResult } from './base-repository';
 
 export abstract class BaseOrmService<
-  Entity extends { id: string },
+  Entity extends BaseOrmEntity,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
   OrmRepository extends BaseOrmRepository<

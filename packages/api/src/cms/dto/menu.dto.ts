@@ -68,7 +68,7 @@ export class MenuCreateDto {
   @IsUUID('4', {
     message: 'Parent must be a valid UUID',
   })
-  parentId?: string;
+  parent?: string;
 
   @ApiProperty({
     description: 'Menu type',

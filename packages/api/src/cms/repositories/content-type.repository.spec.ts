@@ -108,13 +108,13 @@ describe('ContentTypeRepository (TypeORM)', () => {
 
       await contentRepository.create({
         title: 'related-content-a',
-        contentTypeId: created.id,
+        contentType: created.id,
         status: true,
         dynamicFields: {},
       });
       await contentRepository.create({
         title: 'related-content-b',
-        contentTypeId: created.id,
+        contentType: created.id,
         status: true,
         dynamicFields: {},
       });

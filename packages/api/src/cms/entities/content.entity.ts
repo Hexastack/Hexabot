@@ -18,6 +18,7 @@ import {
 import { ContentElement } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { Content } from '../dto/content.dto';
 
@@ -35,11 +36,11 @@ export class ContentOrmEntity extends BaseOrmEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'content_type_id' })
+  @AsRelation()
   contentType!: ContentTypeOrmEntity;
 
-  @Column({ name: 'content_type_id' })
   @RelationId((value: ContentOrmEntity) => value.contentType)
-  contentTypeId!: string;
+  readonly contentTypeId!: string;
 
   /**
    * The title of the content.

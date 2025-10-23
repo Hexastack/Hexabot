@@ -10,7 +10,7 @@ import {
   IHookEntities,
   TNormalizedEvents,
 } from '@nestjs/event-emitter';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
 import {
   DeepPartial,
@@ -20,6 +20,7 @@ import {
   Repository,
 } from 'typeorm';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
 import {
@@ -50,7 +51,7 @@ type RepositoryWhere<EntityType> =
   | undefined;
 
 export abstract class BaseOrmRepository<
-  Entity extends { id: string },
+  Entity extends BaseOrmEntity,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
 > {
@@ -90,6 +91,16 @@ export abstract class BaseOrmRepository<
         exposeUnsetFields: false,
       });
     };
+  }
+
+  public actionDtoToEntity(
+    data: InferActionDto<DtoAction, ActionDto>,
+  ): DeepPartial<Entity> {
+    const e = plainToInstance(
+      this.repository.target as new (...args: any[]) => Entity,
+      instanceToPlain(data),
+    );
+    return Object.assign(e) as DeepPartial<Entity>;
   }
 
   async findAll(
@@ -204,7 +215,7 @@ export abstract class BaseOrmRepository<
   async create(
     payload: InferActionDto<DtoAction.Create, ActionDto>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
-    const entity = this.repository.create(payload as DeepPartial<Entity>);
+    const entity = this.repository.create(this.actionDtoToEntity(payload));
     await this.preCreate(entity);
     await this.emitHook(EHook.preCreate, entity);
     const created = await this.repository.save(entity);
@@ -216,7 +227,9 @@ export abstract class BaseOrmRepository<
   async createMany(
     payloads: InferActionDto<DtoAction.Create, ActionDto>[],
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
-    const entities = this.repository.create(payloads as DeepPartial<Entity>[]);
+    const entities = this.repository.create(
+      payloads.map((payload) => this.actionDtoToEntity(payload)),
+    );
     for (const entity of entities) {
       await this.preCreate(entity);
       await this.emitHook(EHook.preCreate, entity);
@@ -237,12 +250,13 @@ export abstract class BaseOrmRepository<
     const entity = await this.findOneEntity(idOrOptions);
     if (entity) {
       const snapshot = { ...entity };
-      await this.preUpdate(snapshot, payload as DeepPartial<Entity>);
+      const updates = this.actionDtoToEntity(payload);
+      await this.preUpdate(snapshot, updates);
       await this.emitHook(EHook.preUpdate, {
         entity: snapshot,
-        changes: payload,
+        changes: updates,
       });
-      Object.assign(entity, payload);
+      Object.assign(entity, updates);
       const updated = await this.repository.save(entity);
       await this.postUpdate(updated);
       await this.emitHook(EHook.postUpdate, {
@@ -279,7 +293,7 @@ export abstract class BaseOrmRepository<
 
     const filter: RepositoryWhere<Entity> =
       options.where as RepositoryWhere<Entity>;
-    const changes = payload as DeepPartial<Entity>;
+    const changes = this.actionDtoToEntity(payload);
 
     const snapshots = entities.map(
       (entity) =>

@@ -95,7 +95,7 @@ describe('ContentController (TypeORM)', () => {
 
       const created = await controller.create({
         title: 'New content',
-        contentTypeId: contentType!.id,
+        contentType: contentType!.id,
         status: true,
         dynamicFields: { subtitle: 'Test' },
       });
@@ -115,7 +115,7 @@ describe('ContentController (TypeORM)', () => {
       await expect(
         controller.create({
           title: 'Invalid',
-          contentTypeId: randomUUID(),
+          contentType: randomUUID(),
           status: true,
           dynamicFields: {},
         }),
@@ -237,7 +237,7 @@ describe('ContentController (TypeORM)', () => {
       });
       const created = await controller.create({
         title: 'To update',
-        contentTypeId: contentType!.id,
+        contentType: contentType!.id,
         status: true,
         dynamicFields: {},
       });
@@ -259,7 +259,7 @@ describe('ContentController (TypeORM)', () => {
       });
       const created = await controller.create({
         title: 'To delete',
-        contentTypeId: contentType!.id,
+        contentType: contentType!.id,
         status: true,
         dynamicFields: {},
       });

@@ -7,6 +7,7 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
 import { DtoActionConfig, DtoTransformerConfig } from '../types/dto.types';
@@ -15,7 +16,7 @@ import { TValidateProps } from '../types/filter.types';
 import { BaseOrmService } from './base-orm.service';
 
 export abstract class BaseOrmController<
-  Entity extends { id: string },
+  Entity extends BaseOrmEntity,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
   TStub = never,

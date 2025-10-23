@@ -6,12 +6,14 @@
 
 import { DeepPartial, FindManyOptions } from 'typeorm';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
 import { PageQueryDto } from '../pagination/pagination-query.dto';
 
 import { BaseOrmRepository } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
-  Entity extends { id: string },
+  Entity extends BaseOrmEntity,
   RepositoryType extends BaseOrmRepository<
     Entity,
     any,
