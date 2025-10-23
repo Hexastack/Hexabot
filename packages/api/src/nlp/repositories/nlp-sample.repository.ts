@@ -52,9 +52,7 @@ export class NlpSampleRepository extends BaseOrmRepository<
   }): Promise<NlpSample[]> {
     const entities = await this.buildFindByEntitiesQuery(criterias).getMany();
 
-    return entities.map((entity) =>
-      plainToInstance(NlpSample, entity as DeepPartial<NlpSampleOrmEntity>),
-    );
+    return entities.map((entity) => plainToInstance(NlpSample, entity));
   }
 
   async findByEntitiesAndPopulate(criterias: {
@@ -68,9 +66,7 @@ export class NlpSampleRepository extends BaseOrmRepository<
       .leftJoinAndSelect('sampleEntities.value', 'value')
       .getMany();
 
-    return entities.map((entity) =>
-      plainToInstance(NlpSampleFull, entity as DeepPartial<NlpSampleOrmEntity>),
-    );
+    return entities.map((entity) => plainToInstance(NlpSampleFull, entity));
   }
 
   async countByEntities(criterias: {

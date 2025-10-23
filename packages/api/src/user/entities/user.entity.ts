@@ -6,6 +6,7 @@
 
 import {
   BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -21,6 +22,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { UserProvider } from '../types/user-provider.type';
+import { hash } from '../utilities/bcryptjs';
 
 import { RoleOrmEntity } from './role.entity';
 
@@ -94,5 +96,32 @@ export class UserOrmEntity extends BaseOrmEntity {
     if (!this.provider) {
       this.provider = { strategy: 'local' };
     }
+  }
+
+  @BeforeInsert()
+  ensurePassword(): void {
+    if (!this.password) {
+      throw new Error('No password provided');
+    }
+
+    this.password = this.hashIfNeeded(this.password);
+    if (this.resetToken) {
+      this.resetToken = this.hashIfNeeded(this.resetToken);
+    }
+  }
+
+  @BeforeUpdate()
+  hashSensitiveFields(): void {
+    if (this.password) {
+      this.password = this.hashIfNeeded(this.password);
+    }
+
+    if (this.resetToken) {
+      this.resetToken = this.hashIfNeeded(this.resetToken);
+    }
+  }
+
+  private hashIfNeeded(value: string): string {
+    return value.startsWith('$2') ? value : hash(value);
   }
 }
