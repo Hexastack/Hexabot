@@ -164,7 +164,7 @@ describe('RoleController (TypeORM)', () => {
       );
 
       const permissions = await permissionService.find({
-        where: { roleId: roleAdmin.id },
+        where: { role: { id: roleAdmin.id } },
       });
       const result = (await roleController.findOne(roleAdmin.id, [
         'users',

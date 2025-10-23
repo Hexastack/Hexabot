@@ -104,7 +104,7 @@ describe('PermissionService (TypeORM)', () => {
           action: expected.action,
           relation: expected.relation,
         },
-        ['model', 'role', 'createdAt', 'updatedAt', 'modelId', 'roleId'],
+        ['model', 'role', 'createdAt', 'updatedAt'],
       );
 
       expect(result?.role?.id).toBe(role?.id);

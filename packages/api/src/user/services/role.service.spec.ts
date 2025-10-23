@@ -71,7 +71,7 @@ describe('RoleService (TypeORM)', () => {
     role = foundRole;
 
     permissions = await permissionRepository.find({
-      where: { roleId: roleFixtureIds.admin },
+      where: { role: { id: roleFixtureIds.admin } },
     });
   });
 

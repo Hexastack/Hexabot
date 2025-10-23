@@ -4,9 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
@@ -15,28 +23,30 @@ import { ModelOrmEntity } from './model.entity';
 import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'permissions' })
-@Index(['modelId', 'action', 'roleId', 'relation'], { unique: true })
+@Index(['model', 'action', 'role', 'relation'], { unique: true })
 export class PermissionOrmEntity extends BaseOrmEntity {
-  @Column({ name: 'model_id' })
-  modelId!: string;
-
   @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'model_id' })
+  @AsRelation()
   model!: ModelOrmEntity;
 
-  @Column({ type: 'varchar' })
+  @RelationId((permission: PermissionOrmEntity) => permission.model)
+  readonly modelId!: string;
+
+  @Column({ type: 'varchar', enum: Object.values(Action) })
   action!: Action;
 
   @ManyToOne(() => RoleOrmEntity, (role) => role.permissions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'role_id' })
+  @AsRelation()
   role!: RoleOrmEntity;
 
-  @Column({ name: 'role_id' })
-  roleId!: string;
+  @RelationId((permission: PermissionOrmEntity) => permission.role)
+  readonly roleId!: string;
 
   @Column({ default: 'role' })
   relation!: TRelation;

@@ -39,8 +39,6 @@ describe('UserService (TypeORM)', () => {
     'timezone',
     'resetToken',
     'provider',
-    'avatarAttachment',
-    'roleIds',
   ];
 
   beforeAll(async () => {

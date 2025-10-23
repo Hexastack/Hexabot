@@ -78,7 +78,7 @@ export class User extends UserStub {
   @Expose({ name: 'roleIds' })
   roles: string[];
 
-  @Expose()
+  @Expose({ name: 'avatarId' })
   avatar: string;
 }
 
@@ -88,8 +88,8 @@ export class UserFull extends UserStub {
   @Type(() => Role)
   roles: Role[];
 
-@Expose({ name: 'avatarAttachment' })
-@Type(() => Attachment)
+  @Expose()
+  @Type(() => Attachment)
   avatar: Attachment | null;
 }
 

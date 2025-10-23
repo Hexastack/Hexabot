@@ -126,10 +126,8 @@ export const installPermissionFixturesTypeOrm = async (
       id: fixture.id,
       action: fixture.action,
       relation: fixture.relation,
-      modelId: fixture.model,
-      roleId: fixture.role,
-      model: { id: fixture.model } as ModelEntity,
-      role: { id: fixture.role } as RoleEntity,
+      model: { id: fixture.model },
+      role: { id: fixture.role },
     }),
   );
 

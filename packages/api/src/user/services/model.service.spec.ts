@@ -59,7 +59,7 @@ describe('ModelService (TypeORM)', () => {
       modelFixtureIds.contentType,
     )) as ModelEntity;
     permissions = await permissionRepository.find({
-      where: { modelId: modelFixtureIds.contentType },
+      where: { model: { id: modelFixtureIds.contentType } },
     });
   });
 

@@ -38,7 +38,6 @@ describe('UserRepository (TypeORM)', () => {
     'timezone',
     'resetToken',
     'provider',
-    'avatarAttachment',
   ];
 
   beforeAll(async () => {

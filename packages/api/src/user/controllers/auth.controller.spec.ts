@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+// eslint-disable-next-line import/order
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import {
   InternalServerErrorException,

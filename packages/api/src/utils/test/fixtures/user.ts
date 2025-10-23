@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { UserCreateDto } from '@/user/dto/user.dto';
-import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { User, UserModel } from '@/user/schemas/user.schema';
 import { hash } from '@/user/utilities/bcryptjs';
@@ -107,13 +107,12 @@ export const userFixtureIds = {
 } as const;
 
 export const installUserFixturesTypeOrm = async (dataSource: DataSource) => {
-  const roleRepository = dataSource.getRepository(RoleEntity);
+  const roleRepository = dataSource.getRepository(RoleOrmEntity);
   const userRepository = dataSource.getRepository(UserOrmEntity);
 
-  const roles =
-    (await roleRepository.count()) === 0
-      ? await installRoleFixturesTypeOrm(dataSource)
-      : await roleRepository.find();
+  if ((await roleRepository.count()) === 0) {
+    await installRoleFixturesTypeOrm(dataSource);
+  }
 
   if (await userRepository.count()) {
     return await userRepository.find({ relations: ['roles'] });
@@ -126,7 +125,8 @@ export const installUserFixturesTypeOrm = async (dataSource: DataSource) => {
         (index === 0 ? userFixtureIds.admin : undefined),
       ...user,
       password: hash(user.password),
-      roles: user.roles.map((roleId) => ({ id: roleId }) as RoleEntity),
+      roles: user.roles.map((roleId) => ({ id: roleId }) as RoleOrmEntity),
+      avatar: user.avatar ? { id: user.avatar } : undefined,
     }),
   );
 

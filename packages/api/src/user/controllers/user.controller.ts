@@ -168,7 +168,7 @@ export class ReadOnlyUserController extends BaseOrmController<
     const roleIds = currentUser?.roles?.map(({ id }) => id) ?? [];
 
     const currentPermissions = await this.permissionService.findAndPopulate({
-      where: { roleId: In(roleIds) },
+      where: { role: { id: In(roleIds) } },
     });
 
     return {

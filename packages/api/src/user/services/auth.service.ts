@@ -8,8 +8,8 @@ import { Injectable } from '@nestjs/common';
 import { compareSync } from 'bcryptjs';
 
 import { User } from '../dto/user.dto';
-import { hash } from '../utilities/bcryptjs';
 import { UserRepository } from '../repositories/user.repository';
+import { hash } from '../utilities/bcryptjs';
 import { UserService } from './user.service';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class AuthService {
         last_name: entity.last_name,
         email: entity.email,
         roles: entity.roleIds ?? [],
-        avatar: entity.avatar ?? null,
+        avatar: entity.avatarId ?? null,
         sendEmail: entity.sendEmail,
         state: entity.state,
         language: entity.language,

@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { hash } from '../utilities/hash';
 
@@ -34,10 +35,11 @@ export class InvitationOrmEntity extends BaseOrmEntity {
     joinColumn: { name: 'invitation_id' },
     inverseJoinColumn: { name: 'role_id' },
   })
+  @AsRelation({ allowArray: true })
   roles!: RoleOrmEntity[];
 
   @RelationId((invitation: InvitationOrmEntity) => invitation.roles)
-  roleIds!: string[];
+  readonly roleIds!: string[];
 
   @BeforeInsert()
   @BeforeUpdate()

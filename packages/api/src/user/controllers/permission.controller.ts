@@ -59,7 +59,7 @@ export class PermissionController extends BaseOrmController<
     populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<PermissionOrmEntity>({
-        allowedFields: ['modelId', 'roleId', 'relation'],
+        allowedFields: ['model.id', 'role.id', 'relation'],
       }),
     )
     options?: FindManyOptions<PermissionOrmEntity>,

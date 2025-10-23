@@ -82,7 +82,7 @@ describe('RoleRepository (TypeORM)', () => {
   describe('findOneAndPopulate', () => {
     it('should find one role and populate its permissions and users', async () => {
       const permissions = await permissionRepository.find({
-        where: { roleId: adminRole.id },
+        where: { role: { id: adminRole.id } },
       });
 
       const result = await roleRepository.findOneAndPopulate(adminRole.id);
@@ -149,7 +149,7 @@ describe('RoleRepository (TypeORM)', () => {
   describe('deleteOne', () => {
     it('should delete a role by id', async () => {
       const permissionsBefore = await permissionRepository.find({
-        where: { roleId: managerRole.id },
+        where: { role: { id: managerRole.id } },
       });
       expect(permissionsBefore.length).toBeGreaterThan(0);
 
@@ -161,7 +161,7 @@ describe('RoleRepository (TypeORM)', () => {
       });
 
       const permissionsAfter = await permissionRepository.find({
-        where: { roleId: managerRole.id },
+        where: { role: { id: managerRole.id } },
       });
       expect(permissionsAfter.length).toEqual(0);
     });

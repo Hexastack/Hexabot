@@ -18,6 +18,7 @@ import {
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { UserProvider } from '../types/user-provider.type';
 
@@ -42,15 +43,16 @@ export class UserOrmEntity extends BaseOrmEntity {
   @Column()
   password!: string;
 
-  @Column({ name: 'avatar_id', nullable: true })
-  avatar?: string | null;
-
   @ManyToOne(() => AttachmentOrmEntity, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'avatar_id' })
-  avatarAttachment?: AttachmentOrmEntity | null;
+  @AsRelation()
+  avatar?: AttachmentOrmEntity | null;
+
+  @RelationId((user: UserOrmEntity) => user.avatar)
+  readonly avatarId?: string | null;
 
   @ManyToMany(() => RoleOrmEntity, (role) => role.users, {
     cascade: false,
@@ -60,10 +62,11 @@ export class UserOrmEntity extends BaseOrmEntity {
     joinColumn: { name: 'user_id' },
     inverseJoinColumn: { name: 'role_id' },
   })
+  @AsRelation({ allowArray: true })
   roles!: RoleOrmEntity[];
 
   @RelationId((user: UserOrmEntity) => user.roles)
-  roleIds!: string[];
+  readonly roleIds!: string[];
 
   @Column({ name: 'send_email', default: false })
   sendEmail!: boolean;

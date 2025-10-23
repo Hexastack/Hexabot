@@ -30,7 +30,7 @@ export class UserRepository extends BaseOrmRepository<
     @InjectRepository(UserOrmEntity)
     repository: Repository<UserOrmEntity>,
   ) {
-    super(repository, ['roles', 'avatarAttachment'], {
+    super(repository, ['roles', 'avatar'], {
       PlainCls: User,
       FullCls: UserFull,
     });
