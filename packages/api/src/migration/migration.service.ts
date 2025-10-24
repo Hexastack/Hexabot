@@ -10,31 +10,41 @@ import { join } from 'path';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { kebabCase } from 'lodash';
-import mongoose, { Model } from 'mongoose';
-import leanDefaults from 'mongoose-lean-defaults';
-import leanGetters from 'mongoose-lean-getters';
-import leanVirtuals from 'mongoose-lean-virtuals';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataService } from '@/setting/services/metadata.service';
-import idPlugin from '@/utils/schema-plugin/id.plugin';
 
-import { Migration, MigrationDocument } from './migration.schema';
+import { MigrationOrmEntity } from './migration.entity';
 import {
   MigrationAction,
   MigrationName,
   MigrationRunOneParams,
   MigrationRunParams,
+  MigrationServices,
   MigrationSuccessCallback,
   MigrationVersion,
 } from './types';
 
-// Version starting which we added the migrations
-const INITIAL_DB_VERSION = 'v2.1.9';
+type LoadedMigration = {
+  up: (
+    queryRunner: QueryRunner,
+    services?: MigrationServices,
+  ) => Promise<unknown>;
+  down: (
+    queryRunner: QueryRunner,
+    services?: MigrationServices,
+  ) => Promise<unknown>;
+};
+
+type MigrationRunResult = 'executed' | 'skipped' | 'failed';
+
+// Version from which TypeORM migrations start
+const INITIAL_DB_VERSION = 'v3.0.0';
 
 @Injectable()
 export class MigrationService implements OnApplicationBootstrap {
@@ -44,19 +54,21 @@ export class MigrationService implements OnApplicationBootstrap {
     private readonly metadataService: MetadataService,
     private readonly httpService: HttpService,
     private readonly attachmentService: AttachmentService,
-    @InjectModel(Migration.name)
-    private readonly migrationModel: Model<Migration>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    @InjectRepository(MigrationOrmEntity)
+    private readonly migrationRepository: Repository<MigrationOrmEntity>,
   ) {}
 
   async onApplicationBootstrap() {
     await this.ensureMigrationPathExists();
 
-    if (mongoose.connection.readyState !== 1) {
-      await this.connect();
+    if (!this.dataSource.isInitialized) {
+      await this.dataSource.initialize();
     }
-    this.logger.log('Mongoose connection established!');
+    this.logger.log('TypeORM connection established!');
 
-    if (!this.isCLI && config.mongo.autoMigrate) {
+    if (!this.isCLI && config.database.autoMigrate) {
       this.logger.log('Executing migrations ...');
       await this.run({
         action: MigrationAction.UP,
@@ -74,7 +86,7 @@ export class MigrationService implements OnApplicationBootstrap {
    * @returns The migrations dir path
    */
   public get migrationFilePath() {
-    return this.moduleRef.get('MONGO_MIGRATION_DIR');
+    return this.moduleRef.get('TYPEORM_MIGRATION_DIR');
   }
 
   /**
@@ -131,9 +143,14 @@ export class MigrationService implements OnApplicationBootstrap {
       this.exit();
     }
 
-    const migrationFileName = `${Date.now()}-${name}.migration.ts`;
+    const timestamp = Date.now();
+    const migrationFileName = `${timestamp}-${name}.migration.ts`;
     const filePath = join(this.migrationFilePath, migrationFileName);
-    const template = this.getMigrationTemplate();
+    const className = this.buildMigrationClassName(timestamp, version);
+    const template = this.getMigrationTemplate({
+      className,
+      version,
+    });
     try {
       fs.writeFileSync(filePath, template);
       this.logger.log(
@@ -150,45 +167,55 @@ export class MigrationService implements OnApplicationBootstrap {
    * Get a migration template to be used while creating a new migration
    * @returns A migration template
    */
-  private getMigrationTemplate() {
-    return `import mongoose from 'mongoose';
+  private getMigrationTemplate({
+    className,
+    version,
+  }: {
+    className: string;
+    version: MigrationVersion;
+  }) {
+    return `import { MigrationInterface, QueryRunner } from 'typeorm';
 
 import { MigrationServices } from '../types';
 
-module.exports = {
-  async up(services: MigrationServices) {
-    // Migration logic
-    return false;
-  },
-  async down(services: MigrationServices) {
-    // Rollback logic
-    return false;
-  },
-};`;
+export default class ${className} implements MigrationInterface {
+  name = '${className}';
+
+  public async up(
+    queryRunner: QueryRunner,
+    _services?: MigrationServices,
+  ): Promise<void> {
+    // Migration logic for ${version}
   }
 
-  /**
-   * Establishes a MongoDB connection
-   */
-  private async connect() {
-    // Disable for unit tests
-    if (config.env === 'test') {
-      return;
-    }
+  public async down(
+    queryRunner: QueryRunner,
+    _services?: MigrationServices,
+  ): Promise<void> {
+    // Rollback logic for ${version}
+  }
+}
+`;
+  }
 
-    try {
-      const connection = await mongoose.connect(config.mongo.uri, {
-        dbName: config.mongo.dbName,
-      });
+  private buildMigrationClassName(
+    timestamp: number,
+    version: MigrationVersion,
+  ) {
+    const normalizedVersion = version
+      .replace(/^v/i, 'v')
+      .replace(/\./g, '_')
+      .replace(/-/g, '_');
+    const versionSuffix = normalizedVersion.replace(/^v/, 'V');
+    return `Migration${timestamp}_${versionSuffix}`;
+  }
 
-      connection.plugin(idPlugin);
-      connection.plugin(leanVirtuals);
-      connection.plugin(leanGetters);
-      connection.plugin(leanDefaults);
-    } catch (err) {
-      this.logger.error('Failed to connect to MongoDB');
-      throw err;
-    }
+  private getMigrationServices(): MigrationServices {
+    return {
+      logger: this.logger,
+      http: this.httpService,
+      attachmentService: this.attachmentService,
+    };
   }
 
   /**
@@ -238,41 +265,63 @@ module.exports = {
    *
    * @returns Resolves when the migration action is successfully executed or stops if the migration already exists.
    */
-  private async runOne({ version, action }: MigrationRunOneParams) {
+  private async runOne({
+    version,
+    action,
+  }: MigrationRunOneParams): Promise<MigrationRunResult> {
     // Verify DB status
-    const { exist, migrationDocument } = await this.verifyStatus({
+    const { exist, migrationRecord } = await this.verifyStatus({
       version,
       action,
     });
 
     if (exist) {
-      return false; // stop exec;
+      return 'skipped'; // stop exec;
     }
 
-    try {
-      const migration = await this.loadMigrationFile(version);
-      const result = await migration[action]({
-        logger: this.logger,
-        http: this.httpService,
-        attachmentService: this.attachmentService,
-      });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
 
-      if (result) {
-        await this.successCallback({
+    try {
+      await queryRunner.startTransaction();
+      const migration = await this.loadMigrationFile(version);
+      const result = await migration[action](
+        queryRunner,
+        this.getMigrationServices(),
+      );
+
+      if (result === false) {
+        if (queryRunner.isTransactionActive) {
+          await queryRunner.rollbackTransaction();
+        }
+        this.failureCallback({
           version,
           action,
-          migrationDocument,
         });
+        return 'failed';
       }
 
-      return result; // stop exec;
+      await queryRunner.commitTransaction();
+
+      await this.successCallback({
+        version,
+        action,
+        migrationRecord,
+      });
+
+      return 'executed';
     } catch (e) {
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
       this.failureCallback({
         version,
         action,
       });
-      this.logger.log(e.stack);
-      return false;
+      this.logger.error(e.stack);
+      return 'failed';
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -332,7 +381,12 @@ module.exports = {
     let lastVersion = version;
 
     for (const version of filteredVersions) {
-      await this.runOne({ version, action });
+      const outcome = await this.runOne({ version, action });
+      if (outcome === 'failed') {
+        throw new Error(
+          `Migration "${version}" failed while executing "${action}".`,
+        );
+      }
       lastVersion = version;
     }
 
@@ -351,7 +405,12 @@ module.exports = {
 
     let lastVersion: MigrationVersion = INITIAL_DB_VERSION;
     for (const version of versions) {
-      await this.runOne({ version, action });
+      const outcome = await this.runOne({ version, action });
+      if (outcome === 'failed') {
+        throw new Error(
+          `Migration "${version}" failed while executing "${action}".`,
+        );
+      }
       lastVersion = version;
     }
 
@@ -366,27 +425,25 @@ module.exports = {
    *
    * @returns A promise resolving to an object containing:
    * - `exist`: A boolean indicating if the migration already exists in the specified state.
-   * - `migrationDocument`: The existing migration document, or `null` if not found.
+   * - `migrationRecord`: The existing migration record, or `null` if not found.
    */
   private async verifyStatus({ version, action }: MigrationRunParams): Promise<{
     exist: boolean;
-    migrationDocument: MigrationDocument | null;
+    migrationRecord: MigrationOrmEntity | null;
   }> {
-    let exist = false;
-    const migrationDocument = await this.migrationModel.findOne({
-      version,
+    const migrationRecord = await this.migrationRepository.findOne({
+      where: { version },
     });
 
-    if (migrationDocument) {
-      exist = Boolean(migrationDocument.status === action);
-      if (exist) {
-        this.logger.warn(
-          `Cannot proceed migration "${version}" is already in "${action}" state`,
-        );
-      }
+    const exist = migrationRecord !== null && migrationRecord.status === action;
+
+    if (exist) {
+      this.logger.warn(
+        `Cannot proceed migration "${version}" is already in "${action}" state`,
+      );
     }
 
-    return { exist, migrationDocument };
+    return { exist, migrationRecord };
   }
 
   /**
@@ -458,7 +515,9 @@ module.exports = {
    *
    * @returns The loaded migration object containing `up` and `down` methods.
    */
-  private async loadMigrationFile(version: MigrationVersion) {
+  private async loadMigrationFile(
+    version: MigrationVersion,
+  ): Promise<LoadedMigration> {
     try {
       // Map the provided name to the actual file with timestamp
       const fileName = this.findMigrationFileByVersion(version);
@@ -468,7 +527,15 @@ module.exports = {
       }
 
       const filePath = join(this.migrationFilePath, fileName);
-      const migration = await import(filePath);
+      const migrationModule = await import(filePath);
+      const migrationExport =
+        migrationModule?.default ??
+        migrationModule?.Migration ??
+        migrationModule;
+      const migration =
+        typeof migrationExport === 'function'
+          ? new migrationExport()
+          : migrationExport;
       if (
         !migration ||
         typeof migration.up !== 'function' ||
@@ -489,22 +556,22 @@ module.exports = {
    *
    * @param version - The version of the migration to update.
    * @param action - The action performed on the migration (e.g., 'up' or 'down').
-   * @param migrationDocument - An optional existing migration document to update. If not provided, a new document is created.
+   * @param migrationRecord - An optional existing migration record to update. If not provided, a new record is created.
    *
    * @returns Resolves when the migration status is successfully updated.
    */
   async updateStatus({
     version,
     action,
-    migrationDocument,
+    migrationRecord,
   }: Omit<MigrationSuccessCallback, 'terminal'>) {
-    const document =
-      migrationDocument ||
-      new this.migrationModel({
+    const record =
+      migrationRecord ??
+      this.migrationRepository.create({
         version,
       });
-    document.status = action;
-    await document.save();
+    record.status = action;
+    await this.migrationRepository.save(record);
   }
 
   /**
@@ -512,26 +579,53 @@ module.exports = {
    *
    * @param version - The version of the successfully completed migration.
    * @param action - The action performed (e.g., 'up' or 'down').
-   * @param migrationDocument - The migration document to update.
+   * @param migrationRecord - The migration record to update.
    *
    * @returns Resolves when all success-related operations are completed.
    */
   private async successCallback({
     version,
     action,
-    migrationDocument,
+    migrationRecord,
   }: MigrationSuccessCallback): Promise<void> {
-    await this.updateStatus({ version, action, migrationDocument });
+    await this.updateStatus({ version, action, migrationRecord });
     const migrationDisplayName = `${version} [${action}]`;
     this.logger.log(`"${migrationDisplayName}" migration done`);
     // Create or Update DB version
+    const metadataVersion =
+      action === MigrationAction.UP
+        ? version
+        : await this.getLatestAppliedVersion();
     await this.metadataService.updateOne(
       { where: { name: 'db-version' } },
       {
-        value: version,
+        value: metadataVersion,
       },
     );
-    this.logger.log(`db-version metadata "${version}"`);
+    this.logger.log(`db-version metadata "${metadataVersion}"`);
+  }
+
+  /**
+   * Retrieves the latest applied migration version (status === 'up').
+   *
+   * @returns The most recent applied migration version or the initial DB version if none are applied.
+   */
+  private async getLatestAppliedVersion(): Promise<MigrationVersion> {
+    const appliedMigrations = await this.migrationRepository.find({
+      where: { status: MigrationAction.UP },
+    });
+
+    if (!appliedMigrations.length) {
+      return INITIAL_DB_VERSION as MigrationVersion;
+    }
+
+    const [first, ...rest] = appliedMigrations;
+
+    return rest.reduce<MigrationVersion>(
+      (latest, current) =>
+        this.isNewerVersion(current.version, latest) ? current.version : latest,
+      first.version,
+    );
   }
 
   /**

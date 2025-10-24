@@ -8,37 +8,66 @@ import fs from 'fs';
 
 import { HttpService } from '@nestjs/axios';
 import { ModuleRef } from '@nestjs/core';
-import { getModelToken } from '@nestjs/mongoose';
+import { TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
+import { MetadataRepository } from '@/setting/repositories/metadata.repository';
 import { MetadataService } from '@/setting/services/metadata.service';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Migration } from './migration.schema';
+import { MigrationOrmEntity } from './migration.entity';
 import { MigrationService } from './migration.service';
-import { MigrationAction } from './types';
+import { MigrationAction, MigrationVersion } from './types';
 
 describe('MigrationService', () => {
   let service: MigrationService;
   let loggerService: LoggerService;
   let metadataService: MetadataService;
+  let dataSource: DataSource;
+  let testingModule: TestingModule;
+  let httpService: HttpService;
+  let attachmentService: AttachmentService;
+
+  const originalAutoMigrate = config.database.autoMigrate;
+
+  const createQueryRunnerStub = () => {
+    const stub: any = {
+      connect: jest.fn().mockResolvedValue(undefined),
+      startTransaction: jest.fn().mockImplementation(() => {
+        stub.isTransactionActive = true;
+        return Promise.resolve();
+      }),
+      commitTransaction: jest.fn().mockImplementation(() => {
+        stub.isTransactionActive = false;
+        return Promise.resolve();
+      }),
+      rollbackTransaction: jest.fn().mockImplementation(() => {
+        stub.isTransactionActive = false;
+        return Promise.resolve();
+      }),
+      release: jest.fn().mockResolvedValue(undefined),
+      isTransactionActive: false,
+    };
+    return stub;
+  };
 
   beforeAll(async () => {
-    const { getMocks, resolveMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(async () => await Promise.resolve())],
+    const mocks = await buildTestingMocks({
       providers: [
         MigrationService,
+        MetadataService,
+        MetadataRepository,
         {
           provide: LoggerService,
           useValue: {
             log: jest.fn(),
             error: jest.fn(),
+            warn: jest.fn(),
           },
         },
         {
@@ -46,38 +75,62 @@ describe('MigrationService', () => {
           useValue: {},
         },
         {
+          provide: AttachmentService,
+          useValue: {},
+        },
+        {
           provide: ModuleRef,
           useValue: {
             get: jest.fn((token: string) => {
-              if (token === 'MONGO_MIGRATION_DIR') {
+              if (token === 'TYPEORM_MIGRATION_DIR') {
                 return '/migrations';
               }
+              return undefined;
             }),
           },
         },
-        {
-          provide: getModelToken(Migration.name),
-          useValue: jest.fn(),
-        },
       ],
+      typeorm: {
+        entities: [MigrationOrmEntity, MetadataOrmEntity],
+      },
     });
-    [service, metadataService] = await getMocks([
+
+    testingModule = mocks.module;
+    [service, metadataService] = await mocks.getMocks([
       MigrationService,
       MetadataService,
     ]);
-    [loggerService] = await resolveMocks([LoggerService]);
+    [loggerService, dataSource, httpService, attachmentService] =
+      await mocks.resolveMocks([
+        LoggerService,
+        DataSource,
+        HttpService,
+        AttachmentService,
+      ]);
   });
 
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    config.database.autoMigrate = originalAutoMigrate;
+    if (testingModule) {
+      await testingModule.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    delete process.env.HEXABOT_CLI;
+  });
 
   describe('create', () => {
-    beforeEach(() => {
-      jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
-      process.env.HEXABOT_CLI = 'true';
-    });
+    let exitSpy: jest.SpyInstance;
 
-    afterEach(jest.restoreAllMocks);
+    beforeEach(() => {
+      process.env.HEXABOT_CLI = 'true';
+      exitSpy = jest
+        .spyOn(service, 'exit')
+        .mockImplementation(() => undefined as never);
+    });
 
     it('should create a migration file and log success', () => {
       const mockFiles = ['12345-some-migration.migration.ts'];
@@ -87,31 +140,26 @@ describe('MigrationService', () => {
         .mockReturnValue('template');
       jest
         .spyOn(service as any, 'getMigrationName')
-        .mockImplementation((file) => file);
-      const exitSpy = jest.spyOn(service, 'exit').mockImplementation();
-
+        .mockImplementation((file: string) => file);
       jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-      jest.spyOn(fs, 'writeFileSync').mockReturnValue();
+      jest.spyOn(fs, 'writeFileSync').mockImplementation();
 
       service.create('v2.2.0');
 
-      const expectedFilePath = expect.stringMatching(
-        /\/migrations\/\d+-v-2-2-0.migration.ts$/,
-      );
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        expectedFilePath,
+        expect.stringMatching(/\/migrations\/\d+-v-2-2-0\.migration\.ts$/),
         'template',
       );
       expect(loggerService.log).toHaveBeenCalledWith(
-        expect.stringMatching(/Migration file for "v2.2.0" created/),
+        expect.stringContaining('Migration file for "v2.2.0" created'),
       );
       expect(exitSpy).toHaveBeenCalled();
     });
 
     it('should log an error and exit if a migration with the same name exists', () => {
-      const mockFiles = ['12345-v-2-2-1.migration.ts'];
-      jest.spyOn(service, 'getMigrationFiles').mockReturnValue(mockFiles);
-      const exitSpy = jest.spyOn(service, 'exit').mockImplementation();
+      jest
+        .spyOn(service, 'getMigrationFiles')
+        .mockReturnValue(['12345-v-2-2-1.migration.ts']);
 
       service.create('v2.2.1');
 
@@ -123,21 +171,15 @@ describe('MigrationService', () => {
   });
 
   describe('onApplicationBootstrap', () => {
-    beforeEach(() => {
-      jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
-    });
-
-    afterEach(jest.restoreAllMocks);
-
     it('should log a message and execute migrations when autoMigrate is true', async () => {
       process.env.HEXABOT_CLI = '';
-      jest
-        .spyOn(metadataService, 'findOne')
-        .mockResolvedValue({
-          name: 'db-version',
-          value: 'v2.1.9',
-        } as MetadataOrmEntity);
-      jest.spyOn(service, 'run').mockResolvedValue();
+      config.database.autoMigrate = true;
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(service, 'run').mockResolvedValue(undefined);
+      jest.spyOn(metadataService, 'findOne').mockResolvedValue({
+        name: 'db-version',
+        value: 'v3.0.0',
+      } as MetadataOrmEntity);
 
       await service.onApplicationBootstrap();
 
@@ -145,39 +187,39 @@ describe('MigrationService', () => {
         'Executing migrations ...',
       );
       expect(service.run).toHaveBeenCalledWith({
-        action: 'up',
+        action: MigrationAction.UP,
         isAutoMigrate: true,
       });
     });
   });
 
   describe('run', () => {
-    beforeEach(() => {
-      jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
-    });
-
-    afterEach(jest.restoreAllMocks);
-
     it('should call runUpgrades when version is not provided and isAutoMigrate is true', async () => {
       process.env.HEXABOT_CLI = '';
       const runUpgradesSpy = jest
         .spyOn(service as any, 'runUpgrades')
-        .mockResolvedValue('v2.2.0');
+        .mockResolvedValue('v3.0.2');
+      jest.spyOn(metadataService, 'findOne').mockResolvedValue({
+        name: 'db-version',
+        value: 'v3.0.0',
+      } as MetadataOrmEntity);
 
       await service.run({
         action: MigrationAction.UP,
         isAutoMigrate: true,
       });
 
-      expect(runUpgradesSpy).toHaveBeenCalledWith('up', 'v2.1.9');
-      expect(service.exit).not.toHaveBeenCalled();
+      expect(runUpgradesSpy).toHaveBeenCalledWith('up', 'v3.0.0');
     });
 
-    it('should call runAll and exit when version is not provided and isAutoMigrate is false', async () => {
+    it('should call runAll and exit when version is not provided and CLI is enabled', async () => {
       process.env.HEXABOT_CLI = 'true';
+      const exitSpy = jest
+        .spyOn(service, 'exit')
+        .mockImplementation(() => undefined as never);
       const runAllSpy = jest
         .spyOn(service as any, 'runAll')
-        .mockResolvedValue('v2.2.0');
+        .mockResolvedValue('v3.0.2');
 
       await service.run({
         action: MigrationAction.UP,
@@ -186,238 +228,334 @@ describe('MigrationService', () => {
       });
 
       expect(runAllSpy).toHaveBeenCalledWith('up');
-      expect(service.exit).toHaveBeenCalled();
+      expect(exitSpy).toHaveBeenCalled();
     });
 
-    it('should call runOne and exit when version is provided', async () => {
+    it('should call runOne and exit when a version is provided in CLI mode', async () => {
       process.env.HEXABOT_CLI = 'true';
+      const exitSpy = jest
+        .spyOn(service, 'exit')
+        .mockImplementation(() => undefined as never);
       const runOneSpy = jest
         .spyOn(service as any, 'runOne')
-        .mockResolvedValue('v2.2.0');
+        .mockResolvedValue(true);
 
       await service.run({
         action: MigrationAction.UP,
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         isAutoMigrate: false,
       });
 
       expect(runOneSpy).toHaveBeenCalledWith({
         action: 'up',
-        version: 'v2.1.9',
+        version: 'v3.0.1',
       });
-      expect(service.exit).toHaveBeenCalled();
+      expect(exitSpy).toHaveBeenCalled();
     });
   });
 
   describe('runOne', () => {
-    let verifyStatusSpy: jest.SpyInstance;
-    let loadMigrationFileSpy: jest.SpyInstance;
-    let successCallbackSpy: jest.SpyInstance;
-    let failureCallbackSpy: jest.SpyInstance;
-
-    beforeEach(() => {
-      jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
-
-      verifyStatusSpy = jest
+    it('should return "skipped" and not execute if migration already exists', async () => {
+      const verifyStatusSpy = jest
         .spyOn(service as any, 'verifyStatus')
-        .mockResolvedValue({ exist: false, migrationDocument: {} });
-      loadMigrationFileSpy = jest
-        .spyOn(service as any, 'loadMigrationFile')
-        .mockResolvedValue({
-          up: jest.fn().mockResolvedValue(true),
-          down: jest.fn().mockResolvedValue(true),
-        });
-      successCallbackSpy = jest
-        .spyOn(service as any, 'successCallback')
-        .mockResolvedValue(undefined);
-      failureCallbackSpy = jest
-        .spyOn(service as any, 'failureCallback')
-        .mockResolvedValue(undefined);
-    });
-
-    afterEach(jest.restoreAllMocks);
-
-    it('should return false and not execute if migration already exists', async () => {
-      verifyStatusSpy.mockResolvedValue({ exist: true, migrationDocument: {} });
+        .mockResolvedValue({ exist: true, migrationRecord: {} });
+      const queryRunnerSpy = jest.spyOn(dataSource, 'createQueryRunner');
 
       const result = await (service as any).runOne({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
 
+      expect(result).toBe('skipped');
       expect(verifyStatusSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
-      expect(result).toBe(false);
-      expect(loadMigrationFileSpy).not.toHaveBeenCalled();
-      expect(successCallbackSpy).not.toHaveBeenCalled();
-      expect(failureCallbackSpy).not.toHaveBeenCalled();
+      expect(queryRunnerSpy).not.toHaveBeenCalled();
     });
 
     it('should load the migration file and execute the migration action successfully', async () => {
+      const queryRunner = createQueryRunnerStub();
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      jest
+        .spyOn(service as any, 'verifyStatus')
+        .mockResolvedValue({ exist: false, migrationRecord: {} });
       const migrationMock = {
-        up: jest.fn().mockResolvedValue(true),
+        up: jest.fn().mockResolvedValue(undefined),
       };
-      loadMigrationFileSpy.mockResolvedValue(migrationMock);
+      jest
+        .spyOn(service as any, 'loadMigrationFile')
+        .mockResolvedValue(migrationMock);
+      const successCallbackSpy = jest
+        .spyOn(service as any, 'successCallback')
+        .mockResolvedValue(undefined);
 
       const result = await (service as any).runOne({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
 
-      expect(result).toBe(true);
-      expect(verifyStatusSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
-        action: 'up',
-      });
-      expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
-      expect(migrationMock.up).toHaveBeenCalledWith({
-        attachmentService: service['attachmentService'],
-        logger: service['logger'],
-        http: service['httpService'],
-      });
+      expect(result).toBe('executed');
+      expect(migrationMock.up).toHaveBeenCalledWith(
+        queryRunner,
+        expect.objectContaining({
+          attachmentService,
+          http: httpService,
+          logger: loggerService,
+        }),
+      );
+      expect(queryRunner.commitTransaction).toHaveBeenCalled();
       expect(successCallbackSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
-        migrationDocument: {},
+        migrationRecord: {},
       });
-      expect(failureCallbackSpy).not.toHaveBeenCalled();
     });
 
     it('should call failureCallback and log the error if the migration action throws an error', async () => {
+      const queryRunner = createQueryRunnerStub();
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      jest
+        .spyOn(service as any, 'verifyStatus')
+        .mockResolvedValue({ exist: false, migrationRecord: {} });
       const migrationMock = {
         up: jest.fn().mockRejectedValue(new Error('Test Error')),
       };
-      loadMigrationFileSpy.mockResolvedValue(migrationMock);
-      const loggerSpy = jest.spyOn(service['logger'], 'log');
+      jest
+        .spyOn(service as any, 'loadMigrationFile')
+        .mockResolvedValue(migrationMock);
+      const failureCallbackSpy = jest
+        .spyOn(service as any, 'failureCallback')
+        .mockImplementation(() => undefined);
 
       const result = await (service as any).runOne({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
-      expect(result).toBe(false);
 
-      expect(verifyStatusSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
-        action: 'up',
-      });
-      expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
-      expect(migrationMock.up).toHaveBeenCalledWith({
-        attachmentService: service['attachmentService'],
-        logger: service['logger'],
-        http: service['httpService'],
-      });
-      expect(successCallbackSpy).not.toHaveBeenCalled();
+      expect(result).toBe('failed');
+      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(failureCallbackSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
-      expect(loggerSpy).toHaveBeenCalledWith(
+      expect(loggerService.error).toHaveBeenCalledWith(
         expect.stringContaining('Test Error'),
       );
     });
 
-    it('should not call successCallback if the migration action returns false', async () => {
+    it('should rollback and return false when the migration action returns false', async () => {
+      const queryRunner = createQueryRunnerStub();
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      jest
+        .spyOn(service as any, 'verifyStatus')
+        .mockResolvedValue({ exist: false, migrationRecord: {} });
       const migrationMock = {
         up: jest.fn().mockResolvedValue(false),
       };
-      loadMigrationFileSpy.mockResolvedValue(migrationMock);
+      jest
+        .spyOn(service as any, 'loadMigrationFile')
+        .mockResolvedValue(migrationMock);
+      const successCallbackSpy = jest.spyOn(service as any, 'successCallback');
+      const failureCallbackSpy = jest
+        .spyOn(service as any, 'failureCallback')
+        .mockResolvedValue(undefined);
 
       const result = await (service as any).runOne({
-        version: 'v2.1.9',
+        version: 'v3.0.1',
         action: 'up',
       });
-      expect(result).toBe(false);
-      expect(verifyStatusSpy).toHaveBeenCalledWith({
-        version: 'v2.1.9',
-        action: 'up',
-      });
-      expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
-      expect(migrationMock.up).toHaveBeenCalledWith({
-        attachmentService: service['attachmentService'],
-        logger: service['logger'],
-        http: service['httpService'],
-      });
+
+      expect(result).toBe('failed');
+      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(successCallbackSpy).not.toHaveBeenCalled();
-      expect(failureCallbackSpy).not.toHaveBeenCalled();
+      expect(failureCallbackSpy).toHaveBeenCalledWith({
+        version: 'v3.0.1',
+        action: 'up',
+      });
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('should create a new record when none is provided', async () => {
+      const repository = (service as any).migrationRepository;
+      const createSpy = jest
+        .spyOn(repository, 'create')
+        .mockReturnValue(
+          { version: 'v3.0.5' } as unknown as MigrationOrmEntity,
+        );
+      const saveSpy = jest
+        .spyOn(repository, 'save')
+        .mockResolvedValue(undefined as never);
+
+      await service.updateStatus({
+        version: 'v3.0.5',
+        action: MigrationAction.UP,
+        migrationRecord: null,
+      });
+
+      expect(createSpy).toHaveBeenCalledWith({ version: 'v3.0.5' });
+      expect(saveSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ status: MigrationAction.UP }),
+      );
+    });
+
+    it('should reuse the existing record when provided', async () => {
+      const repository = (service as any).migrationRepository;
+      const createSpy = jest.spyOn(repository, 'create');
+      const saveSpy = jest
+        .spyOn(repository, 'save')
+        .mockResolvedValue(undefined as never);
+      const record = {
+        version: 'v3.0.6',
+        status: MigrationAction.UP,
+      } as unknown as MigrationOrmEntity;
+
+      await service.updateStatus({
+        version: 'v3.0.6',
+        action: MigrationAction.DOWN,
+        migrationRecord: record,
+      });
+
+      expect(createSpy).not.toHaveBeenCalled();
+      expect(record.status).toBe(MigrationAction.DOWN);
+      expect(saveSpy).toHaveBeenCalledWith(record);
+    });
+  });
+
+  describe('successCallback', () => {
+    it('should update metadata when migrating up', async () => {
+      const updateStatusSpy = jest
+        .spyOn(service, 'updateStatus')
+        .mockResolvedValue(undefined);
+      const updateOneSpy = jest
+        .spyOn(metadataService, 'updateOne')
+        .mockResolvedValue(undefined as never);
+
+      await (service as any).successCallback({
+        version: 'v3.1.0',
+        action: MigrationAction.UP,
+        migrationRecord: null,
+      });
+
+      expect(updateStatusSpy).toHaveBeenCalled();
+      expect(updateOneSpy).toHaveBeenCalledWith(
+        { where: { name: 'db-version' } },
+        { value: 'v3.1.0' },
+      );
+    });
+
+    it('should update metadata with the latest applied version when migrating down', async () => {
+      const updateStatusSpy = jest
+        .spyOn(service, 'updateStatus')
+        .mockResolvedValue(undefined);
+      const updateOneSpy = jest
+        .spyOn(metadataService, 'updateOne')
+        .mockResolvedValue(undefined as never);
+      const repository = (service as any).migrationRepository;
+      jest.spyOn(repository, 'find').mockResolvedValue([
+        {
+          version: 'v3.0.9',
+          status: MigrationAction.UP,
+        },
+      ]);
+
+      await (service as any).successCallback({
+        version: 'v3.1.0',
+        action: MigrationAction.DOWN,
+        migrationRecord: null,
+      });
+
+      expect(updateStatusSpy).toHaveBeenCalled();
+      expect(updateOneSpy).toHaveBeenCalledWith(
+        { where: { name: 'db-version' } },
+        { value: 'v3.0.9' },
+      );
     });
   });
 
   describe('runUpgrades', () => {
-    let getAvailableUpgradeVersionsSpy: jest.SpyInstance;
-    let isNewerVersionSpy: jest.SpyInstance;
-    let runOneSpy: jest.SpyInstance;
-
-    beforeEach(() => {
-      jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
-
-      getAvailableUpgradeVersionsSpy = jest
+    it('should execute newer migrations and return the latest version', async () => {
+      const availableVersions: MigrationVersion[] = [
+        'v3.0.0',
+        'v3.0.1',
+        'v3.0.2',
+      ];
+      jest
         .spyOn(service as any, 'getAvailableUpgradeVersions')
-        .mockReturnValue(['v2.2.0', 'v2.3.0', 'v2.4.0']); // Mock available versions
-      isNewerVersionSpy = jest
-        .spyOn(service as any, 'isNewerVersion')
-        .mockImplementation(
-          (v1: string, v2: string) =>
-            parseInt(v1.substring(1).replaceAll('.', '')) >
-            parseInt(v2.substring(1).replaceAll('.', '')),
-        ); // Simplified mock for version comparison
-      runOneSpy = jest.spyOn(service as any, 'runOne').mockResolvedValue(true);
-    });
+        .mockReturnValue(availableVersions);
+      const runOneSpy = jest
+        .spyOn(service as any, 'runOne')
+        .mockResolvedValue('executed');
 
-    afterEach(jest.restoreAllMocks);
+      const result = await (service as any).runUpgrades(
+        MigrationAction.UP,
+        'v3.0.0',
+      );
 
-    it('should filter versions and call runOne for each newer version', async () => {
-      const result = await (service as any).runUpgrades('up', 'v2.2.0');
-
-      expect(getAvailableUpgradeVersionsSpy).toHaveBeenCalled();
-      expect(runOneSpy).toHaveBeenCalledTimes(2); // Only for 'v2.3.0' and 'v2.4.0'
-      expect(runOneSpy).toHaveBeenCalledWith({
-        version: 'v2.3.0',
-        action: 'up',
+      expect(runOneSpy).toHaveBeenCalledTimes(2);
+      expect(runOneSpy).toHaveBeenNthCalledWith(1, {
+        action: MigrationAction.UP,
+        version: 'v3.0.1',
       });
-      expect(runOneSpy).toHaveBeenCalledWith({
-        version: 'v2.4.0',
-        action: 'up',
+      expect(runOneSpy).toHaveBeenNthCalledWith(2, {
+        action: MigrationAction.UP,
+        version: 'v3.0.2',
       });
-      expect(result).toBe('v2.4.0'); // Last processed version
+      expect(result).toBe('v3.0.2');
     });
 
-    it('should return the initial version if no newer versions are available', async () => {
-      isNewerVersionSpy.mockImplementation(() => false); // Mock to return no newer versions
-
-      const result = await (service as any).runUpgrades('up', 'v2.4.0');
-
-      expect(getAvailableUpgradeVersionsSpy).toHaveBeenCalled();
-      expect(isNewerVersionSpy).toHaveBeenCalledTimes(3);
-      expect(runOneSpy).not.toHaveBeenCalled();
-      expect(result).toBe('v2.4.0'); // Initial version is returned
-    });
-
-    it('should handle empty available versions gracefully', async () => {
-      getAvailableUpgradeVersionsSpy.mockReturnValue([]);
-
-      const result = await (service as any).runUpgrades('up', 'v2.2.0');
-
-      expect(getAvailableUpgradeVersionsSpy).toHaveBeenCalled();
-      expect(isNewerVersionSpy).not.toHaveBeenCalled();
-      expect(runOneSpy).not.toHaveBeenCalled();
-      expect(result).toBe('v2.2.0'); // Initial version is returned
-    });
-
-    it('should propagate errors from runOne', async () => {
-      runOneSpy.mockRejectedValue(new Error('Test Error'));
+    it('should throw when a migration fails', async () => {
+      const availableVersions: MigrationVersion[] = ['v3.0.1', 'v3.0.2'];
+      jest
+        .spyOn(service as any, 'getAvailableUpgradeVersions')
+        .mockReturnValue(availableVersions);
+      const runOneSpy = jest
+        .spyOn(service as any, 'runOne')
+        .mockResolvedValueOnce('executed')
+        .mockResolvedValueOnce('failed');
 
       await expect(
-        (service as any).runUpgrades('up', 'v2.2.0'),
-      ).rejects.toThrow('Test Error');
+        (service as any).runUpgrades(MigrationAction.UP, 'v3.0.0'),
+      ).rejects.toThrow('Migration "v3.0.2" failed while executing "up".');
+      expect(runOneSpy).toHaveBeenCalledTimes(2);
+    });
+  });
 
-      expect(getAvailableUpgradeVersionsSpy).toHaveBeenCalled();
-      expect(isNewerVersionSpy).toHaveBeenCalled();
-      expect(runOneSpy).toHaveBeenCalledWith({
-        version: 'v2.3.0',
-        action: 'up',
-      });
+  describe('runAll', () => {
+    it('should execute all migrations sequentially', async () => {
+      const availableVersions: MigrationVersion[] = [
+        'v3.0.0',
+        'v3.0.1',
+        'v3.0.2',
+      ];
+      jest
+        .spyOn(service as any, 'getAvailableUpgradeVersions')
+        .mockReturnValue(availableVersions);
+      const runOneSpy = jest
+        .spyOn(service as any, 'runOne')
+        .mockResolvedValue('executed');
+
+      const result = await (service as any).runAll(MigrationAction.UP);
+
+      expect(runOneSpy).toHaveBeenCalledTimes(3);
+      expect(result).toBe('v3.0.2');
+    });
+
+    it('should throw when a migration fails', async () => {
+      const availableVersions: MigrationVersion[] = ['v3.0.1', 'v3.0.2'];
+      jest
+        .spyOn(service as any, 'getAvailableUpgradeVersions')
+        .mockReturnValue(availableVersions);
+      const runOneSpy = jest
+        .spyOn(service as any, 'runOne')
+        .mockResolvedValueOnce('executed')
+        .mockResolvedValueOnce('failed');
+
+      await expect(
+        (service as any).runAll(MigrationAction.UP),
+      ).rejects.toThrow('Migration "v3.0.2" failed while executing "up".');
+      expect(runOneSpy).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -427,33 +565,5 @@ describe('MigrationService', () => {
     );
 
     expect(result).toBe('v-1-0-1');
-  });
-
-  it('should load a valid migration file and return it', async () => {
-    const version = 'v2.1.9';
-
-    const mockFiles = ['1234567890-v-2-1-9.migration.js'];
-    jest.spyOn(service, 'getMigrationFiles').mockReturnValue(mockFiles);
-    const mockMigration = {
-      up: jest.fn(),
-      down: jest.fn(),
-    };
-
-    jest
-      .spyOn(service, 'migrationFilePath', 'get')
-      .mockReturnValue('/migrations');
-    jest.spyOn(service['logger'], 'error').mockImplementation();
-    jest.mock(
-      `/migrations/1234567890-v-2-1-9.migration.js`,
-      () => mockMigration,
-      {
-        virtual: true,
-      },
-    );
-
-    const result = await (service as any).loadMigrationFile(version);
-
-    expect(result.default).toBe(mockMigration);
-    expect(service['logger'].error).not.toHaveBeenCalled();
   });
 });

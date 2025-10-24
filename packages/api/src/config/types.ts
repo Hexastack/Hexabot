@@ -33,6 +33,7 @@ type TDatabaseConfig = {
   synchronize: boolean;
   logging: boolean;
   schema?: string;
+  autoMigrate: boolean;
 };
 type SocketCookie =
   | {

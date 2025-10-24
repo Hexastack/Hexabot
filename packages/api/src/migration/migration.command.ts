@@ -13,7 +13,7 @@ import { MigrationAction } from './types';
 
 @Command({
   name: 'migration',
-  description: 'Manage Mongodb Migrations',
+  description: 'Manage TypeORM migrations',
 })
 export class MigrationCommand extends CommandRunner {
   constructor(
@@ -42,7 +42,8 @@ export class MigrationCommand extends CommandRunner {
           !Object.values(MigrationAction).includes(action as MigrationAction)
         ) {
           this.logger.error('Invalid Operation');
-          this.exit();
+          this.exit(1);
+          return;
         }
 
         if (
@@ -59,13 +60,15 @@ export class MigrationCommand extends CommandRunner {
       }
       default:
         this.logger.error('No valid command provided');
-        this.exit();
-        break;
+        this.exit(1);
+        return;
     }
   }
 
-  exit(): void {
-    this.logger.log('Exiting migration process.');
-    process.exit(0);
+  exit(code = 0): void {
+    if (code === 0) {
+      this.logger.log('Exiting migration process.');
+    }
+    process.exit(code);
   }
 }

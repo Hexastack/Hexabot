@@ -12,6 +12,13 @@ const isProduction = (process.env.NODE_ENV || 'development')
   .toLowerCase()
   .includes('prod');
 
+const autoMigrateToggle =
+  process.env.DB_AUTO_MIGRATE ?? process.env.MONGO_AUTO_MIGRATE;
+const shouldAutoMigrate =
+  (autoMigrateToggle === 'true' &&
+    (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
+  !isProduction;
+
 export const config: Config = {
   mode: process.env.VITE_APP_MODE === 'monolith' ? 'monolith' : 'api-only',
   apiPrefix: process.env.VITE_APP_MODE === 'monolith' ? 'api' : '',
@@ -176,6 +183,7 @@ export const config: Config = {
         : !isProduction,
     logging: process.env.DB_LOGGING === 'true',
     schema: process.env.DB_SCHEMA,
+    autoMigrate: shouldAutoMigrate,
   },
   mongo: {
     user: process.env.MONGO_USER || 'dev_only',
@@ -183,12 +191,7 @@ export const config: Config = {
     uri:
       process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
     dbName: process.env.MONGO_DB || 'hexabot',
-    autoMigrate:
-      // Either auto-migration is explicitly enabled and the node is primary (cluster case)
-      (process.env.MONGO_AUTO_MIGRATE === 'true' &&
-        (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
-      // Otherwise, run only in dev mode
-      !isProduction,
+    autoMigrate: shouldAutoMigrate,
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {

@@ -8,18 +8,18 @@ import { join } from 'path';
 
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { LoggerModule } from '@/logger/logger.module';
 
 import { MigrationCommand } from './migration.command';
-import { MigrationModel } from './migration.schema';
+import { MigrationOrmEntity } from './migration.entity';
 import { MigrationService } from './migration.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([MigrationModel]),
+    TypeOrmModule.forFeature([MigrationOrmEntity]),
     LoggerModule,
     HttpModule,
     AttachmentModule,
@@ -28,7 +28,7 @@ import { MigrationService } from './migration.service';
     MigrationService,
     MigrationCommand,
     {
-      provide: 'MONGO_MIGRATION_DIR',
+      provide: 'TYPEORM_MIGRATION_DIR',
       useValue: join(__dirname, 'migrations'),
     },
   ],
