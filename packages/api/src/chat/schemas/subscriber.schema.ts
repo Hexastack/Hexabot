@@ -18,9 +18,9 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { SubscriberChannelData } from '../types/channel';
+import { SubscriberContext } from '../types/subscriberContext';
 import { Label } from './label.schema';
-import { SubscriberChannelData } from './types/channel';
-import { SubscriberContext } from './types/subscriberContext';
 
 @Schema({ timestamps: true })
 export class SubscriberStub extends BaseSchema {

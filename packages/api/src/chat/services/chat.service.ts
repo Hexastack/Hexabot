@@ -19,7 +19,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { MessageCreateDto } from '../dto/message.dto';
 import { Conversation } from '../schemas/conversation.schema';
 import { SubscriberDocument } from '../schemas/subscriber.schema';
-import { OutgoingMessage } from '../schemas/types/message';
+import { OutgoingMessage } from '../types/message';
 
 import { BotService } from './bot.service';
 import { ConversationService } from './conversation.service';

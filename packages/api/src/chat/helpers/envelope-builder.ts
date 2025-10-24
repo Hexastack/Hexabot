@@ -22,7 +22,7 @@ import {
   stdOutgoingSystemEnvelopeSchema,
   StdOutgoingTextEnvelope,
   stdOutgoingTextEnvelopeSchema,
-} from '../schemas/types/message';
+} from '../types/message';
 
 type ArrayKeys<T> = {
   [K in keyof T]: NonNullable<T[K]> extends Array<any> ? K : never;

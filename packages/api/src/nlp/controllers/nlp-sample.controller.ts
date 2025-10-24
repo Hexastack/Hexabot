@@ -32,7 +32,7 @@ import { z } from 'zod';
 import {
   NlpValueMatchPattern,
   nlpValueMatchPatternSchema,
-} from '@/chat/schemas/types/pattern';
+} from '@/chat/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';

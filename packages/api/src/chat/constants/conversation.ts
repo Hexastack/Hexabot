@@ -5,7 +5,7 @@
  */
 
 import { Subscriber } from '../schemas/subscriber.schema';
-import { Context } from '../schemas/types/context';
+import { Context } from '../types/context';
 
 export function getDefaultConversationContext(): Context {
   return {

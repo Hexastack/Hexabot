@@ -7,7 +7,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
-import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { Format } from '@/utils/types/format.types';

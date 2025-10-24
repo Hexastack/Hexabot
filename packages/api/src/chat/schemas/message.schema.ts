@@ -12,8 +12,8 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
+import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 import { Subscriber } from './subscriber.schema';
-import { StdIncomingMessage, StdOutgoingMessage } from './types/message';
 
 @Schema({ timestamps: true })
 export class MessageStub extends BaseSchema {

@@ -17,7 +17,7 @@ import {
 import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
-import { Context } from './../schemas/types/context';
+import { Context } from './../types/context';
 
 export class ConversationCreateDto {
   @ApiProperty({ description: 'Conversation sender', type: String })

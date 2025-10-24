@@ -7,13 +7,13 @@
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
-import { PayloadType } from '@/chat/schemas/types/button';
+import { PayloadType } from '@/chat/types/button';
 import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/schemas/types/message';
-import { Payload } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { Payload } from '@/chat/types/quick-reply';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import BaseWebChannelHandler from './base-web-channel';

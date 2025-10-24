@@ -35,8 +35,10 @@ import {
   SubscriberFull,
   SubscriberStub,
 } from '@/chat/schemas/subscriber.schema';
-import { AttachmentRef } from '@/chat/schemas/types/attachment';
-import { Button, ButtonType, PayloadType } from '@/chat/schemas/types/button';
+import { MessageService } from '@/chat/services/message.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
+import { AttachmentRef } from '@/chat/types/attachment';
+import { Button, ButtonType, PayloadType } from '@/chat/types/button';
 import {
   AnyMessage,
   ContentElement,
@@ -52,10 +54,8 @@ import {
   StdOutgoingMessage,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/schemas/types/message';
-import { BlockOptions } from '@/chat/schemas/types/options';
-import { MessageService } from '@/chat/services/message.service';
-import { SubscriberService } from '@/chat/services/subscriber.service';
+} from '@/chat/types/message';
+import { BlockOptions } from '@/chat/types/options';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';

@@ -17,7 +17,7 @@ import {
   MessagePopulate,
 } from '../schemas/message.schema';
 import { SubscriberStub } from '../schemas/subscriber.schema';
-import { AnyMessage } from '../schemas/types/message';
+import { AnyMessage } from '../types/message';
 
 @Injectable()
 export class MessageRepository extends BaseRepository<

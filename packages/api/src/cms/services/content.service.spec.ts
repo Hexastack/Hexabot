@@ -6,9 +6,9 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
-import { ContentOptions } from '@/chat/schemas/types/options';
 import { BlockService } from '@/chat/services/block.service';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { ContentOptions } from '@/chat/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,

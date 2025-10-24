@@ -17,9 +17,9 @@ import {
 
 import { getDefaultConversationContext } from '../constants/conversation';
 
+import { Context } from '../types/context';
 import { Block } from './block.schema';
 import { Subscriber } from './subscriber.schema';
-import { Context } from './types/context';
 
 @Schema({ timestamps: true, minimize: false })
 class ConversationStub extends BaseSchema {

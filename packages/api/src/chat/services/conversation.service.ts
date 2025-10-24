@@ -18,8 +18,8 @@ import {
   ConversationFull,
   ConversationPopulate,
 } from '../schemas/conversation.schema';
-import { OutgoingMessageFormat } from '../schemas/types/message';
-import { Payload } from '../schemas/types/quick-reply';
+import { OutgoingMessageFormat } from '../types/message';
+import { Payload } from '../types/quick-reply';
 
 import { ContextVarService } from './context-var.service';
 import { SubscriberService } from './subscriber.service';

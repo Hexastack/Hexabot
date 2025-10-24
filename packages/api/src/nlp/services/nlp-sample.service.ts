@@ -14,7 +14,7 @@ import Papa from 'papaparse';
 import { FindManyOptions, FindOptionsOrder } from 'typeorm';
 
 import { Message } from '@/chat/schemas/message.schema';
-import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';

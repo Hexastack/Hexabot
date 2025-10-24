@@ -8,7 +8,7 @@ import { Expose } from 'class-transformer';
 import { Column, Entity, Index } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
-import { FileType } from '@/chat/schemas/types/attachment';
+import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { buildURL } from '@/utils/helpers/URL';

@@ -14,8 +14,8 @@ import {
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { SubscriberService } from '@/chat/services/subscriber.service';
+import { OutgoingMessageFormat } from '@/chat/types/message';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { installMessageFixtures } from '@/utils/test/fixtures/message';
 import {

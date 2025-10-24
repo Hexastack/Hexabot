@@ -6,7 +6,7 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';

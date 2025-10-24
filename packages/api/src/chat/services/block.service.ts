@@ -37,16 +37,16 @@ import {
 } from '../schemas/block.schema';
 import { Label } from '../schemas/label.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
-import { Context } from '../schemas/types/context';
+import { Context } from '../types/context';
 import {
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
-} from '../schemas/types/message';
-import { FallbackOptions } from '../schemas/types/options';
-import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
-import { Payload } from '../schemas/types/quick-reply';
-import { SubscriberContext } from '../schemas/types/subscriberContext';
+} from '../types/message';
+import { FallbackOptions } from '../types/options';
+import { NlpPattern, PayloadPattern } from '../types/pattern';
+import { Payload } from '../types/quick-reply';
+import { SubscriberContext } from '../types/subscriberContext';
 
 @Injectable()
 export class BlockService extends BaseService<

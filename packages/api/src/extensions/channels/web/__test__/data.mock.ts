@@ -6,9 +6,9 @@
 
 import { textMessage } from '@/channel/lib/__test__/common.mock';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { ButtonType } from '@/chat/schemas/types/button';
-import { FileType } from '@/chat/schemas/types/message';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { ButtonType } from '@/chat/types/button';
+import { FileType } from '@/chat/types/message';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 
 import { Web } from '../types';
 

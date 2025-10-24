@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FallbackOptions } from '../schemas/types/options';
+import { FallbackOptions } from '../types/options';
 
 export function getDefaultFallbackOptions(): FallbackOptions {
   return {

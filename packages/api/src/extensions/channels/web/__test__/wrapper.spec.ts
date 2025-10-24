@@ -7,10 +7,7 @@
 import { JwtService } from '@nestjs/jwt';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import {
-  IncomingMessageType,
-  StdEventType,
-} from '@/chat/schemas/types/message';
+import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import {

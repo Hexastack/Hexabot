@@ -10,7 +10,7 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { ButtonType } from '@/chat/schemas/types/button';
+import { ButtonType } from '@/chat/types/button';
 import {
   FileType,
   OutgoingMessageFormat,
@@ -19,8 +19,8 @@ import {
   StdOutgoingListMessage,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/schemas/types/message';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 
 export const textMessage: StdOutgoingTextMessage = {
   text: 'Hello World',

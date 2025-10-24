@@ -9,9 +9,9 @@ import mongoose from 'mongoose';
 import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block, BlockModel } from '@/chat/schemas/block.schema';
 import { CategoryModel } from '@/chat/schemas/category.schema';
-import { FileType } from '@/chat/schemas/types/attachment';
-import { ButtonType } from '@/chat/schemas/types/button';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { FileType } from '@/chat/types/attachment';
+import { ButtonType } from '@/chat/types/button';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

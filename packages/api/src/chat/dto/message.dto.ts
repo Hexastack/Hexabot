@@ -20,7 +20,7 @@ import {
   StdIncomingMessage,
   StdOutgoingMessage,
   validMessageTextSchema,
-} from '../schemas/types/message';
+} from '../types/message';
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })

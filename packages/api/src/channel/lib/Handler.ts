@@ -28,13 +28,13 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { AttachmentRef } from '@/chat/schemas/types/attachment';
+import { AttachmentRef } from '@/chat/types/attachment';
 import {
   IncomingMessageType,
   StdEventType,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
-} from '@/chat/schemas/types/message';
+} from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';

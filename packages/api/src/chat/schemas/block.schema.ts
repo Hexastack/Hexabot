@@ -17,13 +17,13 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { CaptureVar, captureVarSchema } from '../types/capture-var';
+import { BlockMessage, blockMessageObjectSchema } from '../types/message';
+import { BlockOptions } from '../types/options';
+import { Pattern, patternSchema } from '../types/pattern';
+import { Position, positionSchema } from '../types/position';
 import { Category } from './category.schema';
 import { Label } from './label.schema';
-import { CaptureVar, captureVarSchema } from './types/capture-var';
-import { BlockMessage, blockMessageObjectSchema } from './types/message';
-import { BlockOptions } from './types/options';
-import { Pattern, patternSchema } from './types/pattern';
-import { Position, positionSchema } from './types/position';
 
 @Schema({ timestamps: true })
 export class BlockStub extends BaseSchema {

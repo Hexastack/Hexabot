@@ -13,8 +13,8 @@ import {
   StdOutgoingTextEnvelope,
   stdOutgoingTextEnvelopeSchema,
   stdOutgoingTextMessageSchema,
-} from '../schemas/types/message';
-import { QuickReplyType } from '../schemas/types/quick-reply';
+} from '../types/message';
+import { QuickReplyType } from '../types/quick-reply';
 
 import { EnvelopeBuilder, getEnvelopeBuilder } from './envelope-builder';
 

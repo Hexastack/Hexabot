@@ -15,7 +15,7 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { ContentElement } from '@/chat/schemas/types/message';
+import { ContentElement } from '@/chat/types/message';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';

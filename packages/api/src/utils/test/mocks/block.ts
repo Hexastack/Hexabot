@@ -9,13 +9,13 @@ import {
   labelMock,
 } from '@/channel/lib/__test__/label.mock';
 import { BlockFull } from '@/chat/schemas/block.schema';
-import { FileType } from '@/chat/schemas/types/attachment';
-import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
-import { CaptureVar } from '@/chat/schemas/types/capture-var';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
-import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
-import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { FileType } from '@/chat/types/attachment';
+import { ButtonType, PayloadType } from '@/chat/types/button';
+import { CaptureVar } from '@/chat/types/capture-var';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { BlockOptions, ContentOptions } from '@/chat/types/options';
+import { NlpPattern, Pattern } from '@/chat/types/pattern';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 
 import { modelInstance } from './misc';

@@ -8,7 +8,7 @@ import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
-import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
+import { ButtonType, PayloadType } from '@/chat/types/button';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
@@ -56,13 +56,13 @@ import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
 import { Category } from '../schemas/category.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
-import { FileType } from '../schemas/types/attachment';
-import { Context } from '../schemas/types/context';
+import { FileType } from '../types/attachment';
+import { Context } from '../types/context';
 import {
   OutgoingMessageFormat,
   StdOutgoingListMessage,
-} from '../schemas/types/message';
-import { QuickReplyType } from '../schemas/types/quick-reply';
+} from '../types/message';
+import { QuickReplyType } from '../types/quick-reply';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';

@@ -22,7 +22,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { MessageRepository } from '../repositories/message.repository';
 import { MessageFull, MessagePopulate } from '../schemas/message.schema';
 import { Subscriber, SubscriberStub } from '../schemas/subscriber.schema';
-import { AnyMessage } from '../schemas/types/message';
+import { AnyMessage } from '../types/message';
 
 @Injectable()
 export class MessageService extends BaseService<

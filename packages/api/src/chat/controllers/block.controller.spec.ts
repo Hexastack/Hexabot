@@ -28,9 +28,9 @@ import {
 } from '../dto/block.dto';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block } from '../schemas/block.schema';
-import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
+import { PayloadType } from '../types/button';
 
 import { Category } from './../schemas/category.schema';
 import { BlockController } from './block.controller';

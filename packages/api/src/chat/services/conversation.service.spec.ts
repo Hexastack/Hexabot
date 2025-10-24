@@ -16,7 +16,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { Block } from '../schemas/block.schema';
-import { OutgoingMessageFormat } from '../schemas/types/message';
+import { OutgoingMessageFormat } from '../types/message';
 
 import { ConversationService } from './conversation.service';
 import { SubscriberService } from './subscriber.service';

@@ -30,14 +30,11 @@ import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
-import { CaptureVar, captureVarSchema } from '../schemas/types/capture-var';
-import {
-  BlockMessage,
-  blockMessageObjectSchema,
-} from '../schemas/types/message';
-import { BlockOptions, BlockOptionsSchema } from '../schemas/types/options';
-import { Pattern, patternSchema } from '../schemas/types/pattern';
-import { Position, positionSchema } from '../schemas/types/position';
+import { CaptureVar, captureVarSchema } from '../types/capture-var';
+import { BlockMessage, blockMessageObjectSchema } from '../types/message';
+import { BlockOptions, BlockOptionsSchema } from '../types/options';
+import { Pattern, patternSchema } from '../types/pattern';
+import { Position, positionSchema } from '../types/position';
 
 export class BlockCreateDto {
   @ApiProperty({ description: 'Block name', type: String })

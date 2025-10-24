@@ -8,8 +8,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
 import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
-import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
-import { ContentOptions } from '@/chat/schemas/types/options';
+import { StdOutgoingListMessage } from '@/chat/types/message';
+import { ContentOptions } from '@/chat/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 

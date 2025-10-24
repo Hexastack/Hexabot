@@ -19,10 +19,7 @@ import { Validate } from '@/utils/decorators/validate.decorator';
 import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
-import {
-  channelDataSchema,
-  SubscriberChannelData,
-} from '../schemas/types/channel';
+import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 
 export class SubscriberCreateDto {
   @ApiProperty({ description: 'Subscriber first name', type: String })

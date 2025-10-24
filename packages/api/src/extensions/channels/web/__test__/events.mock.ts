@@ -4,11 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FileType } from '@/chat/schemas/types/attachment';
-import {
-  IncomingMessageType,
-  StdEventType,
-} from '@/chat/schemas/types/message';
+import { FileType } from '@/chat/types/attachment';
+import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 
 import { Web } from '../types';
 

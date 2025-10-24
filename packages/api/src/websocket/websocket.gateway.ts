@@ -24,7 +24,7 @@ import { sync as uid } from 'uid-safe';
 
 import { MessageFull } from '@/chat/schemas/message.schema';
 import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
-import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
+import { OutgoingMessage, StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionMiddleware } from '@/utils/constants/session-middleware';

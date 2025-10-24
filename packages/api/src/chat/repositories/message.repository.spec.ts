@@ -20,7 +20,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Message } from '../schemas/message.schema';
-import { AnyMessage } from '../schemas/types/message';
+import { AnyMessage } from '../types/message';
 
 import { MessageRepository } from './message.repository';
 import { SubscriberRepository } from './subscriber.repository';

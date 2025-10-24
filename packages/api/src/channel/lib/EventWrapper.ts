@@ -6,13 +6,13 @@
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import { SubscriberChannelData } from '@/chat/schemas/types/channel';
+import { SubscriberChannelData } from '@/chat/types/channel';
 import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/schemas/types/message';
-import { Payload } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { Payload } from '@/chat/types/quick-reply';
 import { NLU } from '@/helper/types';
 
 import { ChannelName } from '../types';

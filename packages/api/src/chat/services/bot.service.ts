@@ -18,13 +18,13 @@ import { getDefaultConversationContext } from '../constants/conversation';
 import { MessageCreateDto } from '../dto/message.dto';
 import { BlockFull } from '../schemas/block.schema';
 import { Conversation, ConversationFull } from '../schemas/conversation.schema';
-import { Context } from '../schemas/types/context';
+import { Context } from '../types/context';
 import {
   IncomingMessageType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
-} from '../schemas/types/message';
-import { FallbackOptions } from '../schemas/types/options';
+} from '../types/message';
+import { FallbackOptions } from '../types/options';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';

@@ -4,16 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AttachmentPayload, FileType } from '../schemas/types/attachment';
-import { Button, ButtonType } from '../schemas/types/button';
-import { Context } from '../schemas/types/context';
+import { AttachmentPayload, FileType } from '../types/attachment';
+import { Button, ButtonType } from '../types/button';
+import { Context } from '../types/context';
 import {
   ContentElement,
   ContentPagination,
   OutgoingMessageFormat,
-} from '../schemas/types/message';
-import { ContentOptions } from '../schemas/types/options';
-import { QuickReplyType, StdQuickReply } from '../schemas/types/quick-reply';
+} from '../types/message';
+import { ContentOptions } from '../types/options';
+import { QuickReplyType, StdQuickReply } from '../types/quick-reply';
 
 import { EnvelopeFactory } from './envelope-factory';
 

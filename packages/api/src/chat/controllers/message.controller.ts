@@ -35,6 +35,8 @@ import {
   MessageStub,
 } from '../schemas/message.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
+import { MessageService } from '../services/message.service';
+import { SubscriberService } from '../services/subscriber.service';
 import {
   AnyMessage,
   OutgoingMessage,
@@ -42,9 +44,7 @@ import {
   StdOutgoingEnvelope,
   StdOutgoingMessage,
   StdOutgoingTextMessage,
-} from '../schemas/types/message';
-import { MessageService } from '../services/message.service';
-import { SubscriberService } from '../services/subscriber.service';
+} from '../types/message';
 
 @Controller('message')
 export class MessageController extends BaseController<

@@ -7,7 +7,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { In } from 'typeorm';
 
-import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { Language } from '@/i18n/dto/language.dto';
 import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';

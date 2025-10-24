@@ -6,8 +6,8 @@
 
 import { Block, BlockStub } from '@/chat/schemas/block.schema';
 import { ConversationFull } from '@/chat/schemas/conversation.schema';
-import { Context } from '@/chat/schemas/types/context';
-import { SubscriberContext } from '@/chat/schemas/types/subscriberContext';
+import { Context } from '@/chat/types/context';
+import { SubscriberContext } from '@/chat/types/subscriberContext';
 
 import { quickRepliesBlock, textBlock } from './block';
 import { modelInstance } from './misc';
