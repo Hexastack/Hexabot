@@ -4,22 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
+import { Invitation } from '@/user/dto/invitation.dto';
 import { InvitationOrmEntity as InvitationEntity } from '@/user/entities/invitation.entity';
 import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
-import { Invitation, InvitationModel } from '@/user/schemas/invitation.schema';
 import { hash } from '@/user/utilities/hash';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixtures } from '../types';
 
-import {
-  installRoleFixtures,
-  installRoleFixturesTypeOrm,
-  roleOrmFixtures,
-} from './role';
+import { installRoleFixturesTypeOrm, roleOrmFixtures } from './role';
 
 type InvitationOrmFixture = TFixtures<Invitation> & { id: string };
 
@@ -35,58 +30,6 @@ const invitations: InvitationOrmFixture[] = [
 export const invitationsFixtures = getFixturesWithDefaultValues({
   fixtures: invitations,
 });
-
-export const installInvitationFixtures = async () => {
-  const roles = await installRoleFixtures();
-  const invitation = mongoose.model(
-    InvitationModel.name,
-    InvitationModel.schema,
-  );
-  const roleIdsByIndex = new Map<number, string>();
-  roles.forEach((role, index) => roleIdsByIndex.set(index, role.id.toString()));
-
-  const roleIdsByFixtureId = new Map<string, string>();
-  roleOrmFixtures.forEach((fixture, index) => {
-    const role = roles[index];
-    if (role) {
-      roleIdsByFixtureId.set(fixture.id, role.id.toString());
-    }
-  });
-
-  const invitations = await invitation.insertMany(
-    invitationsFixtures.map((invitationsFixture) => ({
-      ...invitationsFixture,
-      roles: invitationsFixture.roles
-        .map((roleId, index) => {
-          if (roleIdsByFixtureId.has(roleId)) {
-            return roleIdsByFixtureId.get(roleId);
-          }
-
-          if (/^\d+$/.test(roleId)) {
-            return roleIdsByIndex.get(Number(roleId));
-          }
-
-          const byName = roles.find(
-            (role) =>
-              role.name === roleId || role.id.toString() === roleId.toString(),
-          );
-
-          if (byName) {
-            return byName.id.toString();
-          }
-
-          return undefined;
-        })
-        .filter((roleId): roleId is string => Boolean(roleId)),
-    })),
-  );
-  invitationsFixtures.forEach((invitationFixture, index) => {
-    invitationFixture.roles = invitations[index].roles.map((role) =>
-      role.toString(),
-    );
-  });
-  return { roles, invitations };
-};
 
 export const installInvitationFixturesTypeOrm = async (
   dataSource: DataSource,

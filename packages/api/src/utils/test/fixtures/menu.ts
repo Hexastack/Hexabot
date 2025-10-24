@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { MenuCreateDto } from '@/cms/dto/menu.dto';
 import { MenuOrmEntity } from '@/cms/entities/menu.entity';
-import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuType } from '@/cms/types/menu';
 
 export const websiteMenuFixture: MenuCreateDto = {
@@ -99,37 +97,6 @@ export const accountMenuFixtures: MenuCreateDto[] = [
     payload: 'Obtenir mon code PUK',
   },
 ];
-
-export const installMenuFixtures = async () => {
-  const Menu = mongoose.model(MenuModel.name, MenuModel.schema);
-
-  const docs = await Menu.insertMany(rootMenuFixtures);
-
-  const offerDocs = await Menu.insertMany(
-    offersMenuFixtures.map((m) => ({
-      ...m,
-      parent: m.parent ? docs[parseInt(m.parent)].id : undefined,
-    })),
-  );
-
-  const allDocs = docs.concat(offerDocs);
-
-  await Menu.insertMany(
-    devicesMenuFixtures.map((m) => ({
-      ...m,
-      parent: m.parent ? allDocs[parseInt(m.parent)].id : undefined,
-    })),
-  );
-
-  return await Menu.insertMany(
-    accountMenuFixtures.map((m) => {
-      return {
-        ...m,
-        parent: m.parent ? docs[parseInt(m.parent)].id : undefined,
-      };
-    }),
-  );
-};
 
 export const installMenuFixturesTypeOrm = async (
   dataSource: DataSource,

@@ -8,9 +8,9 @@ import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import {

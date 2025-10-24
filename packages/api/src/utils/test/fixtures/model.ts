@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { ModelCreateDto } from '@/user/dto/model.dto';
 import { ModelOrmEntity as ModelEntity } from '@/user/entities/model.entity';
-import { ModelModel } from '@/user/schemas/model.schema';
 
 type ModelOrmFixture = ModelCreateDto & { id: string };
 
@@ -39,11 +37,6 @@ export const modelOrmFixtures: ModelOrmFixture[] = [
 export const modelFixtures: ModelCreateDto[] = modelOrmFixtures.map(
   ({ id: _id, ...model }) => model,
 );
-
-export const installModelFixtures = async () => {
-  const Model = mongoose.model(ModelModel.name, ModelModel.schema);
-  return await Model.insertMany(modelFixtures);
-};
 
 export const installModelFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(ModelEntity);

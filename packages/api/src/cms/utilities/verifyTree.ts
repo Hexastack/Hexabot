@@ -5,7 +5,7 @@
  */
 
 import { Menu } from '../schemas/menu.schema';
-import { AnyMenu, MenuTree, MenuType } from '../schemas/types/menu';
+import { AnyMenu, MenuTree, MenuType } from '../types/menu-types';
 
 const verifyMenu = (
   menu: AnyMenu<Menu> & {

@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { RoleCreateDto } from '@/user/dto/role.dto';
 import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
-import { RoleModel } from '@/user/schemas/role.schema';
 
 type RoleOrmFixture = RoleCreateDto & { id: string };
 
@@ -40,11 +38,6 @@ export const roleOrmFixtures: RoleOrmFixture[] = [
 export const roleFixtures: RoleCreateDto[] = roleOrmFixtures.map(
   ({ id: _id, ...role }) => role,
 );
-
-export const installRoleFixtures = async () => {
-  const Role = mongoose.model(RoleModel.name, RoleModel.schema);
-  return await Role.insertMany(roleFixtures);
-};
 
 export const installRoleFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(RoleEntity);

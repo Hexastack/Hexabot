@@ -4,24 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
-import { UserCreateDto } from '@/user/dto/user.dto';
+import { User, UserCreateDto } from '@/user/dto/user.dto';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { User, UserModel } from '@/user/schemas/user.schema';
 import { hash } from '@/user/utilities/bcryptjs';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
 
-import {
-  installRoleFixtures,
-  installRoleFixturesTypeOrm,
-  roleFixtureIds,
-  roleOrmFixtures,
-} from './role';
+import { installRoleFixturesTypeOrm, roleFixtureIds } from './role';
 
 export const users: UserCreateDto[] = [
   {
@@ -44,63 +37,12 @@ export const userDefaultValues: TFixturesDefaultValues<User> = {
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>
-  getFixturesWithDefaultValues<User>({
+  getFixturesWithDefaultValues<User, UserCreateDto>({
     fixtures: users,
     defaultValues: userDefaultValues,
   });
 
 export const userFixtures = getUserFixtures(users);
-
-export const installUserFixtures = async () => {
-  const roles = await installRoleFixtures();
-  const User = mongoose.model(UserModel.name, UserModel.schema);
-
-  const roleIdsByIndex = new Map<number, string>();
-  roles.forEach((role, index) => roleIdsByIndex.set(index, role.id.toString()));
-
-  const roleIdsByFixtureId = new Map<string, string>();
-  roleOrmFixtures.forEach((fixture, index) => {
-    const role = roles[index];
-    if (role) {
-      roleIdsByFixtureId.set(fixture.id, role.id.toString());
-    }
-  });
-
-  const resolveRoleId = (reference: string, index: number) => {
-    if (roleIdsByFixtureId.has(reference)) {
-      return roleIdsByFixtureId.get(reference);
-    }
-
-    if (/^\d+$/.test(reference)) {
-      const fromIndex = roleIdsByIndex.get(Number(reference));
-      if (fromIndex) {
-        return fromIndex;
-      }
-    }
-
-    const byName = roles.find(
-      (role) => role.name === reference || role.id.toString() === reference,
-    );
-
-    if (byName) {
-      return byName.id.toString();
-    }
-
-    const fallback = roleIdsByIndex.get(index);
-    return fallback ?? reference;
-  };
-
-  const users = await User.create(
-    userFixtures.map((userFixture) => ({
-      ...userFixture,
-      roles: userFixture.roles
-        .map((roleId, index) => resolveRoleId(roleId, index))
-        .filter((roleId): roleId is string => Boolean(roleId)),
-      password: hash(userFixture.password),
-    })),
-  );
-  return { roles, users };
-};
 
 export const userFixtureIds = {
   admin: '66666666-6666-6666-6666-666666666666',

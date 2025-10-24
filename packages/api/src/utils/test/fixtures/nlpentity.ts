@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { NlpEntityCreateDto } from '@/nlp/dto/nlp-entity.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
 
 export const nlpEntityFixtures: NlpEntityCreateDto[] = [
   {
@@ -41,11 +39,6 @@ export const nlpEntityFixtures: NlpEntityCreateDto[] = [
     weight: 0.95,
   },
 ];
-
-export const installNlpEntityFixtures = async () => {
-  const NlpEntity = mongoose.model(NlpEntityModel.name, NlpEntityModel.schema);
-  return await NlpEntity.insertMany(nlpEntityFixtures);
-};
 
 export const nlpEntityOrmFixtures: DeepPartial<NlpEntityOrmEntity>[] =
   nlpEntityFixtures.map((fixture) => ({

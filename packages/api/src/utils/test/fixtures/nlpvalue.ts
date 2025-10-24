@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { NlpValueCreateDto } from '@/nlp/dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
 
 import {
-  installNlpEntityFixtures,
   installNlpEntityFixturesTypeOrm,
   nlpEntityFixtures,
 } from './nlpentity';
@@ -76,25 +73,6 @@ export const nlpValueFixtures: NlpValueCreateDto[] = [
     doc: '',
   },
 ];
-
-export const installNlpValueFixtures = async () => {
-  const nlpEntities = await installNlpEntityFixtures();
-
-  const NlpValue = mongoose.model(NlpValueModel.name, NlpValueModel.schema);
-
-  const nlpValues = await NlpValue.insertMany(
-    nlpValueFixtures.map((v) => ({
-      ...v,
-      entity: v?.entity
-        ? nlpEntities.find(
-            (e) =>
-              e.name === nlpEntityFixtures[parseInt(v.entity as string)].name,
-          ).id
-        : null,
-    })),
-  );
-  return { nlpEntities, nlpValues };
-};
 
 export const installNlpValueFixturesTypeOrm = async (
   dataSource: DataSource,

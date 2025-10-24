@@ -4,22 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { NlpSample, NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
-import {
-  installLanguageFixtures,
-  installLanguageFixturesTypeOrm,
-} from './language';
+import { installLanguageFixturesTypeOrm } from './language';
 
 type TNlpSampleFixtures = FixturesTypeBuilder<NlpSample, NlpSampleCreateDto>;
 
@@ -55,20 +50,6 @@ export const nlpSampleFixtures = getFixturesWithDefaultValues<
   fixtures: nlpSamples,
   defaultValues: nlpSampleDefaultValues,
 });
-
-export const installNlpSampleFixtures = async () => {
-  const languages = await installLanguageFixtures();
-
-  const NlpSample = mongoose.model(NlpSampleModel.name, NlpSampleModel.schema);
-  return await NlpSample.insertMany(
-    nlpSampleFixtures.map((v) => {
-      return {
-        ...v,
-        language: v.language ? languages[parseInt(v.language as any)].id : null,
-      };
-    }),
-  );
-};
 
 export const installNlpSampleFixturesTypeOrm = async (
   dataSource: DataSource,

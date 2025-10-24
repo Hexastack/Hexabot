@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -48,14 +46,6 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     createdBy: '9'.repeat(24),
   },
 ];
-
-export const installAttachmentFixtures = async () => {
-  const Attachment = mongoose.model(
-    AttachmentModel.name,
-    AttachmentModel.schema,
-  );
-  return await Attachment.insertMany(attachmentFixtures);
-};
 
 export const installAttachmentFixturesTypeOrm = async (
   dataSource: DataSource,

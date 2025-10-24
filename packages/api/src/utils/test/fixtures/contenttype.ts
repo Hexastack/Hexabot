@@ -4,15 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
+import { ContentType, ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import {
-  ContentType,
-  ContentTypeModel,
-} from '@/cms/schemas/content-type.schema';
 import { FieldType } from '@/setting/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -127,14 +122,6 @@ export const contentTypeFixtures = getFixturesWithDefaultValues<
   fixtures: contentTypes,
   defaultValues: contentTypeDefaultValues,
 });
-
-export const installContentTypeFixtures = async () => {
-  const ContentType = mongoose.model(
-    ContentTypeModel.name,
-    ContentTypeModel.schema,
-  );
-  return await ContentType.insertMany(contentTypeFixtures);
-};
 
 export const contentTypeOrmFixtures: DeepPartial<ContentTypeOrmEntity>[] =
   contentTypeFixtures.map(({ name, fields }) => ({

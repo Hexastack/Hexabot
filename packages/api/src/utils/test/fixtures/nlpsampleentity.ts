@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { NlpSampleEntityCreateDto } from '@/nlp/dto/nlp-sample-entity.dto';
@@ -12,18 +11,10 @@ import type { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
 import type { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
 import type { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
 
 import { installNlpEntityFixturesTypeOrm } from './nlpentity';
-import {
-  installNlpSampleFixtures,
-  installNlpSampleFixturesTypeOrm,
-} from './nlpsample';
-import {
-  installNlpValueFixtures,
-  installNlpValueFixturesTypeOrm,
-  nlpValueFixtures,
-} from './nlpvalue';
+import { installNlpSampleFixturesTypeOrm } from './nlpsample';
+import { installNlpValueFixturesTypeOrm, nlpValueFixtures } from './nlpvalue';
 
 export const nlpSampleEntityFixtures: NlpSampleEntityCreateDto[] = [
   {
@@ -52,26 +43,6 @@ export const nlpSampleEntityFixtures: NlpSampleEntityCreateDto[] = [
     value: '4',
   },
 ];
-
-export const installNlpSampleEntityFixtures = async () => {
-  const { nlpValues, nlpEntities } = await installNlpValueFixtures();
-  const nlpSamples = await installNlpSampleFixtures();
-
-  const NlpSampleEntity = mongoose.model(
-    NlpSampleEntityModel.name,
-    NlpSampleEntityModel.schema,
-  );
-  return await NlpSampleEntity.insertMany(
-    nlpSampleEntityFixtures.map((s) => {
-      return {
-        ...s,
-        sample: nlpSamples[parseInt(s.sample)].id,
-        entity: nlpEntities[parseInt(s.entity)].id,
-        value: nlpValues[parseInt(s.value)].id,
-      };
-    }),
-  );
-};
 
 export const installNlpSampleEntityFixturesTypeOrm = async (
   dataSource: DataSource,

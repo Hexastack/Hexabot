@@ -156,7 +156,7 @@ describe('SettingRepository (TypeORM)', () => {
         weight: base.weight,
       });
 
-      const updated = await settingRepository.update(created.id, {
+      const updated = await settingRepository.updateOne(created.id, {
         value: 'updated value',
         weight: 100,
       });
@@ -256,7 +256,7 @@ describe('SettingRepository (TypeORM)', () => {
       createdIds.push(created.id);
 
       await expect(
-        settingRepository.update(created.id, { value: 123 as any }),
+        settingRepository.updateOne(created.id, { value: 123 }),
       ).rejects.toThrow('Setting value must be a string.');
     });
   });

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Menu, MenuStub } from '../menu.schema';
+import { Menu, MenuStub } from '../dto/menu.dto';
 
 export enum MenuType {
   web_url = 'web_url',

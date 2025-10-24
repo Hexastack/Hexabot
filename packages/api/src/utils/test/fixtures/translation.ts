@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { TranslationUpdateDto } from '@/i18n/dto/translation.dto';
 import { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
-import { TranslationModel } from '@/i18n/schemas/translation.schema';
 
 export const translationFixtures: TranslationUpdateDto[] = [
   {
@@ -21,14 +19,6 @@ export const translationFixtures: TranslationUpdateDto[] = [
     // translated: 100,
   },
 ];
-
-export const installTranslationFixtures = async () => {
-  const Translation = mongoose.model(
-    TranslationModel.name,
-    TranslationModel.schema,
-  );
-  return await Translation.insertMany(translationFixtures);
-};
 
 export const installTranslationFixturesTypeOrm = async (
   dataSource: DataSource,
