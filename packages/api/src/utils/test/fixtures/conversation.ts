@@ -6,9 +6,11 @@
 
 import mongoose from 'mongoose';
 
-import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
-import { ConversationModel } from '@/chat/schemas/conversation.schema';
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
+import {
+  ConversationCreateDto,
+  ConversationModel,
+} from '@/chat/dto/conversation.dto';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';

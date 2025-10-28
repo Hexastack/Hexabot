@@ -17,20 +17,29 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
-import { Category } from '../schemas/category.schema';
+import {
+  Category,
+  CategoryCreateDto,
+  CategoryDtoConfig,
+  CategoryTransformerDto,
+  CategoryUpdateDto,
+} from '../dto/category.dto';
+import { CategoryOrmEntity } from '../entities/category.entity';
 import { CategoryService } from '../services/category.service';
 
 @Controller('category')
-export class CategoryController extends BaseController<Category> {
+export class CategoryController extends BaseOrmController<
+  CategoryOrmEntity,
+  CategoryTransformerDto,
+  CategoryDtoConfig,
+  Category
+> {
   constructor(private readonly categoryService: CategoryService) {
     super(categoryService);
   }
@@ -43,11 +52,15 @@ export class CategoryController extends BaseController<Category> {
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Category>,
-    @Query(new SearchFilterPipe<Category>({ allowedFields: ['label'] }))
-    filters: TFilterQuery<Category>,
+    @Query(
+      new TypeOrmSearchFilterPipe<CategoryOrmEntity>({
+        allowedFields: ['label', 'builtin'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<CategoryOrmEntity>,
   ) {
-    return await this.categoryService.find(filters, pageQuery);
+    return await this.categoryService.find(options ?? {});
   }
 
   /**
@@ -57,13 +70,13 @@ export class CategoryController extends BaseController<Category> {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Category>({
-        allowedFields: ['label'],
+      new TypeOrmSearchFilterPipe<CategoryOrmEntity>({
+        allowedFields: ['label', 'builtin'],
       }),
     )
-    filters?: TFilterQuery<Category>,
+    options?: FindManyOptions<CategoryOrmEntity>,
   ) {
-    return await this.count(filters);
+    return await this.count(options ?? {});
   }
 
   /**
@@ -133,7 +146,7 @@ export class CategoryController extends BaseController<Category> {
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.categoryService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {

@@ -13,7 +13,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
 import { FindManyOptions, FindOptionsOrder } from 'typeorm';
 
-import { Message } from '@/chat/schemas/message.schema';
+import { Message } from '@/chat/dto/message.dto';
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';

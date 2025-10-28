@@ -4,89 +4,128 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { UserRepository } from '@/user/repositories/user.repository';
-import {
-  installMessageFixtures,
-  messageFixtures,
-} from '@/utils/test/fixtures/message';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Message } from '../schemas/message.schema';
-import { AnyMessage } from '../types/message';
-
 import { MessageRepository } from './message.repository';
-import { SubscriberRepository } from './subscriber.repository';
 
-describe('MessageRepository', () => {
+describe('MessageRepository (TypeORM)', () => {
+  let module: TestingModule;
   let messageRepository: MessageRepository;
-  let userRepository: UserRepository;
-  let subscriberRepository: SubscriberRepository;
-  let messageModel: Model<Message>;
+  let repository: Repository<MessageOrmEntity>;
+  let seededMessages: MessageOrmEntity[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installMessageFixtures)],
-      providers: [MessageRepository, SubscriberRepository, UserRepository],
+      providers: [MessageRepository],
+      typeorm: {
+        entities: [
+          MessageOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          ConversationOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installMessageFixturesTypeOrm,
+      },
     });
-    [messageRepository, userRepository, subscriberRepository, messageModel] =
-      await getMocks([
-        MessageRepository,
-        UserRepository,
-        SubscriberRepository,
-        getModelToken(Message.name),
-      ]);
+
+    module = testing.module;
+
+    [messageRepository] = await testing.getMocks([MessageRepository]);
+
+    repository = module.get<Repository<MessageOrmEntity>>(
+      getRepositoryToken(MessageOrmEntity),
+    );
+
+    seededMessages = await repository.find({
+      relations: ['sender', 'recipient', 'sentBy'],
+      order: { createdAt: 'ASC' },
+    });
   });
 
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
-    it('should find one message by id, and populate its sender and recipient', async () => {
-      jest.spyOn(messageModel, 'findById');
-      const message = (await messageRepository.findOne({ mid: 'mid-1' }))!;
-      const sender = await subscriberRepository.findOne(message!['sender']);
-      const recipient = await subscriberRepository.findOne(
-        message!['recipient'],
+    it('returns a populated message by id', async () => {
+      const reference = seededMessages.find(
+        (message) => message.mid === 'mid-1',
       );
-      const user = (await userRepository.findOne(message!['sentBy']))!;
-      const result = await messageRepository.findOneAndPopulate(message.id);
+      if (!reference) {
+        throw new Error('Expected fixture with mid "mid-1" to be available');
+      }
 
-      expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
-      expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
-        sender,
-        recipient,
-        sentBy: user.id,
-      });
+      const result = await messageRepository.findOneAndPopulate(reference.id);
+
+      expect(result).toBeDefined();
+      expect(result!.id).toBe(reference.id);
+      expect(result!.mid ?? null).toBe(reference.mid ?? null);
+      expect(result!.message).toEqual(reference.message);
+      expect(result!.read).toBe(reference.read);
+      expect(result!.delivery).toBe(reference.delivery);
+      expect(result!.handover).toBe(reference.handover);
+
+      expect(result!.sender?.id ?? null).toBe(reference.sender?.id ?? null);
+      expect(result!.recipient?.id ?? null).toBe(
+        reference.recipient?.id ?? null,
+      );
+      expect(result!.sentBy?.id ?? null).toBe(reference.sentBy?.id ?? null);
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should find one messages, and foreach message populate its sender and recipient', async () => {
-      jest.spyOn(messageModel, 'find');
-      const pageQuery = getPageQuery<AnyMessage>();
-      const result = await messageRepository.findAndPopulate({}, pageQuery);
-      const allSubscribers = await subscriberRepository.findAll();
-      const allUsers = await userRepository.findAll();
-      const allMessages = await messageRepository.findAll();
-      const messages = allMessages.map((message) => ({
-        ...message,
-        sender: allSubscribers.find(({ id }) => id === message['sender']),
-        recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy'])?.id,
-      }));
+    it('populates related entities for every message', async () => {
+      const result = await messageRepository.findAndPopulate({
+        order: { createdAt: 'ASC' },
+      });
 
-      expect(messageModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(messages);
+      expect(result).toHaveLength(seededMessages.length);
+
+      const byId = new Map(result.map((message) => [message.id, message]));
+
+      seededMessages.forEach((entity) => {
+        const dto = byId.get(entity.id);
+        expect(dto).toBeDefined();
+        expect(dto!.mid ?? null).toBe(entity.mid ?? null);
+        expect(dto!.message).toEqual(entity.message);
+        expect(dto!.sender?.id ?? null).toBe(entity.sender?.id ?? null);
+        expect(dto!.recipient?.id ?? null).toBe(entity.recipient?.id ?? null);
+        expect(dto!.sentBy?.id ?? null).toBe(entity.sentBy?.id ?? null);
+      });
     });
   });
 });

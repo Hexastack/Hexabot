@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
-import { BlockCreateDto } from '@/chat/dto/block.dto';
-import { Block, BlockModel } from '@/chat/schemas/block.schema';
-import { CategoryModel } from '@/chat/schemas/category.schema';
+import { Block, BlockCreateDto } from '@/chat/dto/block.dto';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { FileType } from '@/chat/types/attachment';
 import { ButtonType } from '@/chat/types/button';
 import { QuickReplyType } from '@/chat/types/quick-reply';
@@ -181,23 +181,65 @@ export const blockFixtures = getFixturesWithDefaultValues<
   defaultValues: blockDefaultValues,
 });
 
-export const installBlockFixtures = async () => {
-  const Category = mongoose.model(CategoryModel.name, CategoryModel.schema);
-  const defaultCategory = await Category.create({
-    label: 'default',
-    builtin: true,
+const findBlocks = async (dataSource: DataSource) =>
+  await dataSource.getRepository(BlockOrmEntity).find({
+    relations: [
+      'category',
+      'trigger_labels',
+      'assign_labels',
+      'nextBlocks',
+      'previousBlocks',
+      'attachedBlock',
+      'attachedToBlock',
+    ],
   });
-  const Block = mongoose.model(BlockModel.name, BlockModel.schema);
-  const blocks = await Block.insertMany(
-    blockFixtures.map((blockFixture) => ({
-      ...blockFixture,
-      category: defaultCategory.id,
-    })),
-  );
-  await Block.updateOne(
-    { name: 'hasNextBlocks' },
-    { $set: { nextBlocks: blocks[1].id } },
+
+export const installBlockFixturesTypeOrm = async (dataSource: DataSource) => {
+  const blockRepository = dataSource.getRepository(BlockOrmEntity);
+  const categoryRepository = dataSource.getRepository(CategoryOrmEntity);
+
+  if (await blockRepository.count()) {
+    return await findBlocks(dataSource);
+  }
+
+  let defaultCategory = await categoryRepository.findOne({
+    where: { label: 'default', builtin: true },
+  });
+
+  if (!defaultCategory) {
+    defaultCategory = await categoryRepository.save(
+      categoryRepository.create({
+        label: 'default',
+        builtin: true,
+        zoom: 100,
+        offset: [0, 0],
+      }),
+    );
+  }
+
+  const blockEntities = blockFixtures.map((fixture) =>
+    blockRepository.create({
+      ...fixture,
+      category: defaultCategory ? { id: defaultCategory.id } : null,
+    } as DeepPartial<BlockOrmEntity>),
   );
 
-  return blocks;
+  const savedBlocks = await blockRepository.save(blockEntities);
+
+  const hasNextBlocks = savedBlocks.find(
+    (block) => block.name === 'hasNextBlocks',
+  );
+  const hasPreviousBlocks = savedBlocks.find(
+    (block) => block.name === 'hasPreviousBlocks',
+  );
+
+  if (hasNextBlocks && hasPreviousBlocks) {
+    await blockRepository
+      .createQueryBuilder()
+      .relation(BlockOrmEntity, 'nextBlocks')
+      .of(hasNextBlocks.id)
+      .add(hasPreviousBlocks.id);
+  }
+
+  return await findBlocks(dataSource);
 };

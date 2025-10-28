@@ -130,7 +130,8 @@ describe('ContentService (TypeORM)', () => {
 
   describe('textSearch', () => {
     it('matches content by keyword', async () => {
-      const keyword = contentFixtures[0].title.split(' ')[0].toLowerCase();
+      const keyword =
+        contentFixtures[0].title?.split(' ')[0].toLowerCase() || '';
 
       const results = await contentService.textSearch(keyword);
 

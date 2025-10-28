@@ -6,8 +6,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { plainToInstance } from 'class-transformer';
+import { InsertEvent, UpdateEvent } from 'typeorm';
 
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
+import {
+  Subscriber,
+  Subscriber as SubscriberDto,
+} from '@/chat/dto/subscriber.dto';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -29,6 +35,76 @@ export class BotStatsService extends BaseOrmService<
     private readonly logger: LoggerService,
   ) {
     super(repository);
+  }
+
+  @OnEvent('hook:subscriber:preCreate')
+  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>): void {
+    const entity = event.entity;
+    if (!entity) {
+      return;
+    }
+
+    const subscriber = plainToInstance(SubscriberDto, entity, {
+      exposeUnsetFields: false,
+    });
+
+    this.eventBus.emit(
+      'hook:stats:entry',
+      BotStatsType.new_users,
+      'New users',
+      subscriber,
+    );
+  }
+
+  @OnEvent('hook:subscriber:preUpdate')
+  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
+    const entity = event.entity as Partial<SubscriberOrmEntity> | undefined;
+    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
+
+    if (!entity || !previous) {
+      return;
+    }
+
+    const updatedColumns = event.updatedColumns ?? [];
+    const updatedRelations = event.updatedRelations ?? [];
+    const assignmentUpdated =
+      updatedColumns.some(
+        ({ propertyName }) =>
+          propertyName === 'assignedToId' || propertyName === 'assignedTo',
+      ) ||
+      updatedRelations.some(
+        ({ propertyName }) => propertyName === 'assignedTo',
+      );
+
+    if (!assignmentUpdated) {
+      return;
+    }
+
+    const newAssignedTo = entity?.id;
+    const previousAssignedTo = previous?.id;
+
+    if (newAssignedTo === previousAssignedTo) {
+      return;
+    }
+
+    const newAssignmentExists = Boolean(newAssignedTo);
+    const previousAssignmentExists = Boolean(previousAssignedTo);
+
+    if (newAssignmentExists && previousAssignmentExists) {
+      return;
+    }
+
+    const previousSubscriber = plainToInstance(SubscriberDto, previous, {
+      exposeUnsetFields: false,
+    });
+
+    if (previousSubscriber) {
+      this.eventBus.emit(
+        'hook:analytics:passation',
+        previousSubscriber,
+        newAssignmentExists,
+      );
+    }
   }
 
   /**

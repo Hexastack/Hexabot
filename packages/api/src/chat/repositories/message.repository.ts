@@ -5,49 +5,35 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Brackets, Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Message,
-  MESSAGE_POPULATE,
+  MessageDtoConfig,
   MessageFull,
-  MessagePopulate,
-} from '../schemas/message.schema';
-import { SubscriberStub } from '../schemas/subscriber.schema';
-import { AnyMessage } from '../types/message';
+  MessageTransformerDto,
+} from '../dto/message.dto';
+import { SubscriberStub } from '../dto/subscriber.dto';
+import { MessageOrmEntity } from '../entities/message.entity';
 
 @Injectable()
-export class MessageRepository extends BaseRepository<
-  AnyMessage,
-  MessagePopulate,
-  MessageFull
+export class MessageRepository extends BaseOrmRepository<
+  MessageOrmEntity,
+  MessageTransformerDto,
+  MessageDtoConfig
 > {
-  constructor(@InjectModel(Message.name) readonly model: Model<AnyMessage>) {
-    super(
-      model,
-      Message as new () => AnyMessage,
-      MESSAGE_POPULATE,
-      MessageFull,
-    );
-  }
-
-  /**
-   * Pre-create hook to validate message data before saving.
-   * If the message is from a end-user (i.e., has a sender), it is saved
-   * as an inbox NLP sample. Throws an error if neither sender nor recipient
-   * is provided.
-   *
-   * @param _doc - The message document to be created.
-   */
-  async preCreate(_doc: AnyMessage): Promise<void> {
-    if (_doc) {
-      if (!('sender' in _doc) && !('recipient' in _doc)) {
-        throw new Error('Either sender or recipient must be provided!');
-      }
-    }
+  constructor(
+    @InjectRepository(MessageOrmEntity)
+    repository: Repository<MessageOrmEntity>,
+  ) {
+    super(repository, ['sender', 'recipient', 'sentBy'], {
+      PlainCls: Message,
+      FullCls: MessageFull,
+    });
   }
 
   /**
@@ -64,14 +50,27 @@ export class MessageRepository extends BaseRepository<
     subscriber: S,
     until = new Date(),
     limit: number = 30,
-  ) {
-    return await this.find(
-      {
-        $or: [{ recipient: subscriber.id }, { sender: subscriber.id }],
-        createdAt: { $lt: until },
-      },
-      { skip: 0, limit, sort: ['createdAt', 'desc'] },
-    );
+  ): Promise<Message[]> {
+    const qb = this.repository
+      .createQueryBuilder('message')
+      .where(
+        new Brackets((where) => {
+          where
+            .where('message.sender_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            })
+            .orWhere('message.recipient_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            });
+        }),
+      )
+      .andWhere('message.created_at < :until', { until })
+      .orderBy('message.created_at', 'DESC')
+      .limit(limit);
+
+    const results = await qb.getMany();
+    const toDto = this.getTransformer(DtoTransformer.PlainCls);
+    return results.map(toDto);
   }
 
   /**
@@ -88,13 +87,26 @@ export class MessageRepository extends BaseRepository<
     subscriber: S,
     since = new Date(),
     limit: number = 30,
-  ) {
-    return await this.find(
-      {
-        $or: [{ recipient: subscriber.id }, { sender: subscriber.id }],
-        createdAt: { $gt: since },
-      },
-      { skip: 0, limit, sort: ['createdAt', 'asc'] },
-    );
+  ): Promise<Message[]> {
+    const qb = this.repository
+      .createQueryBuilder('message')
+      .where(
+        new Brackets((where) => {
+          where
+            .where('message.sender_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            })
+            .orWhere('message.recipient_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            });
+        }),
+      )
+      .andWhere('message.created_at > :since', { since })
+      .orderBy('message.created_at', 'ASC')
+      .limit(limit);
+
+    const results = await qb.getMany();
+    const toDto = this.getTransformer(DtoTransformer.PlainCls);
+    return results.map(toDto);
   }
 }

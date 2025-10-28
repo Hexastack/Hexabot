@@ -5,27 +5,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { LabelDto } from '../dto/label.dto';
 import {
   Label,
-  LABEL_POPULATE,
+  LabelDtoConfig,
   LabelFull,
-  LabelPopulate,
-} from '../schemas/label.schema';
+  LabelTransformerDto,
+} from '../dto/label.dto';
+import { LabelOrmEntity } from '../entities/label.entity';
 
 @Injectable()
-export class LabelRepository extends BaseRepository<
-  Label,
-  LabelPopulate,
-  LabelFull,
-  LabelDto
+export class LabelRepository extends BaseOrmRepository<
+  LabelOrmEntity,
+  LabelTransformerDto,
+  LabelDtoConfig
 > {
-  constructor(@InjectModel(Label.name) readonly model: Model<Label>) {
-    super(model, Label, LABEL_POPULATE, LabelFull);
+  constructor(
+    @InjectRepository(LabelOrmEntity)
+    repository: Repository<LabelOrmEntity>,
+  ) {
+    super(repository, ['users', 'group'], {
+      PlainCls: Label,
+      FullCls: LabelFull,
+    });
   }
 }

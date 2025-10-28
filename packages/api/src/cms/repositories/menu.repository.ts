@@ -32,6 +32,5 @@ export class MenuRepository extends BaseOrmRepository<
       PlainCls: Menu,
       FullCls: MenuFull,
     });
-    MenuOrmEntity.registerEntityManagerProvider(() => repository.manager);
   }
 }

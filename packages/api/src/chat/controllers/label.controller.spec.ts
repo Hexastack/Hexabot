@@ -5,13 +5,13 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { In } from 'typeorm';
 
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { labelFixtures } from '@/utils/test/fixtures/label';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
-import { getPageQuery } from '@/utils/test/pagination';
 import { sortRowsBy } from '@/utils/test/sort';
 import {
   closeInMongodConnection,
@@ -19,8 +19,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
-import { Label } from '../schemas/label.schema';
+import { Label, LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
 import { LabelService } from '../services/label.service';
 import { SubscriberService } from '../services/subscriber.service';
 
@@ -69,15 +68,14 @@ describe('LabelController', () => {
   });
 
   describe('findPage', () => {
-    const pageQuery = getPageQuery<Label>();
     it('should find labels', async () => {
       jest.spyOn(labelService, 'find');
-      const result = await labelController.findPage(pageQuery, [], {});
+      const result = await labelController.findPage([], {});
       const labelsWithBuiltin = labelFixtures.map((labelFixture) => ({
         ...labelFixture,
       }));
 
-      expect(labelService.find).toHaveBeenCalledWith({}, pageQuery);
+      expect(labelService.find).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(labelsWithBuiltin.sort(sortRowsBy), [
         ...IGNORED_TEST_FIELDS,
         'nextBlocks',
@@ -86,7 +84,7 @@ describe('LabelController', () => {
 
     it('should find labels, and foreach label populate its corresponding users', async () => {
       jest.spyOn(labelService, 'findAndPopulate');
-      const result = await labelController.findPage(pageQuery, ['users'], {});
+      const result = await labelController.findPage(['users'], {});
       const allLabels = await labelService.findAll();
       const allSubscribers = await subscriberService.findAll();
       const labelsWithUsers = allLabels.map((label) => ({
@@ -94,7 +92,7 @@ describe('LabelController', () => {
         users: allSubscribers,
       }));
 
-      expect(labelService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
+      expect(labelService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(labelsWithUsers.sort(sortRowsBy));
     });
   });
@@ -205,7 +203,7 @@ describe('LabelController', () => {
 
       expect(result.deletedCount).toEqual(valuesToDelete.length);
       const remainingValues = await labelService.find({
-        _id: { $in: valuesToDelete },
+        where: { id: In(valuesToDelete) },
       });
       expect(remainingValues.length).toBe(0);
     });

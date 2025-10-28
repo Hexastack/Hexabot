@@ -6,7 +6,8 @@
 
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,
   SocketPost,
@@ -19,22 +20,28 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import {
+  Message,
+  MessageDtoConfig,
+  MessageTransformerDto,
+} from '../dto/message.dto';
+import { Subscriber, SubscriberStub } from '../dto/subscriber.dto';
+import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageRepository } from '../repositories/message.repository';
-import { MessageFull, MessagePopulate } from '../schemas/message.schema';
-import { Subscriber, SubscriberStub } from '../schemas/subscriber.schema';
-import { AnyMessage } from '../types/message';
 
 @Injectable()
-export class MessageService extends BaseService<
-  AnyMessage,
-  MessagePopulate,
-  MessageFull
+export class MessageService extends BaseOrmService<
+  MessageOrmEntity,
+  MessageTransformerDto,
+  MessageDtoConfig,
+  MessageRepository
 > {
   constructor(
-    private readonly messageRepository: MessageRepository,
+    readonly repository: MessageRepository,
     private readonly gateway: WebsocketGateway,
+    private readonly logger: LoggerService,
   ) {
-    super(messageRepository);
+    super(repository);
   }
 
   /**
@@ -76,12 +83,8 @@ export class MessageService extends BaseService<
     subscriber: S,
     until = new Date(),
     limit: number = 30,
-  ) {
-    return await this.messageRepository.findHistoryUntilDate(
-      subscriber,
-      until,
-      limit,
-    );
+  ): Promise<Message[]> {
+    return await this.repository.findHistoryUntilDate(subscriber, until, limit);
   }
 
   /**
@@ -98,12 +101,8 @@ export class MessageService extends BaseService<
     subscriber: S,
     since = new Date(),
     limit: number = 30,
-  ) {
-    return await this.messageRepository.findHistorySinceDate(
-      subscriber,
-      since,
-      limit,
-    );
+  ): Promise<Message[]> {
+    return await this.repository.findHistorySinceDate(subscriber, since, limit);
   }
 
   /**
@@ -114,13 +113,15 @@ export class MessageService extends BaseService<
    *
    * @returns The message history since the specified date.
    */
-  async findLastMessages(subscriber: Subscriber, limit: number = 5) {
-    const lastMessages = await this.find(
-      {
-        $or: [{ sender: subscriber.id }, { recipient: subscriber.id }],
-      },
-      { sort: ['createdAt', 'desc'], skip: 0, limit },
-    );
+  async findLastMessages(
+    subscriber: Subscriber,
+    limit: number = 5,
+  ): Promise<Message[]> {
+    const lastMessages = await this.find({
+      where: [{ senderId: subscriber.id }, { recipientId: subscriber.id }],
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
 
     return lastMessages.reverse();
   }

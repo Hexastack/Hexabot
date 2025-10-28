@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { PluginName } from '@/plugins/types';
 
-import { Message } from '../message.schema';
+import { Message } from '../dto/message.dto';
 
 import { attachmentPayloadSchema } from './attachment';
 import { buttonSchema, PayloadType } from './button';
@@ -245,7 +245,7 @@ export interface OutgoingMessage extends Omit<Message, 'sender'> {
   message: StdOutgoingMessage;
   recipient: string;
   sentBy?: string;
-  handover?: boolean;
+  handover: boolean;
 }
 
 export type AnyMessage = IncomingMessage | OutgoingMessage;

@@ -14,6 +14,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 
@@ -25,7 +26,6 @@ import {
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
   AttachmentAccess,
@@ -152,7 +152,7 @@ export class AttachmentMetadataDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsObjectId({ message: 'Owner must be a valid ObjectId' })
+  @IsUUID('4', { message: 'CreatedBy must be a valid UUID' })
   createdBy: string;
 }
 

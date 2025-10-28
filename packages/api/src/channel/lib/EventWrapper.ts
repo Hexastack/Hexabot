@@ -5,7 +5,7 @@
  */
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { SubscriberChannelData } from '@/chat/types/channel';
 import {
   IncomingMessageType,

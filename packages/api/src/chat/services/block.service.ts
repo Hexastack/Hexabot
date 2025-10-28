@@ -5,7 +5,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
@@ -13,30 +12,31 @@ import { ContentService } from '@/cms/services/content.service';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   DEFAULT_BLOCK_SEARCH_LIMIT,
   getDefaultFallbackOptions,
 } from '../constants/block';
-import { BlockDto } from '../dto/block.dto';
-import { EnvelopeFactory } from '../helpers/envelope-factory';
-import { BlockRepository } from '../repositories/block.repository';
 import {
   Block,
+  BlockDtoConfig,
   BlockFull,
-  BlockPopulate,
   BlockStub,
-} from '../schemas/block.schema';
-import { Label } from '../schemas/label.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+  BlockTransformerDto,
+} from '../dto/block.dto';
+import { Label } from '../dto/label.dto';
+import { Subscriber } from '../dto/subscriber.dto';
+import { BlockOrmEntity } from '../entities/block.entity';
+import { EnvelopeFactory } from '../helpers/envelope-factory';
+import { BlockRepository } from '../repositories/block.repository';
 import { Context } from '../types/context';
 import {
   OutgoingMessageFormat,
@@ -49,11 +49,11 @@ import { Payload } from '../types/quick-reply';
 import { SubscriberContext } from '../types/subscriberContext';
 
 @Injectable()
-export class BlockService extends BaseService<
-  Block,
-  BlockPopulate,
-  BlockFull,
-  BlockDto
+export class BlockService extends BaseOrmService<
+  BlockOrmEntity,
+  BlockTransformerDto,
+  BlockDtoConfig,
+  BlockRepository
 > {
   constructor(
     readonly repository: BlockRepository,
@@ -63,6 +63,7 @@ export class BlockService extends BaseService<
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly nlpService: NlpService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -801,38 +802,7 @@ export class BlockService extends BaseService<
    * @param block - The block to retrieve fallback options from.
    * @returns The fallback options for the block, or default options if not specified.
    */
-  getFallbackOptions<T extends BlockStub>(block: T): FallbackOptions {
-    return block.options?.fallback ?? getDefaultFallbackOptions();
-  }
-
-  /**
-   * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
-   *
-   * @param _query - The Mongoose query object used for deletion.
-   * @param criteria - The filter criteria for finding the labels to be deleted.
-   */
-  @OnEvent('hook:label:preDelete')
-  async handleLabelPreDelete(
-    _query: unknown,
-    criteria: TFilterQuery<Label>,
-  ): Promise<void> {
-    if (criteria._id) {
-      await this.getRepository().model.updateMany(
-        {
-          $or: [
-            { trigger_labels: criteria._id },
-            { assign_labels: criteria._id },
-          ],
-        },
-        {
-          $pull: {
-            trigger_labels: criteria._id,
-            assign_labels: criteria._id,
-          },
-        },
-      );
-    } else {
-      throw new Error('Attempted to delete label using unknown criteria');
-    }
+  getFallbackOptions<T extends BlockStub>(block: T | null): FallbackOptions {
+    return block?.options?.fallback ?? getDefaultFallbackOptions();
   }
 }

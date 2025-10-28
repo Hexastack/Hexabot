@@ -14,31 +14,30 @@ import {
   Query,
   StreamableFile,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
+  SubscriberDtoConfig,
   SubscriberFull,
-  SubscriberPopulate,
-  SubscriberStub,
-} from '../schemas/subscriber.schema';
+  SubscriberTransformerDto,
+  SubscriberUpdateDto,
+} from '../dto/subscriber.dto';
+import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberService } from '../services/subscriber.service';
 
 @Controller('subscriber')
-export class SubscriberController extends BaseController<
-  Subscriber,
-  SubscriberStub,
-  SubscriberPopulate,
-  SubscriberFull
+export class SubscriberController extends BaseOrmController<
+  SubscriberOrmEntity,
+  SubscriberTransformerDto,
+  SubscriberDtoConfig,
+  Subscriber
 > {
   constructor(
     private readonly subscriberService: SubscriberService,
@@ -58,26 +57,27 @@ export class SubscriberController extends BaseController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Subscriber>,
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<Subscriber>({
+      new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
         // TODO : Check if the field email should be added to Subscriber schema
         allowedFields: [
           'first_name',
           'last_name',
-          'assignedTo',
-          'labels',
+          'assignedToId',
+          'labelIds',
           'channel.name',
         ],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<Subscriber>,
-  ) {
+    options: FindManyOptions<SubscriberOrmEntity>,
+  ): Promise<Subscriber[] | SubscriberFull[]> {
+    const queryOptions = options ?? {};
     return this.canPopulate(populate)
-      ? await this.subscriberService.findAndPopulate(filters, pageQuery)
-      : await this.subscriberService.find(filters, pageQuery);
+      ? await this.subscriberService.findAndPopulate(queryOptions)
+      : await this.subscriberService.find(queryOptions);
   }
 
   /**
@@ -89,19 +89,19 @@ export class SubscriberController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Subscriber>({
+      new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
         allowedFields: [
           'first_name',
           'last_name',
-          'assignedTo',
-          'labels',
+          'assignedToId',
+          'labelIds',
           'channel.name',
         ],
       }),
     )
-    filters?: TFilterQuery<Subscriber>,
-  ) {
-    return await this.count(filters);
+    options?: FindManyOptions<SubscriberOrmEntity>,
+  ): Promise<{ count: number }> {
+    return await this.count(options ?? {});
   }
 
   /**
@@ -117,7 +117,7 @@ export class SubscriberController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
-  ) {
+  ): Promise<Subscriber | SubscriberFull> {
     const doc = this.canPopulate(populate)
       ? await this.subscriberService.findOneAndPopulate(id)
       : await this.subscriberService.findOne(id);

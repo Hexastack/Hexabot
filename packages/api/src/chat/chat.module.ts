@@ -5,7 +5,7 @@
  */
 
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { CmsModule } from '@/cms/cms.module';
@@ -19,6 +19,14 @@ import { LabelGroupController } from './controllers/label-group.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
+import { BlockOrmEntity } from './entities/block.entity';
+import { CategoryOrmEntity } from './entities/category.entity';
+import { ContextVarOrmEntity } from './entities/context-var.entity';
+import { ConversationOrmEntity } from './entities/conversation.entity';
+import { LabelGroupOrmEntity } from './entities/label-group.entity';
+import { LabelOrmEntity } from './entities/label.entity';
+import { MessageOrmEntity } from './entities/message.entity';
+import { SubscriberOrmEntity } from './entities/subscriber.entity';
 import { BlockRepository } from './repositories/block.repository';
 import { CategoryRepository } from './repositories/category.repository';
 import { ContextVarRepository } from './repositories/context-var.repository';
@@ -27,14 +35,6 @@ import { LabelGroupRepository } from './repositories/label-group.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
-import { BlockModel } from './schemas/block.schema';
-import { CategoryModel } from './schemas/category.schema';
-import { ContextVarModel } from './schemas/context-var.schema';
-import { ConversationModel } from './schemas/conversation.schema';
-import { LabelGroupModel } from './schemas/label-group.schema';
-import { LabelModel } from './schemas/label.schema';
-import { MessageModel } from './schemas/message.schema';
-import { SubscriberModel } from './schemas/subscriber.schema';
 import { CategorySeeder } from './seeds/category.seed';
 import { ContextVarSeeder } from './seeds/context-var.seed';
 import { BlockService } from './services/block.service';
@@ -50,16 +50,16 @@ import { SubscriberService } from './services/subscriber.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      CategoryModel,
-      ContextVarModel,
-      LabelModel,
-      LabelGroupModel,
-      BlockModel,
-      MessageModel,
-      SubscriberModel,
-      ConversationModel,
-      SubscriberModel,
+    TypeOrmModule.forFeature([
+      CategoryOrmEntity,
+      ContextVarOrmEntity,
+      LabelOrmEntity,
+      LabelGroupOrmEntity,
+      BlockOrmEntity,
+      MessageOrmEntity,
+      SubscriberOrmEntity,
+      ConversationOrmEntity,
+      SubscriberOrmEntity,
     ]),
     CmsModule,
     AttachmentModule,

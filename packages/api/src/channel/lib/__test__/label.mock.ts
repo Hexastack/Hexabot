@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Label } from '@/chat/schemas/label.schema';
+import { Label } from '@/chat/dto/label.dto';
 
 import { modelInstance } from './base.mock';
 

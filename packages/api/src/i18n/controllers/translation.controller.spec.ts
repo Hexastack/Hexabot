@@ -10,8 +10,8 @@ import { FindManyOptions } from 'typeorm';
 
 import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
-import { Block } from '@/chat/schemas/block.schema';
-import { Conversation } from '@/chat/schemas/conversation.schema';
+import { Block } from '@/chat/dto/block.dto';
+import { Conversation } from '@/chat/dto/conversation.dto';
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';

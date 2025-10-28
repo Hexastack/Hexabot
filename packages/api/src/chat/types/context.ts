@@ -7,7 +7,7 @@
 import { ChannelName } from '@/channel/types';
 import { NLU } from '@/helper/types';
 
-import { Subscriber } from '../subscriber.schema';
+import { Subscriber } from '../dto/subscriber.dto';
 
 import { Payload } from './quick-reply';
 

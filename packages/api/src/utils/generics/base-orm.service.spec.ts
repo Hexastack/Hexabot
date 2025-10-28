@@ -21,9 +21,9 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 describe('BaseOrmService', () => {
+  let module: TestingModule;
   let dummyRepository: DummyRepository;
   let dummyService: DummyService;
-  let module: TestingModule;
   let baseline: Dummy[];
   let firstEntity: Dummy;
 
@@ -36,6 +36,7 @@ describe('BaseOrmService', () => {
         fixtures: installDummyFixturesTypeOrm,
       },
     });
+
     module = testingModule;
     [dummyRepository, dummyService] = await getMocks([
       DummyRepository,
@@ -49,7 +50,9 @@ describe('BaseOrmService', () => {
     firstEntity = baseline[0];
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   afterAll(async () => {
     if (module) {
@@ -59,15 +62,15 @@ describe('BaseOrmService', () => {
   });
 
   describe('utilities', () => {
-    it('should expose the underlying repository', () => {
+    it('exposes the configured repository', () => {
       expect(dummyService.getRepository()).toBe(dummyRepository);
     });
 
-    it('should share the repository event emitter', () => {
+    it('shares the repository event emitter', () => {
       expect(dummyService.eventEmitter).toBe(dummyRepository.getEventEmitter());
     });
 
-    it('should delegate populate capability checks to the repository', () => {
+    it('delegates populate checks to the repository', () => {
       const populate = ['relation'];
       const canPopulateSpy = jest.spyOn(dummyRepository, 'canPopulate');
       const result = dummyService.canPopulate(populate);
@@ -78,7 +81,7 @@ describe('BaseOrmService', () => {
   });
 
   describe('read operations', () => {
-    it('should find all plain entities', async () => {
+    it('finds all plain entities', async () => {
       const findAllSpy = jest.spyOn(dummyRepository, 'findAll');
       const results = await dummyService.findAll();
 
@@ -88,7 +91,7 @@ describe('BaseOrmService', () => {
       expect(names).toEqual(dummyFixtures.map(({ dummy }) => dummy).sort());
     });
 
-    it('should find all entities with relations populated', async () => {
+    it('finds all entities with relations populated', async () => {
       const findAllAndPopulateSpy = jest.spyOn(
         dummyRepository,
         'findAllAndPopulate',
@@ -99,7 +102,7 @@ describe('BaseOrmService', () => {
       expect(results).toHaveLength(dummyFixtures.length);
     });
 
-    it('should find entities matching options', async () => {
+    it('finds entities matching options', async () => {
       const options = { where: { id: firstEntity.id } };
       const findSpy = jest.spyOn(dummyRepository, 'find');
       const results = await dummyService.find(options);
@@ -109,7 +112,7 @@ describe('BaseOrmService', () => {
       expect(results[0]!.id).toBe(firstEntity.id);
     });
 
-    it('should find populated entities matching options', async () => {
+    it('finds populated entities matching options', async () => {
       const options = { where: { id: firstEntity.id } };
       const findAndPopulateSpy = jest.spyOn(dummyRepository, 'findAndPopulate');
       const results = await dummyService.findAndPopulate(options);
@@ -119,7 +122,7 @@ describe('BaseOrmService', () => {
       expect(results[0]!.id).toBe(firstEntity.id);
     });
 
-    it('should count stored entities', async () => {
+    it('counts stored entities', async () => {
       const countSpy = jest.spyOn(dummyRepository, 'count');
       const total = await dummyService.count();
 
@@ -127,7 +130,7 @@ describe('BaseOrmService', () => {
       expect(total).toBe(dummyFixtures.length);
     });
 
-    it('should find one entity by id', async () => {
+    it('finds one entity by id', async () => {
       const findOneSpy = jest.spyOn(dummyRepository, 'findOne');
       const result = await dummyService.findOne(firstEntity.id);
 
@@ -136,7 +139,7 @@ describe('BaseOrmService', () => {
       expect(result!.id).toBe(firstEntity.id);
     });
 
-    it('should find one entity by options', async () => {
+    it('finds one entity by options', async () => {
       const options = { where: { id: firstEntity.id } };
       const findOneSpy = jest.spyOn(dummyRepository, 'findOne');
       const result = await dummyService.findOne(options);
@@ -146,7 +149,7 @@ describe('BaseOrmService', () => {
       expect(result!.id).toBe(firstEntity.id);
     });
 
-    it('should find one populated entity', async () => {
+    it('finds one populated entity', async () => {
       const findOneAndPopulateSpy = jest.spyOn(
         dummyRepository,
         'findOneAndPopulate',
@@ -160,7 +163,7 @@ describe('BaseOrmService', () => {
   });
 
   describe('write operations', () => {
-    it('should create a new entity', async () => {
+    it('creates a new entity', async () => {
       const payload = { dummy: 'dummy created via service' };
       const createSpy = jest.spyOn(dummyRepository, 'create');
       const result = await dummyService.create(payload);
@@ -171,7 +174,7 @@ describe('BaseOrmService', () => {
       expect(stored!.dummy).toBe(payload.dummy);
     });
 
-    it('should create multiple entities', async () => {
+    it('creates multiple entities', async () => {
       const payloads = [
         { dummy: 'bulk service 1' },
         { dummy: 'bulk service 2', dynamicField: { foo: 'bar' } },
@@ -187,7 +190,7 @@ describe('BaseOrmService', () => {
       expect(stored).toHaveLength(payloads.length);
     });
 
-    it('should update one entity by id and forward options', async () => {
+    it('updates one entity by id and forwards options', async () => {
       const payload = { dummy: 'updated via service' };
       const updateOneSpy = jest.spyOn(dummyRepository, 'updateOne');
       const result = await dummyService.updateOne(firstEntity.id, payload, {
@@ -202,7 +205,7 @@ describe('BaseOrmService', () => {
       expect(stored!.dummy).toBe(payload.dummy);
     });
 
-    it('should update one entity by options', async () => {
+    it('updates one entity by options', async () => {
       const payload = { dummy: 'updated via criteria' };
       const options = { where: { id: firstEntity.id } };
       const updateOneSpy = jest.spyOn(dummyRepository, 'updateOne');
@@ -212,7 +215,7 @@ describe('BaseOrmService', () => {
       expect(result.dummy).toBe(payload.dummy);
     });
 
-    it('should update many entities', async () => {
+    it('updates many entities', async () => {
       const payload = { dummy: 'bulk update via service' };
       const updateManySpy = jest.spyOn(dummyRepository, 'updateMany');
       const results = await dummyService.updateMany({}, payload);
@@ -222,7 +225,7 @@ describe('BaseOrmService', () => {
       results.forEach((entity) => expect(entity.dummy).toBe(payload.dummy));
     });
 
-    it('should return an existing entity when findOneOrCreate locates a match', async () => {
+    it('returns an existing entity when findOneOrCreate locates a match', async () => {
       const payload = { dummy: 'ignored payload' };
       const findOneOrCreateSpy = jest.spyOn(dummyRepository, 'findOneOrCreate');
       const result = await dummyService.findOneOrCreate(
@@ -235,7 +238,7 @@ describe('BaseOrmService', () => {
       expect(await dummyRepository.count()).toBe(dummyFixtures.length);
     });
 
-    it('should create a new entity when findOneOrCreate matches none', async () => {
+    it('creates a new entity when findOneOrCreate matches none', async () => {
       const payload = { dummy: `created via findOneOrCreate ${randomUUID()}` };
       const options = { where: { id: randomUUID() } };
       const findOneOrCreateSpy = jest.spyOn(dummyRepository, 'findOneOrCreate');
@@ -249,7 +252,7 @@ describe('BaseOrmService', () => {
   });
 
   describe('delete operations', () => {
-    it('should delete one entity by id', async () => {
+    it('deletes one entity by id', async () => {
       const deleteOneSpy = jest.spyOn(dummyRepository, 'deleteOne');
       const result = await dummyService.deleteOne(firstEntity.id);
 
@@ -258,7 +261,7 @@ describe('BaseOrmService', () => {
       expect(await dummyRepository.count()).toBe(dummyFixtures.length - 1);
     });
 
-    it('should delete one entity by options', async () => {
+    it('deletes one entity by options', async () => {
       const options = { where: { id: firstEntity.id } };
       const deleteOneSpy = jest.spyOn(dummyRepository, 'deleteOne');
       const result = await dummyService.deleteOne(options);
@@ -268,7 +271,7 @@ describe('BaseOrmService', () => {
       expect(await dummyRepository.count()).toBe(dummyFixtures.length - 1);
     });
 
-    it('should delete many entities matching options', async () => {
+    it('deletes many entities matching options', async () => {
       const targetIds = baseline.slice(0, 2).map(({ id }) => id);
       const options = { where: { id: In(targetIds) } };
       const deleteManySpy = jest.spyOn(dummyRepository, 'deleteMany');
@@ -281,7 +284,7 @@ describe('BaseOrmService', () => {
       );
     });
 
-    it('should support deleting without filters', async () => {
+    it('supports deleting without filters', async () => {
       const deleteManySpy = jest.spyOn(dummyRepository, 'deleteMany');
       const result = await dummyService.deleteMany();
 
@@ -293,7 +296,7 @@ describe('BaseOrmService', () => {
       expect(await dummyRepository.count()).toBe(0);
     });
 
-    it('should return zero deletions when nothing matches', async () => {
+    it('returns zero deletions when nothing matches', async () => {
       const options = { where: { id: In([randomUUID()]) } };
       const deleteManySpy = jest.spyOn(dummyRepository, 'deleteMany');
       const result = await dummyService.deleteMany(options);

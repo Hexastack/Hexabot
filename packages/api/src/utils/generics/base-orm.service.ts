@@ -20,10 +20,10 @@ import {
 
 import {
   BaseOrmRepository,
+  DeleteResult,
   FindAllOptions,
   UpdateOneOptions,
 } from './base-orm.repository';
-import { DeleteResult } from './base-repository';
 
 export abstract class BaseOrmService<
   Entity extends BaseOrmEntity,
@@ -35,7 +35,7 @@ export abstract class BaseOrmService<
     ActionDto
   > = BaseOrmRepository<Entity, TransformerDto, ActionDto>,
 > {
-  readonly eventEmitter: EventEmitter2 | undefined;
+  readonly eventEmitter: EventEmitter2;
 
   protected constructor(protected readonly repository: OrmRepository) {
     this.eventEmitter = repository.getEventEmitter();

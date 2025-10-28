@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Block, BlockStub } from '@/chat/schemas/block.schema';
-import { ConversationFull } from '@/chat/schemas/conversation.schema';
+import { Block, BlockStub } from '@/chat/dto/block.dto';
+import { ConversationFull } from '@/chat/dto/conversation.dto';
 import { Context } from '@/chat/types/context';
 import { SubscriberContext } from '@/chat/types/subscriberContext';
 

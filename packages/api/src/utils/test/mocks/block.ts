@@ -8,7 +8,7 @@ import {
   customerLabelsMock,
   labelMock,
 } from '@/channel/lib/__test__/label.mock';
-import { BlockFull } from '@/chat/schemas/block.schema';
+import { BlockFull } from '@/chat/dto/block.dto';
 import { FileType } from '@/chat/types/attachment';
 import { ButtonType, PayloadType } from '@/chat/types/button';
 import { CaptureVar } from '@/chat/types/capture-var';

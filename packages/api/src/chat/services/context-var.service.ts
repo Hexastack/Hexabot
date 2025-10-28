@@ -5,20 +5,24 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContextVarDto } from '../dto/context-var.dto';
+import { Block, BlockFull } from '../dto/block.dto';
+import {
+  ContextVar,
+  ContextVarDtoConfig,
+  ContextVarTransformerDto,
+} from '../dto/context-var.dto';
+import { ContextVarOrmEntity } from '../entities/context-var.entity';
 import { ContextVarRepository } from '../repositories/context-var.repository';
-import { Block, BlockFull } from '../schemas/block.schema';
-import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
-export class ContextVarService extends BaseService<
-  ContextVar,
-  never,
-  never,
-  ContextVarDto
+export class ContextVarService extends BaseOrmService<
+  ContextVarOrmEntity,
+  ContextVarTransformerDto,
+  ContextVarDtoConfig
 > {
   constructor(readonly repository: ContextVarRepository) {
     super(repository);
@@ -33,10 +37,18 @@ export class ContextVarService extends BaseService<
   async getContextVarsByBlock(
     block: Block | BlockFull,
   ): Promise<Record<string, ContextVar>> {
+    const captureVarNames =
+      block.capture_vars?.map(({ context_var }) => context_var) ?? [];
+
+    if (!captureVarNames.length) {
+      return {};
+    }
+
     const vars = await this.find({
-      name: { $in: block.capture_vars.map(({ context_var }) => context_var) },
+      where: { name: In(captureVarNames) },
     });
-    return vars.reduce((acc, cv) => {
+
+    return vars.reduce<Record<string, ContextVar>>((acc, cv) => {
       acc[cv.name] = cv;
       return acc;
     }, {});

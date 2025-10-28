@@ -17,56 +17,58 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
+  ContextVar,
   ContextVarCreateDto,
+  ContextVarDtoConfig,
+  ContextVarTransformerDto,
   ContextVarUpdateDto,
 } from '../dto/context-var.dto';
-import { ContextVar } from '../schemas/context-var.schema';
+import { ContextVarOrmEntity } from '../entities/context-var.entity';
 import { ContextVarService } from '../services/context-var.service';
 
 @Controller('contextvar')
-export class ContextVarController extends BaseController<ContextVar> {
+export class ContextVarController extends BaseOrmController<
+  ContextVarOrmEntity,
+  ContextVarTransformerDto,
+  ContextVarDtoConfig,
+  ContextVar
+> {
   constructor(private readonly contextVarService: ContextVarService) {
     super(contextVarService);
   }
 
-  /**
-   * Finds a page of contextVars based on specified filters and pagination parameters.
-   * @param pageQuery - The pagination parameters.
-   * @param filters - The filters to apply.
-   * @returns A Promise that resolves to an array of contextVars.
-   */
+  /** Finds context vars based on TypeORM filters and pagination options. */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContextVar>,
-    @Query(new SearchFilterPipe<ContextVar>({ allowedFields: ['label'] }))
-    filters: TFilterQuery<ContextVar>,
+    @Query(
+      new TypeOrmSearchFilterPipe<ContextVarOrmEntity>({
+        allowedFields: ['label', 'name', 'permanent'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<ContextVarOrmEntity>,
   ): Promise<ContextVar[]> {
-    return await this.contextVarService.find(filters, pageQuery);
+    return await this.contextVarService.find(options ?? {});
   }
 
-  /**
-   * Counts the filtered number of contextVars.
-   * @returns A promise that resolves to an object representing the filtered number of contextVars.
-   */
+  /** Counts context vars matching the provided TypeORM options. */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<ContextVar>({
-        allowedFields: ['label'],
+      new TypeOrmSearchFilterPipe<ContextVarOrmEntity>({
+        allowedFields: ['label', 'name', 'permanent'],
       }),
     )
-    filters?: TFilterQuery<ContextVar>,
+    options?: FindManyOptions<ContextVarOrmEntity>,
   ) {
-    return await this.count(filters);
+    return await this.count(options ?? {});
   }
 
   /**
@@ -137,7 +139,7 @@ export class ContextVarController extends BaseController<ContextVar> {
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.contextVarService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {

@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/dto/user.dto';
+import { UserRepository } from '@/user/repositories/user.repository';
 import {
   installMessageFixtures,
   messageFixtures,
@@ -21,9 +21,9 @@ import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { Message } from '../dto/message.dto';
+import { Subscriber } from '../dto/subscriber.dto';
 import { MessageRepository } from '../repositories/message.repository';
-import { Message } from '../schemas/message.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
 
 import { SubscriberRepository } from './../repositories/subscriber.repository';
 import { MessageService } from './message.service';

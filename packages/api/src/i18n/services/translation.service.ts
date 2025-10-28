@@ -15,7 +15,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Block } from '../../chat/schemas/block.schema';
+import { Block } from '../../chat/dto/block.dto';
 import { BlockService } from '../../chat/services/block.service';
 import {
   TranslationDtoConfig,

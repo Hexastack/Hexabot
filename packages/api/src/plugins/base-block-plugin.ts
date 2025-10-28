@@ -8,7 +8,7 @@ import path from 'path';
 
 import { Injectable } from '@nestjs/common';
 
-import { Block, BlockFull } from '@/chat/schemas/block.schema';
+import { Block, BlockFull } from '@/chat/dto/block.dto';
 import { Context } from '@/chat/types/context';
 import { StdOutgoingEnvelope } from '@/chat/types/message';
 

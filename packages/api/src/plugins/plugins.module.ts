@@ -6,12 +6,12 @@
 
 import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
-import { BlockModel } from '@/chat/schemas/block.schema';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
 import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
 
@@ -28,7 +28,7 @@ import { PluginService } from './plugins.service';
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([BlockModel]),
+    TypeOrmModule.forFeature([BlockOrmEntity]),
     CmsModule,
     AttachmentModule,
     ChatModule,

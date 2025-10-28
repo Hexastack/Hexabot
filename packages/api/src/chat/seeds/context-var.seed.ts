@@ -8,9 +8,8 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
-import { ContextVarDto } from '../dto/context-var.dto';
+import { ContextVar, ContextVarDto } from '../dto/context-var.dto';
 import { ContextVarRepository } from '../repositories/context-var.repository';
-import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
 export class ContextVarSeeder extends BaseSeeder<

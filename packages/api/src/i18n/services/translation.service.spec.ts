@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BlockOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -12,8 +13,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Block } from '../../chat/schemas/block.schema';
-import { BlockOptions } from '../../chat/schemas/types/options';
+import { Block } from '../../chat/dto/block.dto';
 import { BlockService } from '../../chat/services/block.service';
 import { TranslationRepository } from '../repositories/translation.repository';
 import { TranslationService } from '../services/translation.service';

@@ -6,18 +6,17 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LabelDto } from '../dto/label.dto';
+import { LabelDtoConfig, LabelTransformerDto } from '../dto/label.dto';
+import { LabelOrmEntity } from '../entities/label.entity';
 import { LabelRepository } from '../repositories/label.repository';
-import { Label, LabelFull, LabelPopulate } from '../schemas/label.schema';
 
 @Injectable()
-export class LabelService extends BaseService<
-  Label,
-  LabelPopulate,
-  LabelFull,
-  LabelDto
+export class LabelService extends BaseOrmService<
+  LabelOrmEntity,
+  LabelTransformerDto,
+  LabelDtoConfig
 > {
   constructor(readonly repository: LabelRepository) {
     super(repository);

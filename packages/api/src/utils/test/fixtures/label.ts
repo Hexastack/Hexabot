@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { LabelCreateDto } from '@/chat/dto/label.dto';
-import { Label, LabelModel } from '@/chat/schemas/label.schema';
+import { Label, LabelCreateDto } from '@/chat/dto/label.dto';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -61,7 +62,27 @@ export const labelFixtures = getFixturesWithDefaultValues<
   defaultValues: contentLabelDefaultValues,
 });
 
-export const installLabelFixtures = async () => {
-  const Label = mongoose.model(LabelModel.name, LabelModel.schema);
-  return await Label.insertMany(labelFixtures);
+export const installLabelFixturesTypeOrm = async (dataSource: DataSource) => {
+  const repository = dataSource.getRepository(LabelOrmEntity);
+
+  if (await repository.count()) {
+    return await repository.find({ relations: ['group', 'users'] });
+  }
+
+  const entities = labelFixtures.map((fixture) => {
+    const { group, ...label } = fixture;
+
+    return repository.create({
+      ...label,
+      builtin: fixture.builtin ?? false,
+      description:
+        fixture.description === undefined ? null : fixture.description,
+      label_id: fixture.label_id === undefined ? null : fixture.label_id,
+      group: group ? ({ id: group } as Pick<LabelGroupOrmEntity, 'id'>) : null,
+    });
+  });
+
+  await repository.save(entities);
+
+  return await repository.find({ relations: ['group', 'users'] });
 };

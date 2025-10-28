@@ -17,8 +17,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Message } from '../schemas/message.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+import { Message } from '../dto/message.dto';
+import { Subscriber } from '../dto/subscriber.dto';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 

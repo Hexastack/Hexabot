@@ -4,17 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { MessageModel, Message } from '@/chat/schemas/message.schema';
+import { Message, MessageCreateDto } from '@/chat/dto/message.dto';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder, TFixturesDefaultValues } from '../types';
 
-import { installSubscriberFixtures } from './subscriber';
+import { installSubscriberFixturesTypeOrm } from './subscriber';
 
-const messages: MessageCreateDto[] = [
+type TMessageFixtures = FixturesTypeBuilder<Message, MessageCreateDto>;
+
+const messages: TMessageFixtures['values'][] = [
   {
     mid: 'mid-1',
     sender: '1',
@@ -48,22 +50,71 @@ export const messageDefaultValues: TFixturesDefaultValues<Message> = {
   createdAt: new Date('2024-01-01T00:00:00.00Z'),
 };
 
-export const messageFixtures = getFixturesWithDefaultValues<Message>({
+export const messageFixtures = getFixturesWithDefaultValues<
+  Message,
+  TMessageFixtures['values']
+>({
   fixtures: messages,
   defaultValues: messageDefaultValues,
 });
 
-export const installMessageFixtures = async () => {
-  const { subscribers, users } = await installSubscriberFixtures();
-  const Message = mongoose.model(MessageModel.name, MessageModel.schema);
-  return await Message.insertMany(
-    messageFixtures.map((m) => {
-      return {
-        ...m,
-        sender: m.sender ? subscribers[parseInt(m.sender)].id : null,
-        recipient: m.recipient ? subscribers[parseInt(m.recipient)].id : null,
-        sentBy: m.sentBy ? users[parseInt(m.sentBy)].id : null,
-      };
-    }),
-  );
+const findMessages = async (dataSource: DataSource) =>
+  await dataSource.getRepository(MessageOrmEntity).find({
+    relations: ['sender', 'recipient', 'sentBy'],
+  });
+
+const parseIndex = (value?: string | null) => {
+  if (value == null) {
+    return null;
+  }
+
+  const index = Number.parseInt(value, 10);
+  return Number.isNaN(index) ? null : index;
+};
+
+export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
+  const repository = dataSource.getRepository(MessageOrmEntity);
+
+  const { subscribers, users } =
+    await installSubscriberFixturesTypeOrm(dataSource);
+
+  if (await repository.count()) {
+    return await findMessages(dataSource);
+  }
+
+  const entities = messageFixtures.map((fixture) => {
+    const senderIndex = parseIndex(fixture.sender);
+    const recipientIndex = parseIndex(fixture.recipient);
+    const sentByIndex = parseIndex(fixture.sentBy);
+
+    const sender =
+      senderIndex != null && subscribers[senderIndex]
+        ? { id: subscribers[senderIndex].id }
+        : null;
+
+    const recipient =
+      recipientIndex != null && subscribers[recipientIndex]
+        ? { id: subscribers[recipientIndex].id }
+        : null;
+
+    const sentBy =
+      sentByIndex != null && users[sentByIndex]
+        ? { id: users[sentByIndex].id }
+        : null;
+
+    return repository.create({
+      mid: fixture.mid ?? null,
+      message: fixture.message,
+      read: fixture.read ?? false,
+      delivery: fixture.delivery ?? false,
+      handover: fixture.handover ?? false,
+      sender,
+      recipient,
+      sentBy,
+    });
+  });
+
+  await repository.save(entities);
+
+  return await findMessages(dataSource);
 };

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
 
 import { modelInstance } from './base.mock';
 import { customerLabelsMock } from './label.mock';

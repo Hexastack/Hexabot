@@ -145,10 +145,12 @@ export const contentFixtures = getFixturesWithDefaultValues<
   defaultValues: contentDefaultValues,
 });
 
+// eslint-disable-next-line prettier/prettier
 export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] = contentFixtures.map(
   ({ contentType, ...fixture }) => ({
     ...fixture,
     contentTypeId: contentType,
+    // eslint-disable-next-line prettier/prettier
   }),
 );
 

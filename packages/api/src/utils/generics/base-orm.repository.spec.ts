@@ -23,7 +23,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { EHook } from './base-repository';
+import { EHook } from './base-orm.repository';
 
 describe('BaseOrmRepository', () => {
   let dummyRepository: DummyRepository;

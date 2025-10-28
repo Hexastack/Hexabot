@@ -7,17 +7,19 @@
 import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ConversationDto } from '../dto/conversation.dto';
-import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
-import { ConversationRepository } from '../repositories/conversation.repository';
-import { Block, BlockFull } from '../schemas/block.schema';
+import { Block, BlockFull } from '../dto/block.dto';
 import {
   Conversation,
+  ConversationDtoConfig,
   ConversationFull,
-  ConversationPopulate,
-} from '../schemas/conversation.schema';
+  ConversationTransformerDto,
+} from '../dto/conversation.dto';
+import { ConversationOrmEntity } from '../entities/conversation.entity';
+import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
+import { ConversationRepository } from '../repositories/conversation.repository';
 import { OutgoingMessageFormat } from '../types/message';
 import { Payload } from '../types/quick-reply';
 
@@ -25,16 +27,17 @@ import { ContextVarService } from './context-var.service';
 import { SubscriberService } from './subscriber.service';
 
 @Injectable()
-export class ConversationService extends BaseService<
-  Conversation,
-  ConversationPopulate,
-  ConversationFull,
-  ConversationDto
+export class ConversationService extends BaseOrmService<
+  ConversationOrmEntity,
+  ConversationTransformerDto,
+  ConversationDtoConfig,
+  ConversationRepository
 > {
   constructor(
     readonly repository: ConversationRepository,
     private readonly contextVarService: ContextVarService,
     private readonly subscriberService: SubscriberService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -121,7 +124,6 @@ export class ConversationService extends BaseService<
 
     // Store user infos
     if (profile) {
-      // @ts-expect-error : id needs to remain readonly
       convo.context.user.id = profile.id;
       convo.context.user.first_name = profile.first_name || '';
       convo.context.user.last_name = profile.last_name || '';

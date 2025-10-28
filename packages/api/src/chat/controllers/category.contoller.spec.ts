@@ -22,7 +22,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
 import { CategoryService } from '../services/category.service';
 
-import { Category } from './../schemas/category.schema';
+import { Category } from './../dto/category.dto';
 import { CategoryController } from './category.controller';
 
 describe('CategoryController', () => {

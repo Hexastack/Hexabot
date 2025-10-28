@@ -21,10 +21,10 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import {
+  ContextVar,
   ContextVarCreateDto,
   ContextVarUpdateDto,
 } from '../dto/context-var.dto';
-import { ContextVar } from '../schemas/context-var.schema';
 import { ContextVarService } from '../services/context-var.service';
 
 import { ContextVarController } from './context-var.controller';

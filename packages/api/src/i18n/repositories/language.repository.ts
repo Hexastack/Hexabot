@@ -31,6 +31,5 @@ export class LanguageRepository extends BaseOrmRepository<
       PlainCls: Language,
       FullCls: Language,
     });
-    LanguageOrmEntity.registerEntityManagerProvider(() => repository.manager);
   }
 }

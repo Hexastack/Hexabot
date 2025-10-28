@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
 import mime from 'mime';
 
 import { AttachmentOrmEntity as AttachmentEntity } from '@/attachment/entities/attachment.entity';
@@ -14,41 +15,58 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/dto/user.dto';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { installLabelGroupFixtures } from '@/utils/test/fixtures/label-group';
-import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
-import { getPageQuery } from '@/utils/test/pagination';
+import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
+import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
 import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { Subscriber } from '../dto/subscriber.dto';
+import { LabelGroupOrmEntity } from '../entities/label-group.entity';
+import { LabelOrmEntity } from '../entities/label.entity';
+import { SubscriberOrmEntity } from '../entities/subscriber.entity';
+import { LabelGroupRepository } from '../repositories/label-group.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Label } from '../schemas/label.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
 
+import { LabelService } from './label.service';
 import { SubscriberService } from './subscriber.service';
 
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'test-uuid') }));
 
-describe('SubscriberService', () => {
+describe('SubscriberService (TypeORM)', () => {
+  let module: TestingModule;
+  let subscriberService: SubscriberService;
   let subscriberRepository: SubscriberRepository;
   let labelRepository: LabelRepository;
+  let labelGroupRepository: LabelGroupRepository;
   let userRepository: UserRepository;
-  let subscriberService: SubscriberService;
-  let attachmentService: AttachmentService;
-  let allSubscribers: Subscriber[];
-  let allLabels: Label[];
-  let allUsers: User[];
-  let mockGateway: Partial<WebsocketGateway>;
-  let mockSubscriberService: SubscriberService;
+
+  const gatewayMock = {
+    joinNotificationSockets: jest.fn(),
+  } as jest.Mocked<Pick<WebsocketGateway, 'joinNotificationSockets'>>;
+
+  const loggerMock = {
+    debug: jest.fn(),
+    error: jest.fn(),
+    log: jest.fn(),
+    warn: jest.fn(),
+  } as jest.Mocked<Pick<LoggerService, 'debug' | 'error' | 'log' | 'warn'>>;
+
+  const attachmentServiceMock = {
+    store: jest.fn(),
+  } as jest.Mocked<Pick<AttachmentService, 'store'>>;
+
   const SESSION_ID = 'session-123';
   const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
     success: true,
@@ -56,45 +74,65 @@ describe('SubscriberService', () => {
   };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installLabelGroupFixtures();
-          await installSubscriberFixtures();
-        }),
+      providers: [
+        SubscriberService,
+        LabelService,
+        LabelRepository,
+        LabelGroupRepository,
+        SubscriberRepository,
+        UserRepository,
+        { provide: AttachmentService, useValue: attachmentServiceMock },
+        { provide: WebsocketGateway, useValue: gatewayMock },
+        { provide: LoggerService, useValue: loggerMock },
       ],
-      providers: [SubscriberService, LabelRepository, UserRepository],
+      typeorm: {
+        entities: [
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          AttachmentEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: [
+          installLabelGroupFixturesTypeOrm,
+          installSubscriberFixturesTypeOrm,
+        ],
+      },
     });
+
+    module = testing.module;
+
     [
-      labelRepository,
-      userRepository,
       subscriberService,
       subscriberRepository,
-      attachmentService,
-    ] = await getMocks([
-      LabelRepository,
-      UserRepository,
+      labelRepository,
+      labelGroupRepository,
+      userRepository,
+    ] = await testing.getMocks([
       SubscriberService,
       SubscriberRepository,
-      AttachmentService,
+      LabelRepository,
+      LabelGroupRepository,
+      UserRepository,
     ]);
-    allSubscribers = await subscriberRepository.findAll();
-    allLabels = await labelRepository.findAll();
-    allUsers = await userRepository.findAll();
-    mockGateway = {
-      joinNotificationSockets: jest.fn(),
-    };
-    mockSubscriberService = new SubscriberService(
-      {} as any,
-      {} as any,
-      {} as any,
-      mockGateway as any,
-    );
   });
 
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('subscribe', () => {
     it('should join Notification sockets subscriber room and return a success response', async () => {
@@ -108,9 +146,9 @@ describe('SubscriberService', () => {
         status: jest.fn().mockReturnThis(),
       };
 
-      await mockSubscriberService.subscribe(req as any, res as any);
+      await subscriberService.subscribe(req as any, res as any);
 
-      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+      expect(gatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
         req,
         Room.SUBSCRIBER,
       );
@@ -120,66 +158,83 @@ describe('SubscriberService', () => {
   });
 
   describe('findOneAndPopulate', () => {
-    it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
-      jest.spyOn(subscriberService, 'findOneAndPopulate');
-      const subscriber = (await subscriberRepository.findOne({
-        first_name: 'Jhon',
-      }))!;
-      const result = await subscriberService.findOneAndPopulate(subscriber.id);
+    it('should find one subscriber and populate related data', async () => {
+      const subscriber = await subscriberRepository.findOne({
+        where: { first_name: 'Jhon' },
+      });
+      expect(subscriber).not.toBeNull();
 
-      expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
-        subscriber.id,
-      );
+      const spy = jest.spyOn(subscriberService, 'findOneAndPopulate');
+      const result = await subscriberService.findOneAndPopulate(subscriber!.id);
+
+      expect(spy).toHaveBeenCalledWith(subscriber!.id);
+      expect(result).not.toBeNull();
+
+      const [labels, users] = await Promise.all([
+        labelRepository.findAll(),
+        userRepository.findAll(),
+      ]);
+
       expect(result).toEqualPayload({
         ...subscriber,
-        labels: allLabels.filter((label) =>
-          subscriber.labels.includes(label.id),
-        ),
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        labels: labels.filter((label) => subscriber!.labels.includes(label.id)),
+        assignedTo: users.find(({ id }) => subscriber!.assignedTo === id),
       });
     });
   });
 
   describe('findAndPopulate', () => {
-    const pageQuery = getPageQuery<Subscriber>();
-    it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
-      jest.spyOn(subscriberRepository, 'findAndPopulate');
-      const result = await subscriberService.findAndPopulate({}, pageQuery);
-      const subscribersWithLabels = allSubscribers.map((subscriber) => ({
+    it('should find subscribers and populate related data', async () => {
+      const spy = jest.spyOn(subscriberRepository, 'findAndPopulate');
+      const result = await subscriberService.findAndPopulate();
+
+      expect(spy).toHaveBeenCalled();
+      expect(result).not.toHaveLength(0);
+
+      const [subscribers, labels, users] = await Promise.all([
+        subscriberRepository.findAll(),
+        labelRepository.findAll(),
+        userRepository.findAll(),
+      ]);
+
+      const subscribersWithRelations = subscribers.map((subscriber) => ({
         ...subscriber,
-        labels: allLabels.filter((label) =>
-          subscriber.labels.includes(label.id),
-        ),
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        labels: labels.filter((label) => subscriber.labels.includes(label.id)),
+        assignedTo: users.find(({ id }) => subscriber.assignedTo === id),
       }));
 
-      expect(subscriberRepository.findAndPopulate).toHaveBeenCalled();
-      expect(result).toEqualPayload(subscribersWithLabels.sort(sortRowsBy));
+      const expected = [...subscribersWithRelations].sort(sortRowsBy);
+      const actual = [...result].sort(sortRowsBy);
+
+      expect(actual).toEqualPayload(expected);
     });
   });
 
   describe('findOneByForeignId', () => {
     it('should find one subscriber by foreign id', async () => {
-      jest.spyOn(subscriberRepository, 'findOneByForeignId');
+      const subscriber = await subscriberRepository.findOne({
+        where: { foreign_id: 'foreign-id-dimelo' },
+      });
+      expect(subscriber).not.toBeNull();
+
+      const spy = jest.spyOn(subscriberRepository, 'findOneByForeignId');
       const result =
         await subscriberService.findOneByForeignId('foreign-id-dimelo');
-      const subscriber = allSubscribers.find(
-        ({ foreign_id }) => foreign_id === 'foreign-id-dimelo',
-      )!;
 
-      expect(subscriberRepository.findOneByForeignId).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith('foreign-id-dimelo');
       expect(result).toEqualPayload({
         ...subscriber,
-        labels: allLabels
-          .filter((label) => subscriber.labels.includes(label.id))
-          .map((label) => label.id),
+        labels: subscriber!.labels,
       });
     });
   });
 
   describe('storeAvatar', () => {
     it('should persist the avatar and patch the subscriber', async () => {
-      const subscriber = { ...allSubscribers[0], avatar: null };
+      const subscriber = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-messenger' },
+      }))!;
+
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
         type: 'image/png',
@@ -190,15 +245,15 @@ describe('SubscriberService', () => {
       const fakeAttachment = Object.assign(new AttachmentEntity(), {
         id: '9'.repeat(24),
       });
-      jest.spyOn(attachmentService, 'store').mockResolvedValue(fakeAttachment);
+      attachmentServiceMock.store.mockResolvedValue(fakeAttachment as any);
 
       const result = await subscriberService.storeAvatar(
         subscriber.id,
         avatarPayload,
       );
 
-      expect(attachmentService.store).toHaveBeenCalledTimes(1);
-      expect(attachmentService.store).toHaveBeenCalledWith(
+      expect(attachmentServiceMock.store).toHaveBeenCalledTimes(1);
+      expect(attachmentServiceMock.store).toHaveBeenCalledWith(
         avatarPayload.file,
         expect.objectContaining({
           name: 'avatar-test-uuid.png',
@@ -215,7 +270,10 @@ describe('SubscriberService', () => {
     });
 
     it('should propagate an error from AttachmentService and leave the subscriber unchanged', async () => {
-      const subscriber = allSubscribers[0];
+      const subscriber = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-web-1' },
+      }))!;
+
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-jpg'),
         type: 'image/jpeg',
@@ -224,10 +282,10 @@ describe('SubscriberService', () => {
       jest.spyOn(mime, 'extension').mockReturnValue('jpg');
 
       const failure = new Error('disk full');
-      jest.spyOn(attachmentService, 'store').mockRejectedValue(failure);
+      attachmentServiceMock.store.mockRejectedValue(failure);
       const updateOneSpy = jest
         .spyOn(subscriberService, 'updateOne')
-        .mockResolvedValue(allSubscribers[0]);
+        .mockResolvedValue(subscriber);
 
       await expect(
         subscriberService.storeAvatar(subscriber.id, avatarPayload),
@@ -237,7 +295,10 @@ describe('SubscriberService', () => {
     });
 
     it('should generate the filename with the proper extension', async () => {
-      const subscriber = { ...allSubscribers[0], avatar: null };
+      const subscriber = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-web-2' },
+      }))!;
+
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
         type: 'image/png',
@@ -245,25 +306,23 @@ describe('SubscriberService', () => {
       };
       jest.spyOn(mime, 'extension').mockReturnValue('png');
 
-      jest
-        .spyOn(attachmentService, 'store')
-        .mockResolvedValue({ id: '9'.repeat(24) } as any);
-      jest
-        .spyOn(subscriberService, 'updateOne')
-        .mockResolvedValue(allSubscribers[0]);
+      attachmentServiceMock.store.mockResolvedValue({
+        id: '8'.repeat(24),
+      } as any);
 
       await subscriberService.storeAvatar(subscriber.id, avatarPayload);
 
-      const { name } = (attachmentService.store as jest.Mock).mock.calls[0][1]; // second arg in the first call
-      expect(name).toBe('avatar-test-uuid.png');
+      const [, metadata] = attachmentServiceMock.store.mock.calls[0];
+      expect(metadata.name).toBe('avatar-test-uuid.png');
     });
   });
 
   describe('assignLabels', () => {
     it('should merge and deduplicate labels', async () => {
       const profile = (await subscriberService.findOne({
-        first_name: 'Jhon',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
+
       const newLabels = (
         await labelRepository.createMany([
           { title: 'Is Interested', name: 'IS_INTERESTED' },
@@ -271,69 +330,96 @@ describe('SubscriberService', () => {
         ])
       ).map(({ id }) => id);
 
-      const expected: Subscriber = {
-        ...profile,
-        labels: [...profile.labels, ...newLabels],
-      };
+      const expectedLabels = Array.from(
+        new Set([...profile.labels, ...newLabels]),
+      );
 
       const result = await subscriberService.assignLabels(profile, [
         ...newLabels,
         profile.labels[0],
       ]);
 
-      expect(result).toEqualPayload(expected);
+      expect([...result.labels].sort()).toEqual(expectedLabels.sort());
     });
 
     it('should handle mutual exclusion for grouped labels', async () => {
-      const oldLabel = (await labelRepository.findOne({ name: 'FREE' }))!;
-      const newLabel = (await labelRepository.findOne({ name: 'PREMIUM' }))!;
-      const originalSubscriber = (await subscriberService.findOne({
-        first_name: 'Carl',
-        last_name: 'Jung',
+      const mutexGroup = await labelGroupRepository.create({
+        name: 'MUTEX_TEST_GROUP',
+      });
+      const timestamp = Date.now();
+      const [oldLabel, newLabel] = await labelRepository.createMany([
+        {
+          title: 'Mutex Old',
+          name: `MUTEX_OLD_${timestamp}`,
+          group: mutexGroup.id,
+        },
+        {
+          title: 'Mutex New',
+          name: `MUTEX_NEW_${timestamp}`,
+          group: mutexGroup.id,
+        },
+      ]);
+
+      const baseSubscriber = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-web-1' },
       }))!;
       const alteredSubscriber = await subscriberService.assignLabels(
-        originalSubscriber,
+        baseSubscriber,
         [oldLabel.id],
       );
-
-      const expected: Subscriber = {
-        ...originalSubscriber,
-        labels: [...originalSubscriber.labels, newLabel.id],
-      };
 
       const result = await subscriberService.assignLabels(alteredSubscriber, [
         newLabel.id,
       ]);
 
-      expect(result).toEqualPayload(expected);
+      const expected: Subscriber = {
+        ...alteredSubscriber,
+        labels: [
+          ...alteredSubscriber.labels.filter((id) => id !== oldLabel.id),
+          newLabel.id,
+        ],
+      };
+
+      expect([...result.labels].sort()).toEqual([...expected.labels].sort());
+      expect(result.labels).not.toContain(oldLabel.id);
     });
 
-    it('should propagate errors from updateOne', async () => {
-      const base = allSubscribers[0];
-      const [l1] = allLabels.slice(0, 1).map((l) => l.id);
+    it('should propagate errors from assignLabels', async () => {
+      const base = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-web-2' },
+      }))!;
       const failure = new Error('Any error');
+      const targetLabel = base.labels[0];
+      expect(targetLabel).toBeDefined();
 
       jest.spyOn(subscriberService, 'assignLabels').mockRejectedValue(failure);
 
       await expect(
-        subscriberService.applyUpdates(base as any, [l1], null),
+        subscriberService.applyUpdates(base as any, [targetLabel], null),
       ).rejects.toThrow(failure);
     });
   });
 
   describe('handOver', () => {
     it('should set assignedTo when provided without labels', async () => {
-      const base = allSubscribers[1] ?? allSubscribers[0];
-      const assignee = allUsers[0].id;
-      const expected = { ...base, assignedTo: assignee } as Subscriber;
+      const profile = (await subscriberService.findOne({
+        where: { foreign_id: 'foreign-id-web-1' },
+      }))!;
+      const assignee = (await userRepository.findOne({
+        where: { username: 'admin' },
+      })) as User;
+
+      const expected = { ...profile, assignedTo: assignee.id } as Subscriber;
 
       const updateSpy = jest
         .spyOn(subscriberService, 'updateOne')
-        .mockResolvedValue(expected as any);
+        .mockResolvedValue(expected);
 
-      const result = await subscriberService.handOver(base, assignee);
+      const result = await subscriberService.handOver(profile, assignee.id);
 
-      expect(updateSpy).toHaveBeenCalledWith(base.id, { assignedTo: assignee });
+      expect(updateSpy).toHaveBeenCalledWith(profile.id, {
+        assignedTo: assignee.id,
+      });
       expect(result).toEqualPayload(expected);
     });
   });

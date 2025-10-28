@@ -6,6 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { In } from 'typeorm';
 
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -15,9 +16,9 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { getDefaultConversationContext } from '../constants/conversation';
+import { BlockFull } from '../dto/block.dto';
+import { Conversation, ConversationFull } from '../dto/conversation.dto';
 import { MessageCreateDto } from '../dto/message.dto';
-import { BlockFull } from '../schemas/block.schema';
-import { Conversation, ConversationFull } from '../schemas/conversation.schema';
 import { Context } from '../types/context';
 import {
   IncomingMessageType,
@@ -315,7 +316,7 @@ export class BotService {
     const canHaveMultipleMatches = !fallbackOptions?.active;
     // Find the next block that matches
     const nextBlocks = await this.blockService.findAndPopulate({
-      _id: { $in: convo.next.map(({ id }) => id) },
+      where: { id: In(convo.next.map(({ id }) => id)) },
     });
     return await this.blockService.match(
       nextBlocks,
@@ -495,8 +496,7 @@ export class BotService {
     const subscriber = event.getSender();
     try {
       const conversation = await this.conversationService.findOneAndPopulate({
-        sender: subscriber.id,
-        active: true,
+        where: { sender: { id: subscriber.id }, active: true },
       });
       // No active conversation found
       if (!conversation) {
@@ -614,7 +614,7 @@ export class BotService {
       // Search for entry blocks
       try {
         const blocks = await this.blockService.findAndPopulate({
-          starts_conversation: true,
+          where: { starts_conversation: true },
         });
 
         if (!blocks.length) {

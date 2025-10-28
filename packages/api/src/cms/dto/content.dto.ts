@@ -54,7 +54,7 @@ export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })
   @IsString()
   @IsNotEmpty()
-  @IsUUID('4', { message: 'Entity must be a valid UUID' })
+  @IsUUID('4', { message: 'Content Type must be a valid UUID' })
   contentType: string;
 
   @ApiProperty({ description: 'Content title', type: String })

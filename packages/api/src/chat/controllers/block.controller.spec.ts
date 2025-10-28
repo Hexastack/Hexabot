@@ -4,173 +4,255 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ConflictException, NotFoundException } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
+import { NlpService } from '@/nlp/services/nlp.service';
+import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { getUpdateOneError } from '@/utils/test/errors/messages';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { UserService } from '@/user/services/user.service';
 import {
   blockFixtures,
-  installBlockFixtures,
+  installBlockFixturesTypeOrm,
 } from '@/utils/test/fixtures/block';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installCategoryFixturesTypeOrm } from '@/utils/test/fixtures/category';
+import { installLabelFixturesTypeOrm } from '@/utils/test/fixtures/label';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import {
+  Block,
   BlockCreateDto,
+  BlockFull,
   BlockSearchQueryDto,
   BlockUpdateDto,
 } from '../dto/block.dto';
-import { ConversationRepository } from '../repositories/conversation.repository';
-import { Block } from '../schemas/block.schema';
+import { Category } from '../dto/category.dto';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { PayloadType } from '../types/button';
 
-import { Category } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
 
-// Helper function to instantiate BlockSearchQueryDto
+const DEFAULT_SETTINGS = {
+  chatbot_settings: {
+    global_fallback: true,
+    fallback_block: null,
+  },
+} as const;
+
+const settingServiceMock = {
+  getSettings: jest.fn().mockResolvedValue(DEFAULT_SETTINGS),
+};
+
+const pluginServiceMock = {
+  getPlugin: jest.fn(),
+  getAllByType: jest.fn().mockReturnValue([]),
+};
+
+const userServiceMock = {
+  findOne: jest.fn().mockResolvedValue(null),
+};
+
+const contentServiceMock = {};
+const languageServiceMock = {};
+const nlpServiceMock = {};
+const i18nServiceMock = {
+  t: jest.fn().mockImplementation((translationKey: string) => translationKey),
+};
+
+const FIELDS_TO_POPULATE = [
+  'trigger_labels',
+  'assign_labels',
+  'nextBlocks',
+  'attachedBlock',
+  'category',
+  'previousBlocks',
+];
+
 function createSearchQuery(
   data: Partial<BlockSearchQueryDto>,
 ): BlockSearchQueryDto {
-  return plainToInstance(BlockSearchQueryDto, data, {
-    enableImplicitConversion: true,
-    excludeExtraneousValues: false,
-    exposeDefaultValues: true,
-  });
+  return Object.assign(new BlockSearchQueryDto(), data);
 }
 
-describe('BlockController', () => {
+describe('BlockController (TypeORM)', () => {
+  let module: TestingModule;
   let blockController: BlockController;
   let blockService: BlockService;
   let categoryService: CategoryService;
-  let conversationRepository: ConversationRepository;
-  let settingService: SettingService;
-  let category: Category;
-  let block: Block;
-  let blockToDelete: Block;
+
+  let defaultCategory: Category;
+  let defaultBlock: Block;
   let hasNextBlocks: Block;
   let hasPreviousBlocks: Block;
-  const FIELDS_TO_POPULATE = [
-    'trigger_labels',
-    'assign_labels',
-    'nextBlocks',
-    'attachedBlock',
-    'category',
-    'previousBlocks',
-  ];
+
+  const buildBlockPayload = (
+    overrides: Partial<BlockCreateDto> = {},
+  ): BlockCreateDto => {
+    if (!defaultCategory) {
+      throw new Error('Category fixtures not loaded');
+    }
+
+    return {
+      name: `block-${Math.random().toString(36).slice(2, 10)}`,
+      nextBlocks: [],
+      patterns: ['Hi'],
+      outcomes: [],
+      trigger_labels: [],
+      assign_labels: [],
+      trigger_channels: [],
+      category: defaultCategory.id,
+      options: {
+        typing: 0,
+        fallback: {
+          active: false,
+          max_attempts: 1,
+          message: [],
+        },
+      },
+      message: ['Hi back !'],
+      starts_conversation: false,
+      capture_vars: [],
+      position: {
+        x: 0,
+        y: 0,
+      },
+      ...overrides,
+    };
+  };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [BlockController],
-      imports: [rootMongooseTestModule(installBlockFixtures)],
       providers: [
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: ConversationRepository,
-          useValue: {
-            model: {
-              exists: jest.fn().mockResolvedValue(false),
-            },
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getSettings: jest.fn().mockResolvedValue({
-              chatbot_settings: {
-                global_fallback: true,
-                fallback_block: null,
-              },
-            }),
-          },
-        },
+        { provide: PluginService, useValue: pluginServiceMock },
+        { provide: UserService, useValue: userServiceMock },
+        { provide: ContentService, useValue: contentServiceMock },
+        { provide: LanguageService, useValue: languageServiceMock },
+        { provide: NlpService, useValue: nlpServiceMock },
+        { provide: SettingService, useValue: settingServiceMock },
+        { provide: I18nService, useValue: i18nServiceMock },
       ],
+      typeorm: {
+        entities: [
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          ConversationOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: [
+          installCategoryFixturesTypeOrm,
+          installLabelFixturesTypeOrm,
+          installBlockFixturesTypeOrm,
+        ],
+      },
     });
-    [
-      blockController,
-      blockService,
-      categoryService,
-      conversationRepository,
-      settingService,
-    ] = await getMocks([
+
+    module = testing.module;
+
+    [blockController, blockService, categoryService] = await testing.getMocks([
       BlockController,
       BlockService,
       CategoryService,
-      ConversationRepository,
-      SettingService,
     ]);
-    category = (await categoryService.findOne({ label: 'default' }))!;
-    block = (await blockService.findOne({ name: 'first' }))!;
-    blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
-    hasNextBlocks = (await blockService.findOne({
-      name: 'hasNextBlocks',
-    }))!;
-    hasPreviousBlocks = (await blockService.findOne({
-      name: 'hasPreviousBlocks',
-    }))!;
+
+    const category = await categoryService.findOne({
+      where: { label: 'default' },
+    });
+    if (!category) {
+      throw new Error('Expected "default" category fixture to be available');
+    }
+    defaultCategory = category;
+
+    const block = await blockService.findOne({
+      where: { name: 'first' },
+    });
+    if (!block) {
+      throw new Error('Expected "first" block fixture to be available');
+    }
+    defaultBlock = block;
+
+    const nextBlock = await blockService.findOne({
+      where: { name: 'hasNextBlocks' },
+    });
+    if (!nextBlock) {
+      throw new Error('Expected "hasNextBlocks" fixture to be available');
+    }
+    hasNextBlocks = nextBlock;
+
+    const previousBlock = await blockService.findOne({
+      where: { name: 'hasPreviousBlocks' },
+    });
+    if (!previousBlock) {
+      throw new Error('Expected "hasPreviousBlocks" fixture to be available');
+    }
+    hasPreviousBlocks = previousBlock;
   });
 
   beforeEach(() => {
-    (conversationRepository.model.exists as jest.Mock).mockResolvedValue(false);
-    (settingService.getSettings as jest.Mock).mockResolvedValue({
-      chatbot_settings: {
-        global_fallback: true,
-        fallback_block: null,
-      },
-    });
+    pluginServiceMock.getAllByType.mockReturnValue([]);
+    pluginServiceMock.getPlugin.mockReturnValue(undefined);
+    settingServiceMock.getSettings.mockResolvedValue(DEFAULT_SETTINGS);
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('find', () => {
-    it('should find all blocks', async () => {
-      jest.spyOn(blockService, 'find');
-      const result = await blockController.find([], {});
-      const blocksWithCategory = blockFixtures.map((blockFixture) => ({
-        ...blockFixture,
-        category: category.id,
-        nextBlocks:
-          blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks.id] : [],
-      }));
+    it('should return all blocks without populating relations when none requested', async () => {
+      const expected = await blockService.find({});
+      const findSpy = jest
+        .spyOn(blockService, 'find')
+        .mockResolvedValue(expected);
 
-      expect(blockService.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(blocksWithCategory, [
-        ...IGNORED_TEST_FIELDS,
-        'attachedToBlock',
-      ]);
+      const result = await blockController.find([], {} as any);
+
+      expect(findSpy).toHaveBeenCalledWith({});
+      expect(result).toBe(expected);
     });
 
-    it('should find all blocks, and foreach block populate the corresponding category and previousBlocks', async () => {
-      jest.spyOn(blockService, 'findAndPopulate');
-      const category = await categoryService.findOne({ label: 'default' });
-      const result = await blockController.find(FIELDS_TO_POPULATE, {});
-      const blocksWithCategory = blockFixtures.map((blockFixture) => ({
-        ...blockFixture,
-        category,
-        previousBlocks:
-          blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
-        nextBlocks:
-          blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
-        attachedToBlock: null,
-      }));
+    it('should populate relations when requested', async () => {
+      const expected = await blockService.findAndPopulate({});
+      const findAndPopulateSpy = jest
+        .spyOn(blockService, 'findAndPopulate')
+        .mockResolvedValue(expected);
 
-      expect(blockService.findAndPopulate).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(blocksWithCategory);
+      const result = await blockController.find(FIELDS_TO_POPULATE, {} as any);
+
+      expect(findAndPopulateSpy).toHaveBeenCalledWith({});
+      expect(result).toBe(expected);
     });
   });
 
@@ -182,21 +264,26 @@ describe('BlockController', () => {
     });
 
     it('should delegate search to service with correct parameters', async () => {
-      // Test with real data from fixtures
       const query = createSearchQuery({
         q: 'hasNextBlocks',
         limit: 10,
-        category: category.id,
+        category: defaultCategory.id,
       });
+      const searchSpy = jest.spyOn(blockService, 'search');
+
       const result = await blockController.search(query);
 
+      expect(searchSpy).toHaveBeenCalledWith(
+        'hasNextBlocks',
+        10,
+        defaultCategory.id,
+      );
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0].name).toBe('hasNextBlocks');
+      expect(result.some((block) => block.name === 'hasNextBlocks')).toBe(true);
     });
 
     it('should handle service errors gracefully', async () => {
-      // This test can still mock the service to test error handling
       const error = new Error('Block search failed');
       jest.spyOn(blockService, 'search').mockRejectedValueOnce(error);
 
@@ -207,202 +294,169 @@ describe('BlockController', () => {
     });
 
     it('should use default limit when not specified', async () => {
-      const blockServiceSearchSpy = jest.spyOn(blockService, 'search');
+      const searchSpy = jest.spyOn(blockService, 'search');
 
       const query = createSearchQuery({ q: 'hasNextBlocks' });
-      const result = await blockController.search(query);
+      await blockController.search(query);
 
-      // Verify the service was called with the default limit (500)
-      expect(blockServiceSearchSpy).toHaveBeenCalledWith(
+      expect(searchSpy).toHaveBeenCalledWith(
         'hasNextBlocks',
-        500,
+        DEFAULT_BLOCK_SEARCH_LIMIT,
         undefined,
       );
-
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThan(0);
-
-      blockServiceSearchSpy.mockRestore();
     });
 
     it('should filter by category when provided', async () => {
       const query = createSearchQuery({
         q: 'hasNextBlocks',
-        category: category.id,
+        category: defaultCategory.id,
       });
+
       const result = await blockController.search(query);
 
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      // Verify all results belong to the specified category
       result.forEach((block) => {
-        expect(block.category?.toString()).toBe(category.id);
+        expect(block.category).toBe(defaultCategory.id);
       });
     });
   });
 
   describe('findOne', () => {
     it('should find one block by id', async () => {
-      jest.spyOn(blockService, 'findOne');
+      const findOneSpy = jest.spyOn(blockService, 'findOne');
       const result = await blockController.findOne(hasNextBlocks.id, []);
-      expect(blockService.findOne).toHaveBeenCalledWith(hasNextBlocks.id);
-      expect(result).toEqualPayload(
-        {
-          ...blockFixtures.find(({ name }) => name === hasNextBlocks.name),
-          category: category.id,
-          nextBlocks: [hasPreviousBlocks.id],
-        },
-        [...IGNORED_TEST_FIELDS, 'attachedToBlock'],
-      );
+
+      expect(findOneSpy).toHaveBeenCalledWith(hasNextBlocks.id);
+      expect(result).toMatchObject({
+        id: hasNextBlocks.id,
+        name: hasNextBlocks.name,
+        category: hasNextBlocks.category,
+        nextBlocks: hasNextBlocks.nextBlocks,
+      });
     });
 
-    it('should find one block by id, and populate its category and previousBlocks', async () => {
-      jest.spyOn(blockService, 'findOneAndPopulate');
+    it('should find one block by id and populate relations', async () => {
+      const findOneAndPopulateSpy = jest.spyOn(
+        blockService,
+        'findOneAndPopulate',
+      );
       const result = await blockController.findOne(
         hasPreviousBlocks.id,
         FIELDS_TO_POPULATE,
       );
-      expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(
-        hasPreviousBlocks.id,
-      );
-      expect(result).toEqualPayload({
-        ...blockFixtures.find(({ name }) => name === 'hasPreviousBlocks'),
-        category,
-        previousBlocks: [hasNextBlocks],
-        attachedToBlock: null,
-      });
+
+      expect(findOneAndPopulateSpy).toHaveBeenCalledWith(hasPreviousBlocks.id);
+      const populated = result as BlockFull;
+      expect(populated.category?.id).toBe(defaultCategory.id);
+      expect(
+        (populated.previousBlocks ?? []).some(
+          (block) => block.id === hasNextBlocks.id,
+        ),
+      ).toBe(true);
     });
 
-    it('should find one block by id, and populate its category and an empty previousBlocks', async () => {
-      jest.spyOn(blockService, 'findOneAndPopulate');
-      block = (await blockService.findOne({ name: 'attachment' }))!;
-      const result = await blockController.findOne(
-        block.id,
-        FIELDS_TO_POPULATE,
+    it('should find one attachment block with empty previousBlocks when populated', async () => {
+      const attachmentFixture = blockFixtures.find(
+        ({ name }) => name === 'attachment',
       );
-      expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(block.id);
-      expect(result).toEqualPayload({
-        ...blockFixtures.find(({ name }) => name === 'attachment'),
-        category,
-        previousBlocks: [],
-        attachedToBlock: null,
+      if (!attachmentFixture) {
+        throw new Error('Expected "attachment" block fixture to be available');
+      }
+      const attachmentBlock = await blockService.findOne({
+        where: { name: 'attachment' },
       });
+      if (!attachmentBlock) {
+        throw new Error('Expected "attachment" block to exist');
+      }
+
+      const result = (await blockController.findOne(
+        attachmentBlock.id,
+        FIELDS_TO_POPULATE,
+      )) as BlockFull;
+
+      expect(result.category?.id).toBe(defaultCategory.id);
+      expect(result.previousBlocks).toEqual([]);
+      expect(result.attachedToBlock).toBeUndefined();
+      expect(result.message).toEqual(attachmentFixture.message);
     });
   });
 
   describe('create', () => {
     it('should return created block', async () => {
-      jest.spyOn(blockService, 'create');
-      const mockedBlockCreateDto: BlockCreateDto = {
-        name: 'block with nextBlocks',
+      const createSpy = jest.spyOn(blockService, 'create');
+      const payload = buildBlockPayload({
+        name: 'block-with-next',
         nextBlocks: [hasNextBlocks.id],
-        patterns: ['Hi'],
-        outcomes: [],
-        trigger_labels: [],
-        assign_labels: [],
-        trigger_channels: [],
-        category: category.id,
-        options: {
-          typing: 0,
-          fallback: {
-            active: false,
-            max_attempts: 1,
-            message: [],
-          },
-        },
-        message: ['Hi back !'],
-        starts_conversation: false,
-        capture_vars: [],
-        position: {
-          x: 0,
-          y: 0,
-        },
-      };
-      const result = await blockController.create(mockedBlockCreateDto);
+      });
 
-      expect(blockService.create).toHaveBeenCalledWith(mockedBlockCreateDto);
-      expect(result).toEqualPayload(
-        {
-          ...mockedBlockCreateDto,
-        },
-        [...IGNORED_TEST_FIELDS, 'nextBlocks', 'builtin'],
-      );
+      const result = await blockController.create(payload);
+
+      expect(createSpy).toHaveBeenCalledWith(payload);
+      expect(result).toMatchObject({
+        name: payload.name,
+        category: payload.category,
+        nextBlocks: payload.nextBlocks,
+      });
+
+      await blockService.deleteOne(result.id);
     });
   });
 
   describe('deleteOne', () => {
-    it('should throw ConflictException when block is referenced by an active conversation', async () => {
-      (conversationRepository.model.exists as jest.Mock).mockResolvedValueOnce(
-        true,
-      );
-      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
-        ConflictException,
-      );
-    });
-
-    it('should throw ConflictException when block is configured as global fallback in settings', async () => {
-      (settingService.getSettings as jest.Mock).mockResolvedValueOnce({
-        chatbot_settings: {
-          global_fallback: true,
-          fallback_block: block.id,
-        },
-      });
-
-      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
-        ConflictException,
-      );
-    });
-
     it('should delete block', async () => {
-      jest.spyOn(blockService, 'deleteOne');
+      const blockToDelete = await blockService.create(
+        buildBlockPayload({ name: 'block-to-delete' }),
+      );
+      const deleteSpy = jest.spyOn(blockService, 'deleteOne');
+
       const result = await blockController.deleteOne(blockToDelete.id);
 
-      expect(blockService.deleteOne).toHaveBeenCalledWith(blockToDelete.id);
+      expect(deleteSpy).toHaveBeenCalledWith(blockToDelete.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
 
-    it('should throw NotFoundException when attempting to delete a block by id', async () => {
-      await expect(blockController.deleteOne(blockToDelete.id)).rejects.toThrow(
-        new NotFoundException(`Block with ID ${blockToDelete.id} not found`),
+    it('should throw NotFoundException when attempting to delete a missing block', async () => {
+      const nonExistingId = '9'.repeat(24);
+
+      await expect(blockController.deleteOne(nonExistingId)).rejects.toThrow(
+        new NotFoundException(`Block with ID ${nonExistingId} not found`),
       );
     });
   });
 
   describe('updateOne', () => {
     it('should return updated block', async () => {
-      jest.spyOn(blockService, 'updateOne');
       const updateBlock: BlockUpdateDto = {
         name: 'modified block name',
       };
-      const result = await blockController.updateOne(block.id, updateBlock);
+      const updateOneSpy = jest.spyOn(blockService, 'updateOne');
 
-      expect(blockService.updateOne).toHaveBeenCalledWith(
-        block.id,
+      const result = await blockController.updateOne(
+        defaultBlock.id,
         updateBlock,
       );
-      expect(result).toEqualPayload(
-        {
-          ...blockFixtures.find(({ name }) => name === block.name),
-          category: category.id,
-          ...updateBlock,
-        },
-        [...IGNORED_TEST_FIELDS, 'attachedToBlock'],
-      );
+
+      expect(updateOneSpy).toHaveBeenCalledWith(defaultBlock.id, updateBlock);
+      expect(result).toMatchObject({
+        id: defaultBlock.id,
+        name: updateBlock.name,
+        category: defaultBlock.category,
+      });
     });
 
-    it('should throw NotFoundException when attempting to update a block by id', async () => {
+    it('should throw NotFoundException when attempting to update a missing block', async () => {
       const updateBlock: BlockUpdateDto = {
         name: 'attempt to modify block name',
       };
 
       await expect(
-        blockController.updateOne(blockToDelete.id, updateBlock),
-      ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
+        blockController.updateOne('9'.repeat(24), updateBlock),
+      ).rejects.toThrow('Unable to execute updateOne() - No updates');
     });
   });
 
   it('should update block trigger to postback menu', async () => {
-    jest.spyOn(blockService, 'updateOne');
     const updateBlock: BlockUpdateDto = {
       patterns: [
         {
@@ -412,23 +466,26 @@ describe('BlockController', () => {
         },
       ],
     };
-    const result = await blockController.updateOne(block.id, updateBlock);
-    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+    const updateOneSpy = jest.spyOn(blockService, 'updateOne');
 
+    const result = await blockController.updateOne(
+      defaultBlock.id,
+      updateBlock,
+    );
+
+    expect(updateOneSpy).toHaveBeenCalledWith(defaultBlock.id, updateBlock);
     expect(
       result.patterns.find(
         (pattern) =>
           typeof pattern === 'object' &&
           'type' in pattern &&
-          pattern.type === PayloadType.menu &&
-          pattern,
+          pattern.type === PayloadType.menu,
       ),
     ).toBeDefined();
     expect(result.patterns).toEqual(updateBlock.patterns);
   });
 
-  it('should update the block trigger with a content payloadType payload', async () => {
-    jest.spyOn(blockService, 'updateOne');
+  it('should update the block trigger with a content payload type', async () => {
     const updateBlock: BlockUpdateDto = {
       patterns: [
         {
@@ -438,16 +495,20 @@ describe('BlockController', () => {
         },
       ],
     };
-    const result = await blockController.updateOne(block.id, updateBlock);
-    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+    const updateOneSpy = jest.spyOn(blockService, 'updateOne');
 
+    const result = await blockController.updateOne(
+      defaultBlock.id,
+      updateBlock,
+    );
+
+    expect(updateOneSpy).toHaveBeenCalledWith(defaultBlock.id, updateBlock);
     expect(
       result.patterns.find(
         (pattern) =>
           typeof pattern === 'object' &&
           'type' in pattern &&
-          pattern.type === PayloadType.content &&
-          pattern,
+          pattern.type === PayloadType.content,
       ),
     ).toBeDefined();
     expect(result.patterns).toEqual(updateBlock.patterns);

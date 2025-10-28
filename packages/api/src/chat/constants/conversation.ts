@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '../schemas/subscriber.schema';
+import { Subscriber } from '../dto/subscriber.dto';
 import { Context } from '../types/context';
 
 export function getDefaultConversationContext(): Context {

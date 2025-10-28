@@ -14,8 +14,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Block } from '../dto/block.dto';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
-import { Block } from '../schemas/block.schema';
 import { OutgoingMessageFormat } from '../types/message';
 
 import { ConversationService } from './conversation.service';

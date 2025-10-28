@@ -8,9 +8,8 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
-import { CategoryDto } from '../dto/category.dto';
+import { Category, CategoryDto } from '../dto/category.dto';
 import { CategoryRepository } from '../repositories/category.repository';
-import { Category } from '../schemas/category.schema';
 
 @Injectable()
 export class CategorySeeder extends BaseSeeder<

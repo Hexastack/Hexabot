@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SubscriberStub } from '@/chat/schemas/subscriber.schema';
+import { SubscriberStub } from '@/chat/dto/subscriber.dto';
 
 declare module 'express-session' {
   interface SessionUser {

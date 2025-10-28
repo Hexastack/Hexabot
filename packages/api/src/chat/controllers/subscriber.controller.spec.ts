@@ -17,8 +17,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Label } from '../schemas/label.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+import { Label } from '../dto/label.dto';
+import { Subscriber } from '../dto/subscriber.dto';
 import { SubscriberService } from '../services/subscriber.service';
 
 import { UserService } from './../../user/services/user.service';

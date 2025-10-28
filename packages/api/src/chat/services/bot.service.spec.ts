@@ -28,8 +28,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BlockFull } from '../schemas/block.schema';
-import { Conversation, ConversationFull } from '../schemas/conversation.schema';
+import { BlockFull } from '../dto/block.dto';
+import { Conversation, ConversationFull } from '../dto/conversation.dto';
 
 import { BlockService } from './block.service';
 import { BotService } from './bot.service';

@@ -17,41 +17,38 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  BlockCreateDto,
-  BlockSearchQueryDto,
-  BlockUpdateDto,
-} from '../dto/block.dto';
-import {
   Block,
+  BlockCreateDto,
+  BlockDtoConfig,
   BlockFull,
-  BlockPopulate,
-  BlockStub,
+  BlockSearchQueryDto,
+  BlockTransformerDto,
+  BlockUpdateDto,
   SearchRankedBlock,
-} from '../schemas/block.schema';
+} from '../dto/block.dto';
+import { BlockOrmEntity } from '../entities/block.entity';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
 
 @Controller('Block')
-export class BlockController extends BaseController<
-  Block,
-  BlockStub,
-  BlockPopulate,
-  BlockFull
+export class BlockController extends BaseOrmController<
+  BlockOrmEntity,
+  BlockTransformerDto,
+  BlockDtoConfig,
+  Block
 > {
   constructor(
     private readonly blockService: BlockService,
@@ -93,13 +90,18 @@ export class BlockController extends BaseController<
   async find(
     @Query(PopulatePipe)
     populate: string[],
-    @Query(new SearchFilterPipe<Block>({ allowedFields: ['category'] }))
-    filters: TFilterQuery<Block>,
-    @Query(PageQueryPipe) pageQuery?: PageQueryDto<Block>,
+    @Query(
+      new TypeOrmSearchFilterPipe<BlockOrmEntity>({
+        allowedFields: ['categoryId', 'name', 'starts_conversation', 'builtin'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<BlockOrmEntity>,
   ): Promise<Block[] | BlockFull[]> {
+    const queryOptions = options ?? {};
     return this.canPopulate(populate)
-      ? await this.blockService.findAndPopulate(filters, pageQuery)
-      : await this.blockService.find(filters, pageQuery);
+      ? await this.blockService.findAndPopulate(queryOptions)
+      : await this.blockService.find(queryOptions);
   }
 
   /**
@@ -236,36 +238,45 @@ export class BlockController extends BaseController<
    */
   @Post()
   async create(@Body() block: BlockCreateDto): Promise<Block> {
+    const category = block.category
+      ? await this.categoryService.findOne(block.category)
+      : null;
+    const attachedBlock = block.attachedBlock
+      ? await this.blockService.findOne(block.attachedBlock)
+      : null;
+    let nextBlockIds: string[] = [];
+    if (block.nextBlocks?.length) {
+      nextBlockIds = (
+        await this.blockService.find({
+          where: { id: In(block.nextBlocks) },
+        })
+      ).map(({ id }) => id);
+    }
+    let assignLabelIds: string[] = [];
+    if (block.assign_labels?.length) {
+      assignLabelIds = (
+        await this.labelService.find({
+          where: { id: In(block.assign_labels) },
+        })
+      ).map(({ id }) => id);
+    }
+    let triggerLabelIds: string[] = [];
+    if (block.trigger_labels?.length) {
+      triggerLabelIds = (
+        await this.labelService.find({
+          where: { id: In(block.trigger_labels) },
+        })
+      ).map(({ id }) => id);
+    }
+
     this.validate({
       dto: block,
       allowedIds: {
-        category: block.category
-          ? (await this.categoryService.findOne(block.category))?.id
-          : null,
-        attachedBlock: block.attachedBlock
-          ? (await this.blockService.findOne(block.attachedBlock))?.id
-          : null,
-        nextBlocks: (
-          await this.blockService.find({
-            _id: {
-              $in: block.nextBlocks,
-            },
-          })
-        ).map(({ id }) => id),
-        assign_labels: (
-          await this.labelService.find({
-            _id: {
-              $in: block.assign_labels,
-            },
-          })
-        ).map(({ id }) => id),
-        trigger_labels: (
-          await this.labelService.find({
-            _id: {
-              $in: block.trigger_labels,
-            },
-          })
-        ).map(({ id }) => id),
+        category: category?.id ?? null,
+        attachedBlock: attachedBlock?.id ?? null,
+        nextBlocks: nextBlockIds,
+        assign_labels: assignLabelIds,
+        trigger_labels: triggerLabelIds,
       },
     });
     // TODO: the validate function doesn't support nested objects, we need to refactor it to support nested objects
@@ -293,9 +304,7 @@ export class BlockController extends BaseController<
       throw new BadRequestException('No IDs provided  to perform the update');
     }
     const updates = await this.blockService.updateMany(
-      {
-        _id: { $in: body.ids },
-      },
+      { where: { id: In(body.ids) } },
       body.payload,
     );
 
@@ -346,7 +355,7 @@ export class BlockController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.blockService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {

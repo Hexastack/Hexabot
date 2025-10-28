@@ -22,8 +22,8 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
-import { MessageFull } from '@/chat/schemas/message.schema';
-import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import { MessageFull } from '@/chat/dto/message.dto';
+import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { OutgoingMessage, StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';

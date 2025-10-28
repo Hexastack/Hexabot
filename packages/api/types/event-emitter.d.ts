@@ -6,20 +6,20 @@
 
 import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { type Session as ExpressSession } from 'express-session';
-import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
+import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import type { BotStats } from '@/analytics/dto/bot-stats.dto';
 import type { Attachment } from '@/attachment/dto/attachment.dto';
 import type EventWrapper from '@/channel/lib/EventWrapper';
 import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
-import type { Block, BlockFull } from '@/chat/schemas/block.schema';
-import { type Category } from '@/chat/schemas/category.schema';
-import { type ContextVar } from '@/chat/schemas/context-var.schema';
-import { type Conversation } from '@/chat/schemas/conversation.schema';
-import type { Label } from '@/chat/schemas/label.schema';
-import { type Message } from '@/chat/schemas/message.schema';
-import { type Subscriber } from '@/chat/schemas/subscriber.schema';
+import type { Block, BlockFull } from '@/chat/dto/block.dto';
+import type { Category } from '@/chat/dto/category.dto';
+import type { ContextVar } from '@/chat/dto/context-var.dto';
+import type { Conversation } from '@/chat/dto/conversation.dto';
+import type { Label } from '@/chat/dto/label.dto';
+import type { Message } from '@/chat/dto/message.dto';
+import type { Subscriber } from '@/chat/dto/subscriber.dto';
 import type { Content } from '@/cms/dto/content.dto';
 import type { ContentType } from '@/cms/dto/contentType.dto';
 import type { Menu } from '@/cms/dto/menu.dto';
@@ -36,11 +36,7 @@ import type { Model } from '@/user/dto/model.dto';
 import type { Permission } from '@/user/dto/permission.dto';
 import type { Role } from '@/user/dto/role.dto';
 import { type User } from '@/user/dto/user.dto';
-import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
-import type {
-  TFilterQuery,
-  THydratedDocument,
-} from '@/utils/types/filter.types';
+import { EHook } from '@/utils/generics/base-repository';
 
 import '@nestjs/event-emitter';
 /**
@@ -160,81 +156,22 @@ declare module '@nestjs/event-emitter' {
 
   type EventNamespaces = keyof IHookEntityOperationMap;
 
-  /* pre hooks */
-  type TOrmPreCreate<T> = T;
-  type TOrmPreUpdate<T> = {
-    entity: T;
-    changes: Partial<T>;
-  };
-  type TOrmPreDelete<T> = {
-    entities: T[];
-    filter: TFilterQuery<T>;
-  };
-
-  type TPreCreateValidate<T> = THydratedDocument<T>;
-
-  type TPreCreate<T> = THydratedDocument<T> | TOrmPreCreate<T>;
-
-  type TPreUpdateValidate<T> = FilterQuery<T>;
-
-  type TPreUpdate<T> = TFilterQuery<T> | TOrmPreUpdate<T>;
-
-  type TPreDelete<T> =
-    | Query<
-        DeleteResult,
-        Document<T>,
-        unknown,
-        T,
-        'deleteOne',
-        Record<string, never>
-      >
-    | TOrmPreDelete<T>;
-
-  type TPreUnion<T> =
-    | TPreCreateValidate<T>
-    | TPreCreate<T>
-    | TPreUpdateValidate<T>
-    | TPreUpdate<T>
-    | TPreDelete<T>;
-
-  /* post hooks */
-  type TOrmPostCreate<T> = T;
-  type TOrmPostUpdate<T> = {
-    entity: T;
-    previous?: T;
-  };
-  type TOrmPostDelete<T> = {
-    entities: T[];
-    result: DeleteResult;
-  };
-
-  type TPostCreateValidate<T> = THydratedDocument<T>;
-
-  type TPostCreate<T> = THydratedDocument<T> | TOrmPostCreate<T>;
-
-  type TPostUpdateValidate<T> = FilterQuery<T>;
-
-  // TODO this type will be optimized soon in a separated PR
-  type TPostUpdate<T> = (T & any) | TOrmPostUpdate<T>;
-
-  type TPostDelete<T> = DeleteResult | TOrmPostDelete<T>;
-
-  type TPostUnion<T> =
-    | TPostCreateValidate<T>
-    | TPostCreate<T>
-    | TPostUpdateValidate<T>
-    | TPostUpdate<T>
-    | TPostDelete<T>;
-
   type TCustomOperations<E extends keyof IHookEntityOperationMap> =
     IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']];
 
-  /* union hooks */
-  type TUnion<G, E> = E extends keyof IHookEntityOperationMap
-    ? E extends keyof IHookOperationMap
-      ? TCustomOperations<E>
-      : TPreUnion<G> | TPostUnion<G> | TCustomOperations<E>
-    : never;
+  type TLifecycleHookMap<T> = {
+    [EHook.preCreate]: InsertEvent<T>;
+    [EHook.postCreate]: InsertEvent<T>;
+    [EHook.preUpdate]: UpdateEvent<T>;
+    [EHook.postUpdate]: UpdateEvent<T>;
+    [EHook.preDelete]: RemoveEvent<T>;
+    [EHook.postDelete]: RemoveEvent<T>;
+  };
+
+  type TLifecycleHookKey = keyof TLifecycleHookMap<unknown>;
+
+  type TLifecycleHookValue<T> =
+    TLifecycleHookMap<T>[keyof TLifecycleHookMap<T>];
 
   /* Normalized hook */
   enum EHookPrefix {
@@ -253,45 +190,12 @@ declare module '@nestjs/event-emitter' {
 
   type TNormalizedEvents = '*' | TPreHook | TPostHook;
 
-  type TNormalizedHooks<
+  type TNormalizedHook<
     E extends keyof IHookEntityOperationMap,
-    T = IHookEntityOperationMap[E]['schema'],
-  > =
-    | {
-        [EHook.preCreateValidate]: TPreCreateValidate<T>;
-      }
-    | {
-        [EHook.preCreate]: TPreCreate<T>;
-      }
-    | {
-        [EHook.preUpdateValidate]: TPreUpdateValidate<T>;
-      }
-    | {
-        [EHook.preUpdate]: TPreUpdate<T>;
-      }
-    | {
-        [EHook.preDelete]: TPreDelete<T>;
-      }
-    | {
-        [EHook.postCreateValidate]: TPostCreateValidate<T>;
-      }
-    | {
-        [EHook.postCreate]: TPostCreate<T>;
-      }
-    | {
-        [EHook.postUpdateValidate]: TPostUpdateValidate<T>;
-      }
-    | {
-        [EHook.postUpdate]: TPostUpdate<T>;
-      }
-    | {
-        [EHook.postDelete]: TPostDelete<T>;
-      };
-
-  type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<
-    TNormalizedHooks<E>,
-    { [key in O]: unknown }
-  >[O];
+    O,
+  > = O extends TLifecycleHookKey
+    ? TLifecycleHookMap<IHookEntityOperationMap[E]['schema']>[O]
+    : never;
 
   /* Extended hook */
   type TExtendedHook<
@@ -301,7 +205,13 @@ declare module '@nestjs/event-emitter' {
 
   type EventValueOf<G> = G extends `hook:${infer E}:${infer O}`
     ? O extends '*'
-      ? TUnion<G, E>
+      ? E extends keyof IHookEntityOperationMap
+        ? E extends keyof IHookOperationMap
+          ? TCustomOperations<E>
+          :
+              | TLifecycleHookValue<IHookEntityOperationMap[E]['schema']>
+              | TCustomOperations<E>
+        : never
       : E extends keyof IHookEntityOperationMap
         ? O extends keyof IHookEntityOperationMap[E]['operations']
           ? TExtendedHook<E, O>

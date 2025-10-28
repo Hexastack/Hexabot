@@ -13,11 +13,17 @@ import {
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
 import {
+  DataSource,
   DeepPartial,
+  EntityMetadata,
+  EntitySubscriberInterface,
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
+  InsertEvent,
+  RemoveEvent,
   Repository,
+  UpdateEvent,
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -32,7 +38,25 @@ import {
   InferTransformDto,
 } from '../types/dto.types';
 
-import { DeleteResult, EHook } from './base-repository';
+export type DeleteResult = {
+  acknowledged: boolean;
+  deletedCount: number;
+};
+
+export enum EHook {
+  preCreateValidate = 'preCreateValidate',
+  preCreate = 'preCreate',
+  preUpdateValidate = 'preUpdateValidate',
+  preUpdate = 'preUpdate',
+  preUpdateMany = 'preUpdateMany',
+  preDelete = 'preDelete',
+  postCreateValidate = 'postCreateValidate',
+  postCreate = 'postCreate',
+  postUpdateValidate = 'postUpdateValidate',
+  postUpdate = 'postUpdate',
+  postUpdateMany = 'postUpdateMany',
+  postDelete = 'postDelete',
+}
 
 export type UpdateOneOptions = {
   upsert?: boolean;
@@ -45,21 +69,23 @@ export type FindAllOptions<EntityType> = Omit<
   where?: never;
 };
 
-type RepositoryWhere<EntityType> =
-  | FindOptionsWhere<EntityType>
-  | FindOptionsWhere<EntityType>[]
-  | undefined;
-
 export abstract class BaseOrmRepository<
   Entity extends BaseOrmEntity,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
-> {
+> implements EntitySubscriberInterface<Entity>
+{
+  private readonly dataSource: DataSource;
+
   protected constructor(
     protected readonly repository: Repository<Entity>,
     protected readonly populateRelations: string[] = [],
     protected readonly transformers: TransformerDto,
-  ) {}
+  ) {
+    this.dataSource = repository.manager.connection;
+    this.registerEntityManagerProvider();
+    this.registerAsSubscriber();
+  }
 
   getPopulateRelations(): readonly string[] {
     return this.populateRelations;
@@ -75,7 +101,7 @@ export abstract class BaseOrmRepository<
     );
   }
 
-  getEventEmitter(): EventEmitter2 | undefined {
+  getEventEmitter(): EventEmitter2 {
     return this.eventEmitter;
   }
 
@@ -216,11 +242,7 @@ export abstract class BaseOrmRepository<
     payload: InferActionDto<DtoAction.Create, ActionDto>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
-    await this.preCreate(entity);
-    await this.emitHook(EHook.preCreate, entity);
     const created = await this.repository.save(entity);
-    await this.postCreate(created);
-    await this.emitHook(EHook.postCreate, created);
     return this.getTransformer(DtoTransformer.PlainCls)(created);
   }
 
@@ -230,15 +252,7 @@ export abstract class BaseOrmRepository<
     const entities = this.repository.create(
       payloads.map((payload) => this.actionDtoToEntity(payload)),
     );
-    for (const entity of entities) {
-      await this.preCreate(entity);
-      await this.emitHook(EHook.preCreate, entity);
-    }
     const created = await this.repository.save(entities);
-    for (const entity of created) {
-      await this.postCreate(entity);
-      await this.emitHook(EHook.postCreate, entity);
-    }
     return created.map(this.getTransformer(DtoTransformer.PlainCls));
   }
 
@@ -249,20 +263,9 @@ export abstract class BaseOrmRepository<
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
     const entity = await this.findOneEntity(idOrOptions);
     if (entity) {
-      const snapshot = { ...entity };
       const updates = this.actionDtoToEntity(payload);
-      await this.preUpdate(snapshot, updates);
-      await this.emitHook(EHook.preUpdate, {
-        entity: snapshot,
-        changes: updates,
-      });
       Object.assign(entity, updates);
       const updated = await this.repository.save(entity);
-      await this.postUpdate(updated);
-      await this.emitHook(EHook.postUpdate, {
-        entity: updated,
-        previous: snapshot,
-      });
       if (updated) {
         return this.getTransformer(DtoTransformer.PlainCls)(updated);
       } else {
@@ -291,54 +294,13 @@ export abstract class BaseOrmRepository<
       return [];
     }
 
-    const filter: RepositoryWhere<Entity> =
-      options.where as RepositoryWhere<Entity>;
     const changes = this.actionDtoToEntity(payload);
 
-    const snapshots = entities.map(
-      (entity) =>
-        Object.assign(
-          Object.create(Object.getPrototypeOf(entity)),
-          entity,
-        ) as Entity,
-    );
-
-    await this.preUpdateMany(snapshots, filter, changes);
-    await this.emitHook(EHook.preUpdateMany, {
-      entities: snapshots,
-      filter,
-      changes,
-    });
-
     for (let index = 0; index < entities.length; index++) {
-      const snapshot = snapshots[index];
-      await this.preUpdate(snapshot, changes);
-      await this.emitHook(EHook.preUpdate, {
-        entity: snapshot,
-        changes,
-      });
-      Object.assign(entities[index], payload);
+      Object.assign(entities[index], changes);
     }
 
     const updatedEntities = await this.repository.save(entities);
-
-    for (let index = 0; index < updatedEntities.length; index++) {
-      const updated = updatedEntities[index];
-      const previous = snapshots[index];
-      await this.postUpdate(updated);
-      await this.emitHook(EHook.postUpdate, {
-        entity: updated,
-        previous,
-      });
-    }
-
-    await this.postUpdateMany(updatedEntities, filter, changes);
-    await this.emitHook(EHook.postUpdateMany, {
-      entities: updatedEntities,
-      previous: snapshots,
-      filter,
-      changes,
-    });
 
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
     return updatedEntities.map(toDto);
@@ -371,17 +333,11 @@ export abstract class BaseOrmRepository<
       return { acknowledged: true, deletedCount: 0 };
     }
 
-    const filter: RepositoryWhere<Entity> =
-      options.where as RepositoryWhere<Entity>;
-    await this.preDelete(deletable, filter);
-    await this.emitHook(EHook.preDelete, { entities: deletable, filter });
     await this.repository.remove(deletable);
     const result: DeleteResult = {
       acknowledged: true,
       deletedCount: deletable.length,
     };
-    await this.postDelete(deletable, result);
-    await this.emitHook(EHook.postDelete, { entities: deletable, result });
     return result;
   }
 
@@ -394,20 +350,11 @@ export abstract class BaseOrmRepository<
       return { acknowledged: true, deletedCount: 0 };
     }
 
-    const filter: RepositoryWhere<Entity> =
-      typeof idOrOptions === 'string'
-        ? ({ id: idOrOptions } as FindOptionsWhere<Entity>)
-        : (idOrOptions.where as RepositoryWhere<Entity>);
-
-    await this.preDelete([entity], filter);
-    await this.emitHook(EHook.preDelete, { entities: [entity], filter });
     await this.repository.remove(entity);
     const result: DeleteResult = {
       acknowledged: true,
       deletedCount: 1,
     };
-    await this.postDelete([entity], result);
-    await this.emitHook(EHook.postDelete, { entities: [entity], result });
     return result;
   }
 
@@ -415,60 +362,99 @@ export abstract class BaseOrmRepository<
     return (entity as Record<string, unknown>).builtin === true;
   }
 
+  listenTo() {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    return this.repository.target as Function;
+  }
+
+  private registerAsSubscriber(): void {
+    const alreadyRegistered = this.dataSource.subscribers.some(
+      (subscriber) => subscriber === this,
+    );
+    if (!alreadyRegistered) {
+      this.dataSource.subscribers.push(this as EntitySubscriberInterface<any>);
+    }
+  }
+
+  private registerEntityManagerProvider(): void {
+    const target = this.repository.target;
+    if (typeof target !== 'function') {
+      return;
+    }
+
+    const entityConstructor = target as unknown as typeof BaseOrmEntity;
+    if (typeof entityConstructor.registerEntityManagerProvider !== 'function') {
+      return;
+    }
+
+    entityConstructor.registerEntityManagerProvider(
+      () => this.repository.manager,
+    );
+  }
+
   protected getEventName(
+    metadata: EntityMetadata,
     suffix: EHook,
   ): `hook:${IHookEntities}:${TNormalizedEvents}` {
     const entityName =
-      camelCase(
-        (this.repository.metadata.name ?? 'entity').replace(/OrmEntity$/, ''),
-      ) || 'entity';
+      camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
+      'entity';
     return `hook:${entityName}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
-  protected async emitHook(suffix: EHook, ...args: any[]): Promise<void> {
+  protected async emitHook(
+    suffix: EHook,
+    event: OrmLifecycleEvent<Entity>,
+  ): Promise<void> {
     if (!this.eventEmitter) return;
-    const eventName = this.getEventName(suffix);
-    const emitAsync = this.eventEmitter.emitAsync.bind(this.eventEmitter) as (
-      event: string,
-      ...emitArgs: any[]
-    ) => Promise<unknown>;
-    await emitAsync(eventName, ...args);
+    const eventName = this.getEventName(event.metadata, suffix);
+    await this.eventEmitter.emitAsync(eventName, event);
   }
 
-  // Hooks available for child repositories
+  protected async onBeforeInsert(_event: InsertEvent<Entity>): Promise<void> {}
 
-  protected async preCreate(
-    _entity: DeepPartial<Entity> | Entity,
-  ): Promise<void> {}
+  protected async onAfterInsert(_event: InsertEvent<Entity>): Promise<void> {}
 
-  protected async postCreate(_entity: Entity): Promise<void> {}
+  protected async onBeforeUpdate(_event: UpdateEvent<Entity>): Promise<void> {}
 
-  protected async preUpdate(
-    _current: Entity,
-    _changes: DeepPartial<Entity>,
-  ): Promise<void> {}
+  protected async onAfterUpdate(_event: UpdateEvent<Entity>): Promise<void> {}
 
-  protected async postUpdate(_updated: Entity): Promise<void> {}
+  protected async onBeforeRemove(_event: RemoveEvent<Entity>): Promise<void> {}
 
-  protected async preUpdateMany(
-    _entities: Entity[],
-    _filter: RepositoryWhere<Entity>,
-    _changes: DeepPartial<Entity>,
-  ): Promise<void> {}
+  protected async onAfterRemove(_event: RemoveEvent<Entity>): Promise<void> {}
 
-  protected async postUpdateMany(
-    _entities: Entity[],
-    _filter: RepositoryWhere<Entity>,
-    _changes: DeepPartial<Entity>,
-  ): Promise<void> {}
+  async beforeInsert(event: InsertEvent<Entity>): Promise<void> {
+    await this.onBeforeInsert(event);
+    await this.emitHook(EHook.preCreate, event);
+  }
 
-  protected async preDelete(
-    _entities: Entity[],
-    _filter: RepositoryWhere<Entity>,
-  ): Promise<void> {}
+  async afterInsert(event: InsertEvent<Entity>): Promise<void> {
+    await this.onAfterInsert(event);
+    await this.emitHook(EHook.postCreate, event);
+  }
 
-  protected async postDelete(
-    _entities: Entity[],
-    _result: DeleteResult,
-  ): Promise<void> {}
+  async beforeUpdate(event: UpdateEvent<Entity>): Promise<void> {
+    await this.onBeforeUpdate(event);
+    await this.emitHook(EHook.preUpdate, event);
+  }
+
+  async afterUpdate(event: UpdateEvent<Entity>): Promise<void> {
+    await this.onAfterUpdate(event);
+    await this.emitHook(EHook.postUpdate, event);
+  }
+
+  async beforeRemove(event: RemoveEvent<Entity>): Promise<void> {
+    await this.onBeforeRemove(event);
+    await this.emitHook(EHook.preDelete, event);
+  }
+
+  async afterRemove(event: RemoveEvent<Entity>): Promise<void> {
+    await this.onAfterRemove(event);
+    await this.emitHook(EHook.postDelete, event);
+  }
 }
+
+type OrmLifecycleEvent<Entity extends BaseOrmEntity> =
+  | InsertEvent<Entity>
+  | UpdateEvent<Entity>
+  | RemoveEvent<Entity>;

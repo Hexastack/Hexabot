@@ -5,9 +5,32 @@
  */
 
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DtoActionConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+@Exclude()
+export class ContextVarStub extends BaseStub {
+  @Expose()
+  label!: string;
+
+  @Expose()
+  name!: string;
+
+  @Expose()
+  permanent!: boolean;
+}
+
+@Exclude()
+export class ContextVar extends ContextVarStub {}
+
+@Exclude()
+export class ContextVarFull extends ContextVarStub {}
 
 export class ContextVarCreateDto {
   @ApiProperty({ description: 'Context var label', type: String })
@@ -28,6 +51,14 @@ export class ContextVarCreateDto {
 
 export class ContextVarUpdateDto extends PartialType(ContextVarCreateDto) {}
 
-export type ContextVarDto = DtoActionConfig<{
-  create: ContextVarCreateDto;
+export type ContextVarTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof ContextVar;
+  FullCls: typeof ContextVarFull;
 }>;
+
+export type ContextVarDtoConfig = DtoActionConfig<{
+  create: ContextVarCreateDto;
+  update: ContextVarUpdateDto;
+}>;
+
+export type ContextVarDto = ContextVarDtoConfig;

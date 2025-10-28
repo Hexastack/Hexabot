@@ -28,13 +28,13 @@ import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import {
   Subscriber,
+  SubscriberCreateDto,
   SubscriberFull,
   SubscriberStub,
-} from '@/chat/schemas/subscriber.schema';
+} from '@/chat/dto/subscriber.dto';
+import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { AttachmentRef } from '@/chat/types/attachment';

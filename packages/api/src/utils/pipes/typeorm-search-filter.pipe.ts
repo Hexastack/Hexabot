@@ -31,7 +31,7 @@ import {
 type TypeOrmSearchFilterPipeConfig<T> = {
   allowedFields: TFilterNestedKeysOfType<
     T,
-    null | undefined | string | string[]
+    null | undefined | string | string[] | boolean
   >[];
   defaultSort?: QuerySortDto<T>;
 };

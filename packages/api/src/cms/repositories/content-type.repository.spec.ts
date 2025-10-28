@@ -8,9 +8,8 @@ import { randomUUID } from 'crypto';
 
 import { ForbiddenException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 
-import { BlockRepository } from '@/chat/repositories/block.repository';
-import { BlockService } from '@/chat/services/block.service';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { FieldType } from '@/setting/types';
@@ -24,9 +23,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: ContentTypeRepository;
   let contentRepository: ContentRepository;
-  const blockServiceMock = {
-    findOne: jest.fn(),
-  };
+  let dataSource: DataSource;
 
   const buildRequiredFields = () => [
     {
@@ -43,18 +40,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      providers: [
-        ContentRepository,
-        ContentTypeRepository,
-        {
-          provide: BlockRepository,
-          useValue: {},
-        },
-        {
-          provide: BlockService,
-          useValue: blockServiceMock,
-        },
-      ],
+      providers: [ContentRepository, ContentTypeRepository],
       typeorm: {
         entities: [ContentTypeOrmEntity, ContentOrmEntity],
       },
@@ -65,6 +51,14 @@ describe('ContentTypeRepository (TypeORM)', () => {
       ContentTypeRepository,
       ContentRepository,
     ]);
+    dataSource = module.get(DataSource);
+    await dataSource.query(`
+      CREATE TABLE IF NOT EXISTS blocks (
+        id varchar PRIMARY KEY,
+        options text NOT NULL,
+        message text NOT NULL
+      )
+    `);
   });
 
   afterAll(async () => {
@@ -81,26 +75,55 @@ describe('ContentTypeRepository (TypeORM)', () => {
         fields: buildRequiredFields(),
       });
 
-      blockServiceMock.findOne.mockResolvedValueOnce({ id: 'block-1' });
+      const blockId = `block-${randomUUID()}`;
+      const options = {
+        content: {
+          display: 'list',
+          fields: {
+            title: 'Title',
+            subtitle: null,
+            image_url: null,
+          },
+          buttons: [],
+          limit: 5,
+          entity: created.id,
+        },
+      };
+      await dataSource.query(
+        `INSERT INTO blocks (id, options, message) VALUES (?, ?, ?)`,
+        [blockId, JSON.stringify(options), JSON.stringify(['Hello'])],
+      );
+
+      const escapeLikePattern = (value: string) =>
+        value.replace(/[%_]/g, '\\$&');
+      const pattern = `%"content":%"entity":"${escapeLikePattern(
+        created.id,
+      )}"%`;
+      const match = await dataSource
+        .createQueryBuilder()
+        .select('1')
+        .from('blocks', 'block')
+        .where('block.options LIKE :pattern', { pattern })
+        .limit(1)
+        .getRawOne();
+      expect(match).toBeDefined();
 
       await expect(repository.deleteOne(created.id)).rejects.toThrow(
         ForbiddenException,
       );
 
-      expect(blockServiceMock.findOne).toHaveBeenCalledWith({
-        'options.content.entity': created.id,
-      });
       const contentType = await repository.findOne({
         where: { id: created.id },
       });
       expect(contentType).not.toBeNull();
+
+      await dataSource.query(`DELETE FROM blocks WHERE id = ?`, [blockId]);
+      await repository.deleteOne(created.id);
     });
   });
 
   describe('deleteOne cascade', () => {
     it('removes related contents when deleting a content type', async () => {
-      blockServiceMock.findOne.mockResolvedValue(null);
-
       const created = await repository.create({
         name: `cascade-${randomUUID()}`,
         fields: buildRequiredFields(),
@@ -122,9 +145,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
       const result = await repository.deleteOne(created.id);
 
       expect(result.deletedCount).toBe(1);
-      expect(blockServiceMock.findOne).toHaveBeenCalledWith({
-        'options.content.entity': created.id,
-      });
 
       const remainingContents = await contentRepository.find({
         where: { contentType: { id: created.id } },
