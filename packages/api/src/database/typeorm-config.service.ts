@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 
 import { config } from '@/config';
+import { SessionOrmEntity } from '@/session/entities/session.entity';
 
 @Injectable()
 export class TypeormConfigService implements TypeOrmOptionsFactory {
@@ -18,6 +19,7 @@ export class TypeormConfigService implements TypeOrmOptionsFactory {
       synchronize: db.synchronize,
       logging: db.logging,
       autoLoadEntities: true,
+      entities: db.type === 'mongodb' ? [] : [SessionOrmEntity],
     } as TypeOrmModuleOptions;
 
     switch (db.type) {

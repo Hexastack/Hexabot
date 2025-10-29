@@ -21,12 +21,26 @@ import {
   Not,
 } from 'typeorm';
 
-import { QuerySortDto } from '../pagination/pagination-query.dto';
-import { PageQueryParams } from '../pagination/pagination-query.pipe';
 import {
   TFilterNestedKeysOfType,
   TSearchFilterValue,
 } from '../types/filter.types';
+
+export type QuerySortDirection = 'ASC' | 'DESC' | 'asc' | 'desc';
+
+export type QuerySortDto<T> = [keyof T & string, QuerySortDirection];
+
+export type PageQueryDto<T> = {
+  skip: number | undefined;
+  limit: number | undefined;
+  sort?: QuerySortDto<T>;
+};
+
+export type PageQueryParams = {
+  skip?: string;
+  limit?: string;
+  sort?: string;
+};
 
 type TypeOrmSearchFilterPipeConfig<T> = {
   allowedFields: TFilterNestedKeysOfType<
@@ -229,7 +243,7 @@ export class TypeOrmSearchFilterPipe<T>
       this.allowedFields.includes(
         field as TFilterNestedKeysOfType<
           T,
-          null | undefined | string | string[]
+          null | undefined | string | string[] | boolean
         >,
       )
     ) {

@@ -7,7 +7,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata, Provider } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ModelDefinition, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
@@ -18,8 +17,6 @@ import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModule } from '@/setting/setting.module';
 
-import { LifecycleHookManager } from '../generics/lifecycle-hook-manager';
-
 import { registerTypeOrmDataSource } from './test';
 
 type TTypeOrToken = [
@@ -28,8 +25,6 @@ type TTypeOrToken = [
   // @ts-expect-error
   ...(new (...args: any[]) => any[]),
 ];
-
-type TModel = ModelDefinition | `${string}Model`;
 
 type ToUnionArray<T> = (NonNullable<T> extends (infer U)[] ? U : never)[];
 
@@ -45,7 +40,6 @@ type buildTestingMocksProps<
   P extends ModuleMetadata['providers'] = ModuleMetadata['providers'],
   C extends ModuleMetadata['controllers'] = ModuleMetadata['controllers'],
 > = ModuleMetadata & {
-  models?: TModel[];
   typeorm?: TypeOrmTestingConfig | TypeOrmTestingConfig[];
   includeSettingModule?: boolean;
 } & (
@@ -129,44 +123,6 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
   return dependencies;
 };
 
-/**
- * Retrieves a Mongoose model definition from the LifecycleHookManager.
- *
- * @param name - The name of the model.
- * @param suffix - Optional suffix to trim from the name.
- * @returns The model definition.
- * @throws If the model cannot be found.
- */
-const getModel = (name: string, suffix = ''): ModelDefinition | undefined => {
-  const modelName = name.replace(suffix, '');
-  const model = LifecycleHookManager.getModel(modelName);
-
-  return model;
-};
-
-/**
- * Extracts nested Mongoose models from a collection of providers.
- * Typically used for automating inclusion of models in test modules.
- *
- * @param extendedProviders - Array of providers to inspect.
- * @param suffix - Suffix identifying relevant providers (e.g., 'Repository').
- * @returns An array of model definitions.
- */
-const getNestedModels = (
-  extendedProviders: Provider[],
-  suffix = '',
-): ModelDefinition[] =>
-  extendedProviders.reduce((acc, extendedProvider) => {
-    if ('name' in extendedProvider && extendedProvider.name.endsWith(suffix)) {
-      const model = getModel(extendedProvider.name, suffix);
-      if (model) {
-        acc.push(model);
-      }
-    }
-
-    return acc;
-  }, [] as ModelDefinition[]);
-
 const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
 
@@ -198,32 +154,6 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
   return [...nestedDependencies];
 };
 
-/**
- * Determines if models can be automatically injected based on imports.
- * Specifically checks for presence of MongooseModule.
- *
- * @param imports - Modules imported in the test context.
- * @returns True if MongooseModule is included, enabling automatic model injection.
- */
-const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
-  (imports || []).some(
-    (module) => 'module' in module && module.module.name === 'MongooseModule',
-  );
-
-/**
- * Retrieves model definitions for the provided models array.
- * Supports both string references and explicit ModelDefinition objects.
- *
- * @param models - Array of models specified by name or definition.
- * @returns Array of resolved model definitions.
- */
-const getModels = (models: TModel[]): ModelDefinition[] =>
-  models
-    .map((model) =>
-      typeof model === 'string' ? getModel(model, 'Model') : model,
-    )
-    .filter((model): model is ModelDefinition => Boolean(model));
-
 const defaultProviders: Provider[] = [LoggerService];
 
 /**
@@ -241,8 +171,14 @@ const defaultProviders: Provider[] = [LoggerService];
  *   beforeAll(async () => {
  *     const { getMocks } = await buildTestingMocks({
  *       autoInjectFrom: ['providers'],
- *       imports: [MongooseModule.forRoot('mongodb://localhost/test')],
+ *       imports: [...],
  *       providers: [UserService],
+ *       typeorm: {
+ *         entities: [
+ *           AttachmentOrmEntity,
+ *         ],
+ *         fixtures: installSubscriberFixturesTypeOrm,
+ *       },
  *     });
  *
  *     [userService] = await getMocks([UserService]);
@@ -255,7 +191,6 @@ const defaultProviders: Provider[] = [LoggerService];
  * ```
  */
 export const buildTestingMocks = async ({
-  models = [],
   imports = [],
   providers = [],
   controllers = [],
@@ -397,16 +332,6 @@ export const buildTestingMocks = async ({
       EventEmitterModule.forRoot({ global: true }),
       CacheModule.register({ isGlobal: true }),
       ...(shouldIncludeSettingModule ? [SettingModule] : []),
-      ...(canInjectModels(imports)
-        ? [
-            MongooseModule.forFeature([
-              ...getModels(models),
-              ...(autoInjectFrom
-                ? getNestedModels([...dynamicProviders], 'Repository')
-                : []),
-            ]),
-          ]
-        : []),
       ...imports,
     ],
     providers: [...resolvedProviders, ...typeOrmProviders],

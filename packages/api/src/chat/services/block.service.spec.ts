@@ -6,23 +6,19 @@
 
 import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { BlockOrmEntity } from '@/chat/entities/block.entity';
 import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { ButtonType, PayloadType } from '@/chat/types/button';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
@@ -34,6 +30,10 @@ import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
 import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import {
   blockFixtures,
@@ -174,15 +174,15 @@ describe('BlockService (TypeORM)', () => {
       CategoryRepository,
       BlockRepository,
     ]);
-    category = (
-      await categoryRepository.findOne({ where: { label: 'default' } })
-    )!;
-    hasPreviousBlocks = (
-      await blockRepository.findOne({ where: { name: 'hasPreviousBlocks' } })
-    )!;
-    block = (
-      await blockRepository.findOne({ where: { name: 'hasNextBlocks' } })
-    )!;
+    category = (await categoryRepository.findOne({
+      where: { label: 'default' },
+    }))!;
+    hasPreviousBlocks = (await blockRepository.findOne({
+      where: { name: 'hasPreviousBlocks' },
+    }))!;
+    block = (await blockRepository.findOne({
+      where: { name: 'hasNextBlocks' },
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
@@ -1028,9 +1028,9 @@ describe('BlockService (TypeORM)', () => {
     });
 
     it('should process list message (with limit = 2 and skip = 0)', async () => {
-      const contentType = (
-        await contentTypeService.findOne({ where: { name: 'Product' } })
-      )!;
+      const contentType = (await contentTypeService.findOne({
+        where: { name: 'Product' },
+      }))!;
       blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
         blockProductListMock,
@@ -1067,9 +1067,9 @@ describe('BlockService (TypeORM)', () => {
     });
 
     it('should process list message (with limit = 2 and skip = 2)', async () => {
-      const contentType = (
-        await contentTypeService.findOne({ where: { name: 'Product' } })
-      )!;
+      const contentType = (await contentTypeService.findOne({
+        where: { name: 'Product' },
+      }))!;
       blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
         blockProductListMock,
@@ -1166,10 +1166,10 @@ describe('BlockService (TypeORM)', () => {
       // Mock the repository to throw an error
       jest
         .spyOn(blockRepository, 'search')
-        .mockRejectedValue(new Error('MongoDB connection error'));
+        .mockRejectedValue(new Error('Connection error'));
 
       await expect(blockService.search('test', 10)).rejects.toThrow(
-        'MongoDB connection error',
+        'Connection error',
       );
     });
   });

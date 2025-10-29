@@ -12,6 +12,7 @@ import {
 } from '@nestjs/event-emitter';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
+import set from 'lodash/set';
 import {
   DataSource,
   DeepPartial,
@@ -28,6 +29,7 @@ import {
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
+import { flatten } from '@/utils/helpers/flatten';
 
 import {
   DtoAction,
@@ -60,6 +62,7 @@ export enum EHook {
 
 export type UpdateOneOptions = {
   upsert?: boolean;
+  shouldFlatten?: boolean;
 };
 
 export type FindAllOptions<EntityType> = Omit<
@@ -264,7 +267,17 @@ export abstract class BaseOrmRepository<
     const entity = await this.findOneEntity(idOrOptions);
     if (entity) {
       const updates = this.actionDtoToEntity(payload);
-      Object.assign(entity, updates);
+      if (options?.shouldFlatten && updates && typeof updates === 'object') {
+        const flattenedUpdates = flatten(
+          updates as Record<string, unknown>,
+        ) as Record<string, unknown>;
+        const target = entity as Record<string, unknown>;
+        for (const [path, value] of Object.entries(flattenedUpdates)) {
+          set(target, path, value);
+        }
+      } else {
+        Object.assign(entity, updates);
+      }
       const updated = await this.repository.save(entity);
       if (updated) {
         return this.getTransformer(DtoTransformer.PlainCls)(updated);

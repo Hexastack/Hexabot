@@ -209,6 +209,37 @@ describe('BaseOrmRepository', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
+    it('should merge nested object fields when flattening updates', async () => {
+      const target = baselineEntities[2];
+      await dummyRepository.updateOne(target.id, {
+        dynamicField: { foo: 'bar', nested: { initial: true } },
+      });
+
+      const result = await dummyRepository.updateOne(
+        target.id,
+        {
+          dynamicField: {
+            nested: { initial: false, extra: 'value' },
+            newProp: 42,
+          },
+        },
+        { shouldFlatten: true },
+      );
+
+      expect(result.dynamicField).toEqualPayload({
+        foo: 'bar',
+        nested: { initial: false, extra: 'value' },
+        newProp: 42,
+      });
+
+      const stored = await ormRepository.findOne({ where: { id: target.id } });
+      expect(stored?.dynamicField).toEqualPayload({
+        foo: 'bar',
+        nested: { initial: false, extra: 'value' },
+        newProp: 42,
+      });
+    });
+
     it('should update many entities', async () => {
       const payload = { dummy: 'bulk updated' };
       const results = await dummyRepository.updateMany({}, payload);

@@ -61,7 +61,7 @@ export class BlockController extends BaseOrmController<
   }
 
   /**
-   * Text search for blocks using MongoDB text index.
+   * Text search for blocks.
    *
    * Example: GET /block/search?q=UserSearchPhrase&limit=50
    *

@@ -33,7 +33,7 @@ export class SanitizeQueryPipe implements PipeTransform<string, string> {
       })
       .join('');
 
-    // Remove characters that can be used in injection payloads for MongoDB or
+    // Remove characters that can be used in injection payloads or
     // shell-like expressions: dollar sign, braces, semicolon, backslash, slashes.
     s = s.replace(/[\$\{\}\;\\\/]/g, ' ');
 

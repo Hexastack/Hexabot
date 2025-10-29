@@ -8,10 +8,6 @@ import { INestApplication } from '@nestjs/common';
 import { Session } from 'express-session';
 import { Socket, io } from 'socket.io-client';
 
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
@@ -28,13 +24,6 @@ describe('WebsocketGateway', () => {
   beforeAll(async () => {
     const { module } = await buildTestingMocks({
       providers: [WebsocketGateway, SocketEventDispatcherService],
-      imports: [
-        rootMongooseTestModule(({ uri, dbName }) => {
-          process.env.MONGO_URI = uri;
-          process.env.MONGO_DB = dbName;
-          return Promise.resolve();
-        }),
-      ],
     });
     app = module.createNestApplication();
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
@@ -63,7 +52,6 @@ describe('WebsocketGateway', () => {
 
   afterAll(async () => {
     await app.close();
-    await closeInMongodConnection();
   });
 
   afterEach(jest.clearAllMocks);

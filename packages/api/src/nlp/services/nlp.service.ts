@@ -159,7 +159,7 @@ export class NlpService {
   /**
    * Before deleting a `nlpEntity`, this method deletes the related `nlpValue` and `nlpSampleEntity`. Synchronizes the deletion with the external NLP provider
    *
-   * @param _query - The Mongoose query object used for deletion.
+   * @param _query - The query object used for deletion.
    * @param criteria - The filter criteria for finding the nlpEntities to be deleted.
    */
   @OnEvent('hook:nlpEntity:preDelete')
@@ -275,7 +275,7 @@ export class NlpService {
   /**
    * Before deleting a `nlpValue`, this method deletes the related `nlpSampleEntity`. Synchronizes the deletion with the external NLP provider
    *
-   * @param _query - The Mongoose query object used for deletion.
+   * @param _query - The query object used for deletion.
    * @param criteria - The filter criteria for finding the nlpValues to be deleted.
    */
   @OnEvent('hook:nlpValue:preDelete')

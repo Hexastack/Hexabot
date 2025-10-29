@@ -4,20 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 
-import { I18nService } from '@/i18n/services/i18n.service';
-import { getUpdateOneError } from '@/utils/test/errors/messages';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { In } from 'typeorm';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contextVarFixtures,
-  installContextVarFixtures,
+  installContextVarFixturesTypeOrm,
 } from '@/utils/test/fixtures/contextvar';
-import { getPageQuery } from '@/utils/test/pagination';
-import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import {
@@ -29,186 +38,231 @@ import { ContextVarService } from '../services/context-var.service';
 
 import { ContextVarController } from './context-var.controller';
 
-describe('ContextVarController', () => {
+const createUniqueValue = (prefix: string) =>
+  `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+
+describe('ContextVarController (TypeORM)', () => {
+  let module: TestingModule;
   let contextVarController: ContextVarController;
   let contextVarService: ContextVarService;
-  let contextVar: ContextVar;
-  let contextVarToDelete: ContextVar;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [ContextVarController],
-      imports: [rootMongooseTestModule(installContextVarFixtures)],
-      providers: [
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-      ],
+      typeorm: {
+        entities: [
+          ContextVarOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          ConversationOrmEntity,
+        ],
+        fixtures: installContextVarFixturesTypeOrm,
+      },
     });
-    [contextVarController, contextVarService] = await getMocks([
+
+    module = testing.module;
+
+    [contextVarController, contextVarService] = await testing.getMocks([
       ContextVarController,
       ContextVarService,
     ]);
-    contextVar = (await contextVarService.findOne({
-      label: 'test context var 1',
-    }))!;
-    contextVarToDelete = (await contextVarService.findOne({
-      label: 'test context var 2',
-    }))!;
   });
 
   afterEach(jest.clearAllMocks);
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  describe('count', () => {
-    it('should count the contextVars', async () => {
-      jest.spyOn(contextVarService, 'count');
+  describe('filterCount', () => {
+    it('should count context variables', async () => {
+      const expectedCount = await contextVarService.count({});
+      const countSpy = jest.spyOn(contextVarService, 'count');
+
       const result = await contextVarController.filterCount();
 
-      expect(contextVarService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: contextVarFixtures.length });
+      expect(countSpy).toHaveBeenCalledWith({});
+      expect(result).toEqual({ count: expectedCount });
     });
   });
 
   describe('findPage', () => {
-    it('should return an array of contextVars', async () => {
-      const pageQuery = getPageQuery<ContextVar>();
-      jest.spyOn(contextVarService, 'find');
-      const result = await contextVarController.findPage(pageQuery, {});
+    it('should return context variables', async () => {
+      const expected = await contextVarService.find({});
+      const findSpy = jest.spyOn(contextVarService, 'find');
 
-      expect(contextVarService.find).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(contextVarFixtures.sort(sortRowsBy));
+      const result = await contextVarController.findPage({});
+
+      expect(findSpy).toHaveBeenCalledWith({});
+      expect(result).toEqualPayload(expected);
     });
   });
 
   describe('findOne', () => {
-    it('should return the existing contextVar', async () => {
-      jest.spyOn(contextVarService, 'findOne');
-      const result = await contextVarController.findOne(contextVar.id);
+    it('should return an existing context variable', async () => {
+      const expectedFixture = contextVarFixtures.find(
+        ({ label }) => label === 'test context var 1',
+      )!;
+      expect(expectedFixture).toBeDefined();
 
-      expect(contextVarService.findOne).toHaveBeenCalledWith(contextVar.id);
-      expect(result).toEqualPayload(
-        contextVarFixtures.find(({ label }) => label === contextVar.label)!,
+      const existing = (await contextVarService.findOne({
+        where: { label: expectedFixture.label },
+      }))!;
+      expect(existing).toBeDefined();
+
+      const findOneSpy = jest.spyOn(contextVarService, 'findOne');
+      const result = await contextVarController.findOne(existing.id);
+
+      expect(findOneSpy).toHaveBeenCalledWith(existing.id);
+      expect(result).toEqualPayload(expectedFixture);
+    });
+
+    it('should throw NotFoundException when context variable does not exist', async () => {
+      const id = randomUUID();
+      const findOneSpy = jest
+        .spyOn(contextVarService, 'findOne')
+        .mockResolvedValueOnce(null);
+
+      await expect(contextVarController.findOne(id)).rejects.toThrow(
+        new NotFoundException(`ContextVar with ID ${id} not found`),
       );
+      expect(findOneSpy).toHaveBeenCalledWith(id);
     });
   });
 
   describe('create', () => {
-    it('should return created contextVar', async () => {
-      jest.spyOn(contextVarService, 'create');
-      const contextVarCreateDto: ContextVarCreateDto = {
-        label: 'contextVarLabel2',
-        name: 'test_add',
+    it('should create a context variable', async () => {
+      const payload: ContextVarCreateDto = {
+        label: createUniqueValue('contextvar'),
+        name: createUniqueValue('name'),
         permanent: false,
       };
-      const result = await contextVarController.create(contextVarCreateDto);
+      const createSpy = jest.spyOn(contextVarService, 'create');
 
-      expect(contextVarService.create).toHaveBeenCalledWith(
-        contextVarCreateDto,
-      );
-      expect(result).toEqualPayload(contextVarCreateDto);
+      const result = await contextVarController.create(payload);
+
+      expect(createSpy).toHaveBeenCalledWith(payload);
+      expect(result).toEqualPayload(payload);
+
+      await contextVarService.deleteOne(result.id);
+    });
+  });
+
+  describe('updateOne', () => {
+    it('should update an existing context variable', async () => {
+      const created = await contextVarService.create({
+        label: createUniqueValue('contextvar'),
+        name: createUniqueValue('name'),
+        permanent: false,
+      });
+
+      const updates: ContextVarUpdateDto = {
+        permanent: true,
+        name: createUniqueValue('updated'),
+      };
+      const updateSpy = jest.spyOn(contextVarService, 'updateOne');
+
+      const result = await contextVarController.updateOne(created.id, updates);
+
+      expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
+      expect(result.id).toBe(created.id);
+      expect(result.permanent).toBe(true);
+      expect(result.name).toBe(updates.name);
+
+      await contextVarService.deleteOne(result.id);
+    });
+
+    it('should throw NotFoundException when updating a non-existing context variable', async () => {
+      const id = randomUUID();
+
+      await expect(
+        contextVarController.updateOne(id, { permanent: true }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('deleteOne', () => {
-    it('should delete a contextVar by id', async () => {
-      jest.spyOn(contextVarService, 'deleteOne');
-      const result = await contextVarController.deleteOne(
-        contextVarToDelete.id,
-      );
-
-      expect(contextVarService.deleteOne).toHaveBeenCalledWith(
-        contextVarToDelete.id,
-      );
-      expect(result).toEqual({
-        acknowledged: true,
-        deletedCount: 1,
+    it('should delete a context variable by id', async () => {
+      const deletable = await contextVarService.create({
+        label: createUniqueValue('contextvar'),
+        name: createUniqueValue('name'),
+        permanent: false,
       });
+      const deleteSpy = jest.spyOn(contextVarService, 'deleteOne');
+
+      const result = await contextVarController.deleteOne(deletable.id);
+
+      expect(deleteSpy).toHaveBeenCalledWith(deletable.id);
+      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+
+      const lookup = await contextVarService.findOne(deletable.id);
+      expect(lookup).toBeNull();
     });
 
-    it('should throw a NotFoundException when attempting to delete a contextVar by id', async () => {
-      await expect(
-        contextVarController.deleteOne(contextVarToDelete.id),
-      ).rejects.toThrow(
-        new NotFoundException(
-          `Context var with ID ${contextVarToDelete.id} not found.`,
-        ),
+    it('should throw NotFoundException when deletion result is empty', async () => {
+      const id = randomUUID();
+      const deleteSpy = jest
+        .spyOn(contextVarService, 'deleteOne')
+        .mockResolvedValueOnce({ acknowledged: true, deletedCount: 0 });
+
+      await expect(contextVarController.deleteOne(id)).rejects.toThrow(
+        new NotFoundException(`ContextVar with ID ${id} not found`),
       );
+      expect(deleteSpy).toHaveBeenCalledWith(id);
     });
   });
 
   describe('deleteMany', () => {
-    const deleteResult = { acknowledged: true, deletedCount: 2 };
-
-    it('should delete contextVars when valid IDs are provided', async () => {
-      jest
-        .spyOn(contextVarService, 'deleteMany')
-        .mockResolvedValue(deleteResult);
-      const result = await contextVarController.deleteMany([
-        contextVarToDelete.id,
-        contextVar.id,
+    it('should delete multiple context variables', async () => {
+      const created: ContextVar[] = await contextVarService.createMany([
+        {
+          label: createUniqueValue('contextvar'),
+          name: createUniqueValue('name'),
+        },
+        {
+          label: createUniqueValue('contextvar'),
+          name: createUniqueValue('name'),
+        },
       ]);
 
-      expect(contextVarService.deleteMany).toHaveBeenCalledWith({
-        _id: { $in: [contextVarToDelete.id, contextVar.id] },
+      const ids = created.map(({ id }) => id);
+
+      const result = await contextVarController.deleteMany(ids);
+
+      expect(result).toEqualPayload({
+        acknowledged: true,
+        deletedCount: ids.length,
       });
-      expect(result).toEqual(deleteResult);
+
+      const remaining = await contextVarService.find({
+        where: { id: In(ids) },
+      });
+      expect(remaining).toHaveLength(0);
+    });
+
+    it('should throw NotFoundException when provided IDs do not exist', async () => {
+      const ids = [randomUUID(), randomUUID()];
+
+      await expect(contextVarController.deleteMany(ids)).rejects.toThrow(
+        new NotFoundException('Context vars with provided IDs not found'),
+      );
     });
 
     it('should throw BadRequestException when no IDs are provided', async () => {
       await expect(contextVarController.deleteMany([])).rejects.toThrow(
         new BadRequestException('No IDs provided for deletion.'),
-      );
-    });
-
-    it('should throw NotFoundException when no contextVars are deleted', async () => {
-      jest.spyOn(contextVarService, 'deleteMany').mockResolvedValue({
-        acknowledged: true,
-        deletedCount: 0,
-      });
-
-      await expect(
-        contextVarController.deleteMany([contextVarToDelete.id, contextVar.id]),
-      ).rejects.toThrow(
-        new NotFoundException('Context vars with provided IDs not found'),
-      );
-    });
-  });
-
-  describe('updateOne', () => {
-    const contextVarUpdatedDto: ContextVarUpdateDto = {
-      name: 'updated_context_var_name',
-    };
-    it('should return updated contextVar', async () => {
-      jest.spyOn(contextVarService, 'updateOne');
-      const result = await contextVarController.updateOne(
-        contextVar.id,
-        contextVarUpdatedDto,
-      );
-
-      expect(contextVarService.updateOne).toHaveBeenCalledWith(
-        contextVar.id,
-        contextVarUpdatedDto,
-      );
-      expect(result).toEqualPayload({
-        ...contextVarFixtures.find(({ label }) => label === contextVar.label),
-        ...contextVarUpdatedDto,
-      });
-    });
-
-    it('should throw a NotFoundException when attempting to update an non existing contextVar by id', async () => {
-      await expect(
-        contextVarController.updateOne(
-          contextVarToDelete.id,
-          contextVarUpdatedDto,
-        ),
-      ).rejects.toThrow(
-        getUpdateOneError(ContextVar.name, contextVarToDelete.id),
       );
     });
   });

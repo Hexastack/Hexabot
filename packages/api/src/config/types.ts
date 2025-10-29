@@ -84,12 +84,9 @@ export type Config = {
   session: {
     secret: string;
     name: string;
-    adapter: string;
-    url: string;
-    collection: string;
-    auto_reconnect: boolean;
-    ssl: boolean;
-    stringify: boolean;
+    cleanupLimit: number;
+    limitSubquery: boolean;
+    ttlSeconds?: number;
     cookie: {
       maxAge: number;
     };
@@ -122,13 +119,6 @@ export type Config = {
   };
   cache: TCacheConfig;
   database: TDatabaseConfig;
-  mongo: {
-    user: string;
-    password: string;
-    uri: string;
-    dbName: string;
-    autoMigrate: boolean;
-  };
   env: string;
   authentication: {
     jwtOptions: JwtConfigOptions;

@@ -4,13 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  HydratedDocument,
-  QueryOptions,
-  QuerySelector,
-  RootQuerySelector,
-} from 'mongoose';
-
 export type TFilterKeysOfType<T, U> = {
   [K in keyof T]: T[K] extends U ? K : never;
 }[keyof T];
@@ -113,42 +106,3 @@ type TNorField<T> = {
 };
 
 export type TSearchFilterValue<T> = TOrField<T> | TAndField<T> | TNorField<T>;
-
-type TOperator = 'eq' | 'iLike' | 'neq' | 'in';
-type TContext = 'and' | 'or';
-
-export type TTransformFieldProps = {
-  _id?: string;
-  _context?: TContext;
-  _operator?: TOperator;
-  data?: {
-    [x: string]: undefined | string | RegExp | (string | undefined)[];
-  };
-};
-
-/* mongoose */
-type TOmitId<T> = Omit<T, 'id'>;
-type TReplaceId<T> = TOmitId<T> & { id?: string; _id?: string };
-
-// Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
-export type TFilterQuery<T, S = TReplaceId<T>> = (
-  | RecursivePartial<{
-      [P in keyof S]?:
-        | (S[P] extends string ? S[P] | RegExp : S[P])
-        | QuerySelector<S[P]>;
-    }>
-  | Partial<ObjectWithNestedKeys<S>>
-) &
-  WithoutGenericAny<RootQuerySelector<S>>;
-
-export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
-
-export type TFlattenOption = { shouldFlatten?: boolean };
-
-export type TQueryOptions<D> = (QueryOptions<D> & TFlattenOption) | null;
-
-export type TProjectField = 0 | 1;
-
-export type TProjectionType<T> = {
-  [K in keyof T]?: TProjectField;
-};

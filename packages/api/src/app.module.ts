@@ -11,7 +11,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheableMemory } from 'cacheable';
@@ -43,7 +42,6 @@ import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
-import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
 
 const i18nOptions: I18nOptions = {
@@ -71,23 +69,6 @@ const i18nOptions: I18nOptions = {
         ]
       : []),
     MailerModule,
-    MongooseModule.forRoot(config.mongo.uri, {
-      dbName: config.mongo.dbName,
-      autoIndex: config.env !== 'production', // Disable in production
-      connectionFactory: (connection) => {
-        connection.plugin(idPlugin);
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-virtuals'));
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-getters'));
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-defaults').default);
-        return connection;
-      },
-    }),
     NlpModule,
     CmsModule,
     UserModule,

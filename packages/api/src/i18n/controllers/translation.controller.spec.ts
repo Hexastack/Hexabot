@@ -5,13 +5,10 @@
  */
 
 import { NotFoundException } from '@nestjs/common';
-import { getModelToken } from '@nestjs/mongoose';
 import { FindManyOptions } from 'typeorm';
 
 import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
-import { Block } from '@/chat/dto/block.dto';
-import { Conversation } from '@/chat/dto/conversation.dto';
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -86,14 +83,6 @@ describe('TranslationController', () => {
           useValue: {
             getPlugin: jest.fn(),
           },
-        },
-        {
-          provide: getModelToken(Block.name),
-          useValue: {},
-        },
-        {
-          provide: getModelToken(Conversation.name),
-          useValue: {},
         },
       ],
       typeorm: [

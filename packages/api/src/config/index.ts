@@ -12,12 +12,47 @@ const isProduction = (process.env.NODE_ENV || 'development')
   .toLowerCase()
   .includes('prod');
 
-const autoMigrateToggle =
-  process.env.DB_AUTO_MIGRATE ?? process.env.MONGO_AUTO_MIGRATE;
+const autoMigrateToggle = process.env.DB_AUTO_MIGRATE;
 const shouldAutoMigrate =
   (autoMigrateToggle === 'true' &&
     (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
   !isProduction;
+
+const parseIntWithFallback = (
+  value: string | undefined,
+  fallback: number,
+): number => {
+  if (!value) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const parseOptionalInt = (value: string | undefined): number | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+
+const sessionMaxAge = parseIntWithFallback(
+  process.env.SESSION_MAX_AGE,
+  24 * 60 * 60 * 1000,
+);
+
+const sessionCleanupLimit = parseIntWithFallback(
+  process.env.SESSION_CLEANUP_LIMIT,
+  0,
+);
+
+const sessionLimitSubquery =
+  process.env.SESSION_LIMIT_SUBQUERY === undefined
+    ? true
+    : process.env.SESSION_LIMIT_SUBQUERY === 'true';
+
+const sessionTtlSeconds = parseOptionalInt(process.env.SESSION_TTL_SECONDS);
 
 export const config: Config = {
   mode: process.env.VITE_APP_MODE === 'monolith' ? 'monolith' : 'api-only',
@@ -102,14 +137,11 @@ export const config: Config = {
   session: {
     secret: process.env.SESSION_SECRET || 'changeme',
     name: process.env.SESSION_NAME || 's.sid',
-    adapter: 'connect-mongo',
-    url: 'mongodb://localhost:27017/hexabot',
-    collection: 'sessions',
-    auto_reconnect: false,
-    ssl: false,
-    stringify: true,
+    cleanupLimit: sessionCleanupLimit,
+    limitSubquery: sessionLimitSubquery,
+    ttlSeconds: sessionTtlSeconds,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: sessionMaxAge,
     },
   },
   emails: {
@@ -183,14 +215,6 @@ export const config: Config = {
         : !isProduction,
     logging: process.env.DB_LOGGING === 'true',
     schema: process.env.DB_SCHEMA,
-    autoMigrate: shouldAutoMigrate,
-  },
-  mongo: {
-    user: process.env.MONGO_USER || 'dev_only',
-    password: process.env.MONGO_PASSWORD || 'dev_only',
-    uri:
-      process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
-    dbName: process.env.MONGO_DB || 'hexabot',
     autoMigrate: shouldAutoMigrate,
   },
   env: process.env.NODE_ENV || 'development',

@@ -5,16 +5,30 @@
  */
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { webEventText } from '@/extensions/channels/web/__test__/events.mock';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
+import { HelperService } from '@/helper/helper.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { installBlockFixtures } from '@/utils/test/fixtures/block';
-import { installContentFixtures } from '@/utils/test/fixtures/content';
-import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { installBlockFixturesTypeOrm } from '@/utils/test/fixtures/block';
+import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
+import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
+import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
+import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
 import {
   buttonsBlock,
   mockWebChannelData,
@@ -22,10 +36,7 @@ import {
   textBlock,
 } from '@/utils/test/mocks/block';
 import { conversationGetStarted } from '@/utils/test/mocks/conversation';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockFull } from '../dto/block.dto';
@@ -37,55 +48,99 @@ import { ConversationService } from './conversation.service';
 import { SubscriberService } from './subscriber.service';
 
 describe('BotService', () => {
+  let module: TestingModule;
   let blockService: BlockService;
   let subscriberService: SubscriberService;
   let conversationService: ConversationService;
   let botService: BotService;
   let handler: WebChannelHandler;
+  let handlerMock: jest.Mocked<
+    Pick<WebChannelHandler, 'getName' | 'sendMessage'>
+  >;
   let eventEmitter: EventEmitter2;
+  const helperServiceMock: jest.Mocked<
+    Pick<HelperService, 'getDefaultHelper'>
+  > = {
+    getDefaultHelper: jest.fn(),
+  };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['LabelModel', 'CategoryModel'],
+    helperServiceMock.getDefaultHelper.mockImplementation(
+      async () =>
+        ({
+          canHandleFlowEscape: () => false,
+        }) as any,
+    );
+
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installSubscriberFixtures();
-          await installContentFixtures();
-          await installBlockFixtures();
-        }),
-      ],
       providers: [
-        JwtService,
         BotService,
-        WebChannelHandler,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
+        {
+          provide: HelperService,
+          useValue: helperServiceMock,
+        },
       ],
+      typeorm: {
+        entities: [
+          ConversationOrmEntity,
+          ContextVarOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: [
+          installSettingFixturesTypeOrm,
+          installSubscriberFixturesTypeOrm,
+          installBlockFixturesTypeOrm,
+          installContextVarFixturesTypeOrm,
+          installConversationFixturesTypeOrm,
+        ],
+      },
     });
+
+    module = testing.module;
+
     [
       subscriberService,
       conversationService,
       botService,
       blockService,
       eventEmitter,
-      handler,
-    ] = await getMocks([
+    ] = await testing.getMocks([
       SubscriberService,
       ConversationService,
       BotService,
       BlockService,
       EventEmitter2,
-      WebChannelHandler,
     ]);
+
+    handlerMock = {
+      getName: jest.fn().mockReturnValue(WEB_CHANNEL_NAME),
+      sendMessage: jest.fn().mockResolvedValue({ mid: 'mock-mid' }),
+    };
+    handler = handlerMock as unknown as WebChannelHandler;
   });
 
   afterEach(jest.resetAllMocks);
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
   describe('startConversation', () => {
     afterAll(() => {
       jest.restoreAllMocks();
@@ -104,9 +159,11 @@ describe('BotService', () => {
         mockWebChannelData,
       );
 
-      const [block] = await blockService.findAndPopulate({ patterns: ['Hi'] });
+      const [block] = await blockService.findAndPopulate({
+        where: { name: 'hasNextBlocks' },
+      });
       const webSubscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-web-1',
+        where: { foreign_id: 'foreign-id-web-1' },
       }))!;
 
       event.setSender(webSubscriber);
@@ -178,7 +235,7 @@ describe('BotService', () => {
         mockWebChannelData,
       );
       const webSubscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-web-2',
+        where: { foreign_id: 'foreign-id-web-2' },
       }))!;
       event.setSender(webSubscriber);
       const captured = await botService.processConversationMessage(event);
@@ -200,7 +257,7 @@ describe('BotService', () => {
         mockWebChannelData,
       );
       const webSubscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-web-1',
+        where: { foreign_id: 'foreign-id-web-1' },
       }))!;
       event.setSender(webSubscriber);
 

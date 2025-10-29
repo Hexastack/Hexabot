@@ -10,17 +10,25 @@ dotenv.config({ path: '../.env' });
 
 let mockSession = null;
 
-jest.mock('connect-mongo', () => ({
-  create: jest.fn(() => ({
+jest.mock('connect-typeorm', () => {
+  const store = {
     set: jest.fn((_id, newSession, next) => {
       mockSession = newSession;
-      next();
+      next?.();
     }),
     get: jest.fn((_id, next) => {
       next(null, mockSession);
     }),
-  })),
-}));
+    destroy: jest.fn((_id, next) => next?.()),
+    touch: jest.fn((_id, _session, next) => next?.()),
+  };
+
+  return {
+    TypeormStore: jest.fn().mockImplementation(() => ({
+      connect: jest.fn().mockReturnValue(store),
+    })),
+  };
+});
 
 jest.mock('@resvg/resvg-js', () => {
   return {

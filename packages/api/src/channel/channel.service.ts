@@ -158,7 +158,7 @@ export class ChannelService {
       // Create test subscriber for the current user
       const testSubscriber = await this.subscriberService.findOneOrCreate(
         {
-          foreign_id: req.session.passport.user.id,
+          where: { foreign_id: req.session.passport.user.id },
         },
         {
           foreign_id: req.session.passport.user.id,
@@ -169,6 +169,11 @@ export class ChannelService {
           gender: '',
           country: '',
           labels: [],
+          assignedTo: null,
+          assignedAt: null,
+          lastvisit: new Date(),
+          retainedFrom: new Date(),
+          avatar: null,
           channel: {
             name: CONSOLE_CHANNEL_NAME,
             isSocket: true,

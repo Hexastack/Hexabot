@@ -4,190 +4,233 @@
  * Full terms: see LICENSE.md.
  */
 
-import { User } from '@/user/dto/user.dto';
-import { UserRepository } from '@/user/repositories/user.repository';
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { Message, MessageFull } from '@/chat/dto/message.dto';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageRepository } from '@/chat/repositories/message.repository';
+import { MessageService } from '@/chat/services/message.service';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
-  installMessageFixtures,
+  installMessageFixturesTypeOrm,
   messageFixtures,
 } from '@/utils/test/fixtures/message';
-import { getPageQuery } from '@/utils/test/pagination';
-import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Message } from '../dto/message.dto';
-import { Subscriber } from '../dto/subscriber.dto';
-import { MessageRepository } from '../repositories/message.repository';
-
-import { SubscriberRepository } from './../repositories/subscriber.repository';
-import { MessageService } from './message.service';
-
-describe('MessageService', () => {
-  let messageRepository: MessageRepository;
+describe('MessageService (TypeORM)', () => {
+  let module: TestingModule;
   let messageService: MessageService;
-  let subscriberRepository: SubscriberRepository;
-  let userRepository: UserRepository;
-  let allMessages: Message[];
-  let allSubscribers: Subscriber[];
-  let allUsers: User[];
-  let message: Message;
-  let sender: Subscriber;
-  let recipient: Subscriber;
-  let messagesWithSenderAndRecipient: Message[];
-  let user: User;
-  let mockGateway: Partial<WebsocketGateway>;
-  let mockMessageService: MessageService;
+  let messageRepository: MessageRepository;
+
+  let plainMessages: Message[];
+  let populatedMessages: MessageFull[];
+  let referencePlain: Message;
+  let referencePopulated: MessageFull;
+  let referenceSubscriber: Subscriber;
+  let subscriberMessagesAsc: Message[];
+
   const SESSION_ID = 'session-123';
   const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
     success: true,
     subscribe: Room.MESSAGE,
   };
 
+  const websocketGatewayMock: Partial<WebsocketGateway> = {
+    joinNotificationSockets: jest.fn(),
+  };
+
+  const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
+
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installMessageFixtures)],
-      providers: [MessageService, SubscriberRepository, UserRepository],
-    });
-    [messageService, messageRepository, subscriberRepository, userRepository] =
-      await getMocks([
+      providers: [
         MessageService,
         MessageRepository,
-        SubscriberRepository,
-        UserRepository,
-      ]);
-    allSubscribers = await subscriberRepository.findAll();
-    allUsers = await userRepository.findAll();
-    allMessages = await messageRepository.findAll();
-    message = (await messageRepository.findOne({ mid: 'mid-1' }))!;
-    sender = (await subscriberRepository.findOne(message.sender!))!;
-    recipient = (await subscriberRepository.findOne(message.recipient!))!;
-    user = (await userRepository.findOne(message.sentBy!))!;
-    messagesWithSenderAndRecipient = allMessages.map((message) => ({
-      ...message,
-      sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
-      recipient: allSubscribers.find(({ id }) => id === message.recipient)?.id,
-      sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
-    }));
-    mockGateway = {
-      joinNotificationSockets: jest.fn(),
-    };
-    mockMessageService = new MessageService({} as any, mockGateway as any);
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
+        },
+      ],
+      typeorm: {
+        entities: [
+          MessageOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installMessageFixturesTypeOrm,
+      },
+    });
+
+    module = testing.module;
+
+    [messageService, messageRepository] = await testing.getMocks([
+      MessageService,
+      MessageRepository,
+    ]);
+
+    plainMessages = await messageService.find(orderByCreatedAtAsc);
+    populatedMessages =
+      await messageService.findAndPopulate(orderByCreatedAtAsc);
+
+    if (!plainMessages.length || !populatedMessages.length) {
+      throw new Error('Expected seeded message fixtures to be available');
+    }
+
+    const targetMid = messageFixtures[0]?.mid ?? null;
+    referencePlain =
+      plainMessages.find((message) => message.mid === targetMid) ??
+      plainMessages[0];
+    referencePopulated =
+      populatedMessages.find((message) => message.mid === targetMid) ??
+      populatedMessages[0];
+
+    if (!referencePopulated) {
+      throw new Error('Unable to resolve a reference message from fixtures');
+    }
+
+    if (!referencePopulated.sender) {
+      throw new Error('Expected reference message to include a sender');
+    }
+
+    referenceSubscriber = referencePopulated.sender;
+
+    subscriberMessagesAsc = plainMessages
+      .filter(
+        (message) =>
+          message.sender === referenceSubscriber.id ||
+          message.recipient === referenceSubscriber.id,
+      )
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   });
 
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('subscribe', () => {
-    it('should join Notification sockets message room and return a success response', async () => {
+    it('joins the message room and returns a success response', async () => {
       const req = {
         request: {
           session: { passport: { user: { id: SESSION_ID } } },
         },
       };
       const res = {
-        json: jest.fn(),
+        json: jest.fn().mockReturnValue(SUCCESS_PAYLOAD),
         status: jest.fn().mockReturnThis(),
       };
 
-      await mockMessageService.subscribe(req as any, res as any);
+      const result = await messageService.subscribe(req as any, res as any);
 
-      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+      expect(websocketGatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
         req,
         Room.MESSAGE,
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
+      expect(result).toEqual(SUCCESS_PAYLOAD);
     });
   });
 
   describe('findOneAndPopulate', () => {
-    it('should find message by id, and populate its corresponding sender and recipient', async () => {
-      jest.spyOn(messageRepository, 'findOneAndPopulate');
-      const result = await messageService.findOneAndPopulate(message.id);
+    it('finds a message by id and populates relations', async () => {
+      const spy = jest.spyOn(messageRepository, 'findOneAndPopulate');
+      const result = await messageService.findOneAndPopulate(referencePlain.id);
 
-      expect(messageRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        message.id,
-        undefined,
-      );
-      expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
-        sender,
-        recipient,
-        sentBy: user.id,
-      });
+      expect(spy).toHaveBeenCalledWith(referencePlain.id);
+      expect(result).toEqualPayload(referencePopulated);
+
+      spy.mockRestore();
     });
   });
 
   describe('findAndPopulate', () => {
-    const pageQuery = getPageQuery<Message>();
-    it('should find messages, and foreach message populate the corresponding sender and recipient', async () => {
-      jest.spyOn(messageRepository, 'findAndPopulate');
-      const result = await messageService.findAndPopulate({}, pageQuery);
-      const messagesWithSenderAndRecipient = allMessages.map((message) => ({
-        ...message,
-        sender: allSubscribers.find(({ id }) => id === message.sender),
-        recipient: allSubscribers.find(({ id }) => id === message.recipient),
-        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
-      }));
+    it('retrieves messages and populates requested relations', async () => {
+      const spy = jest.spyOn(messageRepository, 'findAndPopulate');
+      const result = await messageService.findAndPopulate(orderByCreatedAtAsc);
 
-      expect(messageRepository.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-        undefined,
-      );
-      expect(result).toEqualPayload(messagesWithSenderAndRecipient);
+      expect(spy).toHaveBeenCalledWith(orderByCreatedAtAsc);
+      expect(result).toEqualPayload(populatedMessages);
+
+      spy.mockRestore();
     });
   });
 
   describe('findHistoryUntilDate', () => {
-    it('should return history until given date', async () => {
-      const until: Date = new Date(
-        new Date().setMonth(new Date().getMonth() + 1),
-      );
+    it('returns history until the specified date ordered from newest to oldest', async () => {
+      const until = new Date('2024-12-31T23:59:59.999Z');
       const result = await messageService.findHistoryUntilDate(
-        sender!,
+        referenceSubscriber,
         until,
         30,
       );
-      const historyMessages = messagesWithSenderAndRecipient.filter(
-        (message) => message.createdAt <= until,
-      );
 
-      expect(result).toEqualPayload(historyMessages);
+      const expected = subscriberMessagesAsc
+        .filter((message) => message.createdAt < until)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 30);
+
+      expect(result).toEqualPayload(expected);
     });
   });
 
   describe('findHistorySinceDate', () => {
-    it('should return history since given date', async () => {
-      const since: Date = new Date();
+    it('returns history since the specified date ordered from oldest to newest', async () => {
+      const since = new Date('2023-12-31T23:59:59.999Z');
       const result = await messageService.findHistorySinceDate(
-        sender!,
+        referenceSubscriber,
         since,
         30,
       );
-      const messagesWithSenderAndRecipient = allMessages.map((message) => ({
-        ...message,
-        sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
-        recipient: allSubscribers.find(({ id }) => id === message.recipient)
-          ?.id,
-        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
-      }));
-      const historyMessages = messagesWithSenderAndRecipient.filter(
-        (message) => message.createdAt > since,
+
+      const expected = subscriberMessagesAsc
+        .filter((message) => message.createdAt > since)
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .slice(0, 30);
+
+      expect(result).toEqualPayload(expected);
+    });
+  });
+
+  describe('findLastMessages', () => {
+    it('returns the most recent messages for a subscriber in chronological order', async () => {
+      const limit = 2;
+      const result = await messageService.findLastMessages(
+        referenceSubscriber,
+        limit,
       );
 
-      expect(result).toEqual(
-        historyMessages.sort((message1, message2) =>
-          sortRowsBy(message1, message2, 'createdAt', 'asc'),
-        ),
-      );
+      const expected =
+        limit >= subscriberMessagesAsc.length
+          ? subscriberMessagesAsc
+          : subscriberMessagesAsc.slice(-limit);
+
+      expect(result).toEqualPayload(expected);
     });
   });
 });

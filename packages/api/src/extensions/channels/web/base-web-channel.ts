@@ -137,7 +137,9 @@ export default abstract class BaseWebChannelHandler<
         await client.join(profile.foreign_id);
         const messagesHistory =
           await this.messageService.findHistoryUntilDate(profile);
-        messages = await this.formatMessages(messagesHistory.reverse());
+        messages = await this.formatMessages(
+          messagesHistory.reverse() as unknown as AnyMessage[],
+        );
       }
 
       this.logger.debug('WS connected .. sending settings');
@@ -281,13 +283,14 @@ export default abstract class BaseWebChannelHandler<
     const formattedMessages: Web.Message[] = [];
 
     for (const anyMessage of messages) {
+      const messageMid = anyMessage.mid ?? this.generateId();
       if (this.isIncomingMessage(anyMessage)) {
         const message = await this.formatIncomingHistoryMessage(anyMessage);
         formattedMessages.push({
           ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid,
+          mid: messageMid,
           createdAt: anyMessage.createdAt,
         });
       } else {
@@ -296,7 +299,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid || this.generateId(),
+          mid: messageMid,
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
         });
@@ -326,7 +329,9 @@ export default abstract class BaseWebChannelHandler<
         until,
         n,
       );
-      return await this.formatMessages(messages.reverse());
+      return await this.formatMessages(
+        messages.reverse() as unknown as AnyMessage[],
+      );
     }
     return [];
   }
@@ -351,7 +356,7 @@ export default abstract class BaseWebChannelHandler<
         since,
         n,
       );
-      return await this.formatMessages(messages);
+      return await this.formatMessages(messages as unknown as AnyMessage[]);
     }
     return [];
   }
@@ -504,6 +509,7 @@ export default abstract class BaseWebChannelHandler<
       assignedAt: null,
       lastvisit: new Date(),
       retainedFrom: new Date(),
+      avatar: null,
       channel: {
         name: this.getName(),
         ...this.getChannelAttributes(req),
@@ -1237,8 +1243,7 @@ export default abstract class BaseWebChannelHandler<
     content: any,
     excludedRooms: string[] = [],
   ): void {
-    const channelData =
-      Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
+    const channelData = subscriber.channel;
     if (channelData.isSocket) {
       this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
@@ -1340,7 +1345,7 @@ export default abstract class BaseWebChannelHandler<
     } = sender;
     const subscriber: SubscriberCreateDto = {
       ...rest,
-      channel: Subscriber.getChannelData(sender),
+      channel: sender.channel,
     };
     return subscriber;
   }
@@ -1373,7 +1378,7 @@ export default abstract class BaseWebChannelHandler<
     } else {
       // Or, he would like to access an attachment sent to him privately
       const message = await this.messageService.findOne({
-        ['recipient' as any]: subscriberId,
+        recipient: { id: subscriberId },
         $or: [
           { 'message.attachment.payload.id': attachment.id },
           {

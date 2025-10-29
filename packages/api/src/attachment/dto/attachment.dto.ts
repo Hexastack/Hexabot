@@ -20,7 +20,6 @@ import {
 
 import { ChannelName } from '@/channel/types';
 import { User } from '@/user/dto/user.dto';
-import { ObjectIdDto } from '@/utils/dto/object-id.dto';
 import {
   BaseStub,
   DtoActionConfig,
@@ -166,7 +165,12 @@ export class AttachmentCreateDto extends AttachmentMetadataDto {
   location: string;
 }
 
-export class AttachmentDownloadDto extends ObjectIdDto {
+export class AttachmentDownloadDto {
+  @ApiPropertyOptional({ description: 'Identifier', type: String })
+  @IsOptional()
+  @IsUUID('4', { each: true, message: 'Assign label must be a valid UUID' })
+  id?: string;
+
   /**
    * Attachment file name
    */
