@@ -12,7 +12,7 @@ import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   BotStats,
-  BotStatsDto,
+  BotStatsActionDto,
   BotStatsTransformerDto,
 } from '../dto/bot-stats.dto';
 import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
@@ -21,7 +21,7 @@ import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 export class BotStatsRepository extends BaseOrmRepository<
   BotStatsOrmEntity,
   BotStatsTransformerDto,
-  BotStatsDto
+  BotStatsActionDto
 > {
   constructor(
     @InjectRepository(BotStatsOrmEntity)

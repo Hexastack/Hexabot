@@ -230,7 +230,7 @@ export class ChatService {
         };
 
         this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
-        this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo');
+        this.eventEmitter.emit('hook:stats:entry', BotStatsType.echo, 'Echo');
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
       }

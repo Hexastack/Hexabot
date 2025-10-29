@@ -18,7 +18,10 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { BotStatsDto, BotStatsTransformerDto } from '../dto/bot-stats.dto';
+import {
+  BotStatsActionDto,
+  BotStatsTransformerDto,
+} from '../dto/bot-stats.dto';
 import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
 
@@ -26,7 +29,7 @@ import { BotStatsRepository } from '../repositories/bot-stats.repository';
 export class BotStatsService extends BaseOrmService<
   BotStatsOrmEntity,
   BotStatsTransformerDto,
-  BotStatsDto,
+  BotStatsActionDto,
   BotStatsRepository
 > {
   constructor(
@@ -38,7 +41,7 @@ export class BotStatsService extends BaseOrmService<
   }
 
   @OnEvent('hook:subscriber:preCreate')
-  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>): void {
+  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
     const entity = event.entity;
     if (!entity) {
       return;

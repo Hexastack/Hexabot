@@ -105,11 +105,9 @@ describe('NlpEntityRepository (TypeORM)', () => {
 
   describe('deleteOne cascade', () => {
     it('should delete a nlp entity and its values', async () => {
-      valueEventEmitter.once('hook:nlpEntity:preDelete', async (payload) => {
-        if (payload && typeof payload === 'object' && 'entities' in payload) {
-          await nlpService.handleEntityDelete(payload);
-        }
-      });
+      valueEventEmitter.once('hook:nlpEntity:preDelete', async (eventPayload) =>
+        nlpService.handleEntityDelete(eventPayload),
+      );
 
       const intentEntity = (await nlpEntityRepository.findOne({
         where: { name: 'intent' },
@@ -168,11 +166,12 @@ describe('NlpEntityRepository (TypeORM)', () => {
       const helperSpy = jest.spyOn(llmNluHelper, 'addEntity');
       const updateSpy = jest.spyOn(nlpEntityService, 'updateOne');
 
-      entityEventEmitter.once('hook:nlpEntity:postCreate', async (created) => {
-        if (created && typeof created === 'object' && 'id' in created) {
-          await nlpService.handleEntityPostCreate(created);
-        }
-      });
+      entityEventEmitter.once(
+        'hook:nlpEntity:postCreate',
+        async (eventPayload) => {
+          await nlpService.handleEntityPostCreate(eventPayload);
+        },
+      );
 
       const result = await nlpEntityRepository.create({
         name: 'test-entity',
@@ -195,11 +194,12 @@ describe('NlpEntityRepository (TypeORM)', () => {
     it('should not attach a foreignId when builtin is true', async () => {
       const helperSpy = jest.spyOn(llmNluHelper, 'addEntity');
 
-      entityEventEmitter.once('hook:nlpEntity:postCreate', async (created) => {
-        if (created && typeof created === 'object' && 'id' in created) {
-          await nlpService.handleEntityPostCreate(created);
-        }
-      });
+      entityEventEmitter.once(
+        'hook:nlpEntity:postCreate',
+        async (eventPayload) => {
+          await nlpService.handleEntityPostCreate(eventPayload);
+        },
+      );
 
       const result = await nlpEntityRepository.create({
         name: 'builtin-entity',
@@ -219,21 +219,12 @@ describe('NlpEntityRepository (TypeORM)', () => {
       const handleSpy = jest.spyOn(nlpService, 'handleEntityPostUpdate');
       const helperSpy = jest.spyOn(llmNluHelper, 'updateEntity');
 
-      entityEventEmitter.once('hook:nlpEntity:postUpdate', async (payload) => {
-        if (
-          payload &&
-          typeof payload === 'object' &&
-          'entity' in payload &&
-          'previous' in payload
-        ) {
-          await nlpService.handleEntityPostUpdate(
-            payload as {
-              entity: NlpEntity;
-              previous: NlpEntity;
-            },
-          );
-        }
-      });
+      entityEventEmitter.once(
+        'hook:nlpEntity:postUpdate',
+        async (eventPayload) => {
+          await nlpService.handleEntityPostUpdate(eventPayload);
+        },
+      );
 
       const updated = await nlpEntityRepository.updateOne(
         firstNameNlpEntity!.id,

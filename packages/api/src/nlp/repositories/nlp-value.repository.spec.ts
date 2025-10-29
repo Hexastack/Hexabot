@@ -142,11 +142,9 @@ describe('NlpValueRepository (TypeORM)', () => {
       );
       expect(valueToDelete).toBeDefined();
 
-      valueEventEmitter.once('hook:nlpValue:preDelete', async (payload) => {
-        if (payload && typeof payload === 'object' && 'entities' in payload) {
-          await nlpService.handleValueDelete(payload);
-        }
-      });
+      valueEventEmitter.once('hook:nlpValue:preDelete', async (eventPayload) =>
+        nlpService.handleValueDelete(eventPayload),
+      );
 
       const result = await nlpValueRepository.deleteOne(valueToDelete!.id);
       expect(result.deletedCount).toBe(1);
@@ -163,11 +161,12 @@ describe('NlpValueRepository (TypeORM)', () => {
       const helperSpy = jest.spyOn(llmNluHelper, 'addValue');
       const updateSpy = jest.spyOn(nlpValueService, 'updateOne');
 
-      valueEventEmitter.once('hook:nlpValue:postCreate', async (created) => {
-        if (created && typeof created === 'object' && 'id' in created) {
-          await nlpService.handleValuePostCreate(created);
-        }
-      });
+      valueEventEmitter.once(
+        'hook:nlpValue:postCreate',
+        async (eventPayload) => {
+          await nlpService.handleValuePostCreate(eventPayload);
+        },
+      );
 
       const parentEntity = await nlpEntityRepository.create({
         name: 'value-parent-entity',
@@ -190,11 +189,12 @@ describe('NlpValueRepository (TypeORM)', () => {
     it('should skip foreignId when builtin is true', async () => {
       const helperSpy = jest.spyOn(llmNluHelper, 'addValue');
 
-      valueEventEmitter.once('hook:nlpValue:postCreate', async (created) => {
-        if (created && typeof created === 'object' && 'id' in created) {
-          await nlpService.handleValuePostCreate(created);
-        }
-      });
+      valueEventEmitter.once(
+        'hook:nlpValue:postCreate',
+        async (eventPayload) => {
+          await nlpService.handleValuePostCreate(eventPayload);
+        },
+      );
 
       const parentEntity = await nlpEntityRepository.create({
         name: 'builtin-parent-entity',
@@ -219,16 +219,12 @@ describe('NlpValueRepository (TypeORM)', () => {
       const handleSpy = jest.spyOn(nlpService, 'handleValuePostUpdate');
       const helperSpy = jest.spyOn(llmNluHelper, 'updateValue');
 
-      valueEventEmitter.once('hook:nlpValue:postUpdate', async (payload) => {
-        if (
-          payload &&
-          typeof payload === 'object' &&
-          'entity' in payload &&
-          'previous' in payload
-        ) {
-          await nlpService.handleValuePostUpdate(payload);
-        }
-      });
+      valueEventEmitter.once(
+        'hook:nlpValue:postUpdate',
+        async (eventPayload) => {
+          await nlpService.handleValuePostUpdate(eventPayload);
+        },
+      );
 
       await nlpValueRepository.updateOne(target.id, {
         doc: 'Updated documentation',

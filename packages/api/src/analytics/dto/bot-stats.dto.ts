@@ -80,7 +80,7 @@ export type BotStatsTransformerDto = DtoTransformerConfig<{
   FullCls: typeof BotStats;
 }>;
 
-export type BotStatsDto = DtoActionConfig<{
+export type BotStatsActionDto = DtoActionConfig<{
   create: BotStatsCreateDto;
   update: BotStatsUpdateDto;
 }>;
