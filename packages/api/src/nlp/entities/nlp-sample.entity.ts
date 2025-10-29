@@ -30,7 +30,7 @@ export class NlpSampleOrmEntity extends BaseOrmEntity {
   trained!: boolean;
 
   @Column({
-    type: 'simple-enum',
+    type: 'enum',
     enum: NlpSampleState,
     default: NlpSampleState.train,
   })

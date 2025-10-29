@@ -63,7 +63,7 @@ export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * Type of the menu item, one of: web_url, postback, nested.
    */
-  @Column({ type: 'varchar' })
+  @Column({ type: 'enum', enum: MenuType })
   type!: MenuType;
 
   /**

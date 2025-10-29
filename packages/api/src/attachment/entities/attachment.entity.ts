@@ -42,18 +42,20 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
 
   @Column({
     name: 'created_by_ref',
-    type: 'varchar',
+    type: 'enum',
+    enum: AttachmentCreatedByRef,
     nullable: true,
   })
   createdByRef?: AttachmentCreatedByRef;
 
   @Column({
     name: 'resource_ref',
-    type: 'varchar',
+    type: 'enum',
+    enum: AttachmentResourceRef,
   })
   resourceRef!: AttachmentResourceRef;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'enum', enum: AttachmentAccess })
   access!: AttachmentAccess;
 
   @Expose()

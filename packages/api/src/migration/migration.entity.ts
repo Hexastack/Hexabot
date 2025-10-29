@@ -25,8 +25,7 @@ export class MigrationOrmEntity {
   version: MigrationVersion;
 
   @Column({
-    type: 'varchar',
-    length: 16,
+    type: 'enum',
     enum: MigrationAction,
   })
   status: MigrationAction;

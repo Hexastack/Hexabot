@@ -25,7 +25,7 @@ export class SettingOrmEntity extends BaseOrmEntity {
   @Index()
   label!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'enum', enum: SettingType })
   type!: SettingType;
 
   @Column({ type: 'simple-json', nullable: true })

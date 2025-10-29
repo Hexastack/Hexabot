@@ -33,7 +33,7 @@ export class BotStatsOrmEntity extends BaseOrmEntity {
   /**
    * Type of the captured insight.
    */
-  @Column()
+  @Column({ type: 'enum', enum: BotStatsType })
   type!: BotStatsType;
 
   /**

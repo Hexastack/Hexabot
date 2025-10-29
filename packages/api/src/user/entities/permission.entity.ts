@@ -35,7 +35,7 @@ export class PermissionOrmEntity extends BaseOrmEntity {
   @RelationId((permission: PermissionOrmEntity) => permission.model)
   readonly modelId!: string;
 
-  @Column({ type: 'varchar', enum: Object.values(Action) })
+  @Column({ type: 'enum', enum: Action })
   action!: Action;
 
   @ManyToOne(() => RoleOrmEntity, (role) => role.permissions, {
