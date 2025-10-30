@@ -39,7 +39,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   @Column({ default: true })
   active!: boolean;
 
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   context: Context = getDefaultConversationContext();
 
   @ManyToOne(() => BlockOrmEntity, {

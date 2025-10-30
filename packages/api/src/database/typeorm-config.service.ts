@@ -40,8 +40,10 @@ export class TypeormConfigService implements TypeOrmOptionsFactory {
         return {
           ...base,
           type: 'mongodb',
-          url: db.url ?? config.mongo.uri,
-          database: db.database ?? config.mongo.dbName,
+          url: db.url,
+          username: db.url ? undefined : db.username,
+          password: db.url ? undefined : db.password,
+          database: db.url ? undefined : db.database,
           // useUnifiedTopology: true,
         } as TypeOrmModuleOptions;
       case 'sqlite':

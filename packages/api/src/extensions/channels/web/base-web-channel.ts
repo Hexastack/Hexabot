@@ -15,6 +15,7 @@ import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
+import { Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -520,6 +521,7 @@ export default abstract class BaseWebChannelHandler<
       gender: 'male',
       country: '',
       labels: [],
+      context: { vars: {} },
     };
     const subscriber = await this.subscriberService.create(newProfile);
     // Init session
@@ -854,11 +856,15 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile as Subscriber);
+      event.setSender(profile as unknown as Subscriber);
 
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile as Subscriber, type, event._adapter.raw);
+        this.broadcast(
+          profile as unknown as Subscriber,
+          type,
+          event._adapter.raw,
+        );
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);
@@ -1378,15 +1384,25 @@ export default abstract class BaseWebChannelHandler<
     } else {
       // Or, he would like to access an attachment sent to him privately
       const message = await this.messageService.findOne({
-        recipient: { id: subscriberId },
-        $or: [
-          { 'message.attachment.payload.id': attachment.id },
-          {
-            'message.attachment': {
-              $elemMatch: { 'payload.id': attachment.id },
-            },
-          },
-        ],
+        where: {
+          recipient: { id: subscriberId },
+          // "message" is your JSONB column
+          message: Raw(
+            (alias) => `
+              (
+                jsonb_typeof(${alias}->'attachment') = 'object'
+                AND (${alias}->'attachment'->'payload'->>'id') = :attId
+              ) OR (
+                jsonb_typeof(${alias}->'attachment') = 'array'
+                AND EXISTS (
+                  SELECT 1 FROM jsonb_array_elements(${alias}->'attachment') a
+                  WHERE a->'payload'->>'id' = :attId
+                )
+              )
+            `,
+            { attId: attachment.id },
+          ),
+        },
       });
 
       return !!message;

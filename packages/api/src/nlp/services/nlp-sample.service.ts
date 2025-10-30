@@ -11,14 +11,13 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
-import { FindManyOptions, FindOptionsOrder } from 'typeorm';
+import { FindManyOptions, FindOptionsOrder, InsertEvent } from 'typeorm';
 
-import { Message } from '@/chat/dto/message.dto';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { THydratedDocument } from '@/utils/types/filter.types';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
 import { NlpEntityFull } from '../dto/nlp-entity.dto';
@@ -378,17 +377,12 @@ export class NlpSampleService extends BaseOrmService<
   }
 
   @OnEvent('hook:message:preCreate')
-  async handleNewMessage(doc: THydratedDocument<Message>) {
+  async handleNewMessage({ entity: e }: InsertEvent<MessageOrmEntity>) {
     // If message is sent by the user then add it as an inbox sample
-    if (
-      'sender' in doc &&
-      doc.sender &&
-      'message' in doc &&
-      'text' in doc.message
-    ) {
+    if ('sender' in e && e.sender && 'message' in e && 'text' in e.message) {
       const defaultLang = await this.languageService.getDefaultLanguage();
       const record: NlpSampleCreateDto = {
-        text: doc.message.text,
+        text: e.message.text,
         type: NlpSampleState.inbox,
         trained: false,
         language: defaultLang.id,

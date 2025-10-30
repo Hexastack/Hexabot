@@ -54,7 +54,7 @@ export class ContentOrmEntity extends BaseOrmEntity {
   @Column({ default: true })
   status!: boolean;
 
-  @Column({ name: 'dynamic_fields', type: 'simple-json', nullable: true })
+  @Column({ name: 'dynamic_fields', type: 'jsonb', nullable: true })
   dynamicFields!: Record<string, any> | null;
 
   @Column({ type: 'text', nullable: true })

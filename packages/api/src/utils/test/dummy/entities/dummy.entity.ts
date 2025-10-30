@@ -13,6 +13,6 @@ export class DummyOrmEntity extends BaseOrmEntity {
   @Column()
   dummy!: string;
 
-  @Column({ type: 'simple-json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   dynamicField?: Record<string, unknown>;
 }

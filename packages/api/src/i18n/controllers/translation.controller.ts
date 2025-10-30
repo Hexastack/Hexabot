@@ -20,7 +20,7 @@ import {
 import { FindManyOptions, In, Not } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {

@@ -272,11 +272,11 @@ export class BlockController extends BaseOrmController<
     this.validate({
       dto: block,
       allowedIds: {
-        category: category?.id ?? null,
-        attachedBlock: attachedBlock?.id ?? null,
-        nextBlocks: nextBlockIds,
-        assign_labels: assignLabelIds,
-        trigger_labels: triggerLabelIds,
+        categoryId: category?.id ?? null,
+        attachedBlockId: attachedBlock?.id ?? null,
+        nextBlockIds,
+        assignLabelIds,
+        triggerLabelIds,
       },
     });
     // TODO: the validate function doesn't support nested objects, we need to refactor it to support nested objects

@@ -22,7 +22,7 @@ export class ModelOrmEntity extends BaseOrmEntity {
   @Column()
   identity!: string;
 
-  @Column({ type: 'simple-json', nullable: false })
+  @Column({ type: 'jsonb', nullable: false })
   attributes: Record<string, unknown> = {};
 
   @Column({ nullable: true })

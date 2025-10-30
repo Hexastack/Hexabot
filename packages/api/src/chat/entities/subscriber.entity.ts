@@ -36,23 +36,23 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @Column()
   last_name!: string;
 
-  @Column({ type: 'text', nullable: true })
-  locale?: string | null;
+  @Column({ type: 'varchar', length: 5, nullable: true })
+  locale: string | null;
 
   @Column({ type: 'integer', default: 0 })
-  timezone?: number;
+  timezone: number;
 
-  @Column({ type: 'text', nullable: true })
-  language?: string | null;
+  @Column({ type: 'varchar', length: 5, nullable: true })
+  language: string | null;
 
-  @Column({ type: 'text', nullable: true })
-  gender?: string | null;
+  @Column({ type: 'varchar', length: 21, nullable: true })
+  gender: string | null;
 
-  @Column({ type: 'text', nullable: true })
-  country?: string | null;
+  @Column({ type: 'varchar', length: 56, nullable: true })
+  country: string | null;
 
-  @Column({ type: 'text', nullable: true })
-  foreign_id?: string | null;
+  @Column({ type: 'varchar', length: 36 })
+  foreign_id: string;
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.users, {
     cascade: false,
@@ -88,13 +88,13 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   readonly assignedToId?: string | null;
 
   @Column({ type: 'datetime', nullable: true })
-  assignedAt?: Date | null;
+  assignedAt: Date | null;
 
   @Column({ type: 'datetime', nullable: true })
-  lastvisit?: Date | null = new Date();
+  lastvisit: Date | null;
 
   @Column({ type: 'datetime', nullable: true })
-  retainedFrom?: Date | null = new Date();
+  retainedFrom: Date | null;
 
   @ManyToOne(() => AttachmentOrmEntity, {
     nullable: true,
@@ -107,9 +107,9 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
   readonly avatarId?: string | null;
 
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   channel!: SubscriberChannelData;
 
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   context: SubscriberContext = { vars: {} };
 }

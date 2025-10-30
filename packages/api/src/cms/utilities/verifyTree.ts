@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Menu } from '../schemas/menu.schema';
+import { Menu } from '../dto/menu.dto';
 import { AnyMenu, MenuTree, MenuType } from '../types/menu-types';
 
 const verifyMenu = (

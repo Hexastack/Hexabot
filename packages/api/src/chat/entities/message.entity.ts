@@ -63,7 +63,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   @RelationId((message: MessageOrmEntity) => message.sentBy)
   readonly sentById?: string | null;
 
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   message!: StdOutgoingMessage | StdIncomingMessage;
 
   @Column({ default: false })

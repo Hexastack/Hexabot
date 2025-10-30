@@ -34,7 +34,7 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   location!: string;
 
-  @Column({ type: 'simple-json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   channel?: Partial<Record<ChannelName, any>>;
 
   @Column({ name: 'created_by', type: 'varchar', nullable: true })

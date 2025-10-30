@@ -28,7 +28,6 @@ import {
 } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
-import { Context } from '../types/context';
 import { SubscriberContext } from '../types/subscriberContext';
 
 import { Label } from './label.dto';
@@ -42,23 +41,18 @@ export class SubscriberStub extends BaseStub {
   last_name!: string;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   locale: string | null;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  timezone: number;
+  timezone: number = 0;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   language: string | null;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   gender: string | null;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   country: string | null;
 
   @Expose()
@@ -89,10 +83,10 @@ export class Subscriber extends SubscriberStub {
   labels!: string[];
 
   @Expose({ name: 'assignedToId' })
-  assignedTo?: string | null;
+  assignedTo: string | null;
 
   @Expose({ name: 'avatarId' })
-  avatar?: string | null;
+  avatar: string | null;
 }
 
 @Exclude()
@@ -103,11 +97,11 @@ export class SubscriberFull extends SubscriberStub {
 
   @Expose()
   @Type(() => User)
-  assignedTo?: User | null;
+  assignedTo: User | null;
 
   @Expose()
   @Type(() => Attachment)
-  avatar?: Attachment | null;
+  avatar: Attachment | null;
 }
 
 export class SubscriberCreateDto {
@@ -124,32 +118,32 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
   @IsString()
-  locale?: string;
+  locale: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber timezone', type: Number })
   @IsOptional()
   @IsNumber()
-  timezone?: number;
+  timezone: number;
 
   @ApiPropertyOptional({ description: 'Subscriber language', type: String })
   @IsNotEmpty()
   @IsString()
-  language: string;
+  language: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber gender', type: String })
   @IsOptional()
   @IsString()
-  gender?: string;
+  gender: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber country', type: String })
   @IsOptional()
   @IsString()
-  country?: string;
+  country: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreign_id?: string;
+  foreign_id: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsNotEmpty()
@@ -182,7 +176,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  lastvisit: Date;
+  lastvisit: Date | null;
 
   @ApiPropertyOptional({
     description: 'Subscriber retained from',
@@ -213,7 +207,7 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Context', type: Object })
   @IsOptional()
   @IsObject()
-  context?: Pick<Context, 'vars'>;
+  context: SubscriberContext;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

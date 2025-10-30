@@ -152,7 +152,7 @@ export const installSubscriberFixturesTypeOrm = async (
         language: rest.language ?? null,
         gender: rest.gender ?? null,
         country: rest.country ?? null,
-        foreign_id: rest.foreign_id ?? null,
+        foreign_id: rest.foreign_id,
         assignedAt: rest.assignedAt ?? null,
         lastvisit: rest.lastvisit ?? new Date(),
         retainedFrom: rest.retainedFrom ?? new Date(),

@@ -16,6 +16,7 @@ import {
 import { isUUID } from 'class-validator';
 import { Request } from 'express';
 import qs from 'qs';
+import { FindOneOptions, In } from 'typeorm';
 
 import { User } from '@/user/dto/user.dto';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
@@ -23,7 +24,6 @@ import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
@@ -150,16 +150,16 @@ export class AttachmentGuard implements CanActivate {
       return false;
     }
 
-    const filter: TFilterQuery<PermissionOrmEntity> = {
-      roleId: { $in: roleIds },
+    const where: FindOneOptions<PermissionOrmEntity>['where'] = {
+      roleId: In(roleIds),
       modelId: model.id,
     };
 
     if (action) {
-      filter.action = action;
+      where.action = action;
     }
 
-    const permission = await this.permissionService.findOne(filter as any);
+    const permission = await this.permissionService.findOne({ where });
 
     return !!permission;
   }

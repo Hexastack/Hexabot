@@ -6,17 +6,17 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseSeeder } from '@/utils/generics/base-seeder';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { Category, CategoryDto } from '../dto/category.dto';
+import { CategoryDtoConfig, CategoryTransformerDto } from '../dto/category.dto';
+import { CategoryOrmEntity } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
 
 @Injectable()
-export class CategorySeeder extends BaseSeeder<
-  Category,
-  never,
-  never,
-  CategoryDto
+export class CategorySeeder extends BaseOrmSeeder<
+  CategoryOrmEntity,
+  CategoryTransformerDto,
+  CategoryDtoConfig
 > {
   constructor(private readonly categoryRepository: CategoryRepository) {
     super(categoryRepository);

@@ -14,6 +14,6 @@ export class TranslationOrmEntity extends BaseOrmEntity {
   @Index()
   str!: string;
 
-  @Column({ type: 'simple-json' })
+  @Column({ type: 'jsonb' })
   translations!: Record<string, string>;
 }
