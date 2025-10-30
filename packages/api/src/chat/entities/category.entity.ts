@@ -23,7 +23,7 @@ export class CategoryOrmEntity extends BaseOrmEntity {
   @Column({ type: 'integer', default: 100 })
   zoom!: number;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   offset: [number, number] = [0, 0];
 
   @OneToMany(() => BlockOrmEntity, (block) => block.category)

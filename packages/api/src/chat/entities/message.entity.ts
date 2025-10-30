@@ -27,7 +27,7 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 )
 @Entity({ name: 'messages' })
 export class MessageOrmEntity extends BaseOrmEntity {
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;
 
   @ManyToOne(() => SubscriberOrmEntity, {
@@ -63,7 +63,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   @RelationId((message: MessageOrmEntity) => message.sentBy)
   readonly sentById?: string | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   message!: StdOutgoingMessage | StdIncomingMessage;
 
   @Column({ default: false })

@@ -14,6 +14,6 @@ export class MetadataOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   value!: any;
 }

@@ -22,7 +22,7 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'jsonb', nullable: false })
+  @Column({ type: 'json', nullable: false })
   lookups: Lookup[] = [LookupStrategy.keywords as Lookup];
 
   @Column({ type: 'text', nullable: true })

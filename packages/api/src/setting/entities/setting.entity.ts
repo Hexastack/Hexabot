@@ -25,16 +25,16 @@ export class SettingOrmEntity extends BaseOrmEntity {
   @Index()
   label!: string;
 
-  @Column({ type: 'enum', enum: SettingType })
+  @Column({ type: 'simple-enum', enum: SettingType })
   type!: SettingType;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   value: any;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   options?: string[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   config?: Record<string, any>;
 
   @Column({ default: 0 })

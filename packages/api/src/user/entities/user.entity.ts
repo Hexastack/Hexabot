@@ -88,7 +88,7 @@ export class UserOrmEntity extends BaseOrmEntity {
   @Column({ name: 'reset_token', nullable: true, type: 'text' })
   resetToken?: string | null;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   provider?: UserProvider;
 
   @BeforeInsert()

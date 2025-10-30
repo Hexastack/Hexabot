@@ -39,7 +39,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   @Column({ default: true })
   active!: boolean;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   context: Context = getDefaultConversationContext();
 
   @ManyToOne(() => BlockOrmEntity, {
@@ -60,7 +60,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
     inverseJoinColumn: { name: 'block_id' },
   })
   @AsRelation({ allowArray: true })
-  next: BlockOrmEntity[] = [];
+  next: BlockOrmEntity[];
 
   @RelationId((conversation: ConversationOrmEntity) => conversation.next)
   readonly nextBlockIds!: string[];

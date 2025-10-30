@@ -19,7 +19,7 @@ export class ContentTypeOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   name!: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   fields!: ContentField[] | null;
 
   @OneToMany(() => ContentOrmEntity, (content) => content.contentType, {

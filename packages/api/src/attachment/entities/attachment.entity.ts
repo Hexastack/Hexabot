@@ -34,7 +34,7 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   location!: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   channel?: Partial<Record<ChannelName, any>>;
 
   @Column({ name: 'created_by', type: 'varchar', nullable: true })
@@ -42,7 +42,7 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
 
   @Column({
     name: 'created_by_ref',
-    type: 'enum',
+    type: 'simple-enum',
     enum: AttachmentCreatedByRef,
     nullable: true,
   })
@@ -50,12 +50,12 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
 
   @Column({
     name: 'resource_ref',
-    type: 'enum',
+    type: 'simple-enum',
     enum: AttachmentResourceRef,
   })
   resourceRef!: AttachmentResourceRef;
 
-  @Column({ type: 'enum', enum: AttachmentAccess })
+  @Column({ type: 'simple-enum', enum: AttachmentAccess })
   access!: AttachmentAccess;
 
   @Expose()

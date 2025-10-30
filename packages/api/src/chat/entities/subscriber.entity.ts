@@ -107,9 +107,9 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
   readonly avatarId?: string | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   channel!: SubscriberChannelData;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   context: SubscriberContext = { vars: {} };
 }

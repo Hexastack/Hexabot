@@ -49,10 +49,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   patterns: Pattern[] = [];
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   outcomes: string[] = [];
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.triggerBlocks, {
@@ -83,13 +83,13 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @RelationId((block: BlockOrmEntity) => block.assign_labels)
   readonly assignLabelIds!: string[];
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   trigger_channels: string[] = [];
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   options: BlockOptions = {} as BlockOptions;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   message!: BlockMessage;
 
   @ManyToMany(() => BlockOrmEntity, (block) => block.previousBlocks, {
@@ -139,10 +139,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column({ default: false })
   starts_conversation!: boolean;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   capture_vars: CaptureVar[] = [];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   position?: Position | null;
 
   @Column({ default: false })
