@@ -173,7 +173,7 @@ export class NlpSampleController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<NlpSampleOrmEntity>({
-        allowedFields: ['text', 'type', 'languageId'],
+        allowedFields: ['text', 'type', 'language.id'],
       }),
     )
     options: FindManyOptions<NlpSampleOrmEntity> = {},
@@ -289,7 +289,7 @@ export class NlpSampleController extends BaseOrmController<
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<NlpSampleOrmEntity>({
-        allowedFields: ['text', 'type', 'languageId'],
+        allowedFields: ['text', 'type', 'language.id'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )

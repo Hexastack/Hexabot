@@ -39,7 +39,7 @@ export class InvitationOrmEntity extends BaseOrmEntity {
   roles!: RoleOrmEntity[];
 
   @RelationId((invitation: InvitationOrmEntity) => invitation.roles)
-  readonly roleIds!: string[];
+  private readonly roleIds!: string[];
 
   @BeforeInsert()
   @BeforeUpdate()

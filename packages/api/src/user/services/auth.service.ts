@@ -7,9 +7,12 @@
 import { Injectable } from '@nestjs/common';
 import { compareSync } from 'bcryptjs';
 
+import { DtoTransformer } from '@/utils/types/dto.types';
+
 import { User } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { hash } from '../utilities/bcryptjs';
+
 import { UserService } from './user.service';
 
 @Injectable()
@@ -46,25 +49,9 @@ export class AuthService {
         return dto;
       }
 
-      return {
-        id: entity.id,
-        username: entity.username,
-        first_name: entity.first_name,
-        last_name: entity.last_name,
-        email: entity.email,
-        roles: entity.roleIds ?? [],
-        avatar: entity.avatarId ?? null,
-        sendEmail: entity.sendEmail,
-        state: entity.state,
-        language: entity.language,
-        timezone: entity.timezone,
-        resetCount: entity.resetCount,
-        resetToken: entity.resetToken ?? null,
-        provider: entity.provider,
-        password: undefined,
-        createdAt: entity.createdAt,
-        updatedAt: entity.updatedAt,
-      } as User;
+      return this.userRepository.getTransformer(DtoTransformer.PlainCls)(
+        entity,
+      );
     }
     return null;
   }

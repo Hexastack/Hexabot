@@ -202,14 +202,14 @@ export class SubscriberService extends BaseOrmService<
         this.labelService.find({
           where: {
             id: In(labelsToPush),
-            groupId: Not(IsNull()),
+            group: { id: Not(IsNull()) },
           },
         }),
         // Retrieve existing mutex group labels (if any)
         this.labelService.find({
           where: {
             id: In(subscriber.labels),
-            groupId: Not(IsNull()),
+            group: { id: Not(IsNull()) },
           },
         }),
       ]);

@@ -186,7 +186,7 @@ describe('BotStatsService', () => {
         assignedTo: null,
         assignedToId: null,
         ...partial,
-      } as unknown as SubscriberOrmEntity);
+      }) as unknown as SubscriberOrmEntity;
 
     const buildEvent = ({
       entity,
@@ -207,12 +207,15 @@ describe('BotStatsService', () => {
             }) as any,
         ),
         updatedRelations: [],
-      } as unknown as UpdateEvent<SubscriberOrmEntity>);
+      }) as unknown as UpdateEvent<SubscriberOrmEntity>;
 
     it('should emit passation analytics when subscriber gets newly assigned', () => {
       const emitSpy = jest.spyOn(eventBus, 'emit');
       const event = buildEvent({
-        entity: { assignedTo: { id: 'user-id' } as any, assignedToId: 'user-id' },
+        entity: {
+          assignedTo: { id: 'user-id' } as any,
+          assignedToId: 'user-id',
+        },
         databaseEntity: { assignedTo: null, assignedToId: null },
       });
 

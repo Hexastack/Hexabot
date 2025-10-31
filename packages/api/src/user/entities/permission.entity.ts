@@ -33,7 +33,7 @@ export class PermissionOrmEntity extends BaseOrmEntity {
   model!: ModelOrmEntity;
 
   @RelationId((permission: PermissionOrmEntity) => permission.model)
-  readonly modelId!: string;
+  private readonly modelId!: string;
 
   @Column({ type: 'simple-enum', enum: Action })
   action!: Action;
@@ -46,7 +46,7 @@ export class PermissionOrmEntity extends BaseOrmEntity {
   role!: RoleOrmEntity;
 
   @RelationId((permission: PermissionOrmEntity) => permission.role)
-  readonly roleId!: string;
+  private readonly roleId!: string;
 
   @Column({ default: 'role' })
   relation!: TRelation;

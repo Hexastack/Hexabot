@@ -66,9 +66,9 @@ export class MessageController extends BaseOrmController<
     @Query(
       new TypeOrmSearchFilterPipe<MessageOrmEntity>({
         allowedFields: [
-          'senderId',
-          'recipientId',
-          'sentById',
+          'sender.id',
+          'recipient.id',
+          'sentBy.id',
           'mid',
           'read',
           'delivery',
@@ -94,9 +94,9 @@ export class MessageController extends BaseOrmController<
     @Query(
       new TypeOrmSearchFilterPipe<MessageOrmEntity>({
         allowedFields: [
-          'senderId',
-          'recipientId',
-          'sentById',
+          'sender.id',
+          'recipient.id',
+          'sentBy.id',
           'mid',
           'read',
           'delivery',

@@ -38,7 +38,7 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   entity!: NlpEntityOrmEntity;
 
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.entity)
-  readonly entityId!: string;
+  private readonly entityId!: string;
 
   @ManyToOne(() => NlpValueOrmEntity, (value) => value.sampleEntities, {
     nullable: false,
@@ -49,7 +49,7 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   value!: NlpValueOrmEntity;
 
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.value)
-  readonly valueId!: string;
+  private readonly valueId!: string;
 
   @ManyToOne(() => NlpSampleOrmEntity, (sample) => sample.entities, {
     nullable: false,
@@ -60,5 +60,5 @@ export class NlpSampleEntityOrmEntity extends BaseOrmEntity {
   sample!: NlpSampleOrmEntity;
 
   @RelationId((sampleEntity: NlpSampleEntityOrmEntity) => sampleEntity.sample)
-  readonly sampleId!: string;
+  private readonly sampleId!: string;
 }

@@ -25,16 +25,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Unable to login, check credentials');
     }
 
-    return Object.entries(user)
-      .filter(
-        ([field]) => !field.startsWith('_') && !field.startsWith('password'),
-      )
-      .reduce(
-        (acc, [field, value]) => ({
-          ...acc,
-          ...{ [field]: value },
-        }),
-        {},
-      );
+    return user;
   }
 }

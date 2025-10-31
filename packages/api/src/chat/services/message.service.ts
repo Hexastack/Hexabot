@@ -118,7 +118,10 @@ export class MessageService extends BaseOrmService<
     limit: number = 5,
   ): Promise<Message[]> {
     const lastMessages = await this.find({
-      where: [{ senderId: subscriber.id }, { recipientId: subscriber.id }],
+      where: [
+        { sender: { id: subscriber.id } },
+        { recipient: { id: subscriber.id } },
+      ],
       order: { createdAt: 'DESC' },
       take: limit,
     });

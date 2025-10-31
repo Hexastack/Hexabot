@@ -67,7 +67,7 @@ export class BlockOrmEntity extends BaseOrmEntity {
   trigger_labels: LabelOrmEntity[];
 
   @RelationId((block: BlockOrmEntity) => block.trigger_labels)
-  readonly triggerLabelIds!: string[];
+  private readonly triggerLabelIds!: string[];
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.assignedBlocks, {
     cascade: false,
@@ -81,7 +81,7 @@ export class BlockOrmEntity extends BaseOrmEntity {
   assign_labels: LabelOrmEntity[];
 
   @RelationId((block: BlockOrmEntity) => block.assign_labels)
-  readonly assignLabelIds!: string[];
+  private readonly assignLabelIds!: string[];
 
   @Column({ type: 'json' })
   trigger_channels: string[] = [];
@@ -104,7 +104,7 @@ export class BlockOrmEntity extends BaseOrmEntity {
   nextBlocks: BlockOrmEntity[];
 
   @RelationId((block: BlockOrmEntity) => block.nextBlocks)
-  readonly nextBlockIds!: string[];
+  private readonly nextBlockIds!: string[];
 
   @ManyToMany(() => BlockOrmEntity, (block) => block.nextBlocks)
   @AsRelation({ allowArray: true })
@@ -119,7 +119,7 @@ export class BlockOrmEntity extends BaseOrmEntity {
   attachedBlock?: BlockOrmEntity | null;
 
   @RelationId((block: BlockOrmEntity) => block.attachedBlock)
-  readonly attachedBlockId?: string | null;
+  private readonly attachedBlockId?: string | null;
 
   @OneToOne(() => BlockOrmEntity, (block) => block.attachedBlock)
   @AsRelation()
@@ -131,10 +131,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
   })
   @JoinColumn({ name: 'category_id' })
   @AsRelation()
-  category?: CategoryOrmEntity | null;
+  category: CategoryOrmEntity | null;
 
   @RelationId((block: BlockOrmEntity) => block.category)
-  readonly categoryId?: string | null;
+  private readonly categoryId: string | null;
 
   @Column({ default: false })
   starts_conversation!: boolean;

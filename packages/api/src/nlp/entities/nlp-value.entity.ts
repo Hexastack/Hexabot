@@ -52,7 +52,7 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
   entity!: NlpEntityOrmEntity;
 
   @RelationId((value: NlpValueOrmEntity) => value.entity)
-  readonly entityId!: string;
+  private readonly entityId!: string;
 
   @OneToMany(
     () => NlpSampleEntityOrmEntity,

@@ -43,10 +43,7 @@ export type PageQueryParams = {
 };
 
 type TypeOrmSearchFilterPipeConfig<T> = {
-  allowedFields: TFilterNestedKeysOfType<
-    T,
-    null | undefined | string | string[] | boolean
-  >[];
+  allowedFields: TFilterNestedKeysOfType<T>[];
   defaultSort?: QuerySortDto<T>;
 };
 
@@ -239,14 +236,7 @@ export class TypeOrmSearchFilterPipe<T>
   }
 
   private isAllowedField(field: string): boolean {
-    if (
-      this.allowedFields.includes(
-        field as TFilterNestedKeysOfType<
-          T,
-          null | undefined | string | string[] | boolean
-        >,
-      )
-    ) {
+    if (this.allowedFields.includes(field as TFilterNestedKeysOfType<T>)) {
       return true;
     }
     Logger.warn(`Field ${field} is not allowed`);

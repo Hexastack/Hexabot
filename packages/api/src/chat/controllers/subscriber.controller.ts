@@ -65,8 +65,7 @@ export class SubscriberController extends BaseOrmController<
         allowedFields: [
           'first_name',
           'last_name',
-          'assignedToId',
-          'labelIds',
+          'assignedTo.id',
           'channel.name',
         ],
         defaultSort: ['createdAt', 'desc'],
@@ -93,8 +92,7 @@ export class SubscriberController extends BaseOrmController<
         allowedFields: [
           'first_name',
           'last_name',
-          'assignedToId',
-          'labelIds',
+          'assignedTo.id',
           'channel.name',
         ],
       }),

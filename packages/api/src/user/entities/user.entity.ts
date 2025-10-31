@@ -54,7 +54,7 @@ export class UserOrmEntity extends BaseOrmEntity {
   avatar?: AttachmentOrmEntity | null;
 
   @RelationId((user: UserOrmEntity) => user.avatar)
-  readonly avatarId?: string | null;
+  private readonly avatarId?: string | null;
 
   @ManyToMany(() => RoleOrmEntity, (role) => role.users, {
     cascade: false,
@@ -68,7 +68,7 @@ export class UserOrmEntity extends BaseOrmEntity {
   roles!: RoleOrmEntity[];
 
   @RelationId((user: UserOrmEntity) => user.roles)
-  readonly roleIds!: string[];
+  private readonly roleIds!: string[];
 
   @Column({ name: 'send_email', default: false })
   sendEmail!: boolean;

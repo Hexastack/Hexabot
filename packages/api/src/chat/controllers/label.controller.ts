@@ -72,7 +72,7 @@ export class LabelController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<LabelOrmEntity>({
-        allowedFields: ['name', 'title', 'builtin', 'groupId'],
+        allowedFields: ['name', 'title', 'builtin', 'group.id'],
       }),
     )
     options?: FindManyOptions<LabelOrmEntity>,

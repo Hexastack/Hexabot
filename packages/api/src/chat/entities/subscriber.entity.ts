@@ -74,7 +74,7 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   labels: LabelOrmEntity[];
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.labels)
-  readonly labelIds!: string[];
+  private readonly labelIds!: string[];
 
   @ManyToOne(() => UserOrmEntity, {
     nullable: true,
@@ -85,7 +85,7 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   assignedTo?: UserOrmEntity | null;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.assignedTo)
-  readonly assignedToId?: string | null;
+  private readonly assignedToId?: string | null;
 
   @Column({ type: 'datetime', nullable: true })
   assignedAt: Date | null;
@@ -105,7 +105,7 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   avatar?: AttachmentOrmEntity | null;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
-  readonly avatarId?: string | null;
+  private readonly avatarId?: string | null;
 
   @Column({ type: 'json' })
   channel!: SubscriberChannelData;

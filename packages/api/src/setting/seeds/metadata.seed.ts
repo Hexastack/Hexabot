@@ -30,7 +30,7 @@ export class MetadataSeeder extends BaseOrmSeeder<
     for (const model of models) {
       await this.repository.updateOne(
         { where: { name: model.name } },
-        { value: model.value },
+        { name: model.name, value: model.value },
         { upsert: true },
       );
     }

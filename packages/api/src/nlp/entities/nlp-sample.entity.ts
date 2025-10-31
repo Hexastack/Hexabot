@@ -45,7 +45,7 @@ export class NlpSampleOrmEntity extends BaseOrmEntity {
   language?: LanguageOrmEntity | null;
 
   @RelationId((sample: NlpSampleOrmEntity) => sample.language)
-  readonly languageId?: string | null;
+  private readonly languageId?: string | null;
 
   @OneToMany(() => NlpSampleEntityOrmEntity, (entity) => entity.sample)
   entities?: NlpSampleEntityOrmEntity[];

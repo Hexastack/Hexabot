@@ -40,7 +40,7 @@ export class LabelOrmEntity extends BaseOrmEntity {
   group?: LabelGroupOrmEntity | null;
 
   @RelationId((label: LabelOrmEntity) => label.group)
-  readonly groupId?: string | null;
+  private readonly groupId?: string | null;
 
   @Column({ type: 'json', nullable: true })
   label_id?: Record<string, any> | null;

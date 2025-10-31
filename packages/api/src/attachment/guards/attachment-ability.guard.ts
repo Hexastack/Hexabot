@@ -151,8 +151,8 @@ export class AttachmentGuard implements CanActivate {
     }
 
     const where: FindOneOptions<PermissionOrmEntity>['where'] = {
-      roleId: In(roleIds),
-      modelId: model.id,
+      role: { id: In(roleIds) },
+      model: { id: model.id },
     };
 
     if (action) {

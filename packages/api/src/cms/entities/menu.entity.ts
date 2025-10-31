@@ -58,7 +58,7 @@ export class MenuOrmEntity extends BaseOrmEntity {
   parent?: MenuOrmEntity | null;
 
   @RelationId((value: MenuOrmEntity) => value.parent)
-  readonly parentId?: string | null;
+  private readonly parentId?: string | null;
 
   /**
    * Type of the menu item, one of: web_url, postback, nested.

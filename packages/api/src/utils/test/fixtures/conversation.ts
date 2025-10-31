@@ -226,9 +226,6 @@ export const installConversationFixturesTypeOrm = async (
           retainedFrom: senderEntity.retainedFrom ?? null,
           channel: senderEntity.channel,
           context: senderEntity.context,
-          labels: senderEntity.labelIds ?? [],
-          assignedTo: senderEntity.assignedToId ?? null,
-          avatar: senderEntity.avatarId ?? null,
         },
       };
 

@@ -170,7 +170,7 @@ export const installContentFixturesTypeOrm = async (
     order: { name: 'ASC' },
   });
   const entities = contentOrmFixtures.map(
-    ({ contentTypeId: entity, ...fixture }) => {
+    ({ contentType: entity, ...fixture }) => {
       const index = Number(entity);
       const fallbackName =
         !Number.isNaN(index) && contentTypeOrmFixtures[index]

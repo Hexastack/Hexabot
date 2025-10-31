@@ -34,7 +34,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   sender!: SubscriberOrmEntity;
 
   @RelationId((conversation: ConversationOrmEntity) => conversation.sender)
-  readonly senderId!: string;
+  private readonly senderId!: string;
 
   @Column({ default: true })
   active!: boolean;
@@ -51,7 +51,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   current: BlockOrmEntity | null;
 
   @RelationId((conversation: ConversationOrmEntity) => conversation.current)
-  readonly currentBlockId?: string | null;
+  private readonly currentBlockId?: string | null;
 
   @ManyToMany(() => BlockOrmEntity)
   @JoinTable({
@@ -63,5 +63,5 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   next: BlockOrmEntity[];
 
   @RelationId((conversation: ConversationOrmEntity) => conversation.next)
-  readonly nextBlockIds!: string[];
+  private readonly nextBlockIds!: string[];
 }

@@ -40,7 +40,7 @@ export class ContentOrmEntity extends BaseOrmEntity {
   contentType!: ContentTypeOrmEntity;
 
   @RelationId((value: ContentOrmEntity) => value.contentType)
-  readonly contentTypeId!: string;
+  private readonly contentTypeId!: string;
 
   /**
    * The title of the content.

@@ -39,7 +39,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   sender?: SubscriberOrmEntity | null;
 
   @RelationId((message: MessageOrmEntity) => message.sender)
-  readonly senderId?: string | null;
+  private readonly senderId?: string | null;
 
   @ManyToOne(() => SubscriberOrmEntity, {
     nullable: true,
@@ -50,7 +50,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   recipient?: SubscriberOrmEntity | null;
 
   @RelationId((message: MessageOrmEntity) => message.recipient)
-  readonly recipientId?: string | null;
+  private readonly recipientId?: string | null;
 
   @ManyToOne(() => UserOrmEntity, {
     nullable: true,
@@ -61,7 +61,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   sentBy?: UserOrmEntity | null;
 
   @RelationId((message: MessageOrmEntity) => message.sentBy)
-  readonly sentById?: string | null;
+  private readonly sentById?: string | null;
 
   @Column({ type: 'json' })
   message!: StdOutgoingMessage | StdIncomingMessage;

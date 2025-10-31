@@ -92,7 +92,12 @@ export class BlockController extends BaseOrmController<
     populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<BlockOrmEntity>({
-        allowedFields: ['categoryId', 'name', 'starts_conversation', 'builtin'],
+        allowedFields: [
+          'category.id',
+          'name',
+          'starts_conversation',
+          'builtin',
+        ],
         defaultSort: ['createdAt', 'desc'],
       }),
     )

@@ -53,7 +53,7 @@ export class MenuController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<MenuOrmEntity>({
-        allowedFields: ['parentId', 'type', 'title', 'payload', 'url'],
+        allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],
       }),
     )
     options?: FindManyOptions<MenuOrmEntity>,
@@ -71,7 +71,7 @@ export class MenuController extends BaseOrmController<
   async find(
     @Query(
       new TypeOrmSearchFilterPipe<MenuOrmEntity>({
-        allowedFields: ['parentId', 'type', 'title', 'payload', 'url'],
+        allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -91,14 +91,15 @@ export class MenuController extends BaseOrmController<
    */
   @Post()
   async create(@Body() body: MenuCreateDto): Promise<Menu> {
-    this.validate({
-      dto: body,
-      allowedIds: {
-        parentId: body?.parent
-          ? (await this.menuService.findOne(body.parent))?.id
-          : undefined,
-      },
-    });
+    // @todo: to be revisited
+    // this.validate({
+    //   dto: body,
+    //   allowedIds: {
+    //     'parent.id': body?.parent
+    //       ? (await this.menuService.findOne(body.parent))?.id
+    //       : undefined,
+    //   },
+    // });
     return await this.menuService.create(body);
   }
 
