@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { InsertEvent, UpdateEvent } from 'typeorm';
 
@@ -34,7 +34,6 @@ export class BotStatsService extends BaseOrmService<
 > {
   constructor(
     readonly repository: BotStatsRepository,
-    private readonly eventBus: EventEmitter2,
     private readonly logger: LoggerService,
   ) {
     super(repository);
@@ -51,7 +50,7 @@ export class BotStatsService extends BaseOrmService<
       exposeUnsetFields: false,
     });
 
-    this.eventBus.emit(
+    this.eventEmitter.emit(
       'hook:stats:entry',
       BotStatsType.new_users,
       'New users',
@@ -68,23 +67,8 @@ export class BotStatsService extends BaseOrmService<
       return;
     }
 
-    const updatedColumns = event.updatedColumns ?? [];
-    const updatedRelations = event.updatedRelations ?? [];
-    const assignmentUpdated =
-      updatedColumns.some(
-        ({ propertyName }) =>
-          propertyName === 'assignedToId' || propertyName === 'assignedTo',
-      ) ||
-      updatedRelations.some(
-        ({ propertyName }) => propertyName === 'assignedTo',
-      );
-
-    if (!assignmentUpdated) {
-      return;
-    }
-
-    const newAssignedTo = entity?.id;
-    const previousAssignedTo = previous?.id;
+    const newAssignedTo = entity.assignedTo?.id;
+    const previousAssignedTo = previous.assignedTo?.id;
 
     if (newAssignedTo === previousAssignedTo) {
       return;
@@ -102,7 +86,7 @@ export class BotStatsService extends BaseOrmService<
     });
 
     if (previousSubscriber) {
-      this.eventBus.emit(
+      this.eventEmitter.emit(
         'hook:analytics:passation',
         previousSubscriber,
         newAssignmentExists,
@@ -156,7 +140,7 @@ export class BotStatsService extends BaseOrmService<
     if (subscriber.lastvisit) {
       // A loyal subscriber is a subscriber that comes back after some inactivity
       if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
-        this.eventBus.emit(
+        this.eventEmitter.emit(
           'hook:stats:entry',
           BotStatsType.returning_users,
           'Loyalty',
@@ -166,7 +150,7 @@ export class BotStatsService extends BaseOrmService<
 
       // Returning subscriber is a subscriber that comes back after some inactivity
       if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
-        this.eventBus.emit(
+        this.eventEmitter.emit(
           'hook:stats:entry',
           BotStatsType.returning_users,
           'Returning users',
@@ -179,7 +163,7 @@ export class BotStatsService extends BaseOrmService<
       subscriber.retainedFrom &&
       now - +subscriber.retainedFrom > config.analytics.thresholds.retention
     ) {
-      this.eventBus.emit(
+      this.eventEmitter.emit(
         'hook:stats:entry',
         BotStatsType.retention,
         'Retentioned users',

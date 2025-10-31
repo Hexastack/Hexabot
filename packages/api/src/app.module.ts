@@ -82,6 +82,7 @@ const i18nOptions: I18nOptions = {
     LoggerModule,
     WebsocketModule,
     EventEmitterModule.forRoot({
+      global: true,
       // set this to `true` to use wildcards
       wildcard: true,
       // the delimiter used to segment namespaces

@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -35,10 +34,10 @@ export abstract class BaseOrmService<
     ActionDto
   > = BaseOrmRepository<Entity, TransformerDto, ActionDto>,
 > {
-  readonly eventEmitter: EventEmitter2;
+  protected constructor(protected readonly repository: OrmRepository) {}
 
-  protected constructor(protected readonly repository: OrmRepository) {
-    this.eventEmitter = repository.getEventEmitter();
+  get eventEmitter() {
+    return this.repository.getEventEmitter();
   }
 
   getRepository(): OrmRepository {

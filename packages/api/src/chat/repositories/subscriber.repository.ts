@@ -51,8 +51,7 @@ export class SubscriberRepository extends BaseOrmRepository<
       const updatedRelations = event.updatedRelations ?? [];
       const assignmentUpdated =
         updatedColumns.some(
-          ({ propertyName }) =>
-            propertyName === 'assignedToId' || propertyName === 'assignedTo',
+          ({ propertyName }) => propertyName === 'assignedTo',
         ) ||
         updatedRelations.some(
           ({ propertyName }) => propertyName === 'assignedTo',
