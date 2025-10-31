@@ -6,6 +6,9 @@
 
 import { TestingModule } from '@nestjs/testing';
 
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { BlockService } from '@/chat/services/block.service';
 import { FieldType } from '@/setting/types';
 import {
@@ -41,7 +44,13 @@ describe('ContentTypeService (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [ContentTypeOrmEntity, ContentOrmEntity],
+        entities: [
+          ContentTypeOrmEntity,
+          ContentOrmEntity,
+          BlockOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+        ],
         fixtures: installContentTypeFixturesTypeOrm,
       },
     });

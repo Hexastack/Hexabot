@@ -169,33 +169,42 @@ export const installContentFixturesTypeOrm = async (
   const contentTypes = await contentTypeRepository.find({
     order: { name: 'ASC' },
   });
-  const entities = contentOrmFixtures.map(
-    ({ contentType: entity, ...fixture }) => {
-      const index = Number(entity);
-      const fallbackName =
-        !Number.isNaN(index) && contentTypeOrmFixtures[index]
-          ? contentTypeOrmFixtures[index].name
-          : undefined;
-      const target = contentTypes.find(
-        (type) =>
-          type.id === entity ||
-          type.name === entity ||
-          (fallbackName ? type.name === fallbackName : false),
+  const entities = contentOrmFixtures.map((fixture) => {
+    const {
+      contentTypeId: rawContentTypeId,
+      contentType: rawContentType,
+      ...rest
+    } = fixture as DeepPartial<ContentOrmEntity> & {
+      contentTypeId?: string;
+      contentType?: unknown;
+    };
+    const entity =
+      rawContentTypeId ??
+      (typeof rawContentType === 'string' ? rawContentType : undefined);
+    const index = Number(entity);
+    const fallbackName =
+      !Number.isNaN(index) && contentTypeOrmFixtures[index]
+        ? contentTypeOrmFixtures[index].name
+        : undefined;
+    const target = contentTypes.find(
+      (type) =>
+        type.id === entity ||
+        type.name === entity ||
+        (fallbackName ? type.name === fallbackName : false),
+    );
+
+    if (!target) {
+      throw new Error(
+        `Unable to resolve content type for fixture contentType reference: ${entity}`,
       );
+    }
 
-      if (!target) {
-        throw new Error(
-          `Unable to resolve content type for fixture contentType: ${entity}`,
-        );
-      }
-
-      return contentRepository.create({
-        ...fixture,
-        contentType: target,
-        contentTypeId: target.id,
-      });
-    },
-  );
+    return contentRepository.create({
+      ...rest,
+      contentType: target,
+      contentTypeId: target.id,
+    });
+  });
 
   await contentRepository.save(entities);
 };
