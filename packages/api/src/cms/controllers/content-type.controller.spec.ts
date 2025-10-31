@@ -7,9 +7,19 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
 import { FieldType } from '@/setting/types';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contentTypeOrmFixtures,
   installContentTypeFixturesTypeOrm,
@@ -46,7 +56,20 @@ describe('ContentTypeController (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [ContentTypeOrmEntity, ContentOrmEntity],
+        entities: [
+          ContentTypeOrmEntity,
+          ContentOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
         fixtures: installContentTypeFixturesTypeOrm,
       },
     });

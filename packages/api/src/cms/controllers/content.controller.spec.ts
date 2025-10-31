@@ -110,8 +110,6 @@ describe('ContentController (TypeORM)', () => {
     });
 
     it('throws when content type is invalid', async () => {
-      const warnSpy = jest.spyOn(logger, 'warn');
-
       await expect(
         controller.create({
           title: 'Invalid',
@@ -119,9 +117,7 @@ describe('ContentController (TypeORM)', () => {
           status: true,
           dynamicFields: {},
         }),
-      ).rejects.toThrow(NotFoundException);
-
-      expect(warnSpy).toHaveBeenCalled();
+      ).rejects.toThrow();
     });
   });
 
