@@ -41,8 +41,7 @@ import { NlpEntityService } from '../services/nlp-entity.service';
 export class NlpEntityController extends BaseOrmController<
   NlpEntityOrmEntity,
   NlpEntityTransformerDto,
-  NlpEntityDtoConfig,
-  NlpEntity
+  NlpEntityDtoConfig
 > {
   constructor(private readonly nlpEntityService: NlpEntityService) {
     super(nlpEntityService);

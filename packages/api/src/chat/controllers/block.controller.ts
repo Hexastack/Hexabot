@@ -47,8 +47,7 @@ import { LabelService } from '../services/label.service';
 export class BlockController extends BaseOrmController<
   BlockOrmEntity,
   BlockTransformerDto,
-  BlockDtoConfig,
-  Block
+  BlockDtoConfig
 > {
   constructor(
     private readonly blockService: BlockService,
@@ -243,48 +242,7 @@ export class BlockController extends BaseOrmController<
    */
   @Post()
   async create(@Body() block: BlockCreateDto): Promise<Block> {
-    const category = block.category
-      ? await this.categoryService.findOne(block.category)
-      : null;
-    const attachedBlock = block.attachedBlock
-      ? await this.blockService.findOne(block.attachedBlock)
-      : null;
-    let nextBlockIds: string[] = [];
-    if (block.nextBlocks?.length) {
-      nextBlockIds = (
-        await this.blockService.find({
-          where: { id: In(block.nextBlocks) },
-        })
-      ).map(({ id }) => id);
-    }
-    let assignLabelIds: string[] = [];
-    if (block.assign_labels?.length) {
-      assignLabelIds = (
-        await this.labelService.find({
-          where: { id: In(block.assign_labels) },
-        })
-      ).map(({ id }) => id);
-    }
-    let triggerLabelIds: string[] = [];
-    if (block.trigger_labels?.length) {
-      triggerLabelIds = (
-        await this.labelService.find({
-          where: { id: In(block.trigger_labels) },
-        })
-      ).map(({ id }) => id);
-    }
-
-    this.validate({
-      dto: block,
-      allowedIds: {
-        categoryId: category?.id ?? null,
-        attachedBlockId: attachedBlock?.id ?? null,
-        nextBlockIds,
-        assignLabelIds,
-        triggerLabelIds,
-      },
-    });
-    // TODO: the validate function doesn't support nested objects, we need to refactor it to support nested objects
+    // TODO: typeorm fk constraint doesn't support nested objects, we need to refactor it to support nested objects
     if (block.options?.assignTo) {
       const user = await this.userService.findOne(block.options.assignTo);
       if (!user) {

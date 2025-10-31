@@ -37,8 +37,7 @@ import { ContextVarService } from '../services/context-var.service';
 export class ContextVarController extends BaseOrmController<
   ContextVarOrmEntity,
   ContextVarTransformerDto,
-  ContextVarDtoConfig,
-  ContextVar
+  ContextVarDtoConfig
 > {
   constructor(private readonly contextVarService: ContextVarService) {
     super(contextVarService);

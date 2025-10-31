@@ -36,8 +36,7 @@ import { SubscriberService } from '../services/subscriber.service';
 export class SubscriberController extends BaseOrmController<
   SubscriberOrmEntity,
   SubscriberTransformerDto,
-  SubscriberDtoConfig,
-  Subscriber
+  SubscriberDtoConfig
 > {
   constructor(
     private readonly subscriberService: SubscriberService,

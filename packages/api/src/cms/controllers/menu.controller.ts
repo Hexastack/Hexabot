@@ -91,15 +91,6 @@ export class MenuController extends BaseOrmController<
    */
   @Post()
   async create(@Body() body: MenuCreateDto): Promise<Menu> {
-    // @todo: to be revisited
-    // this.validate({
-    //   dto: body,
-    //   allowedIds: {
-    //     'parent.id': body?.parent
-    //       ? (await this.menuService.findOne(body.parent))?.id
-    //       : undefined,
-    //   },
-    // });
     return await this.menuService.create(body);
   }
 

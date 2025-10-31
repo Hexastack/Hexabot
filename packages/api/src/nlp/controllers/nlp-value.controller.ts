@@ -40,8 +40,7 @@ import { NlpValueService } from '../services/nlp-value.service';
 export class NlpValueController extends BaseOrmController<
   NlpValueOrmEntity,
   NlpValueTransformerDto,
-  NlpValueDtoConfig,
-  NlpValue
+  NlpValueDtoConfig
 > {
   constructor(
     protected readonly nlpValueService: NlpValueService,
@@ -64,16 +63,6 @@ export class NlpValueController extends BaseOrmController<
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = createNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
-      : null;
-
-    this.validate({
-      dto: createNlpValueDto,
-      allowedIds: {
-        entityId: nlpEntity?.id,
-      },
-    });
     return await this.nlpValueService.create(createNlpValueDto);
   }
 
@@ -164,22 +153,6 @@ export class NlpValueController extends BaseOrmController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = updateNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
-      : null;
-
-    const dtoToValidate = {
-      ...updateNlpValueDto,
-      entityId: updateNlpValueDto.entity,
-    };
-
-    this.validate({
-      dto: dtoToValidate,
-      allowedIds: {
-        entityId: nlpEntity?.id,
-      },
-    });
-
     return await this.nlpValueService.updateOne(id, updateNlpValueDto);
   }
 

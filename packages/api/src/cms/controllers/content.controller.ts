@@ -60,20 +60,6 @@ export class ContentController extends BaseOrmController<
    */
   @Post()
   async create(@Body() contentDto: ContentCreateDto): Promise<Content> {
-    // Find the content type that corresponds to the given content
-    const contentType = await this.contentTypeService.findOne(
-      contentDto.contentType,
-    );
-    if (!contentType) {
-      this.logger.warn(
-        `Failed to fetch content type with id ${contentDto.contentType}. Content type not found.`,
-      );
-      throw new NotFoundException('Content type not found');
-    }
-    this.validate({
-      dto: contentDto,
-      allowedIds: { contentType: contentType?.id } as any,
-    });
     return await this.contentService.create(contentDto);
   }
 

@@ -47,8 +47,7 @@ import {
 export class MessageController extends BaseOrmController<
   MessageOrmEntity,
   MessageTransformerDto,
-  MessageDtoConfig,
-  Message
+  MessageDtoConfig
 > {
   constructor(
     private readonly messageService: MessageService,

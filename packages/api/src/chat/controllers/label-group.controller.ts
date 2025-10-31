@@ -39,8 +39,7 @@ import { LabelGroupService } from '../services/label-group.service';
 export class LabelGroupController extends BaseOrmController<
   LabelGroupOrmEntity,
   LabelGroupTransformerDto,
-  LabelGroupDtoConfig,
-  LabelGroup
+  LabelGroupDtoConfig
 > {
   constructor(private readonly labelGroupService: LabelGroupService) {
     super(labelGroupService);

@@ -37,8 +37,7 @@ import { CategoryService } from '../services/category.service';
 export class CategoryController extends BaseOrmController<
   CategoryOrmEntity,
   CategoryTransformerDto,
-  CategoryDtoConfig,
-  Category
+  CategoryDtoConfig
 > {
   constructor(private readonly categoryService: CategoryService) {
     super(categoryService);

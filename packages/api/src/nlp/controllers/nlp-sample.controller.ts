@@ -44,7 +44,6 @@ import { ZodQueryParamPipe } from '@/utils/pipes/zod.pipe';
 
 import { NlpSampleState } from '..//types';
 import {
-  NlpSample,
   NlpSampleDto,
   NlpSampleFull,
   NlpSampleTransformerDto,
@@ -59,8 +58,7 @@ import { NlpSampleService } from '../services/nlp-sample.service';
 export class NlpSampleController extends BaseOrmController<
   NlpSampleOrmEntity,
   NlpSampleTransformerDto,
-  TNlpSampleDto,
-  NlpSample
+  TNlpSampleDto
 > {
   constructor(
     private readonly nlpSampleService: NlpSampleService,
