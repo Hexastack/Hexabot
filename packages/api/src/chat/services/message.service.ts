@@ -117,15 +117,9 @@ export class MessageService extends BaseOrmService<
     subscriber: Subscriber,
     limit: number = 5,
   ): Promise<Message[]> {
-    const lastMessages = await this.find({
-      where: [
-        { sender: { id: subscriber.id } },
-        { recipient: { id: subscriber.id } },
-      ],
-      order: { createdAt: 'DESC' },
-      take: limit,
-    });
-
-    return lastMessages.reverse();
+    return await this.repository.findLastMessagesForSubscriber(
+      subscriber,
+      limit,
+    );
   }
 }

@@ -73,7 +73,10 @@ describe('LabelController (TypeORM)', () => {
     ]);
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
 
   afterAll(async () => {
     if (module) {

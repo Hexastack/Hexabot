@@ -6,7 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Raw, Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
@@ -78,10 +78,12 @@ export class BlockRepository extends BaseOrmRepository<
     const pattern = `%${this.escapeLikePattern(sanitized)}%`;
 
     try {
-      const driverType = this.repository.manager.connection.options
-        ?.type as string | undefined;
+      const driverType = this.repository.manager.connection.options?.type as
+        | string
+        | undefined;
       const likeOperator =
-        driverType && ['sqlite', 'better-sqlite3', 'capacitor'].includes(driverType)
+        driverType &&
+        ['sqlite', 'better-sqlite3', 'capacitor'].includes(driverType)
           ? 'LIKE'
           : 'ILIKE';
 
@@ -130,14 +132,36 @@ export class BlockRepository extends BaseOrmRepository<
       return [];
     }
 
-    const pattern = `%\\"context_var\\":\\"${this.escapeLikePattern(name)}\\"%`;
-    const entities = await this.repository.find({
-      where: {
-        capture_vars: Raw((alias) => `${alias} LIKE :pattern`, { pattern }),
-      },
-    });
-
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
+
+    const driverType = (
+      this.repository.manager.connection.options?.type ?? ''
+    ).toString();
+
+    const qb = this.repository.createQueryBuilder('block');
+
+    if (['sqlite', 'better-sqlite3', 'capacitor'].includes(driverType)) {
+      qb.where(
+        `EXISTS (
+            SELECT 1
+            FROM json_each(block.capture_vars) AS elem
+            WHERE json_extract(elem.value, '$.context_var') = :name
+          )`,
+        { name },
+      );
+    } else {
+      qb.where(
+        `EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(block.capture_vars::jsonb) AS elem
+            WHERE elem->>'context_var' = :name
+          )`,
+        { name },
+      );
+    }
+
+    const entities = await qb.getMany();
+
     return entities.map(toDto);
   }
 

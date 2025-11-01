@@ -12,9 +12,9 @@ import { Subscriber } from '../dto/subscriber.dto';
 import { Payload } from './quick-reply';
 
 export interface Context {
-  channel?: ChannelName;
-  text?: string;
-  payload?: Payload | string;
+  channel?: ChannelName | null;
+  text?: string | null;
+  payload?: Payload | string | null;
   nlp?: NLU.ParseEntities | null;
   vars: { [key: string]: any };
   user_location: {

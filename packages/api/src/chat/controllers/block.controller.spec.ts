@@ -14,9 +14,15 @@ import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -31,6 +37,7 @@ import {
 } from '@/utils/test/fixtures/block';
 import { installCategoryFixturesTypeOrm } from '@/utils/test/fixtures/category';
 import { installLabelFixturesTypeOrm } from '@/utils/test/fixtures/label';
+import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -43,6 +50,7 @@ import {
   BlockUpdateDto,
 } from '../dto/block.dto';
 import { Category } from '../dto/category.dto';
+import { CategoryRepository } from '../repositories/category.repository';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { PayloadType } from '../types/button';
@@ -142,6 +150,8 @@ describe('BlockController (TypeORM)', () => {
       autoInjectFrom: ['controllers'],
       controllers: [BlockController],
       providers: [
+        CategoryService,
+        CategoryRepository,
         { provide: PluginService, useValue: pluginServiceMock },
         { provide: UserService, useValue: userServiceMock },
         { provide: ContentService, useValue: contentServiceMock },
@@ -163,11 +173,18 @@ describe('BlockController (TypeORM)', () => {
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,
+          NlpEntityOrmEntity,
+          NlpValueOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+          ContentOrmEntity,
+          ContentTypeOrmEntity,
         ],
         fixtures: [
           installCategoryFixturesTypeOrm,
           installLabelFixturesTypeOrm,
           installBlockFixturesTypeOrm,
+          installNlpSampleEntityFixturesTypeOrm,
         ],
       },
     });
@@ -189,12 +206,9 @@ describe('BlockController (TypeORM)', () => {
     defaultCategory = category;
 
     const block = await blockService.findOne({
-      where: { name: 'first' },
+      where: { name: 'test' },
     });
-    if (!block) {
-      throw new Error('Expected "first" block fixture to be available');
-    }
-    defaultBlock = block;
+    defaultBlock = block!;
 
     const nextBlock = await blockService.findOne({
       where: { name: 'hasNextBlocks' },
@@ -377,7 +391,7 @@ describe('BlockController (TypeORM)', () => {
 
       expect(result.category?.id).toBe(defaultCategory.id);
       expect(result.previousBlocks).toEqual([]);
-      expect(result.attachedToBlock).toBeUndefined();
+      expect(result.attachedToBlock).toBeNull();
       expect(result.message).toEqual(attachmentFixture.message);
     });
   });

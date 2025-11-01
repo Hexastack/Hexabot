@@ -195,13 +195,20 @@ export class SubscriberService extends BaseOrmService<
       throw new Error('No labels to be assigned!');
     }
 
+    const uniqueLabelsToPush = Array.from(new Set(labelsToPush));
+    const currentLabelIds = new Set(subscriber.labels);
+
     let labelsToPull: string[] = [];
-    if (subscriber.labels.length > 0) {
+    const newLabelIds = uniqueLabelsToPush.filter(
+      (id) => !currentLabelIds.has(id),
+    );
+
+    if (newLabelIds.length > 0 && subscriber.labels.length > 0) {
       const [newMutexLabels, existingMutexLabels] = await Promise.all([
         // Retrieve new mutex group labels (if any)
         this.labelService.find({
           where: {
-            id: In(labelsToPush),
+            id: In(newLabelIds),
             group: { id: Not(IsNull()) },
           },
         }),
@@ -215,19 +222,24 @@ export class SubscriberService extends BaseOrmService<
       ]);
 
       if (newMutexLabels.length > 0 && existingMutexLabels.length > 0) {
-        const mutexGroups = newMutexLabels
-          .map(({ group }) => group)
-          .filter((group): group is string => !!group);
+        const mutexGroups = new Set(
+          newMutexLabels
+            .map(({ group }) => group)
+            .filter((group): group is string => !!group),
+        );
 
         labelsToPull = existingMutexLabels
-          .filter(({ group }) => group && mutexGroups.includes(group))
+          .filter(
+            ({ group, id }) =>
+              !!group && mutexGroups.has(group) && !newLabelIds.includes(id),
+          )
           .map(({ id }) => id);
       }
     }
 
     return await this.repository.updateLabels(
       subscriber.id,
-      labelsToPush,
+      uniqueLabelsToPush,
       labelsToPull,
     );
   }

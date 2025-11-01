@@ -5,9 +5,10 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import mime from 'mime';
 
-import { AttachmentOrmEntity as AttachmentEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -32,6 +33,8 @@ import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber } from '../dto/subscriber.dto';
+import { BlockOrmEntity } from '../entities/block.entity';
+import { CategoryOrmEntity } from '../entities/category.entity';
 import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 import { LabelOrmEntity } from '../entities/label.entity';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
@@ -92,11 +95,13 @@ describe('SubscriberService (TypeORM)', () => {
           SubscriberOrmEntity,
           LabelOrmEntity,
           LabelGroupOrmEntity,
-          AttachmentEntity,
+          AttachmentOrmEntity,
           UserOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
         ],
         fixtures: [
           installLabelGroupFixturesTypeOrm,
@@ -175,9 +180,21 @@ describe('SubscriberService (TypeORM)', () => {
         userRepository.findAll(),
       ]);
 
-      expect(result).toEqualPayload({
+      const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
+        [...list].sort((a, b) => a.name.localeCompare(b.name));
+
+      const expectedLabels = sortLabelsByName(
+        labels.filter((label) => subscriber!.labels.includes(label.id)),
+      );
+
+      const normalizedResult = {
+        ...result!,
+        labels: sortLabelsByName(result!.labels ?? []),
+      };
+
+      expect(normalizedResult).toEqualPayload({
         ...subscriber,
-        labels: labels.filter((label) => subscriber!.labels.includes(label.id)),
+        labels: expectedLabels,
         assignedTo: users.find(({ id }) => subscriber!.assignedTo === id),
       });
     });
@@ -197,14 +214,24 @@ describe('SubscriberService (TypeORM)', () => {
         userRepository.findAll(),
       ]);
 
+      const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
+        [...list].sort((a, b) => a.name.localeCompare(b.name));
+
       const subscribersWithRelations = subscribers.map((subscriber) => ({
         ...subscriber,
-        labels: labels.filter((label) => subscriber.labels.includes(label.id)),
+        labels: sortLabelsByName(
+          labels.filter((label) => subscriber.labels.includes(label.id)),
+        ),
         assignedTo: users.find(({ id }) => subscriber.assignedTo === id),
       }));
 
+      const normalizedResult = result.map((item) => ({
+        ...item,
+        labels: sortLabelsByName(item.labels ?? []),
+      }));
+
       const expected = [...subscribersWithRelations].sort(sortRowsBy);
-      const actual = [...result].sort(sortRowsBy);
+      const actual = [...normalizedResult].sort(sortRowsBy);
 
       expect(actual).toEqualPayload(expected);
     });
@@ -242,10 +269,27 @@ describe('SubscriberService (TypeORM)', () => {
       };
       jest.spyOn(mime, 'extension').mockReturnValue('png');
 
-      const fakeAttachment = Object.assign(new AttachmentEntity(), {
+      const fakeAttachment = Object.assign(new AttachmentOrmEntity(), {
         id: '9'.repeat(24),
       });
       attachmentServiceMock.store.mockResolvedValue(fakeAttachment as any);
+
+      const attachmentRepository = module.get(
+        getRepositoryToken(AttachmentOrmEntity),
+      );
+      await attachmentRepository.save(
+        attachmentRepository.create({
+          id: fakeAttachment.id,
+          name: 'avatar-test-uuid.png',
+          type: 'image/png',
+          size: avatarPayload.size,
+          location: `avatar-${fakeAttachment.id}`,
+          resourceRef: AttachmentResourceRef.SubscriberAvatar,
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.Subscriber,
+          createdBy: subscriber.id,
+        }),
+      );
 
       const result = await subscriberService.storeAvatar(
         subscriber.id,
@@ -309,6 +353,23 @@ describe('SubscriberService (TypeORM)', () => {
       attachmentServiceMock.store.mockResolvedValue({
         id: '8'.repeat(24),
       } as any);
+
+      const attachmentRepository = module.get(
+        getRepositoryToken(AttachmentOrmEntity),
+      );
+      await attachmentRepository.save(
+        attachmentRepository.create({
+          id: '8'.repeat(24),
+          name: 'avatar-test-uuid.png',
+          type: 'image/png',
+          size: avatarPayload.size,
+          location: `avatar-${'8'.repeat(24)}`,
+          resourceRef: AttachmentResourceRef.SubscriberAvatar,
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.Subscriber,
+          createdBy: subscriber.id,
+        }),
+      );
 
       await subscriberService.storeAvatar(subscriber.id, avatarPayload);
 

@@ -67,7 +67,10 @@ describe('LabelGroupController', () => {
     ]);
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
 
   afterAll(async () => {
     if (module) {
@@ -205,20 +208,20 @@ describe('LabelGroupController', () => {
   });
 
   describe('deleteMany', () => {
-    it('should delete multiple labels', async () => {
+    it('should delete multiple label groups', async () => {
       const labelGroups = (
         await labelGroupService.createMany([
           { name: 'Group 1' },
           { name: 'Group 2' },
         ])
       ).map(({ id }) => id);
-
       const result = await labelGroupController.deleteMany(labelGroups);
 
       expect(result.deletedCount).toEqual(labelGroups.length);
       const remainingValues = await labelGroupService.find({
         where: { id: In(labelGroups) },
       });
+
       expect(remainingValues.length).toBe(0);
     });
 

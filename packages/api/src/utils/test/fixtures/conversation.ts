@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { DataSource, DeepPartial } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
@@ -186,64 +186,60 @@ export const installConversationFixturesTypeOrm = async (
     return blocksByName.get(blockName) ?? null;
   };
 
-  const conversationsToCreate: DeepPartial<ConversationOrmEntity>[] =
-    conversationFixtures.map((fixture) => {
-      const { sender, current, next, ...rest } = fixture;
+  const conversationsToCreate = conversationFixtures.map((fixture) => {
+    const { sender, current, next, ...rest } = fixture;
 
-      const senderIndex = Number.parseInt(sender, 10);
-      const senderEntity = subscribers[senderIndex];
-      if (!senderEntity) {
-        throw new Error(
-          `Missing subscriber fixture at index ${sender} for conversation fixtures`,
-        );
-      }
+    const senderIndex = Number.parseInt(sender, 10);
+    const senderEntity = subscribers[senderIndex];
+    if (!senderEntity) {
+      throw new Error(
+        `Missing subscriber fixture at index ${sender} for conversation fixtures`,
+      );
+    }
 
-      const currentEntity = getBlockByIndex(current ?? undefined);
+    const currentEntity = getBlockByIndex(current ?? undefined);
 
-      const nextEntities = (next ?? [])
-        .map((n) => getBlockByIndex(n))
-        .filter(
-          (block): block is Exclude<typeof block, null> =>
-            block !== null && block !== undefined,
-        );
+    const nextEntities = (next ?? [])
+      .map((n) => getBlockByIndex(n))
+      .filter(
+        (block): block is Exclude<typeof block, null> =>
+          block !== null && block !== undefined,
+      );
 
-      const context = {
-        ...(rest.context ?? {}),
-        user: {
-          id: senderEntity.id,
-          createdAt: senderEntity.createdAt,
-          updatedAt: senderEntity.updatedAt,
-          first_name: senderEntity.first_name,
-          last_name: senderEntity.last_name,
-          locale: senderEntity.locale ?? null,
-          timezone: senderEntity.timezone ?? 0,
-          language: senderEntity.language ?? null,
-          gender: senderEntity.gender ?? null,
-          country: senderEntity.country ?? null,
-          foreign_id: senderEntity.foreign_id ?? '',
-          assignedAt: senderEntity.assignedAt ?? null,
-          lastvisit: senderEntity.lastvisit ?? null,
-          retainedFrom: senderEntity.retainedFrom ?? null,
-          channel: senderEntity.channel,
-          context: senderEntity.context,
-        },
-      };
+    const context = {
+      ...(rest.context ?? {}),
+      user: {
+        id: senderEntity.id,
+        createdAt: senderEntity.createdAt,
+        updatedAt: senderEntity.updatedAt,
+        first_name: senderEntity.first_name,
+        last_name: senderEntity.last_name,
+        locale: senderEntity.locale ?? null,
+        timezone: senderEntity.timezone ?? 0,
+        language: senderEntity.language ?? null,
+        gender: senderEntity.gender ?? null,
+        country: senderEntity.country ?? null,
+        foreign_id: senderEntity.foreign_id ?? '',
+        assignedAt: senderEntity.assignedAt ?? null,
+        lastvisit: senderEntity.lastvisit ?? null,
+        retainedFrom: senderEntity.retainedFrom ?? null,
+        channel: senderEntity.channel,
+        context: senderEntity.context,
+      },
+    };
 
-      return {
-        ...rest,
-        context,
-        sender: { id: senderEntity.id } satisfies Pick<
-          SubscriberOrmEntity,
-          'id'
-        >,
-        current: currentEntity
-          ? ({ id: currentEntity.id } satisfies Pick<BlockOrmEntity, 'id'>)
-          : null,
-        next: nextEntities.map(
-          (block) => ({ id: block.id }) satisfies Pick<BlockOrmEntity, 'id'>,
-        ),
-      };
+    return repository.create({
+      ...rest,
+      context,
+      sender: { id: senderEntity.id } satisfies Pick<SubscriberOrmEntity, 'id'>,
+      current: currentEntity
+        ? ({ id: currentEntity.id } satisfies Pick<BlockOrmEntity, 'id'>)
+        : null,
+      next: nextEntities.map(
+        (block) => ({ id: block.id }) satisfies Pick<BlockOrmEntity, 'id'>,
+      ),
     });
+  });
 
   await repository.save(conversationsToCreate);
 

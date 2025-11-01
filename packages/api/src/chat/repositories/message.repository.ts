@@ -109,4 +109,43 @@ export class MessageRepository extends BaseOrmRepository<
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
     return results.map(toDto);
   }
+
+  /**
+   * Retrieves the most recent messages exchanged with the provided subscriber and returns them in chronological order.
+   *
+   * @param subscriber - The subscriber whose messages are being retrieved.
+   * @param limit - Maximum number of messages to return.
+   *
+   * @returns The latest messages ordered from oldest to newest.
+   */
+  async findLastMessagesForSubscriber<S extends SubscriberStub>(
+    subscriber: S,
+    limit: number = 5,
+  ): Promise<Message[]> {
+    const normalizedLimit = Math.max(0, limit ?? 0);
+
+    if (!normalizedLimit) {
+      return [];
+    }
+
+    const results = await this.repository
+      .createQueryBuilder('message')
+      .where(
+        new Brackets((where) => {
+          where
+            .where('message.sender_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            })
+            .orWhere('message.recipient_id = :subscriberId', {
+              subscriberId: subscriber.id,
+            });
+        }),
+      )
+      .orderBy('message.created_at', 'DESC')
+      .limit(limit)
+      .getMany();
+
+    const toDto = this.getTransformer(DtoTransformer.PlainCls);
+    return results.map(toDto);
+  }
 }

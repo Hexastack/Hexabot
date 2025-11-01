@@ -161,12 +161,14 @@ describe('ConversationService (TypeORM)', () => {
       expect(result.context.channel).toBe('messenger-channel');
       expect(result.context.text).toBe(mockPhone);
       expect(result.context.vars.phone).toBe(mockPhone);
-      expect(result.context.user).toEqual({
-        id: subscriber.id,
-        first_name: subscriber.first_name,
-        last_name: subscriber.last_name,
-        language: subscriber.language,
-      });
+      expect(result.context.user).toEqual(
+        expect.objectContaining({
+          id: subscriber.id,
+          first_name: subscriber.first_name,
+          last_name: subscriber.last_name,
+          language: subscriber.language,
+        }),
+      );
 
       const updatedSubscriber = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-messenger' },

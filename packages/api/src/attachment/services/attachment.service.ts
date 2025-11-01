@@ -8,7 +8,7 @@ import { Readable, Stream } from 'stream';
 
 import { Injectable, StreamableFile } from '@nestjs/common';
 
-import { AttachmentOrmEntity as AttachmentEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -24,7 +24,7 @@ import { AttachmentRepository } from '../repositories/attachment.repository';
 
 @Injectable()
 export class AttachmentService extends BaseOrmService<
-  AttachmentEntity,
+  AttachmentOrmEntity,
   AttachmentTransformerDto,
   AttachmentDtoConfig
 > {

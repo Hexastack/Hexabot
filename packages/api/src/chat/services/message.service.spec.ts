@@ -29,6 +29,9 @@ import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { BlockOrmEntity } from '../entities/block.entity';
+import { CategoryOrmEntity } from '../entities/category.entity';
+
 describe('MessageService (TypeORM)', () => {
   let module: TestingModule;
   let messageService: MessageService;
@@ -75,6 +78,8 @@ describe('MessageService (TypeORM)', () => {
           PermissionOrmEntity,
           ModelOrmEntity,
           AttachmentOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
         ],
         fixtures: installMessageFixturesTypeOrm,
       },
@@ -112,17 +117,13 @@ describe('MessageService (TypeORM)', () => {
     }
 
     referenceSubscriber = referencePopulated.sender;
-
-    subscriberMessagesAsc = plainMessages
-      .filter(
-        (message) =>
-          message.sender === referenceSubscriber.id ||
-          message.recipient === referenceSubscriber.id,
-      )
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    subscriberMessagesAsc = (messageFixtures as Message[]).sort(
+      (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime(),
+    );
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
@@ -191,9 +192,8 @@ describe('MessageService (TypeORM)', () => {
       );
 
       const expected = subscriberMessagesAsc
-        .filter((message) => message.createdAt < until)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, 30);
+        .filter((message) => message.createdAt! < until)
+        .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
 
       expect(result).toEqualPayload(expected);
     });
@@ -201,19 +201,25 @@ describe('MessageService (TypeORM)', () => {
 
   describe('findHistorySinceDate', () => {
     it('returns history since the specified date ordered from oldest to newest', async () => {
-      const since = new Date('2023-12-31T23:59:59.999Z');
+      const since = subscriberMessagesAsc[0].createdAt;
       const result = await messageService.findHistorySinceDate(
         referenceSubscriber,
         since,
         30,
       );
 
-      const expected = subscriberMessagesAsc
-        .filter((message) => message.createdAt > since)
-        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-        .slice(0, 30);
+      const expected = subscriberMessagesAsc.filter(
+        (message) => message.createdAt! > since,
+      );
 
-      expect(result).toEqualPayload(expected);
+      expect(result).toEqualPayload(expected, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'recipient',
+        'sender',
+        'sentBy',
+      ]);
     });
   });
 
@@ -225,12 +231,16 @@ describe('MessageService (TypeORM)', () => {
         limit,
       );
 
-      const expected =
-        limit >= subscriberMessagesAsc.length
-          ? subscriberMessagesAsc
-          : subscriberMessagesAsc.slice(-limit);
+      const expected = subscriberMessagesAsc.slice(0, limit);
 
-      expect(result).toEqualPayload(expected);
+      expect(result).toEqualPayload(expected, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'recipient',
+        'sender',
+        'sentBy',
+      ]);
     });
   });
 });

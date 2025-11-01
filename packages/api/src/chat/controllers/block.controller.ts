@@ -40,8 +40,6 @@ import {
 } from '../dto/block.dto';
 import { BlockOrmEntity } from '../entities/block.entity';
 import { BlockService } from '../services/block.service';
-import { CategoryService } from '../services/category.service';
-import { LabelService } from '../services/label.service';
 
 @Controller('Block')
 export class BlockController extends BaseOrmController<
@@ -51,8 +49,6 @@ export class BlockController extends BaseOrmController<
 > {
   constructor(
     private readonly blockService: BlockService,
-    private readonly categoryService: CategoryService,
-    private readonly labelService: LabelService,
     private readonly userService: UserService,
     private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {

@@ -47,7 +47,6 @@ export const messageDefaultValues: TFixturesDefaultValues<Message> = {
   read: false,
   delivery: false,
   handover: false,
-  createdAt: new Date('2024-01-01T00:00:00.00Z'),
 };
 
 export const messageFixtures = getFixturesWithDefaultValues<
@@ -111,6 +110,7 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
       sender,
       recipient,
       sentBy,
+      createdAt: fixture.createdAt,
     });
   });
 

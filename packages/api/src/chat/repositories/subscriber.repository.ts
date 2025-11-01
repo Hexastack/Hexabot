@@ -6,7 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, In, Repository, UpdateEvent } from 'typeorm';
+import { FindManyOptions, Repository, UpdateEvent } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { DtoTransformer } from '@/utils/types/dto.types';
@@ -18,7 +18,6 @@ import {
   SubscriberTransformerDto,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
-import { LabelOrmEntity } from '../entities/label.entity';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 
 @Injectable()
@@ -213,36 +212,42 @@ export class SubscriberRepository extends BaseOrmRepository<
     labelsToPush: string[],
     labelsToPull: string[] = [],
   ): Promise<Subscriber> {
-    const subscriber = await this.repository.findOne({
-      where: { id: subscriberId },
-      relations: ['labels'],
-    });
+    const subscriber = await this.findOne(subscriberId);
 
     if (!subscriber) {
       throw new Error(`Unable to resolve subscriber ${subscriberId}`);
     }
 
+    const relationQuery = this.repository
+      .createQueryBuilder()
+      .relation(SubscriberOrmEntity, 'labels')
+      .of(subscriberId);
+
+    const existingIds = new Set(subscriber.labels);
+
     if (labelsToPull.length) {
-      const toRemove = new Set(labelsToPull);
-      subscriber.labels = subscriber.labels.filter(
-        (label) => !toRemove.has(label.id),
-      );
+      await relationQuery.remove(labelsToPull);
+      labelsToPull.forEach((id) => existingIds.delete(id));
     }
 
-    if (labelsToPush.length) {
-      const existingIds = new Set(subscriber.labels.map((label) => label.id));
-      const labelIdsToAdd = labelsToPush.filter((id) => !existingIds.has(id));
-
-      if (labelIdsToAdd.length) {
-        const labels = await this.repository.manager.find(LabelOrmEntity, {
-          where: { id: In(labelIdsToAdd) },
-        });
-
-        subscriber.labels = [...subscriber.labels, ...labels];
+    const labelIdsToAdd = Array.from(new Set(labelsToPush)).filter((id) => {
+      const shouldAdd = !existingIds.has(id);
+      if (shouldAdd) {
+        existingIds.add(id);
       }
+      return shouldAdd;
+    });
+
+    if (labelIdsToAdd.length) {
+      await relationQuery.add(labelIdsToAdd);
     }
 
-    const saved = await this.repository.save(subscriber);
-    return this.getTransformer(DtoTransformer.PlainCls)(saved);
+    const refreshed = await this.findOne(subscriberId);
+
+    if (!refreshed) {
+      throw new Error(`Unable to reload subscriber ${subscriberId}`);
+    }
+
+    return refreshed;
   }
 }

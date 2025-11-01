@@ -10,7 +10,7 @@ import { DataSource } from 'typeorm';
 
 import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
-import { SessionOrmEntity } from '@/session/entities/session.entity';
+import { SessionOrmEntity } from '@/user/entities/session.entity';
 
 const toSeconds = (milliseconds: number): number =>
   Math.max(1, Math.floor(milliseconds / 1000));

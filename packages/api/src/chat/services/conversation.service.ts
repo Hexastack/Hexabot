@@ -10,6 +10,7 @@ import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import { getDefaultConversationContext } from '../constants/conversation';
 import { Block, BlockFull } from '../dto/block.dto';
 import {
   Conversation,
@@ -67,15 +68,26 @@ export class ConversationService extends BaseOrmService<
     event: EventWrapper<any, any>,
     shouldCaptureVars: boolean = false,
   ) {
+    const defaultContext = getDefaultConversationContext();
+    if (!convo.context) {
+      convo.context = defaultContext;
+    }
+
     const msgType = event.getMessageType();
     const profile = event.getSender();
 
+    convo.context.vars = convo.context.vars ?? {};
+    convo.context.skip = convo.context.skip ?? {};
+    convo.context.user = convo.context.user ?? defaultContext.user;
+    convo.context.user_location =
+      convo.context.user_location ?? defaultContext.user_location;
+    convo.context.attempt = convo.context.attempt ?? defaultContext.attempt;
+
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getName();
-    convo.context.text = event.getText();
-    convo.context.payload = event.getPayload();
-    convo.context.nlp = event.getNLP();
-    convo.context.vars = convo.context.vars || {};
+    convo.context.text = event.getText() ?? null;
+    convo.context.payload = event.getPayload() ?? null;
+    convo.context.nlp = event.getNLP() ?? null;
 
     const contextVars =
       await this.contextVarService.getContextVarsByBlock(next);
@@ -150,9 +162,10 @@ export class ConversationService extends BaseOrmService<
         next.options.content.display === OutgoingMessageFormat.carousel)
     ) {
       if (event.getPayload() === VIEW_MORE_PAYLOAD) {
-        convo.context.skip[next.id] += next.options.content.limit;
+        const currentSkip = convo.context.skip[next.id] ?? 0;
+        convo.context.skip[next.id] =
+          currentSkip + (next.options.content.limit ?? 0);
       } else {
-        convo.context.skip = convo.context.skip ? convo.context.skip : {};
         convo.context.skip[next.id] = 0;
       }
     }

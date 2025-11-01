@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { DataSource, DeepPartial } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
@@ -137,37 +137,36 @@ export const installSubscriberFixturesTypeOrm = async (
 
   const assignedUser = users[0] ?? null;
 
-  const entities: DeepPartial<SubscriberOrmEntity>[] = subscriberFixtures.map(
-    (fixture) => {
-      const {
-        labels: _labels,
-        assignedTo: _assignedTo,
-        avatar: _avatar,
-        ...rest
-      } = fixture;
+  for (const fixture of subscriberFixtures) {
+    const {
+      labels: _labels,
+      assignedTo: _assignedTo,
+      avatar: _avatar,
+      ...rest
+    } = fixture;
 
-      return {
-        ...rest,
-        locale: rest.locale ?? null,
-        language: rest.language ?? null,
-        gender: rest.gender ?? null,
-        country: rest.country ?? null,
-        foreign_id: rest.foreign_id,
-        assignedAt: rest.assignedAt ?? null,
-        lastvisit: rest.lastvisit ?? new Date(),
-        retainedFrom: rest.retainedFrom ?? new Date(),
-        labels: labelEntities.map(
-          ({ id }) => ({ id }) as Pick<LabelOrmEntity, 'id'>,
-        ),
-        assignedTo: assignedUser
-          ? ({ id: assignedUser.id } as Pick<UserOrmEntity, 'id'>)
-          : null,
-        avatar: _avatar ? ({ id: _avatar } as { id: string }) : null,
-      };
-    },
-  );
+    const entity = new SubscriberOrmEntity();
+    Object.assign(entity, {
+      ...rest,
+      locale: rest.locale ?? null,
+      language: rest.language ?? null,
+      gender: rest.gender ?? null,
+      country: rest.country ?? null,
+      foreign_id: rest.foreign_id,
+      assignedAt: rest.assignedAt ?? null,
+      lastvisit: rest.lastvisit ?? new Date(),
+      retainedFrom: rest.retainedFrom ?? new Date(),
+      labels: labelEntities.map(
+        ({ id }) => ({ id }) as Pick<LabelOrmEntity, 'id'>,
+      ),
+      assignedTo: assignedUser
+        ? ({ id: assignedUser.id } as Pick<UserOrmEntity, 'id'>)
+        : null,
+      avatar: _avatar ? ({ id: _avatar } as { id: string }) : null,
+    });
 
-  await subscriberRepository.save(entities);
+    await subscriberRepository.save(entity);
+  }
 
   return {
     labels: await findLabelRelations(dataSource),
