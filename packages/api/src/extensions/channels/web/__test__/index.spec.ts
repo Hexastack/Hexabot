@@ -39,6 +39,9 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import {
   webAttachment,
   webButtons,
@@ -95,7 +98,6 @@ describe('WebChannelHandler', () => {
           useValue: websocketGatewayMock,
         },
       ],
-      includeSettingModule: true,
       typeorm: {
         entities: [
           AttachmentOrmEntity,
@@ -107,6 +109,9 @@ describe('WebChannelHandler', () => {
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          MenuOrmEntity,
         ],
         fixtures: [
           installLabelGroupFixturesTypeOrm,

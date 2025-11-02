@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { Model } from '@/user/schemas/model.schema';
-import { Permission } from '@/user/schemas/permission.schema';
+import { Model } from '@/user/dto/model.dto';
+import { Permission } from '@/user/dto/permission.dto';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';

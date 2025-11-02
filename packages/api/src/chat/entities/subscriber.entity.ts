@@ -82,10 +82,10 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   })
   @JoinColumn({ name: 'assigned_to_id' })
   @AsRelation()
-  assignedTo?: UserOrmEntity | null;
+  assignedTo: UserOrmEntity | null;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.assignedTo)
-  private readonly assignedToId?: string | null;
+  private readonly assignedToId: string | null;
 
   @Column({ type: 'datetime', nullable: true })
   assignedAt: Date | null;

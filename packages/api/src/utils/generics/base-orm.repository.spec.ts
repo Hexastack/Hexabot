@@ -9,7 +9,7 @@ import { randomUUID } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
-import { In, Repository } from 'typeorm';
+import { In, InsertEvent, RemoveEvent, Repository, UpdateEvent } from 'typeorm';
 
 import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
@@ -309,6 +309,17 @@ describe('BaseOrmRepository', () => {
   describe('event emission', () => {
     let eventEmitter: EventEmitter2;
     const hookEvent = (suffix: EHook) => `hook:dummy:${suffix}`;
+    const resolveRemoveEventId = (
+      event: RemoveEvent<DummyOrmEntity>,
+    ): string | undefined => {
+      const candidate =
+        event.entity?.id ??
+        event.databaseEntity?.id ??
+        (typeof event.entityId === 'object'
+          ? (event.entityId as Record<string, unknown>).id
+          : (event.entityId as string | undefined));
+      return typeof candidate === 'string' ? candidate : undefined;
+    };
 
     beforeEach(() => {
       eventEmitter = dummyRepository.getEventEmitter()!;
@@ -326,16 +337,20 @@ describe('BaseOrmRepository', () => {
 
       const result = await dummyRepository.create(payload);
 
-      expect(emitSpy).toHaveBeenNthCalledWith(
-        1,
-        hookEvent(EHook.preCreate),
-        expect.objectContaining({ dummy: payload.dummy }),
-      );
-      expect(emitSpy).toHaveBeenNthCalledWith(
-        2,
-        hookEvent(EHook.postCreate),
-        expect.objectContaining({ id: result.id, dummy: payload.dummy }),
-      );
+      expect(emitSpy).toHaveBeenCalledTimes(2);
+      const [preCall, postCall] = emitSpy.mock.calls as [
+        [string, InsertEvent<DummyOrmEntity>],
+        [string, InsertEvent<DummyOrmEntity>],
+      ];
+
+      const [preEventName, preEvent] = preCall;
+      expect(preEventName).toBe(hookEvent(EHook.preCreate));
+      expect(preEvent.entity?.dummy).toBe(payload.dummy);
+
+      const [postEventName, postEvent] = postCall;
+      expect(postEventName).toBe(hookEvent(EHook.postCreate));
+      expect(postEvent.entity?.id).toBe(result.id);
+      expect(postEvent.entity?.dummy).toBe(payload.dummy);
     });
 
     it('should emit hooks when creating many entities', async () => {
@@ -351,18 +366,21 @@ describe('BaseOrmRepository', () => {
 
       const preCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.preCreate),
-      );
+      ) as Array<[string, InsertEvent<DummyOrmEntity>]>;
       const postCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.postCreate),
-      );
+      ) as Array<[string, InsertEvent<DummyOrmEntity>]>;
 
       expect(preCalls).toHaveLength(payloads.length);
       expect(postCalls).toHaveLength(payloads.length);
-      expect(
-        preCalls.map(([, entity]) => (entity as DummyOrmEntity).dummy),
-      ).toEqual(payloads.map((payload) => payload.dummy));
-      postCalls.forEach(([, entity]) =>
-        expect((entity as DummyOrmEntity).id).toBeDefined(),
+      expect(preCalls.map(([, event]) => event.entity?.dummy)).toEqual(
+        payloads.map((payload) => payload.dummy),
+      );
+      postCalls.forEach(([, event]) => {
+        expect(event.entity?.id).toBeDefined();
+      });
+      expect(postCalls.map(([, event]) => event.entity?.dummy)).toEqual(
+        expect.arrayContaining(payloads.map((payload) => payload.dummy)),
       );
     });
 
@@ -377,26 +395,21 @@ describe('BaseOrmRepository', () => {
 
       const preCall = emitSpy.mock.calls.find(
         ([event]) => event === hookEvent(EHook.preUpdate),
-      );
+      ) as [string, UpdateEvent<DummyOrmEntity>] | undefined;
       const postCall = emitSpy.mock.calls.find(
         ([event]) => event === hookEvent(EHook.postUpdate),
-      );
+      ) as [string, UpdateEvent<DummyOrmEntity>] | undefined;
 
       expect(preCall).toBeDefined();
-      const prePayload = preCall![1] as {
-        entity: DummyOrmEntity;
-        changes: Record<string, unknown>;
-      };
-      expect(prePayload.entity.id).toBe(target.id);
-      expect(prePayload.changes).toEqualPayload(payload);
+      const [, preEvent] = preCall!;
+      expect(preEvent.entity?.id).toBe(target.id);
+      expect(preEvent.entity?.dummy).toBe(payload.dummy);
+      expect(preEvent.databaseEntity?.dummy).toBe(target.dummy);
 
       expect(postCall).toBeDefined();
-      const postPayload = postCall![1] as {
-        entity: DummyOrmEntity;
-        previous: DummyOrmEntity;
-      };
-      expect(postPayload.entity.dummy).toBe(payload.dummy);
-      expect(postPayload.previous.dummy).toBe(target.dummy);
+      const [, postEvent] = postCall!;
+      expect(postEvent.entity?.dummy).toBe(payload.dummy);
+      expect(postEvent.databaseEntity?.dummy).toBe(target.dummy);
     });
 
     it('should emit hooks when updating many entities', async () => {
@@ -407,35 +420,32 @@ describe('BaseOrmRepository', () => {
 
       await dummyRepository.updateMany({}, payload);
 
-      const preManyCalls = emitSpy.mock.calls.filter(
-        ([event]) => event === hookEvent(EHook.preUpdateMany),
-      );
       const preCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.preUpdate),
-      );
+      ) as Array<[string, UpdateEvent<DummyOrmEntity>]>;
       const postCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.postUpdate),
-      );
-      const postManyCalls = emitSpy.mock.calls.filter(
-        ([event]) => event === hookEvent(EHook.postUpdateMany),
-      );
+      ) as Array<[string, UpdateEvent<DummyOrmEntity>]>;
 
-      expect(preManyCalls).toHaveLength(1);
       expect(preCalls).toHaveLength(dummyFixtures.length);
       expect(postCalls).toHaveLength(dummyFixtures.length);
-      expect(postManyCalls).toHaveLength(1);
 
-      const preManyPayload = preManyCalls[0]![1] as {
-        entities: DummyOrmEntity[];
-      };
-      expect(preManyPayload.entities).toHaveLength(dummyFixtures.length);
+      preCalls.forEach(([, event]) => {
+        expect(event.entity?.dummy).toBe(payload.dummy);
+        expect(event.databaseEntity?.dummy).toBeDefined();
+      });
 
-      const postManyPayload = postManyCalls[0]![1] as {
-        entities: DummyOrmEntity[];
-        previous: DummyOrmEntity[];
-      };
-      expect(postManyPayload.entities).toHaveLength(dummyFixtures.length);
-      expect(postManyPayload.previous).toHaveLength(dummyFixtures.length);
+      postCalls.forEach(([, event]) => {
+        expect(event.entity?.dummy).toBe(payload.dummy);
+        expect(event.databaseEntity?.dummy).toBeDefined();
+      });
+
+      const bulkCalls = emitSpy.mock.calls.filter(
+        ([event]) =>
+          event === hookEvent(EHook.preUpdateMany) ||
+          event === hookEvent(EHook.postUpdateMany),
+      );
+      expect(bulkCalls).toHaveLength(0);
     });
 
     it('should emit hooks when deleting one entity', async () => {
@@ -448,27 +458,18 @@ describe('BaseOrmRepository', () => {
 
       const preCall = emitSpy.mock.calls.find(
         ([event]) => event === hookEvent(EHook.preDelete),
-      );
+      ) as [string, RemoveEvent<DummyOrmEntity>] | undefined;
       const postCall = emitSpy.mock.calls.find(
         ([event]) => event === hookEvent(EHook.postDelete),
-      );
+      ) as [string, RemoveEvent<DummyOrmEntity>] | undefined;
 
       expect(preCall).toBeDefined();
-      const prePayload = preCall![1] as {
-        entities: DummyOrmEntity[];
-        filter: Record<string, unknown>;
-      };
-      expect(prePayload.entities[0].id).toBe(target.id);
-      expect(prePayload.filter).toEqual({ id: target.id });
+      const [, preEvent] = preCall!;
+      expect(resolveRemoveEventId(preEvent)).toBe(target.id);
 
       expect(postCall).toBeDefined();
-      const postPayload = postCall![1] as {
-        result: { acknowledged: boolean; deletedCount: number };
-      };
-      expect(postPayload.result).toEqualPayload({
-        acknowledged: true,
-        deletedCount: 1,
-      });
+      const [, postEvent] = postCall!;
+      expect(resolveRemoveEventId(postEvent)).toBe(target.id);
     });
 
     it('should emit hooks when deleting many entities', async () => {
@@ -479,27 +480,26 @@ describe('BaseOrmRepository', () => {
 
       await dummyRepository.deleteMany({ where: { id: In(targetIds) } });
 
-      const preCall = emitSpy.mock.calls.find(
+      const preCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.preDelete),
-      );
-      const postCall = emitSpy.mock.calls.find(
+      ) as Array<[string, RemoveEvent<DummyOrmEntity>]>;
+      const postCalls = emitSpy.mock.calls.filter(
         ([event]) => event === hookEvent(EHook.postDelete),
-      );
+      ) as Array<[string, RemoveEvent<DummyOrmEntity>]>;
 
-      expect(preCall).toBeDefined();
-      const prePayload = preCall![1] as {
-        entities: DummyOrmEntity[];
-      };
-      expect(prePayload.entities).toHaveLength(2);
+      expect(preCalls).toHaveLength(targetIds.length);
+      expect(postCalls).toHaveLength(targetIds.length);
 
-      expect(postCall).toBeDefined();
-      const postPayload = postCall![1] as {
-        result: { acknowledged: boolean; deletedCount: number };
-      };
-      expect(postPayload.result).toEqualPayload({
-        acknowledged: true,
-        deletedCount: 2,
-      });
+      const extractIds = (
+        calls: Array<[string, RemoveEvent<DummyOrmEntity>]>,
+      ) =>
+        calls
+          .map(([, event]) => resolveRemoveEventId(event))
+          .filter((id): id is string => typeof id === 'string')
+          .sort();
+
+      expect(extractIds(preCalls)).toEqual([...targetIds].sort());
+      expect(extractIds(postCalls)).toEqual([...targetIds].sort());
     });
 
     it('should not emit hooks when findOneOrCreate reuses an existing entity', async () => {

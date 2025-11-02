@@ -5,13 +5,14 @@
  */
 
 import { CacheModule } from '@nestjs/cache-manager';
-import { ModuleMetadata, Provider } from '@nestjs/common';
+import { DynamicModule, ModuleMetadata, Provider } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LoggerModule } from '@/logger/logger.module';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
@@ -41,7 +42,6 @@ type buildTestingMocksProps<
   C extends ModuleMetadata['controllers'] = ModuleMetadata['controllers'],
 > = ModuleMetadata & {
   typeorm?: TypeOrmTestingConfig | TypeOrmTestingConfig[];
-  includeSettingModule?: boolean;
 } & (
     | {
         providers: NonNullable<P>;
@@ -132,6 +132,8 @@ const filterNestedDependencies = (dependency: Provider) =>
  * @param providers - Array of initial providers.
  * @returns Array of additional nested dependencies.
  */
+const autoInjectExclusions = new Set<Provider>([DataSource]);
+
 const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
 
@@ -139,6 +141,9 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
     getClassDependencies(provider)
       .filter(filterNestedDependencies)
       .forEach((dependency) => {
+        if (autoInjectExclusions.has(dependency)) {
+          return;
+        }
         if (
           !providers.includes(dependency) &&
           !providers.find(
@@ -196,11 +201,13 @@ export const buildTestingMocks = async ({
   controllers = [],
   autoInjectFrom,
   typeorm,
-  includeSettingModule,
   ...rest
 }: buildTestingMocksProps) => {
   const extendedProviders = new Set<Provider>();
-  const dynamicProviders = new Set<Provider>();
+  const dynamicProviders = new Set<Provider>([
+    ...defaultProviders,
+    ...extendedProviders,
+  ]);
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
 
   if (injectionFrom?.includes('providers')) {
@@ -216,10 +223,6 @@ export const buildTestingMocks = async ({
   }
 
   providers.forEach((provider) => extendedProviders.add(provider));
-  [...defaultProviders, ...extendedProviders].forEach((provider) => {
-    dynamicProviders.add(provider);
-  });
-
   const providersList = [...dynamicProviders];
   const overrideTokens = new Set<Provider>(
     providersList
@@ -271,67 +274,45 @@ export const buildTestingMocks = async ({
     }
   });
 
-  const typeOrmFixtureRunner =
-    typeOrmFixtures.length > 0
-      ? async (dataSource: DataSource) => {
-          for (const fixture of typeOrmFixtures) {
-            await fixture(dataSource);
-          }
-        }
-      : undefined;
-
-  let dataSource: DataSource | undefined;
-  const typeOrmProviders: Provider[] = [];
-
-  if (typeOrmEntities.size > 0) {
-    const entitiesArray = Array.from(typeOrmEntities);
-
-    const baseOptions: DataSourceOptions = {
-      type: 'sqlite',
-      database: ':memory:',
-      synchronize: true,
-      dropSchema: true,
-      logging: false,
-      entities: entitiesArray,
-      ...(typeOrmOptions ?? {}),
-    } as DataSourceOptions;
-
-    dataSource = new DataSource(baseOptions);
-    await dataSource.initialize();
-    if (typeOrmFixtureRunner) {
-      await typeOrmFixtureRunner(dataSource);
+  const runTypeOrmFixtures = async (dataSource: DataSource) => {
+    for (const fixture of typeOrmFixtures) {
+      await fixture(dataSource);
     }
-    registerTypeOrmDataSource(dataSource);
+  };
 
-    const dataSourceToken = getDataSourceToken(
-      baseOptions as DataSourceOptions,
-    );
-    typeOrmProviders.push(
-      { provide: DataSource, useValue: dataSource },
-      { provide: dataSourceToken, useValue: dataSource },
-    );
+  const entitiesArray = Array.from(typeOrmEntities);
+  const baseOptions: DataSourceOptions = {
+    type: 'sqlite',
+    database: ':memory:',
+    synchronize: true,
+    dropSchema: true,
+    logging: false,
+    entities: entitiesArray,
+    ...(typeOrmOptions ?? {}),
+  } as DataSourceOptions;
 
-    const currentDataSource = dataSource;
-    if (!currentDataSource) {
-      throw new Error('TypeORM data source failed to initialize');
-    }
+  const dataSource = new DataSource(baseOptions);
+  await dataSource.initialize();
+  await runTypeOrmFixtures(dataSource);
+  registerTypeOrmDataSource(dataSource);
 
-    entitiesArray.forEach((entity) => {
-      typeOrmProviders.push({
-        provide: getRepositoryToken(entity as any),
-        useValue: currentDataSource.getRepository(entity),
-      });
-    });
-  }
+  const typeOrmRootModule: DynamicModule = TypeOrmModule.forRootAsync({
+    useFactory: async () => baseOptions as DataSourceOptions,
+    dataSourceFactory: async () => dataSource,
+  });
 
-  const shouldIncludeSettingModule =
-    includeSettingModule ?? typeOrmEntities.size === 0;
+  const typeOrmProviders = entitiesArray.map((entity) => ({
+    provide: getRepositoryToken(entity as any),
+    useValue: dataSource.getRepository(entity),
+  }));
 
   const testingModuleBuilder = Test.createTestingModule({
     imports: [
+      LoggerModule,
       EventEmitterModule.forRoot({ global: true }),
       CacheModule.register({ isGlobal: true }),
-      ...(shouldIncludeSettingModule ? [SettingModule] : []),
+      typeOrmRootModule,
+      SettingModule,
       ...imports,
     ],
     providers: [...resolvedProviders, ...typeOrmProviders],

@@ -38,7 +38,6 @@ describe('AttachmentRepository (TypeORM)', () => {
         entities: [AttachmentOrmEntity],
         fixtures: installAttachmentFixturesTypeOrm,
       },
-      includeSettingModule: false,
     });
 
     module = testing.module;

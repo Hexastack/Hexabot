@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -59,15 +59,12 @@ export class SubscriberStub extends BaseStub {
   foreign_id: string;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   assignedAt: Date | null;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   lastvisit: Date | null;
 
   @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
   retainedFrom: Date | null;
 
   @Expose()

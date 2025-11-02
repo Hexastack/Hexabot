@@ -92,7 +92,6 @@ describe(`Web event wrapper`, () => {
           useValue: messageServiceMock,
         },
       ],
-      includeSettingModule: true,
       typeorm: {
         entities: [
           AttachmentOrmEntity,
