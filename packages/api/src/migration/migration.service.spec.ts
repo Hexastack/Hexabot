@@ -100,13 +100,18 @@ describe('MigrationService', () => {
       MigrationService,
       MetadataService,
     ]);
-    [loggerService, dataSource, httpService, attachmentService] =
-      await mocks.resolveMocks([
-        LoggerService,
-        DataSource,
-        HttpService,
-        AttachmentService,
-      ]);
+    const serviceInternals = service as unknown as {
+      logger: LoggerService;
+      dataSource: DataSource;
+      httpService: HttpService;
+      attachmentService: AttachmentService;
+      metadataService: MetadataService;
+    };
+    loggerService = serviceInternals.logger;
+    dataSource = serviceInternals.dataSource;
+    httpService = serviceInternals.httpService;
+    attachmentService = serviceInternals.attachmentService;
+    metadataService = serviceInternals.metadataService;
   });
 
   afterAll(async () => {
@@ -120,6 +125,11 @@ describe('MigrationService', () => {
   afterEach(() => {
     jest.restoreAllMocks();
     delete process.env.HEXABOT_CLI;
+  });
+
+  beforeEach(() => {
+    jest.spyOn(loggerService, 'log').mockImplementation(() => undefined);
+    jest.spyOn(loggerService, 'error').mockImplementation(() => undefined);
   });
 
   describe('create', () => {
@@ -379,11 +389,9 @@ describe('MigrationService', () => {
   describe('updateStatus', () => {
     it('should create a new record when none is provided', async () => {
       const repository = (service as any).migrationRepository;
-      const createSpy = jest
-        .spyOn(repository, 'create')
-        .mockReturnValue(
-          { version: 'v3.0.5' } as unknown as MigrationOrmEntity,
-        );
+      const createSpy = jest.spyOn(repository, 'create').mockReturnValue({
+        version: 'v3.0.5',
+      } as unknown as MigrationOrmEntity);
       const saveSpy = jest
         .spyOn(repository, 'save')
         .mockResolvedValue(undefined as never);
@@ -441,7 +449,7 @@ describe('MigrationService', () => {
       expect(updateStatusSpy).toHaveBeenCalled();
       expect(updateOneSpy).toHaveBeenCalledWith(
         { where: { name: 'db-version' } },
-        { value: 'v3.1.0' },
+        { name: 'db-version', value: 'v3.1.0' },
       );
     });
 
@@ -469,7 +477,7 @@ describe('MigrationService', () => {
       expect(updateStatusSpy).toHaveBeenCalled();
       expect(updateOneSpy).toHaveBeenCalledWith(
         { where: { name: 'db-version' } },
-        { value: 'v3.0.9' },
+        { name: 'db-version', value: 'v3.0.9' },
       );
     });
   });
@@ -552,9 +560,9 @@ describe('MigrationService', () => {
         .mockResolvedValueOnce('executed')
         .mockResolvedValueOnce('failed');
 
-      await expect(
-        (service as any).runAll(MigrationAction.UP),
-      ).rejects.toThrow('Migration "v3.0.2" failed while executing "up".');
+      await expect((service as any).runAll(MigrationAction.UP)).rejects.toThrow(
+        'Migration "v3.0.2" failed while executing "up".',
+      );
       expect(runOneSpy).toHaveBeenCalledTimes(2);
     });
   });

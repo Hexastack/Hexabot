@@ -203,27 +203,23 @@ export const buildTestingMocks = async ({
   typeorm,
   ...rest
 }: buildTestingMocksProps) => {
-  const extendedProviders = new Set<Provider>();
-  const dynamicProviders = new Set<Provider>([
-    ...defaultProviders,
-    ...extendedProviders,
-  ]);
+  const injectedProviders = new Set<Provider>(defaultProviders);
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
 
   if (injectionFrom?.includes('providers')) {
-    [...getNestedDependencies(providers)].forEach((provider) =>
-      extendedProviders.add(provider),
+    getNestedDependencies(providers).forEach((provider) =>
+      injectedProviders.add(provider),
     );
   }
 
   if (injectionFrom?.includes('controllers')) {
-    [...getNestedDependencies(controllers)].forEach((controller) =>
-      extendedProviders.add(controller),
+    getNestedDependencies(controllers).forEach((controller) =>
+      injectedProviders.add(controller),
     );
   }
 
-  providers.forEach((provider) => extendedProviders.add(provider));
-  const providersList = [...dynamicProviders];
+  providers.forEach((provider) => injectedProviders.add(provider));
+  const providersList = [...injectedProviders];
   const overrideTokens = new Set<Provider>(
     providersList
       .filter(

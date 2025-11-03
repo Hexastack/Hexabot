@@ -9,6 +9,7 @@ import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Lookup, LookupStrategy } from '..//types';
+import { NlpEntity, NlpEntityFull } from '../dto/nlp-entity.dto';
 
 import { NlpSampleEntityOrmEntity } from './nlp-sample-entity.entity';
 import { NlpValueOrmEntity } from './nlp-value.entity';
@@ -43,7 +44,7 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
   )
   sampleEntities?: NlpSampleEntityOrmEntity[];
 
-  static getEntityMap<T extends { id: string }>(entities: T[]) {
+  static getEntityMap<T extends NlpEntity | NlpEntityFull>(entities: T[]) {
     return entities.reduce(
       (acc, entity) => {
         if (entity.id) {

@@ -599,6 +599,7 @@ export default class ${className} implements MigrationInterface {
     await this.metadataService.updateOne(
       { where: { name: 'db-version' } },
       {
+        name: 'db-version',
         value: metadataVersion,
       },
     );

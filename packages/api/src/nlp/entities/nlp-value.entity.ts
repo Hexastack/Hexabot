@@ -18,6 +18,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { NlpMetadata } from '..//types';
+import { NlpValue, NlpValueFull } from '../dto/nlp-value.dto';
 
 import { NlpEntityOrmEntity } from './nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from './nlp-sample-entity.entity';
@@ -75,7 +76,7 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
     }, [] as TValue[]);
   }
 
-  static getValueMap<T extends { id: string | number }>(values: T[]) {
+  static getValueMap<T extends NlpValue | NlpValueFull>(values: T[]) {
     return values.reduce(
       (acc, value) => {
         if (value.id !== undefined && value.id !== null) {

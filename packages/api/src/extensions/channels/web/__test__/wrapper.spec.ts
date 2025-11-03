@@ -30,6 +30,9 @@ import WebChannelHandler from '../index.channel';
 import { WEB_CHANNEL_NAME } from '../settings';
 import WebEventWrapper from '../wrapper';
 
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { webEvents } from './events.mock';
 
 describe(`Web event wrapper`, () => {
@@ -103,6 +106,9 @@ describe(`Web event wrapper`, () => {
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          MenuOrmEntity,
         ],
         fixtures: installSubscriberFixturesTypeOrm,
       },
