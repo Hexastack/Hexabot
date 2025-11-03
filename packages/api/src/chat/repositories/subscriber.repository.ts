@@ -205,7 +205,7 @@ export class SubscriberRepository extends BaseOrmRepository<
    * @param labelsToPush - Label IDs to add.
    * @param labelsToPull - Optional label IDs to remove before adding.
    *
-   * @returns The subscriber document (pre-update by default), or `null` if not found.
+   * @returns The subscriber object (pre-update by default), or `null` if not found.
    */
   async updateLabels(
     subscriberId: string,

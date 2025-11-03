@@ -107,7 +107,7 @@ export class SubscriberController extends BaseOrmController<
    *
    * @param id - The unique identifier of the subscriber to retrieve.
    * @param populate - An optional list of related fields to populate in the response.
-   * @returns The subscriber document, populated if requested.
+   * @returns The subscriber object, populated if requested.
    */
   @Get(':id')
   async findOne(
