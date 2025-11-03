@@ -24,6 +24,7 @@ import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
+import { UuidPipe } from './utils/pipes/uuid.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {
@@ -86,8 +87,7 @@ async function bootstrap() {
       transform: true,
       // forbidNonWhitelisted: true,
     }),
-    // @TODO : Remove fully once port to TypeORM is finalized
-    // new ObjectIdPipe(),
+    new UuidPipe(),
   );
   app.use(getSessionMiddleware());
   app.use(passport.initialize());
