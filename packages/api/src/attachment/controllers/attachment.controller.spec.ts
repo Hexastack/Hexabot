@@ -47,6 +47,7 @@ describe('AttachmentController', () => {
   let attachmentToDelete: Attachment;
   let helperService: HelperService;
   let settingService: SettingService;
+  const TEST_USER_ID = '99999999-9999-4999-9999-999999999999';
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
@@ -163,7 +164,7 @@ describe('AttachmentController', () => {
           file: [attachmentFile],
         },
         {
-          session: { passport: { user: { id: '9'.repeat(24) } } },
+          session: { passport: { user: { id: TEST_USER_ID } } },
         } as unknown as Request,
         { resourceRef: AttachmentResourceRef.BlockAttachment },
       );
@@ -176,7 +177,7 @@ describe('AttachmentController', () => {
         resourceRef: AttachmentResourceRef.BlockAttachment,
         access: AttachmentAccess.Public,
         createdByRef: AttachmentCreatedByRef.User,
-        createdBy: '9'.repeat(24),
+        createdBy: TEST_USER_ID,
       });
       expect(result).toEqualPayload(
         [
@@ -184,7 +185,7 @@ describe('AttachmentController', () => {
             ...attachment,
             resourceRef: AttachmentResourceRef.BlockAttachment,
             createdByRef: AttachmentCreatedByRef.User,
-            createdBy: '9'.repeat(24),
+            createdBy: TEST_USER_ID,
           },
         ],
         [...IGNORED_TEST_FIELDS, 'location', 'url', 'channel'],

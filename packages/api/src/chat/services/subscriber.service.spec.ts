@@ -54,6 +54,8 @@ describe('SubscriberService (TypeORM)', () => {
   let labelRepository: LabelRepository;
   let labelGroupRepository: LabelGroupRepository;
   let userRepository: UserRepository;
+  const STORED_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+  const EXISTING_ATTACHMENT_ID = '88888888-8888-4888-8888-888888888888';
 
   const gatewayMock = {
     joinNotificationSockets: jest.fn(),
@@ -270,7 +272,7 @@ describe('SubscriberService (TypeORM)', () => {
       jest.spyOn(mime, 'extension').mockReturnValue('png');
 
       const fakeAttachment = Object.assign(new AttachmentOrmEntity(), {
-        id: '9'.repeat(24),
+        id: STORED_ATTACHMENT_ID,
       });
       attachmentServiceMock.store.mockResolvedValue(fakeAttachment as any);
 
@@ -351,7 +353,7 @@ describe('SubscriberService (TypeORM)', () => {
       jest.spyOn(mime, 'extension').mockReturnValue('png');
 
       attachmentServiceMock.store.mockResolvedValue({
-        id: '8'.repeat(24),
+        id: EXISTING_ATTACHMENT_ID,
       } as any);
 
       const attachmentRepository = module.get(
@@ -359,11 +361,11 @@ describe('SubscriberService (TypeORM)', () => {
       );
       await attachmentRepository.save(
         attachmentRepository.create({
-          id: '8'.repeat(24),
+          id: EXISTING_ATTACHMENT_ID,
           name: 'avatar-test-uuid.png',
           type: 'image/png',
           size: avatarPayload.size,
-          location: `avatar-${'8'.repeat(24)}`,
+          location: `avatar-${EXISTING_ATTACHMENT_ID}`,
           resourceRef: AttachmentResourceRef.SubscriberAvatar,
           access: AttachmentAccess.Private,
           createdByRef: AttachmentCreatedByRef.Subscriber,

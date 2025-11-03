@@ -4,4 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export const NOT_FOUND_ID = '9'.repeat(24);
+export const NOT_FOUND_ID = '99999999-9999-4999-9999-999999999999';

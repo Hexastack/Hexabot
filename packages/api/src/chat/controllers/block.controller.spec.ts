@@ -57,6 +57,8 @@ import { PayloadType } from '../types/button';
 
 import { BlockController } from './block.controller';
 
+const UNKNOWN_BLOCK_ID = '99999999-9999-4999-9999-999999999999';
+
 const DEFAULT_SETTINGS = {
   chatbot_settings: {
     global_fallback: true,
@@ -431,7 +433,7 @@ describe('BlockController (TypeORM)', () => {
     });
 
     it('should throw NotFoundException when attempting to delete a missing block', async () => {
-      const nonExistingId = '9'.repeat(24);
+      const nonExistingId = UNKNOWN_BLOCK_ID;
 
       await expect(blockController.deleteOne(nonExistingId)).rejects.toThrow(
         new NotFoundException(`Block with ID ${nonExistingId} not found`),
@@ -465,7 +467,7 @@ describe('BlockController (TypeORM)', () => {
       };
 
       await expect(
-        blockController.updateOne('9'.repeat(24), updateBlock),
+        blockController.updateOne(UNKNOWN_BLOCK_ID, updateBlock),
       ).rejects.toThrow('Unable to execute updateOne() - No updates');
     });
   });

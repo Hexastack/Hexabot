@@ -105,6 +105,8 @@ function makeMockBlock(overrides: Partial<Block>): Block {
   };
 }
 
+const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+
 describe('BlockService (TypeORM)', () => {
   let module: TestingModule;
   let blockRepository: BlockRepository;
@@ -611,7 +613,7 @@ describe('BlockService (TypeORM)', () => {
           attachment: {
             type: FileType.file,
             payload: {
-              id: '9'.repeat(24),
+              id: ATTACHMENT_ID,
               url: 'http://link.to/the/file',
             },
           },

@@ -77,6 +77,8 @@ const fileChannelData = {
   ipAddress: '3.3.3.3',
 };
 
+const TEST_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+
 export const webEvents: [string, Web.IncomingMessage, any][] = [
   [
     'Payload Event',
@@ -144,14 +146,14 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
         attachment: {
           type: FileType.image,
           payload: {
-            id: '9'.repeat(24),
+            id: TEST_ATTACHMENT_ID,
           },
         },
       },
       message: {
         attachment: {
           payload: {
-            id: '9'.repeat(24),
+            id: TEST_ATTACHMENT_ID,
           },
           type: FileType.image,
         },

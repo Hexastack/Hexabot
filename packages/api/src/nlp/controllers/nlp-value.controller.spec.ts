@@ -218,8 +218,8 @@ describe('NlpValueController', () => {
 
     it('should throw NotFoundException when provided IDs do not exist', async () => {
       const nonExistentIds = [
-        '614c1b2f58f4f04c876d6b8d',
-        '614c1b2f58f4f04c876d6b8e',
+        '2f8f1d3d-6a84-4c54-9b4b-7a5d2c3b0001',
+        '2f8f1d3d-6a84-4c54-9b4b-7a5d2c3b0002',
       ];
 
       await expect(

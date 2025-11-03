@@ -29,6 +29,7 @@ describe('AttachmentRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: AttachmentRepository;
   const createdAttachmentIds = new Set<string>();
+  const CREATOR_UUID = '99999999-9999-4999-9999-999999999999';
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -101,7 +102,7 @@ describe('AttachmentRepository (TypeORM)', () => {
         resourceRef: AttachmentResourceRef.BlockAttachment,
         access: AttachmentAccess.Public,
         createdByRef: AttachmentCreatedByRef.User,
-        createdBy: '9'.repeat(24),
+        createdBy: CREATOR_UUID,
         channel: {
           'web-channel': { id: 'channel-id' },
         },

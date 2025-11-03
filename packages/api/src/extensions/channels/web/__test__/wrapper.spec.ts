@@ -35,6 +35,8 @@ import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { webEvents } from './events.mock';
 
+const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+
 describe(`Web event wrapper`, () => {
   let module: TestingModule;
   let handler: WebChannelHandler;
@@ -140,7 +142,7 @@ describe(`Web event wrapper`, () => {
       event._adapter.messageType === IncomingMessageType.attachments
     ) {
       event._adapter.attachment = {
-        id: '9'.repeat(24),
+        id: ATTACHMENT_ID,
         type: 'image/png',
         name: 'filename.extension',
       } as AttachmentOrmEntity;

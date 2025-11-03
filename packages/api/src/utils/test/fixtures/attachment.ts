@@ -28,7 +28,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '9'.repeat(24),
+    createdBy: '99999999-9999-4999-9999-999999999999',
   },
   {
     name: 'store2.jpg',
@@ -43,7 +43,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '9'.repeat(24),
+    createdBy: '99999999-9999-4999-9999-999999999999',
   },
 ];
 
