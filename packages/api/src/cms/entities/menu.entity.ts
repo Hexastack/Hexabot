@@ -17,6 +17,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -63,7 +64,7 @@ export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * Type of the menu item, one of: web_url, postback, nested.
    */
-  @Column({ type: 'simple-enum', enum: MenuType })
+  @EnumColumn({ enum: MenuType })
   type!: MenuType;
 
   /**

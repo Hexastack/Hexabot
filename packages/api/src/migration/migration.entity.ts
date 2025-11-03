@@ -13,6 +13,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+
 import { MigrationAction, MigrationVersion } from './types';
 
 @Entity('migrations')
@@ -24,8 +26,7 @@ export class MigrationOrmEntity {
   @Column({ type: 'varchar', length: 32 })
   version: MigrationVersion;
 
-  @Column({
-    type: 'simple-enum',
+  @EnumColumn({
     enum: MigrationAction,
   })
   status: MigrationAction;
