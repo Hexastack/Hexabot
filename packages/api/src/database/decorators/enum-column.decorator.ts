@@ -18,9 +18,7 @@ const dbTypeToEnumColumn: Record<string, ColumnType> = {
   mariadb: 'enum',
 };
 
-export const EnumColumn = (
-  options: EnumColumnOptions,
-): PropertyDecorator => {
+export const EnumColumn = (options: EnumColumnOptions): PropertyDecorator => {
   if (!options?.enum) {
     throw new Error('EnumColumn requires the enum option to be provided.');
   }
@@ -33,4 +31,3 @@ export const EnumColumn = (
     type: columnType,
   });
 };
-
