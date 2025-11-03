@@ -32,6 +32,10 @@ export class NlpSampleRepository extends BaseOrmRepository<
   NlpSampleTransformerDto,
   TNlpSampleDto
 > {
+  /**
+   * Initializes the repository with default relations and transformers.
+   * @param repository The TypeORM repository for `NlpSampleOrmEntity`.
+   */
   constructor(
     @InjectRepository(NlpSampleOrmEntity)
     repository: Repository<NlpSampleOrmEntity>,
@@ -42,6 +46,11 @@ export class NlpSampleRepository extends BaseOrmRepository<
     });
   }
 
+  /**
+   * Finds samples that match the provided entity/value pairs.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Samples transformed into `NlpSample` instances.
+   */
   async findByEntities(criterias: {
     options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
@@ -51,6 +60,11 @@ export class NlpSampleRepository extends BaseOrmRepository<
     return entities.map((entity) => plainToInstance(NlpSample, entity));
   }
 
+  /**
+   * Finds samples that match the provided entity/value pairs and loads relations.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Samples transformed into `NlpSampleFull` instances.
+   */
   async findByEntitiesAndPopulate(criterias: {
     options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
@@ -65,6 +79,11 @@ export class NlpSampleRepository extends BaseOrmRepository<
     return entities.map((entity) => plainToInstance(NlpSampleFull, entity));
   }
 
+  /**
+   * Counts samples that match the provided entity/value pairs.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Number of samples that satisfy the constraints.
+   */
   async countByEntities(criterias: {
     options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
@@ -74,6 +93,12 @@ export class NlpSampleRepository extends BaseOrmRepository<
     return await qb.getCount();
   }
 
+  /**
+   * Creates the query builder used to retrieve samples filtered by entity/value pairs.
+   * @param options Optional TypeORM `FindManyOptions` used to refine filtering.
+   * @param values Entity/value constraints to enforce on the query.
+   * @returns Configured query builder that applies the provided constraints.
+   */
   private buildFindByEntitiesQuery({
     options = {},
     values,
@@ -119,6 +144,11 @@ export class NlpSampleRepository extends BaseOrmRepository<
     return qb;
   }
 
+  /**
+   * Constrains the query so that each provided value must be present in the sample.
+   * @param qb Query builder to update.
+   * @param values Entity/value pairs used in `EXISTS` subqueries.
+   */
   private applyValueConstraints(
     qb: SelectQueryBuilder<NlpSampleOrmEntity>,
     values: NlpValue[],
@@ -134,6 +164,12 @@ export class NlpSampleRepository extends BaseOrmRepository<
     });
   }
 
+  /**
+   * Searches for samples containing keywords and optionally filtered by types.
+   * @param keywords Keywords to match within the sample text (case-insensitive).
+   * @param types Optional sample states to limit the search scope.
+   * @returns Samples transformed into `NlpSample` instances.
+   */
   async findContainingKeywords(
     keywords: string[],
     types: NlpSampleState[],

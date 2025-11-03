@@ -169,7 +169,7 @@ export class NlpValueController extends BaseOrmController<
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const result = await this.nlpValueService.deleteCascadeOne(id);
+    const result = await this.nlpValueService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);

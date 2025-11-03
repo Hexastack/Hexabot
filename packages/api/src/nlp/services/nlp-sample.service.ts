@@ -192,17 +192,6 @@ export class NlpSampleService extends BaseOrmService<
   }
 
   /**
-   * Deletes an NLP sample by its ID and cascades the operation if needed.
-   *
-   * @param id - The unique identifier of the NLP sample to delete.
-   *
-   * @returns A promise resolving when the sample is deleted.
-   */
-  async deleteCascadeOne(id: string) {
-    return await this.repository.deleteOne(id);
-  }
-
-  /**
    * This function is responsible for parsing a CSV dataset string and saving the parsed data into the database.
    * It ensures that all necessary entities and languages exist, validates the dataset, and processes it row by row
    * to create NLP samples and associated entities in the system.

@@ -30,6 +30,10 @@ export class NlpValueRepository extends BaseOrmRepository<
   NlpValueTransformerDto,
   NlpValueDtoConfig
 > {
+  /**
+   * Initializes the repository with relations and DTO classes used for value entities.
+   * @param repository The TypeORM repository for `NlpValueOrmEntity`.
+   */
   constructor(
     @InjectRepository(NlpValueOrmEntity)
     repository: Repository<NlpValueOrmEntity>,
@@ -40,6 +44,13 @@ export class NlpValueRepository extends BaseOrmRepository<
     });
   }
 
+  /**
+   * Retrieves values with the count of linked training samples, using the requested format.
+   * @param format Determines whether plain or full DTOs are returned.
+   * @param options Optional TypeORM find options to refine filtering, sorting, or pagination.
+   * @returns Array of values enriched with their linked training sample counts.
+   * @throws Logs the underlying error before rethrowing when the query fails.
+   */
   async findWithCount<F extends Format>(
     format: F,
     options: FindManyOptions<NlpValueOrmEntity> = {},
@@ -66,6 +77,12 @@ export class NlpValueRepository extends BaseOrmRepository<
     }
   }
 
+  /**
+   * Builds the query used to load values alongside their linked training sample counts.
+   * @param format Determines which relations are joined and selected.
+   * @param options Optional TypeORM find options to apply to the query builder.
+   * @returns A query builder prepared with the requested joins, ordering, and pagination.
+   */
   private buildCountQuery(
     format: Format,
     options: FindManyOptions<NlpValueOrmEntity>,

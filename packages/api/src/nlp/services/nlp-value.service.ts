@@ -8,7 +8,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { Format } from '@/utils/types/format.types';
 
@@ -52,17 +51,6 @@ export class NlpValueService extends BaseOrmService<
         value: In(patterns.map((p) => p.value)),
       },
     });
-  }
-
-  /**
-   * Deletes an NLP value by its ID, cascading any dependent data.
-   *
-   * @param id The ID of the NLP value to delete.
-   *
-   * @returns A promise that resolves when the deletion is complete.
-   */
-  async deleteCascadeOne(id: string): Promise<DeleteResult> {
-    return await this.repository.deleteOne(id);
   }
 
   /**

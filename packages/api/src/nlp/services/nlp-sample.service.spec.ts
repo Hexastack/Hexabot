@@ -96,7 +96,7 @@ describe('NlpSampleService (TypeORM)', () => {
       const sample = await nlpSampleRepository.findOne({
         where: { text: 'Bye Jhon' },
       });
-      const result = await nlpSampleService.deleteCascadeOne(sample!.id);
+      const result = await nlpSampleService.deleteOne(sample!.id);
       expect(result.deletedCount).toBe(1);
     });
   });

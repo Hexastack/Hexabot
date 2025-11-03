@@ -111,7 +111,7 @@ describe('NlpValueService (TypeORM)', () => {
         value: `delete-${randomUUID()}`,
       });
 
-      const result = await nlpValueService.deleteCascadeOne(removable.id);
+      const result = await nlpValueService.deleteOne(removable.id);
       expect(result.deletedCount).toBe(1);
     });
   });

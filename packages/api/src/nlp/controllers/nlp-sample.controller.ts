@@ -361,7 +361,7 @@ export class NlpSampleController extends BaseOrmController<
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const result = await this.nlpSampleService.deleteCascadeOne(id);
+    const result = await this.nlpSampleService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
