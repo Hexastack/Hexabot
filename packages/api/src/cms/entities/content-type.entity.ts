@@ -34,24 +34,33 @@ export class ContentTypeOrmEntity extends BaseOrmEntity {
     }
 
     const manager = ContentTypeOrmEntity.getEntityManager();
-    const pattern = `%"content":%"entity":"${ContentTypeOrmEntity.escapeLikePattern(
-      this.id,
-    )}"%`;
+    const databaseType = manager.connection.options.type;
 
-    const associatedBlock = await manager
+    const blockQuery = manager
       .createQueryBuilder()
       .select('1')
-      .from('blocks', 'block')
-      .where('block.options LIKE :pattern', { pattern })
-      .limit(1)
-      .getRawOne();
+      .from('blocks', 'block');
+
+    if (databaseType === 'sqlite' || databaseType === 'better-sqlite3') {
+      blockQuery.where(
+        `json_extract(block.options, '$.content.entity') = :contentTypeId`,
+        { contentTypeId: this.id },
+      );
+    } else if (databaseType === 'postgres') {
+      blockQuery.where(
+        `(block.options -> 'content' ->> 'entity') = :contentTypeId`,
+        { contentTypeId: this.id },
+      );
+    } else {
+      throw new Error(
+        `Unsupported database type for content type deletion safeguard: ${databaseType}`,
+      );
+    }
+
+    const associatedBlock = await blockQuery.limit(1).getRawOne();
 
     if (associatedBlock) {
       throw new ForbiddenException('Content type have blocks associated to it');
     }
-  }
-
-  private static escapeLikePattern(value: string): string {
-    return value.replace(/[%_]/g, '\\$&');
   }
 }
