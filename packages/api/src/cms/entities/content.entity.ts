@@ -17,6 +17,7 @@ import {
 
 import { ContentElement } from '@/chat/types/message';
 import { config } from '@/config';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -54,7 +55,7 @@ export class ContentOrmEntity extends BaseOrmEntity {
   @Column({ default: true })
   status!: boolean;
 
-  @Column({ type: 'json', name: 'dynamic_fields', nullable: true })
+  @JsonColumn({ name: 'dynamic_fields', nullable: true })
   dynamicFields!: Record<string, any> | null;
 
   @Column({ type: 'text', nullable: true })

@@ -10,6 +10,7 @@ import { Column, Entity, Index } from 'typeorm';
 import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { buildURL } from '@/utils/helpers/URL';
 
@@ -34,7 +35,7 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   location!: string;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   channel?: Partial<Record<ChannelName, any>>;
 
   @Column({ name: 'created_by', type: 'varchar', nullable: true })

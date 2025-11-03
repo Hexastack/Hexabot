@@ -23,6 +23,7 @@ import {
   Repository,
 } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { SettingService } from '@/setting/services/setting.service';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -49,10 +50,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   patterns: Pattern[] = [];
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   outcomes: string[] = [];
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.triggerBlocks, {
@@ -83,13 +84,13 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @RelationId((block: BlockOrmEntity) => block.assign_labels)
   private readonly assignLabelIds!: string[];
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   trigger_channels: string[] = [];
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   options: BlockOptions = {} as BlockOptions;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   message!: BlockMessage;
 
   @ManyToMany(() => BlockOrmEntity, (block) => block.previousBlocks, {
@@ -139,10 +140,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column({ default: false })
   starts_conversation!: boolean;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   capture_vars: CaptureVar[] = [];
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   position?: Position | null;
 
   @Column({ default: false })

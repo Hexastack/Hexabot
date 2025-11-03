@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -63,7 +64,7 @@ export class MessageOrmEntity extends BaseOrmEntity {
   @RelationId((message: MessageOrmEntity) => message.sentBy)
   private readonly sentById?: string | null;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   message!: StdOutgoingMessage | StdIncomingMessage;
 
   @Column({ default: false })

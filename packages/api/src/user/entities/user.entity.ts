@@ -18,6 +18,7 @@ import {
 } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -88,7 +89,7 @@ export class UserOrmEntity extends BaseOrmEntity {
   @Column({ name: 'reset_token', nullable: true, type: 'text' })
   resetToken?: string | null;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   provider?: UserProvider;
 
   @BeforeInsert()

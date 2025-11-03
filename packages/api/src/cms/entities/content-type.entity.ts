@@ -7,6 +7,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { BeforeRemove, Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { ContentField } from '../dto/contentType.dto';
@@ -19,7 +20,7 @@ export class ContentTypeOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   name!: string;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   fields!: ContentField[] | null;
 
   @OneToMany(() => ContentOrmEntity, (content) => content.contentType, {

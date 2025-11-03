@@ -7,6 +7,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { SettingType } from '../types';
@@ -28,13 +29,13 @@ export class SettingOrmEntity extends BaseOrmEntity {
   @Column({ type: 'simple-enum', enum: SettingType })
   type!: SettingType;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   value: any;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   options?: string[];
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   config?: Record<string, any>;
 
   @Column({ default: 0 })

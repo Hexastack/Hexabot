@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 @Entity({ name: 'metadata' })
@@ -14,6 +15,6 @@ export class MetadataOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   value!: any;
 }

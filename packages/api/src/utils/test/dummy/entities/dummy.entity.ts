@@ -6,6 +6,7 @@
 
 import { Column, Entity } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 @Entity({ name: 'dummy' })
@@ -13,6 +14,6 @@ export class DummyOrmEntity extends BaseOrmEntity {
   @Column()
   dummy!: string;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   dynamicField?: Record<string, unknown>;
 }

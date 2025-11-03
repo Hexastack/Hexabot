@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -32,10 +33,10 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
   @Column()
   value!: string;
 
-  @Column({ type: 'json', nullable: false })
+  @JsonColumn()
   expressions: string[] = [];
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   metadata?: NlpMetadata | null;
 
   @Column({ type: 'text', nullable: true })

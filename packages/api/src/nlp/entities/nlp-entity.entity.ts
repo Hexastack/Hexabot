@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Lookup, LookupStrategy } from '..//types';
@@ -23,7 +24,7 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @Column({ type: 'json', nullable: false })
+  @JsonColumn()
   lookups: Lookup[] = [LookupStrategy.keywords as Lookup];
 
   @Column({ type: 'text', nullable: true })
