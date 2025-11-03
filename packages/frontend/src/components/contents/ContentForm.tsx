@@ -117,7 +117,7 @@ const buildDynamicFields = (
   contentType?: IContentType,
 ) => ({
   title: content.title,
-  entity: content.entity,
+  contentType: content.contentType,
   status: content.status,
   dynamicFields: {
     ...contentType?.fields
@@ -141,7 +141,7 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
     handleSubmit,
   } = useForm<IContentAttributes & { [key: string]: any }>({
     defaultValues: {
-      entity: content?.entity || "",
+      contentType: content?.contentType || "",
       status: content?.status || false,
       title: content?.title || "",
     },
@@ -176,7 +176,10 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       );
     } else if (contentType) {
       createContent(
-        { ...buildDynamicFields(params, contentType), entity: contentType.id },
+        {
+          ...buildDynamicFields(params, contentType),
+          contentType: contentType.id,
+        },
         options,
       );
     } else {
@@ -208,8 +211,8 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
                   contentField.name === "title"
                     ? validationRules.title
                     : contentField.type === ContentFieldType.URL
-                    ? validationRules.url
-                    : undefined
+                      ? validationRules.url
+                      : undefined
                 }
                 render={({ field }) => (
                   <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>

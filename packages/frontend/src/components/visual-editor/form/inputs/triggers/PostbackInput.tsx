@@ -158,7 +158,7 @@ export const PostbackInput = ({
         )
         .map((b) => {
           const availableContents = (contents || []).filter(
-            ({ entity, status }) =>
+            ({ contentType: entity, status }) =>
               status && entity === b.options?.content?.entity,
           );
 

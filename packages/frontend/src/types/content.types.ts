@@ -10,7 +10,7 @@ import { IBaseSchema, IFormat } from "./base.types";
 import { IContentType } from "./content-type.types";
 
 export interface IContentAttributes {
-  entity: string;
+  contentType: string;
   title: string;
   status: boolean;
   dynamicFields: Record<string, any>;
@@ -23,9 +23,9 @@ export interface IContentStub extends IBaseSchema {
 }
 
 export interface IContent extends IContentStub, IFormat<Format.BASIC> {
-  entity: string;
+  contentType: string;
 }
 
 export interface IContentFull extends IContentStub, IFormat<Format.FULL> {
-  entity: IContentType;
+  contentType: IContentType;
 }
