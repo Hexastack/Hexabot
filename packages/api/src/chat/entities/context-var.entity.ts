@@ -28,13 +28,37 @@ export class ContextVarOrmEntity extends BaseOrmEntity {
   protected async ensureNotInUse(): Promise<void> {
     const manager = ContextVarOrmEntity.getEntityManager();
 
-    const pattern = `%\\"context_var\\":\\"${ContextVarOrmEntity.escapeLikePattern(this.name)}\\"%`;
-    const blocks = await manager
+    const databaseType = manager.connection.options.type;
+    const blocksQuery = manager
       .getRepository(BlockOrmEntity)
       .createQueryBuilder('block')
-      .select(['block.name'])
-      .where('block.capture_vars LIKE :pattern', { pattern })
-      .getMany();
+      .select(['block.name']);
+
+    if (databaseType === 'sqlite' || databaseType === 'better-sqlite3') {
+      blocksQuery.where(
+        `EXISTS (
+          SELECT 1
+          FROM json_each(block.capture_vars) AS capture
+          WHERE json_extract(capture.value, '$.context_var') = :contextVar
+        )`,
+        { contextVar: this.name },
+      );
+    } else if (databaseType === 'postgres') {
+      blocksQuery.where(
+        `EXISTS (
+          SELECT 1
+          FROM json_array_elements(block.capture_vars) AS capture
+          WHERE capture ->> 'context_var' = :contextVar
+        )`,
+        { contextVar: this.name },
+      );
+    } else {
+      throw new Error(
+        `Unsupported database type for context var deletion safeguard: ${databaseType}`,
+      );
+    }
+
+    const blocks = await blocksQuery.getMany();
 
     if (!blocks.length) {
       return;
@@ -44,9 +68,5 @@ export class ContextVarOrmEntity extends BaseOrmEntity {
     throw new ForbiddenException(
       `Context var "${this.name}" is associated with the following block(s): ${blockNames} and cannot be deleted.`,
     );
-  }
-
-  private static escapeLikePattern(value: string): string {
-    return value.replace(/[%_]/g, '\\$&');
   }
 }
