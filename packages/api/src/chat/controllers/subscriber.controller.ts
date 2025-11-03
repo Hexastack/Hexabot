@@ -115,14 +115,14 @@ export class SubscriberController extends BaseOrmController<
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Subscriber | SubscriberFull> {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.subscriberService.findOneAndPopulate(id)
       : await this.subscriberService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Subscriber by id ${id}`);
       throw new NotFoundException(`Subscriber with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**

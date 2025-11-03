@@ -246,15 +246,15 @@ export class ReadOnlyUserController extends BaseOrmController<
     populate: string[],
   ) {
     const shouldPopulate = this.canPopulate(populate);
-    const doc = shouldPopulate
+    const record = shouldPopulate
       ? await this.userService.findOneAndPopulate(id)
       : await this.userService.findOne(id);
 
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 }
 

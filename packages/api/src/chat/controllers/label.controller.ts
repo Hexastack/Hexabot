@@ -85,14 +85,14 @@ export class LabelController extends BaseOrmController<
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Label | LabelFull> {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.labelService.findOneAndPopulate(id)
       : await this.labelService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Label by id ${id}`);
       throw new NotFoundException(`Label with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   @Post()

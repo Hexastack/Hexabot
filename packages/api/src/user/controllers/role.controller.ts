@@ -102,15 +102,15 @@ export class RoleController extends BaseOrmController<
     populate: string[],
   ) {
     const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-    const doc = shouldPopulate
+    const record = shouldPopulate
       ? await this.roleService.findOneAndPopulate(id)
       : await this.roleService.findOne(id);
 
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Role by id ${id}`);
       throw new NotFoundException(`Role with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**

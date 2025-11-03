@@ -99,14 +99,14 @@ export class NlpEntityController extends BaseOrmController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.nlpEntityService.findOneAndPopulate(id)
       : await this.nlpEntityService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find NLP Entity by id ${id}`);
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**

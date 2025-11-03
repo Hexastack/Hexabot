@@ -220,14 +220,14 @@ export class BlockController extends BaseOrmController<
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Block | BlockFull> {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.blockService.findOneAndPopulate(id)
       : await this.blockService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**

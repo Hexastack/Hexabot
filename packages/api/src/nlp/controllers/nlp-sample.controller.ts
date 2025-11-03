@@ -263,14 +263,14 @@ export class NlpSampleController extends BaseOrmController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.nlpSampleService.findOneAndPopulate(id)
       : await this.nlpSampleService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**

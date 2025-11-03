@@ -114,14 +114,14 @@ export class MessageController extends BaseOrmController<
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Message | MessageFull> {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.messageService.findOneAndPopulate(id)
       : await this.messageService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Message by id ${id}`);
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   @Post()

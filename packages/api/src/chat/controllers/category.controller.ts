@@ -82,15 +82,15 @@ export class CategoryController extends BaseOrmController<
    * Finds a category by its ID.
    * @param id - The ID of the category to find.
    * @returns A Promise that resolves to the found category.
-   */
+  */
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Category> {
-    const doc = await this.categoryService.findOne(id);
-    if (!doc) {
+    const record = await this.categoryService.findOne(id);
+    if (!record) {
       this.logger.warn(`Unable to find Category by id ${id}`);
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
-    return doc;
+    return record;
   }
 
   /**
