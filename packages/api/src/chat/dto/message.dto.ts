@@ -12,10 +12,10 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import {
   BaseStub,
@@ -91,19 +91,19 @@ export class MessageCreateDto {
   @ApiPropertyOptional({ description: 'Message sender', type: String })
   @IsString()
   @IsOptional()
-  @IsUUID('4', { message: 'Sender must be a valid UUID' })
+  @IsUUIDv4({ message: 'Sender must be a valid UUID' })
   sender?: string;
 
   @ApiPropertyOptional({ description: 'Message recipient', type: String })
   @IsString()
   @IsOptional()
-  @IsUUID('4', { message: 'Recipient must be a valid UUID' })
+  @IsUUIDv4({ message: 'Recipient must be a valid UUID' })
   recipient?: string;
 
   @ApiPropertyOptional({ description: 'Message sent by', type: String })
   @IsString()
   @IsOptional()
-  @IsUUID('4', { message: 'SentBy must be a valid UUID' })
+  @IsUUIDv4({ message: 'SentBy must be a valid UUID' })
   sentBy?: string;
 
   @ApiProperty({ description: 'Message', type: Object })

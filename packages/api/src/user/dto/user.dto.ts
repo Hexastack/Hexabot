@@ -20,10 +20,10 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -122,13 +122,13 @@ export class UserCreateDto {
   @ApiProperty({ description: 'User roles', type: String })
   @IsNotEmpty()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Role must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Role must be a valid UUID' })
   roles: string[];
 
   @ApiPropertyOptional({ description: 'Avatar', type: String })
   @IsOptional()
   @IsString()
-  @IsUUID('4', { message: 'Avatar must be a valid UUID' })
+  @IsUUIDv4({ message: 'Avatar must be a valid UUID' })
   avatar: string | null = null;
 
   @ApiPropertyOptional({
@@ -210,7 +210,7 @@ export class UserUpdateStateAndRolesDto {
   })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Role must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Role must be a valid UUID' })
   roles?: string[];
 }
 

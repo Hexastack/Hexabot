@@ -6,14 +6,9 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -59,7 +54,7 @@ export class PermissionCreateDto {
   @ApiProperty({ description: 'Id of the model', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Model must be a valid UUID' })
+  @IsUUIDv4({ message: 'Model must be a valid UUID' })
   model: string;
 
   @ApiProperty({ description: 'Action to perform on the model', enum: Action })
@@ -70,7 +65,7 @@ export class PermissionCreateDto {
   @IsNotEmpty()
   @ApiProperty({ description: 'Id of the role', type: String })
   @IsString()
-  @IsUUID('4', { message: 'Role must be a valid UUID' })
+  @IsUUIDv4({ message: 'Role must be a valid UUID' })
   role: string;
 
   @ApiProperty({

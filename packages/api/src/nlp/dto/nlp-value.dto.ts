@@ -14,9 +14,9 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -140,7 +140,7 @@ export class NlpValueCreateDto {
   })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Entity must be a valid UUID' })
+  @IsUUIDv4({ message: 'Entity must be a valid UUID' })
   entity: string;
 }
 

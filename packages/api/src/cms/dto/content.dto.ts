@@ -6,14 +6,9 @@
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -54,7 +49,7 @@ export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })
   @IsString()
   @IsNotEmpty()
-  @IsUUID('4', { message: 'Content Type must be a valid UUID' })
+  @IsUUIDv4({ message: 'Content Type must be a valid UUID' })
   contentType: string;
 
   @ApiProperty({ description: 'Content title', type: String })

@@ -19,12 +19,12 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   Min,
 } from 'class-validator';
 import { z } from 'zod';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { SanitizeQueryPipe } from '@/utils/pipes/sanitize-query.pipe';
 import {
@@ -162,13 +162,13 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Trigger label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Trigger label must be a valid UUID' })
   trigger_labels?: string[] = [];
 
   @ApiPropertyOptional({ description: 'Block assign labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Assign label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
   assign_labels?: string[] = [];
 
   @ApiPropertyOptional({ description: 'Block trigger channels', type: Array })
@@ -190,13 +190,13 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'next blocks', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Next block must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Next block must be a valid UUID' })
   nextBlocks?: string[];
 
   @ApiPropertyOptional({ description: 'attached blocks', type: String })
   @IsOptional()
   @IsString()
-  @IsUUID('4', {
+  @IsUUIDv4({
     message: 'Attached block must be a valid UUID',
   })
   attachedBlock?: string | null;
@@ -204,7 +204,7 @@ export class BlockCreateDto {
   @ApiProperty({ description: 'Block category', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Category must be a valid UUID' })
+  @IsUUIDv4({ message: 'Category must be a valid UUID' })
   category: string | null;
 
   @ApiPropertyOptional({
@@ -257,13 +257,13 @@ export class BlockUpdateDto extends PartialType(
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Trigger label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Trigger label must be a valid UUID' })
   trigger_labels?: string[];
 
   @ApiPropertyOptional({ description: 'Block assign labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Assign label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
   assign_labels?: string[];
 
   @ApiPropertyOptional({ description: 'Block trigger channels', type: Array })
@@ -303,7 +303,7 @@ export class BlockSearchQueryDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Category must be a valid UUID' })
+  @IsUUIDv4({ message: 'Category must be a valid UUID' })
   category?: string;
 }
 

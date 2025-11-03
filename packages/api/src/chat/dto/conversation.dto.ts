@@ -13,9 +13,9 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -67,7 +67,7 @@ export class ConversationCreateDto {
   @ApiProperty({ description: 'Conversation sender', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', {
+  @IsUUIDv4({
     message: 'Sender must be a valid UUID',
   })
   sender: string;
@@ -85,7 +85,7 @@ export class ConversationCreateDto {
   @ApiProperty({ description: 'Current conversation', type: String })
   @IsOptional()
   @IsString()
-  @IsUUID('4', {
+  @IsUUIDv4({
     message: 'Current must be a valid UUID',
   })
   current?: string | null;
@@ -93,7 +93,7 @@ export class ConversationCreateDto {
   @ApiProperty({ description: 'next conversation', type: Array })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', {
+  @IsUUIDv4({
     each: true,
     message: 'next must be a valid UUID',
   })

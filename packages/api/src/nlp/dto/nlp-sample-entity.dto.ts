@@ -6,14 +6,9 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -74,19 +69,19 @@ export class NlpSampleEntityCreateDto {
   @ApiProperty({ type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Entity must be a valid UUID' })
+  @IsUUIDv4({ message: 'Entity must be a valid UUID' })
   entity: string;
 
   @ApiProperty({ type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Value must be a valid UUID' })
+  @IsUUIDv4({ message: 'Value must be a valid UUID' })
   value: string;
 
   @ApiProperty({ type: String })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Sample must be a valid UUID' })
+  @IsUUIDv4({ message: 'Sample must be a valid UUID' })
   sample: string;
 }
 

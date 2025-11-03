@@ -11,10 +11,10 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
   Matches,
 } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -83,7 +83,7 @@ export class LabelCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsUUID('4', { message: 'group must be a valid UUID' })
+  @IsUUIDv4({ message: 'group must be a valid UUID' })
   group?: string | null;
 
   @ApiPropertyOptional({ description: 'Label description', type: String })

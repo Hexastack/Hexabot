@@ -14,10 +14,10 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { Language } from '@/i18n/dto/language.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -91,7 +91,7 @@ export class NlpSampleCreateDto {
   })
   @IsNotEmpty()
   @IsString()
-  @IsUUID('4', { message: 'Language must be a valid UUID' })
+  @IsUUIDv4({ message: 'Language must be a valid UUID' })
   language: string;
 }
 

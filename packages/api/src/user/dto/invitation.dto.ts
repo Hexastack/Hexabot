@@ -6,14 +6,9 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsArray, IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -48,7 +43,7 @@ export class InvitationCreateDto {
   @ApiProperty({ description: 'Invitation roles', type: String })
   @IsNotEmpty()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Role must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Role must be a valid UUID' })
   roles: string[];
 
   @ApiProperty({ description: 'Invitation email', type: String })

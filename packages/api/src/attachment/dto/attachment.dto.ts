@@ -14,12 +14,12 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
 import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -151,7 +151,7 @@ export class AttachmentMetadataDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsUUID('4', { message: 'CreatedBy must be a valid UUID' })
+  @IsUUIDv4({ message: 'CreatedBy must be a valid UUID' })
   createdBy: string;
 }
 
@@ -167,7 +167,7 @@ export class AttachmentCreateDto extends AttachmentMetadataDto {
 
 export class AttachmentDownloadDto {
   @ApiPropertyOptional({ description: 'Identifier', type: String })
-  @IsUUID('4', { each: true, message: 'Assign label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
   id: string;
 
   /**

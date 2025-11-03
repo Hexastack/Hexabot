@@ -12,10 +12,10 @@ import {
   IsOptional,
   IsString,
   IsUrl,
-  IsUUID,
   ValidateIf,
 } from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -65,7 +65,7 @@ export class MenuCreateDto {
   @ApiPropertyOptional({ description: 'Menu parent', type: String })
   @IsOptional()
   @IsString()
-  @IsUUID('4', {
+  @IsUUIDv4({
     message: 'Parent must be a valid UUID',
   })
   parent?: string;

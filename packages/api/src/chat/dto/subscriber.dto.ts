@@ -14,12 +14,12 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
 import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import {
   BaseStub,
@@ -145,7 +145,7 @@ export class SubscriberCreateDto {
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsNotEmpty()
   @IsArray()
-  @IsUUID('4', { each: true, message: 'Label must be a valid UUID' })
+  @IsUUIDv4({ each: true, message: 'Label must be a valid UUID' })
   labels: string[];
 
   @ApiPropertyOptional({
@@ -155,7 +155,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsUUID('4', { message: 'AssignedTo must be a valid UUID' })
+  @IsUUIDv4({ message: 'AssignedTo must be a valid UUID' })
   assignedTo: string | null = null;
 
   @ApiPropertyOptional({
@@ -198,7 +198,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsUUID('4', { message: 'Avatar Attachment ID must be a valid UUID' })
+  @IsUUIDv4({ message: 'Avatar Attachment ID must be a valid UUID' })
   avatar: string | null = null;
 
   @ApiPropertyOptional({ description: 'Context', type: Object })
