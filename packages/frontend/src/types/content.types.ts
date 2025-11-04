@@ -6,7 +6,7 @@
 
 import { Format } from "@/services/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
+import { IBaseSchema, IFormat, TNestedPaths } from "./base.types";
 import { IContentType } from "./content-type.types";
 
 export interface IContentAttributes {
@@ -14,6 +14,11 @@ export interface IContentAttributes {
   title: string;
   status: boolean;
   dynamicFields: Record<string, any>;
+}
+
+export interface IContentFilters
+  extends TNestedPaths<{ contentType: { id: string } }> {
+  title: string;
 }
 
 export interface IContentStub extends IBaseSchema {

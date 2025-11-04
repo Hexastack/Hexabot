@@ -6,7 +6,7 @@
 
 import { Format } from "@/services/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
+import { IBaseSchema, IFormat, TNestedPaths } from "./base.types";
 import { INlpEntity, INlpMetadata } from "./nlp-entity.types";
 
 export interface INlpValueAttributes {
@@ -18,6 +18,12 @@ export interface INlpValueAttributes {
   metadata?: INlpMetadata;
   builtin?: boolean;
   nlpSamplesCount?: number;
+}
+
+export interface INlpValueFilters
+  extends TNestedPaths<{ entity: { id: string } }> {
+  value: string;
+  doc: string;
 }
 
 export interface INlpValueStub extends IBaseSchema, INlpValueAttributes {}
