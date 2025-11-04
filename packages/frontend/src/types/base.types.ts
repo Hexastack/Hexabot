@@ -108,7 +108,6 @@ export const POPULATE_BY_TYPE = {
     "attachedToBlock",
     "assign_labels",
     "trigger_labels",
-    "assignTo",
   ],
   [EntityType.BLOCK_SEARCH]: [],
   [EntityType.NLP_SAMPLE]: ["language", "entities"],
