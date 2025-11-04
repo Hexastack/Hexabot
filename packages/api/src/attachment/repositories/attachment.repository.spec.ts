@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 
 import { TestingModule } from '@nestjs/testing';
 
+import { config } from '@/config';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,
@@ -74,9 +75,18 @@ describe('AttachmentRepository (TypeORM)', () => {
       const attachments = await repository.findAll({ order: { name: 'asc' } });
       expect(attachments).toHaveLength(attachmentFixtures.length);
 
-      const expected = [...attachmentFixtures].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const expected = [...attachmentFixtures]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((a) => {
+          const attachmentUuid = attachments.find(
+            (r) => r.location === a.location,
+          )?.id;
+
+          return {
+            ...a,
+            url: `${config.uiBaseUrl}/api/attachment/download/${attachmentUuid}/${a.name}`,
+          };
+        });
 
       expect(attachments).toEqualPayload(expected, [...IGNORED_TEST_FIELDS]);
 
