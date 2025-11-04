@@ -18,6 +18,7 @@ import { Socket } from 'socket.io';
 import { Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -67,7 +68,6 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';

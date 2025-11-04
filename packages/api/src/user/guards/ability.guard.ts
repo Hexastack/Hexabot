@@ -18,8 +18,8 @@ import { Request } from 'express';
 
 import { config } from '@/config';
 
-import { TRole } from '../entities/role.entity';
 import { User } from '../dto/user.dto';
+import { TRole } from '../entities/role.entity';
 import { PermissionService } from '../services/permission.service';
 import { MethodToAction } from '../types/action.type';
 import { TModel } from '../types/model.type';

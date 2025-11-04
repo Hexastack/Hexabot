@@ -19,6 +19,7 @@ import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
 import { PermissionOrmEntity as PermissionEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
 import { UserOrmEntity } from '../entities/user.entity';
+
 import { ModelRepository } from './model.repository';
 import { PermissionRepository } from './permission.repository';
 
