@@ -84,7 +84,7 @@ describe('AttachmentRepository (TypeORM)', () => {
 
           return {
             ...a,
-            url: `${config.uiBaseUrl}/api/attachment/download/${attachmentUuid}/${a.name}`,
+            url: `${config.apiBaseUrl}/attachment/download/${attachmentUuid}/${a.name}`,
           };
         });
 
