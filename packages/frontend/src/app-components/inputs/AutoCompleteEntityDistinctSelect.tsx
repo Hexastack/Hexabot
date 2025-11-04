@@ -63,7 +63,11 @@ const AutoCompleteEntityDistinctSelect = <
     { entity, format: Format.FULL },
     {
       hasCount: false,
-      initialSortState: sortKey ? [{ field: sortKey, sort: "asc" }] : [],
+      initialSortState: groupKey
+        ? [{ field: `${sortKey}.${groupKey}`, sort: "asc" }]
+        : sortKey
+          ? [{ field: sortKey, sort: "asc" }]
+          : [],
     },
   );
   const options = preprocess ? preprocess(data as Value[]) : (data as Value[]);
