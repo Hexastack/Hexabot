@@ -61,7 +61,7 @@ export const config: Config = {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
-  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:4000',
+  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:8080/api',
   uiBaseUrl: process.env.FRONTEND_BASE_URL
     ? process.env.FRONTEND_BASE_URL
     : 'http://localhost:8080', // default to local dev

@@ -14,7 +14,7 @@ const mode =
 const MB = 1024 * 1024;
 const defaultConfig: IConfig = {
   apiUrl:
-    import.meta.env.VITE_API_ORIGIN?.toString() || "http://localhost:4000",
+    import.meta.env.VITE_API_ORIGIN?.toString() || "http://localhost:8080/api",
   ssoEnabled: parseEnvBoolean(
     import.meta.env.VITE_SSO_ENABLED?.toString(),
     false,
