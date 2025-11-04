@@ -12,7 +12,7 @@ import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
 const mode =
   import.meta.env.VITE_APP_MODE === "monolith" ? "monolith" : "api-only";
 const MB = 1024 * 1024;
-const defautConfig: IConfig = {
+const defaultConfig: IConfig = {
   apiUrl:
     import.meta.env.VITE_API_ORIGIN?.toString() || "http://localhost:4000",
   ssoEnabled: parseEnvBoolean(
@@ -25,7 +25,7 @@ const defautConfig: IConfig = {
   ),
 };
 
-export const ConfigContext = createContext<IConfig | null>(defautConfig);
+export const ConfigContext = createContext<IConfig | null>(defaultConfig);
 
 export interface IConfig {
   apiUrl: string;
@@ -49,7 +49,7 @@ export const ConfigProvider = ({ children }) => {
           console.error("Failed to fetch configuration:", error);
         }
       } else {
-        setConfig(defautConfig);
+        setConfig(defaultConfig);
       }
     };
 
