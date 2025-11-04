@@ -9,12 +9,15 @@ import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
@@ -30,9 +33,6 @@ import WebChannelHandler from '../index.channel';
 import { WEB_CHANNEL_NAME } from '../settings';
 import WebEventWrapper from '../wrapper';
 
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { webEvents } from './events.mock';
 
 const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';

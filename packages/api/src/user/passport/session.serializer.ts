@@ -17,7 +17,10 @@ export class AuthSerializer extends PassportSerializer {
     super();
   }
 
-  serializeUser(user: User, done: (err: Error | null, user: SessionUser) => void) {
+  serializeUser(
+    user: User,
+    done: (err: Error | null, user: SessionUser) => void,
+  ) {
     done(null, {
       id: user.id,
       first_name: user.first_name,

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
@@ -15,7 +16,6 @@ import {
 } from '@/chat/types/message';
 import { Payload } from '@/chat/types/quick-reply';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import BaseWebChannelHandler from './base-web-channel';
 import { WEB_CHANNEL_NAME } from './settings';
 import { Web } from './types';

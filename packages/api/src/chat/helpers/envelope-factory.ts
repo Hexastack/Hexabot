@@ -94,7 +94,7 @@ export class EnvelopeFactory {
   public processText(text: string | string[]): string {
     let result = Array.isArray(text) ? getRandomElement(text) : text;
     result = this.i18n.t(result, {
-      lang: this.context.user.language,
+      lang: this.context.user.language || undefined,
       defaultValue: result,
     });
     result = EnvelopeFactory.compileHandlebarsTemplate(

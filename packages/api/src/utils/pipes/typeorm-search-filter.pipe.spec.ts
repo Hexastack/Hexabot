@@ -56,9 +56,7 @@ describe('TypeOrmSearchFilterPipe', () => {
     );
 
     expect(Array.isArray(result.where)).toBe(true);
-    const [first, second] = result.where as Array<
-      Record<string, unknown>
-    >;
+    const [first, second] = result.where as Array<Record<string, unknown>>;
     expect(first).toEqual({ name: 'John' });
     expect(second.email).toBeInstanceOf(FindOperator);
   });
