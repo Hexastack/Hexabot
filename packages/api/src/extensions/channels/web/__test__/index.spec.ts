@@ -17,12 +17,15 @@ import {
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
@@ -39,9 +42,6 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import {
   webAttachment,
   webButtons,

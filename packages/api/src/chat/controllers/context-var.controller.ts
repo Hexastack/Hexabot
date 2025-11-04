@@ -74,7 +74,7 @@ export class ContextVarController extends BaseOrmController<
    * Retrieves a contextVar by its ID.
    * @param id - The ID of the contextVar to retrieve.
    * @returns A Promise that resolves to the retrieved contextVar.
-  */
+   */
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<ContextVar> {
