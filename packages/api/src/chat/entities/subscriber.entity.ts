@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -107,9 +108,9 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
   private readonly avatarId?: string | null;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   channel!: SubscriberChannelData;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   context: SubscriberContext = { vars: {} };
 }

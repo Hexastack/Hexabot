@@ -10,6 +10,8 @@ import { Column, Entity, Index } from 'typeorm';
 import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { buildURL } from '@/utils/helpers/URL';
 
@@ -34,28 +36,26 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   location!: string;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   channel?: Partial<Record<ChannelName, any>>;
 
   @Column({ name: 'created_by', type: 'varchar', nullable: true })
   createdBy?: string | null;
 
-  @Column({
+  @EnumColumn({
     name: 'created_by_ref',
-    type: 'simple-enum',
     enum: AttachmentCreatedByRef,
     nullable: true,
   })
   createdByRef?: AttachmentCreatedByRef;
 
-  @Column({
+  @EnumColumn({
     name: 'resource_ref',
-    type: 'simple-enum',
     enum: AttachmentResourceRef,
   })
   resourceRef!: AttachmentResourceRef;
 
-  @Column({ type: 'simple-enum', enum: AttachmentAccess })
+  @EnumColumn({ enum: AttachmentAccess })
   access!: AttachmentAccess;
 
   @Expose()

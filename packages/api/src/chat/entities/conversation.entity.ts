@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -39,7 +40,7 @@ export class ConversationOrmEntity extends BaseOrmEntity {
   @Column({ default: true })
   active!: boolean;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   context: Context = getDefaultConversationContext();
 
   @ManyToOne(() => BlockOrmEntity, {

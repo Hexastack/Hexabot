@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 export enum BotStatsType {
@@ -33,7 +34,7 @@ export class BotStatsOrmEntity extends BaseOrmEntity {
   /**
    * Type of the captured insight.
    */
-  @Column({ type: 'simple-enum', enum: BotStatsType })
+  @EnumColumn({ enum: BotStatsType })
   type!: BotStatsType;
 
   /**

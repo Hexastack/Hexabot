@@ -7,6 +7,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { BeforeRemove, Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { BlockOrmEntity } from './block.entity';
@@ -23,7 +24,7 @@ export class CategoryOrmEntity extends BaseOrmEntity {
   @Column({ type: 'integer', default: 100 })
   zoom!: number;
 
-  @Column({ type: 'json' })
+  @JsonColumn()
   offset: [number, number] = [0, 0];
 
   @OneToMany(() => BlockOrmEntity, (block) => block.category)

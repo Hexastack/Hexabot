@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -29,8 +30,7 @@ export class NlpSampleOrmEntity extends BaseOrmEntity {
   @Column({ default: false })
   trained!: boolean;
 
-  @Column({
-    type: 'simple-enum',
+  @EnumColumn({
     enum: NlpSampleState,
     default: NlpSampleState.train,
   })

@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -35,7 +36,7 @@ export class PermissionOrmEntity extends BaseOrmEntity {
   @RelationId((permission: PermissionOrmEntity) => permission.model)
   private readonly modelId!: string;
 
-  @Column({ type: 'simple-enum', enum: Action })
+  @EnumColumn({ enum: Action })
   action!: Action;
 
   @ManyToOne(() => RoleOrmEntity, (role) => role.permissions, {

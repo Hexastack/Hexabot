@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -42,7 +43,7 @@ export class LabelOrmEntity extends BaseOrmEntity {
   @RelationId((label: LabelOrmEntity) => label.group)
   private readonly groupId?: string | null;
 
-  @Column({ type: 'json', nullable: true })
+  @JsonColumn({ nullable: true })
   label_id?: Record<string, any> | null;
 
   @Column({ type: 'text', nullable: true })

@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { TRelation } from '../types/index.type';
@@ -22,7 +23,7 @@ export class ModelOrmEntity extends BaseOrmEntity {
   @Column()
   identity!: string;
 
-  @Column({ type: 'json', nullable: false })
+  @JsonColumn()
   attributes: Record<string, unknown> = {};
 
   @Column({ nullable: true })
