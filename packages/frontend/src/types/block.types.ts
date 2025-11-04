@@ -6,7 +6,7 @@
 
 import { EntityType, Format } from "@/services/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { IBaseSchema, IFormat, OmitPopulate, TNestedPaths } from "./base.types";
 import { ILabel } from "./label.types";
 import {
   ContentOptions,
@@ -117,6 +117,9 @@ export interface IBlockAttributes {
   position: Position;
   type: BlockType; // Computed field added by the processStrategy
 }
+
+export interface IBLockFilters
+  extends TNestedPaths<{ category: { id: string } }> {}
 
 export interface IBlockStub
   extends IBaseSchema,

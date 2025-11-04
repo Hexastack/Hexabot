@@ -17,6 +17,7 @@ import {
 import {
   IBlock,
   IBlockAttributes,
+  IBLockFilters,
   IBlockFull,
   IBlockSearchResult,
   ICustomBlockSettingFilters,
@@ -25,7 +26,12 @@ import {
 import { ICategory, ICategoryAttributes } from "./category.types";
 import { IChannel, IChannelAttributes } from "./channel.types";
 import { IContentType, IContentTypeAttributes } from "./content-type.types";
-import { IContent, IContentAttributes, IContentFull } from "./content.types";
+import {
+  IContent,
+  IContentAttributes,
+  IContentFilters,
+  IContentFull,
+} from "./content.types";
 import { IContextVar, IContextVarAttributes } from "./context-var.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
@@ -59,6 +65,7 @@ import {
 import {
   INlpValue,
   INlpValueAttributes,
+  INlpValueFilters,
   INlpValueFull,
 } from "./nlp-value.types";
 import {
@@ -108,7 +115,6 @@ export const POPULATE_BY_TYPE = {
     "attachedToBlock",
     "assign_labels",
     "trigger_labels",
-    "assignTo",
   ],
   [EntityType.BLOCK_SEARCH]: [],
   [EntityType.NLP_SAMPLE]: ["language", "entities"],
@@ -154,7 +160,12 @@ interface IEntityTypes<
 }
 
 export interface IEntityMapTypes {
-  [EntityType.BLOCK]: IEntityTypes<IBlock, IBlockAttributes, never, IBlockFull>;
+  [EntityType.BLOCK]: IEntityTypes<
+    IBlock,
+    IBlockAttributes,
+    IBLockFilters,
+    IBlockFull
+  >;
   [EntityType.BLOCK_SEARCH]: IEntityTypes<
     IBlockSearchResult,
     never,
@@ -165,7 +176,7 @@ export interface IEntityMapTypes {
   [EntityType.CONTENT]: IEntityTypes<
     IContent,
     IContentAttributes,
-    never,
+    IContentFilters,
     IContentFull
   >;
   [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
@@ -209,7 +220,7 @@ export interface IEntityMapTypes {
   [EntityType.NLP_VALUE]: IEntityTypes<
     INlpValue,
     INlpValueAttributes,
-    never,
+    INlpValueFilters,
     INlpValueFull
   >;
   [EntityType.NLP_SAMPLE_ENTITY]: IEntityTypes<
