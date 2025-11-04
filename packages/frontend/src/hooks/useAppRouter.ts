@@ -7,6 +7,7 @@
 import { useCallback, useMemo } from "react";
 import {
   NavigateOptions,
+  Params,
   To,
   useLocation,
   useNavigate,
@@ -27,9 +28,16 @@ export interface AppRouter {
   asPath: string;
   query: Record<string, QueryValue>;
   isReady: boolean;
-  push: (url: To | UrlObject, state?: NavigateOptions["state"]) => Promise<boolean>;
-  replace: (url: To | UrlObject, state?: NavigateOptions["state"]) => Promise<boolean>;
+  push: (
+    url: To | UrlObject,
+    state?: NavigateOptions["state"],
+  ) => Promise<boolean>;
+  replace: (
+    url: To | UrlObject,
+    state?: NavigateOptions["state"],
+  ) => Promise<boolean>;
   reload: () => void;
+  params: Readonly<Params<string>>;
 }
 
 const buildSearchString = (query?: Record<string, QueryValue>) => {
@@ -133,5 +141,6 @@ export const useAppRouter = (): AppRouter => {
     push,
     replace,
     reload,
+    params,
   };
 };
