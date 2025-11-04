@@ -258,7 +258,6 @@ export const BlockEntity = new schema.Entity(
   {
     trigger_labels: [LabelEntity],
     assign_labels: [LabelEntity],
-    assignTo: [UserEntity],
     category: CategoryEntity,
   },
   {

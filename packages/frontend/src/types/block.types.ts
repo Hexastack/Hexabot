@@ -18,7 +18,6 @@ import {
   StdOutgoingTextMessage,
   StdPluginMessage,
 } from "./message.types";
-import { IUser } from "./user.types";
 
 export type Position = {
   x: number;
@@ -128,7 +127,6 @@ export interface IBlockStub
 export interface IBlock extends IBlockStub, IFormat<Format.BASIC> {
   trigger_labels?: string[];
   assign_labels?: string[];
-  assignTo?: string | null;
   nextBlocks?: string[];
   attachedBlock?: string | null;
   //to be able to read previousBlocks field from cache
@@ -140,7 +138,6 @@ export interface IBlockFull extends IBlockStub, IFormat<Format.FULL> {
   nextBlocks: IBlock[];
   trigger_labels?: ILabel[];
   assign_labels?: ILabel[];
-  assignTo?: IUser;
   previousBlocks?: IBlock[];
   attachedBlock?: IBlock;
   attachedToBlock?: IBlock;
