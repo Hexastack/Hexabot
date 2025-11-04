@@ -11,10 +11,12 @@ import {
   Grid,
   styled,
   Theme,
+  Typography,
 } from "@mui/material";
 import { FC } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslate } from "@/hooks/useTranslate";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 import { IContentPaddingProps } from "..";
@@ -47,12 +49,14 @@ export type ContentProps = BoxProps & {
 } & IContentPaddingProps;
 export const Content: FC<ContentProps> = ({ children, ...rest }) => {
   const { error } = useAuth();
+  const { t } = useTranslate();
   const isNotAvailableApi = typeof error === "string" && error === "";
 
   if (isNotAvailableApi) {
     return (
       <Grid
         container
+        gap="10px"
         top="0"
         bottom="0"
         height="100%"
@@ -60,8 +64,10 @@ export const Content: FC<ContentProps> = ({ children, ...rest }) => {
         position="fixed"
         alignItems="center"
         justifyContent="center"
+        flexDirection="column"
       >
         <CircularProgress />
+        <Typography display="block">{t("message.wait_message")} ...</Typography>
       </Grid>
     );
   }
