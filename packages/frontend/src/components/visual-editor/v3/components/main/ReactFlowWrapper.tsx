@@ -313,7 +313,7 @@ export const ReactFlowWrapper = ({
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
 
-          if (n.id.includes("-")) {
+          if (n.id.startsWith("startPoint")) {
             return "transparent";
           }
 
