@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
