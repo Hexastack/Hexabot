@@ -72,14 +72,9 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                const nextQuery = {
-                  ...router.query,
-                  subscriber: subscriber.id,
-                };
 
                 router.push({
                   pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
-                  query: nextQuery,
                 });
               }}
               className="changeColor"

@@ -95,7 +95,11 @@ export const useUrlQueryParam = <T>(
     (val: T) => {
       setValue(val);
       if (!router.isReady) return;
-      const newQuery = { ...router.query };
+      const newQuery = Object.fromEntries(
+        Object.entries({ ...router.query }).filter(
+          ([key]) => !Object.keys(router.params).includes(key),
+        ),
+      );
 
       if (
         val === defaultValue ||
