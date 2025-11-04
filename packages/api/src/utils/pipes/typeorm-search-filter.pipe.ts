@@ -10,7 +10,7 @@ import {
   Logger,
   PipeTransform,
 } from '@nestjs/common';
-import _ from 'lodash';
+import set from 'lodash/set';
 import {
   FindManyOptions,
   FindOptionsOrder,
@@ -208,7 +208,7 @@ export class TypeOrmSearchFilterPipe<T>
 
     const normalized = direction.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
-    return _.set({}, field, normalized) as FindOptionsOrder<T>;
+    return set({}, field, normalized) as FindOptionsOrder<T>;
   }
 
   private parseDefaultSort(): FindOptionsOrder<T> | undefined {
