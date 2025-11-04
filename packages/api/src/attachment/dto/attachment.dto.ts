@@ -57,6 +57,9 @@ export class AttachmentStub extends BaseStub {
 
   @Expose()
   access!: AttachmentAccess;
+
+  @Expose()
+  url: string;
 }
 
 @Exclude()
