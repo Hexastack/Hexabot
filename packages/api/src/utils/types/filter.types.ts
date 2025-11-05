@@ -60,40 +60,12 @@ export type TFilterKeysOfType<T, U> = {
 
 export type TFilterKeysOfNeverType<T> = Omit<T, TFilterKeysOfType<T, []>>;
 
-export type WithoutGenericAny<T> = {
-  [K in keyof T as string extends K ? never : K]: T[K];
-};
-
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object
       ? RecursivePartial<T[P]>
       : T[P];
-};
-//base controller validator types
-type TAllowedKeys<T, TStub, TValue = (string | null | undefined)[]> = {
-  [key in keyof Record<
-    TFilterKeysOfType<
-      TFilterPopulateFields<TFilterKeysOfNeverType<T>, TStub>,
-      TValue
-    >,
-    TValue
-  >]: TValue;
-};
-
-type TVirtualFields<T> = Pick<T, TFilterKeysOfType<T, undefined>>;
-
-export type TValidateProps<T, TStub> = {
-  dto:
-    | Partial<TAllowedKeys<T, TStub>>
-    | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: Partial<
-    Omit<
-      TAllowedKeys<T, TStub, null | undefined | string | string[]>,
-      keyof TVirtualFields<T>
-    >
-  >;
 };
 
 //populate types
