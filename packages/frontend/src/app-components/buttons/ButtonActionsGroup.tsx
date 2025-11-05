@@ -18,18 +18,18 @@ const COMMON_BUTTON_PROPS: Partial<ButtonProps> = {
   variant: "contained",
 };
 
+export type ButtonActionsGroupProps = {
+  entity?: EntityType;
+  buttons: (Partial<ButtonProps> & {
+    permissions?: Partial<Record<EntityType, PermissionAction>>;
+    permissionAction?: PermissionAction;
+  })[];
+};
+
 export const ButtonActionsGroup = ({
   entity,
   buttons,
-}: {
-  entity?: EntityType;
-  buttons: (
-    | Partial<ButtonProps> & {
-        permissions?: Partial<Record<EntityType, PermissionAction>>;
-        permissionAction?: PermissionAction;
-      }
-  )[];
-}) => {
+}: ButtonActionsGroupProps) => {
   const { t } = useTranslate();
   const hasPermission = useHasPermission();
   const defaultProps: Partial<Record<PermissionAction, Partial<ButtonProps>>> =

@@ -5,29 +5,24 @@
  */
 
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import { Grid, Switch } from "@mui/material";
+import { Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
-import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { IContextVar } from "@/types/context-var.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -40,19 +35,6 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.CONTEXT_VAR>(
-      {
-        $iLike: ["label"],
-      },
-      { syncUrl: true },
-    );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.CONTEXT_VAR },
-    {
-      params: searchPayload,
-    },
-  );
   const { mutate: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -166,51 +148,34 @@ export const ContextVars = () => {
   };
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          <ButtonActionsGroup
-            entity={EntityType.CONTEXT_VAR}
-            buttons={[
-              {
-                permissionAction: PermissionAction.CREATE,
-                onClick: () =>
-                  dialogs.open(ContextVarFormDialog, { defaultValues: null }),
-              },
-              {
-                permissionAction: PermissionAction.DELETE,
-                onClick: async () => {
-                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                    mode: "selection",
-                    count: selectedContextVars.length,
-                  });
+    <GenericDataGrid
+      entity={EntityType.CONTEXT_VAR}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          onClick: () =>
+            dialogs.open(ContextVarFormDialog, { defaultValues: null }),
+        },
+        {
+          permissionAction: PermissionAction.DELETE,
+          onClick: async () => {
+            const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+              mode: "selection",
+              count: selectedContextVars.length,
+            });
 
-                  if (isConfirmed) {
-                    deleteContextVars(selectedContextVars);
-                  }
-                },
-                disabled: !selectedContextVars.length,
-              },
-            ]}
-          />
-        </Grid>
-      </PageHeader>
-      <DataGrid
-        columns={columns}
-        {...dataGridProps}
-        checkboxSelection
-        onRowSelectionModelChange={handleSelectionChange}
-      />
-    </Grid>
+            if (isConfirmed) {
+              deleteContextVars(selectedContextVars);
+            }
+          },
+          disabled: !selectedContextVars.length,
+        },
+      ]}
+      columns={columns}
+      headerIcon={faAsterisk}
+      searchParams={{ $iLike: ["label"], syncUrl: true }}
+      headerI18nTitle="title.context_vars"
+      selectionChangeHandler={handleSelectionChange}
+    />
   );
 };

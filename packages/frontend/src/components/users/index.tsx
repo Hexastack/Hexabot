@@ -6,29 +6,26 @@
 
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { Button, Grid, Switch } from "@mui/material";
+import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { IUser } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -51,23 +48,11 @@ export const Users = () => {
     },
   });
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<EntityType.USER>(
-    {
-      $or: ["first_name", "last_name", "email"],
-    },
-    { syncUrl: true },
-  );
   const { data: roles } = useFind(
     {
       entity: EntityType.ROLE,
     },
     { hasCount: false },
-  );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.USER, format: Format.FULL },
-    {
-      params: searchPayload,
-    },
   );
   const actionColumns = useActionColumns<IUser>(
     EntityType.USER,
@@ -188,39 +173,27 @@ export const Users = () => {
   ];
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faUsers} title={t("title.users")}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          {!ssoEnabled &&
-          hasPermission(EntityType.USER, PermissionAction.CREATE) ? (
-            <Button
-              startIcon={<PersonAddAlt1Icon />}
-              variant="contained"
-              sx={{
-                float: "right",
-              }}
-              onClick={() =>
-                dialogs.open(InviteUserFormDialog, {
-                  defaultValues: null,
-                })
-              }
-            >
-              {t("button.invite")}
-            </Button>
-          ) : null}
-        </Grid>
-      </PageHeader>
-      <DataGrid columns={columns} {...dataGridProps} />
-    </Grid>
+    <GenericDataGrid
+      entity={EntityType.USER}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          children: t("button.invite"),
+          startIcon: <PersonAddAlt1Icon />,
+          onClick: () => {
+            dialogs.open(InviteUserFormDialog, {
+              defaultValues: null,
+            });
+          },
+        },
+      ]}
+      columns={columns}
+      headerIcon={faUsers}
+      searchParams={{
+        $or: ["first_name", "last_name", "email"],
+        syncUrl: true,
+      }}
+      headerI18nTitle="title.users"
+    />
   );
 };
