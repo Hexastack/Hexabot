@@ -58,17 +58,14 @@ export const installPermissionFixturesTypeOrm = async (
   const modelRepository = dataSource.getRepository(ModelEntity);
   const roleRepository = dataSource.getRepository(RoleEntity);
   const permissionRepository = dataSource.getRepository(PermissionEntity);
-
   const models =
     (await modelRepository.count()) === 0
       ? await installModelFixturesTypeOrm(dataSource)
       : await modelRepository.find();
-
   const roles =
     (await roleRepository.count()) === 0
       ? await installRoleFixturesTypeOrm(dataSource)
       : await roleRepository.find();
-
   const users = await installUserFixturesTypeOrm(dataSource);
 
   if (await permissionRepository.count()) {

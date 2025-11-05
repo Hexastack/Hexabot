@@ -49,16 +49,13 @@ describe('MessageController (TypeORM)', () => {
     findOne: jest.fn(),
     findOneAndPopulate: jest.fn(),
   };
-
   const channelServiceMock: Partial<ChannelService> = {
     findChannel: jest.fn(),
     getChannelHandler: jest.fn(),
   };
-
   const websocketGatewayMock: Partial<WebsocketGateway> = {
     joinNotificationSockets: jest.fn(),
   };
-
   const defaultOrder = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {

@@ -23,6 +23,7 @@ const makeConversationUser = (
   overrides: Partial<Subscriber> & Pick<Subscriber, 'id'>,
 ): Subscriber => {
   const now = new Date();
+
   return {
     id: overrides.id,
     createdAt: overrides.createdAt ?? now,
@@ -49,7 +50,6 @@ const makeConversationUser = (
     avatar: overrides.avatar ?? null,
   };
 };
-
 const conversations: ConversationCreateDto[] = [
   {
     sender: '0',
@@ -166,7 +166,6 @@ export const installConversationFixturesTypeOrm = async (
     installBlockFixturesTypeOrm(dataSource),
     installSubscriberFixturesTypeOrm(dataSource),
   ]);
-
   const blocksByName = new Map(blocks.map((block) => [block.name, block]));
   const getBlockByIndex = (index: string | undefined) => {
     if (index == null) {
@@ -185,10 +184,8 @@ export const installConversationFixturesTypeOrm = async (
 
     return blocksByName.get(blockName) ?? null;
   };
-
   const conversationsToCreate = conversationFixtures.map((fixture) => {
     const { sender, current, next, ...rest } = fixture;
-
     const senderIndex = Number.parseInt(sender, 10);
     const senderEntity = subscribers[senderIndex];
     if (!senderEntity) {
@@ -198,14 +195,12 @@ export const installConversationFixturesTypeOrm = async (
     }
 
     const currentEntity = getBlockByIndex(current ?? undefined);
-
     const nextEntities = (next ?? [])
       .map((n) => getBlockByIndex(n))
       .filter(
         (block): block is Exclude<typeof block, null> =>
           block !== null && block !== undefined,
       );
-
     const context = {
       ...(rest.context ?? {}),
       user: {

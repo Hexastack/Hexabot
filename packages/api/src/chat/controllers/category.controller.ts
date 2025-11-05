@@ -90,6 +90,7 @@ export class CategoryController extends BaseOrmController<
       this.logger.warn(`Unable to find Category by id ${id}`);
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -130,6 +131,7 @@ export class CategoryController extends BaseOrmController<
       this.logger.warn(`Unable to delete Category by id ${id}`);
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -154,6 +156,7 @@ export class CategoryController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted categories with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

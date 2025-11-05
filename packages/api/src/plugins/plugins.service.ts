@@ -58,6 +58,7 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
    */
   public getAllByType<PT extends PluginType>(type: PT): PluginInstance<PT>[] {
     const registry = this.registry.get(type) as Map<PluginName, T>;
+
     return Array.from(registry.values()) as PluginInstance<PT>[];
   }
 
@@ -81,6 +82,7 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
   public getPlugin<PT extends PluginType>(type: PT, name: PluginName) {
     const registry = this.registry.get(type) as Map<PluginName, T>;
     const plugin = registry.get(name);
+
     return plugin ? (plugin as PluginInstance<PT>) : undefined;
   }
 

@@ -66,7 +66,6 @@ describe('InvitationRepository (TypeORM)', () => {
       const invitation = await invitationRepository.findOne({
         where: { email: baseInvitation.email },
       });
-
       const result = await invitationRepository.findOneAndPopulate(
         invitation!.id,
       );

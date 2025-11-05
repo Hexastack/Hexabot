@@ -263,6 +263,7 @@ export default abstract class EventWrapper<
     } else if ('serialized_text' in message) {
       return message.serialized_text;
     }
+
     return '';
   }
 

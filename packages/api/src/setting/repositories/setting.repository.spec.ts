@@ -114,7 +114,6 @@ describe('SettingRepository (TypeORM)', () => {
       const target = settingFixtures.find(
         (fixture) => fixture.group === 'contact',
       )!;
-
       const found = await settingRepository.findOne({
         where: {
           group: target.group,
@@ -144,7 +143,6 @@ describe('SettingRepository (TypeORM)', () => {
         value: 'initial value',
         weight: 99,
       };
-
       const created = await settingRepository.create(base);
       createdIds.push(created.id);
 
@@ -181,7 +179,6 @@ describe('SettingRepository (TypeORM)', () => {
       value,
       ...(type === SettingType.select ? { options: ['option'] } : {}),
     });
-
     const passingCases: ReadonlyArray<
       [SettingType, () => Parameters<typeof buildPayload>[1]]
     > = [
@@ -251,7 +248,6 @@ describe('SettingRepository (TypeORM)', () => {
         type: SettingType.text,
         value: 'valid',
       };
-
       const created = await settingRepository.create(base);
       createdIds.push(created.id);
 
@@ -278,7 +274,6 @@ describe('SettingRepository (TypeORM)', () => {
           weight: 10,
           translatable: true,
         });
-
         const updateEvent = {
           databaseEntity,
         } as unknown as UpdateEvent<SettingOrmEntity>;
@@ -314,10 +309,8 @@ describe('SettingRepository (TypeORM)', () => {
         value: 'to delete',
         weight: 5,
       }));
-
       const inserted = await settingRepository.createMany(payloads);
       const labels = inserted.map((setting) => setting.label);
-
       const result = await settingRepository.deleteMany({
         where: {
           label: In(labels),

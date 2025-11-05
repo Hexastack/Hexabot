@@ -33,6 +33,7 @@ export class NlpValueStub extends BaseStub {
   @Expose()
   @Transform(({ value, obj }) => {
     const resolved = value ?? obj?.foreign_id ?? null;
+
     return resolved === null ? undefined : resolved;
   })
   foreignId?: string | null;

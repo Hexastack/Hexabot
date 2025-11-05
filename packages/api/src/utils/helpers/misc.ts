@@ -27,5 +27,6 @@ export const camelCase = (input: string): string => {
 
 export const upperFirst = (input: string): string => {
   if (!input) return input; // Return as is if the input is empty
+
   return input.charAt(0).toUpperCase() + input.slice(1);
 };

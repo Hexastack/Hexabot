@@ -74,7 +74,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
         name: `type-${randomUUID()}`,
         fields: buildRequiredFields(),
       });
-
       const blockId = `block-${randomUUID()}`;
       const options = {
         content: {

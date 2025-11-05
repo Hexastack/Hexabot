@@ -107,7 +107,6 @@ describe('RoleService (TypeORM)', () => {
         .filter((user) => user.roles.includes(role.id))
         .map((user) => user.id)
         .sort();
-
       const userIds = (result?.users ?? []).map((user) => user.id).sort();
       expect(userIds).toEqual(expectedUserIds);
 
@@ -145,7 +144,6 @@ describe('RoleService (TypeORM)', () => {
           .filter((user) => user.roles.includes(roleResult.id))
           .map((user) => user.id)
           .sort();
-
         const permissionIds = (roleResult.permissions ?? [])
           .map((permission) => permission.id)
           .sort();

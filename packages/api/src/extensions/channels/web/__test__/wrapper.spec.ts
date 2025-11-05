@@ -43,20 +43,17 @@ describe(`Web event wrapper`, () => {
   const menuServiceMock = {
     getTree: jest.fn().mockResolvedValue([]),
   } as jest.Mocked<Pick<MenuService, 'getTree'>>;
-
   const attachmentServiceMock = {
     findOne: jest.fn(),
     store: jest.fn(),
     create: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
-
   const websocketGatewayMock = {
     broadcast: jest.fn(),
     joinNotificationSockets: jest.fn(),
   } as jest.Mocked<
     Pick<WebsocketGateway, 'broadcast' | 'joinNotificationSockets'>
   >;
-
   const messageServiceMock = {
     findHistoryUntilDate: jest.fn(),
     findHistorySinceDate: jest.fn(),

@@ -107,6 +107,7 @@ export class NlpValueController extends BaseOrmController<
       this.logger.warn(`Unable to find NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -174,6 +175,7 @@ export class NlpValueController extends BaseOrmController<
       this.logger.warn(`Unable to delete NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -199,6 +201,7 @@ export class NlpValueController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted NLP values with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

@@ -34,25 +34,28 @@ describe('MigrationService', () => {
   let attachmentService: AttachmentService;
 
   const originalAutoMigrate = config.database.autoMigrate;
-
   const createQueryRunnerStub = () => {
     const stub: any = {
       connect: jest.fn().mockResolvedValue(undefined),
       startTransaction: jest.fn().mockImplementation(() => {
         stub.isTransactionActive = true;
+
         return Promise.resolve();
       }),
       commitTransaction: jest.fn().mockImplementation(() => {
         stub.isTransactionActive = false;
+
         return Promise.resolve();
       }),
       rollbackTransaction: jest.fn().mockImplementation(() => {
         stub.isTransactionActive = false;
+
         return Promise.resolve();
       }),
       release: jest.fn().mockResolvedValue(undefined),
       isTransactionActive: false,
     };
+
     return stub;
   };
 
@@ -85,6 +88,7 @@ describe('MigrationService', () => {
               if (token === 'TYPEORM_MIGRATION_DIR') {
                 return '/migrations';
               }
+
               return undefined;
             }),
           },
@@ -270,7 +274,6 @@ describe('MigrationService', () => {
         .spyOn(service as any, 'verifyStatus')
         .mockResolvedValue({ exist: true, migrationRecord: {} });
       const queryRunnerSpy = jest.spyOn(dataSource, 'createQueryRunner');
-
       const result = await (service as any).runOne({
         version: 'v3.0.1',
         action: 'up',
@@ -299,7 +302,6 @@ describe('MigrationService', () => {
       const successCallbackSpy = jest
         .spyOn(service as any, 'successCallback')
         .mockResolvedValue(undefined);
-
       const result = await (service as any).runOne({
         version: 'v3.0.1',
         action: 'up',
@@ -337,7 +339,6 @@ describe('MigrationService', () => {
       const failureCallbackSpy = jest
         .spyOn(service as any, 'failureCallback')
         .mockImplementation(() => undefined);
-
       const result = await (service as any).runOne({
         version: 'v3.0.1',
         action: 'up',
@@ -370,7 +371,6 @@ describe('MigrationService', () => {
       const failureCallbackSpy = jest
         .spyOn(service as any, 'failureCallback')
         .mockResolvedValue(undefined);
-
       const result = await (service as any).runOne({
         version: 'v3.0.1',
         action: 'up',
@@ -495,7 +495,6 @@ describe('MigrationService', () => {
       const runOneSpy = jest
         .spyOn(service as any, 'runOne')
         .mockResolvedValue('executed');
-
       const result = await (service as any).runUpgrades(
         MigrationAction.UP,
         'v3.0.0',
@@ -543,7 +542,6 @@ describe('MigrationService', () => {
       const runOneSpy = jest
         .spyOn(service as any, 'runOne')
         .mockResolvedValue('executed');
-
       const result = await (service as any).runAll(MigrationAction.UP);
 
       expect(runOneSpy).toHaveBeenCalledTimes(3);

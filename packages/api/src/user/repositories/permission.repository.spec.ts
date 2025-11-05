@@ -84,7 +84,6 @@ describe('PermissionRepository (TypeORM)', () => {
     it('should find a permission and populate its role and model', async () => {
       const role = await roleRepository.findOne(createPermission.role);
       const model = await modelRepository.findOne(createPermission.model);
-
       const result = await permissionRepository.findOneAndPopulate(
         createPermission.id,
       );

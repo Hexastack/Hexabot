@@ -123,7 +123,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
         type: NlpSampleState.train,
         language: languages[0]?.id ?? null,
       });
-
       const greetingValue = await nlpValueRepository.findOne({
         where: { value: 'greeting' },
       });
@@ -166,7 +165,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
           value: 'nonexistent',
         },
       ] as unknown as NlpValue[];
-
       const result = await nlpSampleRepository.findByEntities({ values });
 
       expect(result).toHaveLength(0);
@@ -218,7 +216,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
           value: 'nonexistent',
         },
       ] as unknown as NlpValue[];
-
       const result = await nlpSampleRepository.findByEntitiesAndPopulate({
         values,
       });
@@ -232,7 +229,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
       const values = await nlpValueRepository.find({
         where: { value: 'greeting' },
       });
-
       const count = await nlpSampleRepository.countByEntities({
         options: {},
         values,
@@ -246,7 +242,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
         where: { value: 'greeting' },
       });
       const language = languages[0];
-
       const count = await nlpSampleRepository.countByEntities({
         options: { where: { language: { id: language.id } } },
         values,
@@ -263,7 +258,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
           value: 'nonexistent',
         },
       ] as unknown as NlpValue[];
-
       const count = await nlpSampleRepository.countByEntities({ values });
 
       expect(count).toBe(0);

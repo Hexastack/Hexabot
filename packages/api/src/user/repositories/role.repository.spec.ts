@@ -84,7 +84,6 @@ describe('RoleRepository (TypeORM)', () => {
       const permissions = await permissionRepository.find({
         where: { role: { id: adminRole.id } },
       });
-
       const result = await roleRepository.findOneAndPopulate(adminRole.id);
 
       expect(result).toBeDefined();
@@ -96,7 +95,6 @@ describe('RoleRepository (TypeORM)', () => {
         .filter((fixture) => fixture.role === roleFixtureIds.admin)
         .map((fixture) => fixture.action)
         .sort();
-
       const actions = (result!.permissions ?? [])
         .map((permission) => permission.action)
         .sort();
@@ -116,7 +114,6 @@ describe('RoleRepository (TypeORM)', () => {
         permissionRepository.findAll(),
         userRepository.findAll(),
       ]);
-
       const result = await roleRepository.findAndPopulate({});
 
       expect(result).toHaveLength(roles.length);
@@ -128,7 +125,6 @@ describe('RoleRepository (TypeORM)', () => {
         const expectedUsers = allUsers.filter((user) =>
           user.roles.includes(role.id),
         );
-
         const resultPermissionIds = (role.permissions ?? []).map(
           (permission) => permission.id,
         );

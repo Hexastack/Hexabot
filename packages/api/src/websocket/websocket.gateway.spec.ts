@@ -78,7 +78,6 @@ describe('WebsocketGateway', () => {
 
   it('should emit "OK" on "healthcheck"', async () => {
     const [socket1] = sockets;
-
     const connectionPromise = new Promise<void>((resolve) => {
       socket1.on('connect', () => {
         socket1.emit('healthcheck', 'Hello world!');
@@ -153,7 +152,6 @@ describe('WebsocketGateway', () => {
   it('should allow users to join the global "Message" room', async () => {
     const [, admin2ClientSocket, admin3ClientSocket, subscriberSocket] =
       sockets;
-
     const onSubscriberConnect = new Promise<void>((resolve) =>
       subscriberSocket.on('connect', resolve),
     );
@@ -247,14 +245,12 @@ describe('WebsocketGateway', () => {
         resolve();
       });
     });
-
     const onMessagePromise3 = new Promise<void>((resolve) => {
       admin3ClientSocket.on('message', async ({ data }) => {
         expect(data).toBe('The subscriber message');
         resolve();
       });
     });
-
     const onSubscriberMessagePromise = new Promise<void>((resolve, reject) => {
       subscriberSocket.on('message', async () => {
         reject();

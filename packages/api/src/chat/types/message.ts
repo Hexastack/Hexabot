@@ -371,23 +371,19 @@ export const pluginBlockMessageSchema = z
 
 // textBlockMessageSchema in case of Text Block
 const textBlockMessageSchema = z.string().max(1000);
-
 const buttonMessageSchema = z.object({
   text: z.string(),
   buttons: z.array(buttonSchema).max(3),
 });
-
 // quickReplyMessageSchema in case of QuickReply Block
 const quickReplyMessageSchema = z.object({
   text: z.string(),
   quickReplies: z.array(quickReplySchema).max(11).optional(),
 });
-
 // listBlockMessageSchema in case of List Block
 const listBlockMessageSchema = z.object({
   elements: z.boolean(),
 });
-
 // attachmentBlockMessageSchema in case of Attachment Block
 const attachmentBlockMessageSchema = z.object({
   text: z.string().max(1000).optional(),

@@ -37,6 +37,7 @@ export abstract class BaseOrmSeeder<
 
   async isEmpty(options: FindManyOptions<Entity> = {}): Promise<boolean> {
     const count = await this.repository.count(options);
+
     return count === 0;
   }
 
@@ -45,8 +46,10 @@ export abstract class BaseOrmSeeder<
   ): Promise<boolean> {
     if (await this.isEmpty()) {
       await this.repository.createMany(models);
+
       return true;
     }
+
     return false;
   }
 }

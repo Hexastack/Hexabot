@@ -67,6 +67,7 @@ describe('NlpValueService (TypeORM)', () => {
     const entities = await nlpEntityRepository.findAll();
     entitiesById = entities.reduce<Record<string, NlpEntity>>((acc, entity) => {
       acc[entity.id] = entity;
+
       return acc;
     }, {});
   });
@@ -110,7 +111,6 @@ describe('NlpValueService (TypeORM)', () => {
         entity: parent.id,
         value: `delete-${randomUUID()}`,
       });
-
       const result = await nlpValueService.deleteOne(removable.id);
       expect(result.deletedCount).toBe(1);
     });
@@ -127,7 +127,6 @@ describe('NlpValueService (TypeORM)', () => {
         ],
         storedEntities,
       );
-
       const greeting = await nlpValueRepository.findOne({
         where: { value: 'greeting' },
       });
@@ -148,7 +147,6 @@ describe('NlpValueService (TypeORM)', () => {
       const sampleEntities = [
         { entity: 'intent', value: 'greeting', start: 0, end: 7 },
       ];
-
       const result = await nlpValueService.storeValues(
         sampleText,
         sampleEntities,
@@ -170,13 +168,11 @@ describe('NlpValueService (TypeORM)', () => {
   describe('findWithCount', () => {
     it('should call repository with stub format', async () => {
       const spy = jest.spyOn(nlpValueRepository, 'findWithCount');
-
       const options: FindManyOptions<NlpValueOrmEntity> = {
         skip: 0,
         take: 10,
         order: { value: 'ASC' },
       };
-
       const results = await nlpValueService.findWithCount(Format.STUB, options);
 
       expect(results.length).toBeGreaterThan(0);

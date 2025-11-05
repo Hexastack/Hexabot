@@ -79,6 +79,7 @@ export class MessageController extends BaseOrmController<
     options: FindManyOptions<MessageOrmEntity>,
   ): Promise<Message[] | MessageFull[]> {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.messageService.findAndPopulate(queryOptions)
       : await this.messageService.find(queryOptions);
@@ -121,6 +122,7 @@ export class MessageController extends BaseOrmController<
       this.logger.warn(`Unable to find Message by id ${id}`);
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -175,6 +177,7 @@ export class MessageController extends BaseOrmController<
         handover: false,
       };
       this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+
       return {
         success: true,
       };

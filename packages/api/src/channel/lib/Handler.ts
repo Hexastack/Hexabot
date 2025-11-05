@@ -106,6 +106,7 @@ export default abstract class ChannelHandler<
    */
   async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
+
     // @ts-expect-error workaround typing
     return settings[this.getNamespace() as keyof Settings] as Settings[S];
   }
@@ -308,6 +309,7 @@ export default abstract class ChannelHandler<
     if (attachment && 'id' in attachment) {
       if (!attachment || !attachment.id) {
         this.logger.warn('Unable to build public URL: Empty attachment ID');
+
         return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
       }
 
@@ -315,10 +317,12 @@ export default abstract class ChannelHandler<
 
       if (!resource) {
         this.logger.warn('Unable to find attachment sending fallback image');
+
         return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
       }
 
       const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
+
       return buildURL(
         config.apiBaseUrl,
         `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
@@ -331,6 +335,7 @@ export default abstract class ChannelHandler<
         'Unable to resolve the attachment public URL.',
         attachment,
       );
+
       return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
     }
   }
@@ -373,7 +378,6 @@ export default abstract class ChannelHandler<
         this.jwtSignOptions as JwtVerifyOptions,
       );
       const attachment = plainToClass(AttachmentOrmEntity, result);
-
       // Check access
       const canDownload = await this.hasDownloadAccess(attachment, req);
       if (!canDownload) {

@@ -41,14 +41,12 @@ describe('AttachmentGuard', () => {
     subscriber: 'subscriber-model-id',
     user: 'user-model-id',
   };
-
   const buildContext = (request: Partial<Request>) =>
     ({
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue(request),
       }),
     }) as unknown as ExecutionContext;
-
   const mockModelFindOne = () =>
     jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
       const identity = (criteria as { where?: { identity?: TModel } }).where
@@ -60,6 +58,7 @@ describe('AttachmentGuard', () => {
           new Error(`Unexpected model identity: ${identity}`),
         );
       }
+
       return Promise.resolve({
         id,
         identity,
@@ -98,18 +97,15 @@ describe('AttachmentGuard', () => {
     it('should allow GET requests with valid ref', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
       const mockRef = [AttachmentResourceRef.UserAvatar];
-
       const modelFindOne = mockModelFindOne();
       const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
         .mockResolvedValue({} as Permission);
-
       const mockExecutionContext = buildContext({
         query: { where: { resourceRef: mockRef } },
         method: 'GET',
         user: mockUser,
       });
-
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
 
@@ -152,13 +148,11 @@ describe('AttachmentGuard', () => {
       const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
         .mockResolvedValue({} as Permission);
-
       const mockExecutionContext = buildContext({
         params: { id: attachmentId },
         method: 'GET',
         user: mockUser,
       });
-
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
 
@@ -180,18 +174,15 @@ describe('AttachmentGuard', () => {
 
     it('should allow POST requests with a valid ref', async () => {
       const mockUser = { roles: ['editor-id'] } as any;
-
       const modelFindOne = mockModelFindOne();
       const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
         .mockResolvedValue({} as Permission);
-
       const mockExecutionContext = buildContext({
         query: { resourceRef: AttachmentResourceRef.BlockAttachment },
         method: 'POST',
         user: mockUser,
       });
-
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
 
@@ -241,7 +232,6 @@ describe('AttachmentGuard', () => {
 
     it('should allow DELETE requests with valid attachment and context', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
-
       const attachmentWithUuid = {
         ...attachment,
         id: '5a1ea13e-63ef-48da-9afb-7b4d0533b1a0',
@@ -255,13 +245,11 @@ describe('AttachmentGuard', () => {
       const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
         .mockResolvedValue({} as Permission);
-
       const mockExecutionContext = buildContext({
         method: 'DELETE',
         params: { id: attachmentWithUuid.id },
         user: mockUser,
       });
-
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
 

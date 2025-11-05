@@ -44,6 +44,7 @@ export class AppController {
   @Get('__getcookie')
   cookies(@Req() req: Request): string {
     req.session.anonymous = true;
+
     return '';
   }
 }

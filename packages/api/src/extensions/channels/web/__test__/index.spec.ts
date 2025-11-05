@@ -59,13 +59,11 @@ describe('WebChannelHandler', () => {
   const menuServiceMock = {
     getTree: jest.fn().mockResolvedValue([]),
   } as jest.Mocked<Pick<MenuService, 'getTree'>>;
-
   const attachmentServiceMock = {
     findOne: jest.fn(),
     store: jest.fn(),
     create: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
-
   const websocketGatewayMock = {
     broadcast: jest.fn(),
     joinNotificationSockets: jest.fn(),
@@ -152,7 +150,6 @@ describe('WebChannelHandler', () => {
       },
       method: 'GET',
     } as unknown as Request;
-
     const res = {
       set: jest.fn(),
     } as any;
@@ -243,7 +240,6 @@ describe('WebChannelHandler', () => {
       headers: { 'user-agent': 'browser' },
       user: {},
     } as any as Request;
-
     const generatedId = 'web-test';
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -269,6 +265,7 @@ describe('WebChannelHandler', () => {
     };
     const subscriberAttrs = Object.keys(expectedAttrs).reduce((acc, curr) => {
       acc[curr] = subscriber[curr];
+
       return acc;
     }, {});
     expect(subscriberAttrs).toEqual(expectedAttrs);
@@ -320,6 +317,7 @@ describe('WebChannelHandler', () => {
     const res = {
       status: (code: number) => {
         expect(code).toEqual(200);
+
         return res;
       },
       json: (payload: any) => {

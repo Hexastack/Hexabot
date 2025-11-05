@@ -303,6 +303,7 @@ export class ChatService {
 
       if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
+
         return;
       }
 

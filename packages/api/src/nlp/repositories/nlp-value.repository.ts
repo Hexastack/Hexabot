@@ -63,7 +63,6 @@ export class NlpValueRepository extends BaseOrmRepository<
           ...entity,
           nlpSamplesCount: entity.nlpSamplesCount ?? 0,
         };
-
         const dto =
           format === Format.FULL
             ? plainToInstance(NlpValueFullWithCount, payload)

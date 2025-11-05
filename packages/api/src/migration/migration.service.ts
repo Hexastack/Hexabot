@@ -104,6 +104,7 @@ export class MigrationService implements OnApplicationBootstrap {
    */
   public isValidVersion(version: string): version is MigrationVersion {
     const regex = /^v(\d+)\.(\d+)\.(\d+)$/;
+
     return regex.test(version);
   }
 
@@ -135,6 +136,7 @@ export class MigrationService implements OnApplicationBootstrap {
     const files = this.getMigrationFiles();
     const exist = files.some((file) => {
       const migrationName = this.getMigrationName(file);
+
       return migrationName === name;
     });
 
@@ -207,6 +209,7 @@ export default class ${className} implements MigrationInterface {
       .replace(/\./g, '_')
       .replace(/-/g, '_');
     const versionSuffix = normalizedVersion.replace(/^v/, 'V');
+
     return `Migration${timestamp}_${versionSuffix}`;
   }
 
@@ -298,6 +301,7 @@ export default class ${className} implements MigrationInterface {
           version,
           action,
         });
+
         return 'failed';
       }
 
@@ -319,6 +323,7 @@ export default class ${className} implements MigrationInterface {
         action,
       });
       this.logger.error(e.stack);
+
       return 'failed';
     } finally {
       await queryRunner.release();
@@ -375,6 +380,7 @@ export default class ${className} implements MigrationInterface {
 
     if (!filteredVersions.length) {
       this.logger.log('No migrations to execute ...');
+
       return version;
     }
 
@@ -434,7 +440,6 @@ export default class ${className} implements MigrationInterface {
     const migrationRecord = await this.migrationRepository.findOne({
       where: { version },
     });
-
     const exist = migrationRecord !== null && migrationRecord.status === action;
 
     if (exist) {
@@ -456,6 +461,7 @@ export default class ${className} implements MigrationInterface {
    */
   getMigrationFiles() {
     const files = fs.readdirSync(this.migrationFilePath);
+
     return files.filter((file) => /\.migration\.(js|ts)$/.test(file));
   }
 
@@ -486,6 +492,7 @@ export default class ${className} implements MigrationInterface {
       .map((filename) => this.getMigrationName(filename))
       .map((name) => {
         const [, ...migrationVersion] = name.split('-');
+
         return `v${migrationVersion.join('.')}` as MigrationVersion;
       })
       .filter((value, index, self) => self.indexOf(value) === index);
@@ -500,9 +507,11 @@ export default class ${className} implements MigrationInterface {
   findMigrationFileByVersion(version: MigrationVersion): string | null {
     const files = this.getMigrationFiles();
     const migrationName = kebabCase(version) as MigrationName;
+
     return (
       files.find((file) => {
         const name = this.getMigrationName(file);
+
         return migrationName === name;
       }) || null
     );
@@ -545,6 +554,7 @@ export default class ${className} implements MigrationInterface {
           `Migration file "${version}" must export an object with "up" and "down" methods.`,
         );
       }
+
       return migration;
     } catch (e) {
       throw new Error(`Failed to load migration "${version}".\n${e.message}`);

@@ -70,7 +70,6 @@ describe('UserController (TypeORM)', () => {
       download: jest.fn(),
       upload: jest.fn(),
     };
-
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [ReadWriteUserController],
@@ -189,7 +188,6 @@ describe('UserController (TypeORM)', () => {
       const options = { order: { createdAt: 'ASC' as const } };
       const findSpy = jest.spyOn(userService, 'find');
       const findAndPopulateSpy = jest.spyOn(userService, 'findAndPopulate');
-
       const result = await userController.findPage([], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
@@ -214,7 +212,6 @@ describe('UserController (TypeORM)', () => {
       const options = { order: { createdAt: 'ASC' as const } };
       jest.spyOn(userService, 'findAndPopulate');
       const findSpy = jest.spyOn(userService, 'find');
-
       const result = await userController.findPage(['roles'], options);
 
       expect(userService.findAndPopulate).toHaveBeenCalledWith(options);

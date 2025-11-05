@@ -106,7 +106,6 @@ describe('NlpSampleService (TypeORM)', () => {
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'greeting' },
       ];
-
       const result = await nlpSampleService.findByPatterns({
         patterns,
       });
@@ -120,7 +119,6 @@ describe('NlpSampleService (TypeORM)', () => {
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'greeting' },
       ];
-
       const count = await nlpSampleService.countByPatterns({
         patterns,
       });

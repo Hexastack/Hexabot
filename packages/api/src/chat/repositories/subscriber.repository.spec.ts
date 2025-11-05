@@ -134,12 +134,11 @@ describe('SubscriberRepository (TypeORM)', () => {
         : null,
       ...overrides,
     });
-
     const saved = await repository.save(subscriber);
     createdSubscriberIds.push(saved.id);
+
     return saved;
   };
-
   const createPersistedLabel = async (): Promise<LabelOrmEntity> => {
     const unique = randomUUID();
     const label = labelRepository.create({
@@ -154,9 +153,9 @@ describe('SubscriberRepository (TypeORM)', () => {
       },
       description: null,
     });
-
     const saved = await labelRepository.save(label);
     createdLabelIds.push(saved.id);
+
     return saved;
   };
 
@@ -222,7 +221,6 @@ describe('SubscriberRepository (TypeORM)', () => {
       const entity = await createPersistedSubscriber({
         timezone: 2,
       });
-
       const updated = await subscriberRepository.updateOneByForeignIdQuery(
         entity.foreign_id ?? '',
         { timezone: 9 },
@@ -242,7 +240,6 @@ describe('SubscriberRepository (TypeORM)', () => {
     it('unassigns then assigns a subscriber by foreign id', async () => {
       const entity = await createPersistedSubscriber();
       const assignedUser = existingUsers[0];
-
       const unassigned = await subscriberRepository.handBackByForeignIdQuery(
         entity.foreign_id ?? '',
       );
@@ -276,10 +273,8 @@ describe('SubscriberRepository (TypeORM)', () => {
             }) as Pick<LabelOrmEntity, 'id'> & LabelOrmEntity,
         ),
       });
-
       const labelToRemove = initialLabelIds[0];
       const newLabel = await createPersistedLabel();
-
       const updated = await subscriberRepository.updateLabels(
         entity.id,
         [newLabel.id, newLabel.id],

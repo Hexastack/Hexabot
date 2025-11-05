@@ -45,12 +45,14 @@ export class I18nService<
             R
           >;
         }
+
         return options.defaultValue as IfAnyOrNever<R, string, R>;
       }
     }
 
     // Otherwise, call the original `t` method from I18nService
     key = `${config.i18n.translationFilename}.${key}` as P;
+
     return super.t<P, R>(key, options);
   }
 

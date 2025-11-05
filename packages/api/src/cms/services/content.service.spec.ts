@@ -132,7 +132,6 @@ describe('ContentService (TypeORM)', () => {
     it('matches content by keyword', async () => {
       const keyword =
         contentFixtures[0].title?.split(' ')[0].toLowerCase() || '';
-
       const results = await contentService.textSearch(keyword);
 
       expect(
@@ -194,7 +193,6 @@ describe('ContentService (TypeORM)', () => {
 
       const csv =
         'title,status,description,subtitle\nDemo,true,Description,Subtitle';
-
       const created = await contentService.parseAndSaveDataset(
         csv,
         existingContentType,

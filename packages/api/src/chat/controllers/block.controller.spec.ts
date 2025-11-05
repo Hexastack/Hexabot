@@ -58,34 +58,28 @@ import { PayloadType } from '../types/button';
 import { BlockController } from './block.controller';
 
 const UNKNOWN_BLOCK_ID = '99999999-9999-4999-9999-999999999999';
-
 const DEFAULT_SETTINGS = {
   chatbot_settings: {
     global_fallback: true,
     fallback_block: null,
   },
 } as const;
-
 const settingServiceMock = {
   getSettings: jest.fn().mockResolvedValue(DEFAULT_SETTINGS),
 };
-
 const pluginServiceMock = {
   getPlugin: jest.fn(),
   getAllByType: jest.fn().mockReturnValue([]),
 };
-
 const userServiceMock = {
   findOne: jest.fn().mockResolvedValue(null),
 };
-
 const contentServiceMock = {};
 const languageServiceMock = {};
 const nlpServiceMock = {};
 const i18nServiceMock = {
   t: jest.fn().mockImplementation((translationKey: string) => translationKey),
 };
-
 const FIELDS_TO_POPULATE = [
   'trigger_labels',
   'assign_labels',
@@ -252,7 +246,6 @@ describe('BlockController (TypeORM)', () => {
       const findSpy = jest
         .spyOn(blockService, 'find')
         .mockResolvedValue(expected);
-
       const result = await blockController.find([], {} as any);
 
       expect(findSpy).toHaveBeenCalledWith({});
@@ -264,7 +257,6 @@ describe('BlockController (TypeORM)', () => {
       const findAndPopulateSpy = jest
         .spyOn(blockService, 'findAndPopulate')
         .mockResolvedValue(expected);
-
       const result = await blockController.find(FIELDS_TO_POPULATE, {} as any);
 
       expect(findAndPopulateSpy).toHaveBeenCalledWith({});
@@ -286,7 +278,6 @@ describe('BlockController (TypeORM)', () => {
         category: defaultCategory.id,
       });
       const searchSpy = jest.spyOn(blockService, 'search');
-
       const result = await blockController.search(query);
 
       expect(searchSpy).toHaveBeenCalledWith(
@@ -311,7 +302,6 @@ describe('BlockController (TypeORM)', () => {
 
     it('should use default limit when not specified', async () => {
       const searchSpy = jest.spyOn(blockService, 'search');
-
       const query = createSearchQuery({ q: 'hasNextBlocks' });
       await blockController.search(query);
 
@@ -327,7 +317,6 @@ describe('BlockController (TypeORM)', () => {
         q: 'hasNextBlocks',
         category: defaultCategory.id,
       });
-
       const result = await blockController.search(query);
 
       expect(Array.isArray(result)).toBe(true);
@@ -405,7 +394,6 @@ describe('BlockController (TypeORM)', () => {
         name: 'block-with-next',
         nextBlocks: [hasNextBlocks.id],
       });
-
       const result = await blockController.create(payload);
 
       expect(createSpy).toHaveBeenCalledWith(payload);
@@ -425,7 +413,6 @@ describe('BlockController (TypeORM)', () => {
         buildBlockPayload({ name: 'block-to-delete' }),
       );
       const deleteSpy = jest.spyOn(blockService, 'deleteOne');
-
       const result = await blockController.deleteOne(blockToDelete.id);
 
       expect(deleteSpy).toHaveBeenCalledWith(blockToDelete.id);
@@ -447,7 +434,6 @@ describe('BlockController (TypeORM)', () => {
         name: 'modified block name',
       };
       const updateOneSpy = jest.spyOn(blockService, 'updateOne');
-
       const result = await blockController.updateOne(
         defaultBlock.id,
         updateBlock,
@@ -483,7 +469,6 @@ describe('BlockController (TypeORM)', () => {
       ],
     };
     const updateOneSpy = jest.spyOn(blockService, 'updateOne');
-
     const result = await blockController.updateOne(
       defaultBlock.id,
       updateBlock,
@@ -512,7 +497,6 @@ describe('BlockController (TypeORM)', () => {
       ],
     };
     const updateOneSpy = jest.spyOn(blockService, 'updateOne');
-
     const result = await blockController.updateOne(
       defaultBlock.id,
       updateBlock,

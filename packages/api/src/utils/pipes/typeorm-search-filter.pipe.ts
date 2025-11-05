@@ -77,7 +77,6 @@ export class TypeOrmSearchFilterPipe<T>
     _metadata: ArgumentMetadata,
   ): Promise<FindManyOptions<T>> {
     const options: FindManyOptions<T> = {};
-
     const where = this.buildWhereClause(value);
     if (where) {
       options.where = where;
@@ -106,7 +105,6 @@ export class TypeOrmSearchFilterPipe<T>
   ): FindOptionsWhere<T> | FindOptionsWhere<T>[] | undefined {
     const whereParams = (value['where'] ?? {}) as Record<string, unknown>;
     const filters: TypeOrmFilterToken[] = [];
-
     const orParams = whereParams?.['or'];
     if (orParams) {
       const orValues = Array.isArray(orParams)
@@ -240,6 +238,7 @@ export class TypeOrmSearchFilterPipe<T>
       return true;
     }
     Logger.warn(`Field ${field} is not allowed`);
+
     return false;
   }
 
@@ -259,6 +258,7 @@ export class TypeOrmSearchFilterPipe<T>
           record['contains'] ??
           record?.[field]?.['contains'] ??
           record?.[field];
+
         return {
           field,
           operator: 'contains',
@@ -298,6 +298,7 @@ export class TypeOrmSearchFilterPipe<T>
 
     const clause: Record<string, unknown> = {};
     this.assignNestedWhereValue(clause, token.field, value);
+
     return clause as FindOptionsWhere<T>;
   }
 
@@ -330,6 +331,7 @@ export class TypeOrmSearchFilterPipe<T>
           if (value === null) {
             return Not(IsNull());
           }
+
           return Not(value);
         }
 
@@ -372,6 +374,7 @@ export class TypeOrmSearchFilterPipe<T>
           if (value === null) {
             return IsNull();
           }
+
           return value;
         }
 
@@ -443,6 +446,7 @@ export class TypeOrmSearchFilterPipe<T>
     if (value === undefined) {
       return [];
     }
+
     return [value];
   }
 
@@ -481,6 +485,7 @@ export class TypeOrmSearchFilterPipe<T>
     if (value === null || value === undefined) {
       return '';
     }
+
     return String(value);
   }
 
@@ -492,6 +497,7 @@ export class TypeOrmSearchFilterPipe<T>
     if (value === null || typeof value !== 'object' || Array.isArray(value)) {
       return false;
     }
+
     return Object.getPrototypeOf(value) === Object.prototype;
   }
 }

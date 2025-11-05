@@ -108,7 +108,6 @@ describe('SettingController', () => {
       const setting = (await settingService.findOne({
         where: { label: 'contact_email_recipient' },
       })) as Setting;
-
       const assertValidValueSpy = jest.spyOn(
         SettingOrmEntity.prototype as any,
         'assertValidValue',

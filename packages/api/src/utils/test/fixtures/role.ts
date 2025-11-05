@@ -47,5 +47,6 @@ export const installRoleFixturesTypeOrm = async (dataSource: DataSource) => {
   }
 
   const entities = repository.create(roleOrmFixtures);
+
   return await repository.save(entities);
 };

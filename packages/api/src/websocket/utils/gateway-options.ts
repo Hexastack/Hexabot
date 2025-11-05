@@ -23,6 +23,7 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
       allowRequest: (handshake, cb) => {
         try {
           const result = config.sockets.beforeConnect(handshake);
+
           return cb(null, result);
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -32,6 +33,7 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
               `${util.inspect(handshake.headers, { depth: null })}\n` +
               `Details: ${e}`,
           );
+
           return cb(e, false);
         }
       },

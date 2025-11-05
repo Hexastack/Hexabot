@@ -36,5 +36,6 @@ export const installLanguageFixturesTypeOrm = async (
   }
 
   const entities = repository.create(languageFixtures);
+
   return await repository.save(entities);
 };

@@ -217,6 +217,7 @@ export class AttachmentGuard implements CanActivate {
     }
 
     const idRegex = /^[a-fA-F0-9]{24}$/;
+
     return idRegex.test(trimmed) || isUUID(trimmed);
   }
 

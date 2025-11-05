@@ -179,7 +179,6 @@ describe('BotService', () => {
         webEventText,
         mockWebChannelData,
       );
-
       const [block] = await blockService.findAndPopulate({
         where: { name: 'hasNextBlocks' },
       });
@@ -358,7 +357,6 @@ describe('BotService', () => {
       } as unknown as ConversationFull;
       const next = { id: 'block2', name: 'Block 2' } as any;
       const fallback = true;
-
       const result = await botService.proceedToNextBlock(
         mockConvo,
         next,
@@ -418,7 +416,6 @@ describe('BotService', () => {
         },
       },
     } as unknown as ConversationFull;
-
     const mockEvent = new WebEventWrapper(
       handler,
       webEventText,
@@ -462,7 +459,6 @@ describe('BotService', () => {
       const proceedSpy = jest
         .spyOn(botService, 'proceedToNextBlock')
         .mockResolvedValue(true);
-
       const result = await botService.handleOngoingConversationMessage(
         mockConvo,
         mockEvent,
@@ -495,7 +491,6 @@ describe('BotService', () => {
       jest.spyOn(blockService, 'findAndPopulate').mockResolvedValue([]);
       jest.spyOn(blockService, 'match').mockResolvedValue(undefined);
       const emitSpy = jest.spyOn(eventEmitter, 'emit');
-
       const result = await botService.handleOngoingConversationMessage(
         mockConvoWithoutFallback,
         mockEvent,

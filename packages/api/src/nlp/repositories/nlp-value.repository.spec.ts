@@ -171,12 +171,10 @@ describe('NlpValueRepository (TypeORM)', () => {
       const parentEntity = await nlpEntityRepository.create({
         name: 'value-parent-entity',
       });
-
       const createdValue = await nlpValueRepository.create({
         entity: parentEntity.id,
         value: 'type-orm-created',
       });
-
       const stored = await nlpValueRepository.findOne(createdValue.id);
 
       expect(helperSpy).toHaveBeenCalledTimes(1);
@@ -199,13 +197,11 @@ describe('NlpValueRepository (TypeORM)', () => {
       const parentEntity = await nlpEntityRepository.create({
         name: 'builtin-parent-entity',
       });
-
       const createdValue = await nlpValueRepository.create({
         entity: parentEntity.id,
         value: 'builtin-value',
         builtin: true,
       });
-
       const stored = await nlpValueRepository.findOne(createdValue.id);
 
       expect(helperSpy).not.toHaveBeenCalled();

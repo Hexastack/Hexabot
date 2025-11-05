@@ -145,6 +145,7 @@ export class MenuController extends BaseOrmController<
         this.logger.warn(`Unable to find menu with id: ${id}`);
         throw new NotFoundException(`Menu with id: ${id} not found`);
       }
+
       return result;
     } catch (e) {
       this.logger.error(e);
@@ -170,6 +171,7 @@ export class MenuController extends BaseOrmController<
     if (!id) {
       return await this.create(body as MenuCreateDto);
     }
+
     return await this.menuService.updateOne(id, body);
   }
 
@@ -190,6 +192,7 @@ export class MenuController extends BaseOrmController<
         this.logger.warn(`Unable to delete menu with id: ${id}`);
         throw new NotFoundException();
       }
+
       return '';
     } catch (e) {
       this.logger.error(e);

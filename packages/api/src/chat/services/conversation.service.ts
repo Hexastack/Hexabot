@@ -175,11 +175,9 @@ export class ConversationService extends BaseOrmService<
       const updatedConversation = await this.updateOne(convo.id, {
         context: convo.context,
       });
-
       //TODO: add check if nothing changed don't update
       const criteria =
         typeof convo.sender === 'object' ? convo.sender.id : convo.sender;
-
       // Store permanent context vars at the subscriber level
       const permanentContextVars = Object.entries(contextVars)
         .filter(([, { permanent }]) => permanent)
@@ -187,6 +185,7 @@ export class ConversationService extends BaseOrmService<
           if (cur in convo.context.vars) {
             acc[cur] = convo.context.vars[cur];
           }
+
           return acc;
         }, {});
 

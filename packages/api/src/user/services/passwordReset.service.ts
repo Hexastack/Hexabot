@@ -101,7 +101,6 @@ export class PasswordResetService {
         throw new UnauthorizedException('Token expired');
       else throw new BadRequestException(error.name, error.message);
     });
-
     // first step is to check if the token has been used
     const user = await this.userService.findOne({
       where: { email: payload.email },

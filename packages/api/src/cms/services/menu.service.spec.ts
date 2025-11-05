@@ -75,7 +75,6 @@ describe('MenuService (TypeORM)', () => {
         parent: parent.id,
         type: MenuType.nested,
       } as const;
-
       const created = await menuService.create(payload);
       createdIds.add(created.id);
 

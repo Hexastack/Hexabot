@@ -52,11 +52,13 @@ export class MenuService extends BaseOrmService<
       const menuParent = menuItem.parent?.toString();
       if (!menuItem.parent) {
         parents.get(this.RootSymbol)!.push(menuItem);
+
         return;
       }
       if (menuParent) {
         if (parents.has(menuParent)) {
           parents.get(menuParent)!.push(menuItem);
+
           return;
         }
 
@@ -113,6 +115,7 @@ export class MenuService extends BaseOrmService<
   public async getTree() {
     const menuItems = (await this.findAll()) as AnyMenu[];
     const parents = this.groupByParents(menuItems);
+
     return this.buildTree(parents);
   }
 }

@@ -106,6 +106,7 @@ export class NlpEntityController extends BaseOrmController<
       this.logger.warn(`Unable to find NLP Entity by id ${id}`);
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -203,6 +204,7 @@ export class NlpEntityController extends BaseOrmController<
         `Failed to delete NLP Entity with ID ${id}`,
       );
     }
+
     return result;
   }
 
@@ -230,6 +232,7 @@ export class NlpEntityController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted NLP entities with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

@@ -129,6 +129,7 @@ export abstract class BaseOrmRepository<
       this.repository.target as new (...args: any[]) => Entity,
       instanceToPlain(data),
     );
+
     return Object.assign(e) as DeepPartial<Entity>;
   }
 
@@ -136,6 +137,7 @@ export abstract class BaseOrmRepository<
     options: FindAllOptions<Entity> = {} as FindAllOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
     const entities = await this.findAllEntities(options);
+
     return entities.map(this.getTransformer(DtoTransformer.PlainCls));
   }
 
@@ -151,6 +153,7 @@ export abstract class BaseOrmRepository<
     const populatedEntities = await this.repository.find(
       this.withPopulateRelations(options as FindManyOptions<Entity>, true),
     );
+
     return populatedEntities.map(this.getTransformer(DtoTransformer.FullCls));
   }
 
@@ -158,6 +161,7 @@ export abstract class BaseOrmRepository<
     options: FindManyOptions<Entity> = {} as FindManyOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
     const entities = await this.findEntities(options);
+
     return entities.map(this.getTransformer(DtoTransformer.PlainCls));
   }
 
@@ -166,6 +170,7 @@ export abstract class BaseOrmRepository<
     populate = false,
   ): Promise<Entity[]> {
     const finalOptions = this.withPopulateRelations(options, populate);
+
     return await this.repository.find(finalOptions);
   }
 
@@ -181,6 +186,7 @@ export abstract class BaseOrmRepository<
 
     if (!currentRelations) {
       (finalOptions as any).relations = this.populateRelations;
+
       return finalOptions;
     }
 
@@ -197,6 +203,7 @@ export abstract class BaseOrmRepository<
     options: FindManyOptions<Entity> = {} as FindManyOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
     const entities = await this.findEntities(options, true);
+
     return entities.map(this.getTransformer(DtoTransformer.FullCls));
   }
 
@@ -213,6 +220,7 @@ export abstract class BaseOrmRepository<
     TransformerDto
   > | null> {
     const entity = await this.findOneEntity(idOrOptions);
+
     return entity ? this.getTransformer(DtoTransformer.PlainCls)(entity) : null;
   }
 
@@ -227,10 +235,12 @@ export abstract class BaseOrmRepository<
         },
         populate,
       );
+
       return (await this.repository.findOne(options)) ?? null;
     }
 
     const options = this.withPopulateRelations(idOrOptions, populate);
+
     return (await this.repository.findOne(options)) ?? null;
   }
 
@@ -238,6 +248,7 @@ export abstract class BaseOrmRepository<
     idOrOptions: string | FindOneOptions<Entity>,
   ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null> {
     const entity = await this.findOneEntity(idOrOptions, true);
+
     return entity ? this.getTransformer(DtoTransformer.FullCls)(entity) : null;
   }
 
@@ -246,6 +257,7 @@ export abstract class BaseOrmRepository<
   ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
     const created = await this.repository.save(entity);
+
     return this.getTransformer(DtoTransformer.PlainCls)(created);
   }
 
@@ -256,6 +268,7 @@ export abstract class BaseOrmRepository<
       payloads.map((payload) => this.actionDtoToEntity(payload)),
     );
     const created = await this.repository.save(entities);
+
     return created.map(this.getTransformer(DtoTransformer.PlainCls));
   }
 
@@ -314,8 +327,8 @@ export abstract class BaseOrmRepository<
     }
 
     const updatedEntities = await this.repository.save(entities);
-
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
+
     return updatedEntities.map(toDto);
   }
 
@@ -351,6 +364,7 @@ export abstract class BaseOrmRepository<
       acknowledged: true,
       deletedCount: deletable.length,
     };
+
     return result;
   }
 
@@ -368,6 +382,7 @@ export abstract class BaseOrmRepository<
       acknowledged: true,
       deletedCount: 1,
     };
+
     return result;
   }
 
@@ -412,6 +427,7 @@ export abstract class BaseOrmRepository<
     const entityName =
       camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
       'entity';
+
     return `hook:${entityName}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 

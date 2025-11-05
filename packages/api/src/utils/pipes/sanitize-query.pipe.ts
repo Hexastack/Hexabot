@@ -29,6 +29,7 @@ export class SanitizeQueryPipe implements PipeTransform<string, string> {
     s = Array.from(s)
       .filter((ch) => {
         const code = ch.charCodeAt(0);
+
         return code >= 0x20 && code !== 0x7f;
       })
       .join('');

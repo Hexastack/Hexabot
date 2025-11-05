@@ -161,7 +161,6 @@ export class NlpSampleService extends BaseOrmService<
     const normalized: FindManyOptions<NlpSampleOrmEntity> = {
       ...(options ?? {}),
     };
-
     const hasOrder =
       normalized.order &&
       Object.keys(normalized.order as Record<string, unknown>).length > 0;
@@ -185,7 +184,6 @@ export class NlpSampleService extends BaseOrmService<
     const samples = await this.findAndPopulate({
       where: { type },
     });
-
     const entities = await this.nlpEntityService.findAllAndPopulate();
 
     return { samples, entities };
@@ -262,7 +260,6 @@ export class NlpSampleService extends BaseOrmService<
           trained: false,
           language: languages[d.language].id,
         };
-
         // Create a new sample entity dto
         const entities: NlpSampleEntityValue[] = allEntities
           .filter(({ name }) => name in d)
@@ -270,14 +267,12 @@ export class NlpSampleService extends BaseOrmService<
             entity: name,
             value: d[name],
           }));
-
         // Store any new entity/value
         const storedEntities = await this.nlpEntityService.storeNewEntities(
           sample.text,
           entities,
           ['trait'],
         );
-
         // Store sample
         const createdSample = await this.create(sample);
         nlpSamples.push(createdSample);

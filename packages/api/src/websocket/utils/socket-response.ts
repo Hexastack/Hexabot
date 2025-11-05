@@ -37,16 +37,19 @@ export class SocketResponse {
 
   status(code: number): SocketResponse {
     this.statusCode = code;
+
     return this;
   }
 
   set(key: string, value: any): SocketResponse {
     this.headers[key] = value;
+
     return this;
   }
 
   setHeaders(headers: { [key: string]: any }): SocketResponse {
     this.headers = headers;
+
     return this;
   }
 
@@ -65,11 +68,13 @@ export class SocketResponse {
 
     // this.socket.send(response);
     this.resolve(response);
+
     return response;
   }
 
   json<T = Partial<IOOutgoingMessage>>(data: T): T {
     this.set('Content-Type', 'application/json');
+
     return this.send(data) as T;
   }
 

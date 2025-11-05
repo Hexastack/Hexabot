@@ -240,12 +240,14 @@ export class BlockOrmEntity extends BaseOrmEntity {
     const scopeIds = this.getCategoryUpdateScopeIds();
     if (!scopeIds.length) {
       this.clearCategoryUpdateScope();
+
       return;
     }
 
     const nextCategoryId = this.category?.id ?? null;
     if (!nextCategoryId) {
       this.clearCategoryUpdateScope();
+
       return;
     }
 
@@ -254,10 +256,10 @@ export class BlockOrmEntity extends BaseOrmEntity {
       where: { id: this.id },
       relations: ['category'],
     });
-
     const previousCategoryId = previous?.category?.id ?? null;
     if (nextCategoryId === previousCategoryId) {
       this.clearCategoryUpdateScope();
+
       return;
     }
 

@@ -88,6 +88,7 @@ export class SocketRequest {
     const urlQuery = Array.from(urlObj.searchParams).reduce(
       (acc, [key, value]) => {
         acc[key] = value;
+
         return acc;
       },
       {} as Record<string, any>,

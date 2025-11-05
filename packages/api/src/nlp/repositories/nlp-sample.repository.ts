@@ -107,9 +107,7 @@ export class NlpSampleRepository extends BaseOrmRepository<
     values: NlpValue[];
   }): SelectQueryBuilder<NlpSampleOrmEntity> {
     const qb = this.repository.createQueryBuilder('sample');
-
     const findOptions: FindManyOptions<NlpSampleOrmEntity> = {};
-
     const hasWhere = options.where !== undefined;
     const hasOrder =
       options.order !== undefined &&
@@ -188,6 +186,7 @@ export class NlpSampleRepository extends BaseOrmRepository<
     const clauses = keywords.map((keyword, index) => {
       const param = `keyword${index}`;
       params[param] = `%${keyword.toLowerCase()}%`;
+
       return `LOWER(sample.text) LIKE :${param}`;
     });
 

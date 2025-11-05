@@ -117,6 +117,7 @@ export default class LocalStorageHelper
     }
 
     const location = filePath.replace(rootDir, '');
+
     return {
       ...metadata,
       location,

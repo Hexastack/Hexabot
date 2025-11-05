@@ -80,7 +80,6 @@ export class Ability implements CanActivate {
       const modelFromPathname = pathname?.split('/')[1].toLowerCase() as
         | TModel
         | undefined;
-
       const permissions = await this.permissionService.getPermissions();
 
       if (permissions) {

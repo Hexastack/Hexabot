@@ -123,7 +123,6 @@ describe('RoleController (TypeORM)', () => {
           .filter((permission) => permission.role === role.id)
           .map((permission) => permission.id)
           .sort();
-
         const permissionIds = (role.permissions ?? [])
           .map((permission) => permission.id)
           .sort();
@@ -133,7 +132,6 @@ describe('RoleController (TypeORM)', () => {
           .filter((user) => user.roles.includes(role.id))
           .map((user) => user.id)
           .sort();
-
         const userIds = (role.users ?? []).map((user) => user.id).sort();
         expect(userIds).toEqual(expectedUserIds);
       });
@@ -162,7 +160,6 @@ describe('RoleController (TypeORM)', () => {
       const users = (await userService.findAll()).filter((user) =>
         user.roles.includes(roleAdmin.id),
       );
-
       const permissions = await permissionService.find({
         where: { role: { id: roleAdmin.id } },
       });

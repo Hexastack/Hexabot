@@ -61,7 +61,6 @@ describe('AuthController (TypeORM)', () => {
         return Promise.resolve('Mail sent successfully');
       },
     };
-
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],

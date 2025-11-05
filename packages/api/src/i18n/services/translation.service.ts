@@ -161,6 +161,7 @@ export class TranslationService extends BaseOrmService<
     ) {
       strings = strings.concat(block.options.fallback.message);
     }
+
     return strings;
   }
 
@@ -193,6 +194,7 @@ export class TranslationService extends BaseOrmService<
       where: { translatable: true },
     });
     const settings = await this.settingService.getSettings();
+
     return Object.values(settings)
       .map((group: Record<string, string | string[]>) => Object.entries(group))
       .flat()

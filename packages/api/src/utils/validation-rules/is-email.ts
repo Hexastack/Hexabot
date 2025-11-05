@@ -5,7 +5,6 @@
  */
 
 const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
 const isEmail = (v: string) => EMAIL_REGEX.test(v);
 
 export { isEmail };

@@ -64,7 +64,6 @@ export class SubscriberRepository extends BaseOrmRepository<
           const previousSubscriber = this.getTransformer(
             DtoTransformer.PlainCls,
           )(previous);
-
           const subscriberUpdates: SubscriberUpdateDto = {
             assignedTo: newAssignedTo ?? null,
           };
@@ -115,6 +114,7 @@ export class SubscriberRepository extends BaseOrmRepository<
   async findOneByForeignId(id: string): Promise<Subscriber | null> {
     const results = await this.find(this.createForeignIdOptions(id));
     const [result] = results;
+
     return result || null;
   }
 
@@ -128,6 +128,7 @@ export class SubscriberRepository extends BaseOrmRepository<
   async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
     const results = await this.findAndPopulate(this.createForeignIdOptions(id));
     const [result] = results;
+
     return result;
   }
 
@@ -222,7 +223,6 @@ export class SubscriberRepository extends BaseOrmRepository<
       .createQueryBuilder()
       .relation(SubscriberOrmEntity, 'labels')
       .of(subscriberId);
-
     const existingIds = new Set(subscriber.labels);
 
     if (labelsToPull.length) {
@@ -235,6 +235,7 @@ export class SubscriberRepository extends BaseOrmRepository<
       if (shouldAdd) {
         existingIds.add(id);
       }
+
       return shouldAdd;
     });
 

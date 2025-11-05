@@ -62,6 +62,7 @@ export class LabelGroupController extends BaseOrmController<
     options: FindManyOptions<LabelGroupOrmEntity>,
   ): Promise<LabelGroup[] | LabelGroupFull[]> {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.labelGroupService.findAndPopulate(queryOptions)
       : await this.labelGroupService.find(queryOptions);
@@ -100,6 +101,7 @@ export class LabelGroupController extends BaseOrmController<
       this.logger.warn(`Unable to find Label Group by id ${id}`);
       throw new NotFoundException(`Label Group with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -136,6 +138,7 @@ export class LabelGroupController extends BaseOrmController<
       this.logger.warn(`Unable to delete Label Group by id ${id}`);
       throw new NotFoundException(`Label Group with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -162,6 +165,7 @@ export class LabelGroupController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted Label Groups with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

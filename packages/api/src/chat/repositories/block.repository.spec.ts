@@ -51,7 +51,6 @@ describe('BlockRepository (TypeORM)', () => {
         chatbot_settings: {},
       }),
     };
-
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
@@ -163,7 +162,6 @@ describe('BlockRepository (TypeORM)', () => {
       const blockByName = new Map(
         populated.map((block) => [block.name, block]),
       );
-
       const nextBlock = blockByName.get('hasNextBlocks');
       expect(nextBlock).toBeDefined();
       expect((nextBlock!.nextBlocks ?? []).map((b) => b.name)).toEqual([
@@ -182,7 +180,6 @@ describe('BlockRepository (TypeORM)', () => {
   describe('findByContextVarName', () => {
     it('returns an empty array when the name is blank', async () => {
       const repositoryFindSpy = jest.spyOn(blockOrmRepository, 'find');
-
       const result = await blockRepository.findByContextVarName('');
 
       expect(result).toEqual([]);
@@ -228,7 +225,6 @@ describe('BlockRepository (TypeORM)', () => {
         blockOrmRepository,
         'createQueryBuilder',
       );
-
       const result = await blockRepository.search('   ');
 
       expect(result).toEqual([]);

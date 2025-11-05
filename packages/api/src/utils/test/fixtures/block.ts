@@ -223,9 +223,7 @@ export const installBlockFixturesTypeOrm = async (dataSource: DataSource) => {
       category: defaultCategory ? { id: defaultCategory.id } : null,
     } as DeepPartial<BlockOrmEntity>),
   );
-
   const savedBlocks = await blockRepository.save(blockEntities);
-
   const hasNextBlocks = savedBlocks.find(
     (block) => block.name === 'hasNextBlocks',
   );

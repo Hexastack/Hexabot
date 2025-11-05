@@ -67,9 +67,9 @@ export class MessageRepository extends BaseOrmRepository<
       .andWhere('message.created_at < :until', { until })
       .orderBy('message.created_at', 'DESC')
       .limit(limit);
-
     const results = await qb.getMany();
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
+
     return results.map(toDto);
   }
 
@@ -104,9 +104,9 @@ export class MessageRepository extends BaseOrmRepository<
       .andWhere('message.created_at > :since', { since })
       .orderBy('message.created_at', 'ASC')
       .limit(limit);
-
     const results = await qb.getMany();
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
+
     return results.map(toDto);
   }
 
@@ -144,8 +144,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'DESC')
       .limit(limit)
       .getMany();
-
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
+
     return results.map(toDto);
   }
 }

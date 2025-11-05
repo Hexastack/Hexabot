@@ -94,7 +94,6 @@ describe('ContentTypeService (TypeORM)', () => {
   describe('create', () => {
     it('applies default fields when none are provided', async () => {
       const payload = { name: 'Blog posts' };
-
       const created = await service.create(payload);
       createdIds.push(created.id);
 

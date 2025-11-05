@@ -48,11 +48,11 @@ export async function seedDatabase(app: INestApplicationContext) {
   const translationSeeder = app.get(TranslationSeeder);
   const nlpEntitySeeder = app.get(NlpEntitySeeder);
   const nlpValueSeeder = app.get(NlpValueSeeder);
-
   const existingUsers = await userSeeder.findAll();
 
   if (existingUsers.length > 0) {
     logger.log('Database already seeded, aborting ...');
+
     return;
   }
 
@@ -83,7 +83,6 @@ export async function seedDatabase(app: INestApplicationContext) {
     ...models.map((model) => [model.id, adminRole.id]),
     ...managerModels.map((model) => [model.id, managerRole.id]),
   ] as [string, string][];
-
   const permissionSeeds = roleModelsCombinations.reduce(
     (acc, [modelId, roleId]) => {
       return acc.concat(permissionModels(modelId, roleId));

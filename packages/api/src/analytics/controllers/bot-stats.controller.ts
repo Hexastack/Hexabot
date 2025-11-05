@@ -50,6 +50,7 @@ export class BotStatsController extends BaseOrmController<
       BotStatsType.outgoing,
     ];
     const result = await this.botStatsService.findMessages(from, to, types);
+
     return BotStatsOrmEntity.toLines(result, types);
   }
 
@@ -86,8 +87,8 @@ export class BotStatsController extends BaseOrmController<
       BotStatsType.new_conversations,
       BotStatsType.existing_conversations,
     ];
-
     const result = await this.botStatsService.findMessages(from, to, types);
+
     return BotStatsOrmEntity.toLines(result, types);
   }
 
@@ -108,8 +109,8 @@ export class BotStatsController extends BaseOrmController<
       BotStatsType.returning_users,
       BotStatsType.retention,
     ];
-
     const result = await this.botStatsService.findMessages(from, to, types);
+
     return BotStatsOrmEntity.toLines(result, types);
   }
 

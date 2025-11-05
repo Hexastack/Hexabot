@@ -130,7 +130,6 @@ describe('ContentController (TypeORM)', () => {
 
     it('retrieves populated content when requested', async () => {
       const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
-
       const result = await controller.find(['contentType'], {
         take: 5,
         skip: 0,
@@ -175,7 +174,6 @@ describe('ContentController (TypeORM)', () => {
         contentService,
         'findOneAndPopulate',
       );
-
       const found = await controller.findOne(existing.id, ['contentType']);
 
       expect(found).toMatchObject({ id: existing.id });
@@ -259,7 +257,6 @@ describe('ContentController (TypeORM)', () => {
         status: true,
         dynamicFields: {},
       });
-
       const result = await controller.deleteOne(created.id);
 
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });

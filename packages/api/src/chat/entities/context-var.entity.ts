@@ -27,7 +27,6 @@ export class ContextVarOrmEntity extends BaseOrmEntity {
   @BeforeRemove()
   protected async ensureNotInUse(): Promise<void> {
     const manager = ContextVarOrmEntity.getEntityManager();
-
     const databaseType = manager.connection.options.type;
     const blocksQuery = manager
       .getRepository(BlockOrmEntity)

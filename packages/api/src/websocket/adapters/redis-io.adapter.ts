@@ -43,6 +43,7 @@ export class RedisIoAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
     const server = super.createIOServer(port, options);
     server.adapter(this.adapter);
+
     return server;
   }
 }

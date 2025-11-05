@@ -48,7 +48,6 @@ describe('ConversationService (TypeORM)', () => {
   const attachmentServiceMock: jest.Mocked<Pick<AttachmentService, 'store'>> = {
     store: jest.fn(),
   };
-
   const gatewayMock: jest.Mocked<
     Pick<WebsocketGateway, 'joinNotificationSockets'>
   > = {
@@ -118,14 +117,11 @@ describe('ConversationService (TypeORM)', () => {
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: -1, context_var: 'phone' }],
       } as Block;
-
       const mockPhone = '+1 514 678 9873';
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
         getText: jest.fn().mockReturnValue(mockPhone),
@@ -150,7 +146,6 @@ describe('ConversationService (TypeORM)', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
         conversation,
         next,
@@ -186,12 +181,10 @@ describe('ConversationService (TypeORM)', () => {
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: 'country_code', context_var: 'country' }],
       } as Block;
-
       const mockMessage = 'Are you from the US?';
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
@@ -224,7 +217,6 @@ describe('ConversationService (TypeORM)', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
         conversation,
         next,
@@ -246,12 +238,10 @@ describe('ConversationService (TypeORM)', () => {
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: 'country_code', context_var: 'country' }],
       } as Block;
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('location'),
         getText: jest.fn().mockReturnValue(''),
@@ -276,7 +266,6 @@ describe('ConversationService (TypeORM)', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
         conversation,
         next,
@@ -296,7 +285,6 @@ describe('ConversationService (TypeORM)', () => {
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [],
@@ -307,7 +295,6 @@ describe('ConversationService (TypeORM)', () => {
           },
         },
       } as unknown as Block;
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
         getText: jest.fn().mockReturnValue('I would like to see the products'),
@@ -332,7 +319,6 @@ describe('ConversationService (TypeORM)', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result1 = await conversationService.storeContextData(
         conversation,
         next,
@@ -365,7 +351,6 @@ describe('ConversationService (TypeORM)', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result2 = await conversationService.storeContextData(
         conversation,
         next,

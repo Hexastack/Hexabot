@@ -89,7 +89,6 @@ describe('LabelController (TypeORM)', () => {
     it('should count labels', async () => {
       const expectedCount = await labelService.count({});
       const countSpy = jest.spyOn(labelService, 'count');
-
       const result = await labelController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
@@ -103,7 +102,6 @@ describe('LabelController (TypeORM)', () => {
       const findSpy = jest
         .spyOn(labelService, 'find')
         .mockResolvedValue(expected);
-
       const result = await labelController.findPage([], {});
 
       expect(findSpy).toHaveBeenCalledWith({});
@@ -115,7 +113,6 @@ describe('LabelController (TypeORM)', () => {
       const findAndPopulateSpy = jest
         .spyOn(labelService, 'findAndPopulate')
         .mockResolvedValue(expected);
-
       const result = await labelController.findPage(['users'], {});
 
       expect(findAndPopulateSpy).toHaveBeenCalledWith({});
@@ -140,7 +137,6 @@ describe('LabelController (TypeORM)', () => {
 
     it('should find one label by id', async () => {
       const findSpy = jest.spyOn(labelService, 'findOne');
-
       const result = await labelController.findOne(existingLabel.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(existingLabel.id);
@@ -149,7 +145,6 @@ describe('LabelController (TypeORM)', () => {
 
     it('should find one label and populate users', async () => {
       const findSpy = jest.spyOn(labelService, 'findOneAndPopulate');
-
       const result = await labelController.findOne(existingLabel.id, ['users']);
 
       expect(findSpy).toHaveBeenCalledWith(existingLabel.id);
@@ -179,7 +174,6 @@ describe('LabelController (TypeORM)', () => {
         label_id: { web: randomString() },
       };
       const createSpy = jest.spyOn(labelService, 'create');
-
       const result = await labelController.create(payload);
 
       expect(createSpy).toHaveBeenCalledWith(payload);
@@ -196,12 +190,10 @@ describe('LabelController (TypeORM)', () => {
         name: createUniqueLabelName(),
         description: 'Initial description',
       });
-
       const updates: LabelUpdateDto = {
         description: 'Updated description',
       };
       const updateSpy = jest.spyOn(labelService, 'updateOne');
-
       const result = await labelController.updateOne(created.id, updates);
 
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
@@ -226,7 +218,6 @@ describe('LabelController (TypeORM)', () => {
         description: 'Label to delete',
       });
       const deleteSpy = jest.spyOn(labelService, 'deleteOne');
-
       const result = await labelController.deleteOne(deletable.id);
 
       expect(deleteSpy).toHaveBeenCalledWith(deletable.id);
@@ -261,9 +252,7 @@ describe('LabelController (TypeORM)', () => {
           name: createUniqueLabelName(),
         },
       ]);
-
       const ids = created.map(({ id }) => id);
-
       const result = await labelController.deleteMany(ids);
 
       expect(result).toEqualPayload({

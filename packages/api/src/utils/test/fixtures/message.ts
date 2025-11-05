@@ -61,19 +61,18 @@ const findMessages = async (dataSource: DataSource) =>
   await dataSource.getRepository(MessageOrmEntity).find({
     relations: ['sender', 'recipient', 'sentBy'],
   });
-
 const parseIndex = (value?: string | null) => {
   if (value == null) {
     return null;
   }
 
   const index = Number.parseInt(value, 10);
+
   return Number.isNaN(index) ? null : index;
 };
 
 export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(MessageOrmEntity);
-
   const { subscribers, users } =
     await installSubscriberFixturesTypeOrm(dataSource);
 
@@ -85,17 +84,14 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
     const senderIndex = parseIndex(fixture.sender);
     const recipientIndex = parseIndex(fixture.recipient);
     const sentByIndex = parseIndex(fixture.sentBy);
-
     const sender =
       senderIndex != null && subscribers[senderIndex]
         ? { id: subscribers[senderIndex].id }
         : null;
-
     const recipient =
       recipientIndex != null && subscribers[recipientIndex]
         ? { id: subscribers[recipientIndex].id }
         : null;
-
     const sentBy =
       sentByIndex != null && users[sentByIndex]
         ? { id: users[sentByIndex].id }

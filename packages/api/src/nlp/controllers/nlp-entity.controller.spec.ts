@@ -106,6 +106,7 @@ describe('NlpEntityController', () => {
             weight: weight!,
             doc,
           });
+
           return acc;
         },
         [] as TFixtures<NlpEntityFull>[],
@@ -145,6 +146,7 @@ describe('NlpEntityController', () => {
           if (a.name < b.name) {
             return 1;
           }
+
           return 0;
         }),
       );
@@ -271,7 +273,6 @@ describe('NlpEntityController', () => {
       };
       const findOneSpy = jest.spyOn(nlpEntityService, 'findOne');
       const updateWeightSpy = jest.spyOn(nlpEntityService, 'updateWeight');
-
       const result = await nlpEntityController.updateOne(
         buitInEntityId!,
         updatedNlpEntity,
@@ -303,7 +304,6 @@ describe('NlpEntityController', () => {
       const originalEntity: NlpEntity | null = await nlpEntityService.findOne(
         buitInEntityId!,
       );
-
       const result: NlpEntity = await nlpEntityController.updateOne(
         buitInEntityId!,
         updatedNlpEntity,
@@ -333,7 +333,6 @@ describe('NlpEntityController', () => {
           })
         )?.id,
       ] as string[];
-
       const result = await nlpEntityController.deleteMany(entitiesToDelete);
 
       expect(result.deletedCount).toEqual(entitiesToDelete.length);

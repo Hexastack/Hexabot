@@ -257,7 +257,6 @@ describe('BlockService (TypeORM)', () => {
       },
       mockWebChannelData,
     );
-
     const webEventAmbiguous = new WebEventWrapper(
       handlerMock,
       {
@@ -440,13 +439,11 @@ describe('BlockService (TypeORM)', () => {
         // no match
         blockGetStarted,
       ];
-
       // Spy on calculateBlockScore to check if it's called
       const calculateBlockScoreSpy = jest.spyOn(
         blockService,
         'calculateNluPatternMatchScore',
       );
-
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
@@ -511,7 +508,6 @@ describe('BlockService (TypeORM)', () => {
         },
         blockGetStarted,
       ];
-
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
@@ -540,7 +536,6 @@ describe('BlockService (TypeORM)', () => {
         mockNlpGreetingNameEntities,
         FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
-
       const scoreWithPenalty = blockService.calculateNluPatternMatchScore(
         mockNlpGreetingAnyNamePatterns,
         mockNlpGreetingNameEntities,
@@ -688,7 +683,6 @@ describe('BlockService (TypeORM)', () => {
           'Hello {{context.user.first_name}}, your phone is {{context.vars.phone}} and your favorite color is {{context.vars.color}}',
         ],
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -716,7 +710,6 @@ describe('BlockService (TypeORM)', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -743,7 +736,6 @@ describe('BlockService (TypeORM)', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -781,7 +773,6 @@ describe('BlockService (TypeORM)', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -812,7 +803,6 @@ describe('BlockService (TypeORM)', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -858,7 +848,6 @@ describe('BlockService (TypeORM)', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -896,7 +885,6 @@ describe('BlockService (TypeORM)', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -933,7 +921,6 @@ describe('BlockService (TypeORM)', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -971,7 +958,6 @@ describe('BlockService (TypeORM)', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -1008,7 +994,6 @@ describe('BlockService (TypeORM)', () => {
       const spyCheckDeprecated = jest
         .spyOn(blockService as any, 'checkDeprecatedAttachmentUrl')
         .mockImplementation(() => {});
-
       const block = makeMockBlock({
         message: {
           attachment: {

@@ -125,6 +125,7 @@ describe('NlpSampleEntityService (TypeORM)', () => {
             metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
+
           return acc;
         },
         [] as any,
@@ -148,6 +149,7 @@ describe('NlpSampleEntityService (TypeORM)', () => {
             end: curr.end || null,
           };
           acc.push(sampleEntityWithPopulate);
+
           return acc;
         }, [] as TFixtures<NlpSampleEntityFull>[]);
       expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate, [
@@ -233,7 +235,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'AI',
         expressions: ['amazing'],
       } as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's1',
@@ -267,7 +268,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's2',
@@ -294,7 +294,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's3',
@@ -335,7 +334,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'science',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's4',
@@ -376,7 +374,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       // Should not match "AI-powered" since it's not a standalone word
       const expected: NlpSampleEntityCreateDto[] = [];
 
@@ -393,7 +390,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's7',
@@ -428,14 +424,12 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         id: 's10',
         text: 'Find the,AI, in this text.',
       } as NlpSample;
-
       const value = {
         id: 'v10',
         entity: 'e10',
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's10',

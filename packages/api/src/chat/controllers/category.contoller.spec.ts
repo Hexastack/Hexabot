@@ -85,7 +85,6 @@ describe('CategoryController (TypeORM)', () => {
     it('should count categories', async () => {
       const expectedCount = await categoryService.count({});
       const countSpy = jest.spyOn(categoryService, 'count');
-
       const result = await categoryController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
@@ -97,7 +96,6 @@ describe('CategoryController (TypeORM)', () => {
     it('should find categories', async () => {
       const expected = await categoryService.find({});
       const findSpy = jest.spyOn(categoryService, 'find');
-
       const result = await categoryController.findPage({});
 
       expect(findSpy).toHaveBeenCalledWith({});
@@ -141,7 +139,6 @@ describe('CategoryController (TypeORM)', () => {
         offset: [10, 20],
       };
       const createSpy = jest.spyOn(categoryService, 'create');
-
       const result = await categoryController.create(payload);
 
       expect(createSpy).toHaveBeenCalledWith(payload);
@@ -157,13 +154,11 @@ describe('CategoryController (TypeORM)', () => {
         label: `category-${Math.random().toString(36).slice(2, 10)}`,
         builtin: false,
       });
-
       const updates: CategoryUpdateDto = {
         zoom: 80,
         offset: [5, 5],
       };
       const updateSpy = jest.spyOn(categoryService, 'updateOne');
-
       const result = await categoryController.updateOne(created.id, updates);
 
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
@@ -182,7 +177,6 @@ describe('CategoryController (TypeORM)', () => {
         builtin: false,
       });
       const deleteSpy = jest.spyOn(categoryService, 'deleteOne');
-
       const result = await categoryController.deleteOne(deletable.id);
 
       expect(deleteSpy).toHaveBeenCalledWith(deletable.id);
@@ -211,9 +205,7 @@ describe('CategoryController (TypeORM)', () => {
         { label: `category-${Math.random().toString(36).slice(2, 10)}` },
         { label: `category-${Math.random().toString(36).slice(2, 10)}` },
       ]);
-
       const ids = createdCategories.map(({ id }) => id);
-
       const result = await categoryController.deleteMany(ids);
 
       expect(result).toEqualPayload({

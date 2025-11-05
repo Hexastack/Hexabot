@@ -80,6 +80,7 @@ export class TranslationController extends BaseOrmController<
       this.logger.warn(`Unable to find Translation by id ${id}`);
       throw new NotFoundException(`Translation with ID ${id} not found`);
     }
+
     return translation;
   }
 
@@ -106,6 +107,7 @@ export class TranslationController extends BaseOrmController<
       .reduce(
         (acc, curr) => {
           acc[curr] = '';
+
           return acc;
         },
         {} as { [key: string]: string },
@@ -130,6 +132,7 @@ export class TranslationController extends BaseOrmController<
     // Purge non existing translations
     const deleteOptions: FindManyOptions<TranslationOrmEntity> =
       strings.length > 0 ? { where: { str: Not(In(strings)) } } : {};
+
     return await this.translationService.deleteMany(deleteOptions);
   }
 
@@ -148,6 +151,7 @@ export class TranslationController extends BaseOrmController<
         `Unable to delete Translation with ID ${id}`,
       );
     }
+
     return result;
   }
 }

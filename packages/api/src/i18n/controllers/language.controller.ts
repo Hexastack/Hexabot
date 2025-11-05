@@ -89,6 +89,7 @@ export class LanguageController extends BaseOrmController<
       this.logger.warn(`Unable to find Language by id ${id}`);
       throw new NotFoundException(`Language with ID ${id} not found`);
     }
+
     return language;
   }
 
@@ -133,6 +134,7 @@ export class LanguageController extends BaseOrmController<
       this.logger.warn(`Unable to delete Language by id ${id}`);
       throw new BadRequestException(`Unable to delete Language with ID ${id}`);
     }
+
     return result;
   }
 }

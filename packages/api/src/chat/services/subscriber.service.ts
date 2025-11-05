@@ -164,7 +164,6 @@ export class SubscriberService extends BaseOrmService<
   ): Promise<Subscriber> {
     const { file, type, size } = avatar;
     const extension = mime.extension(type);
-
     const attachment = await this.attachmentService.store(file, {
       name: `avatar-${uuidv4()}.${extension}`,
       size,
@@ -261,6 +260,7 @@ export class SubscriberService extends BaseOrmService<
     this.logger.debug(
       `Subscriber "${profile.id}" handed over to "${assignTo}"`,
     );
+
     return updated;
   }
 
@@ -298,6 +298,7 @@ export class SubscriberService extends BaseOrmService<
         labels,
         assignTo,
       });
+
       return current;
     } catch (err) {
       this.logger.error('Unable to perform block updates!', err);

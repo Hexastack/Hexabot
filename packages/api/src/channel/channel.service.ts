@@ -81,6 +81,7 @@ export class ChannelService {
     if (!handler) {
       throw new Error(`Channel ${name} not found`);
     }
+
     return handler as C;
   }
 
@@ -107,6 +108,7 @@ export class ChannelService {
    */
   async download(channel: string, token: string, req: Request) {
     const handler = this.getChannelHandler(`${channel}-channel`);
+
     return await handler.download(token, req);
   }
 
@@ -124,6 +126,7 @@ export class ChannelService {
   ) {
     this.logger.log('Channel notification (Web Socket) : ', req.method);
     const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
+
     return await handler.handle(req, res);
   }
 
@@ -200,6 +203,7 @@ export class ChannelService {
     }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
+
     return await handler.handle(req, res);
   }
 }

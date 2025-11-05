@@ -318,6 +318,7 @@ describe('BaseOrmRepository', () => {
         (typeof event.entityId === 'object'
           ? (event.entityId as Record<string, unknown>).id
           : (event.entityId as string | undefined));
+
       return typeof candidate === 'string' ? candidate : undefined;
     };
 
@@ -334,7 +335,6 @@ describe('BaseOrmRepository', () => {
         .spyOn(eventEmitter, 'emitAsync')
         .mockResolvedValue([]);
       const payload = { dummy: 'event create' };
-
       const result = await dummyRepository.create(payload);
 
       expect(emitSpy).toHaveBeenCalledTimes(2);
@@ -342,7 +342,6 @@ describe('BaseOrmRepository', () => {
         [string, InsertEvent<DummyOrmEntity>],
         [string, InsertEvent<DummyOrmEntity>],
       ];
-
       const [preEventName, preEvent] = preCall;
       expect(preEventName).toBe(hookEvent(EHook.preCreate));
       expect(preEvent.entity?.dummy).toBe(payload.dummy);
@@ -519,7 +518,6 @@ describe('BaseOrmRepository', () => {
       const emitSpy = jest
         .spyOn(eventEmitter, 'emitAsync')
         .mockResolvedValue([]);
-
       const result = await dummyRepository.updateMany(
         { where: { id: In([randomUUID()]) } },
         { dummy: 'no-op' },
@@ -533,7 +531,6 @@ describe('BaseOrmRepository', () => {
       const emitSpy = jest
         .spyOn(eventEmitter, 'emitAsync')
         .mockResolvedValue([]);
-
       const result = await dummyRepository.deleteMany({
         where: { id: In([randomUUID()]) },
       });

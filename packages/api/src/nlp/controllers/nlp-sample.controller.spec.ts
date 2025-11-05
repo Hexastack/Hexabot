@@ -98,7 +98,6 @@ describe('NlpSampleController (TypeORM)', () => {
           order: { text: 'DESC' },
         },
       );
-
       const samples = await nlpSampleService.findAll();
       const sampleEntities = await nlpSampleEntityService.findAll();
       const expected = samples.reduce((acc, sample) => {
@@ -111,9 +110,9 @@ describe('NlpSampleController (TypeORM)', () => {
             languages.find((language) => language.id === sample.language) ||
             null,
         });
+
         return acc;
       }, [] as TFixtures<NlpSampleFull>[]);
-
       const normalizeEntitiesOrder = (
         samples: TFixtures<NlpSampleFull>[],
       ): TFixtures<NlpSampleFull>[] =>
@@ -123,7 +122,6 @@ describe('NlpSampleController (TypeORM)', () => {
             a.id.localeCompare(b.id),
           ),
         }));
-
       const normalizedResult = normalizeEntitiesOrder(
         result as TFixtures<NlpSampleFull>[],
       );
@@ -136,7 +134,6 @@ describe('NlpSampleController (TypeORM)', () => {
       const result = await nlpSampleController.findPage(['invalid'], {
         order: { text: 'DESC' },
       });
-
       const expected = await nlpSampleService.find({
         order: { text: 'DESC' },
       });
@@ -147,7 +144,6 @@ describe('NlpSampleController (TypeORM)', () => {
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'greeting' },
       ];
-
       const result = await nlpSampleController.findPage(
         ['language', 'entities'],
         {
@@ -155,7 +151,6 @@ describe('NlpSampleController (TypeORM)', () => {
         },
         patterns,
       );
-
       const expected = await nlpSampleService.findByPatternsAndPopulate({
         options: { order: { text: 'DESC' } },
         patterns,
@@ -285,7 +280,6 @@ describe('NlpSampleController (TypeORM)', () => {
         entities: [],
         languageCode: languages[0]?.code,
       };
-
       const result = await nlpSampleController.updateOne(sample.id, updateDto);
       expect(result.text).toEqual(updateDto.text);
       expect(result.language).toBeDefined();

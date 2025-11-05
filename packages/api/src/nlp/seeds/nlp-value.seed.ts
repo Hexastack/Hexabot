@@ -38,8 +38,10 @@ export class NlpValueSeeder extends BaseOrmSeeder<
         entity: entities.find(({ name }) => name === v.entity)?.id as string,
       }));
       await this.repository.createMany(modelDtos);
+
       return true;
     }
+
     return false;
   }
 }

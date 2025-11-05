@@ -92,6 +92,7 @@ export class ContentService extends BaseOrmService<
         };
         const contents = await this.find(findOptions);
         const elements = contents.map(ContentOrmEntity.toElement);
+
         return {
           elements,
           pagination: {

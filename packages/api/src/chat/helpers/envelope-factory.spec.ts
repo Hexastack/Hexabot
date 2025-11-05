@@ -32,6 +32,7 @@ jest.mock('@/utils/helpers/safeRandom', () => ({
       for (const part of parts) {
         value = value[part];
       }
+
       return value;
     }),
 };
@@ -94,7 +95,6 @@ describe('EnvelopeFactory', () => {
     it('should replace tokens with context variables correctly', () => {
       const text =
         'Hello {{context.user.first_name}} {{context.user.last_name}}, your phone is {{context.vars.phone}}';
-
       const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
@@ -118,7 +118,6 @@ describe('EnvelopeFactory', () => {
       const settings = {
         contact: {},
       } as unknown as Settings;
-
       const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
@@ -285,7 +284,6 @@ describe('EnvelopeFactory', () => {
             skip: 0,
             limit: 3,
           } as ContentPagination;
-
           const envelope = factory.buildListEnvelope(
             format as
               | OutgoingMessageFormat.carousel

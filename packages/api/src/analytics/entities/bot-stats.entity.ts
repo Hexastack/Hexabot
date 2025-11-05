@@ -73,19 +73,19 @@ export class BotStatsOrmEntity extends BaseOrmEntity {
         values: [],
       } as ToLinesType;
     });
-
     const index: { [dataName: string]: number } = data.reduce(
       (acc, curr, i) => {
         acc[curr.name] = i;
+
         return acc;
       },
       {},
     );
-
     const result = stats.reduce(
       (acc, stat: BotStatsOrmEntity & { date: Date }) => {
         stat.date = stat.day;
         acc[index[stat.type]].values.push(stat);
+
         return acc;
       },
       data,

@@ -17,6 +17,7 @@ export class AppInstance {
     if (!this.app) {
       throw new Error('App instance has not been set yet.');
     }
+
     return this.app;
   }
 

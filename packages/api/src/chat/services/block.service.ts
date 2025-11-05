@@ -123,6 +123,7 @@ export class BlockService extends BaseOrmService<
     const triggerLabels = block.trigger_labels.map((l: string | Label) =>
       typeof l === 'string' ? l : l.id,
     );
+
     return (
       triggerLabels.length === 0 ||
       triggerLabels.some((l) => subscriber.labels.includes(l))
@@ -144,6 +145,7 @@ export class BlockService extends BaseOrmService<
         `The NLU penalty factor has reverted to its default fallback value of: ${FALLBACK_DEFAULT_NLU_PENALTY_FACTOR}`,
       );
     }
+
     return nluPenaltyFactor ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
   }
 
@@ -183,7 +185,6 @@ export class BlockService extends BaseOrmService<
     const prioritizedCandidates = candidates.sort(
       (a, b) => b.trigger_labels.length - a.trigger_labels.length,
     );
-
     // Perform a payload match & pick last createdAt
     const payload = event.getPayload();
     if (payload) {
@@ -225,6 +226,7 @@ export class BlockService extends BaseOrmService<
 
       if (scoredEntities.entities.length) {
         const penaltyFactor = await this.getPenaltyFactor();
+
         return this.matchBestNLP(
           prioritizedCandidates,
           scoredEntities,
@@ -285,6 +287,7 @@ export class BlockService extends BaseOrmService<
       ) {
         return new RegExp(pattern.slice(1, -1), 'i');
       }
+
       return pattern;
     });
 
@@ -300,6 +303,7 @@ export class BlockService extends BaseOrmService<
                 // Remove global match if needed
                 matches.shift();
               }
+
               return matches;
             }
           }
@@ -327,6 +331,7 @@ export class BlockService extends BaseOrmService<
         //   return [text];
         // }
       }
+
     // No match
     return false;
   }
@@ -373,6 +378,7 @@ export class BlockService extends BaseOrmService<
           });
         } else {
           this.logger.warn('Unknown NLP match type', p);
+
           return false;
         }
       });
@@ -406,7 +412,6 @@ export class BlockService extends BaseOrmService<
           scoredEntities,
           block,
         );
-
         // Compute the score (Weighted sum = weight * confidence)
         // for each of block NLU patterns
         const score = matchedPatterns.reduce((maxScore, patterns) => {
@@ -415,8 +420,10 @@ export class BlockService extends BaseOrmService<
             scoredEntities,
             penaltyFactor,
           );
+
           return Math.max(maxScore, score);
         }, 0);
+
         return score > bestMatch.score ? { block, score } : bestMatch;
       },
       { block: undefined, score: 0 },
@@ -453,7 +460,6 @@ export class BlockService extends BaseOrmService<
     return patterns.reduce((score, pattern) => {
       const matchedEntity: NLU.ScoredEntity | undefined =
         prediction.entities.find((e) => this.matchesNluEntity(e, pattern));
-
       const patternScore = matchedEntity
         ? this.computePatternScore(matchedEntity, pattern, penaltyFactor)
         : 0;
@@ -724,6 +730,7 @@ export class BlockService extends BaseOrmService<
             )
           : envelopeFactory.buildTextEnvelope(fallback.message);
       }
+
       return envelopeFactory.buildAttachmentEnvelope(
         {
           type: block.message.attachment.type,

@@ -111,7 +111,6 @@ describe('MenuController (TypeORM)', () => {
         type: MenuType.nested,
         parent: parent!.id,
       };
-
       const created = await controller.create(payload);
       createdMenuIds.add(created.id);
 
@@ -157,7 +156,6 @@ describe('MenuController (TypeORM)', () => {
         type: MenuType.postback,
         payload: 'quick',
       };
-
       const created = await controller.updateOne(payload, '');
       createdMenuIds.add(created.id);
 

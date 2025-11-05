@@ -51,6 +51,7 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
         if (entity.id) {
           acc[entity.id] = entity;
         }
+
         return acc;
       },
       {} as Record<string, T>,

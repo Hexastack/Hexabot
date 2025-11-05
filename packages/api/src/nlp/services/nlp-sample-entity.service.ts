@@ -53,12 +53,10 @@ export class NlpSampleEntityService extends BaseOrmService<
   ): Promise<NlpSampleEntity[]> {
     // Store any new entity/value
     const storedEntities = await this.nlpEntityService.storeEntities(entities);
-
     const storedValues = await this.nlpValueService.storeValues(
       sample.text,
       entities,
     );
-
     // Store sample entities
     const sampleEntities = entities.map((e) => {
       const storedEntity = storedEntities.find((se) => se.name === e.entity);
@@ -66,6 +64,7 @@ export class NlpSampleEntityService extends BaseOrmService<
       if (!storedEntity || !storedValue) {
         throw new Error('Unable to find the stored entity or value');
       }
+
       return {
         sample: sample.id,
         entity: storedEntity.id, // replace entity name by id
