@@ -4,28 +4,24 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ConflictException, Logger } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import {
   BeforeRemove,
   BeforeUpdate,
-  Brackets,
   Column,
   Entity,
-  In,
   Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  Not,
   OneToOne,
   RelationId,
-  Repository,
 } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { SettingService } from '@/setting/services/setting.service';
+import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { CaptureVar } from '../types/capture-var';
@@ -41,12 +37,6 @@ import { LabelOrmEntity } from './label.entity';
 @Entity({ name: 'blocks' })
 @Index(['name'])
 export class BlockOrmEntity extends BaseOrmEntity {
-  private static readonly logger = new Logger(BlockOrmEntity.name);
-
-  private static settingServiceProvider?: () => SettingService;
-
-  private categoryUpdateScope?: Set<string>;
-
   @Column()
   name!: string;
 
@@ -150,271 +140,130 @@ export class BlockOrmEntity extends BaseOrmEntity {
   builtin!: boolean;
 
   @BeforeUpdate()
-  protected async handleBeforeUpdate(): Promise<void> {
-    await this.ensureCategoryTransitionsAreClean();
+  protected async enforceCategoryConsistency(): Promise<void> {
+    if (!this.id) {
+      return;
+    }
+
+    const repository =
+      BlockOrmEntity.getEntityManager().getRepository(BlockOrmEntity);
+    const persistedBlock = await repository.findOne({
+      where: { id: this.id },
+      relations: [
+        'category',
+        'nextBlocks',
+        'nextBlocks.category',
+        'previousBlocks',
+        'previousBlocks.category',
+        'attachedBlock',
+        'attachedBlock.category',
+        'attachedToBlock',
+        'attachedToBlock.category',
+      ],
+    });
+
+    if (!persistedBlock) {
+      return;
+    }
+
+    const previousCategoryId = persistedBlock.category?.id ?? null;
+    const categoryProvided = Object.prototype.hasOwnProperty.call(
+      this,
+      'category',
+    );
+    const nextCategoryId = categoryProvided
+      ? this.category
+        ? this.category.id
+        : null
+      : (this.categoryId ?? previousCategoryId);
+
+    if (previousCategoryId === nextCategoryId) {
+      return;
+    }
+
+    const nextBlocksToDetach = (persistedBlock.nextBlocks ?? []).filter(
+      (nextBlock) => (nextBlock.category?.id ?? null) !== nextCategoryId,
+    );
+
+    if (nextBlocksToDetach.length) {
+      await repository
+        .createQueryBuilder()
+        .relation(BlockOrmEntity, 'nextBlocks')
+        .of(this.id)
+        .remove(nextBlocksToDetach.map((block) => block.id));
+
+      if (this.nextBlocks) {
+        this.nextBlocks = this.nextBlocks.filter(
+          (block) =>
+            !nextBlocksToDetach.some((toDetach) => toDetach.id === block.id),
+        );
+      }
+    }
+
+    const previousBlocksToDetach = (persistedBlock.previousBlocks ?? []).filter(
+      (prevBlock) => (prevBlock.category?.id ?? null) !== nextCategoryId,
+    );
+
+    if (previousBlocksToDetach.length) {
+      await repository
+        .createQueryBuilder()
+        .relation(BlockOrmEntity, 'nextBlocks')
+        .of(previousBlocksToDetach.map((block) => block.id))
+        .remove(this.id);
+    }
+
+    const attachedBlock = persistedBlock.attachedBlock;
+    if (
+      attachedBlock &&
+      (attachedBlock.category?.id ?? null) !== nextCategoryId
+    ) {
+      await repository
+        .createQueryBuilder()
+        .relation(BlockOrmEntity, 'attachedBlock')
+        .of(this.id)
+        .set(null);
+
+      if (this.attachedBlock && this.attachedBlock.id === attachedBlock.id) {
+        this.attachedBlock = null;
+      }
+    }
+
+    const attachedToBlock = persistedBlock.attachedToBlock;
+    if (
+      attachedToBlock &&
+      (attachedToBlock.category?.id ?? null) !== nextCategoryId
+    ) {
+      await repository
+        .createQueryBuilder()
+        .relation(BlockOrmEntity, 'attachedBlock')
+        .of(attachedToBlock.id)
+        .set(null);
+    }
   }
 
   @BeforeRemove()
   protected async ensureDeletable(): Promise<void> {
-    const blockId = this.id;
-    if (!blockId) {
+    if (!this.id) {
       return;
     }
 
-    const manager = BlockOrmEntity.getEntityManager();
-    const inUse = await manager
-      .createQueryBuilder(ConversationOrmEntity, 'conversation')
-      .leftJoin('conversation.next', 'nextBlocks')
-      .where('conversation.active = :active', { active: true })
-      .andWhere(
-        new Brackets((where) => {
-          where
-            .where('conversation.current_block_id = :blockId', { blockId })
-            .orWhere('nextBlocks.id = :blockId', { blockId });
-        }),
-      )
-      .getOne();
-
-    if (inUse) {
-      throw new ConflictException(
-        'Cannot delete block: it is currently used by an active conversation.',
-      );
-    }
-
-    const settingService = BlockOrmEntity.getSettingService();
-    const settings = await settingService.getSettings();
-    const fallbackBlockId = settings?.chatbot_settings?.fallback_block;
-    const isGlobalFallbackEnabled = settings?.chatbot_settings?.global_fallback;
-
-    if (
-      isGlobalFallbackEnabled &&
-      fallbackBlockId &&
-      fallbackBlockId === blockId
-    ) {
-      throw new ConflictException(
-        'Cannot delete block: it is configured as the global fallback block in settings.',
-      );
-    }
-
-    await BlockOrmEntity.removeReferencesToBlocks([blockId]);
+    await this.removeReferencesToBlock();
+    await this.ensureNotUsedInActiveConversations();
+    await this.ensureNotConfiguredAsGlobalFallback();
   }
 
-  static registerSettingServiceProvider(provider: () => SettingService): void {
-    this.settingServiceProvider = provider;
+  async removeReferencesToBlock(): Promise<void> {
+    await this.removeAttachedBlockReferences();
+    await this.removeNextBlockReferences();
   }
 
-  registerCategoryUpdateScope(ids: Iterable<string>): void {
-    this.categoryUpdateScope = new Set(
-      Array.from(ids).filter(
-        (id): id is string => typeof id === 'string' && id.length > 0,
-      ),
-    );
-  }
-
-  static async removeReferencesToBlocks(ids: string[]): Promise<void> {
-    const validIds = ids.filter(
-      (id): id is string => typeof id === 'string' && id.length > 0,
-    );
-
-    if (!validIds.length) {
-      return;
-    }
-
-    await this.removeAttachedBlockReferences(validIds);
-    await this.removeNextBlockReferences(validIds);
-  }
-
-  private getCategoryUpdateScopeIds(): string[] {
-    if (this.categoryUpdateScope && this.categoryUpdateScope.size > 0) {
-      return Array.from(this.categoryUpdateScope);
-    }
-
-    return typeof this.id === 'string' && this.id.length > 0 ? [this.id] : [];
-  }
-
-  private clearCategoryUpdateScope(): void {
-    this.categoryUpdateScope = undefined;
-  }
-
-  private async ensureCategoryTransitionsAreClean(): Promise<void> {
-    const scopeIds = this.getCategoryUpdateScopeIds();
-    if (!scopeIds.length) {
-      this.clearCategoryUpdateScope();
-      return;
-    }
-
-    const nextCategoryId = this.category?.id ?? null;
-    if (!nextCategoryId) {
-      this.clearCategoryUpdateScope();
-      return;
-    }
-
-    const repository = BlockOrmEntity.getRepository();
-    const previous = await repository.findOne({
-      where: { id: this.id },
-      relations: ['category'],
-    });
-
-    const previousCategoryId = previous?.category?.id ?? null;
-    if (nextCategoryId === previousCategoryId) {
-      this.clearCategoryUpdateScope();
-      return;
-    }
-
-    const scopeSet = new Set(scopeIds);
-    const isScopeLeader =
-      typeof this.id === 'string' && scopeIds.length > 0
-        ? scopeIds[0] === this.id
-        : false;
-
-    if (Array.isArray(this.nextBlocks) && this.nextBlocks.length) {
-      this.nextBlocks = this.nextBlocks.filter(
-        (next) => next?.id && scopeSet.has(next.id),
-      );
-    }
-
-    if (
-      this.attachedBlock &&
-      (!this.attachedBlock.id || !scopeSet.has(this.attachedBlock.id))
-    ) {
-      this.attachedBlock = null;
-    }
-
-    if (isScopeLeader) {
-      await BlockOrmEntity.prepareBlocksInCategoryUpdateScope(
-        nextCategoryId,
-        scopeIds,
-      );
-
-      await BlockOrmEntity.prepareBlocksOutOfCategoryUpdateScope(
-        previousCategoryId,
-        scopeIds,
-      );
-
-      await BlockOrmEntity.removeReferencesToBlocks(scopeIds);
-    }
-
-    this.clearCategoryUpdateScope();
-  }
-
-  static async prepareBlocksInCategoryUpdateScope(
-    categoryId: string,
-    ids: string[],
-  ): Promise<void> {
-    if (!categoryId || !ids.length) {
-      return;
-    }
-
-    const repository = this.getRepository();
-    const blocks = await repository.find({
-      where: {
-        id: In(ids),
-        category: {
-          id: Not(categoryId),
-        },
-      },
-      relations: ['nextBlocks', 'attachedBlock', 'category'],
-    });
-
-    if (!blocks.length) {
-      return;
-    }
-
-    const scope = new Set(ids);
-    const updated: BlockOrmEntity[] = [];
-
-    for (const block of blocks) {
-      let changed = false;
-
-      if (Array.isArray(block.nextBlocks) && block.nextBlocks.length) {
-        const filteredNext = block.nextBlocks.filter(
-          (next) => next?.id && scope.has(next.id),
-        );
-        if (filteredNext.length !== block.nextBlocks.length) {
-          block.nextBlocks = filteredNext;
-          changed = true;
-        }
-      }
-
-      const attachedId = block.attachedBlock?.id ?? null;
-      if (attachedId && !scope.has(attachedId)) {
-        block.attachedBlock = null;
-        changed = true;
-      }
-
-      if (changed) {
-        updated.push(block);
-      }
-    }
-
-    if (updated.length) {
-      await repository.save(updated);
-    }
-  }
-
-  static async prepareBlocksOutOfCategoryUpdateScope(
-    sourceCategoryId: string | null,
-    ids: string[],
-  ): Promise<void> {
-    if (!sourceCategoryId || !ids.length) {
-      return;
-    }
-
-    const repository = this.getRepository();
-    const blocks = await repository.find({
-      where: {
-        id: Not(In(ids)),
-        category: {
-          id: sourceCategoryId,
-        },
-      },
-      relations: ['nextBlocks', 'attachedBlock'],
-    });
-
-    if (!blocks.length) {
-      return;
-    }
-
-    const scope = new Set(ids);
-    const updated: BlockOrmEntity[] = [];
-
-    for (const block of blocks) {
-      let changed = false;
-
-      const attachedId = block.attachedBlock?.id ?? null;
-      if (attachedId && scope.has(attachedId)) {
-        block.attachedBlock = null;
-        changed = true;
-      }
-
-      if (Array.isArray(block.nextBlocks) && block.nextBlocks.length) {
-        const filteredNext = block.nextBlocks.filter(
-          (next) => next?.id && !scope.has(next.id),
-        );
-        if (filteredNext.length !== block.nextBlocks.length) {
-          block.nextBlocks = filteredNext;
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        updated.push(block);
-      }
-    }
-
-    if (updated.length) {
-      await repository.save(updated);
-    }
-  }
-
-  private static async removeAttachedBlockReferences(
-    ids: string[],
-  ): Promise<void> {
-    const repository = this.getRepository();
+  private async removeAttachedBlockReferences(): Promise<void> {
+    const repository =
+      BlockOrmEntity.getEntityManager().getRepository(BlockOrmEntity);
     const blocks = await repository.find({
       where: {
         attachedBlock: {
-          id: In(ids),
+          id: this.id,
         },
       },
       relations: ['attachedBlock'],
@@ -431,13 +280,17 @@ export class BlockOrmEntity extends BaseOrmEntity {
     await repository.save(blocks);
   }
 
-  private static async removeNextBlockReferences(ids: string[]): Promise<void> {
-    const repository = this.getRepository();
-    const blocks = await repository
-      .createQueryBuilder('block')
-      .leftJoinAndSelect('block.nextBlocks', 'nextBlocks')
-      .where('nextBlocks.id IN (:...ids)', { ids })
-      .getMany();
+  private async removeNextBlockReferences(): Promise<void> {
+    const repository =
+      BlockOrmEntity.getEntityManager().getRepository(BlockOrmEntity);
+    const blocks = await repository.find({
+      where: {
+        nextBlocks: {
+          id: this.id,
+        },
+      },
+      relations: ['nextBlocks'],
+    });
 
     if (!blocks.length) {
       return;
@@ -445,31 +298,73 @@ export class BlockOrmEntity extends BaseOrmEntity {
 
     for (const block of blocks) {
       block.nextBlocks = block.nextBlocks.filter(
-        (nextBlock) => !ids.includes(nextBlock.id),
+        (nextBlock) => this.id !== nextBlock.id,
       );
     }
 
     await repository.save(blocks);
   }
 
-  private static getRepository(): Repository<BlockOrmEntity> {
-    return this.getEntityManager().getRepository(BlockOrmEntity);
+  private async ensureNotUsedInActiveConversations(): Promise<void> {
+    const conversationRepository =
+      BlockOrmEntity.getEntityManager().getRepository(ConversationOrmEntity);
+    const inUse = await conversationRepository.find({
+      where: [
+        { active: true, current: { id: this.id } },
+        { active: true, next: { id: this.id } },
+      ],
+      relations: ['current', 'next'],
+      take: 1,
+    });
+
+    if (inUse.length) {
+      throw new ConflictException(
+        'Cannot delete block: it is currently used by an active conversation.',
+      );
+    }
   }
 
-  private static getSettingService(): SettingService {
-    if (!this.settingServiceProvider) {
-      throw new Error(
-        'Setting service provider not registered for BlockOrmEntity',
+  private async ensureNotConfiguredAsGlobalFallback(): Promise<void> {
+    const manager = BlockOrmEntity.getEntityManager();
+    const settingsRepository = manager.getRepository(SettingOrmEntity);
+
+    const [fallbackSetting, globalFallbackSetting] = await Promise.all([
+      settingsRepository.findOne({
+        select: ['value'],
+        where: {
+          group: 'chatbot_settings',
+          label: 'fallback_block',
+        },
+      }),
+      settingsRepository.findOne({
+        select: ['value'],
+        where: {
+          group: 'chatbot_settings',
+          label: 'global_fallback',
+        },
+      }),
+    ]);
+
+    const fallbackValue = fallbackSetting?.value;
+    const fallbackBlockId =
+      typeof fallbackValue === 'string'
+        ? fallbackValue
+        : fallbackValue && typeof fallbackValue === 'object'
+          ? String((fallbackValue as Record<string, unknown>).id ?? '') || null
+          : null;
+
+    const fallbackEnabledValue = globalFallbackSetting?.value;
+    const isGlobalFallbackEnabled =
+      fallbackEnabledValue === true || fallbackEnabledValue === 'true';
+
+    if (
+      fallbackBlockId &&
+      fallbackBlockId === this.id &&
+      isGlobalFallbackEnabled
+    ) {
+      throw new ConflictException(
+        'Cannot delete block: it is configured as the global fallback block in settings.',
       );
     }
-
-    const service = this.settingServiceProvider();
-    if (!service) {
-      throw new Error(
-        'Setting service provider returned no instance for BlockOrmEntity',
-      );
-    }
-
-    return service;
   }
 }

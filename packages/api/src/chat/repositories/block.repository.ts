@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 
-import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { DtoTransformer } from '@/utils/types/dto.types';
 
@@ -31,7 +30,6 @@ export class BlockRepository extends BaseOrmRepository<
   constructor(
     @InjectRepository(BlockOrmEntity)
     repository: Repository<BlockOrmEntity>,
-    private readonly settingService: SettingService,
   ) {
     super(
       repository,
@@ -49,8 +47,6 @@ export class BlockRepository extends BaseOrmRepository<
         FullCls: BlockFull,
       },
     );
-
-    BlockOrmEntity.registerSettingServiceProvider(() => this.settingService);
   }
 
   /**
