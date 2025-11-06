@@ -75,7 +75,9 @@ export default function NlpSample() {
   const dialogs = useDialogs();
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
-  const [language, setLanguage] = useState<string | undefined>(undefined);
+  const [languageCode, setLanguageCode] = useState<string | undefined>(
+    undefined,
+  );
   const [patterns, setPatterns] = useState<NlpPattern[]>([]);
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
@@ -88,7 +90,7 @@ export default function NlpSample() {
       {
         $eq: [
           ...(type !== "all" ? [{ type }] : []),
-          ...(language ? [{ language }] : []),
+          ...(languageCode ? [{ languageCode }] : []),
           // We send only value match patterns
           ...(patterns
             ? [{ patterns: patterns.filter(({ match }) => match === "value") }]
@@ -168,7 +170,7 @@ export default function NlpSample() {
                 entity: getNlpEntityFromCache(entity)?.name || "",
               };
             }),
-            language: language
+            languageCode: language
               ? (getLanguageFromCache(language) as ILanguage).code
               : null,
           };
@@ -270,8 +272,8 @@ export default function NlpSample() {
             val.value === NlpSampleType.train
               ? "enabled"
               : val.value === NlpSampleType.inbox
-              ? "inbox"
-              : "test"
+                ? "inbox"
+                : "test"
           }
         />
       ),
@@ -339,7 +341,7 @@ export default function NlpSample() {
             labelKey="title"
             label={t("label.language")}
             multiple={false}
-            onChange={(_e, selected) => setLanguage(selected?.id)}
+            onChange={(_e, selected) => setLanguageCode(selected?.id)}
           />
           <Input
             select

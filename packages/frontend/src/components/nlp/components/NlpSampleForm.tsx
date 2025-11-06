@@ -101,7 +101,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
     () => ({
       type: nlpDatasetSample?.type || NlpSampleType.train,
       text: nlpDatasetSample?.text || "",
-      language: nlpDatasetSample?.language || null,
+      languageCode: nlpDatasetSample?.languageCode || null,
       traitEntities: [...allTraitEntities.values()].map((e) => {
         return {
           entity: e.name,
@@ -166,7 +166,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
         ({ entity }) => entity === "language",
       );
 
-      setValue("language", language?.value || "");
+      setValue("languageCode", language?.value || "");
       setValue("traitEntities", predictedTraitEntities);
       setValue("keywordEntities", predictedKeywordEntities);
       setPatternEntities(predictedPatternEntities);
@@ -198,7 +198,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
             text: form.text,
             type: form.type,
             entities: [...form.keywordEntities, ...form.traitEntities],
-            language: form.language,
+            languageCode: form.languageCode,
           },
         },
         {
@@ -212,7 +212,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
         text: form.text,
         type: form.type,
         entities: [...form.traitEntities, ...form.keywordEntities],
-        language: form.language,
+        languageCode: form.languageCode,
       });
     }
   };
@@ -351,7 +351,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
               gap={2}
             >
               <Controller
-                name="language"
+                name="languageCode"
                 control={control}
                 render={({ field }) => {
                   const { onChange, ...rest } = field;
