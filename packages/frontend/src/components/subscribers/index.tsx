@@ -157,7 +157,7 @@ export const Subscribers = () => {
       columns={columns}
       headerIcon={AccountCircleIcon}
       searchParams={{
-        $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
+        $eq: labelFilter ? [{ labels: [{ id: labelFilter }] }] : [],
         $or: ["first_name", "last_name"],
         syncUrl: true,
       }}

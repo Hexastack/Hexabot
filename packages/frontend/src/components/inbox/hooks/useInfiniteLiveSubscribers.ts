@@ -13,14 +13,13 @@ import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
-import { ISubscriber } from "@/types/subscriber.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { AssignedTo, SocketSubscriberEvents } from "../types";
 
 export const useInfiniteLiveSubscribers = (props: {
   channels: string[];
-  searchPayload: SearchPayload<ISubscriber>;
+  searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
 }) => {
   const { user } = useAuth();
@@ -31,20 +30,21 @@ export const useInfiniteLiveSubscribers = (props: {
     where: {
       // Firstname and lastname keyword search
       ...props.searchPayload.where,
+      // TODO: need to support $in operator for partial filter plain object field
       // Channel filter using $in operator
       "channel.name": { $in: props.channels },
       // Assignment filter
       ...(props.assignedTo === AssignedTo.ME
-        ? { assignedTo: user?.id }
+        ? { "assignedTo.id": user?.id }
         : props.assignedTo === AssignedTo.OTHERS
-        ? {
-            assignedTo: {
-              "!=": user?.id,
-            },
-          }
-        : {}),
+          ? {
+              "assignedTo.id": {
+                "!=": user?.id,
+              },
+            }
+          : {}),
     },
-  } satisfies SearchPayload<ISubscriber>;
+  } satisfies SearchPayload<EntityType.SUBSCRIBER>;
   const {
     data,
     fetchNextPage,

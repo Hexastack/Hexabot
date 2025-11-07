@@ -68,6 +68,8 @@ export interface INlpDatasetSample
   extends IBaseSchema,
     INlpDatasetSampleAttributes {}
 
-export interface INlpSampleFilters extends INlpSample {
+export interface INlpSampleFilters {
   patterns?: NlpPattern[];
+  type: string;
+  text: string;
 }
