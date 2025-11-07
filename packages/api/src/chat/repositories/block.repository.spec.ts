@@ -152,7 +152,6 @@ describe('BlockRepository (TypeORM)', () => {
     position: { x: 0, y: 0 },
     ...overrides,
   });
-
   const createBlock = async (
     overrides: Partial<BlockCreateDto> = {},
   ): Promise<BlockFull> => {
@@ -163,9 +162,9 @@ describe('BlockRepository (TypeORM)', () => {
     if (!full) {
       throw new Error('Failed to load created block');
     }
+
     return full;
   };
-
   const createCategory = async (label?: string): Promise<CategoryOrmEntity> => {
     const category = await categoryRepository.save(
       categoryRepository.create({
@@ -176,9 +175,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdCategoryIds.push(category.id);
+
     return category;
   };
-
   const createSubscriber = async (): Promise<SubscriberOrmEntity> => {
     const subscriber = await subscriberRepository.save(
       subscriberRepository.create({
@@ -196,9 +195,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdSubscriberIds.push(subscriber.id);
+
     return subscriber;
   };
-
   const createConversation = async (
     blockId: string,
     subscriberId: string,
@@ -213,9 +212,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdConversationIds.push(conversation.id);
+
     return conversation;
   };
-
   const createSetting = async (
     data: Partial<SettingOrmEntity> &
       Pick<SettingOrmEntity, 'group' | 'label' | 'type' | 'value'>,
@@ -231,6 +230,7 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdSettingIds.push(setting.id);
+
     return setting;
   };
 
@@ -452,7 +452,6 @@ describe('BlockRepository (TypeORM)', () => {
         });
 
         const newCategory = await createCategory();
-
         const updatedBlock = await blockRepository.updateOne(blockToMove.id, {
           category: newCategory.id,
         });
