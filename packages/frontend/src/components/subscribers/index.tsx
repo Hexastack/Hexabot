@@ -6,12 +6,11 @@
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DeleteIcon from "@mui/icons-material/Close";
-import { Grid, IconButton, MenuItem } from "@mui/material";
+import { IconButton, MenuItem } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
 import {
   ActionColumnLabel,
@@ -19,13 +18,11 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -42,18 +39,6 @@ export const Subscribers = () => {
     { hasCount: false },
   );
   const [labelFilter, setLabelFilter] = useState<string>("");
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.SUBSCRIBER>(
-      {
-        $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
-        $or: ["first_name", "last_name"],
-      },
-      { syncUrl: true },
-    );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.SUBSCRIBER, format: Format.FULL },
-    { params: searchPayload },
-  );
   const actionColumns = useActionColumns<ISubscriber>(
     EntityType.SUBSCRIBER,
     [
@@ -167,60 +152,53 @@ export const Subscribers = () => {
   ];
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={AccountCircleIcon} title={t("title.subscribers")}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          flexWrap="nowrap"
-          width="50%"
-        >
-          <FilterTextfield
-            onChange={onSearch}
-            fullWidth={true}
-            defaultValue={searchText}
-          />
-          <Input
-            select
-            label={t("label.labels")}
-            value={labelFilter}
-            onChange={(e) => setLabelFilter(e.target.value)}
-            fullWidth={true}
-            SelectProps={{
-              ...(labelFilter !== "" && {
-                IconComponent: () => (
-                  <IconButton size="small" onClick={() => setLabelFilter("")}>
-                    <DeleteIcon />
-                  </IconButton>
-                ),
-              }),
-              renderValue: (value) => (
-                <ChipEntity
-                  id={String(value)}
-                  key={String(value)}
-                  variant="role"
-                  field="name"
-                  entity={EntityType.LABEL}
-                />
+    <GenericDataGrid
+      entity={EntityType.SUBSCRIBER}
+      columns={columns}
+      headerIcon={AccountCircleIcon}
+      searchParams={{
+        $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
+        $or: ["first_name", "last_name"],
+        syncUrl: true,
+      }}
+      headerI18nTitle="title.subscribers"
+      headerFilterInputs={
+        <Input
+          sx={{ minWidth: "120px" }}
+          select
+          label={t("label.labels")}
+          value={labelFilter}
+          onChange={(e) => setLabelFilter(e.target.value)}
+          SelectProps={{
+            ...(labelFilter !== "" && {
+              IconComponent: () => (
+                <IconButton size="small" onClick={() => setLabelFilter("")}>
+                  <DeleteIcon />
+                </IconButton>
               ),
-            }}
-          >
-            {!!labels.length ? (
-              labels.map((label) => (
-                <MenuItem key={label.id} value={label.id}>
-                  {label.name}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>{t("message.no_label_found")}</MenuItem>
-            )}
-          </Input>
-        </Grid>
-      </PageHeader>
-      <DataGrid columns={columns} {...dataGridProps} />
-    </Grid>
+            }),
+            renderValue: (value) => (
+              <ChipEntity
+                id={String(value)}
+                key={String(value)}
+                variant="role"
+                field="name"
+                entity={EntityType.LABEL}
+              />
+            ),
+          }}
+        >
+          {!!labels.length ? (
+            labels.map((label) => (
+              <MenuItem key={label.id} value={label.id}>
+                {label.name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>{t("message.no_label_found")}</MenuItem>
+          )}
+        </Input>
+      }
+    />
   );
 };

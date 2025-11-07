@@ -5,25 +5,19 @@
  */
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import { Grid } from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
 
-import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { IContentType } from "@/types/content-type.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -36,28 +30,18 @@ export const ContentTypes = () => {
   const { toast } = useToast();
   const router = useAppRouter();
   const dialogs = useDialogs();
-  // data fetching
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.CONTENT_TYPE>(
-      {
-        $iLike: ["name"],
-      },
-      { syncUrl: true },
-    );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.CONTENT_TYPE },
-    {
-      params: searchPayload,
+  const options = {
+    onError: (error: Error) => {
+      toast.error(error);
     },
-  );
-  const { mutate: deleteContentType } = useDelete(EntityType.CONTENT_TYPE, {
     onSuccess: () => {
       toast.success(t("message.item_delete_success"));
     },
-    onError: (error) => {
-      toast.error(error);
-    },
-  });
+  };
+  const { mutate: deleteContentType } = useDelete(
+    EntityType.CONTENT_TYPE,
+    options,
+  );
   const actionColumns = useActionColumns<IContentType>(
     EntityType.CONTENT_TYPE,
     [
@@ -86,66 +70,45 @@ export const ContentTypes = () => {
     ],
     t("label.operations"),
   );
+  const columns: GridColDef<IContentType>[] = [
+    { flex: 1, field: "name", headerName: t("label.name") },
+    {
+      maxWidth: 140,
+      field: "createdAt",
+      headerName: t("label.createdAt"),
+      disableColumnMenu: true,
+      resizable: false,
+      headerAlign: "left",
+      valueGetter: (params) =>
+        t("datetime.created_at", getDateTimeFormatter(params)),
+    },
+    {
+      maxWidth: 140,
+      field: "updatedAt",
+      headerName: t("label.updatedAt"),
+      disableColumnMenu: true,
+      resizable: false,
+      headerAlign: "left",
+      valueGetter: (params) =>
+        t("datetime.updated_at", getDateTimeFormatter(params)),
+    },
+    actionColumns,
+  ];
 
   return (
-    <Grid container flexDirection="column" gap={3}>
-      <PageHeader icon={faAlignLeft} title={t("title.entities")}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          <ButtonActionsGroup
-            entity={EntityType.CONTENT_TYPE}
-            buttons={[
-              {
-                permissionAction: PermissionAction.CREATE,
-                onClick: () =>
-                  dialogs.open(ContentTypeFormDialog, {
-                    defaultValues: null,
-                  }),
-              },
-            ]}
-          />
-        </Grid>
-      </PageHeader>
-      <DataGrid
-        {...dataGridProps}
-        disableColumnFilter
-        columns={[
-          { flex: 1, field: "name", headerName: t("label.name") },
-          {
-            maxWidth: 140,
-            field: "createdAt",
-            headerName: t("label.createdAt"),
-            disableColumnMenu: true,
-            renderHeader,
-            resizable: false,
-            headerAlign: "left",
-            valueGetter: (params) =>
-              t("datetime.created_at", getDateTimeFormatter(params)),
-          },
-          {
-            maxWidth: 140,
-            field: "updatedAt",
-            headerName: t("label.updatedAt"),
-            disableColumnMenu: true,
-            renderHeader,
-            resizable: false,
-            headerAlign: "left",
-            valueGetter: (params) =>
-              t("datetime.updated_at", getDateTimeFormatter(params)),
-          },
-
-          actionColumns,
-        ]}
-      />
-    </Grid>
+    <GenericDataGrid
+      entity={EntityType.CONTENT_TYPE}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          onClick: () =>
+            dialogs.open(ContentTypeFormDialog, { defaultValues: null }),
+        },
+      ]}
+      columns={columns}
+      headerIcon={faAlignLeft}
+      searchParams={{ $iLike: ["name"], syncUrl: true }}
+      headerI18nTitle="title.entities"
+    />
   );
 };

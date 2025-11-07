@@ -183,7 +183,7 @@ export const ContentEntity = new schema.Entity(
   },
 );
 
-export const SettingEntity = new schema.Entity(EntityType.SETTING, {
+export const SettingEntity = new schema.Entity(EntityType.SETTING, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
 });

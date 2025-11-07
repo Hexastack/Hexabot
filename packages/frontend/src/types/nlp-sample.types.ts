@@ -22,7 +22,7 @@ export interface INlpSampleAttributes {
   trained?: boolean;
   type?: NlpSampleType;
   entities: string[];
-  language: string | null;
+  languageCode: string | null;
 }
 
 export interface INlpSampleStub

@@ -15,22 +15,15 @@ import MediaLibraryPage from "@/pages/content/media-library";
 import PersistentMenuPage from "@/pages/content/persistent-menu";
 import ContentTypesPage from "@/pages/content/types";
 import ContextVarsPage from "@/pages/context-vars";
-import InboxPage from "@/pages/inbox";
-import InboxSubscribersPage from "@/pages/inbox/subscribers";
 import InboxSubscriberPage from "@/pages/inbox/subscribers/[subscriber]";
 import LocalizationLanguagesPage from "@/pages/localization/languages";
 import LocalizationTranslationsPage from "@/pages/localization/translations";
 import LoginPage from "@/pages/login/[[...token]]";
-import NlpPage from "@/pages/nlp";
-import NlpEntitiesPage from "@/pages/nlp/nlp-entities";
 import NlpEntityValuesPage from "@/pages/nlp/nlp-entities/[id]/nlpValues";
 import ProfilePage from "@/pages/profile";
 import RegisterPage from "@/pages/register/[token]";
-import ResetPage from "@/pages/reset";
 import ResetTokenPage from "@/pages/reset/[token]";
 import RolesPage from "@/pages/roles";
-import SettingsPage from "@/pages/settings";
-import SettingsGroupsPage from "@/pages/settings/groups";
 import SettingsGroupPage from "@/pages/settings/groups/[group]";
 import SubscribersPage from "@/pages/subscribers";
 import SubscribersLabelsPage from "@/pages/subscribers/labels";
@@ -61,15 +54,7 @@ export const routes: RouteObject[] = [
     element: withLayout(DashboardPage),
   },
   {
-    path: "/login",
-    element: withLayout(LoginPage),
-  },
-  {
-    path: "/login/:token",
-    element: withLayout(LoginPage),
-  },
-  {
-    path: "/login/*",
+    path: "/login/:token?",
     element: withLayout(LoginPage),
   },
   {
@@ -81,15 +66,7 @@ export const routes: RouteObject[] = [
     element: withLayout(ContextVarsPage),
   },
   {
-    path: "/inbox",
-    element: withLayout(InboxPage),
-  },
-  {
-    path: "/inbox/subscribers",
-    element: withLayout(InboxSubscribersPage),
-  },
-  {
-    path: "/inbox/subscribers/:subscriber",
+    path: "/inbox/subscribers?/:subscriber?",
     element: withLayout(InboxSubscriberPage),
   },
   {
@@ -117,15 +94,7 @@ export const routes: RouteObject[] = [
     element: withLayout(ContentTypesPage),
   },
   {
-    path: "/nlp",
-    element: withLayout(NlpPage),
-  },
-  {
-    path: "/nlp/nlp-entities",
-    element: withLayout(NlpEntitiesPage),
-  },
-  {
-    path: "/nlp/nlp-entities/:id/nlpValues",
+    path: "/nlp/nlp-entities?/:id?/nlpValues?",
     element: withLayout(NlpEntityValuesPage),
   },
   {
@@ -137,11 +106,7 @@ export const routes: RouteObject[] = [
     element: withLayout(RegisterPage),
   },
   {
-    path: "/reset",
-    element: withLayout(ResetPage),
-  },
-  {
-    path: "/reset/:token",
+    path: "/reset/:token?",
     element: withLayout(ResetTokenPage),
   },
   {
@@ -149,15 +114,7 @@ export const routes: RouteObject[] = [
     element: withLayout(RolesPage),
   },
   {
-    path: "/settings",
-    element: withLayout(SettingsPage),
-  },
-  {
-    path: "/settings/groups",
-    element: withLayout(SettingsGroupsPage),
-  },
-  {
-    path: "/settings/groups/:group",
+    path: "/settings/groups?/:group?",
     element: withLayout(SettingsGroupPage),
   },
   {
@@ -173,11 +130,7 @@ export const routes: RouteObject[] = [
     element: withLayout(UsersPage),
   },
   {
-    path: "/visual-editor",
-    element: withLayout(VisualEditorPage),
-  },
-  {
-    path: "/visual-editor/flows/:id?/:blockIds?",
+    path: "/visual-editor/flows?/:id?/:blockIds?",
     element: withLayout(VisualEditorPage),
   },
   {

@@ -46,37 +46,3 @@ export const attachmentFile: Express.Multer.File = {
   stream: new Stream.Readable(),
   encoding: '7bit',
 };
-
-export const attachments: AttachmentOrmEntity[] = [
-  attachment,
-  Object.assign(new AttachmentOrmEntity(), {
-    name: 'Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
-    type: 'image/png',
-    size: 343370,
-    location:
-      '/app/src/attachment/uploads/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
-    channel: { ['some-channel']: {} },
-    resourceRef: AttachmentResourceRef.BlockAttachment,
-    access: AttachmentAccess.Public,
-    id: '1f63d4ec-0993-4c57-9b51-1c8af7330002',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: '1',
-    createdByRef: AttachmentCreatedByRef.User,
-  }),
-  Object.assign(new AttachmentOrmEntity(), {
-    name: 'Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
-    type: 'image/png',
-    size: 33829,
-    location:
-      '/app/src/attachment/uploads/Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
-    channel: { ['some-channel']: {} },
-    resourceRef: AttachmentResourceRef.BlockAttachment,
-    access: AttachmentAccess.Public,
-    id: '1f63d4ec-0993-4c57-9b51-1c8af7330003',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: '1',
-    createdByRef: AttachmentCreatedByRef.User,
-  }),
-];

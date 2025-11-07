@@ -5,18 +5,14 @@
  */
 
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import { Box, Grid } from "@mui/material";
+import { Box } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useFind } from "@/hooks/crud/useFind";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
-import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { getDateTimeFormatter } from "@/utils/date";
 
@@ -34,32 +30,6 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const formatFileSize = useFormattedFileSize();
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.ATTACHMENT>(
-      {
-        $iLike: ["name"],
-      },
-      // Sync URL only in the media library page (not the modal)
-      { syncUrl: !onSelect },
-    );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.ATTACHMENT },
-    {
-      params: {
-        where: {
-          resourceRef: [
-            AttachmentResourceRef.BlockAttachment,
-            AttachmentResourceRef.ContentAttachment,
-          ],
-          ...searchPayload.where,
-          or: [
-            ...(searchPayload.where?.or || []),
-            ...(accept ? accept.split(",").map((type) => ({ type })) : []),
-          ],
-        },
-      },
-    },
-  );
   const columns: GridColDef<IAttachment>[] = [
     { field: "id", headerName: "ID" },
     {
@@ -67,7 +37,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       headerName: t("label.thumbnail"),
       disableColumnMenu: true,
       resizable: false,
-
+      sortable: false,
       renderCell({ row }) {
         return (
           <Box
@@ -135,28 +105,31 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   ];
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader title={t("title.media_library")} icon={DriveFolderUploadIcon}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-        </Grid>
-      </PageHeader>
-      <DataGrid
-        columns={columns}
-        {...dataGridProps}
-        disableRowSelectionOnClick={!onSelect}
-        onRowClick={onSelect}
-        rowHeight={86}
-      />
-    </Grid>
+    <GenericDataGrid
+      entity={EntityType.ATTACHMENT}
+      columns={columns}
+      headerIcon={DriveFolderUploadIcon}
+      searchParams={{
+        $iLike: ["name"],
+        syncUrl: !onSelect, // Sync URL only in the media library page (not the modal)
+        getFindParams: (searchPayload) => ({
+          where: {
+            resourceRef: [
+              AttachmentResourceRef.BlockAttachment,
+              AttachmentResourceRef.ContentAttachment,
+            ],
+            ...searchPayload.where,
+            or: [
+              ...(searchPayload.where?.or || []),
+              ...(accept ? accept.split(",").map((type) => ({ type })) : []),
+            ],
+          },
+        }),
+      }}
+      headerI18nTitle="title.media_library"
+      disableRowSelectionOnClick={!onSelect}
+      onRowClick={onSelect}
+      rowHeight={86}
+    />
   );
 };
