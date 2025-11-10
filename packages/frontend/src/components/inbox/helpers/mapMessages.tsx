@@ -24,8 +24,10 @@ function hasSameSender(
   m1: IMessage | IMessageFull,
   m2: IMessage | IMessageFull,
 ): boolean {
-  const sender1 = typeof m1.sender === "object" ? m1.sender.id : m1.sender;
-  const sender2 = typeof m2.sender === "object" ? m2.sender.id : m2.sender;
+  const sender1 =
+    m1.sender && typeof m1.sender === "object" ? m1.sender.id : m1.sender;
+  const sender2 =
+    m2.sender && typeof m2.sender === "object" ? m2.sender.id : m2.sender;
 
   return sender1 === sender2;
 }
