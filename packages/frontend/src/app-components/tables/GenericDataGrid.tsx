@@ -34,9 +34,6 @@ import { DataGrid } from "./DataGrid";
 export const GenericDataGrid = <
   TP extends THook["params"],
   TE extends THook<TP>["entity"],
-  TFilters extends THook<{ entity: TE }>["filters"] = THook<{
-    entity: TE;
-  }>["filters"],
 >({
   entity,
   buttons,
@@ -54,11 +51,9 @@ export const GenericDataGrid = <
   buttons?: ButtonActionsGroupProps["buttons"];
   columns: GridColDef<THook<{ entity: TE }>["basic"]>[];
   headerIcon: TMenuItem["Icon"];
-  searchParams: TParamItem<TFilters> &
+  searchParams: TParamItem<TE> &
     SearchHookOptions & {
-      getFindParams?: (
-        searchPayload: SearchPayload<TFilters>,
-      ) => SearchPayload<TFilters>;
+      getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;
     };
   headerI18nTitle: TTranslationKeys;
   headerTitleChip?: string;

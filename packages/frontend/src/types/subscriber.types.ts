@@ -32,6 +32,12 @@ export interface ISubscriberAttributes {
   foreign_id?: string;
 }
 
+export interface ISubscriberFilters {
+  first_name: string;
+  last_name: string;
+  channel: Channel;
+}
+
 export interface ISubscriberStub
   extends IBaseSchema,
     OmitPopulate<ISubscriberAttributes, EntityType.SUBSCRIBER> {}

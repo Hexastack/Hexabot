@@ -66,6 +66,8 @@ export class SubscriberController extends BaseOrmController<
           'last_name',
           'assignedTo.id',
           'channel.name',
+          // TODO : type need to be enhanced to include 'labels'
+          'labels' as any,
         ],
         defaultSort: ['createdAt', 'desc'],
       }),

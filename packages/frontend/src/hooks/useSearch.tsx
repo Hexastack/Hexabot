@@ -56,13 +56,8 @@ const buildNeqInitialParams = <T,>({
     {} as NeqParam<T>,
   );
 
-export const useSearch = <
-  TE extends THook["entity"],
-  TFilters extends THook<{ entity: TE }>["filters"] = THook<{
-    entity: TE;
-  }>["filters"],
->(
-  params: TParamItem<TFilters>,
+export const useSearch = <TE extends THook["entity"]>(
+  params: TParamItem<TE>,
   { syncUrl }: SearchHookOptions = { syncUrl: false },
 ) => {
   const [searchQuery, setSearchQuery] = useUrlQueryParam("search", "");
@@ -92,6 +87,6 @@ export const useSearch = <
           ...buildILikeParams({ params: params.$iLike, searchText }),
         }),
       },
-    } as SearchPayload<TFilters>,
+    } as SearchPayload<TE>,
   };
 };

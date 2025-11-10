@@ -18,12 +18,11 @@ export const useInfiniteFind = <
   T extends THook["params"],
   TAttr extends THook<T>["attributes"],
   TBasic extends THook<T>["basic"],
-  TFilters extends THook<T>["filters"],
   TFull extends THook<T>["full"],
   P = THook<T>["populate"],
 >(
   { entity, format }: THook<T>["params"],
-  config?: IFindConfigProps<TFilters>,
+  config?: IFindConfigProps<THook<T>["entity"]>,
   options?: Omit<
     UseInfiniteQueryOptions<
       string[],

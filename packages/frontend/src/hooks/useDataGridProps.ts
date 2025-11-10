@@ -17,18 +17,15 @@ import { useSearch } from "./useSearch";
 export const useDataGridProps = <
   TP extends THook["params"],
   TE extends THook<TP>["entity"],
-  TFilters extends THook<{ entity: TE }>["filters"],
 >(
   { entity, format }: THook<{ entity: TE }>["params"],
   {
     searchParams: { syncUrl, ...extendedSearchParams },
     ...rest
-  }: IFindConfigProps<TFilters> & {
-    searchParams: TParamItem<TFilters> &
+  }: IFindConfigProps<TE> & {
+    searchParams: TParamItem<TE> &
       SearchHookOptions & {
-        getFindParams?: (
-          searchPayload: SearchPayload<TFilters>,
-        ) => SearchPayload<TFilters>;
+        getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;
       };
   },
 ) => {

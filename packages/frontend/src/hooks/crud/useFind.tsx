@@ -20,12 +20,11 @@ export const useFind = <
   TP extends THook["params"],
   TBasic extends THook<TP>["basic"],
   TAttr extends THook<TP>["attributes"],
-  TFilters extends THook<TP>["filters"],
   TFull extends THook<TP>["full"],
   P = THook<TP>["populate"],
 >(
   { entity, format }: THook<TP>["params"],
-  config?: IFindConfigProps<TFilters>,
+  config?: IFindConfigProps<THook<TP>["entity"]>,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
     "queryFn" | "queryKey" | "onSuccess"
