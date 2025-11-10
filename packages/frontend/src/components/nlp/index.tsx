@@ -41,7 +41,7 @@ export const Nlp = () => {
     return Array.isArray(router.query.id)
       ? router.query.id.at(-1)
       : router.query.id;
-  }, [router.query]);
+  }, [router.query.id]);
   const selectedTab = useMemo(() => {
     return router.pathname === "/nlp" ? "sample" : "entity";
   }, [router.pathname]);

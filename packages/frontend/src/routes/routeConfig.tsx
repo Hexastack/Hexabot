@@ -34,7 +34,7 @@ export type RouteComponent = React.ComponentType & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-const PageWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
+const ComponentWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
   return <React.Fragment {...rest}>{children}</React.Fragment>;
 };
 
@@ -42,25 +42,25 @@ export const routes: RouteObject[] = [
   {
     path: "/login/:token?",
     element: (
-      <PageWrapper sxContent={{ alignContent: "center" }}>
+      <ComponentWrapper sxContent={{ alignContent: "center" }}>
         <Login />
-      </PageWrapper>
+      </ComponentWrapper>
     ),
   },
   {
     path: "/register/:token",
     element: (
-      <PageWrapper sxContent={{ alignContent: "center" }}>
+      <ComponentWrapper sxContent={{ alignContent: "center" }}>
         <Register />
-      </PageWrapper>
+      </ComponentWrapper>
     ),
   },
   {
     path: "/reset/:token?",
     element: (
-      <PageWrapper sxContent={{ alignContent: "center" }}>
+      <ComponentWrapper sxContent={{ alignContent: "center" }}>
         <ResetPassword />
-      </PageWrapper>
+      </ComponentWrapper>
     ),
   },
   {
@@ -70,9 +70,9 @@ export const routes: RouteObject[] = [
   {
     path: "/visual-editor/flows?/:id?/:blockIds?",
     element: (
-      <PageWrapper hasNoPadding>
+      <ComponentWrapper hasNoPadding>
         <VisualEditor />
-      </PageWrapper>
+      </ComponentWrapper>
     ),
   },
   {
@@ -82,9 +82,9 @@ export const routes: RouteObject[] = [
   {
     path: "/inbox/subscribers?/:subscriber?",
     element: (
-      <PageWrapper hasNoPadding>
+      <ComponentWrapper hasNoPadding>
         <Inbox />
-      </PageWrapper>
+      </ComponentWrapper>
     ),
   },
   {
