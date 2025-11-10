@@ -40,20 +40,44 @@ const PageWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
 
 export const routes: RouteObject[] = [
   {
+    path: "/login/:token?",
+    element: (
+      <PageWrapper sxContent={{ alignContent: "center" }}>
+        <Login />
+      </PageWrapper>
+    ),
+  },
+  {
+    path: "/register/:token",
+    element: (
+      <PageWrapper sxContent={{ alignContent: "center" }}>
+        <Register />
+      </PageWrapper>
+    ),
+  },
+  {
+    path: "/reset/:token?",
+    element: (
+      <PageWrapper sxContent={{ alignContent: "center" }}>
+        <ResetPassword />
+      </PageWrapper>
+    ),
+  },
+  {
     path: "/",
     Component: Dashboard,
   },
   {
-    path: "/login/:token?",
-    Component: Login,
+    path: "/visual-editor/flows?/:id?/:blockIds?",
+    element: (
+      <PageWrapper hasNoPadding>
+        <VisualEditor />
+      </PageWrapper>
+    ),
   },
   {
-    path: "/categories",
-    Component: Categories,
-  },
-  {
-    path: "/context-vars",
-    Component: ContextVars,
+    path: "/nlp/nlp-entities?/:id?/nlpValues?",
+    Component: Nlp,
   },
   {
     path: "/inbox/subscribers?/:subscriber?",
@@ -64,52 +88,28 @@ export const routes: RouteObject[] = [
     ),
   },
   {
-    path: "/localization/languages",
-    Component: Languages,
+    path: "/categories",
+    Component: Categories,
   },
   {
-    path: "/localization/translations",
-    Component: Translations,
-  },
-  {
-    path: "/content/media-library",
-    Component: MediaLibrary,
+    path: "/context-vars",
+    Component: ContextVars,
   },
   {
     path: "/content/persistent-menu",
     Component: Menu,
   },
   {
-    path: "/content/:id/list",
-    Component: Contents,
-  },
-  {
     path: "/content/types",
     Component: ContentTypes,
   },
   {
-    path: "/nlp/nlp-entities?/:id?/nlpValues?",
-    Component: Nlp,
+    path: "/content/:id/list",
+    Component: Contents,
   },
   {
-    path: "/profile",
-    Component: Profile,
-  },
-  {
-    path: "/register/:token",
-    Component: Register,
-  },
-  {
-    path: "/reset/:token?",
-    Component: ResetPassword,
-  },
-  {
-    path: "/roles",
-    Component: Roles,
-  },
-  {
-    path: "/settings/groups?/:group?",
-    Component: Settings,
+    path: "/content/media-library",
+    Component: MediaLibrary,
   },
   {
     path: "/subscribers",
@@ -124,12 +124,24 @@ export const routes: RouteObject[] = [
     Component: Users,
   },
   {
-    path: "/visual-editor/flows?/:id?/:blockIds?",
-    element: (
-      <PageWrapper hasNoPadding>
-        <VisualEditor />
-      </PageWrapper>
-    ),
+    path: "/roles",
+    Component: Roles,
+  },
+  {
+    path: "/localization/languages",
+    Component: Languages,
+  },
+  {
+    path: "/localization/translations",
+    Component: Translations,
+  },
+  {
+    path: "/settings/groups?/:group?",
+    Component: Settings,
+  },
+  {
+    path: "/profile",
+    Component: Profile,
   },
   {
     path: "*",
