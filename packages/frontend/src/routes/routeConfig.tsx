@@ -7,28 +7,28 @@
 import React, { FC, ReactElement, ReactNode } from "react";
 import { Navigate, RouteObject } from "react-router-dom";
 
+import { Login } from "@/app-components/auth/Login";
+import { Register } from "@/app-components/auth/Register";
+import { ResetPassword } from "@/app-components/auth/ResetPassword";
+import { Categories } from "@/components/categories";
+import { ContentTypes } from "@/components/content-types";
+import { Contents } from "@/components/contents";
+import { ContextVars } from "@/components/context-vars";
+import { Dashboard } from "@/components/dashboard";
+import { Inbox } from "@/components/inbox";
+import { Labels } from "@/components/labels";
+import { Languages } from "@/components/languages";
+import { MediaLibrary } from "@/components/media-library";
+import { Menu } from "@/components/menu";
+import { Nlp } from "@/components/nlp";
+import { Profile } from "@/components/profile";
+import { Roles } from "@/components/roles";
+import { Settings } from "@/components/settings";
+import { Subscribers } from "@/components/subscribers";
+import { Translations } from "@/components/translations";
+import { Users } from "@/components/users";
+import { VisualEditor } from "@/components/visual-editor/v3";
 import { LayoutProps } from "@/layout";
-import DashboardPage from "@/pages";
-import CategoriesPage from "@/pages/categories";
-import ContentListPage from "@/pages/content/[id]/list";
-import MediaLibraryPage from "@/pages/content/media-library";
-import PersistentMenuPage from "@/pages/content/persistent-menu";
-import ContentTypesPage from "@/pages/content/types";
-import ContextVarsPage from "@/pages/context-vars";
-import InboxSubscriberPage from "@/pages/inbox/subscribers/[subscriber]";
-import LocalizationLanguagesPage from "@/pages/localization/languages";
-import LocalizationTranslationsPage from "@/pages/localization/translations";
-import LoginPage from "@/pages/login/[[...token]]";
-import NlpEntityValuesPage from "@/pages/nlp/nlp-entities/[id]/nlpValues";
-import ProfilePage from "@/pages/profile";
-import RegisterPage from "@/pages/register/[token]";
-import ResetTokenPage from "@/pages/reset/[token]";
-import RolesPage from "@/pages/roles";
-import SettingsGroupPage from "@/pages/settings/groups/[group]";
-import SubscribersPage from "@/pages/subscribers";
-import SubscribersLabelsPage from "@/pages/subscribers/labels";
-import UsersPage from "@/pages/users";
-import VisualEditorPage from "@/pages/visual-editor";
 
 export type RouteComponent = React.ComponentType & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -41,93 +41,93 @@ const PageWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
 export const routes: RouteObject[] = [
   {
     path: "/",
-    Component: DashboardPage,
+    Component: Dashboard,
   },
   {
     path: "/login/:token?",
-    Component: LoginPage,
+    Component: Login,
   },
   {
     path: "/categories",
-    Component: CategoriesPage,
+    Component: Categories,
   },
   {
     path: "/context-vars",
-    Component: ContextVarsPage,
+    Component: ContextVars,
   },
   {
     path: "/inbox/subscribers?/:subscriber?",
     element: (
       <PageWrapper hasNoPadding>
-        <InboxSubscriberPage />
+        <Inbox />
       </PageWrapper>
     ),
   },
   {
     path: "/localization/languages",
-    Component: LocalizationLanguagesPage,
+    Component: Languages,
   },
   {
     path: "/localization/translations",
-    Component: LocalizationTranslationsPage,
+    Component: Translations,
   },
   {
     path: "/content/media-library",
-    Component: MediaLibraryPage,
+    Component: MediaLibrary,
   },
   {
     path: "/content/persistent-menu",
-    Component: PersistentMenuPage,
+    Component: Menu,
   },
   {
     path: "/content/:id/list",
-    Component: ContentListPage,
+    Component: Contents,
   },
   {
     path: "/content/types",
-    Component: ContentTypesPage,
+    Component: ContentTypes,
   },
   {
     path: "/nlp/nlp-entities?/:id?/nlpValues?",
-    Component: NlpEntityValuesPage,
+    Component: Nlp,
   },
   {
     path: "/profile",
-    Component: ProfilePage,
+    Component: Profile,
   },
   {
     path: "/register/:token",
-    Component: RegisterPage,
+    Component: Register,
   },
   {
     path: "/reset/:token?",
-    Component: ResetTokenPage,
+    Component: ResetPassword,
   },
   {
     path: "/roles",
-    Component: RolesPage,
+    Component: Roles,
   },
   {
     path: "/settings/groups?/:group?",
-    Component: SettingsGroupPage,
+    Component: Settings,
   },
   {
     path: "/subscribers",
-    Component: SubscribersPage,
+    Component: Subscribers,
   },
   {
     path: "/subscribers/labels",
-    Component: SubscribersLabelsPage,
+    Component: Labels,
   },
   {
     path: "/users",
-    Component: UsersPage,
+    Component: Users,
   },
   {
     path: "/visual-editor/flows?/:id?/:blockIds?",
     element: (
       <PageWrapper hasNoPadding>
-        <VisualEditorPage />
+        <VisualEditor />
       </PageWrapper>
     ),
   },

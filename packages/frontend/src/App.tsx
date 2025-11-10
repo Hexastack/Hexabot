@@ -18,7 +18,7 @@ const App = () => {
   return (
     <Suspense fallback={<Progress />}>
       <Layout {...children.props}>
-        <>{children}</>
+        <>{element}</>
       </Layout>
     </Suspense>
   );
