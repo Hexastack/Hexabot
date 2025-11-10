@@ -4,8 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import React, { FC, ReactElement, ReactNode } from "react";
-import { Navigate, RouteObject } from "react-router-dom";
+import React, { ReactElement, ReactNode } from "react";
+import {
+  IndexRouteObject,
+  Navigate,
+  NonIndexRouteObject,
+} from "react-router-dom";
 
 import { Login } from "@/app-components/auth/Login";
 import { Register } from "@/app-components/auth/Register";
@@ -34,34 +38,28 @@ export type RouteComponent = React.ComponentType & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-const ComponentWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
-  return <React.Fragment {...rest}>{children}</React.Fragment>;
+export type RouteObjectItem = (
+  | Omit<IndexRouteObject, "handle">
+  | Omit<NonIndexRouteObject, "handle">
+) & {
+  handle?: Omit<LayoutProps, "children">;
 };
 
-export const routes: RouteObject[] = [
+export const routes: RouteObjectItem[] = [
   {
     path: "/login/:token?",
-    element: (
-      <ComponentWrapper sxContent={{ alignContent: "center" }}>
-        <Login />
-      </ComponentWrapper>
-    ),
+    Component: Login,
+    handle: { isPublicRoute: true, sxContent: { alignContent: "center" } },
   },
   {
     path: "/register/:token",
-    element: (
-      <ComponentWrapper sxContent={{ alignContent: "center" }}>
-        <Register />
-      </ComponentWrapper>
-    ),
+    Component: Register,
+    handle: { isPublicRoute: true, sxContent: { alignContent: "center" } },
   },
   {
     path: "/reset/:token?",
-    element: (
-      <ComponentWrapper sxContent={{ alignContent: "center" }}>
-        <ResetPassword />
-      </ComponentWrapper>
-    ),
+    Component: ResetPassword,
+    handle: { isPublicRoute: true, sxContent: { alignContent: "center" } },
   },
   {
     path: "/",
@@ -69,11 +67,8 @@ export const routes: RouteObject[] = [
   },
   {
     path: "/visual-editor/flows?/:id?/:blockIds?",
-    element: (
-      <ComponentWrapper hasNoPadding>
-        <VisualEditor />
-      </ComponentWrapper>
-    ),
+    Component: VisualEditor,
+    handle: { hasNoPadding: true },
   },
   {
     path: "/nlp/nlp-entities?/:id?/nlpValues?",
@@ -81,11 +76,8 @@ export const routes: RouteObject[] = [
   },
   {
     path: "/inbox/subscribers?/:subscriber?",
-    element: (
-      <ComponentWrapper hasNoPadding>
-        <Inbox />
-      </ComponentWrapper>
-    ),
+    Component: Inbox,
+    handle: { hasNoPadding: true },
   },
   {
     path: "/categories",
