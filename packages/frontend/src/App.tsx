@@ -5,15 +5,23 @@
  */
 
 import { Suspense } from "react";
-import { useRoutes } from "react-router-dom";
 
 import { Progress } from "@/app-components/displays/Progress";
-import { routes } from "@/routes";
+import { Layout } from "@/layout";
+
+import { useAppRouter } from "./hooks/useAppRouter";
 
 const App = () => {
-  const element = useRoutes(routes);
+  const { element, routeObject } = useAppRouter();
+  const { handle } = routeObject;
 
-  return <Suspense fallback={<Progress />}>{element}</Suspense>;
+  return (
+    <Suspense fallback={<Progress />}>
+      <Layout {...handle}>
+        <>{element}</>
+      </Layout>
+    </Suspense>
+  );
 };
 
 export default App;

@@ -6,8 +6,6 @@
 
 import { BoxProps } from "@mui/material";
 
-import { useAuth } from "@/hooks/useAuth";
-
 import { AnonymousLayout } from "./AnonymousLayout";
 import { AuthenticatedLayout } from "./AuthenticatedLayout";
 
@@ -18,13 +16,16 @@ export interface IContentPaddingProps {
 export type LayoutProps = IContentPaddingProps & {
   children: JSX.Element;
   sxContent?: BoxProps;
+  isPublicRoute?: boolean;
 };
-export const Layout: React.FC<LayoutProps> = ({ children, ...rest }) => {
-  const { isAuthenticated } = useAuth();
-
-  return isAuthenticated ? (
-    <AuthenticatedLayout {...rest}>{children}</AuthenticatedLayout>
-  ) : (
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  isPublicRoute,
+  ...rest
+}) => {
+  return isPublicRoute ? (
     <AnonymousLayout {...rest}>{children}</AnonymousLayout>
+  ) : (
+    <AuthenticatedLayout {...rest}>{children}</AuthenticatedLayout>
   );
 };
