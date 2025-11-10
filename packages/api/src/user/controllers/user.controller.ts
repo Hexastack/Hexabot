@@ -143,6 +143,7 @@ export class ReadOnlyUserController extends BaseOrmController<
         'User has no avatar, generating initials avatar ...',
         err,
       );
+
       return await generateInitialsAvatar(user);
     }
   }
@@ -164,9 +165,7 @@ export class ReadOnlyUserController extends BaseOrmController<
     const currentUser = await this.userService.findOneAndPopulate(
       req.user.id as string,
     );
-
     const roleIds = currentUser?.roles?.map(({ id }) => id) ?? [];
-
     const currentPermissions = await this.permissionService.findAndPopulate({
       where: { role: { id: In(roleIds) } },
     });
@@ -182,6 +181,7 @@ export class ReadOnlyUserController extends BaseOrmController<
               relation: permission.relation,
             };
           }
+
           return undefined;
         })
         .filter(Boolean),
@@ -209,6 +209,7 @@ export class ReadOnlyUserController extends BaseOrmController<
     options?: FindManyOptions<UserOrmEntity>,
   ) {
     const shouldPopulate = this.canPopulate(populate);
+
     return shouldPopulate
       ? await this.userService.findAndPopulate(options)
       : await this.userService.find(options);
@@ -254,6 +255,7 @@ export class ReadOnlyUserController extends BaseOrmController<
       this.logger.warn(`Unable to find User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
     return record;
   }
 }
@@ -293,6 +295,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       roles: user.roles,
       avatar: user.avatar ?? null,
     });
+
     return await this.userService.create(user);
   }
 
@@ -375,7 +378,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     const existingUser = await this.userService.findOne(id);
     const oldRoleIds = existingUser?.roles ?? [];
     const newRoles = body.roles;
-
     const adminRole = await this.roleService.findOne({
       where: { name: 'admin' },
     });
@@ -399,6 +401,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       this.logger.warn(`Unable to update User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -420,6 +423,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       this.logger.warn(`Unable to delete User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
     return result;
   }
 

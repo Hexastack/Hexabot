@@ -105,15 +105,16 @@ const findSubscriberRelations = async (
   dataSource: DataSource,
 ): Promise<SubscriberOrmEntity[]> => {
   const repository = dataSource.getRepository(SubscriberOrmEntity);
+
   return await repository.find({
     relations: ['labels', 'assignedTo', 'avatar'],
   });
 };
-
 const findLabelRelations = async (
   dataSource: DataSource,
 ): Promise<LabelOrmEntity[]> => {
   const repository = dataSource.getRepository(LabelOrmEntity);
+
   return await repository.find({ relations: ['group', 'users'] });
 };
 
@@ -121,7 +122,6 @@ export const installSubscriberFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
   const subscriberRepository = dataSource.getRepository(SubscriberOrmEntity);
-
   const [users, labelEntities] = await Promise.all([
     installUserFixturesTypeOrm(dataSource),
     installLabelFixturesTypeOrm(dataSource),
@@ -144,7 +144,6 @@ export const installSubscriberFixturesTypeOrm = async (
       avatar: _avatar,
       ...rest
     } = fixture;
-
     const entity = new SubscriberOrmEntity();
     Object.assign(entity, {
       ...rest,

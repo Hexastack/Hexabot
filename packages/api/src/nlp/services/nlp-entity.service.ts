@@ -106,6 +106,7 @@ export class NlpEntityService extends BaseOrmService<
     const newEntities = await this.createMany(entitiesToAdd);
     // Add new entities to the storedEntities array
     storedEntities = storedEntities.concat(newEntities);
+
     return await this.nlpValueService.storeNewValues(
       sampleText,
       sampleEntities,
@@ -131,6 +132,7 @@ export class NlpEntityService extends BaseOrmService<
         { name: entityName },
       ),
     );
+
     return Promise.all(findOrCreate);
   }
 
@@ -180,8 +182,10 @@ export class NlpEntityService extends BaseOrmService<
   @Cacheable(NLP_MAP_CACHE_KEY)
   async getNlpMap(): Promise<NlpCacheMap> {
     const entities = await this.findAllAndPopulate();
+
     return entities.reduce((acc, curr) => {
       acc.set(curr.name, curr);
+
       return acc;
     }, new Map());
   }
@@ -200,6 +204,7 @@ export class NlpEntityService extends BaseOrmService<
    */
   async getNlpEntitiesByLookup(lookups: Lookup[]): Promise<NlpEntityFull[]> {
     const entities = [...(await this.getNlpMap()).values()];
+
     return entities.filter((e) => {
       return lookups.filter((l) => e.lookups.includes(l)).length > 0;
     });

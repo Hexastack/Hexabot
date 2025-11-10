@@ -50,6 +50,7 @@ export class UuidPipe implements PipeTransform {
       return false;
     }
     const lowered = paramName.toLowerCase();
+
     return lowered === 'id' || lowered.startsWith('id');
   }
 

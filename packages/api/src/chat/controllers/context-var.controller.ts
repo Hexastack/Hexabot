@@ -83,6 +83,7 @@ export class ContextVarController extends BaseOrmController<
       this.logger.warn(`Unable to find ContextVar by id ${id}`);
       throw new NotFoundException(`ContextVar with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -123,6 +124,7 @@ export class ContextVarController extends BaseOrmController<
       this.logger.warn(`Unable to delete ContextVar by id ${id}`);
       throw new NotFoundException(`ContextVar with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -149,6 +151,7 @@ export class ContextVarController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted context vars with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

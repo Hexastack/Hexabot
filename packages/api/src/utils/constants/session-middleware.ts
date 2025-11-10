@@ -34,5 +34,6 @@ export const getSessionMiddleware = () => {
       },
     });
   }
+
   return sessionMiddleware;
 };

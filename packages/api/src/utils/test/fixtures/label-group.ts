@@ -51,11 +51,12 @@ export const groupedLabelFixtures = getFixturesWithDefaultValues<
 
 const findLabelGroups = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(LabelGroupOrmEntity);
+
   return await repository.find({ relations: ['labels'] });
 };
-
 const findLabels = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(LabelOrmEntity);
+
   return await repository.find({ relations: ['group', 'users'] });
 };
 
@@ -64,7 +65,6 @@ export const installLabelGroupFixturesTypeOrm = async (
 ) => {
   const labelGroupRepository = dataSource.getRepository(LabelGroupOrmEntity);
   const labelRepository = dataSource.getRepository(LabelOrmEntity);
-
   const baseLabels = await installLabelFixturesTypeOrm(dataSource);
 
   if (await labelGroupRepository.count()) {
@@ -80,7 +80,6 @@ export const installLabelGroupFixturesTypeOrm = async (
   );
   const savedGroups = await labelGroupRepository.save(groupEntities);
   const [primaryGroup] = savedGroups;
-
   const groupedLabelEntities = groupedLabelFixtures.map((fixture) =>
     labelRepository.create({
       ...fixture,

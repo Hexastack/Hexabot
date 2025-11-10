@@ -56,5 +56,6 @@ export const installNlpEntityFixturesTypeOrm = async (
   }
 
   const entities = repository.create(nlpEntityOrmFixtures);
+
   return await repository.save(entities);
 };

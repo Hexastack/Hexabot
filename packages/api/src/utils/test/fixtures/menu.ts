@@ -120,12 +120,11 @@ export const installMenuFixturesTypeOrm = async (
     if (!Number.isInteger(idx) || !collection[idx]) {
       throw new Error(`Unable to resolve menu parent for index: ${parent}`);
     }
+
     return collection[idx].id;
   };
-
   const toParentRelation = (id?: string): DeepPartial<MenuOrmEntity> | null =>
     id ? ({ id } as DeepPartial<MenuOrmEntity>) : null;
-
   const roots = await repository.save(
     repository.create(
       rootMenuFixtures.map(
@@ -138,7 +137,6 @@ export const installMenuFixturesTypeOrm = async (
       ),
     ),
   );
-
   const offers = await repository.save(
     repository.create(
       offersMenuFixtures.map(
@@ -152,7 +150,6 @@ export const installMenuFixturesTypeOrm = async (
       ),
     ),
   );
-
   const all = [...roots, ...offers];
 
   await repository.save(

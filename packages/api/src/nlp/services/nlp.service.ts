@@ -36,7 +36,6 @@ const mapValueForHelper = (value: NlpValueFull | NlpValue): NlpValue => {
     entity: entityId,
   };
 };
-
 const mapEntityForHelper = (entity: NlpEntityFull): HelperEntityPayload => {
   const { values, ...rest } = entity;
 
@@ -73,7 +72,6 @@ export class NlpService {
     entities,
   }: NLU.ParseEntities): Promise<NLU.ScoredEntities> {
     const nlpMap = await this.nlpEntityService.getNlpMap();
-
     const scoredEntities = entities
       .filter(({ entity }) => nlpMap.has(entity))
       .map((e) => {

@@ -119,7 +119,6 @@ export default class LlmNluHelper
         description: 'Language of the input text',
       },
     );
-
     const traits: NLU.ParseEntity[] = [
       {
         entity: 'language',
@@ -156,7 +155,6 @@ export default class LlmNluHelper
       'keywords',
       'pattern',
     ]);
-
     const slotEntities = this.runDeterministicSlotFilling(text, entities);
 
     return { entities: traits.concat(slotEntities) };

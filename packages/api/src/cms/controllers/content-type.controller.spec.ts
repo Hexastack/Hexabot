@@ -108,7 +108,6 @@ describe('ContentTypeController (TypeORM)', () => {
           },
         ],
       };
-
       const created = await controller.create(payload);
       createdIds.add(created.id);
 
@@ -185,7 +184,6 @@ describe('ContentTypeController (TypeORM)', () => {
         name: 'Temporary',
         fields: [],
       });
-
       const result = await controller.deleteOne(created.id);
 
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });

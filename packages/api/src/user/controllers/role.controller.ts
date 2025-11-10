@@ -66,6 +66,7 @@ export class RoleController extends BaseOrmController<
     options?: FindManyOptions<RoleOrmEntity>,
   ) {
     const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
+
     return shouldPopulate
       ? await this.roleService.findAndPopulate(options)
       : await this.roleService.find(options);
@@ -110,6 +111,7 @@ export class RoleController extends BaseOrmController<
       this.logger.warn(`Unable to find Role by id ${id}`);
       throw new NotFoundException(`Role with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -173,6 +175,7 @@ export class RoleController extends BaseOrmController<
     if (result.deletedCount === 0) {
       throw new NotFoundException(`Role with ID ${id} not found`);
     }
+
     return result;
   }
 }

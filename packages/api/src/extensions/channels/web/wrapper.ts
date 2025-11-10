@@ -208,6 +208,7 @@ export default class WebEventWrapper<
 
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
+
         return {
           type: PayloadType.location,
           coordinates: {
@@ -259,6 +260,7 @@ export default class WebEventWrapper<
 
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
+
         return {
           type: PayloadType.location,
           coordinates: {
@@ -276,6 +278,7 @@ export default class WebEventWrapper<
         const fileType = AttachmentOrmEntity.getTypeByMime(
           this._adapter.attachment.type,
         );
+
         return {
           type: PayloadType.attachments,
           serialized_text: `attachment:${fileType}:${this._adapter.attachment.name}`,

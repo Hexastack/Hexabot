@@ -66,6 +66,7 @@ export class SettingService extends BaseOrmService<
     const settings = await this.findAll({
       order: { weight: 'ASC' },
     });
+
     return this.group(settings);
   }
 
@@ -103,6 +104,7 @@ export class SettingService extends BaseOrmService<
         const group = acc[curr.group] || [];
         group.push(curr);
         acc[curr.group] = group;
+
         return acc;
       },
       {} as Record<string, Setting[]>,
@@ -150,13 +152,11 @@ export class SettingService extends BaseOrmService<
     const settings = (await this.find({
       where: { label: 'allowed_domains' },
     })) as TextSetting[];
-
     const allowedDomains = settings.flatMap((setting) =>
       (typeof setting.value === 'string' ? setting.value : '')
         .split(',')
         .filter((origin) => origin),
     );
-
     const uniqueOrigins = new Set([
       ...config.security.cors.allowOrigins,
       ...config.sockets.onlyAllowOrigins,
@@ -175,6 +175,7 @@ export class SettingService extends BaseOrmService<
   @Cacheable(SETTING_CACHE_KEY)
   async getSettings(): Promise<Settings> {
     const settings = await this.findAll();
+
     return this.buildTree(settings);
   }
 }

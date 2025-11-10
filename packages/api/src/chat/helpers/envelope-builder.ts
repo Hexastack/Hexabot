@@ -54,6 +54,7 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
   const rawKey = prop.toString().replace(prefix, '');
   // e.g. "Buttons" -> "buttons"
   const messageKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
+
   return messageKey;
 }
 
@@ -130,6 +131,7 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
               format,
               message: template,
             };
+
             return result;
           };
         }
@@ -143,6 +145,7 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
               built.message[messageKey] = [];
             }
             (built.message[messageKey] as unknown[]).push(item);
+
             return builder;
           };
         }
@@ -154,12 +157,14 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
               prop.toString(),
               /^get/,
             );
+
             return built.message[messageKey];
           }
 
           const value = args[0];
           const messageKey = getAttributeNameFromProp(prop.toString(), /^set/);
           built.message[messageKey] = value;
+
           return builder;
         };
       },

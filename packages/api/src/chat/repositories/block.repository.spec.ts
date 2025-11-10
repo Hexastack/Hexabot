@@ -62,7 +62,6 @@ describe('BlockRepository (TypeORM)', () => {
         chatbot_settings: {},
       }),
     };
-
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
@@ -153,7 +152,6 @@ describe('BlockRepository (TypeORM)', () => {
     position: { x: 0, y: 0 },
     ...overrides,
   });
-
   const createBlock = async (
     overrides: Partial<BlockCreateDto> = {},
   ): Promise<BlockFull> => {
@@ -164,9 +162,9 @@ describe('BlockRepository (TypeORM)', () => {
     if (!full) {
       throw new Error('Failed to load created block');
     }
+
     return full;
   };
-
   const createCategory = async (label?: string): Promise<CategoryOrmEntity> => {
     const category = await categoryRepository.save(
       categoryRepository.create({
@@ -177,9 +175,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdCategoryIds.push(category.id);
+
     return category;
   };
-
   const createSubscriber = async (): Promise<SubscriberOrmEntity> => {
     const subscriber = await subscriberRepository.save(
       subscriberRepository.create({
@@ -197,9 +195,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdSubscriberIds.push(subscriber.id);
+
     return subscriber;
   };
-
   const createConversation = async (
     blockId: string,
     subscriberId: string,
@@ -214,9 +212,9 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdConversationIds.push(conversation.id);
+
     return conversation;
   };
-
   const createSetting = async (
     data: Partial<SettingOrmEntity> &
       Pick<SettingOrmEntity, 'group' | 'label' | 'type' | 'value'>,
@@ -232,6 +230,7 @@ describe('BlockRepository (TypeORM)', () => {
       }),
     );
     createdSettingIds.push(setting.id);
+
     return setting;
   };
 
@@ -307,7 +306,6 @@ describe('BlockRepository (TypeORM)', () => {
       const blockByName = new Map(
         populated.map((block) => [block.name, block]),
       );
-
       const nextBlock = blockByName.get('hasNextBlocks');
       expect(nextBlock).toBeDefined();
       expect((nextBlock!.nextBlocks ?? []).map((b) => b.name)).toEqual([
@@ -326,7 +324,6 @@ describe('BlockRepository (TypeORM)', () => {
   describe('findByContextVarName', () => {
     it('returns an empty array when the name is blank', async () => {
       const repositoryFindSpy = jest.spyOn(blockOrmRepository, 'find');
-
       const result = await blockRepository.findByContextVarName('');
 
       expect(result).toEqual([]);
@@ -372,7 +369,6 @@ describe('BlockRepository (TypeORM)', () => {
         blockOrmRepository,
         'createQueryBuilder',
       );
-
       const result = await blockRepository.search('   ');
 
       expect(result).toEqual([]);
@@ -456,7 +452,6 @@ describe('BlockRepository (TypeORM)', () => {
         });
 
         const newCategory = await createCategory();
-
         const updatedBlock = await blockRepository.updateOne(blockToMove.id, {
           category: newCategory.id,
         });

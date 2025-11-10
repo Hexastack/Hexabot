@@ -327,7 +327,6 @@ export class BlockOrmEntity extends BaseOrmEntity {
   private async ensureNotConfiguredAsGlobalFallback(): Promise<void> {
     const manager = BlockOrmEntity.getEntityManager();
     const settingsRepository = manager.getRepository(SettingOrmEntity);
-
     const [fallbackSetting, globalFallbackSetting] = await Promise.all([
       settingsRepository.findOne({
         select: ['value'],
@@ -344,7 +343,6 @@ export class BlockOrmEntity extends BaseOrmEntity {
         },
       }),
     ]);
-
     const fallbackValue = fallbackSetting?.value;
     const fallbackBlockId =
       typeof fallbackValue === 'string'
@@ -352,7 +350,6 @@ export class BlockOrmEntity extends BaseOrmEntity {
         : fallbackValue && typeof fallbackValue === 'object'
           ? String((fallbackValue as Record<string, unknown>).id ?? '') || null
           : null;
-
     const fallbackEnabledValue = globalFallbackSetting?.value;
     const isGlobalFallbackEnabled =
       fallbackEnabledValue === true || fallbackEnabledValue === 'true';

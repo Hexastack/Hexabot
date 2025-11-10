@@ -65,6 +65,7 @@ export class PermissionController extends BaseOrmController<
     options?: FindManyOptions<PermissionOrmEntity>,
   ) {
     const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
+
     return shouldPopulate
       ? await this.permissionService.findAndPopulate(options)
       : await this.permissionService.find(options);
@@ -111,6 +112,7 @@ export class PermissionController extends BaseOrmController<
       this.logger.warn(`Unable to delete Permission by id ${id}`);
       throw new NotFoundException(`Permission with ID ${id} not found`);
     }
+
     return result;
   }
 }

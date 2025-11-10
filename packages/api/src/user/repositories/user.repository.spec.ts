@@ -86,7 +86,6 @@ describe('UserRepository (TypeORM)', () => {
         roleFixtureIds.admin,
         roleFixtureIds.manager,
       ].sort();
-
       const roleIds = (result!.roles ?? []).map((role) => role.id).sort();
       expect(roleIds).toEqual(expectedRoleIds);
 

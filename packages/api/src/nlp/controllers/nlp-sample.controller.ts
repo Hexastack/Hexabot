@@ -110,7 +110,6 @@ export class NlpSampleController extends BaseOrmController<
     const entities = await this.nlpEntityService.findAllAndPopulate();
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
     const result = await helper.format(samples, entities);
-
     // Sending the JSON data as a file
     const readable = Readable.from(JSON.stringify(result));
 
@@ -140,12 +139,10 @@ export class NlpSampleController extends BaseOrmController<
     }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
       language: language.id,
     });
-
     const entities = nlpEntities
       ? await this.nlpSampleEntityService.storeSampleEntities(
           nlpSample,
@@ -187,6 +184,7 @@ export class NlpSampleController extends BaseOrmController<
       options,
       patterns,
     });
+
     return {
       count,
     };
@@ -202,6 +200,7 @@ export class NlpSampleController extends BaseOrmController<
   @Get('message')
   async message(@Query('text') text: string) {
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
     return helper.predict(text);
   }
 
@@ -225,6 +224,7 @@ export class NlpSampleController extends BaseOrmController<
         { where: { type: NlpSampleState.train } },
         { trained: true },
       );
+
       return response;
     } catch (err) {
       this.logger.error(err);
@@ -245,8 +245,8 @@ export class NlpSampleController extends BaseOrmController<
       await this.nlpSampleService.getAllSamplesAndEntitiesByType(
         NlpSampleState.test,
       );
-
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
     return await helper.evaluate?.(samples, entities);
   }
 
@@ -270,6 +270,7 @@ export class NlpSampleController extends BaseOrmController<
       this.logger.warn(`Unable to find NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -301,6 +302,7 @@ export class NlpSampleController extends BaseOrmController<
     patterns: NlpValueMatchPattern[] = [],
   ) {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.nlpSampleService.findByPatternsAndPopulate({
           options: queryOptions,
@@ -328,7 +330,6 @@ export class NlpSampleController extends BaseOrmController<
     { entities, languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
       language: language.id,
@@ -366,6 +367,7 @@ export class NlpSampleController extends BaseOrmController<
       this.logger.warn(`Unable to delete NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -393,6 +395,7 @@ export class NlpSampleController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted NLP samples with IDs: ${ids}`);
+
     return deleteResult;
   }
 
@@ -400,6 +403,7 @@ export class NlpSampleController extends BaseOrmController<
   @UseInterceptors(FileInterceptor('file'))
   async importFile(@UploadedFile() file: Express.Multer.File) {
     const datasetContent = file.buffer.toString('utf-8');
+
     return await this.nlpSampleService.parseAndSaveDataset(datasetContent);
   }
 }

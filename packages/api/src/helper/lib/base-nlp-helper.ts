@@ -144,6 +144,7 @@ export default abstract class BaseNlpHelper<
                 end: e.end,
               });
             }
+
             return res;
           })
           .concat({
@@ -235,6 +236,7 @@ export default abstract class BaseNlpHelper<
    */
   private buildUnicodeRegexExpression(term: string): RegExp {
     const escapedTerm = escapeRegExp(term);
+
     return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gui');
   }
 
@@ -256,6 +258,7 @@ export default abstract class BaseNlpHelper<
   ): NLU.ParseEntity[] {
     if (!entity.values?.length) {
       this.logger.warn('NLP entity has no values');
+
       return [];
     }
 
@@ -296,6 +299,7 @@ export default abstract class BaseNlpHelper<
   ): NLU.ParseEntity[] {
     if (!entity.values?.length) {
       this.logger.warn('NLP entity has no values');
+
       return [];
     }
 
@@ -305,6 +309,7 @@ export default abstract class BaseNlpHelper<
 
         if (!pattern) {
           this.logger.error('Missing NLP regex pattern');
+
           return [];
         }
 
@@ -317,6 +322,7 @@ export default abstract class BaseNlpHelper<
           );
         } catch {
           this.logger.error('Invalid NLP regex pattern');
+
           return [];
         }
 

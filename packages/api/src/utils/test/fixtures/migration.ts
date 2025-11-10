@@ -25,5 +25,6 @@ export const installMigrationFixturesTypeOrm = async (
 ) => {
   const repository = dataSource.getRepository(MigrationOrmEntity);
   const entities = repository.create(migrationFixtures);
+
   return await repository.save(entities);
 };

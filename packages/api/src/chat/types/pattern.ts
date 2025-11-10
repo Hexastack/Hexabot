@@ -44,11 +44,13 @@ export const stringRegexPatternSchema = z.string().refine(
       if (value.length === 2) return false;
       try {
         new RegExp(value.slice(1, -1), 'gi');
+
         return true;
       } catch (_err) {
         return false;
       }
     }
+
     return value !== '';
   },
   (value) => {
@@ -56,6 +58,7 @@ export const stringRegexPatternSchema = z.string().refine(
       if (value.length === 2) {
         return { message: 'Empty regex' };
       }
+
       return { message: 'Invalid regex' };
     } else if (value.length === 0) {
       return { message: 'Empty string' };

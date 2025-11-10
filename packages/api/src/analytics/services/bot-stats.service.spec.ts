@@ -36,6 +36,7 @@ describe('BotStatsService', () => {
       if (leftTime !== rightTime) {
         return leftTime - rightTime;
       }
+
       return left.type.localeCompare(right.type);
     });
 
@@ -186,7 +187,6 @@ describe('BotStatsService', () => {
         assignedToId: null,
         ...partial,
       }) as unknown as SubscriberOrmEntity;
-
     const buildEvent = ({
       entity,
       databaseEntity,

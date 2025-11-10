@@ -73,12 +73,10 @@ const findInstances = async <T extends TTypeOrToken>(
       module[type.toString()]<InstanceType<typeof typeOrToken>>(typeOrToken),
     ),
   );
-
 const extractInstances =
   (type: keyof TestingModule, module: TestingModule) =>
   async <T extends TTypeOrToken>(types: T) =>
     await findInstances(type, module, types);
-
 /**
  * Retrieves constructor parameter types (dependencies) of a NestJS provider class.
  * Useful for inspecting dependencies to dynamically build NestJS testing modules.
@@ -88,7 +86,6 @@ const extractInstances =
  */
 const getParamTypes = (provider: Provider) =>
   Reflect.getMetadata('design:paramtypes', provider) || [];
-
 /**
  * Recursively resolves all unique dependencies required by a NestJS provider.
  * Essential for automating provider inclusion in NestJS unit tests.
@@ -122,10 +119,8 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
 
   return dependencies;
 };
-
 const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
-
 /**
  * Identifies nested class-based dependencies to be automatically injected into test modules.
  *
@@ -133,7 +128,6 @@ const filterNestedDependencies = (dependency: Provider) =>
  * @returns Array of additional nested dependencies.
  */
 const autoInjectExclusions = new Set<Provider>([DataSource]);
-
 const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
 
@@ -158,7 +152,6 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
 
   return [...nestedDependencies];
 };
-
 const defaultProviders: Provider[] = [LoggerService];
 
 /**
@@ -230,7 +223,6 @@ export const buildTestingMocks = async ({
       )
       .map((provider) => (provider as { provide: Provider }).provide),
   );
-
   const resolvedProviders = providersList.filter(
     (provider) =>
       !(
@@ -238,7 +230,6 @@ export const buildTestingMocks = async ({
         overrideTokens.has(provider as unknown as Provider)
       ),
   );
-
   const defaultTypeOrmEntities: EntityTarget<any>[] = [
     SettingOrmEntity,
     MetadataOrmEntity,
@@ -247,7 +238,6 @@ export const buildTestingMocks = async ({
   const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
   let typeOrmOptions: Partial<DataSourceOptions> | undefined;
   const typeOrmFixtures: TypeOrmFixture[] = [];
-
   const typeOrmConfigs = Array.isArray(typeorm)
     ? typeorm.filter(Boolean)
     : typeorm
@@ -275,7 +265,6 @@ export const buildTestingMocks = async ({
       await fixture(dataSource);
     }
   };
-
   const entitiesArray = Array.from(typeOrmEntities);
   const baseOptions: DataSourceOptions = {
     type: 'sqlite',
@@ -286,7 +275,6 @@ export const buildTestingMocks = async ({
     entities: entitiesArray,
     ...(typeOrmOptions ?? {}),
   } as DataSourceOptions;
-
   const dataSource = new DataSource(baseOptions);
   await dataSource.initialize();
   await runTypeOrmFixtures(dataSource);
@@ -296,12 +284,10 @@ export const buildTestingMocks = async ({
     useFactory: async () => baseOptions as DataSourceOptions,
     dataSourceFactory: async () => dataSource,
   });
-
   const typeOrmProviders = entitiesArray.map((entity) => ({
     provide: getRepositoryToken(entity as any),
     useValue: dataSource.getRepository(entity),
   }));
-
   const testingModuleBuilder = Test.createTestingModule({
     imports: [
       LoggerModule,
@@ -315,7 +301,6 @@ export const buildTestingMocks = async ({
     controllers,
     ...rest,
   });
-
   const module = await testingModuleBuilder.compile();
 
   return {

@@ -99,6 +99,7 @@ export class BlockController extends BaseOrmController<
     options: FindManyOptions<BlockOrmEntity>,
   ): Promise<Block[] | BlockFull[]> {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.blockService.findAndPopulate(queryOptions)
       : await this.blockService.find(queryOptions);
@@ -159,6 +160,7 @@ export class BlockController extends BaseOrmController<
                 args: defaultSettings.reduce(
                   (acc, setting) => {
                     acc[setting.label] = setting.value;
+
                     return acc;
                   },
                   {} as { [key: string]: any },
@@ -169,6 +171,7 @@ export class BlockController extends BaseOrmController<
               typeof p.effects === 'object' ? Object.keys(p.effects) : [],
           };
         });
+
       return await Promise.all(plugins);
     } catch (e) {
       this.logger.error(e);
@@ -227,6 +230,7 @@ export class BlockController extends BaseOrmController<
       this.logger.warn(`Unable to find Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -299,6 +303,7 @@ export class BlockController extends BaseOrmController<
       this.logger.warn(`Unable to delete Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -323,6 +328,7 @@ export class BlockController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted blocks with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

@@ -87,11 +87,11 @@ export const installNlpValueFixturesTypeOrm = async (
   const entitiesByName = nlpEntities.reduce<Record<string, NlpEntityOrmEntity>>(
     (acc, entity) => {
       acc[entity.name] = entity;
+
       return acc;
     },
     {},
   );
-
   const values: DeepPartial<NlpValueOrmEntity>[] = nlpValueFixtures.map(
     (fixture) => {
       const entityIndex = parseInt(fixture.entity, 10);
@@ -109,7 +109,7 @@ export const installNlpValueFixturesTypeOrm = async (
       };
     },
   );
-
   const records = repository.create(values);
+
   return await repository.save(records);
 };

@@ -11,13 +11,11 @@ import { Config } from './types';
 const isProduction = (process.env.NODE_ENV || 'development')
   .toLowerCase()
   .includes('prod');
-
 const autoMigrateToggle = process.env.DB_AUTO_MIGRATE;
 const shouldAutoMigrate =
   (autoMigrateToggle === 'true' &&
     (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
   !isProduction;
-
 const parseIntWithFallback = (
   value: string | undefined,
   fallback: number,
@@ -26,32 +24,29 @@ const parseIntWithFallback = (
     return fallback;
   }
   const parsed = Number.parseInt(value, 10);
+
   return Number.isNaN(parsed) ? fallback : parsed;
 };
-
 const parseOptionalInt = (value: string | undefined): number | undefined => {
   if (value === undefined) {
     return undefined;
   }
   const parsed = Number.parseInt(value, 10);
+
   return Number.isNaN(parsed) ? undefined : parsed;
 };
-
 const sessionMaxAge = parseIntWithFallback(
   process.env.SESSION_MAX_AGE,
   24 * 60 * 60 * 1000,
 );
-
 const sessionCleanupLimit = parseIntWithFallback(
   process.env.SESSION_CLEANUP_LIMIT,
   0,
 );
-
 const sessionLimitSubquery =
   process.env.SESSION_LIMIT_SUBQUERY === undefined
     ? true
     : process.env.SESSION_LIMIT_SUBQUERY === 'true';
-
 const sessionTtlSeconds = parseOptionalInt(process.env.SESSION_TTL_SECONDS);
 
 export const config: Config = {

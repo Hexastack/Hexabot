@@ -110,6 +110,7 @@ export class ContentTypeController extends BaseOrmController<
       );
       throw new NotFoundException(`Content type with id ${id} not found`);
     }
+
     return foundContentType;
   }
 
@@ -131,6 +132,7 @@ export class ContentTypeController extends BaseOrmController<
       );
       throw new NotFoundException(`Content type with id ${id} not found`);
     }
+
     return removedType;
   }
 

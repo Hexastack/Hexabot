@@ -46,5 +46,6 @@ export const installModelFixturesTypeOrm = async (dataSource: DataSource) => {
   }
 
   const entities = repository.create(modelOrmFixtures);
+
   return await repository.save(entities);
 };

@@ -39,7 +39,6 @@ describe('TypeOrmSearchFilterPipe', () => {
       } as any,
       {} as any,
     );
-
     const where = result.where as Record<string, FindOperator<string>>;
     expect(where.email).toBeInstanceOf(FindOperator);
     expect(where.email.type).toBe('ilike');

@@ -16,7 +16,6 @@ const postBackButtonSchema = z.object({
   title: z.string(),
   payload: z.string(),
 });
-
 const webUrlButtonSchema = z.object({
   type: z.literal(ButtonType.web_url),
   title: z.string(),

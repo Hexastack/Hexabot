@@ -73,7 +73,6 @@ describe('ModelRepository (TypeORM)', () => {
       const expectedPermissions = permissionOrmFixtures.filter(
         (fixture) => fixture.model === modelFixtureIds.contentType,
       );
-
       const result = await modelRepository.findOneAndPopulate(
         contentTypeModel.id,
       );
@@ -93,7 +92,6 @@ describe('ModelRepository (TypeORM)', () => {
     it('should find models and populate permissions', async () => {
       const models = await modelRepository.findAll();
       const permissions = await permissionRepository.findAll();
-
       const result = await modelRepository.findAndPopulate({});
 
       expect(result).toHaveLength(models.length);

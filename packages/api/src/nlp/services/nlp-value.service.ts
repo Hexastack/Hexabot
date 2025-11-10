@@ -71,11 +71,11 @@ export class NlpValueService extends BaseOrmService<
     const eMap: Record<string, NlpEntity> = storedEntities.reduce(
       (acc, curr) => {
         if (curr.name) acc[curr?.name] = curr;
+
         return acc;
       },
       {},
     );
-
     // Extract entity values from sampleEntities
     const values = sampleEntities.map((e) => e.value);
 
@@ -107,9 +107,9 @@ export class NlpValueService extends BaseOrmService<
             newValue.expressions = [word];
           }
         }
+
         return newValue;
       });
-
     // Store new values
     const newValues = await this.createMany(valuesToAdd);
 
@@ -117,23 +117,26 @@ export class NlpValueService extends BaseOrmService<
 
     const vMap: Record<string, NlpValue> = storedValues.reduce((acc, curr) => {
       acc[curr.value] = curr;
+
       return acc;
     }, {});
-
     // Store new synonyms for existing values
     const synonymsToAdd = sampleEntities
       .filter((e) => {
         if ('start' in e && 'end' in e) {
           const word = sampleText.slice(e.start, e.end);
+
           return (
             word !== e.value && vMap[e.value].expressions?.indexOf(word) === -1
           );
         }
+
         return false;
       })
       .map((e) => {
         const value = vMap[e.value];
         const expression = sampleText.slice(e.start, e.end);
+
         return this.updateOne(value.id, {
           expressions: [...(value.expressions ?? []), expression],
         });
@@ -172,7 +175,6 @@ export class NlpValueService extends BaseOrmService<
     const storedEntities = await this.nlpEntityService.find({
       where: { name: In(entities) },
     });
-
     // Prepare values objects for storage
     const valuesToAddMap = new Map<string, NlpValueCreateDto>();
     for (const entityValue of sampleEntities) {
@@ -231,7 +233,6 @@ export class NlpValueService extends BaseOrmService<
             ?.concat(v.expressions) // Add new synonyms
             .filter((v, i, a) => a.indexOf(v) === i)
         : createdOrFound.expressions?.filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
-
       // Update expressions
       const result = await this.updateOne(
         { where: { value: v.value } },
@@ -242,6 +243,7 @@ export class NlpValueService extends BaseOrmService<
 
       return result;
     });
+
     return Promise.all(promises);
   }
 

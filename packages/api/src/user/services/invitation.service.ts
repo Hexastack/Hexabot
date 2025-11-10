@@ -88,6 +88,7 @@ export class InvitationService extends BaseOrmService<
       roles: [...dto.roles],
     };
     const newInvitation = await super.create({ ...payload, token: jwt });
+
     return { ...newInvitation, token: jwt, roles: [...payload.roles] };
   }
 

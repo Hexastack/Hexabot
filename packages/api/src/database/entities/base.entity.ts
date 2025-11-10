@@ -57,6 +57,7 @@ export abstract class BaseOrmEntity {
       if (!manager) {
         throw new Error('Entity manager provider returned no manager');
       }
+
       return manager;
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);

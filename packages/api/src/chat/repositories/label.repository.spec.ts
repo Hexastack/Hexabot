@@ -135,7 +135,6 @@ describe('LabelRepository (TypeORM)', () => {
   describe('findAndPopulate', () => {
     it('should filter labels and populate matching results', async () => {
       const targetNames = labelFixtures.slice(0, 2).map(({ name }) => name);
-
       const results = await labelRepository.findAndPopulate({
         where: { name: In(targetNames) },
       });

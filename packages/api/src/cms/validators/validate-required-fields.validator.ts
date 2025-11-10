@@ -37,6 +37,7 @@ export class ValidateRequiredFields implements ValidatorConstraintInterface {
 
       if (!field) {
         errors.push(`Field ${requiredField.name} is required.`);
+
         return;
       }
 

@@ -58,6 +58,7 @@ export class LabelController extends BaseOrmController<
     options: FindManyOptions<LabelOrmEntity>,
   ): Promise<Label[] | LabelFull[]> {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.labelService.findAndPopulate(queryOptions)
       : await this.labelService.find(queryOptions);
@@ -92,6 +93,7 @@ export class LabelController extends BaseOrmController<
       this.logger.warn(`Unable to find Label by id ${id}`);
       throw new NotFoundException(`Label with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -116,6 +118,7 @@ export class LabelController extends BaseOrmController<
       this.logger.warn(`Unable to delete Label by id ${id}`);
       throw new NotFoundException(`Label with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -140,6 +143,7 @@ export class LabelController extends BaseOrmController<
     }
 
     this.logger.log(`Successfully deleted Labels with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

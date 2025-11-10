@@ -50,6 +50,7 @@ export class ContextVarService extends BaseOrmService<
 
     return vars.reduce<Record<string, ContextVar>>((acc, cv) => {
       acc[cv.name] = cv;
+
       return acc;
     }, {});
   }

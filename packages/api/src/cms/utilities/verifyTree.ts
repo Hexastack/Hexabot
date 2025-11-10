@@ -33,11 +33,13 @@ const verifyMenu = (
 
 export const verifyTree = (menuTree?: MenuTree) => {
   if (!Array.isArray(menuTree)) return true;
+
   return !menuTree.some((v) => {
     const valid = verifyMenu(v);
     if (valid && v.type === MenuType.nested) {
       return !verifyTree(v.call_to_actions);
     }
+
     return !valid;
   });
 };

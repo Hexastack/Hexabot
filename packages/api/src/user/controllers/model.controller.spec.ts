@@ -96,7 +96,6 @@ describe('ModelController (TypeORM)', () => {
           .filter((permission) => permission.model === model.id)
           .map((permission) => permission.id)
           .sort();
-
         const permissionIds = (model.permissions ?? [])
           .map((permission) => permission.id)
           .sort();

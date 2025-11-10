@@ -104,6 +104,7 @@ describe('AttachmentRepository (TypeORM)', () => {
   describe('write operations', () => {
     const buildPayload = (overrides: Partial<Record<string, unknown>> = {}) => {
       const suffix = randomUUID();
+
       return {
         name: `new-file-${suffix}.png`,
         type: 'image/png',

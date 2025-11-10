@@ -54,7 +54,6 @@ describe('InvitationService (TypeORM)', () => {
           Promise.resolve('Mail sent successfully'),
       ),
     };
-
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       imports: [JwtModule.register({})],

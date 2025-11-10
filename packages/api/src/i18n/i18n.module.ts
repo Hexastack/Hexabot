@@ -57,6 +57,7 @@ export class I18nModule extends NativeI18nModule {
         'I18n: Unable to find providers and/or exports forRoot()',
       );
     }
+
     return {
       module: I18nModule,
       imports: (imports || []).concat([

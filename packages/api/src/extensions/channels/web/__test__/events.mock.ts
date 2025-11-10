@@ -43,7 +43,6 @@ const webEventLocation: Web.IncomingMessage = {
   mid: 'web-event-location',
   read: true,
 };
-
 const webEventFile: Web.Event = {
   type: Web.IncomingMessageType.file,
   data: {
@@ -56,27 +55,22 @@ const webEventFile: Web.Event = {
   mid: 'web-event-file',
   read: true,
 };
-
 const payloadChannelData = {
   isSocket: true,
   ipAddress: '0.0.0.0',
 };
-
 const textChannelData = {
   isSocket: false,
   ipAddress: '1.1.1.1',
 };
-
 const locationChannelData = {
   isSocket: true,
   ipAddress: '2.2.2.2',
 };
-
 const fileChannelData = {
   isSocket: false,
   ipAddress: '3.3.3.3',
 };
-
 const TEST_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
 
 export const webEvents: [string, Web.IncomingMessage, any][] = [

@@ -29,5 +29,6 @@ export const installDummyFixturesTypeOrm = async (
 ): Promise<DummyOrmEntity[]> => {
   const repository = dataSource.getRepository(DummyOrmEntity);
   const entities = repository.create(dummyFixtures);
+
   return await repository.save(entities);
 };

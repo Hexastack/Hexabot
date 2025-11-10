@@ -49,11 +49,9 @@ describe('MessageService (TypeORM)', () => {
     success: true,
     subscribe: Room.MESSAGE,
   };
-
   const websocketGatewayMock: Partial<WebsocketGateway> = {
     joinNotificationSockets: jest.fn(),
   };
-
   const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
@@ -145,7 +143,6 @@ describe('MessageService (TypeORM)', () => {
         json: jest.fn().mockReturnValue(SUCCESS_PAYLOAD),
         status: jest.fn().mockReturnThis(),
       };
-
       const result = await messageService.subscribe(req as any, res as any);
 
       expect(websocketGatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
@@ -190,7 +187,6 @@ describe('MessageService (TypeORM)', () => {
         until,
         30,
       );
-
       const expected = subscriberMessagesAsc
         .filter((message) => message.createdAt! < until)
         .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
@@ -207,7 +203,6 @@ describe('MessageService (TypeORM)', () => {
         since,
         30,
       );
-
       const expected = subscriberMessagesAsc.filter(
         (message) => message.createdAt! > since,
       );
@@ -230,7 +225,6 @@ describe('MessageService (TypeORM)', () => {
         referenceSubscriber,
         limit,
       );
-
       const expected = subscriberMessagesAsc.slice(0, limit);
 
       expect(result).toEqualPayload(expected, [

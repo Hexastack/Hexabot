@@ -73,6 +73,7 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
       if (Array.isArray(entity.values) && entity.values.length) {
         acc.push(...(entity.values as TValue[]));
       }
+
       return acc;
     }, [] as TValue[]);
   }
@@ -83,6 +84,7 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
         if (value.id !== undefined && value.id !== null) {
           acc[String(value.id)] = value;
         }
+
         return acc;
       },
       {} as Record<string, T>,

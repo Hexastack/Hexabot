@@ -36,7 +36,6 @@ export class ContentTypeOrmEntity extends BaseOrmEntity {
 
     const manager = ContentTypeOrmEntity.getEntityManager();
     const databaseType = manager.connection.options.type;
-
     const blockQuery = manager
       .createQueryBuilder()
       .select('1')

@@ -56,22 +56,18 @@ describe('SubscriberService (TypeORM)', () => {
   let userRepository: UserRepository;
   const STORED_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
   const EXISTING_ATTACHMENT_ID = '88888888-8888-4888-8888-888888888888';
-
   const gatewayMock = {
     joinNotificationSockets: jest.fn(),
   } as jest.Mocked<Pick<WebsocketGateway, 'joinNotificationSockets'>>;
-
   const loggerMock = {
     debug: jest.fn(),
     error: jest.fn(),
     log: jest.fn(),
     warn: jest.fn(),
   } as jest.Mocked<Pick<LoggerService, 'debug' | 'error' | 'log' | 'warn'>>;
-
   const attachmentServiceMock = {
     store: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'store'>>;
-
   const SESSION_ID = 'session-123';
   const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
     success: true,
@@ -181,14 +177,11 @@ describe('SubscriberService (TypeORM)', () => {
         labelRepository.findAll(),
         userRepository.findAll(),
       ]);
-
       const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
         [...list].sort((a, b) => a.name.localeCompare(b.name));
-
       const expectedLabels = sortLabelsByName(
         labels.filter((label) => subscriber!.labels.includes(label.id)),
       );
-
       const normalizedResult = {
         ...result!,
         labels: sortLabelsByName(result!.labels ?? []),
@@ -215,10 +208,8 @@ describe('SubscriberService (TypeORM)', () => {
         labelRepository.findAll(),
         userRepository.findAll(),
       ]);
-
       const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
         [...list].sort((a, b) => a.name.localeCompare(b.name));
-
       const subscribersWithRelations = subscribers.map((subscriber) => ({
         ...subscriber,
         labels: sortLabelsByName(
@@ -226,12 +217,10 @@ describe('SubscriberService (TypeORM)', () => {
         ),
         assignedTo: users.find(({ id }) => subscriber.assignedTo === id),
       }));
-
       const normalizedResult = result.map((item) => ({
         ...item,
         labels: sortLabelsByName(item.labels ?? []),
       }));
-
       const expected = [...subscribersWithRelations].sort(sortRowsBy);
       const actual = [...normalizedResult].sort(sortRowsBy);
 
@@ -263,7 +252,6 @@ describe('SubscriberService (TypeORM)', () => {
       const subscriber = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-messenger' },
       }))!;
-
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
         type: 'image/png',
@@ -319,7 +307,6 @@ describe('SubscriberService (TypeORM)', () => {
       const subscriber = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-web-1' },
       }))!;
-
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-jpg'),
         type: 'image/jpeg',
@@ -344,7 +331,6 @@ describe('SubscriberService (TypeORM)', () => {
       const subscriber = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-web-2' },
       }))!;
-
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
         type: 'image/png',
@@ -385,18 +371,15 @@ describe('SubscriberService (TypeORM)', () => {
       const profile = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-messenger' },
       }))!;
-
       const newLabels = (
         await labelRepository.createMany([
           { title: 'Is Interested', name: 'IS_INTERESTED' },
           { title: 'Follow Up Required', name: 'FOLLOW_UP_REQUIRED' },
         ])
       ).map(({ id }) => id);
-
       const expectedLabels = Array.from(
         new Set([...profile.labels, ...newLabels]),
       );
-
       const result = await subscriberService.assignLabels(profile, [
         ...newLabels,
         profile.labels[0],
@@ -422,7 +405,6 @@ describe('SubscriberService (TypeORM)', () => {
           group: mutexGroup.id,
         },
       ]);
-
       const baseSubscriber = (await subscriberService.findOne({
         where: { foreign_id: 'foreign-id-web-1' },
       }))!;
@@ -430,11 +412,9 @@ describe('SubscriberService (TypeORM)', () => {
         baseSubscriber,
         [oldLabel.id],
       );
-
       const result = await subscriberService.assignLabels(alteredSubscriber, [
         newLabel.id,
       ]);
-
       const expected: Subscriber = {
         ...alteredSubscriber,
         labels: [
@@ -471,13 +451,10 @@ describe('SubscriberService (TypeORM)', () => {
       const assignee = (await userRepository.findOne({
         where: { username: 'admin' },
       })) as User;
-
       const expected = { ...profile, assignedTo: assignee.id } as Subscriber;
-
       const updateSpy = jest
         .spyOn(subscriberService, 'updateOne')
         .mockResolvedValue(expected);
-
       const result = await subscriberService.handOver(profile, assignee.id);
 
       expect(updateSpy).toHaveBeenCalledWith(profile.id, {

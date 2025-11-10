@@ -104,7 +104,6 @@ describe('AttachmentController', () => {
     it('should forward TypeORM options to the service', async () => {
       const findSpy = jest.spyOn(attachmentService, 'find');
       const name = attachmentFixtures[0].name;
-
       const options = {
         where: { name },
         take: 5,
@@ -127,7 +126,6 @@ describe('AttachmentController', () => {
     it('should count attachments', async () => {
       const countSpy = jest.spyOn(attachmentService, 'count');
       const name = attachmentFixtures[0].name;
-
       const result = await attachmentController.filterCount({
         where: { name },
       });

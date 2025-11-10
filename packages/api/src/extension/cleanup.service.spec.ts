@@ -41,6 +41,7 @@ describe('CleanupService', () => {
       if (groupCompare !== 0) {
         return groupCompare;
       }
+
       return a.label.localeCompare(b.label);
     });
 

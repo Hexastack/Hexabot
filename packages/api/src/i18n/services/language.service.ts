@@ -49,6 +49,7 @@ export class LanguageService extends BaseOrmService<
   @Cacheable(LANGUAGES_CACHE_KEY)
   async getLanguages(): Promise<Record<string, LanguageOrmEntity>> {
     const languages = await this.findAll();
+
     return languages.reduce((acc, curr) => {
       return {
         ...acc,
@@ -70,6 +71,7 @@ export class LanguageService extends BaseOrmService<
         'Default language not found: getDefaultLanguage()',
       );
     }
+
     return defaultLanguage;
   }
 

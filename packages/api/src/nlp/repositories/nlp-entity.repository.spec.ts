@@ -112,7 +112,6 @@ describe('NlpEntityRepository (TypeORM)', () => {
       const intentEntity = (await nlpEntityRepository.findOne({
         where: { name: 'intent' },
       }))!;
-
       const result = await nlpEntityRepository.deleteOne(intentEntity.id);
 
       expect(result.deletedCount).toEqual(1);
@@ -177,7 +176,6 @@ describe('NlpEntityRepository (TypeORM)', () => {
         name: 'test-entity',
         lookups: ['keywords'],
       });
-
       const createdEntity = await nlpEntityRepository.findOne(result.id);
 
       expect(helperSpy).toHaveBeenCalledTimes(1);
@@ -205,7 +203,6 @@ describe('NlpEntityRepository (TypeORM)', () => {
         name: 'builtin-entity',
         builtin: true,
       });
-
       const createdEntity = await nlpEntityRepository.findOne(result.id);
 
       expect(helperSpy).not.toHaveBeenCalled();
@@ -248,7 +245,6 @@ describe('NlpEntityRepository (TypeORM)', () => {
       const subject = await nlpEntityRepository.create({
         name: 'subject-test',
       });
-
       const result = await nlpEntityRepository.deleteMany({
         where: { id: In([sentiment.id, subject.id]) },
       });

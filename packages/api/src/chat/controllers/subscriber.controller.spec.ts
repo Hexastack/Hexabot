@@ -51,11 +51,9 @@ describe('SubscriberController (TypeORM)', () => {
     readAsBuffer: jest.fn(),
     readAsStream: jest.fn(),
   };
-
   const websocketGatewayMock: Partial<WebsocketGateway> = {
     joinNotificationSockets: jest.fn(),
   };
-
   const defaultOrder = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {

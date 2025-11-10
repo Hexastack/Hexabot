@@ -54,6 +54,7 @@ export class AttachmentService extends BaseOrmService<
       HelperType.STORAGE,
     );
     const dto = await storageHelper.store(file, metadata);
+
     return await this.create(dto);
   }
 
@@ -69,6 +70,7 @@ export class AttachmentService extends BaseOrmService<
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.download(attachment);
   }
 
@@ -84,6 +86,7 @@ export class AttachmentService extends BaseOrmService<
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.readAsBuffer(attachment);
   }
 
@@ -99,6 +102,7 @@ export class AttachmentService extends BaseOrmService<
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.readAsStream(attachment);
   }
 }

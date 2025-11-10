@@ -79,6 +79,8 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
           2,
           { blankLine: 'always', prev: '*', next: 'export' },
           { blankLine: 'always', prev: '*', next: 'function' },
+          { blankLine: 'always', prev: '*', next: 'return' },
+          { blankLine: 'never', prev: 'const', next: 'const' },
         ],
         'lines-between-class-members': ['warn', 'always'],
         'no-console': 2,

@@ -27,6 +27,7 @@ export async function moveFile(
   // Move the file
   await fs.promises.copyFile(sourcePath, destinationPath);
   await fs.promises.unlink(sourcePath);
+
   return destinationPath;
 }
 
@@ -44,7 +45,6 @@ export async function moveFiles(
 ): Promise<void> {
   // Read the contents of the source folder
   const files = await fs.promises.readdir(sourceFolder);
-
   // Filter only files (skip directories)
   const filePaths: string[] = [];
   for (const file of files) {

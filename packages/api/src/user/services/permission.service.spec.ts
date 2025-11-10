@@ -116,7 +116,6 @@ describe('PermissionService (TypeORM)', () => {
     it('should find permissions, and for each permission, populate the corresponding role and model', async () => {
       jest.spyOn(permissionRepository, 'findAllAndPopulate');
       const allPermissions = await permissionRepository.findAll();
-
       const result = await permissionService.findAllAndPopulate();
 
       expect(permissionRepository.findAllAndPopulate).toHaveBeenCalled();

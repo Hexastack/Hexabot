@@ -116,6 +116,7 @@ export class LocalAuthController extends BaseAuthController {
   async signup(@Body() userCreateDto: UserCreateDto) {
     try {
       await this.userService.create(userCreateDto);
+
       return { success: true };
     } catch (error) {
       this.logger.error(error);

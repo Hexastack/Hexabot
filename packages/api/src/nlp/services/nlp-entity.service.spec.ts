@@ -80,7 +80,6 @@ describe('NlpEntityService (TypeORM)', () => {
       const intentEntity = await nlpEntityRepository.findOne({
         where: { name: 'intent' },
       });
-
       const result = await nlpEntityService.deleteCascadeOne(intentEntity!.id);
 
       expect(result.deletedCount).toBe(1);
@@ -189,7 +188,6 @@ describe('NlpEntityService (TypeORM)', () => {
         ],
         ['trait'],
       );
-
       const nameValue = await nlpValueRepository.findOne({
         where: { value: 'Name' },
       });

@@ -76,11 +76,11 @@ export class EnvelopeFactory {
       context: { ...context },
       contact: { ...settings.contact },
     };
-
     // Compile and run the Handlebars template
     const compileTemplate = Handlebars.compile(
       EnvelopeFactory.toHandlebars(text),
     );
+
     return compileTemplate(templateContext);
   }
 
@@ -102,6 +102,7 @@ export class EnvelopeFactory {
       this.context,
       this.settings,
     );
+
     return result;
   }
 
@@ -128,6 +129,7 @@ export class EnvelopeFactory {
   buildTextEnvelope(text: string | string[]): StdOutgoingTextEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.text);
     const processedText = this.processText(text);
+
     return builder.setText(processedText).build();
   }
 
@@ -244,6 +246,7 @@ export class EnvelopeFactory {
     pagination: ContentPagination,
   ): StdOutgoingListEnvelope {
     const builder = this.getBuilder(format);
+
     return builder
       .setOptions(options)
       .setElements(elements)
@@ -266,6 +269,7 @@ export class EnvelopeFactory {
     data?: unknown,
   ): StdOutgoingSystemEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.system);
+
     return builder.setOutcome(outcome).setData(data).build();
   }
 }

@@ -98,6 +98,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
       return response;
     } catch (error) {
       this.logger.error('Error while handling Web-socket event', error);
+
       return this.handleException(error, req, res);
     } finally {
       release();
@@ -117,6 +118,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
       .filter((provider) => !!provider.instance)
       .filter((provider, idx, self) => {
         const matchIdx = self.findIndex((p) => p.name === provider.name);
+
         return matchIdx === idx;
       });
 

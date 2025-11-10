@@ -36,7 +36,6 @@ export const installInvitationFixturesTypeOrm = async (
 ) => {
   const roleRepository = dataSource.getRepository(RoleEntity);
   const invitationRepository = dataSource.getRepository(InvitationEntity);
-
   const roles =
     (await roleRepository.count()) === 0
       ? await installRoleFixturesTypeOrm(dataSource)

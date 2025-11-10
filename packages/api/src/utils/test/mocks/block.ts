@@ -28,7 +28,6 @@ const blockOptions: BlockOptions = {
     message: [],
   },
 };
-
 const blockListOptions: BlockOptions = {
   content: {
     display: OutgoingMessageFormat.list,
@@ -48,7 +47,6 @@ const blockListOptions: BlockOptions = {
     entity: '1',
   },
 };
-
 const blockCarouselOptions: BlockOptions = {
   content: {
     display: OutgoingMessageFormat.carousel,
@@ -68,12 +66,10 @@ const blockCarouselOptions: BlockOptions = {
     entity: '1',
   },
 };
-
 const captureVar: CaptureVar = {
   entity: -2,
   context_var: 'string',
 };
-
 const position = {
   x: 0,
   y: 0,

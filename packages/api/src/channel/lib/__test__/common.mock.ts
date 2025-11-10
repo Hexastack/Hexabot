@@ -81,7 +81,6 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
 };
 
 const MOCK_ATTACHMENT_ID = '11111111-1111-4111-8111-111111111111';
-
 const attachment: AttachmentOrmEntity = Object.assign(
   new AttachmentOrmEntity(),
   {

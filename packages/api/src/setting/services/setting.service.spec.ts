@@ -41,6 +41,7 @@ describe('SettingService', () => {
       translatable: false,
       ...overrides,
     });
+
     return setting;
   };
 

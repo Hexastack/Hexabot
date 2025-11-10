@@ -35,6 +35,7 @@ export class SettingSeeder extends BaseOrmSeeder<
       (acc, model) => {
         acc[model.group] = acc[model.group] || [];
         acc[model.group].push(model);
+
         return acc;
       },
       {},

@@ -14,7 +14,6 @@ import { SessionOrmEntity } from '@/user/entities/session.entity';
 
 const toSeconds = (milliseconds: number): number =>
   Math.max(1, Math.floor(milliseconds / 1000));
-
 const logStoreError = (error: Error) => {
   if (config.env === 'test') {
     return;
@@ -22,7 +21,6 @@ const logStoreError = (error: Error) => {
   // eslint-disable-next-line no-console
   console.error('[session-store] TypeORM store error:', error);
 };
-
 const buildTypeormStore = (): session.Store => {
   if (!AppInstance.isReady()) {
     return new session.MemoryStore();

@@ -41,6 +41,7 @@ export class DummyPlugin extends BaseBlockPlugin<PluginSetting[]> {
         text: 'Hello world !',
       },
     };
+
     return envelope;
   }
 }

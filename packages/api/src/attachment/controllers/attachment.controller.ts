@@ -79,6 +79,7 @@ export class AttachmentController extends BaseOrmController<
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
+
     return attachment;
   }
 

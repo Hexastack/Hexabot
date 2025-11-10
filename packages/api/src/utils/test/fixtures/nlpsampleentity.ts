@@ -48,21 +48,19 @@ export const installNlpSampleEntityFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
   const repository = dataSource.getRepository(NlpSampleEntityOrmEntity);
-
   const entities = await installNlpEntityFixturesTypeOrm(dataSource);
   const [samples, values] = await Promise.all([
     installNlpSampleFixturesTypeOrm(dataSource),
     installNlpValueFixturesTypeOrm(dataSource),
   ]);
-
   const valueMap = values.reduce<Record<string, NlpValueOrmEntity>>(
     (acc, value) => {
       acc[value.value] = value;
+
       return acc;
     },
     {},
   );
-
   const sampleRecords: Record<number, NlpSampleOrmEntity> = {};
   samples.forEach((sample, index) => (sampleRecords[index] = sample));
 
@@ -95,7 +93,7 @@ export const installNlpSampleEntityFixturesTypeOrm = async (
         end: fixture.end ?? null,
       };
     });
-
   const created = repository.create(records);
+
   return await repository.save(created);
 };

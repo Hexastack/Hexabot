@@ -55,6 +55,7 @@ export class PermissionService extends BaseOrmService<
   @Cacheable(PERMISSION_CACHE_KEY)
   async getPermissions(): Promise<PermissionsTree> {
     const currentPermissions = await this.findAllAndPopulate();
+
     return this.buildTree(currentPermissions);
   }
 
@@ -78,6 +79,7 @@ export class PermissionService extends BaseOrmService<
       acc[role][model] = acc[role][model] || [];
 
       acc[role][model].push(p.action);
+
       return acc;
     }, {});
   }

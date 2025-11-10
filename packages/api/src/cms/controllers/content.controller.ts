@@ -162,6 +162,7 @@ export class ContentController extends BaseOrmController<
       );
       throw new NotFoundException(`Content of id ${id} not found`);
     }
+
     return content;
   }
 
@@ -182,6 +183,7 @@ export class ContentController extends BaseOrmController<
       );
       throw new NotFoundException(`Content of id ${id} not found`);
     }
+
     return removedContent;
   }
 

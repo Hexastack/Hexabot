@@ -75,7 +75,6 @@ describe('ModelService (TypeORM)', () => {
   describe('findOneAndPopulate', () => {
     it('should find a model and populate its permissions', async () => {
       const result = await modelService.findOneAndPopulate(model.id);
-
       const expectedFixture = modelOrmFixtures.find(
         ({ id }) => id === modelFixtureIds.contentType,
       )!;

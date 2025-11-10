@@ -53,6 +53,7 @@ export class AuthService {
         entity,
       );
     }
+
     return null;
   }
 }

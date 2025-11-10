@@ -73,6 +73,7 @@ export class SubscriberController extends BaseOrmController<
     options: FindManyOptions<SubscriberOrmEntity>,
   ): Promise<Subscriber[] | SubscriberFull[]> {
     const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
       ? await this.subscriberService.findAndPopulate(queryOptions)
       : await this.subscriberService.find(queryOptions);
@@ -122,6 +123,7 @@ export class SubscriberController extends BaseOrmController<
       this.logger.warn(`Unable to find Subscriber by id ${id}`);
       throw new NotFoundException(`Subscriber with ID ${id} not found`);
     }
+
     return record;
   }
 
@@ -153,6 +155,7 @@ export class SubscriberController extends BaseOrmController<
         'Subscriber has no avatar, generating initials avatar ...',
         err,
       );
+
       return await generateInitialsAvatar(subscriber);
     }
   }

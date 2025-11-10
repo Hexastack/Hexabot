@@ -76,6 +76,7 @@ export const installNlpSampleFixturesTypeOrm = async (
         Number.isNaN(languageIndex) || !languages[languageIndex]
           ? null
           : languages[languageIndex];
+
       return {
         text: fixture.text,
         trained: fixture.trained ?? false,
@@ -84,7 +85,7 @@ export const installNlpSampleFixturesTypeOrm = async (
       };
     },
   );
-
   const records = repository.create(samples);
+
   return await repository.save(records);
 };

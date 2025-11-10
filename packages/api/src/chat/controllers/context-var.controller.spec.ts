@@ -90,7 +90,6 @@ describe('ContextVarController (TypeORM)', () => {
     it('should count context variables', async () => {
       const expectedCount = await contextVarService.count({});
       const countSpy = jest.spyOn(contextVarService, 'count');
-
       const result = await contextVarController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
@@ -102,7 +101,6 @@ describe('ContextVarController (TypeORM)', () => {
     it('should return context variables', async () => {
       const expected = await contextVarService.find({});
       const findSpy = jest.spyOn(contextVarService, 'find');
-
       const result = await contextVarController.findPage({});
 
       expect(findSpy).toHaveBeenCalledWith({});
@@ -150,7 +148,6 @@ describe('ContextVarController (TypeORM)', () => {
         permanent: false,
       };
       const createSpy = jest.spyOn(contextVarService, 'create');
-
       const result = await contextVarController.create(payload);
 
       expect(createSpy).toHaveBeenCalledWith(payload);
@@ -167,13 +164,11 @@ describe('ContextVarController (TypeORM)', () => {
         name: createUniqueValue('name'),
         permanent: false,
       });
-
       const updates: ContextVarUpdateDto = {
         permanent: true,
         name: createUniqueValue('updated'),
       };
       const updateSpy = jest.spyOn(contextVarService, 'updateOne');
-
       const result = await contextVarController.updateOne(created.id, updates);
 
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
@@ -201,7 +196,6 @@ describe('ContextVarController (TypeORM)', () => {
         permanent: false,
       });
       const deleteSpy = jest.spyOn(contextVarService, 'deleteOne');
-
       const result = await contextVarController.deleteOne(deletable.id);
 
       expect(deleteSpy).toHaveBeenCalledWith(deletable.id);
@@ -236,9 +230,7 @@ describe('ContextVarController (TypeORM)', () => {
           name: createUniqueValue('name'),
         },
       ]);
-
       const ids = created.map(({ id }) => id);
-
       const result = await contextVarController.deleteMany(ids);
 
       expect(result).toEqualPayload({

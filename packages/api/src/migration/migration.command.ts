@@ -43,6 +43,7 @@ export class MigrationCommand extends CommandRunner {
         ) {
           this.logger.error('Invalid Operation');
           this.exit(1);
+
           return;
         }
 
@@ -61,6 +62,7 @@ export class MigrationCommand extends CommandRunner {
       default:
         this.logger.error('No valid command provided');
         this.exit(1);
+
         return;
     }
   }

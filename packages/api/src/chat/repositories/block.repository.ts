@@ -70,7 +70,6 @@ export class BlockRepository extends BaseOrmRepository<
       Math.max(1, limit ?? DEFAULT_BLOCK_SEARCH_LIMIT),
       DEFAULT_BLOCK_SEARCH_LIMIT,
     );
-
     const pattern = `%${this.escapeLikePattern(sanitized)}%`;
 
     try {
@@ -82,7 +81,6 @@ export class BlockRepository extends BaseOrmRepository<
         ['sqlite', 'better-sqlite3', 'capacitor'].includes(driverType)
           ? 'LIKE'
           : 'ILIKE';
-
       const qb = this.repository
         .createQueryBuilder('block')
         .where(
@@ -110,6 +108,7 @@ export class BlockRepository extends BaseOrmRepository<
       return entities.map((entity, index) => {
         const dto = toDto(entity) as Block;
         const score = entities.length - index;
+
         return Object.assign(new SearchRankedBlock(), dto, { score });
       });
     } catch (error) {
@@ -129,11 +128,9 @@ export class BlockRepository extends BaseOrmRepository<
     }
 
     const toDto = this.getTransformer(DtoTransformer.PlainCls);
-
     const driverType = (
       this.repository.manager.connection.options?.type ?? ''
     ).toString();
-
     const qb = this.repository.createQueryBuilder('block');
 
     if (['sqlite', 'better-sqlite3', 'capacitor'].includes(driverType)) {

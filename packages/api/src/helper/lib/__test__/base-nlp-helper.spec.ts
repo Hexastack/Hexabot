@@ -22,11 +22,9 @@ const mockLoggerService = {
   error: jest.fn(),
   warn: jest.fn(),
 } as unknown as LoggerService;
-
 const mockSettingService = {
   get: jest.fn(),
 } as unknown as SettingService;
-
 const mockHelperService = {
   doSomething: jest.fn(),
 } as unknown as HelperService;
@@ -110,7 +108,6 @@ describe('BaseNlpHelper', () => {
         { id: 'entity1-id', name: 'intent' },
         { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
-
       const samples: NlpSampleFull[] = [
         {
           text: 'test-text',
@@ -187,7 +184,6 @@ describe('BaseNlpHelper', () => {
       const entities: NlpEntityFull[] = [
         { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
-
       const samples: NlpSampleFull[] = [
         {
           text: 'test-text',
@@ -224,7 +220,6 @@ describe('BaseNlpHelper', () => {
           { value: 'green', expressions: ['emerald', 'lime'] },
         ],
       } as any;
-
       const result = helper.extractKeywordBasedSlots(
         'The sky is azure and emerald',
         entity,
@@ -252,7 +247,6 @@ describe('BaseNlpHelper', () => {
         name: 'color',
         values: [{ value: 'blue', expressions: ['أزرق', 'ازرق', 'زرقاء'] }],
       } as any;
-
       const result = helper.extractKeywordBasedSlots('السماء زرقاء', entity);
       expect(result).toEqual([
         {
@@ -293,7 +287,6 @@ describe('BaseNlpHelper', () => {
           { value: 'green', expressions: ['emerald', 'lime'] },
         ],
       } as any;
-
       const result = helper.extractKeywordBasedSlots(
         `The sky is "azure" and "emerald"`,
         entity,
@@ -349,7 +342,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'Order 123 and 456 now!',
         entity,
@@ -388,7 +380,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'My CODE is HEX BOT!',
         entity,
@@ -418,7 +409,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'clé USB est endommagée',
         entity,
@@ -448,7 +438,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'comment réparer un clé USB endommagée?',
         entity,
@@ -475,7 +464,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'هذا الحاسوب معطب',
         entity,
@@ -502,7 +490,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'كيف يمكن إصلاح هذا العطب؟',
         entity,
@@ -534,7 +521,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'The word "où" (where)',
         entity,
@@ -570,7 +556,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as any;
-
       const result = helper.extractPatternBasedSlots('test', entity);
       expect(result).toEqual([]);
     });
