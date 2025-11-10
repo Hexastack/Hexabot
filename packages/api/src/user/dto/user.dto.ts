@@ -68,9 +68,6 @@ export class UserStub extends BaseStub {
 
   @Expose()
   provider?: UserProvider;
-
-  @Expose()
-  password?: string;
 }
 
 @Exclude()
