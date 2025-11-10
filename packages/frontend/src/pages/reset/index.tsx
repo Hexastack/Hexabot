@@ -4,17 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { ResetPasswordRequest } from "@/app-components/auth/resetPasswordRequest";
-import { Layout } from "@/layout";
 
 const ResetRequestPage = () => {
   return <ResetPasswordRequest />;
-};
-
-ResetRequestPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout sxContent={{ alignContent: "center" }}>{page}</Layout>;
 };
 
 export default ResetRequestPage;

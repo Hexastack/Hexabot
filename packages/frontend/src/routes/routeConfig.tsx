@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement, ReactNode } from "react";
+import React, { FC, ReactElement, ReactNode } from "react";
 import { Navigate, RouteObject } from "react-router-dom";
 
-import { Layout } from "@/layout";
+import { LayoutProps } from "@/layout";
 import DashboardPage from "@/pages";
 import CategoriesPage from "@/pages/categories";
 import ContentListPage from "@/pages/content/[id]/list";
@@ -34,104 +34,102 @@ export type RouteComponent = React.ComponentType & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-const withLayout = (Component: RouteComponent) => {
-  const Wrapped = () => {
-    const page = <Component />;
-
-    return Component.getLayout ? (
-      <>{Component.getLayout(page)}</>
-    ) : (
-      <Layout>{page}</Layout>
-    );
-  };
-
-  return <Wrapped />;
+const PageWrapper: FC<LayoutProps> = ({ children, ...rest }) => {
+  return <React.Fragment {...rest}>{children}</React.Fragment>;
 };
 
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: withLayout(DashboardPage),
+    Component: DashboardPage,
   },
   {
     path: "/login/:token?",
-    element: withLayout(LoginPage),
+    Component: LoginPage,
   },
   {
     path: "/categories",
-    element: withLayout(CategoriesPage),
+    Component: CategoriesPage,
   },
   {
     path: "/context-vars",
-    element: withLayout(ContextVarsPage),
+    Component: ContextVarsPage,
   },
   {
     path: "/inbox/subscribers?/:subscriber?",
-    element: withLayout(InboxSubscriberPage),
+    element: (
+      <PageWrapper hasNoPadding>
+        <InboxSubscriberPage />
+      </PageWrapper>
+    ),
   },
   {
     path: "/localization/languages",
-    element: withLayout(LocalizationLanguagesPage),
+    Component: LocalizationLanguagesPage,
   },
   {
     path: "/localization/translations",
-    element: withLayout(LocalizationTranslationsPage),
+    Component: LocalizationTranslationsPage,
   },
   {
     path: "/content/media-library",
-    element: withLayout(MediaLibraryPage),
+    Component: MediaLibraryPage,
   },
   {
     path: "/content/persistent-menu",
-    element: withLayout(PersistentMenuPage),
+    Component: PersistentMenuPage,
   },
   {
     path: "/content/:id/list",
-    element: withLayout(ContentListPage),
+    Component: ContentListPage,
   },
   {
     path: "/content/types",
-    element: withLayout(ContentTypesPage),
+    Component: ContentTypesPage,
   },
   {
     path: "/nlp/nlp-entities?/:id?/nlpValues?",
-    element: withLayout(NlpEntityValuesPage),
+    Component: NlpEntityValuesPage,
   },
   {
     path: "/profile",
-    element: withLayout(ProfilePage),
+    Component: ProfilePage,
   },
   {
     path: "/register/:token",
-    element: withLayout(RegisterPage),
+    Component: RegisterPage,
   },
   {
     path: "/reset/:token?",
-    element: withLayout(ResetTokenPage),
+    Component: ResetTokenPage,
   },
   {
     path: "/roles",
-    element: withLayout(RolesPage),
+    Component: RolesPage,
   },
   {
     path: "/settings/groups?/:group?",
-    element: withLayout(SettingsGroupPage),
+    Component: SettingsGroupPage,
   },
   {
     path: "/subscribers",
-    element: withLayout(SubscribersPage),
+    Component: SubscribersPage,
   },
   {
     path: "/subscribers/labels",
-    element: withLayout(SubscribersLabelsPage),
+    Component: SubscribersLabelsPage,
   },
   {
     path: "/users",
-    element: withLayout(UsersPage),
+    Component: UsersPage,
   },
   {
     path: "/visual-editor/flows?/:id?/:blockIds?",
-    element: withLayout(VisualEditorPage),
+    element: (
+      <PageWrapper hasNoPadding>
+        <VisualEditorPage />
+      </PageWrapper>
+    ),
   },
   {
     path: "*",

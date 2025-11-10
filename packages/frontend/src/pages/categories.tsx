@@ -4,17 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Categories } from "@/components/categories";
-import { Layout } from "@/layout";
 
 const CategoriesPage = () => {
   return <Categories />;
-};
-
-CategoriesPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default CategoriesPage;

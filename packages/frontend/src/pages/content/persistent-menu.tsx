@@ -4,17 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Menu } from "@/components/menu/index";
-import { Layout } from "@/layout/index";
 
 const MenusPage = () => {
   return <Menu />;
-};
-
-MenusPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default MenusPage;

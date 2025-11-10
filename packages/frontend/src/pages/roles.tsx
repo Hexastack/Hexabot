@@ -4,18 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Roles } from "@/components/roles";
-
-import { Layout } from "../layout";
 
 const RolesPage = () => {
   return <Roles />;
-};
-
-RolesPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default RolesPage;

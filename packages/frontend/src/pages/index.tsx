@@ -4,19 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
 import "eazychart-css";
 
 import { Dashboard } from "@/components/dashboard";
 
-import { Layout } from "../layout";
-
 const DashboardPage = () => {
   return <Dashboard />;
-};
-
-DashboardPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default DashboardPage;

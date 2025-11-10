@@ -4,17 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Users } from "@/components/users";
-import { Layout } from "@/layout";
 
 const UsersPage = () => {
   return <Users />;
-};
-
-UsersPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default UsersPage;

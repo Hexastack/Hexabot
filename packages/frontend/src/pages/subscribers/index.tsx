@@ -4,17 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Subscribers } from "@/components/subscribers";
-import { Layout } from "@/layout";
 
 const SubscribersPage = () => {
   return <Subscribers />;
-};
-
-SubscribersPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default SubscribersPage;

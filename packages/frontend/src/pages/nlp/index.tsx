@@ -4,11 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ReactElement } from "react";
-
 import { Nlp } from "@/components/nlp";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { Layout } from "@/layout";
 
 const NlpPage = () => {
   const router = useAppRouter();
@@ -22,10 +19,6 @@ const NlpPage = () => {
       selectedTab={router.pathname === "/nlp" ? "sample" : "entity"}
     />
   );
-};
-
-NlpPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout>{page}</Layout>;
 };
 
 export default NlpPage;

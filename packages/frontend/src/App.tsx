@@ -8,12 +8,20 @@ import { Suspense } from "react";
 import { useRoutes } from "react-router-dom";
 
 import { Progress } from "@/app-components/displays/Progress";
+import { Layout } from "@/layout";
 import { routes } from "@/routes";
 
 const App = () => {
   const element = useRoutes(routes);
+  const { children } = element?.props;
 
-  return <Suspense fallback={<Progress />}>{element}</Suspense>;
+  return (
+    <Suspense fallback={<Progress />}>
+      <Layout {...children.props}>
+        <>{children}</>
+      </Layout>
+    </Suspense>
+  );
 };
 
 export default App;
