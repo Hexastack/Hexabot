@@ -4,68 +4,137 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { BlockService } from '@/chat/services/block.service';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { installContentFixtures } from '@/utils/test/fixtures/content';
+import { FieldType } from '@/setting/types';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+  contentTypeOrmFixtures,
+  installContentTypeFixturesTypeOrm,
+} from '@/utils/test/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ContentField } from '../dto/contentType.dto';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 
 import { ContentTypeService } from './content-type.service';
-import { ContentService } from './content.service';
 
-describe('ContentTypeService', () => {
-  let contentTypeService: ContentTypeService;
-  let contentService: ContentService;
-  let contentTypeRepository: ContentTypeRepository;
-  let blockService: BlockService;
+describe('ContentTypeService (TypeORM)', () => {
+  let module: TestingModule;
+  let service: ContentTypeService;
+  const createdIds: string[] = [];
+  const blockServiceMock = {
+    findOne: jest.fn().mockResolvedValue(null),
+  };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installContentFixtures)],
+    const { module: testingModule, getMocks } = await buildTestingMocks({
       providers: [
         ContentTypeService,
+        ContentTypeRepository,
         {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
+          provide: BlockService,
+          useFactory: () => blockServiceMock,
         },
       ],
+      typeorm: {
+        entities: [
+          ContentTypeOrmEntity,
+          ContentOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: installContentTypeFixturesTypeOrm,
+      },
     });
-    [blockService, contentTypeService, contentService, contentTypeRepository] =
-      await getMocks([
-        BlockService,
-        ContentTypeService,
-        ContentService,
-        ContentTypeRepository,
-      ]);
+    module = testingModule;
+    [service] = await getMocks([ContentTypeService]);
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  afterEach(jest.clearAllMocks);
-
-  describe('deleteOne', () => {
-    it('should delete a content type and its related contents', async () => {
-      const deleteContentTypeSpy = jest.spyOn(
-        contentTypeRepository,
-        'deleteOne',
+  afterEach(async () => {
+    jest.clearAllMocks();
+    if (createdIds.length > 0) {
+      await Promise.all(
+        createdIds.map(async (id) => {
+          await service.deleteOne(id);
+        }),
       );
-      jest.spyOn(blockService, 'findOne').mockResolvedValueOnce(null);
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
+      createdIds.length = 0;
+    }
+  });
 
-      const result = await contentTypeService.deleteCascadeOne(contentType!.id);
-      expect(deleteContentTypeSpy).toHaveBeenCalledWith(contentType!.id);
-      expect(await contentService.find({ entity: contentType!.id })).toEqual(
-        [],
+  describe('create', () => {
+    it('applies default fields when none are provided', async () => {
+      const payload = { name: 'Blog posts' };
+      const created = await service.create(payload);
+      createdIds.push(created.id);
+
+      expect(created).toMatchObject({
+        id: expect.any(String),
+        name: payload.name,
+      });
+      expect(created.fields).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'title',
+            type: FieldType.text,
+          }),
+          expect.objectContaining({
+            name: 'status',
+            type: FieldType.checkbox,
+          }),
+        ]),
       );
-      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+    });
+  });
+
+  describe('deleteCascadeOne', () => {
+    it('removes the requested content type', async () => {
+      const baseName = `${contentTypeOrmFixtures[0].name}-to-delete`;
+      const baseFields =
+        (contentTypeOrmFixtures[0].fields as ContentField[] | undefined)?.map(
+          (field) => ({ ...field }),
+        ) ?? [];
+      const created = await service.create({
+        name: baseName,
+        fields: baseFields,
+      });
+      createdIds.push(created.id);
+
+      const deleted = await service.deleteOne(created.id);
+      createdIds.splice(createdIds.indexOf(created.id), 1);
+      const found = await service.findOne(created.id);
+
+      expect(deleted).toEqual({ acknowledged: true, deletedCount: 1 });
+      expect(found).toBeNull();
     });
   });
 });

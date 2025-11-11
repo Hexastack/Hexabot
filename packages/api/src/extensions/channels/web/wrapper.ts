@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/dto/attachment.dto';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
-import { PayloadType } from '@/chat/schemas/types/button';
+import { PayloadType } from '@/chat/types/button';
 import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/schemas/types/message';
-import { Payload } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { Payload } from '@/chat/types/quick-reply';
 
 import BaseWebChannelHandler from './base-web-channel';
 import { WEB_CHANNEL_NAME } from './settings';
@@ -207,6 +208,7 @@ export default class WebEventWrapper<
 
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
+
         return {
           type: PayloadType.location,
           coordinates: {
@@ -223,7 +225,9 @@ export default class WebEventWrapper<
         return {
           type: PayloadType.attachments,
           attachment: {
-            type: Attachment.getTypeByMime(this._adapter.raw.data.type),
+            type: AttachmentOrmEntity.getTypeByMime(
+              this._adapter.raw.data.type,
+            ),
             payload: {
               id: this._adapter.attachment.id,
             },
@@ -256,6 +260,7 @@ export default class WebEventWrapper<
 
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
+
         return {
           type: PayloadType.location,
           coordinates: {
@@ -270,9 +275,10 @@ export default class WebEventWrapper<
           throw new Error('Attachment has not been processed');
         }
 
-        const fileType = Attachment.getTypeByMime(
+        const fileType = AttachmentOrmEntity.getTypeByMime(
           this._adapter.attachment.type,
         );
+
         return {
           type: PayloadType.attachments,
           serialized_text: `attachment:${fileType}:${this._adapter.attachment.name}`,

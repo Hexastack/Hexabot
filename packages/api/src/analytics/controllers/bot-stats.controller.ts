@@ -6,16 +6,31 @@
 
 import { Controller, Get, Query } from '@nestjs/common';
 
-import { BotStatsFindDatumDto, BotStatsFindDto } from '../dto/bot-stats.dto';
-import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+
+import {
+  BotStatsActionDto,
+  BotStatsFindDatumDto,
+  BotStatsFindDto,
+  BotStatsTransformerDto,
+} from '../dto/bot-stats.dto';
+import {
+  BotStatsOrmEntity,
+  BotStatsType,
+  ToLinesType,
+} from '../entities/bot-stats.entity';
 import { BotStatsService } from '../services/bot-stats.service';
 import { aMonthAgo } from '../utilities';
 
-import { ToLinesType } from './../schemas/bot-stats.schema';
-
 @Controller('botstats')
-export class BotStatsController {
-  constructor(private readonly botStatsService: BotStatsService) {}
+export class BotStatsController extends BaseOrmController<
+  BotStatsOrmEntity,
+  BotStatsTransformerDto,
+  BotStatsActionDto
+> {
+  constructor(protected readonly botStatsService: BotStatsService) {
+    super(botStatsService);
+  }
 
   /**
    * Retrieves message stats within a specified time range.
@@ -35,7 +50,8 @@ export class BotStatsController {
       BotStatsType.outgoing,
     ];
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -52,7 +68,7 @@ export class BotStatsController {
     const { from = aMonthAgo(), to = new Date(), type } = dto;
     const result = await this.botStatsService.findMessages(from, to, [type]);
 
-    return BotStats.toLines(result, [type]);
+    return BotStatsOrmEntity.toLines(result, [type]);
   }
 
   /**
@@ -71,9 +87,9 @@ export class BotStatsController {
       BotStatsType.new_conversations,
       BotStatsType.existing_conversations,
     ];
-
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -93,9 +109,9 @@ export class BotStatsController {
       BotStatsType.returning_users,
       BotStatsType.retention,
     ];
-
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -112,6 +128,6 @@ export class BotStatsController {
     const { from = aMonthAgo(), to = new Date() } = dto;
     const results = await this.botStatsService.findPopularBlocks(from, to);
 
-    return BotStats.toBars(results);
+    return BotStatsOrmEntity.toBars(results);
   }
 }

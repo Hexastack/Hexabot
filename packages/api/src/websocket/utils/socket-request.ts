@@ -9,7 +9,7 @@
 import { Socket } from 'socket.io';
 
 import { config } from '@/config';
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
 
 import { IOIncomingMessage } from '../pipes/io-message.pipe';
 
@@ -88,6 +88,7 @@ export class SocketRequest {
     const urlQuery = Array.from(urlObj.searchParams).reduce(
       (acc, [key, value]) => {
         acc[key] = value;
+
         return acc;
       },
       {} as Record<string, any>,

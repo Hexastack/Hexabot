@@ -13,11 +13,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { Request } from 'express';
-import { Types } from 'mongoose';
 import qs from 'qs';
+import { FindOneOptions, In } from 'typeorm';
 
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
@@ -136,24 +138,30 @@ export class AttachmentGuard implements CanActivate {
     user: Express.User & User,
     identity: TModel,
     action?: Action,
-  ) {
-    if (Array.isArray(user?.roles)) {
-      for (const role of user.roles) {
-        const modelObj = await this.modelService.findOne({ identity });
-        if (modelObj) {
-          const { id: model } = modelObj;
-          const hasRequiredPermission = await this.permissionService.findOne({
-            action,
-            role,
-            model,
-          });
+  ): Promise<boolean> {
+    const roleIds = Array.isArray(user?.roles) ? user.roles : [];
 
-          return !!hasRequiredPermission;
-        }
-      }
+    if (!roleIds.length) {
+      return false;
     }
 
-    return false;
+    const model = await this.modelService.findOne({ where: { identity } });
+    if (!model) {
+      return false;
+    }
+
+    const where: FindOneOptions<PermissionOrmEntity>['where'] = {
+      role: { id: In(roleIds) },
+      model: { id: model.id },
+    };
+
+    if (action) {
+      where.action = action;
+    }
+
+    const permission = await this.permissionService.findOne({ where });
+
+    return !!permission;
   }
 
   /**
@@ -193,6 +201,27 @@ export class AttachmentGuard implements CanActivate {
   }
 
   /**
+   * Checks whether a value is a valid attachment identifier.
+   *
+   * @param value - The value to validate.
+   * @returns `true` if the value is a non-empty string, otherwise `false`.
+   */
+  private isValidId(value: unknown): value is string {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return false;
+    }
+
+    const idRegex = /^[a-fA-F0-9]{24}$/;
+
+    return idRegex.test(trimmed) || isUUID(trimmed);
+  }
+
+  /**
    * Determines if the user is authorized to perform the requested action.
    *
    * @param ctx - The execution context, providing details of the
@@ -208,7 +237,7 @@ export class AttachmentGuard implements CanActivate {
     switch (method) {
       // count(), find() and findOne() endpoints
       case 'GET': {
-        if (params && 'id' in params && Types.ObjectId.isValid(params.id)) {
+        if (params && 'id' in params && this.isValidId(params.id)) {
           const attachment = await this.attachmentService.findOne(params.id);
 
           if (!attachment) {
@@ -247,7 +276,7 @@ export class AttachmentGuard implements CanActivate {
       }
       // deleteOne() endpoint
       case 'DELETE': {
-        if (params && 'id' in params && Types.ObjectId.isValid(params.id)) {
+        if (params && 'id' in params && this.isValidId(params.id)) {
           const attachment = await this.attachmentService.findOne(params.id);
 
           if (!attachment) {

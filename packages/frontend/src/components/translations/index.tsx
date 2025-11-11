@@ -6,26 +6,23 @@
 
 import { faLanguage } from "@fortawesome/free-solid-svg-icons";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { Button, Chip, Grid, Stack } from "@mui/material";
+import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ITranslation } from "@/types/translation.types";
@@ -37,24 +34,11 @@ export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const hasPermission = useHasPermission();
+  const queryClient = useQueryClient();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
       hasCount: false,
-    },
-  );
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.TRANSLATION>(
-      {
-        $iLike: ["str"],
-      },
-      { syncUrl: true },
-    );
-  const { dataGridProps, refetch: refreshTranslations } = useFind(
-    { entity: EntityType.TRANSLATION },
-    {
-      params: searchPayload,
     },
   );
   const { mutate: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
@@ -71,7 +55,10 @@ export const Translations = () => {
         toast.error(t("message.internal_server_error"));
       },
       onSuccess: () => {
-        refreshTranslations();
+        queryClient.invalidateQueries([
+          QueryType.collection,
+          EntityType.TRANSLATION,
+        ]);
         toast.success(t("message.success_translation_refresh"));
       },
     });
@@ -140,37 +127,28 @@ export const Translations = () => {
       valueGetter: (params) =>
         t("datetime.updated_at", getDateTimeFormatter(params)),
     },
-
     actionColumns,
   ];
 
   return (
-    <Grid container flexDirection="column" gap={3}>
-      <PageHeader title={t("title.translations")} icon={faLanguage}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          {hasPermission(EntityType.TRANSLATION, PermissionAction.CREATE) ? (
-            <Button
-              startIcon={<AutorenewIcon />}
-              variant="contained"
-              onClick={checkRefreshTranslations}
-              disabled={isLoading}
-            >
-              {t("button.refresh")}
-            </Button>
-          ) : null}
-        </Grid>
-      </PageHeader>
-      <DataGrid {...dataGridProps} columns={columns} />
-    </Grid>
+    <GenericDataGrid
+      entity={EntityType.TRANSLATION}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          children: t("button.refresh"),
+          startIcon: <AutorenewIcon />,
+          onClick: checkRefreshTranslations,
+          disabled: isLoading,
+        },
+      ]}
+      columns={columns}
+      headerIcon={faLanguage}
+      searchParams={{
+        $iLike: ["str"],
+        syncUrl: true,
+      }}
+      headerI18nTitle="title.translations"
+    />
   );
 };

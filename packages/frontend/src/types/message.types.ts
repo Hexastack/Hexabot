@@ -218,6 +218,8 @@ export interface IMessageAttributes {
   handover?: boolean;
 }
 
+export interface IMessageFilters {}
+
 export interface IMessageStub
   extends IBaseSchema,
     OmitPopulate<IMessageAttributes, EntityType.MESSAGE> {}

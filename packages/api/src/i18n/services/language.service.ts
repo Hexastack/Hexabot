@@ -11,29 +11,31 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
+import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LanguageDto } from '../dto/language.dto';
+import { LanguageDtoConfig, LanguageTransformerDto } from '../dto/language.dto';
+import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
-import { Language } from '../schemas/language.schema';
 
 @Injectable()
-export class LanguageService extends BaseService<
-  Language,
-  never,
-  never,
-  LanguageDto
+export class LanguageService extends BaseOrmService<
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDtoConfig
 > {
   constructor(
-    readonly repository: LanguageRepository,
+    repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -45,8 +47,9 @@ export class LanguageService extends BaseService<
    * and the corresponding value is the `Language` object.
    */
   @Cacheable(LANGUAGES_CACHE_KEY)
-  async getLanguages(): Promise<Record<string, Language>> {
+  async getLanguages(): Promise<Record<string, LanguageOrmEntity>> {
     const languages = await this.findAll();
+
     return languages.reduce((acc, curr) => {
       return {
         ...acc,
@@ -62,12 +65,13 @@ export class LanguageService extends BaseService<
    */
   @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getDefaultLanguage() {
-    const defaultLanguage = await this.findOne({ isDefault: true });
+    const defaultLanguage = await this.findOne({ where: { isDefault: true } });
     if (!defaultLanguage) {
       throw new InternalServerErrorException(
         'Default language not found: getDefaultLanguage()',
       );
     }
+
     return defaultLanguage;
   }
 
@@ -77,7 +81,7 @@ export class LanguageService extends BaseService<
    * @returns A promise that resolves to the `Language` object.
    */
   async getLanguageByCode(code: string) {
-    const language = await this.findOne({ code });
+    const language = await this.findOne({ where: { code } });
 
     if (!language) {
       this.logger.warn(`Unable to Language by languageCode ${code}`);
@@ -87,5 +91,11 @@ export class LanguageService extends BaseService<
     }
 
     return language;
+  }
+
+  @OnEvent('hook:language:*')
+  async handleLanguageMutated(): Promise<void> {
+    await this.cacheManager.del(LANGUAGES_CACHE_KEY);
+    await this.cacheManager.del(DEFAULT_LANGUAGE_CACHE_KEY);
   }
 }

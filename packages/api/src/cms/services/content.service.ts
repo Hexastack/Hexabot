@@ -6,29 +6,36 @@
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
+import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
-import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
-import { ContentOptions } from '@/chat/schemas/types/options';
-import { BaseService } from '@/utils/generics/base-service';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { StdOutgoingListMessage } from '@/chat/types/message';
+import { ContentOptions } from '@/chat/types/options';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentDto } from '../dto/content.dto';
-import { ContentRepository } from '../repositories/content.repository';
-import { ContentType } from '../schemas/content-type.schema';
 import {
-  Content,
-  ContentFull,
-  ContentPopulate,
-} from '../schemas/content.schema';
+  ContentCreateDto,
+  ContentDtoConfig,
+  ContentTransformerDto,
+} from '../dto/content.dto';
+import { ContentType } from '../dto/contentType.dto';
+import { ContentOrmEntity } from '../entities/content.entity';
+import { ContentRepository } from '../repositories/content.repository';
+import { CONTENT_POPULATE, ContentPopulate } from '../types/content';
 
 @Injectable()
-export class ContentService extends BaseService<
-  Content,
-  ContentPopulate,
-  ContentFull,
-  ContentDto
+export class ContentService extends BaseOrmService<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig,
+  ContentRepository
 > {
-  constructor(readonly repository: ContentRepository) {
+  private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
+
+  constructor(
+    readonly repository: ContentRepository,
+    private readonly logger: LoggerService,
+  ) {
     super(repository);
   }
 
@@ -39,7 +46,7 @@ export class ContentService extends BaseService<
    *
    * @return A list of content matching the search query.
    */
-  async textSearch(query: string) {
+  async textSearch(query: string): Promise<ContentOrmEntity[]> {
     return await this.repository.textSearch(query);
   }
 
@@ -55,31 +62,37 @@ export class ContentService extends BaseService<
     options: ContentOptions,
     skip: number,
   ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
-    let query: TFilterQuery<Content> = { status: true };
+    const where: FindOptionsWhere<ContentOrmEntity> = {
+      status: true,
+      ...(options.query as FindOptionsWhere<ContentOrmEntity> | undefined),
+    };
     const limit = options.limit;
 
-    if (options.query) {
-      query = { ...query, ...options.query };
-    }
     if (typeof options.entity === 'string') {
-      query = { ...query, entity: options.entity };
+      where.contentType = {
+        id: options.entity,
+      };
     }
 
     try {
-      const total = await this.count(query);
+      const countOptions: FindManyOptions<ContentOrmEntity> = { where };
+      const total = await this.count(countOptions);
 
       if (total === 0) {
-        this.logger.warn('No content found', query);
+        this.logger.warn('No content found', where);
         throw new Error('No content found');
       }
 
       try {
-        const contents = await this.find(query, {
+        const findOptions: FindManyOptions<ContentOrmEntity> = {
+          where,
           skip,
-          limit,
-          sort: ['createdAt', 'desc'],
-        });
-        const elements = contents.map(Content.toElement);
+          take: limit,
+          order: { createdAt: 'DESC' },
+        };
+        const contents = await this.find(findOptions);
+        const elements = contents.map(ContentOrmEntity.toElement);
+
         return {
           elements,
           pagination: {
@@ -89,11 +102,11 @@ export class ContentService extends BaseService<
           },
         };
       } catch (err) {
-        this.logger.error('Unable to retrieve content', err, query);
+        this.logger.error('Unable to retrieve content', err, where);
         throw err;
       }
     } catch (err) {
-      this.logger.error('Unable to count content', err, query);
+      this.logger.error('Unable to count content', err, where);
       throw err;
     }
   }
@@ -102,15 +115,10 @@ export class ContentService extends BaseService<
    * Parses a CSV dataset and saves the content in the repository.
    *
    * @param data - The CSV data as a string to be parsed.
-   * @param targetContentType - The content type to associate with the parsed data.
    * @param contentType - The content type metadata, including fields to validate the parsed data.
    * @return A promise resolving to the created content objects.
    */
-  async parseAndSaveDataset(
-    data: string,
-    targetContentType: string,
-    contentType: ContentType,
-  ) {
+  async parseAndSaveDataset(data: string, contentType: ContentType) {
     // Parse local CSV file
     const result: {
       errors: any[];
@@ -138,21 +146,25 @@ export class ContentService extends BaseService<
         },
       );
     }
-    const contentsDto = result.data.reduce(
+
+    const contentsDto: ContentCreateDto[] = result.data.reduce(
       (acc, { title, status, ...rest }) => [
         ...acc,
         {
           title: String(title),
           status: status.trim().toLowerCase() === 'true',
-          entity: targetContentType,
+          contentType: contentType.id,
           dynamicFields: Object.keys(rest)
             .filter((key) =>
               contentType.fields?.map((field) => field.name).includes(key),
             )
-            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+            .reduce(
+              (filtered, key) => ({ ...filtered, [key]: rest[key] }),
+              {} as Record<string, string>,
+            ),
         },
       ],
-      [],
+      [] as ContentCreateDto[],
     );
     this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
     try {

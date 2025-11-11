@@ -9,7 +9,7 @@ import { HttpService } from '@nestjs/axios';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 
-import { MigrationDocument } from './migration.schema';
+import type { MigrationOrmEntity } from './migration.entity';
 
 export enum MigrationAction {
   UP = 'up',
@@ -31,7 +31,7 @@ export interface MigrationRunOneParams extends MigrationRunParams {
 }
 
 export interface MigrationSuccessCallback extends MigrationRunParams {
-  migrationDocument: MigrationDocument | null;
+  migrationRecord: MigrationOrmEntity | null;
 }
 
 export type MigrationServices = {

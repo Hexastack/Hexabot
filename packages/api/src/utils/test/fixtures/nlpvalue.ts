@@ -4,12 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
 import { NlpValueCreateDto } from '@/nlp/dto/nlp-value.dto';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 
-import { installNlpEntityFixtures, nlpEntityFixtures } from './nlpentity';
+import {
+  installNlpEntityFixturesTypeOrm,
+  nlpEntityFixtures,
+} from './nlpentity';
 
 export const nlpValueFixtures: NlpValueCreateDto[] = [
   {
@@ -70,21 +74,42 @@ export const nlpValueFixtures: NlpValueCreateDto[] = [
   },
 ];
 
-export const installNlpValueFixtures = async () => {
-  const nlpEntities = await installNlpEntityFixtures();
+export const installNlpValueFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const nlpEntities = await installNlpEntityFixturesTypeOrm(dataSource);
+  const repository = dataSource.getRepository(NlpValueOrmEntity);
+  const existing = await repository.find();
+  if (existing.length) {
+    return existing;
+  }
 
-  const NlpValue = mongoose.model(NlpValueModel.name, NlpValueModel.schema);
+  const entitiesByName = nlpEntities.reduce<Record<string, NlpEntityOrmEntity>>(
+    (acc, entity) => {
+      acc[entity.name] = entity;
 
-  const nlpValues = await NlpValue.insertMany(
-    nlpValueFixtures.map((v) => ({
-      ...v,
-      entity: v?.entity
-        ? nlpEntities.find(
-            (e) =>
-              e.name === nlpEntityFixtures[parseInt(v.entity as string)].name,
-          ).id
-        : null,
-    })),
+      return acc;
+    },
+    {},
   );
-  return { nlpEntities, nlpValues };
+  const values: DeepPartial<NlpValueOrmEntity>[] = nlpValueFixtures.map(
+    (fixture) => {
+      const entityIndex = parseInt(fixture.entity, 10);
+      const entityName = nlpEntityFixtures[entityIndex]?.name;
+      const entity = entityName ? entitiesByName[entityName] : undefined;
+
+      if (!entity) {
+        throw new Error(`Unable to resolve entity for value ${fixture.value}`);
+      }
+
+      return {
+        ...fixture,
+        entity: { id: entity.id },
+        foreignId: null,
+      };
+    },
+  );
+  const records = repository.create(values);
+
+  return await repository.save(records);
 };

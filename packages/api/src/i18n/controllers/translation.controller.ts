@@ -17,35 +17,44 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In, Not } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { TranslationUpdateDto } from '../dto/translation.dto';
-import { Translation } from '../schemas/translation.schema';
+import {
+  TranslationDtoConfig,
+  TranslationTransformerDto,
+  TranslationUpdateDto,
+} from '../dto/translation.dto';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 @Controller('translation')
-export class TranslationController extends BaseController<Translation> {
+export class TranslationController extends BaseOrmController<
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDtoConfig
+> {
   constructor(
     private readonly languageService: LanguageService,
-    private readonly translationService: TranslationService,
+    protected readonly translationService: TranslationService,
   ) {
     super(translationService);
   }
 
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Translation>,
-    @Query(new SearchFilterPipe<Translation>({ allowedFields: ['str'] }))
-    filters: TFilterQuery<Translation>,
+    @Query(
+      new TypeOrmSearchFilterPipe<TranslationOrmEntity>({
+        allowedFields: ['str'],
+      }),
+    )
+    options: FindManyOptions<TranslationOrmEntity>,
   ) {
-    return await this.translationService.find(filters, pageQuery);
+    return await this.translationService.find(options);
   }
 
   /**
@@ -55,23 +64,24 @@ export class TranslationController extends BaseController<Translation> {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Translation>({
+      new TypeOrmSearchFilterPipe<TranslationOrmEntity>({
         allowedFields: ['str'],
       }),
     )
-    filters?: TFilterQuery<Translation>,
+    options?: FindManyOptions<TranslationOrmEntity>,
   ) {
-    return await this.count(filters);
+    return await super.count(options);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const doc = await this.translationService.findOne(id);
-    if (!doc) {
+    const translation = await this.translationService.findOne(id);
+    if (!translation) {
       this.logger.warn(`Unable to find Translation by id ${id}`);
       throw new NotFoundException(`Translation with ID ${id} not found`);
     }
-    return doc;
+
+    return translation;
   }
 
   @Patch(':id')
@@ -90,11 +100,14 @@ export class TranslationController extends BaseController<Translation> {
   async refresh(): Promise<any> {
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     const languages = await this.languageService.getLanguages();
-    const defaultTrans: Translation['translations'] = Object.keys(languages)
+    const defaultTrans: TranslationOrmEntity['translations'] = Object.keys(
+      languages,
+    )
       .filter((lang) => lang !== defaultLanguage.code)
       .reduce(
         (acc, curr) => {
           acc[curr] = '';
+
           return acc;
         },
         {} as { [key: string]: string },
@@ -111,15 +124,16 @@ export class TranslationController extends BaseController<Translation> {
     // Perform refresh
     const queue = strings.map((str) =>
       this.translationService.findOneOrCreate(
-        { str },
+        { where: { str } },
         { str, translations: defaultTrans },
       ),
     );
     await Promise.all(queue);
     // Purge non existing translations
-    return await this.translationService.deleteMany({
-      str: { $nin: strings },
-    });
+    const deleteOptions: FindManyOptions<TranslationOrmEntity> =
+      strings.length > 0 ? { where: { str: Not(In(strings)) } } : {};
+
+    return await this.translationService.deleteMany(deleteOptions);
   }
 
   /**
@@ -137,6 +151,7 @@ export class TranslationController extends BaseController<Translation> {
         `Unable to delete Translation with ID ${id}`,
       );
     }
+
     return result;
   }
 }

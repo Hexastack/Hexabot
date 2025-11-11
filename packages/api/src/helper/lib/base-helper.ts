@@ -42,13 +42,7 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
   }
 
   async setup() {
-    await this.settingService.seedIfNotExist(
-      this.getName(),
-      this.settings.map((s, i) => ({
-        ...s,
-        weight: i + 1,
-      })),
-    );
+    await this.settingService.seedIfNotExist(this.getName(), this.settings);
   }
 
   /**
@@ -67,6 +61,7 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
    */
   async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
+
     // @ts-expect-error workaround typing
     return settings[this.getNamespace() as keyof Settings] as Settings[S];
   }

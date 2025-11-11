@@ -4,17 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { TNestedPaths } from "./base.types";
+import { THook, TNestedPaths } from "./base.types";
 
 export type TFilterStringFields<T> = {
   [K in keyof T]: T[K] extends string | undefined ? K : never;
 }[keyof T];
 
-export type TParamItem<T> = {
-  $eq?: { [key in keyof T]?: T[key] }[];
-  $iLike?: TFilterStringFields<T>[];
-  $neq?: { [key in keyof T]?: T[key] }[];
-  $or?: TFilterStringFields<T>[];
+export type TParamItem<
+  TE extends THook["entity"],
+  TF extends THook<{ entity: TE }>["filters"] = THook<{
+    entity: TE;
+  }>["filters"],
+> = {
+  $eq?: { [K in keyof TF]?: TF[K] }[];
+  $iLike?: TFilterStringFields<TF>[];
+  $neq?: { [K in keyof TF]?: TF[K] }[];
+  $or?: TFilterStringFields<TF>[];
 };
 
 export type TBuildParamProps<T> = {
@@ -53,7 +58,13 @@ export type SearchItem<T> = {
         $in?: T[K] | T[K][];
       };
 };
-export type SearchPayload<T, N = TNestedPaths<T>> = EqParam<N> & {
+export type SearchPayload<
+  TE extends THook["entity"],
+  TF extends THook<{ entity: TE }>["filters"] = THook<{
+    entity: TE;
+  }>["filters"],
+  N = TNestedPaths<TF>,
+> = EqParam<N> & {
   where?: {
     or?: SearchItem<N>[];
   } & SearchItem<N>;

@@ -5,13 +5,13 @@
  */
 
 import { Global, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SettingController } from './controllers/setting.controller';
+import { MetadataOrmEntity } from './entities/metadata.entity';
+import { SettingOrmEntity } from './entities/setting.entity';
 import { MetadataRepository } from './repositories/metadata.repository';
 import { SettingRepository } from './repositories/setting.repository';
-import { MetadataModel } from './schemas/metadata.schema';
-import { SettingModel } from './schemas/setting.schema';
 import { MetadataSeeder } from './seeds/metadata.seed';
 import { SettingSeeder } from './seeds/setting.seed';
 import { MetadataService } from './services/metadata.service';
@@ -19,7 +19,7 @@ import { SettingService } from './services/setting.service';
 
 @Global()
 @Module({
-  imports: [MongooseModule.forFeature([SettingModel, MetadataModel])],
+  imports: [TypeOrmModule.forFeature([SettingOrmEntity, MetadataOrmEntity])],
   providers: [
     SettingRepository,
     MetadataRepository,

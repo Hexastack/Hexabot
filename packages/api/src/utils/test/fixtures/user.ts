@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { UserCreateDto } from '@/user/dto/user.dto';
-import { User, UserModel } from '@/user/schemas/user.schema';
+import { User, UserCreateDto } from '@/user/dto/user.dto';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { hash } from '@/user/utilities/bcryptjs';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
 
-import { installRoleFixtures } from './role';
+import { installRoleFixturesTypeOrm, roleFixtureIds } from './role';
 
 export const users: UserCreateDto[] = [
   {
@@ -22,7 +23,7 @@ export const users: UserCreateDto[] = [
     last_name: 'admin',
     email: 'admin@admin.admin',
     password: 'adminadmin',
-    roles: ['0', '1'],
+    roles: [roleFixtureIds.admin, roleFixtureIds.manager],
     avatar: null,
   },
 ];
@@ -36,25 +37,40 @@ export const userDefaultValues: TFixturesDefaultValues<User> = {
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>
-  getFixturesWithDefaultValues<User>({
+  getFixturesWithDefaultValues<User, UserCreateDto>({
     fixtures: users,
     defaultValues: userDefaultValues,
   });
 
 export const userFixtures = getUserFixtures(users);
 
-export const installUserFixtures = async () => {
-  const roles = await installRoleFixtures();
-  const User = mongoose.model(UserModel.name, UserModel.schema);
+export const userFixtureIds = {
+  admin: '66666666-6666-6666-6666-666666666666',
+} as const;
 
-  const users = await User.create(
-    userFixtures.map((userFixture) => ({
-      ...userFixture,
-      roles: roles
-        .map((role) => role.id)
-        .filter((_, index) => userFixture.roles.includes(index.toString())),
-      password: hash(userFixture.password),
-    })),
+export const installUserFixturesTypeOrm = async (dataSource: DataSource) => {
+  const roleRepository = dataSource.getRepository(RoleOrmEntity);
+  const userRepository = dataSource.getRepository(UserOrmEntity);
+
+  if ((await roleRepository.count()) === 0) {
+    await installRoleFixturesTypeOrm(dataSource);
+  }
+
+  if (await userRepository.count()) {
+    return await userRepository.find({ relations: ['roles'] });
+  }
+
+  const entities = users.map((user, index) =>
+    userRepository.create({
+      id:
+        userFixtureIds[user.username as keyof typeof userFixtureIds] ??
+        (index === 0 ? userFixtureIds.admin : undefined),
+      ...user,
+      password: hash(user.password),
+      roles: user.roles.map((roleId) => ({ id: roleId }) as RoleOrmEntity),
+      avatar: user.avatar ? { id: user.avatar } : undefined,
+    }),
   );
-  return { roles, users };
+
+  return await userRepository.save(entities);
 };

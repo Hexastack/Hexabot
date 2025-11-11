@@ -4,16 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
-import { installLabelFixtures } from './label';
-import { installUserFixtures } from './user';
+import { installLabelFixturesTypeOrm } from './label';
+import { installUserFixturesTypeOrm } from './user';
 
 type TSubscriberFixtures = FixturesTypeBuilder<Subscriber, SubscriberCreateDto>;
 
@@ -99,19 +101,75 @@ export const subscriberFixtures = getFixturesWithDefaultValues<
   defaultValues: subscriberDefaultValues,
 });
 
-export const installSubscriberFixtures = async () => {
-  const Subscriber = mongoose.model(
-    SubscriberModel.name,
-    SubscriberModel.schema,
-  );
-  const { users } = await installUserFixtures();
-  const labels = await installLabelFixtures();
-  const subscribers = await Subscriber.insertMany(
-    subscriberFixtures.map((subscriberFixture) => ({
-      ...subscriberFixture,
-      labels: labels.map(({ _id }) => _id.toString()),
-      assignedTo: users[0].id,
-    })),
-  );
-  return { labels, subscribers, users };
+const findSubscriberRelations = async (
+  dataSource: DataSource,
+): Promise<SubscriberOrmEntity[]> => {
+  const repository = dataSource.getRepository(SubscriberOrmEntity);
+
+  return await repository.find({
+    relations: ['labels', 'assignedTo', 'avatar'],
+  });
+};
+const findLabelRelations = async (
+  dataSource: DataSource,
+): Promise<LabelOrmEntity[]> => {
+  const repository = dataSource.getRepository(LabelOrmEntity);
+
+  return await repository.find({ relations: ['group', 'users'] });
+};
+
+export const installSubscriberFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const subscriberRepository = dataSource.getRepository(SubscriberOrmEntity);
+  const [users, labelEntities] = await Promise.all([
+    installUserFixturesTypeOrm(dataSource),
+    installLabelFixturesTypeOrm(dataSource),
+  ]);
+
+  if (await subscriberRepository.count()) {
+    return {
+      labels: await findLabelRelations(dataSource),
+      subscribers: await findSubscriberRelations(dataSource),
+      users,
+    };
+  }
+
+  const assignedUser = users[0] ?? null;
+
+  for (const fixture of subscriberFixtures) {
+    const {
+      labels: _labels,
+      assignedTo: _assignedTo,
+      avatar: _avatar,
+      ...rest
+    } = fixture;
+    const entity = new SubscriberOrmEntity();
+    Object.assign(entity, {
+      ...rest,
+      locale: rest.locale ?? null,
+      language: rest.language ?? null,
+      gender: rest.gender ?? null,
+      country: rest.country ?? null,
+      foreign_id: rest.foreign_id,
+      assignedAt: rest.assignedAt ?? null,
+      lastvisit: rest.lastvisit ?? new Date(),
+      retainedFrom: rest.retainedFrom ?? new Date(),
+      labels: labelEntities.map(
+        ({ id }) => ({ id }) as Pick<LabelOrmEntity, 'id'>,
+      ),
+      assignedTo: assignedUser
+        ? ({ id: assignedUser.id } as Pick<UserOrmEntity, 'id'>)
+        : null,
+      avatar: _avatar ? ({ id: _avatar } as { id: string }) : null,
+    });
+
+    await subscriberRepository.save(entity);
+  }
+
+  return {
+    labels: await findLabelRelations(dataSource),
+    subscribers: await findSubscriberRelations(dataSource),
+    users,
+  };
 };

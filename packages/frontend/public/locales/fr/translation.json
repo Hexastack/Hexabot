@@ -132,7 +132,8 @@
     "results": "résultats",
     "item_selected": "{{0}} élément sélectionné",
     "items_selected": "{{0}} éléments sélectionnés",
-    "start": "Début"
+    "start": "Début",
+    "wait_message": "Veuillez patienter"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

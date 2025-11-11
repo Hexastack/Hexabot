@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { CategoryCreateDto } from '@/chat/dto/category.dto';
-import { Category, CategoryModel } from '@/chat/schemas/category.schema';
+import { Category, CategoryCreateDto } from '@/chat/dto/category.dto';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -39,7 +39,30 @@ export const categoryFixtures = getFixturesWithDefaultValues<
   defaultValues: categoryDefaultValues,
 });
 
-export const installCategoryFixtures = async () => {
-  const Category = mongoose.model(CategoryModel.name, CategoryModel.schema);
-  return await Category.insertMany(categoryFixtures);
+const findCategories = async (dataSource: DataSource) =>
+  await dataSource
+    .getRepository(CategoryOrmEntity)
+    .find({ relations: ['blocks'] });
+
+export const installCategoryFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(CategoryOrmEntity);
+
+  if (await repository.count()) {
+    return await findCategories(dataSource);
+  }
+
+  const entities = categoryFixtures.map((fixture) =>
+    repository.create({
+      ...fixture,
+      builtin: fixture.builtin ?? false,
+      zoom: fixture.zoom ?? categoryDefaultValues.zoom ?? 100,
+      offset: fixture.offset ?? categoryDefaultValues.offset ?? [0, 0],
+    }),
+  );
+
+  await repository.save(entities);
+
+  return await findCategories(dataSource);
 };

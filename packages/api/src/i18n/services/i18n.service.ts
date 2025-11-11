@@ -14,7 +14,7 @@ import {
 import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
 import { config } from '@/config';
-import { Translation } from '@/i18n/schemas/translation.schema';
+import { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 
 @Injectable()
 export class I18nService<
@@ -45,19 +45,23 @@ export class I18nService<
             R
           >;
         }
+
         return options.defaultValue as IfAnyOrNever<R, string, R>;
       }
     }
 
     // Otherwise, call the original `t` method from I18nService
     key = `${config.i18n.translationFilename}.${key}` as P;
+
     return super.t<P, R>(key, options);
   }
 
-  refreshDynamicTranslations(translations: Translation[]) {
+  refreshDynamicTranslations(
+    translations: Pick<TranslationOrmEntity, 'str' | 'translations'>[],
+  ) {
     this.dynamicTranslations = translations.reduce((acc, curr) => {
-      const { str, translations } = curr;
-      Object.entries(translations).forEach(([lang, t]) => {
+      const { str, translations: records } = curr;
+      Object.entries(records).forEach(([lang, t]) => {
         acc[lang] = acc[lang] || {};
         acc[lang][str] = t;
       });

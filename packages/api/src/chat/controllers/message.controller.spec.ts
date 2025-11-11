@@ -4,144 +4,186 @@
  * Full terms: see LICENSE.md.
  */
 
-import { User } from '@/user/schemas/user.schema';
-import { UserService } from '@/user/services/user.service';
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { ChannelService } from '@/channel/channel.service';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageRepository } from '@/chat/repositories/message.repository';
+import { MessageService } from '@/chat/services/message.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
-  installMessageFixtures,
+  installMessageFixturesTypeOrm,
   messageFixtures,
 } from '@/utils/test/fixtures/message';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Message } from '../schemas/message.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
-import { MessageService } from '../services/message.service';
-import { SubscriberService } from '../services/subscriber.service';
+import { Message, MessageFull } from '../dto/message.dto';
 
 import { MessageController } from './message.controller';
 
-describe('MessageController', () => {
+describe('MessageController (TypeORM)', () => {
+  let module: TestingModule;
   let messageController: MessageController;
   let messageService: MessageService;
-  let subscriberService: SubscriberService;
-  let userService: UserService;
-  let sender: Subscriber;
-  let recipient: Subscriber;
-  let user: User;
-  let message: Message;
-  let allMessages: Message[];
-  let allUsers: User[];
-  let allSubscribers: Subscriber[];
+
+  let totalMessages: number;
+  let plainMessages: Message[];
+  let populatedMessages: MessageFull[];
+  let referencePlain: Message;
+  let referencePopulated: MessageFull;
+
+  const subscriberServiceMock: Partial<SubscriberService> = {
+    findOne: jest.fn(),
+    findOneAndPopulate: jest.fn(),
+  };
+  const channelServiceMock: Partial<ChannelService> = {
+    findChannel: jest.fn(),
+    getChannelHandler: jest.fn(),
+  };
+  const websocketGatewayMock: Partial<WebsocketGateway> = {
+    joinNotificationSockets: jest.fn(),
+  };
+  const defaultOrder = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [MessageController],
-      imports: [rootMongooseTestModule(installMessageFixtures)],
-      providers: [UserService],
-    });
-    [messageService, userService, subscriberService, messageController] =
-      await getMocks([
+      providers: [
         MessageService,
-        UserService,
-        SubscriberService,
-        MessageController,
-      ]);
-    message = (await messageService.findOne({ mid: 'mid-1' }))!;
-    sender = (await subscriberService.findOne(message.sender!))!;
-    recipient = (await subscriberService.findOne(message.recipient!))!;
-    user = (await userService.findOne(message.sentBy!))!;
-    allSubscribers = await subscriberService.findAll();
-    allUsers = await userService.findAll();
-    allMessages = await messageService.findAll();
+        MessageRepository,
+        {
+          provide: SubscriberService,
+          useValue: subscriberServiceMock,
+        },
+        {
+          provide: ChannelService,
+          useValue: channelServiceMock,
+        },
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
+        },
+      ],
+      typeorm: {
+        entities: [
+          MessageOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          ConversationOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installMessageFixturesTypeOrm,
+      },
+    });
+
+    module = testing.module;
+
+    [messageController, messageService] = await testing.getMocks([
+      MessageController,
+      MessageService,
+    ]);
+
+    totalMessages = await messageService.count();
+    plainMessages = await messageService.find(defaultOrder);
+    populatedMessages = await messageService.findAndPopulate(defaultOrder);
+
+    const targetMid = messageFixtures[0]?.mid ?? null;
+
+    referencePlain =
+      plainMessages.find((message) => message.mid === targetMid) ??
+      plainMessages[0];
+
+    referencePopulated =
+      populatedMessages.find((message) => message.mid === targetMid) ??
+      populatedMessages[0];
+
+    if (!referencePlain || !referencePopulated) {
+      throw new Error('Expected message fixtures to seed at least one message');
+    }
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('count', () => {
     it('should count messages', async () => {
-      jest.spyOn(messageService, 'count');
+      const countSpy = jest.spyOn(messageService, 'count');
       const result = await messageController.filterCount();
 
-      expect(messageService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: messageFixtures.length });
+      expect(countSpy).toHaveBeenCalledWith({});
+      expect(result).toEqual({ count: totalMessages });
     });
   });
 
   describe('findOne', () => {
-    it('should find message by id, and populate its corresponding sender and recipient', async () => {
-      jest.spyOn(messageService, 'findOneAndPopulate');
-      const result = await messageController.findOne(message.id, [
+    it('should find message by id with populated relations', async () => {
+      const populateSpy = jest.spyOn(messageService, 'findOneAndPopulate');
+      const result = await messageController.findOne(referencePlain.id, [
         'sender',
         'recipient',
+        'sentBy',
       ]);
 
-      expect(messageService.findOneAndPopulate).toHaveBeenCalledWith(
-        message.id,
-      );
-      expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
-        sender,
-        recipient,
-        sentBy: user.id,
-      });
+      expect(populateSpy).toHaveBeenCalledWith(referencePlain.id);
+      expect(result).toEqualPayload(referencePopulated);
     });
-    it('should find message by id', async () => {
-      jest.spyOn(messageService, 'findOne');
-      const result = await messageController.findOne(message.id, []);
 
-      expect(messageService.findOne).toHaveBeenCalledWith(message.id);
-      expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
-        sender: sender.id,
-        recipient: recipient.id,
-        sentBy: user.id,
-      });
+    it('should find message by id without populating relations', async () => {
+      const findSpy = jest.spyOn(messageService, 'findOne');
+      const result = await messageController.findOne(referencePlain.id, []);
+
+      expect(findSpy).toHaveBeenCalledWith(referencePlain.id);
+      expect(result).toEqualPayload(referencePlain);
     });
   });
 
   describe('findPage', () => {
-    const pageQuery = getPageQuery<Message>();
-    it('should find messages', async () => {
-      jest.spyOn(messageService, 'find');
-      const result = await messageController.findPage(pageQuery, [], {});
-      const messagesWithSenderAndRecipient = allMessages.map((message) => ({
-        ...message,
-        sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
-        recipient: allSubscribers.find(({ id }) => id === message.recipient)
-          ?.id,
-        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
-      }));
+    it('should find messages without populating relations when none requested', async () => {
+      const findSpy = jest.spyOn(messageService, 'find');
+      const result = await messageController.findPage([], defaultOrder);
 
-      expect(messageService.find).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(messagesWithSenderAndRecipient);
+      expect(findSpy).toHaveBeenCalledWith(defaultOrder);
+      expect(result).toEqualPayload(plainMessages);
     });
 
-    it('should find messages, and foreach message populate the corresponding sender and recipient', async () => {
-      jest.spyOn(messageService, 'findAndPopulate');
+    it('should find messages and populate requested relations', async () => {
+      const populateSpy = jest.spyOn(messageService, 'findAndPopulate');
       const result = await messageController.findPage(
-        pageQuery,
-        ['sender', 'recipient'],
-        {},
+        ['sender', 'recipient', 'sentBy'],
+        defaultOrder,
       );
-      const messages = allMessages.map((message) => ({
-        ...message,
-        sender: allSubscribers.find(({ id }) => id === message.sender),
-        recipient: allSubscribers.find(({ id }) => id === message.recipient),
-        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
-      }));
 
-      expect(messageService.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
-      expect(result).toEqualPayload(messages);
+      expect(populateSpy).toHaveBeenCalledWith(defaultOrder);
+      expect(result).toEqualPayload(populatedMessages);
     });
   });
 });

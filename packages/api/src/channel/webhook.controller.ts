@@ -38,6 +38,7 @@ export class WebhookController {
     @Req() req: Request,
   ) {
     this.logger.log('Channel download request: ', channel, name);
+
     return await this.channelService.download(channel, token, req);
   }
 
@@ -61,6 +62,7 @@ export class WebhookController {
     @Res() res: Response,
   ): Promise<any> {
     this.logger.log('Channel notification : ', req.method, channel);
+
     return await this.channelService.handle(channel, req, res);
   }
 
@@ -84,6 +86,7 @@ export class WebhookController {
     @Res() res: Response,
   ): Promise<void> {
     this.logger.log('Channel notification : ', req.method, channel);
+
     return await this.channelService.handle(channel, req, res);
   }
 

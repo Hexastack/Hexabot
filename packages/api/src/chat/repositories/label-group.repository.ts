@@ -5,53 +5,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { LabelGroupDto } from '../dto/label-group.dto';
-import { LabelGroup } from '../schemas/label-group.schema';
-import { LabelService } from '../services/label.service';
+import {
+  LabelGroup,
+  LabelGroupDtoConfig,
+  LabelGroupFull,
+  LabelGroupTransformerDto,
+} from '../dto/label-group.dto';
+import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 
 @Injectable()
-export class LabelGroupRepository extends BaseRepository<
-  LabelGroup,
-  never,
-  never,
-  LabelGroupDto
+export class LabelGroupRepository extends BaseOrmRepository<
+  LabelGroupOrmEntity,
+  LabelGroupTransformerDto,
+  LabelGroupDtoConfig
 > {
   constructor(
-    @InjectModel(LabelGroup.name) readonly model: Model<LabelGroup>,
-    private readonly labelService: LabelService,
+    @InjectRepository(LabelGroupOrmEntity)
+    repository: Repository<LabelGroupOrmEntity>,
   ) {
-    super(model, LabelGroup);
-  }
-
-  /**
-   * Reset all related labels group to `null` to ensure consistency.
-   *
-   * @param query - The delete query.
-   * @param criteria - The filter criteria for finding groups to delete.
-   */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<LabelGroup, any, any>,
-      unknown,
-      LabelGroup,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<LabelGroup>,
-  ) {
-    const groups = await this.find(criteria);
-
-    await this.labelService.updateMany(
-      {
-        group: { $in: groups.map(({ id }) => id) },
-      },
-      { group: null },
-    );
+    super(repository, ['labels'], {
+      PlainCls: LabelGroup,
+      FullCls: LabelGroupFull,
+    });
   }
 }

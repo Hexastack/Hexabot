@@ -6,13 +6,19 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import { DummyDtoConfig, DummyTransformerDto } from '../dto/dummy.dto';
+import { DummyOrmEntity } from '../entities/dummy.entity';
 import { DummyRepository } from '../repositories/dummy.repository';
-import { Dummy } from '../schemas/dummy.schema';
 
 @Injectable()
-export class DummyService extends BaseService<Dummy> {
+export class DummyService extends BaseOrmService<
+  DummyOrmEntity,
+  DummyTransformerDto,
+  DummyDtoConfig,
+  DummyRepository
+> {
   constructor(readonly repository: DummyRepository) {
     super(repository);
   }

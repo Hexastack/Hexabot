@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnyMessage } from '@/chat/schemas/types/message';
+import { AnyMessage } from '@/chat/types/message';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 

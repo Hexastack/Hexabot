@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { ButtonType } from '@/chat/schemas/types/button';
+import { ButtonType } from '@/chat/types/button';
 import {
   FileType,
   OutgoingMessageFormat,
@@ -19,8 +19,8 @@ import {
   StdOutgoingListMessage,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/schemas/types/message';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 
 export const textMessage: StdOutgoingTextMessage = {
   text: 'Hello World',
@@ -80,24 +80,28 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
   ],
 };
 
-const attachment: Attachment = {
-  id: '1'.repeat(24),
-  name: 'attachment.jpg',
-  type: 'image/jpeg',
-  size: 3539,
-  location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
-  channel: {
-    ['any-channel']: {
-      id: 'any-channel-attachment-id',
+const MOCK_ATTACHMENT_ID = '11111111-1111-4111-8111-111111111111';
+const attachment: AttachmentOrmEntity = Object.assign(
+  new AttachmentOrmEntity(),
+  {
+    id: MOCK_ATTACHMENT_ID,
+    name: 'attachment.jpg',
+    type: 'image/jpeg',
+    size: 3539,
+    location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
+    channel: {
+      ['any-channel']: {
+        id: 'any-channel-attachment-id',
+      },
     },
+    resourceRef: AttachmentResourceRef.BlockAttachment,
+    access: AttachmentAccess.Public,
+    createdByRef: AttachmentCreatedByRef.User,
+    createdBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
-  resourceRef: AttachmentResourceRef.BlockAttachment,
-  access: AttachmentAccess.Public,
-  createdByRef: AttachmentCreatedByRef.User,
-  createdBy: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+);
 
 export const contentMessage: StdOutgoingListMessage = {
   options: {

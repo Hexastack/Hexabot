@@ -17,35 +17,33 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 import { Format } from '@/utils/types/format.types';
 
-import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
 import {
   NlpValue,
-  NlpValueFull,
-  NlpValuePopulate,
-  NlpValueStub,
-} from '../schemas/nlp-value.schema';
+  NlpValueCreateDto,
+  NlpValueDtoConfig,
+  NlpValueTransformerDto,
+  NlpValueUpdateDto,
+} from '../dto/nlp-value.dto';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
 @Controller('nlpvalue')
-export class NlpValueController extends BaseController<
-  NlpValue,
-  NlpValueStub,
-  NlpValuePopulate,
-  NlpValueFull
+export class NlpValueController extends BaseOrmController<
+  NlpValueOrmEntity,
+  NlpValueTransformerDto,
+  NlpValueDtoConfig
 > {
   constructor(
-    private readonly nlpValueService: NlpValueService,
+    protected readonly nlpValueService: NlpValueService,
     private readonly nlpEntityService: NlpEntityService,
   ) {
     super(nlpValueService);
@@ -65,17 +63,6 @@ export class NlpValueController extends BaseController<
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = createNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
-      : null;
-
-    this.validate({
-      dto: createNlpValueDto,
-      allowedIds: {
-        entity: nlpEntity?.id,
-      },
-    });
-
     return await this.nlpValueService.create(createNlpValueDto);
   }
 
@@ -89,13 +76,13 @@ export class NlpValueController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<NlpValue>({
-        allowedFields: ['entity', 'value', 'doc'],
+      new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
+        allowedFields: ['entity.id', 'value', 'doc'],
       }),
     )
-    filters?: TFilterQuery<NlpValue>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ) {
-    return await this.count(filters);
+    return await this.count(options);
   }
 
   /**
@@ -113,14 +100,15 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const result = this.canPopulate(populate)
       ? await this.nlpValueService.findOneAndPopulate(id)
       : await this.nlpValueService.findOne(id);
-    if (!doc) {
+    if (!result) {
       this.logger.warn(`Unable to find NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
     }
-    return doc;
+
+    return result;
   }
 
   /**
@@ -128,27 +116,25 @@ export class NlpValueController extends BaseController<
    *
    * Supports filtering, pagination, and optional population of related entities.
    *
-   * @param pageQuery - The pagination query parameters.
    * @param populate - An array of related entities to populate.
-   * @param filters - Filters to apply when retrieving the NLP values.
+   * @param options - TypeORM find options for filtering, sorting, and pagination.
    *
    * @returns A promise resolving to a paginated list of NLP values with NLP Samples count.
    */
   @Get()
   async findWithCount(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<NlpValue>({
-        allowedFields: ['entity', 'value', 'doc'],
+      new TypeOrmSearchFilterPipe<NlpValueOrmEntity>({
+        allowedFields: ['entity.id', 'value', 'doc'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<NlpValue>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ) {
     return await this.nlpValueService.findWithCount(
       this.canPopulate(populate) ? Format.FULL : Format.STUB,
-      pageQuery,
-      filters,
+      options,
     );
   }
 
@@ -168,17 +154,6 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const nlpEntity = updateNlpValueDto.entity
-      ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
-      : null;
-
-    this.validate({
-      dto: updateNlpValueDto,
-      allowedIds: {
-        entity: nlpEntity?.id,
-      },
-    });
-
     return await this.nlpValueService.updateOne(id, updateNlpValueDto);
   }
 
@@ -195,11 +170,12 @@ export class NlpValueController extends BaseController<
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const result = await this.nlpValueService.deleteCascadeOne(id);
+    const result = await this.nlpValueService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -216,7 +192,7 @@ export class NlpValueController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.nlpValueService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -225,6 +201,7 @@ export class NlpValueController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted NLP values with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

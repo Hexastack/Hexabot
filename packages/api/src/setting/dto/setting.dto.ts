@@ -5,16 +5,60 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
 
-import { SettingType } from '../schemas/types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+import { SettingType } from '../types';
+
+@Exclude()
+export class SettingStub extends BaseStub {
+  @Expose()
+  group!: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.options || undefined)
+  subgroup?: string;
+
+  @Expose()
+  label!: string;
+
+  @Expose()
+  type!: SettingType;
+
+  @Expose()
+  value!: null | string | number | boolean | string[] | Record<string, any>;
+
+  @Expose()
+  @Transform(({ obj }) => obj.options || undefined)
+  options?: string[];
+
+  @Expose()
+  @Transform(({ obj }) => obj.config || undefined)
+  config?: Record<string, any>;
+
+  @Expose()
+  weight?: number;
+
+  @Expose()
+  translatable?: boolean;
+}
+
+@Exclude()
+export class Setting extends SettingStub {}
 
 export class SettingCreateDto {
   @ApiProperty({ description: 'Setting group', type: String })
@@ -69,7 +113,8 @@ export class SettingCreateDto {
       'Defines the display order of the setting in the user interface',
     type: Number,
   })
-  weight: number;
+  @IsOptional()
+  weight?: number;
 
   @ApiPropertyOptional({
     description: 'Indicates whether this setting supports translation',
@@ -82,5 +127,24 @@ export class SettingCreateDto {
 
 export class SettingUpdateDto {
   @ApiProperty({ description: 'value of the setting' })
+  @IsDefined()
   value: null | string | number | boolean | string[] | Record<string, any>;
+
+  @ApiPropertyOptional({
+    description:
+      'Defines the display order of the setting in the user interface',
+    type: Number,
+  })
+  @IsOptional()
+  weight?: number;
 }
+
+export type SettingTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Setting;
+  FullCls: typeof Setting;
+}>;
+
+export type SettingDtoConfig = DtoActionConfig<{
+  create: SettingCreateDto;
+  update: SettingUpdateDto;
+}>;

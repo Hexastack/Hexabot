@@ -16,25 +16,29 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { FindAllOptions } from '@/utils/generics/base-orm.repository';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { MenuCreateDto, MenuQueryDto } from '../dto/menu.dto';
-import { Menu, MenuFull, MenuPopulate, MenuStub } from '../schemas/menu.schema';
+import {
+  Menu,
+  MenuCreateDto,
+  MenuDtoConfig,
+  MenuTransformerDto,
+  MenuUpdateDto,
+} from '../dto/menu.dto';
+import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 
 @Controller('menu')
-export class MenuController extends BaseController<
-  Menu,
-  MenuStub,
-  MenuPopulate,
-  MenuFull
+export class MenuController extends BaseOrmController<
+  MenuOrmEntity,
+  MenuTransformerDto,
+  MenuDtoConfig
 > {
-  constructor(private readonly menuService: MenuService) {
+  constructor(protected readonly menuService: MenuService) {
     super(menuService);
   }
 
@@ -47,26 +51,33 @@ export class MenuController extends BaseController<
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<Menu>,
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],
+      }),
+    )
+    options?: FindManyOptions<MenuOrmEntity>,
   ) {
-    return await this.count(filters);
+    return super.count(options);
   }
 
   /**
-   * Retrieves a paginated list of menu items.
+   * Retrieves menu items.
    *
-   * Fetches a paginated set of menus based on query parameters and search filters.
-   *
-   * @returns A promise that resolves to the paginated list of menu items.
+   * If pagination parameters are provided, returns a paginated list.
+   * Otherwise, applies filters when present or returns the whole collection.
    */
   @Get()
-  async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Menu>,
-    @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<Menu>,
+  async find(
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<MenuOrmEntity>,
   ) {
-    return await this.menuService.find(filters, pageQuery);
+    return await this.menuService.find(options);
   }
 
   /**
@@ -79,15 +90,7 @@ export class MenuController extends BaseController<
    * @returns A promise that resolves to the created menu item.
    */
   @Post()
-  async create(@Body() body: MenuCreateDto) {
-    this.validate({
-      dto: body,
-      allowedIds: {
-        parent: body?.parent
-          ? (await this.menuService.findOne(body.parent))?.id
-          : undefined,
-      },
-    });
+  async create(@Body() body: MenuCreateDto): Promise<Menu> {
     return await this.menuService.create(body);
   }
 
@@ -101,9 +104,16 @@ export class MenuController extends BaseController<
    * @returns A promise that resolves to an array of menu items.
    */
   @Get()
-  async findAll(@Query() query?: MenuQueryDto) {
-    if (!query) return await this.menuService.findAll();
-    return await this.menuService.find(query);
+  async findAll(
+    @Query(
+      new TypeOrmSearchFilterPipe<MenuOrmEntity>({
+        allowedFields: [],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindAllOptions<MenuOrmEntity>,
+  ) {
+    return await this.menuService.findAll(options);
   }
 
   /**
@@ -128,13 +138,14 @@ export class MenuController extends BaseController<
    * @returns A promise that resolves to the menu item if found, or throws a `NotFoundException`.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<Menu> {
     try {
       const result = await this.menuService.findOne(id);
       if (!result) {
         this.logger.warn(`Unable to find menu with id: ${id}`);
         throw new NotFoundException(`Menu with id: ${id} not found`);
       }
+
       return result;
     } catch (e) {
       this.logger.error(e);
@@ -154,10 +165,13 @@ export class MenuController extends BaseController<
    */
   @Patch(':id')
   async updateOne(
-    @Body() body: MenuCreateDto,
+    @Body() body: MenuUpdateDto,
     @Param('id') id: string,
   ): Promise<Menu> {
-    if (!id) return await this.create(body);
+    if (!id) {
+      return await this.create(body as MenuCreateDto);
+    }
+
     return await this.menuService.updateOne(id, body);
   }
 
@@ -173,11 +187,12 @@ export class MenuController extends BaseController<
   @Delete(':id')
   async delete(@Param('id') id: string) {
     try {
-      const deletedCount = await this.menuService.deepDelete(id);
-      if (deletedCount == 0) {
+      const result = await this.menuService.deleteOne(id);
+      if (!result.deletedCount) {
         this.logger.warn(`Unable to delete menu with id: ${id}`);
         throw new NotFoundException();
       }
+
       return '';
     } catch (e) {
       this.logger.error(e);

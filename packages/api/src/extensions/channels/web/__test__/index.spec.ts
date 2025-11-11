@@ -5,8 +5,11 @@
  */
 
 import { JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   attachmentMessage,
   buttonsMessage,
@@ -14,17 +17,28 @@ import {
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { SubscriberService } from '@/chat/services/subscriber.service';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
+import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { installMessageFixtures } from '@/utils/test/fixtures/message';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
+import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 
@@ -38,18 +52,28 @@ import {
 } from './data.mock';
 
 describe('WebChannelHandler', () => {
+  let module: TestingModule;
   let subscriberService: SubscriberService;
   let handler: WebChannelHandler;
 
+  const menuServiceMock = {
+    getTree: jest.fn().mockResolvedValue([]),
+  } as jest.Mocked<Pick<MenuService, 'getTree'>>;
+  const attachmentServiceMock = {
+    findOne: jest.fn(),
+    store: jest.fn(),
+    create: jest.fn(),
+  } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
+  const websocketGatewayMock = {
+    broadcast: jest.fn(),
+    joinNotificationSockets: jest.fn(),
+  } as jest.Mocked<
+    Pick<WebsocketGateway, 'broadcast' | 'joinNotificationSockets'>
+  >;
+
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['LabelModel', 'UserModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installMessageFixtures();
-        }),
-      ],
       providers: [
         JwtService,
         WebChannelHandler,
@@ -59,9 +83,44 @@ describe('WebChannelHandler', () => {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
+        {
+          provide: MenuService,
+          useValue: menuServiceMock,
+        },
+        {
+          provide: AttachmentService,
+          useValue: attachmentServiceMock,
+        },
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
+        },
       ],
+      typeorm: {
+        entities: [
+          AttachmentOrmEntity,
+          MessageOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          MenuOrmEntity,
+        ],
+        fixtures: [
+          installLabelGroupFixturesTypeOrm,
+          installMessageFixturesTypeOrm,
+        ],
+      },
     });
-    [subscriberService, handler] = await getMocks([
+
+    module = testing.module;
+
+    [subscriberService, handler] = await testing.getMocks([
       SubscriberService,
       WebChannelHandler,
     ]);
@@ -73,7 +132,10 @@ describe('WebChannelHandler', () => {
 
   afterAll(async () => {
     jest.restoreAllMocks();
-    await closeInMongodConnection();
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
   });
 
   it('should have correct name', () => {
@@ -88,7 +150,6 @@ describe('WebChannelHandler', () => {
       },
       method: 'GET',
     } as unknown as Request;
-
     const res = {
       set: jest.fn(),
     } as any;
@@ -179,7 +240,6 @@ describe('WebChannelHandler', () => {
       headers: { 'user-agent': 'browser' },
       user: {},
     } as any as Request;
-
     const generatedId = 'web-test';
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -205,6 +265,7 @@ describe('WebChannelHandler', () => {
     };
     const subscriberAttrs = Object.keys(expectedAttrs).reduce((acc, curr) => {
       acc[curr] = subscriber[curr];
+
       return acc;
     }, {});
     expect(subscriberAttrs).toEqual(expectedAttrs);
@@ -256,6 +317,7 @@ describe('WebChannelHandler', () => {
     const res = {
       status: (code: number) => {
         expect(code).toEqual(200);
+
         return res;
       },
       json: (payload: any) => {

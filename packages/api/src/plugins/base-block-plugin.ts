@@ -8,9 +8,9 @@ import path from 'path';
 
 import { Injectable } from '@nestjs/common';
 
-import { Block, BlockFull } from '@/chat/schemas/block.schema';
-import { Context } from '@/chat/schemas/types/context';
-import { StdOutgoingEnvelope } from '@/chat/schemas/types/message';
+import { Block, BlockFull } from '@/chat/dto/block.dto';
+import { Context } from '@/chat/types/context';
+import { StdOutgoingEnvelope } from '@/chat/types/message';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginService } from './plugins.service';

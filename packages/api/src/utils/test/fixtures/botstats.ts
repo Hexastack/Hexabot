@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { BotStatsCreateDto } from '@/analytics/dto/bot-stats.dto';
 import {
-  BotStatsModel,
+  BotStatsOrmEntity,
   BotStatsType,
-} from '@/analytics/schemas/bot-stats.schema';
+} from '@/analytics/entities/bot-stats.entity';
 
 export const botstatsFixtures: BotStatsCreateDto[] = [
   {
@@ -57,7 +57,10 @@ export const botstatsFixtures: BotStatsCreateDto[] = [
   },
 ];
 
-export const installBotStatsFixtures = async () => {
-  const BotStats = mongoose.model(BotStatsModel.name, BotStatsModel.schema);
-  return await BotStats.insertMany(botstatsFixtures);
+export const installBotStatsFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(BotStatsOrmEntity);
+  const entities = repository.create(botstatsFixtures);
+  await repository.save(entities);
 };

@@ -5,315 +5,210 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { plainToClass } from 'class-transformer';
+import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import {
-  Aggregate,
-  Document,
-  Model,
-  PipelineStage,
-  Query,
-  Types,
-} from 'mongoose';
+  DeepPartial,
+  FindManyOptions,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery, TProjectionType } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { TNlpSampleDto } from '../dto/nlp-sample.dto';
-import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
+import { NlpSampleState } from '..//types';
 import {
-  NLP_SAMPLE_POPULATE,
   NlpSample,
-  NlpSampleDocument,
   NlpSampleFull,
-  NlpSamplePopulate,
-} from '../schemas/nlp-sample.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
+  NlpSampleTransformerDto,
+  TNlpSampleDto,
+} from '../dto/nlp-sample.dto';
+import { NlpValue } from '../dto/nlp-value.dto';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
 
 @Injectable()
-export class NlpSampleRepository extends BaseRepository<
-  NlpSample,
-  NlpSamplePopulate,
-  NlpSampleFull,
+export class NlpSampleRepository extends BaseOrmRepository<
+  NlpSampleOrmEntity,
+  NlpSampleTransformerDto,
   TNlpSampleDto
 > {
+  /**
+   * Initializes the repository with default relations and transformers.
+   * @param repository The TypeORM repository for `NlpSampleOrmEntity`.
+   */
   constructor(
-    @InjectModel(NlpSample.name) readonly model: Model<NlpSample>,
-    @InjectModel(NlpSampleEntity.name)
-    private readonly nlpSampleEntityModel: Model<NlpSampleEntity>,
+    @InjectRepository(NlpSampleOrmEntity)
+    repository: Repository<NlpSampleOrmEntity>,
   ) {
-    super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
+    super(repository, ['language', 'entities'], {
+      PlainCls: NlpSample,
+      FullCls: NlpSampleFull,
+    });
   }
 
   /**
-   * Normalize the filter query.
-   *
-   * @param filters - The filters to normalize.
-   * @returns The normalized filters.
+   * Finds samples that match the provided entity/value pairs.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Samples transformed into `NlpSample` instances.
    */
-  private normalizeFilters(
-    filters: TFilterQuery<NlpSample>,
-  ): TFilterQuery<NlpSample> {
-    if (filters?.$and) {
-      return {
-        ...filters,
-        $and: filters.$and.map((condition) => {
-          // @todo: think of a better way to handle language to objectId conversion
-          // This is a workaround for the fact that language is stored as an ObjectId
-          // in the database, but we want to filter by its string representation.
-          if ('language' in condition && condition.language) {
-            return {
-              ...condition,
-              language: new Types.ObjectId(condition.language as string),
-            };
-          }
-          return condition;
-        }),
-      };
-    }
-    return filters;
-  }
-
-  /**
-   * Build the aggregation stages that restrict a *nlpSampleEntities* collection
-   * to links which:
-   * 1. Reference all of the supplied `values`, and
-   * 2. Whose document satisfies the optional `filters`.
-   *
-   * @param criterias               Object with:
-   * @param criterias.filters       Extra filters to be applied on *nlpsamples*.
-   * @param criterias.entities      Entity documents whose IDs should match `entity`.
-   * @param criterias.values        Value documents whose IDs should match `value`.
-   * @returns Array of aggregation `PipelineStage`s ready to be concatenated
-   *          into a larger pipeline.
-   */
-  buildFindByEntitiesStages({
-    filters,
-    values,
-  }: {
-    filters: TFilterQuery<NlpSample>;
+  async findByEntities(criterias: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
-  }): PipelineStage[] {
-    const requiredPairs = values.map(({ id, entity }) => ({
-      entity: new Types.ObjectId(entity),
-      value: new Types.ObjectId(id),
-    }));
+  }): Promise<NlpSample[]> {
+    const entities = await this.buildFindByEntitiesQuery(criterias).getMany();
 
-    const normalizedFilters = this.normalizeFilters(filters);
-
-    return [
-      {
-        $match: {
-          ...normalizedFilters,
-        },
-      },
-
-      // Fetch the entities for each sample
-      {
-        $lookup: {
-          from: 'nlpsampleentities',
-          localField: '_id', // nlpsamples._id
-          foreignField: 'sample', // nlpsampleentities.sample
-          as: 'sampleentities',
-          pipeline: [
-            {
-              $match: {
-                $or: requiredPairs,
-              },
-            },
-          ],
-        },
-      },
-
-      // Filter out empty or less matching
-      {
-        $match: {
-          $expr: {
-            $gte: [{ $size: '$sampleentities' }, requiredPairs.length],
-          },
-        },
-      },
-
-      // Collapse each link into an { entity, value } object
-      {
-        $addFields: {
-          entities: {
-            $ifNull: [
-              {
-                $map: {
-                  input: '$sampleentities',
-                  as: 's',
-                  in: { entity: '$$s.entity', value: '$$s.value' },
-                },
-              },
-              [],
-            ],
-          },
-        },
-      },
-
-      // Keep only the samples whose `entities` array ⊇ `requiredPairs`
-      {
-        $match: {
-          $expr: {
-            $eq: [
-              requiredPairs.length, // target size
-              {
-                $size: {
-                  $setIntersection: ['$entities', requiredPairs],
-                },
-              },
-            ],
-          },
-        },
-      },
-
-      //drop helper array if you don’t need it downstream
-      { $project: { entities: 0, sampleentities: 0 } },
-    ];
-  }
-
-  findByEntitiesAggregation(
-    criterias: {
-      filters: TFilterQuery<NlpSample>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSample>,
-    projection?: TProjectionType<NlpSample>,
-  ): Aggregate<NlpSampleDocument[]> {
-    return this.model.aggregate<NlpSampleDocument>([
-      ...this.buildFindByEntitiesStages(criterias),
-
-      // sort / skip / limit
-      ...this.buildPaginationPipelineStages(page),
-
-      // projection
-      ...(projection
-        ? [
-            {
-              $project:
-                typeof projection === 'string'
-                  ? { [projection]: 1 }
-                  : projection,
-            },
-          ]
-        : []),
-    ]);
-  }
-
-  async findByEntities(
-    criterias: {
-      filters: TFilterQuery<NlpSample>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSample>,
-    projection?: TProjectionType<NlpSample>,
-  ): Promise<NlpSample[]> {
-    const aggregation = this.findByEntitiesAggregation(
-      criterias,
-      page,
-      projection,
-    );
-
-    const resultSet = await aggregation.exec();
-    return resultSet.map((doc) =>
-      plainToClass(NlpSample, doc, this.transformOpts),
-    );
+    return entities.map((entity) => plainToInstance(NlpSample, entity));
   }
 
   /**
-   * Find NLP samples by entities and populate them with their related data.
-   *
-   * @param criterias - Criteria containing filters and values to match.
-   * @param page - Optional pagination parameters.
-   * @param projection - Optional projection to limit fields returned.
-   * @returns Promise resolving to an array of populated NlpSampleFull objects.
+   * Finds samples that match the provided entity/value pairs and loads relations.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Samples transformed into `NlpSampleFull` instances.
    */
-  async findByEntitiesAndPopulate(
-    criterias: {
-      filters: TFilterQuery<NlpSample>;
-      values: NlpValue[];
-    },
-    page?: PageQueryDto<NlpSample>,
-    projection?: TProjectionType<NlpSample>,
-  ): Promise<NlpSampleFull[]> {
-    const aggregation = this.findByEntitiesAggregation(
-      criterias,
-      page,
-      projection,
-    );
-
-    const docs = await aggregation.exec();
-
-    const populatedResultSet = await this.populate(docs);
-
-    return populatedResultSet.map((doc) =>
-      plainToClass(NlpSampleFull, doc, this.transformOpts),
-    );
-  }
-
-  /**
-   * Build an aggregation pipeline that counts NLP samples satisfying:
-   * – the extra `filters`  (passed to `$match` later on), and
-   * – All of the supplied `entities` / `values`.
-   *
-   * @param criterias `{ filters, entities, values }`
-   * @returns Un-executed aggregation cursor.
-   */
-  countByEntitiesAggregation(criterias: {
-    filters: TFilterQuery<NlpSample>;
+  async findByEntitiesAndPopulate(criterias: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
-  }): Aggregate<{ count: number }[]> {
-    return this.model.aggregate<{ count: number }>([
-      ...this.buildFindByEntitiesStages(criterias),
+  }): Promise<NlpSampleFull[]> {
+    const entities = await this.buildFindByEntitiesQuery(criterias)
+      .leftJoinAndSelect('sample.language', 'language')
+      .leftJoinAndSelect('sample.entities', 'sampleEntities')
+      .leftJoinAndSelect('sampleEntities.entity', 'entity')
+      .leftJoinAndSelect('sampleEntities.value', 'value')
+      .getMany();
 
-      //  Final count
-      { $count: 'count' },
-    ]);
+    return entities.map((entity) => plainToInstance(NlpSampleFull, entity));
   }
 
   /**
-   * Returns the count of samples by filters, entities and/or values
-   *
-   * @param criterias `{ filters, entities, values }`
-   * @returns Promise resolving to the count.
+   * Counts samples that match the provided entity/value pairs.
+   * @param criterias Optional query options and the entity/value constraints to apply.
+   * @returns Number of samples that satisfy the constraints.
    */
   async countByEntities(criterias: {
-    filters: TFilterQuery<NlpSample>;
+    options?: FindManyOptions<NlpSampleOrmEntity>;
     values: NlpValue[];
   }): Promise<number> {
-    const aggregation = this.countByEntitiesAggregation(criterias);
+    const qb = this.buildFindByEntitiesQuery(criterias);
 
-    const [result] = await aggregation.exec();
-
-    return result?.count || 0;
+    return await qb.getCount();
   }
 
   /**
-   * Deletes NLP sample entities associated with the provided criteria before deleting the sample itself.
-   *
-   * @param query - The query object used for deletion.
-   * @param criteria - Criteria to identify the sample(s) to delete.
+   * Creates the query builder used to retrieve samples filtered by entity/value pairs.
+   * @param options Optional TypeORM `FindManyOptions` used to refine filtering.
+   * @param values Entity/value constraints to enforce on the query.
+   * @returns Configured query builder that applies the provided constraints.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpSample, any, any>,
-      unknown,
-      NlpSample,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpSample>,
-  ) {
-    if (criteria._id) {
-      await this.nlpSampleEntityModel.deleteMany({
-        sample: criteria._id,
-      });
-    } else {
-      throw new Error(
-        'Attempted to delete a NLP sample using unknown criteria',
-      );
+  private buildFindByEntitiesQuery({
+    options = {},
+    values,
+  }: {
+    options?: FindManyOptions<NlpSampleOrmEntity>;
+    values: NlpValue[];
+  }): SelectQueryBuilder<NlpSampleOrmEntity> {
+    const qb = this.repository.createQueryBuilder('sample');
+    const findOptions: FindManyOptions<NlpSampleOrmEntity> = {};
+    const hasWhere = options.where !== undefined;
+    const hasOrder =
+      options.order !== undefined &&
+      Object.keys(options.order as Record<string, unknown>).length > 0;
+
+    if (hasWhere) {
+      findOptions.where = options.where;
     }
+
+    if (hasOrder) {
+      findOptions.order = options.order;
+    }
+
+    if (Object.keys(findOptions).length > 0) {
+      qb.setFindOptions(findOptions);
+    }
+
+    if (!hasOrder) {
+      qb.addOrderBy('sample.createdAt', 'DESC');
+    }
+
+    if (typeof options?.skip === 'number') {
+      qb.skip(options.skip);
+    }
+
+    if (typeof options?.take === 'number') {
+      qb.take(options.take);
+    }
+
+    this.applyValueConstraints(qb, values);
+
+    return qb;
+  }
+
+  /**
+   * Constrains the query so that each provided value must be present in the sample.
+   * @param qb Query builder to update.
+   * @param values Entity/value pairs used in `EXISTS` subqueries.
+   */
+  private applyValueConstraints(
+    qb: SelectQueryBuilder<NlpSampleOrmEntity>,
+    values: NlpValue[],
+  ): void {
+    values.forEach((value, index) => {
+      qb.andWhere(
+        `EXISTS (SELECT 1 FROM nlp_sample_entities sampleEntity${index} WHERE sampleEntity${index}.sample_id = sample.id AND sampleEntity${index}.entity_id = :entityId${index} AND sampleEntity${index}.value_id = :valueId${index})`,
+        {
+          [`entityId${index}`]: value.entity,
+          [`valueId${index}`]: value.id,
+        },
+      );
+    });
+  }
+
+  /**
+   * Searches for samples containing keywords and optionally filtered by types.
+   * @param keywords Keywords to match within the sample text (case-insensitive).
+   * @param types Optional sample states to limit the search scope.
+   * @returns Samples transformed into `NlpSample` instances.
+   */
+  async findContainingKeywords(
+    keywords: string[],
+    types: NlpSampleState[],
+  ): Promise<NlpSample[]> {
+    if (!keywords.length) {
+      return [];
+    }
+
+    const qb = this.repository.createQueryBuilder('sample');
+
+    if (types.length) {
+      qb.where('sample.type IN (:...types)', { types });
+    }
+
+    const params: Record<string, string> = {};
+    const clauses = keywords.map((keyword, index) => {
+      const param = `keyword${index}`;
+      params[param] = `%${keyword.toLowerCase()}%`;
+
+      return `LOWER(sample.text) LIKE :${param}`;
+    });
+
+    if (clauses.length === 1) {
+      if (types.length) {
+        qb.andWhere(clauses[0], params);
+      } else {
+        qb.where(clauses[0], params);
+      }
+    } else {
+      const combined = clauses.map((c) => `(${c})`).join(' OR ');
+      if (types.length) {
+        qb.andWhere(combined, params);
+      } else {
+        qb.where(combined, params);
+      }
+    }
+
+    const entities = await qb.getMany();
+
+    return entities.map((entity) =>
+      plainToInstance(NlpSample, entity as DeepPartial<NlpSampleOrmEntity>),
+    );
   }
 }

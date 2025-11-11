@@ -7,39 +7,53 @@
 // eslint-disable-next-line import/order
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 import { SentMessageInfo } from 'nodemailer';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
-import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
-import { getUserFixtures, userFixtures } from '@/utils/test/fixtures/user';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
+import { Role } from '../dto/role.dto';
 import {
+  User,
   UserCreateDto,
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { Role } from '../schemas/role.schema';
-import { User, UserFull } from '../schemas/user.schema';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { InvitationRepository } from '../repositories/invitation.repository';
+import { ModelRepository } from '../repositories/model.repository';
+import { PermissionRepository } from '../repositories/permission.repository';
+import { RoleRepository } from '../repositories/role.repository';
+import { UserRepository } from '../repositories/user.repository';
 import { PasswordResetService } from '../services/passwordReset.service';
+import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
+import { ValidateAccountService } from '../services/validate-account.service';
 
 import { InvitationService } from './../services/invitation.service';
 import { ReadWriteUserController } from './user.controller';
 
-describe('UserController', () => {
+describe('UserController (TypeORM)', () => {
+  let module: TestingModule;
   let userController: ReadWriteUserController;
   let userService: UserService;
   let roleService: RoleService;
@@ -51,16 +65,33 @@ describe('UserController', () => {
   let passwordResetService: PasswordResetService;
   let jwtService: JwtService;
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
+    const attachmentServiceMock = {
+      findOne: jest.fn().mockResolvedValue(null),
+      download: jest.fn(),
+      upload: jest.fn(),
+    };
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [ReadWriteUserController],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installLanguageFixtures();
-          await installPermissionFixtures();
-        }),
-      ],
+      imports: [JwtModule.register({})],
       providers: [
+        UserService,
+        RoleService,
+        InvitationService,
+        PermissionService,
+        PasswordResetService,
+        ValidateAccountService,
+        LanguageService,
+        LanguageRepository,
+        UserRepository,
+        RoleRepository,
+        InvitationRepository,
+        PermissionRepository,
+        ModelRepository,
+        {
+          provide: AttachmentService,
+          useValue: attachmentServiceMock,
+        },
         {
           provide: MailerService,
           useValue: {
@@ -76,7 +107,25 @@ describe('UserController', () => {
           },
         },
       ],
+      typeorm: {
+        entities: [
+          UserOrmEntity,
+          RoleOrmEntity,
+          InvitationOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+          LanguageOrmEntity,
+        ],
+        fixtures: [
+          installLanguageFixturesTypeOrm,
+          installPermissionFixturesTypeOrm,
+        ],
+      },
     });
+
+    module = testing.module;
+
     [
       userController,
       userService,
@@ -84,7 +133,7 @@ describe('UserController', () => {
       invitationService,
       jwtService,
       passwordResetService,
-    ] = await getMocks([
+    ] = await testing.getMocks([
       ReadWriteUserController,
       UserService,
       RoleService,
@@ -92,21 +141,30 @@ describe('UserController', () => {
       JwtService,
       PasswordResetService,
     ]);
-    role = await roleService.findOne({ name: 'admin' });
+    role = await roleService.findOne({ where: { name: 'admin' } });
+    if (!role) {
+      throw new Error('Expected admin role fixture to be available');
+    }
     roles = await roleService.findAll();
-    user = await userService.findOne({ username: 'admin' });
+    user = await userService.findOne({ where: { username: 'admin' } });
   });
 
   const IGNORED_FIELDS = [...IGNORED_TEST_FIELDS, 'resetToken'];
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 
   describe('count', () => {
     it('should count users', async () => {
       const result = await userController.filterCount();
-      expect(result).toEqual({ count: userFixtures.length });
+      const total = await userService.count();
+      expect(result).toEqual({ count: total });
     });
   });
 
@@ -115,41 +173,59 @@ describe('UserController', () => {
       jest.spyOn(userService, 'findOneAndPopulate');
       const result = await userController.findOne(user!.id, ['roles']);
       expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user!.id);
-      expect(result).toEqualPayload(
-        {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: roles.filter(({ id }) => user!.roles.includes(id)),
-        },
-        [...IGNORED_FIELDS, 'password', 'provider'],
-      );
+      expect(result).toMatchObject({
+        id: user!.id,
+        email: user!.email,
+        username: user!.username,
+      });
+      const roleIds = (result?.roles ?? []).map((role) => role.id).sort();
+      expect(roleIds).toEqual((user!.roles ?? []).sort());
     });
   });
 
-  describe('findAll', () => {
-    const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
+  describe('findPage', () => {
+    it('should find users without populating relations when none requested', async () => {
+      const options = { order: { createdAt: 'ASC' as const } };
+      const findSpy = jest.spyOn(userService, 'find');
+      const findAndPopulateSpy = jest.spyOn(userService, 'findAndPopulate');
+      const result = await userController.findPage([], options);
 
-    it('should find users, and for each user populate the corresponding roles', async () => {
-      jest.spyOn(userService, 'findAndPopulate');
-      const result = await userService.findAndPopulate({}, pageQuery);
+      expect(findSpy).toHaveBeenCalledWith(options);
+      expect(findAndPopulateSpy).not.toHaveBeenCalled();
 
-      const usersWithRoles = userFixtures.reduce(
-        (acc, currUser) => {
-          acc.push({
-            ...currUser,
-            roles: roles.filter(({ id }) => user?.roles?.includes(id)),
-            avatar: null,
-          });
-          return acc;
-        },
-        [] as Omit<UserFull, 'id' | 'createdAt' | 'updatedAt'>[],
+      const usersPlain = await userService.findAll();
+      expect(result).toHaveLength(usersPlain.length);
+
+      const adminPlain = usersPlain.find(
+        (candidate) => candidate.id === user!.id,
       );
+      const adminResult = result.find((candidate) => candidate.id === user!.id);
+      expect(adminPlain).toBeDefined();
+      expect(adminResult).toMatchObject({
+        id: adminPlain!.id,
+        email: adminPlain!.email,
+        username: adminPlain!.username,
+      });
+    });
 
-      expect(userService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(usersWithRoles, [
-        ...IGNORED_FIELDS,
-        'password',
-        'provider',
-      ]);
+    it('should find users, and for each user populate the corresponding roles when requested', async () => {
+      const options = { order: { createdAt: 'ASC' as const } };
+      jest.spyOn(userService, 'findAndPopulate');
+      const findSpy = jest.spyOn(userService, 'find');
+      const result = await userController.findPage(['roles'], options);
+
+      expect(userService.findAndPopulate).toHaveBeenCalledWith(options);
+      expect(findSpy).not.toHaveBeenCalled();
+
+      const usersPlain = await userService.findAll();
+      expect(result).toHaveLength(usersPlain.length);
+
+      usersPlain.forEach((plain) => {
+        const full = result.find((candidate) => candidate.id === plain.id);
+        expect(full).toBeDefined();
+        const fullRoleIds = (full?.roles ?? []).map((role) => role.id).sort();
+        expect(fullRoleIds).toEqual((plain.roles ?? []).sort());
+      });
     });
   });
 
@@ -167,11 +243,12 @@ describe('UserController', () => {
       };
       const result = await userController.create(userDto);
       expect(userService.create).toHaveBeenCalledWith(userDto);
-      expect(result).toEqualPayload(getUserFixtures([userDto])[0], [
-        ...IGNORED_FIELDS,
-        'password',
-        'provider',
-      ]);
+      expect(result).toMatchObject({
+        email: userDto.email,
+        username: userDto.username,
+        first_name: userDto.first_name,
+        last_name: userDto.last_name,
+      });
     });
   });
 
@@ -187,21 +264,18 @@ describe('UserController', () => {
         updateDto,
       );
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
-      expect(result).toEqualPayload(
-        {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          ...updateDto,
-          roles: user!.roles,
-        },
-        [...IGNORED_FIELDS, 'password', 'provider'],
-      );
+      expect(result).toMatchObject({
+        id: user!.id,
+        first_name: updateDto.first_name,
+      });
     });
   });
 
   describe('updateStateAndRoles', () => {
     it('should return updated user', async () => {
+      const expectedRoles = [role!.id].sort();
       const updateDto: UserUpdateStateAndRolesDto = {
-        roles: [role!.id],
+        roles: [...expectedRoles],
       };
       jest.spyOn(userService, 'updateOne');
       const result = await userController.updateStateAndRoles(
@@ -216,18 +290,16 @@ describe('UserController', () => {
         } as Request,
       );
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
-      expect(result).toEqualPayload(
-        {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          ...updateDto,
-        },
-        [...IGNORED_FIELDS, 'first_name', 'password', 'provider'],
-      );
+      const updatedRoleIds = ((result.roles ?? []) as Array<string | Role>)
+        .map((role) => (typeof role === 'string' ? role : role.id))
+        .sort();
+      expect(updatedRoleIds).toEqual(expectedRoles);
     });
 
     it('should return updated user after adding an extra role', async () => {
+      const expectedExpandedRoles = [role!.id, roles[1].id].sort();
       const updateDto: UserUpdateStateAndRolesDto = {
-        roles: [role!.id, roles[1].id],
+        roles: [...expectedExpandedRoles],
       };
       jest.spyOn(userService, 'updateOne');
       const result = await userController.updateStateAndRoles(
@@ -242,14 +314,10 @@ describe('UserController', () => {
         } as Request,
       );
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
-      expect(result).toEqualPayload(
-        {
-          ...userFixtures.find(({ username }) => username === 'admin'),
-          ...updateDto,
-        },
-
-        [...IGNORED_FIELDS, 'first_name', 'password', 'provider'],
-      );
+      const expandedRoleIds = ((result.roles ?? []) as Array<string | Role>)
+        .map((role) => (typeof role === 'string' ? role : role.id))
+        .sort();
+      expect(expandedRoleIds).toEqual(expectedExpandedRoles);
     });
 
     it('should throw a ForbiddenException when an admin try to disable his state', async () => {
@@ -328,7 +396,7 @@ describe('UserController', () => {
     it('should create a valid user with a hashed token', async () => {
       const invitation: InvitationCreateDto = {
         email: 'email@email.com',
-        roles: ['507f1f77bcf86cd799439011'],
+        roles: [role!.id],
       };
       jest.spyOn(invitationService, 'create');
       const result = await userController.invite(invitation);

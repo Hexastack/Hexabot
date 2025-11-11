@@ -7,34 +7,38 @@
 import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ConversationDto } from '../dto/conversation.dto';
-import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
-import { ConversationRepository } from '../repositories/conversation.repository';
-import { Block, BlockFull } from '../schemas/block.schema';
+import { getDefaultConversationContext } from '../constants/conversation';
+import { Block, BlockFull } from '../dto/block.dto';
 import {
   Conversation,
+  ConversationDtoConfig,
   ConversationFull,
-  ConversationPopulate,
-} from '../schemas/conversation.schema';
-import { OutgoingMessageFormat } from '../schemas/types/message';
-import { Payload } from '../schemas/types/quick-reply';
+  ConversationTransformerDto,
+} from '../dto/conversation.dto';
+import { ConversationOrmEntity } from '../entities/conversation.entity';
+import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
+import { ConversationRepository } from '../repositories/conversation.repository';
+import { OutgoingMessageFormat } from '../types/message';
+import { Payload } from '../types/quick-reply';
 
 import { ContextVarService } from './context-var.service';
 import { SubscriberService } from './subscriber.service';
 
 @Injectable()
-export class ConversationService extends BaseService<
-  Conversation,
-  ConversationPopulate,
-  ConversationFull,
-  ConversationDto
+export class ConversationService extends BaseOrmService<
+  ConversationOrmEntity,
+  ConversationTransformerDto,
+  ConversationDtoConfig,
+  ConversationRepository
 > {
   constructor(
     readonly repository: ConversationRepository,
     private readonly contextVarService: ContextVarService,
     private readonly subscriberService: SubscriberService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -64,15 +68,26 @@ export class ConversationService extends BaseService<
     event: EventWrapper<any, any>,
     shouldCaptureVars: boolean = false,
   ) {
+    const defaultContext = getDefaultConversationContext();
+    if (!convo.context) {
+      convo.context = defaultContext;
+    }
+
     const msgType = event.getMessageType();
     const profile = event.getSender();
 
+    convo.context.vars = convo.context.vars ?? {};
+    convo.context.skip = convo.context.skip ?? {};
+    convo.context.user = convo.context.user ?? defaultContext.user;
+    convo.context.user_location =
+      convo.context.user_location ?? defaultContext.user_location;
+    convo.context.attempt = convo.context.attempt ?? defaultContext.attempt;
+
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getName();
-    convo.context.text = event.getText();
-    convo.context.payload = event.getPayload();
-    convo.context.nlp = event.getNLP();
-    convo.context.vars = convo.context.vars || {};
+    convo.context.text = event.getText() ?? null;
+    convo.context.payload = event.getPayload() ?? null;
+    convo.context.nlp = event.getNLP() ?? null;
 
     const contextVars =
       await this.contextVarService.getContextVarsByBlock(next);
@@ -121,7 +136,6 @@ export class ConversationService extends BaseService<
 
     // Store user infos
     if (profile) {
-      // @ts-expect-error : id needs to remain readonly
       convo.context.user.id = profile.id;
       convo.context.user.first_name = profile.first_name || '';
       convo.context.user.last_name = profile.last_name || '';
@@ -148,9 +162,10 @@ export class ConversationService extends BaseService<
         next.options.content.display === OutgoingMessageFormat.carousel)
     ) {
       if (event.getPayload() === VIEW_MORE_PAYLOAD) {
-        convo.context.skip[next.id] += next.options.content.limit;
+        const currentSkip = convo.context.skip[next.id] ?? 0;
+        convo.context.skip[next.id] =
+          currentSkip + (next.options.content.limit ?? 0);
       } else {
-        convo.context.skip = convo.context.skip ? convo.context.skip : {};
         convo.context.skip[next.id] = 0;
       }
     }
@@ -160,11 +175,9 @@ export class ConversationService extends BaseService<
       const updatedConversation = await this.updateOne(convo.id, {
         context: convo.context,
       });
-
       //TODO: add check if nothing changed don't update
       const criteria =
         typeof convo.sender === 'object' ? convo.sender.id : convo.sender;
-
       // Store permanent context vars at the subscriber level
       const permanentContextVars = Object.entries(contextVars)
         .filter(([, { permanent }]) => permanent)
@@ -172,6 +185,7 @@ export class ConversationService extends BaseService<
           if (cur in convo.context.vars) {
             acc[cur] = convo.context.vars[cur];
           }
+
           return acc;
         }, {});
 

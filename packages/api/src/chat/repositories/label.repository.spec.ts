@@ -4,92 +4,161 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
+import { In } from 'typeorm';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { labelFixtures } from '@/utils/test/fixtures/label';
-import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
-import { getPageQuery } from '@/utils/test/pagination';
-import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { Label, LabelFull } from '../schemas/label.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
 
 import { LabelRepository } from './label.repository';
 import { SubscriberRepository } from './subscriber.repository';
 
-describe('LabelRepository', () => {
+const sortById = <T extends { id?: string }>(row1: T, row2: T) =>
+  (row1.id ?? '').localeCompare(row2.id ?? '');
+
+describe('LabelRepository (TypeORM)', () => {
+  let module: TestingModule;
   let labelRepository: LabelRepository;
-  let labelModel: Model<Label>;
   let subscriberRepository: SubscriberRepository;
-  let users: Subscriber[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installSubscriberFixtures)],
       providers: [LabelRepository, SubscriberRepository],
+      typeorm: {
+        entities: [
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          ConversationOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: installSubscriberFixturesTypeOrm,
+      },
     });
-    [labelRepository, subscriberRepository, labelModel] = await getMocks([
+
+    module = testing.module;
+    [labelRepository, subscriberRepository] = await testing.getMocks([
       LabelRepository,
       SubscriberRepository,
-      getModelToken(Label.name),
     ]);
-    users = await subscriberRepository.findAll();
   });
 
-  afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
-    it('should find one label by id, and populate its users', async () => {
-      jest.spyOn(labelModel, 'findById');
-      const label = (await labelRepository.findOne({
-        name: 'TEST_TITLE_2',
-      })) as Label;
-      const result = (await labelRepository.findOneAndPopulate(
-        label.id,
-      )) as LabelFull;
-
-      expect(labelModel.findById).toHaveBeenCalledWith(label.id, undefined);
-      expect(result).toEqualPayload({
-        ...labelFixtures.find(({ name }) => name === label.name),
-        users,
+    it('should load a label and populate its users', async () => {
+      const label = await labelRepository.findOne({
+        where: { name: 'TEST_TITLE_2' },
       });
+
+      expect(label).not.toBeNull();
+
+      const populated = await labelRepository.findOneAndPopulate(label!.id);
+
+      expect(populated).not.toBeNull();
+      expect(populated!.name).toBe(label!.name);
+      expect(populated!.group ?? null).toBeNull();
+
+      const expectedFixture = labelFixtures.find(
+        ({ name }) => name === label!.name,
+      );
+      expect(expectedFixture).toBeDefined();
+
+      expect(populated).toEqualPayload(expectedFixture!, [
+        ...IGNORED_TEST_FIELDS,
+        'users',
+        'group',
+      ]);
+
+      const subscribers = await subscriberRepository.findAll();
+      const expectedUsers = [...subscribers].sort(sortById);
+      const actualUsers = [...(populated!.users ?? [])].sort(sortById);
+
+      expect(actualUsers).toEqualPayload(expectedUsers);
     });
   });
 
   describe('findAllAndPopulate', () => {
-    it('should find all labels, and foreach label populate its corresponding users', async () => {
-      jest.spyOn(labelModel, 'find');
-      const result = await labelRepository.findAllAndPopulate();
-      const labelsWithUsers = labelFixtures.map((label) => ({
-        ...label,
-        users,
-      }));
+    it('should load every label with populated users', async () => {
+      const populated = await labelRepository.findAllAndPopulate({
+        order: { name: 'asc' },
+      });
 
-      expect(labelModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(labelsWithUsers);
+      expect(populated).toHaveLength(labelFixtures.length);
+
+      const populatedNames = populated.map(({ name }) => name).sort();
+      const expectedNames = labelFixtures.map(({ name }) => name).sort();
+      expect(populatedNames).toEqual(expectedNames);
+
+      const subscribers = await subscriberRepository.findAll();
+      const expectedUsers = [...subscribers].sort(sortById);
+
+      populated.forEach((label) => {
+        expect(label.group ?? null).toBeNull();
+
+        const actualUsers = [...(label.users ?? [])].sort(sortById);
+        expect(actualUsers).toEqualPayload(expectedUsers);
+      });
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should find labels, and foreach label populate its corresponding users', async () => {
-      const pageQuery = getPageQuery<Label>();
-      jest.spyOn(labelModel, 'find');
-      const result = await labelRepository.findAndPopulate({}, pageQuery);
-      const labelsWithUsers = labelFixtures.map((label) => ({
-        ...label,
-        users,
-      }));
+    it('should filter labels and populate matching results', async () => {
+      const targetNames = labelFixtures.slice(0, 2).map(({ name }) => name);
+      const results = await labelRepository.findAndPopulate({
+        where: { name: In(targetNames) },
+      });
 
-      expect(labelModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(labelsWithUsers.sort(sortRowsBy));
+      expect(results).toHaveLength(2);
+
+      const resultNames = results.map(({ name }) => name).sort();
+      expect(resultNames).toEqual([...targetNames].sort());
+
+      const subscribers = await subscriberRepository.findAll();
+      const expectedUsers = [...subscribers].sort(sortById);
+
+      results.forEach((label) => {
+        const fixture = labelFixtures.find(({ name }) => name === label.name);
+        expect(fixture).toBeDefined();
+        expect(label).toEqualPayload(fixture!, [
+          ...IGNORED_TEST_FIELDS,
+          'users',
+          'group',
+        ]);
+
+        const actualUsers = [...(label.users ?? [])].sort(sortById);
+        expect(actualUsers).toEqualPayload(expectedUsers);
+      });
     });
   });
 });

@@ -5,7 +5,7 @@
  */
 
 import { customerLabelsMock } from '@/channel/lib/__test__/label.mock';
-import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
 
 import { modelInstance } from './misc';
 

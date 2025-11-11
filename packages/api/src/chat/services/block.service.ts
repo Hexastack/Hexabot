@@ -5,7 +5,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
@@ -13,47 +12,48 @@ import { ContentService } from '@/cms/services/content.service';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   DEFAULT_BLOCK_SEARCH_LIMIT,
   getDefaultFallbackOptions,
 } from '../constants/block';
-import { BlockDto } from '../dto/block.dto';
-import { EnvelopeFactory } from '../helpers/envelope-factory';
-import { BlockRepository } from '../repositories/block.repository';
 import {
   Block,
+  BlockDtoConfig,
   BlockFull,
-  BlockPopulate,
   BlockStub,
-} from '../schemas/block.schema';
-import { Label } from '../schemas/label.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
-import { Context } from '../schemas/types/context';
+  BlockTransformerDto,
+} from '../dto/block.dto';
+import { Label } from '../dto/label.dto';
+import { Subscriber } from '../dto/subscriber.dto';
+import { BlockOrmEntity } from '../entities/block.entity';
+import { EnvelopeFactory } from '../helpers/envelope-factory';
+import { BlockRepository } from '../repositories/block.repository';
+import { Context } from '../types/context';
 import {
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
-} from '../schemas/types/message';
-import { FallbackOptions } from '../schemas/types/options';
-import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
-import { Payload } from '../schemas/types/quick-reply';
-import { SubscriberContext } from '../schemas/types/subscriberContext';
+} from '../types/message';
+import { FallbackOptions } from '../types/options';
+import { NlpPattern, PayloadPattern } from '../types/pattern';
+import { Payload } from '../types/quick-reply';
+import { SubscriberContext } from '../types/subscriberContext';
 
 @Injectable()
-export class BlockService extends BaseService<
-  Block,
-  BlockPopulate,
-  BlockFull,
-  BlockDto
+export class BlockService extends BaseOrmService<
+  BlockOrmEntity,
+  BlockTransformerDto,
+  BlockDtoConfig,
+  BlockRepository
 > {
   constructor(
     readonly repository: BlockRepository,
@@ -63,6 +63,7 @@ export class BlockService extends BaseService<
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly nlpService: NlpService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -122,6 +123,7 @@ export class BlockService extends BaseService<
     const triggerLabels = block.trigger_labels.map((l: string | Label) =>
       typeof l === 'string' ? l : l.id,
     );
+
     return (
       triggerLabels.length === 0 ||
       triggerLabels.some((l) => subscriber.labels.includes(l))
@@ -143,6 +145,7 @@ export class BlockService extends BaseService<
         `The NLU penalty factor has reverted to its default fallback value of: ${FALLBACK_DEFAULT_NLU_PENALTY_FACTOR}`,
       );
     }
+
     return nluPenaltyFactor ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
   }
 
@@ -182,7 +185,6 @@ export class BlockService extends BaseService<
     const prioritizedCandidates = candidates.sort(
       (a, b) => b.trigger_labels.length - a.trigger_labels.length,
     );
-
     // Perform a payload match & pick last createdAt
     const payload = event.getPayload();
     if (payload) {
@@ -224,6 +226,7 @@ export class BlockService extends BaseService<
 
       if (scoredEntities.entities.length) {
         const penaltyFactor = await this.getPenaltyFactor();
+
         return this.matchBestNLP(
           prioritizedCandidates,
           scoredEntities,
@@ -284,6 +287,7 @@ export class BlockService extends BaseService<
       ) {
         return new RegExp(pattern.slice(1, -1), 'i');
       }
+
       return pattern;
     });
 
@@ -299,6 +303,7 @@ export class BlockService extends BaseService<
                 // Remove global match if needed
                 matches.shift();
               }
+
               return matches;
             }
           }
@@ -326,6 +331,7 @@ export class BlockService extends BaseService<
         //   return [text];
         // }
       }
+
     // No match
     return false;
   }
@@ -372,6 +378,7 @@ export class BlockService extends BaseService<
           });
         } else {
           this.logger.warn('Unknown NLP match type', p);
+
           return false;
         }
       });
@@ -405,7 +412,6 @@ export class BlockService extends BaseService<
           scoredEntities,
           block,
         );
-
         // Compute the score (Weighted sum = weight * confidence)
         // for each of block NLU patterns
         const score = matchedPatterns.reduce((maxScore, patterns) => {
@@ -414,8 +420,10 @@ export class BlockService extends BaseService<
             scoredEntities,
             penaltyFactor,
           );
+
           return Math.max(maxScore, score);
         }, 0);
+
         return score > bestMatch.score ? { block, score } : bestMatch;
       },
       { block: undefined, score: 0 },
@@ -452,7 +460,6 @@ export class BlockService extends BaseService<
     return patterns.reduce((score, pattern) => {
       const matchedEntity: NLU.ScoredEntity | undefined =
         prediction.entities.find((e) => this.matchesNluEntity(e, pattern));
-
       const patternScore = matchedEntity
         ? this.computePatternScore(matchedEntity, pattern, penaltyFactor)
         : 0;
@@ -723,6 +730,7 @@ export class BlockService extends BaseService<
             )
           : envelopeFactory.buildTextEnvelope(fallback.message);
       }
+
       return envelopeFactory.buildAttachmentEnvelope(
         {
           type: block.message.attachment.type,
@@ -801,38 +809,7 @@ export class BlockService extends BaseService<
    * @param block - The block to retrieve fallback options from.
    * @returns The fallback options for the block, or default options if not specified.
    */
-  getFallbackOptions<T extends BlockStub>(block: T): FallbackOptions {
-    return block.options?.fallback ?? getDefaultFallbackOptions();
-  }
-
-  /**
-   * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
-   *
-   * @param _query - The Mongoose query object used for deletion.
-   * @param criteria - The filter criteria for finding the labels to be deleted.
-   */
-  @OnEvent('hook:label:preDelete')
-  async handleLabelPreDelete(
-    _query: unknown,
-    criteria: TFilterQuery<Label>,
-  ): Promise<void> {
-    if (criteria._id) {
-      await this.getRepository().model.updateMany(
-        {
-          $or: [
-            { trigger_labels: criteria._id },
-            { assign_labels: criteria._id },
-          ],
-        },
-        {
-          $pull: {
-            trigger_labels: criteria._id,
-            assign_labels: criteria._id,
-          },
-        },
-      );
-    } else {
-      throw new Error('Attempted to delete label using unknown criteria');
-    }
+  getFallbackOptions<T extends BlockStub>(block: T | null): FallbackOptions {
+    return block?.options?.fallback ?? getDefaultFallbackOptions();
   }
 }

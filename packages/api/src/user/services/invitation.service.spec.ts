@@ -4,53 +4,65 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 // eslint-disable-next-line import/order
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { JwtModule, JwtService, JwtVerifyOptions } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 import { SentMessageInfo } from 'nodemailer';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
-  installInvitationFixtures,
+  installInvitationFixturesTypeOrm,
   invitationsFixtures,
 } from '@/utils/test/fixtures/invitation';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import { roleFixtureIds } from '@/utils/test/fixtures/role';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
 
 import { InvitationService } from './invitation.service';
 
-describe('InvitationService', () => {
+describe('InvitationService (TypeORM)', () => {
+  let module: TestingModule;
   let invitationService: InvitationService;
   let roleRepository: RoleRepository;
   let invitationRepository: InvitationRepository;
   let jwtService: JwtService;
   let mailerService: MailerService;
+
   const IGNORED_FIELDS = ['iat', 'exp', 'token', ...IGNORED_TEST_FIELDS];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['PermissionModel'],
+    const mailerMock = {
+      sendMail: jest.fn(
+        (_options: ISendMailOptions): Promise<SentMessageInfo> =>
+          Promise.resolve('Mail sent successfully'),
+      ),
+    };
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installLanguageFixtures();
-          await installInvitationFixtures();
-        }),
-        JwtModule,
-      ],
+      imports: [JwtModule.register({})],
       providers: [
         InvitationService,
         RoleRepository,
+        InvitationRepository,
+        LanguageService,
+        LanguageRepository,
         {
           provide: I18nService,
           useValue: {
@@ -59,22 +71,35 @@ describe('InvitationService', () => {
         },
         {
           provide: MailerService,
-          useValue: {
-            sendMail: jest.fn(
-              (_options: ISendMailOptions): Promise<SentMessageInfo> =>
-                Promise.resolve('Mail sent successfully'),
-            ),
-          },
+          useValue: mailerMock,
         },
       ],
+      typeorm: {
+        entities: [
+          InvitationOrmEntity,
+          RoleOrmEntity,
+          UserOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+          LanguageOrmEntity,
+        ],
+        fixtures: [
+          installLanguageFixturesTypeOrm,
+          installInvitationFixturesTypeOrm,
+        ],
+      },
     });
+
+    module = testing.module;
+
     [
       roleRepository,
       invitationService,
       invitationRepository,
       jwtService,
       mailerService,
-    ] = await getMocks([
+    ] = await testing.getMocks([
       RoleRepository,
       InvitationService,
       InvitationRepository,
@@ -83,9 +108,14 @@ describe('InvitationService', () => {
     ]);
   });
 
-  afterAll(closeInMongodConnection);
-
   afterEach(jest.clearAllMocks);
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('sign', () => {
     it('should sign a jwt', async () => {
@@ -119,10 +149,10 @@ describe('InvitationService', () => {
     it('should create a valid invitation with a hashed token', async () => {
       jest.spyOn(mailerService, 'sendMail');
       jest.spyOn(invitationService, 'sign');
-      const role = await roleRepository.findOne({});
+      const role = await roleRepository.findOne(roleFixtureIds.admin);
       const newInvitation: InvitationCreateDto = {
         email: 'test@testland.tst',
-        roles: [role!.id.toString()],
+        roles: [role!.id],
       };
 
       jest.spyOn(invitationRepository, 'create');
@@ -133,7 +163,7 @@ describe('InvitationService', () => {
         ...newInvitation,
         token: result.token,
       });
-      expect(mailerService.sendMail).toHaveReturned();
+      expect(mailerService.sendMail).toHaveBeenCalled();
       expect(invitationService.sign).toHaveBeenCalledWith(newInvitation);
       expect(result).toEqualPayload(newInvitation, IGNORED_FIELDS);
       expect(decodedJwt).toEqualPayload(newInvitation, IGNORED_FIELDS);

@@ -5,12 +5,13 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { In, Like } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { DeleteResult } from '@/utils/generics/base-repository';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 
 import { TCriteria, TExtractExtension, TExtractNamespace } from './types';
 
@@ -34,10 +35,32 @@ export class CleanupService {
   private async deleteManyBySuffixAndNamespaces(
     criteria: TCriteria[],
   ): Promise<DeleteResult> {
+    const groupsToDelete = new Set<string>();
+
+    for (const { suffix, namespaces } of criteria) {
+      const matchingSettings = await this.settingService.find({
+        where: { group: Like(`%${suffix}`) },
+      });
+
+      if (!matchingSettings.length) {
+        continue;
+      }
+
+      const namespacesSet = new Set<string>(namespaces);
+
+      matchingSettings.forEach(({ group }) => {
+        if (!namespacesSet.has(group)) {
+          groupsToDelete.add(group);
+        }
+      });
+    }
+
+    if (!groupsToDelete.size) {
+      return { acknowledged: true, deletedCount: 0 };
+    }
+
     return await this.settingService.deleteMany({
-      $or: criteria.map(({ suffix, namespaces }) => ({
-        group: { $regex: new RegExp(`${suffix}$`), $nin: namespaces },
-      })),
+      where: { group: In(Array.from(groupsToDelete)) },
     });
   }
 

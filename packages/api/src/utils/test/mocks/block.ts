@@ -8,14 +8,14 @@ import {
   customerLabelsMock,
   labelMock,
 } from '@/channel/lib/__test__/label.mock';
-import { BlockFull } from '@/chat/schemas/block.schema';
-import { FileType } from '@/chat/schemas/types/attachment';
-import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
-import { CaptureVar } from '@/chat/schemas/types/capture-var';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
-import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
-import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
-import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { BlockFull } from '@/chat/dto/block.dto';
+import { FileType } from '@/chat/types/attachment';
+import { ButtonType, PayloadType } from '@/chat/types/button';
+import { CaptureVar } from '@/chat/types/capture-var';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { BlockOptions, ContentOptions } from '@/chat/types/options';
+import { NlpPattern, Pattern } from '@/chat/types/pattern';
+import { QuickReplyType } from '@/chat/types/quick-reply';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 
 import { modelInstance } from './misc';
@@ -28,7 +28,6 @@ const blockOptions: BlockOptions = {
     message: [],
   },
 };
-
 const blockListOptions: BlockOptions = {
   content: {
     display: OutgoingMessageFormat.list,
@@ -48,7 +47,6 @@ const blockListOptions: BlockOptions = {
     entity: '1',
   },
 };
-
 const blockCarouselOptions: BlockOptions = {
   content: {
     display: OutgoingMessageFormat.carousel,
@@ -68,12 +66,10 @@ const blockCarouselOptions: BlockOptions = {
     entity: '1',
   },
 };
-
 const captureVar: CaptureVar = {
   entity: -2,
   context_var: 'string',
 };
-
 const position = {
   x: 0,
   y: 0,

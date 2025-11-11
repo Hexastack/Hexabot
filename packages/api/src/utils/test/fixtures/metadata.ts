@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { MetadataCreateDto } from '@/setting/dto/metadata.dto';
-import { MetadataModel } from '@/setting/schemas/metadata.schema';
+import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 
 const metadataFixtures: MetadataCreateDto[] = [
   {
@@ -16,7 +16,10 @@ const metadataFixtures: MetadataCreateDto[] = [
   },
 ];
 
-export const installMetadataFixtures = async () => {
-  const Metadata = mongoose.model(MetadataModel.name, MetadataModel.schema);
-  return await Metadata.insertMany(metadataFixtures);
+export const installMetadataFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(MetadataOrmEntity);
+  const entities = repository.create(metadataFixtures);
+  await repository.save(entities);
 };

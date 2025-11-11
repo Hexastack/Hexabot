@@ -28,7 +28,7 @@ describe('SanitizeQueryPipe', () => {
     expect(SanitizeQueryPipe.sanitize(input)).toBe('helloworld');
   });
 
-  it('should remove dangerous MongoDB/shell characters', () => {
+  it('should remove dangerous characters', () => {
     const input = 'price$ = {100}; \\ /';
     expect(SanitizeQueryPipe.sanitize(input)).toBe('price  =  100');
   });
@@ -44,8 +44,8 @@ describe('SanitizeQueryPipe', () => {
   });
 
   it('should enforce maxLength', () => {
-    const input = 'new-mongo-query-performed'; // 21 chars
-    expect(SanitizeQueryPipe.sanitize(input, 10)).toBe('new-mongo-');
+    const input = 'new-query-performed'; // 21 chars
+    expect(SanitizeQueryPipe.sanitize(input, 10)).toBe('new-query-');
   });
 
   it('should combine all sanitizations', () => {
@@ -56,9 +56,9 @@ describe('SanitizeQueryPipe', () => {
 
   describe('transform (instance method)', () => {
     it('should call sanitize with the instance maxLength', () => {
-      const input = 'new-mongo-query-performed'; // 21 chars
+      const input = 'new-query-performed'; // 21 chars
       expect(pipe.transform(input, {} as any)).toBe(
-        'new-mongo-query-performed'.slice(0, 20),
+        'new-query-performed'.slice(0, 20),
       );
     });
 

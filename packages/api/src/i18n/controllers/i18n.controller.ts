@@ -27,8 +27,10 @@ export class I18nController {
     const plugins = this.pluginService.getAll();
     const helpers = this.helperService.getAll();
     const channels = this.channelService.getAll();
+
     return [...plugins, ...helpers, ...channels].reduce((acc, curr) => {
       acc[curr.getNamespace()] = curr.getTranslations();
+
       return acc;
     }, {});
   }

@@ -4,52 +4,66 @@
  * Full terms: see LICENSE.md.
  */
 
-import { NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { getModelToken } from '@nestjs/mongoose';
+// eslint-disable-next-line import/order
 import { ISendMailOptions } from '@nestjs-modules/mailer';
+import { NotFoundException } from '@nestjs/common';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 import { compareSync } from 'bcryptjs';
-import { Model } from 'mongoose';
 import { SentMessageInfo } from 'nodemailer';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
-import { installUserFixtures, users } from '@/utils/test/fixtures/user';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { users } from '@/utils/test/fixtures/user';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { User } from '../schemas/user.schema';
+import { User } from '../dto/user.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { RoleOrmEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
+import { RoleRepository } from '../repositories/role.repository';
+import { UserRepository } from '../repositories/user.repository';
 
 import { PasswordResetService } from './passwordReset.service';
+import { UserService } from './user.service';
 
-describe('PasswordResetService', () => {
+describe('PasswordResetService (TypeORM)', () => {
+  let module: TestingModule;
   let passwordResetService: PasswordResetService;
   let mailerService: MailerService;
   let jwtService: JwtService;
-  let userModel: Model<User>;
+  let userRepository: UserRepository;
+  let userService: UserService;
+  let adminUser: User | null;
+
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const mailerMock = {
+      sendMail: jest.fn(
+        (_options: ISendMailOptions): Promise<SentMessageInfo> =>
+          Promise.resolve('Mail sent successfully'),
+      ),
+    };
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installLanguageFixtures();
-          await installUserFixtures();
-        }),
-      ],
+      imports: [JwtModule.register({})],
       providers: [
         PasswordResetService,
+        UserService,
+        UserRepository,
+        RoleRepository,
+        LanguageService,
+        LanguageRepository,
         {
           provide: MailerService,
-          useValue: {
-            sendMail: jest.fn(
-              (_options: ISendMailOptions): Promise<SentMessageInfo> =>
-                Promise.resolve('Mail sent successfully'),
-            ),
-          },
+          useValue: mailerMock,
         },
         {
           provide: I18nService,
@@ -58,26 +72,56 @@ describe('PasswordResetService', () => {
           },
         },
       ],
+      typeorm: {
+        entities: [
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          AttachmentOrmEntity,
+          LanguageOrmEntity,
+        ],
+        fixtures: [
+          installLanguageFixturesTypeOrm,
+          installPermissionFixturesTypeOrm,
+        ],
+      },
     });
-    [passwordResetService, mailerService, jwtService, userModel] =
-      await getMocks([
-        PasswordResetService,
-        MailerService,
-        JwtService,
-        getModelToken(User.name),
-      ]);
+
+    module = testing.module;
+
+    [
+      passwordResetService,
+      mailerService,
+      jwtService,
+      userService,
+      userRepository,
+    ] = await testing.getMocks([
+      PasswordResetService,
+      MailerService,
+      JwtService,
+      UserService,
+      UserRepository,
+    ]);
+
+    adminUser = await userService.findOne({ where: { email: users[0].email } });
   });
 
-  afterAll(closeInMongodConnection);
-
   afterEach(jest.clearAllMocks);
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('requestReset', () => {
     it('should send an email with a token', async () => {
       const sendMailSpy = jest.spyOn(mailerService, 'sendMail');
       const signSpy = jest.spyOn(passwordResetService, 'sign');
       const promise = passwordResetService.requestReset({
-        email: users[0].email,
+        email: adminUser!.email,
       });
       await expect(promise).resolves.toBeUndefined();
 
@@ -92,27 +136,26 @@ describe('PasswordResetService', () => {
       await expect(promise).rejects.toThrow(NotFoundException);
     });
 
-    it('should return change the password', async () => {
+    it('should update the password and clear the reset token', async () => {
       const spy = jest.spyOn(passwordResetService, 'sign');
       const verifySpy = jest.spyOn(passwordResetService, 'verify');
       const token = jwtService.sign(
-        { email: users[0].email },
+        { email: adminUser!.email },
         passwordResetService.jwtSignOptions,
       );
       spy.mockResolvedValue(token);
-      await passwordResetService.requestReset({ email: users[0].email });
+      await passwordResetService.requestReset({ email: adminUser!.email });
 
-      const promise = passwordResetService.reset(
-        { password: 'newPassword' },
-        token,
-      );
-
-      await expect(promise).resolves.toBeUndefined();
+      await expect(
+        passwordResetService.reset({ password: 'newPassword' }, token),
+      ).resolves.toBeUndefined();
       expect(verifySpy).toHaveBeenCalled();
 
-      const user = await userModel.findOne({ email: users[0].email });
-      expect(user!.resetToken).toBeNull();
-      expect(compareSync('newPassword', user!.password)).toBeTruthy();
+      const entity = await userRepository.findOneByEmailWithPassword(
+        adminUser!.email,
+      );
+      expect(entity?.resetToken).toBeNull();
+      expect(compareSync('newPassword', entity!.password)).toBeTruthy();
     });
   });
 });

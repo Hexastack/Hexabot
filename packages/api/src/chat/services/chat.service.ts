@@ -6,8 +6,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { In, InsertEvent, UpdateEvent } from 'typeorm';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
+import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -16,10 +17,10 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { Conversation } from '../dto/conversation.dto';
 import { MessageCreateDto } from '../dto/message.dto';
-import { Conversation } from '../schemas/conversation.schema';
-import { SubscriberDocument } from '../schemas/subscriber.schema';
-import { OutgoingMessage } from '../schemas/types/message';
+import { SubscriberOrmEntity } from '../entities/subscriber.entity';
+import { OutgoingMessage } from '../types/message';
 
 import { BotService } from './bot.service';
 import { ConversationService } from './conversation.service';
@@ -81,7 +82,7 @@ export class ChatService {
       try {
         const message = await this.messageService.findOneOrCreate(
           {
-            mid: sentMessage.mid,
+            where: { mid: sentMessage.mid },
           },
           sentMessage,
         );
@@ -153,7 +154,7 @@ export class ChatService {
       const deliveredMessages = event.getDeliveredMessages();
       try {
         await this.messageService.updateMany(
-          { mid: { $in: deliveredMessages } },
+          { where: { mid: In(deliveredMessages) } },
           { delivery: true },
         );
         this.websocketGateway.broadcastMessageDelivered(
@@ -213,7 +214,7 @@ export class ChatService {
     if (foreignId) {
       try {
         const recipient = await this.subscriberService.findOne({
-          foreign_id: foreignId,
+          where: { foreign_id: foreignId },
         });
 
         if (!recipient) {
@@ -229,7 +230,7 @@ export class ChatService {
         };
 
         this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
-        this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo');
+        this.eventEmitter.emit('hook:stats:entry', BotStatsType.echo, 'Echo');
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
       }
@@ -250,7 +251,7 @@ export class ChatService {
 
     try {
       let subscriber = await this.subscriberService.findOne({
-        foreign_id: foreignId,
+        where: { foreign_id: foreignId },
       });
 
       if (!subscriber) {
@@ -302,6 +303,7 @@ export class ChatService {
 
       if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
+
         return;
       }
 
@@ -351,10 +353,12 @@ export class ChatService {
    * @param subscriber - The end user (subscriber)
    */
   @OnEvent('hook:subscriber:postCreate')
-  async onSubscriberCreate({ _id }: SubscriberDocument) {
-    const subscriber = await this.subscriberService.findOne(_id);
-    if (subscriber) {
-      this.websocketGateway.broadcastSubscriberNew(subscriber);
+  async onSubscriberCreate(e: InsertEvent<SubscriberOrmEntity>) {
+    if (e.entityId) {
+      const subscriber = await this.subscriberService.findOne(e.entityId);
+      if (subscriber) {
+        this.websocketGateway.broadcastSubscriberNew(subscriber);
+      }
     }
   }
 
@@ -364,10 +368,14 @@ export class ChatService {
    * @param subscriber - The end user (subscriber)
    */
   @OnEvent('hook:subscriber:postUpdate')
-  async onSubscriberUpdate({ _id }: SubscriberDocument) {
-    const subscriber = await this.subscriberService.findOne(_id);
-    if (subscriber) {
-      this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+  async onSubscriberUpdate(e: UpdateEvent<SubscriberOrmEntity>) {
+    if (e.databaseEntity) {
+      const subscriber = await this.subscriberService.findOne(
+        e.databaseEntity.id,
+      );
+      if (subscriber) {
+        this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+      }
     }
   }
 }

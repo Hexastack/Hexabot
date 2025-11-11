@@ -29,11 +29,12 @@ export class SanitizeQueryPipe implements PipeTransform<string, string> {
     s = Array.from(s)
       .filter((ch) => {
         const code = ch.charCodeAt(0);
+
         return code >= 0x20 && code !== 0x7f;
       })
       .join('');
 
-    // Remove characters that can be used in injection payloads for MongoDB or
+    // Remove characters that can be used in injection payloads or
     // shell-like expressions: dollar sign, braces, semicolon, backslash, slashes.
     s = s.replace(/[\$\{\}\;\\\/]/g, ' ');
 

@@ -20,30 +20,28 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { NlpEntityCreateDto, NlpEntityUpdateDto } from '../dto/nlp-entity.dto';
 import {
   NlpEntity,
-  NlpEntityFull,
-  NlpEntityPopulate,
-  NlpEntityStub,
-} from '../schemas/nlp-entity.schema';
+  NlpEntityCreateDto,
+  NlpEntityDtoConfig,
+  NlpEntityTransformerDto,
+  NlpEntityUpdateDto,
+} from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 
 @Controller('nlpentity')
-export class NlpEntityController extends BaseController<
-  NlpEntity,
-  NlpEntityStub,
-  NlpEntityPopulate,
-  NlpEntityFull
+export class NlpEntityController extends BaseOrmController<
+  NlpEntityOrmEntity,
+  NlpEntityTransformerDto,
+  NlpEntityDtoConfig
 > {
   constructor(private readonly nlpEntityService: NlpEntityService) {
     super(nlpEntityService);
@@ -70,16 +68,20 @@ export class NlpEntityController extends BaseController<
    *
    * This endpoint allows users to apply filters to count the number of entities in the system that match specific criteria.
    *
-   * @param filters - Optional filters to apply when counting entities.
+   * @param options - Optional query options to apply when counting entities.
    *
    * @returns The count of NLP entities matching the filters.
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
-    filters?: TFilterQuery<NlpEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<NlpEntityOrmEntity>({
+        allowedFields: ['name', 'doc'],
+      }),
+    )
+    options?: FindManyOptions<NlpEntityOrmEntity>,
   ) {
-    return await this.count(filters);
+    return await super.count(options);
   }
 
   /**
@@ -97,14 +99,15 @@ export class NlpEntityController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.nlpEntityService.findOneAndPopulate(id)
       : await this.nlpEntityService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find NLP Entity by id ${id}`);
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   /**
@@ -112,22 +115,25 @@ export class NlpEntityController extends BaseController<
    *
    * This endpoint supports pagination and allows users to retrieve a filtered list of NLP entities.
    *
-   * @param pageQuery - The pagination details such as page number and size.
    * @param populate - Fields to populate in the retrieved entities.
-   * @param filters - Filters to apply when retrieving entities.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
    * @returns A paginated list of NLP entities.
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpEntity>,
     @Query(PopulatePipe) populate: string[],
-    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
-    filters: TFilterQuery<NlpEntity>,
+    @Query(
+      new TypeOrmSearchFilterPipe<NlpEntityOrmEntity>({
+        allowedFields: ['name', 'doc'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<NlpEntityOrmEntity>,
   ) {
     return this.canPopulate(populate)
-      ? await this.nlpEntityService.findAndPopulate(filters, pageQuery)
-      : await this.nlpEntityService.find(filters, pageQuery);
+      ? await this.nlpEntityService.findAndPopulate(options)
+      : await this.nlpEntityService.find(options);
   }
 
   /**
@@ -198,6 +204,7 @@ export class NlpEntityController extends BaseController<
         `Failed to delete NLP Entity with ID ${id}`,
       );
     }
+
     return result;
   }
 
@@ -214,7 +221,7 @@ export class NlpEntityController extends BaseController<
     }
 
     const deleteResult = await this.nlpEntityService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -225,6 +232,7 @@ export class NlpEntityController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted NLP entities with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

@@ -24,7 +24,7 @@ import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
 import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { PermissionCreateDto } from './user/dto/permission.dto';
-import { Role } from './user/schemas/role.schema';
+import { Role } from './user/dto/role.dto';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
 import { PermissionSeeder } from './user/seeds/permission.seed';
@@ -48,11 +48,11 @@ export async function seedDatabase(app: INestApplicationContext) {
   const translationSeeder = app.get(TranslationSeeder);
   const nlpEntitySeeder = app.get(NlpEntitySeeder);
   const nlpValueSeeder = app.get(NlpValueSeeder);
-
   const existingUsers = await userSeeder.findAll();
 
   if (existingUsers.length > 0) {
     logger.log('Database already seeded, aborting ...');
+
     return;
   }
 
@@ -83,7 +83,6 @@ export async function seedDatabase(app: INestApplicationContext) {
     ...models.map((model) => [model.id, adminRole.id]),
     ...managerModels.map((model) => [model.id, managerRole.id]),
   ] as [string, string][];
-
   const permissionSeeds = roleModelsCombinations.reduce(
     (acc, [modelId, roleId]) => {
       return acc.concat(permissionModels(modelId, roleId));

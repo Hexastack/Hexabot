@@ -20,6 +20,21 @@ type TCacheConfig = {
   port: number;
   type: 'memory' | 'redis';
 };
+type TDatabaseType = 'sqlite' | 'postgres' | 'mongodb';
+type TDatabaseConfig = {
+  type: TDatabaseType;
+  url?: string;
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  database?: string;
+  sqlitePath?: string;
+  synchronize: boolean;
+  logging: boolean;
+  schema?: string;
+  autoMigrate: boolean;
+};
 type SocketCookie =
   | {
       maxAge?: number | undefined;
@@ -69,12 +84,9 @@ export type Config = {
   session: {
     secret: string;
     name: string;
-    adapter: string;
-    url: string;
-    collection: string;
-    auto_reconnect: boolean;
-    ssl: boolean;
-    stringify: boolean;
+    cleanupLimit: number;
+    limitSubquery: boolean;
+    ttlSeconds?: number;
     cookie: {
       maxAge: number;
     };
@@ -106,13 +118,7 @@ export type Config = {
     level: TLogLevel;
   };
   cache: TCacheConfig;
-  mongo: {
-    user: string;
-    password: string;
-    uri: string;
-    dbName: string;
-    autoMigrate: boolean;
-  };
+  database: TDatabaseConfig;
   env: string;
   authentication: {
     jwtOptions: JwtConfigOptions;

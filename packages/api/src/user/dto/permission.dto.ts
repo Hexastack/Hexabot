@@ -5,19 +5,56 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
+
+import { Model } from './model.dto';
+import { Role } from './role.dto';
+
+@Exclude()
+export class PermissionStub extends BaseStub {
+  @Expose()
+  action: string;
+
+  @Expose()
+  relation: TRelation;
+}
+
+@Exclude()
+export class Permission extends PermissionStub {
+  @Expose({ name: 'modelId' })
+  model: string;
+
+  @Expose({ name: 'roleId' })
+  role: string;
+}
+
+@Exclude()
+export class PermissionFull extends PermissionStub {
+  @Expose()
+  @Type(() => Model)
+  model: Model;
+
+  @Expose()
+  @Type(() => Role)
+  role: Role;
+}
 
 export class PermissionCreateDto {
   @ApiProperty({ description: 'Id of the model', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsObjectId({ message: 'Model must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'Model must be a valid UUID' })
   model: string;
 
   @ApiProperty({ description: 'Action to perform on the model', enum: Action })
@@ -28,7 +65,7 @@ export class PermissionCreateDto {
   @IsNotEmpty()
   @ApiProperty({ description: 'Id of the role', type: String })
   @IsString()
-  @IsObjectId({ message: 'Role must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'Role must be a valid UUID' })
   role: string;
 
   @ApiProperty({
@@ -40,6 +77,11 @@ export class PermissionCreateDto {
   relation?: TRelation;
 }
 
-export type PermissionDto = DtoConfig<{
+export type PermissionTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Permission;
+  FullCls: typeof PermissionFull;
+}>;
+
+export type PermissionDtoConfig = DtoActionConfig<{
   create: PermissionCreateDto;
 }>;

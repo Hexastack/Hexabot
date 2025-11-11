@@ -4,12 +4,55 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  HydratedDocument,
-  QueryOptions,
-  QuerySelector,
-  RootQuerySelector,
-} from 'mongoose';
+// --- Configurable leaves ---
+type AllowedLeaf = string | number | boolean | null | undefined | Date;
+
+// --- Small numeric "decrement" map for depth limiting ---
+type Prev = {
+  0: 0;
+  1: 0;
+  2: 1;
+  3: 2;
+};
+type Dec<N extends number> = N extends keyof Prev ? Prev[N] : 0;
+
+// --- Helpers ---
+type IsArray<T> = T extends readonly any[] ? true : false;
+type Elem<T> = T extends readonly (infer U)[] ? U : never;
+type IsFunction<T> = T extends (...args: any) => any ? true : false;
+type IsPlainObject<T> = T extends object
+  ? IsArray<T> extends true
+    ? false
+    : IsFunction<T> extends true
+      ? false
+      : true
+  : false;
+
+type Join<K extends string, P> = P extends string ? `${K}.${P}` : never;
+type NonU<T> = NonNullable<T>;
+
+// --- Core (array → object → leaf), depth-limited ---
+export type TFilterNestedKeysOfType<T, D extends number = 3> = [D] extends [0]
+  ? never
+  : {
+      [K in keyof T & string]: IsArray<NonU<T[K]>> extends true // 1) arrays first
+        ? Elem<NonU<T[K]>> extends AllowedLeaf
+          ? K // arrays of leaves allowed as the key itself
+          : never // arrays of objects are not recursed
+        : // 2) plain objects (recurse with depth-1)
+          IsPlainObject<NonU<T[K]>> extends true
+          ? TFilterNestedKeysOfType<NonU<T[K]>, Dec<D>> extends infer P
+            ? P extends never
+              ? never
+              : Join<K, Extract<P, string>>
+            : never
+          : // 3) leaves
+            NonU<T[K]> extends AllowedLeaf
+            ? K
+            : never;
+    }[keyof T & string];
+
+//////
 
 export type TFilterKeysOfType<T, U> = {
   [K in keyof T]: T[K] extends U ? K : never;
@@ -17,67 +60,12 @@ export type TFilterKeysOfType<T, U> = {
 
 export type TFilterKeysOfNeverType<T> = Omit<T, TFilterKeysOfType<T, []>>;
 
-export type NestedKeys<T> = T extends object
-  ? {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-      [K in keyof T]: T[K] extends Function
-        ? never
-        : Array<any> extends T[K]
-          ? Exclude<K, symbol>
-          : K extends symbol
-            ? Exclude<K, symbol>
-            : `${Exclude<K, symbol>}${'' | `.${NestedKeys<T[K]>}`}`;
-    }[keyof T]
-  : never;
-
-export type ObjectWithNestedKeys<T, ValueType = any> = Partial<{
-  [K in NestedKeys<T>]: ValueType;
-}>;
-
-export type TFilterNestedKeysOfType<T, U> = T extends object
-  ? {
-      [K in keyof T]: T[K] extends U
-        ? `${K & string}`
-        : T[K] extends object
-          ? Array<any> extends T[K]
-            ? never
-            : `${K & string}.${TFilterNestedKeysOfType<T[K], U>}`
-          : never;
-    }[keyof T]
-  : never;
-
-export type WithoutGenericAny<T> = {
-  [K in keyof T as string extends K ? never : K]: T[K];
-};
-
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object
       ? RecursivePartial<T[P]>
       : T[P];
-};
-//base controller validator types
-type TAllowedKeys<T, TStub, TValue = (string | null | undefined)[]> = {
-  [key in keyof Record<
-    TFilterKeysOfType<
-      TFilterPopulateFields<TFilterKeysOfNeverType<T>, TStub>,
-      TValue
-    >,
-    TValue
-  >]: TValue;
-};
-
-type TVirtualFields<T> = Pick<T, TFilterKeysOfType<T, undefined>>;
-
-export type TValidateProps<T, TStub> = {
-  dto:
-    | Partial<TAllowedKeys<T, TStub>>
-    | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: Omit<
-    TAllowedKeys<T, TStub, null | undefined | string | string[]>,
-    keyof TVirtualFields<T>
-  >;
 };
 
 //populate types
@@ -111,42 +99,3 @@ type TNorField<T> = {
 };
 
 export type TSearchFilterValue<T> = TOrField<T> | TAndField<T> | TNorField<T>;
-
-type TOperator = 'eq' | 'iLike' | 'neq' | 'in';
-type TContext = 'and' | 'or';
-
-export type TTransformFieldProps = {
-  _id?: string;
-  _context?: TContext;
-  _operator?: TOperator;
-  data?: {
-    [x: string]: undefined | string | RegExp | (string | undefined)[];
-  };
-};
-
-/* mongoose */
-type TOmitId<T> = Omit<T, 'id'>;
-type TReplaceId<T> = TOmitId<T> & { _id?: string };
-
-// Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
-export type TFilterQuery<T, S = TReplaceId<T>> = (
-  | RecursivePartial<{
-      [P in keyof S]?:
-        | (S[P] extends string ? S[P] | RegExp : S[P])
-        | QuerySelector<S[P]>;
-    }>
-  | Partial<ObjectWithNestedKeys<S>>
-) &
-  WithoutGenericAny<RootQuerySelector<S>>;
-
-export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
-
-export type TFlattenOption = { shouldFlatten?: boolean };
-
-export type TQueryOptions<D> = (QueryOptions<D> & TFlattenOption) | null;
-
-export type TProjectField = 0 | 1;
-
-export type TProjectionType<T> = {
-  [K in keyof T]?: TProjectField;
-};

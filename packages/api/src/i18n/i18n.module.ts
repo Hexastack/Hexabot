@@ -12,7 +12,7 @@ import {
   Module,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   I18N_OPTIONS,
   I18N_TRANSLATIONS,
@@ -27,10 +27,10 @@ import { ChatModule } from '@/chat/chat.module';
 import { I18nController } from './controllers/i18n.controller';
 import { LanguageController } from './controllers/language.controller';
 import { TranslationController } from './controllers/translation.controller';
+import { LanguageOrmEntity } from './entities/language.entity';
+import { TranslationOrmEntity } from './entities/translation.entity';
 import { LanguageRepository } from './repositories/language.repository';
 import { TranslationRepository } from './repositories/translation.repository';
-import { LanguageModel } from './schemas/language.schema';
-import { TranslationModel } from './schemas/translation.schema';
 import { LanguageSeeder } from './seeds/language.seed';
 import { TranslationSeeder } from './seeds/translation.seed';
 import { I18nService } from './services/i18n.service';
@@ -57,10 +57,11 @@ export class I18nModule extends NativeI18nModule {
         'I18n: Unable to find providers and/or exports forRoot()',
       );
     }
+
     return {
       module: I18nModule,
       imports: (imports || []).concat([
-        MongooseModule.forFeature([LanguageModel, TranslationModel]),
+        TypeOrmModule.forFeature([LanguageOrmEntity, TranslationOrmEntity]),
         ChatModule,
       ]),
       controllers: (controllers || []).concat([

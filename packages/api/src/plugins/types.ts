@@ -5,10 +5,9 @@
  */
 
 import { ChannelEvent } from '@/channel/lib/EventWrapper';
-import { BlockCreateDto } from '@/chat/dto/block.dto';
-import { Block } from '@/chat/schemas/block.schema';
-import { Conversation } from '@/chat/schemas/conversation.schema';
-import { ExtensionSetting } from '@/setting/schemas/types';
+import { Block, BlockCreateDto } from '@/chat/dto/block.dto';
+import { Conversation } from '@/chat/dto/conversation.dto';
+import { AnySetting, ExtensionSetting } from '@/setting/types';
 
 export type PluginName = `${string}-plugin`;
 
@@ -19,7 +18,13 @@ export enum PluginType {
 
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = ExtensionSetting;
+export type PluginSetting = ExtensionSetting<
+  {
+    weight?: number;
+  },
+  AnySetting,
+  'id' | 'createdAt' | 'updatedAt' | 'weight'
+>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,

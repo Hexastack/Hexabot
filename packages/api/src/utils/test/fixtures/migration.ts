@@ -4,23 +4,27 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { Migration, MigrationModel } from '@/migration/migration.schema';
+import { MigrationOrmEntity } from '@/migration/migration.entity';
 import { MigrationAction } from '@/migration/types';
 
-const migrationFixtures: Migration[] = [
+const migrationFixtures: Array<Partial<MigrationOrmEntity>> = [
   {
-    version: 'v2.1.2',
+    version: 'v3.0.2',
     status: MigrationAction.UP,
   },
   {
-    version: 'v2.1.1',
+    version: 'v3.0.1',
     status: MigrationAction.DOWN,
   },
 ];
 
-export const installMigrationFixtures = async () => {
-  const Migration = mongoose.model(MigrationModel.name, MigrationModel.schema);
-  return await Migration.insertMany(migrationFixtures);
+export const installMigrationFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(MigrationOrmEntity);
+  const entities = repository.create(migrationFixtures);
+
+  return await repository.save(entities);
 };

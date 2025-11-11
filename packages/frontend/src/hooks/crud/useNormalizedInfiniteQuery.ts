@@ -25,7 +25,7 @@ export const useNormalizedInfiniteQuery = <
   P = THook<T>["populate"],
 >(
   { entity, format }: THook<T>["params"],
-  config?: IFindConfigProps<TAttr>,
+  config?: IFindConfigProps<THook<T>["entity"]>,
   options?: Omit<
     UseInfiniteQueryOptions<
       string[],

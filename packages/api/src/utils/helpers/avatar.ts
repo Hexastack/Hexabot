@@ -37,23 +37,28 @@ export const generateInitialsAvatar = async (name: {
     text: getInitials(name),
     bgColor: '#DBDBDB',
   });
+
   return await generateAvatarSvg(svg);
 };
 
 export const getBotAvatar = async (color: string) => {
   const svg = generateBotAvatarSvg({ bgColor: color });
+
   return await generateAvatarSvg(svg);
 };
 
 const getInitials = (name: { first_name: string; last_name: string }) => {
   if (isEmpty(name.first_name)) {
     const string = name.first_name.trim().slice(0, 2);
+
     return string.toUpperCase();
   }
   if (isEmpty(name.last_name)) {
     const string = name.last_name.trim().slice(0, 2);
+
     return string.toUpperCase();
   }
+
   return `${name.first_name.trim()[0]}${
     name.last_name.trim()[0]
   }`.toUpperCase();

@@ -5,27 +5,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import {
-  NLP_ENTITY_POPULATE,
   NlpEntity,
+  NlpEntityDtoConfig,
   NlpEntityFull,
-  NlpEntityPopulate,
-} from '../schemas/nlp-entity.schema';
+  NlpEntityTransformerDto,
+} from '../dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 
 @Injectable()
-export class NlpEntityRepository extends BaseRepository<
-  NlpEntity,
-  NlpEntityPopulate,
-  NlpEntityFull,
-  NlpEntityDto
+export class NlpEntityRepository extends BaseOrmRepository<
+  NlpEntityOrmEntity,
+  NlpEntityTransformerDto,
+  NlpEntityDtoConfig
 > {
-  constructor(@InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>) {
-    super(model, NlpEntity, NLP_ENTITY_POPULATE, NlpEntityFull);
+  constructor(
+    @InjectRepository(NlpEntityOrmEntity)
+    repository: Repository<NlpEntityOrmEntity>,
+  ) {
+    super(repository, ['values'], {
+      PlainCls: NlpEntity,
+      FullCls: NlpEntityFull,
+    });
   }
 }

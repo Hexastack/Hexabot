@@ -7,6 +7,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
+import { In, IsNull, Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -17,8 +18,8 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
-import { BaseService } from '@/utils/generics/base-service';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,
   SocketPost,
@@ -31,29 +32,30 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Label } from '../schemas/label.schema';
 import {
   Subscriber,
-  SubscriberFull,
-  SubscriberPopulate,
-} from '../schemas/subscriber.schema';
+  SubscriberDtoConfig,
+  SubscriberTransformerDto,
+  SubscriberUpdateDto,
+} from '../dto/subscriber.dto';
+import { SubscriberOrmEntity } from '../entities/subscriber.entity';
+import { SubscriberRepository } from '../repositories/subscriber.repository';
 
 import { LabelService } from './label.service';
 
 @Injectable()
-export class SubscriberService extends BaseService<
-  Subscriber,
-  SubscriberPopulate,
-  SubscriberFull,
-  SubscriberDto
+export class SubscriberService extends BaseOrmService<
+  SubscriberOrmEntity,
+  SubscriberTransformerDto,
+  SubscriberDtoConfig,
+  SubscriberRepository
 > {
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
     protected readonly labelService: LabelService,
     private readonly gateway: WebsocketGateway,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -79,7 +81,7 @@ export class SubscriberService extends BaseService<
         subscribe: Room.SUBSCRIBER,
       });
     } catch (e) {
-      this.logger.error('Websocket subscription');
+      this.logger.error('Websocket subscription', e);
       throw new InternalServerErrorException(e);
     }
   }
@@ -162,7 +164,6 @@ export class SubscriberService extends BaseService<
   ): Promise<Subscriber> {
     const { file, type, size } = avatar;
     const extension = mime.extension(type);
-
     const attachment = await this.attachmentService.store(file, {
       name: `avatar-${uuidv4()}.${extension}`,
       size,
@@ -193,35 +194,51 @@ export class SubscriberService extends BaseService<
       throw new Error('No labels to be assigned!');
     }
 
+    const uniqueLabelsToPush = Array.from(new Set(labelsToPush));
+    const currentLabelIds = new Set(subscriber.labels);
+
     let labelsToPull: string[] = [];
-    if (subscriber.labels.length > 0) {
-      const [newMutexLabels, existingMutexLabels] = [
+    const newLabelIds = uniqueLabelsToPush.filter(
+      (id) => !currentLabelIds.has(id),
+    );
+
+    if (newLabelIds.length > 0 && subscriber.labels.length > 0) {
+      const [newMutexLabels, existingMutexLabels] = await Promise.all([
         // Retrieve new mutex group labels (if any)
-        await this.labelService.find({
-          _id: { $in: labelsToPush },
-          group: { $ne: null },
+        this.labelService.find({
+          where: {
+            id: In(newLabelIds),
+            group: { id: Not(IsNull()) },
+          },
         }),
         // Retrieve existing mutex group labels (if any)
-        await this.labelService.find({
-          _id: { $in: subscriber.labels },
-          group: { $ne: null },
+        this.labelService.find({
+          where: {
+            id: In(subscriber.labels),
+            group: { id: Not(IsNull()) },
+          },
         }),
-      ];
+      ]);
 
       if (newMutexLabels.length > 0 && existingMutexLabels.length > 0) {
-        const mutexGroups = newMutexLabels
-          .map(({ group }) => group)
-          .filter((group): group is string => !!group);
+        const mutexGroups = new Set(
+          newMutexLabels
+            .map(({ group }) => group)
+            .filter((group): group is string => !!group),
+        );
 
         labelsToPull = existingMutexLabels
-          .filter(({ group }) => group && mutexGroups.includes(group))
+          .filter(
+            ({ group, id }) =>
+              !!group && mutexGroups.has(group) && !newLabelIds.includes(id),
+          )
           .map(({ id }) => id);
       }
     }
 
     return await this.repository.updateLabels(
       subscriber.id,
-      labelsToPush,
+      uniqueLabelsToPush,
       labelsToPull,
     );
   }
@@ -243,6 +260,7 @@ export class SubscriberService extends BaseService<
     this.logger.debug(
       `Subscriber "${profile.id}" handed over to "${assignTo}"`,
     );
+
     return updated;
   }
 
@@ -280,6 +298,7 @@ export class SubscriberService extends BaseService<
         labels,
         assignTo,
       });
+
       return current;
     } catch (err) {
       this.logger.error('Unable to perform block updates!', err);
@@ -319,27 +338,6 @@ export class SubscriberService extends BaseService<
       } catch (err) {
         this.logger.error(err);
       }
-    }
-  }
-
-  /**
-   * Before deleting a `Label`, this method updates the `labels` field of a subscriber.
-   *
-   * @param _query - The Mongoose query object used for deletion.
-   * @param criteria - The filter criteria for finding the labels to be deleted.
-   */
-  @OnEvent('hook:label:preDelete')
-  async handleLabelDelete(
-    _query: unknown,
-    criteria: TFilterQuery<Label>,
-  ): Promise<void> {
-    if (criteria._id) {
-      await this.getRepository().model.updateMany(
-        { labels: criteria._id },
-        { $pull: { labels: criteria._id } },
-      );
-    } else {
-      throw new Error('Attempted to delete label using unknown criteria');
     }
   }
 }

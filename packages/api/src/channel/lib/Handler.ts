@@ -19,7 +19,7 @@ import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -28,13 +28,13 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { AttachmentRef } from '@/chat/schemas/types/attachment';
+import { AttachmentRef } from '@/chat/types/attachment';
 import {
   IncomingMessageType,
   StdEventType,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
-} from '@/chat/schemas/types/message';
+} from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -96,13 +96,7 @@ export default abstract class ChannelHandler<
   }
 
   async setup() {
-    await this.settingService.seedIfNotExist(
-      this.getName(),
-      this.settings.map((s, i) => ({
-        ...s,
-        weight: i + 1,
-      })),
-    );
+    await this.settingService.seedIfNotExist(this.getName(), this.settings);
     this.init();
   }
 
@@ -112,6 +106,7 @@ export default abstract class ChannelHandler<
    */
   async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
+
     // @ts-expect-error workaround typing
     return settings[this.getNamespace() as keyof Settings] as Settings[S];
   }
@@ -309,11 +304,12 @@ export default abstract class ChannelHandler<
    * @param attachment The attachment ID or object to generate a signed URL for.
    * @return A signed URL string for downloading the specified attachment.
    */
-  public async getPublicUrl(attachment: AttachmentRef | Attachment) {
+  public async getPublicUrl(attachment: AttachmentRef | AttachmentOrmEntity) {
     const [name, _suffix] = this.getName().split('-');
     if (attachment && 'id' in attachment) {
       if (!attachment || !attachment.id) {
         this.logger.warn('Unable to build public URL: Empty attachment ID');
+
         return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
       }
 
@@ -321,10 +317,12 @@ export default abstract class ChannelHandler<
 
       if (!resource) {
         this.logger.warn('Unable to find attachment sending fallback image');
+
         return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
       }
 
       const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
+
       return buildURL(
         config.apiBaseUrl,
         `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
@@ -337,6 +335,7 @@ export default abstract class ChannelHandler<
         'Unable to resolve the attachment public URL.',
         attachment,
       );
+
       return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
     }
   }
@@ -350,7 +349,10 @@ export default abstract class ChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
+  public async hasDownloadAccess(
+    attachment: AttachmentOrmEntity,
+    _req: Request,
+  ) {
     return attachment.access === AttachmentAccess.Public;
   }
 
@@ -375,8 +377,7 @@ export default abstract class ChannelHandler<
         token,
         this.jwtSignOptions as JwtVerifyOptions,
       );
-      const attachment = plainToClass(Attachment, result);
-
+      const attachment = plainToClass(AttachmentOrmEntity, result);
       // Check access
       const canDownload = await this.hasDownloadAccess(attachment, req);
       if (!canDownload) {

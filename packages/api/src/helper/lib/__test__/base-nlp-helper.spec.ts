@@ -4,20 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ObjectId } from 'bson';
-
 import { LoggerService } from '@/logger/logger.service';
-import {
-  NlpEntity,
-  NlpEntityDocument,
-  NlpEntityFull,
-} from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
-import {
-  NlpValue,
-  NlpValueDocument,
-  NlpValueFull,
-} from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
+import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
+import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../../helper.service';
@@ -30,11 +22,9 @@ const mockLoggerService = {
   error: jest.fn(),
   warn: jest.fn(),
 } as unknown as LoggerService;
-
 const mockSettingService = {
   get: jest.fn(),
 } as unknown as SettingService;
-
 const mockHelperService = {
   doSomething: jest.fn(),
 } as unknown as HelperService;
@@ -72,7 +62,7 @@ describe('BaseNlpHelper', () => {
 
   describe('addEntity', () => {
     it('should return a new UUID', async () => {
-      const result = await helper.addEntity({} as NlpEntityDocument);
+      const result = await helper.addEntity({} as NlpEntity);
       expect(result).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
@@ -97,7 +87,7 @@ describe('BaseNlpHelper', () => {
 
   describe('addValue', () => {
     it('should return a new UUID', async () => {
-      const result = await helper.addValue({} as NlpValueDocument);
+      const result = await helper.addValue({} as NlpValue);
       expect(result).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
@@ -115,10 +105,9 @@ describe('BaseNlpHelper', () => {
   describe('format', () => {
     it('should format the samples and entities into NLP training data', async () => {
       const entities: NlpEntityFull[] = [
-        { _id: 'entity1', name: 'intent' },
-        { _id: 'entity2', name: 'test-entity' },
+        { id: 'entity1-id', name: 'intent' },
+        { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
-
       const samples: NlpSampleFull[] = [
         {
           text: 'test-text',
@@ -130,46 +119,50 @@ describe('BaseNlpHelper', () => {
         },
       ] as unknown as NlpSampleFull[];
 
-      jest.spyOn(NlpEntity, 'getEntityMap').mockReturnValue({
+      jest.spyOn(NlpEntityOrmEntity, 'getEntityMap').mockReturnValue({
         entity1: {
-          id: new ObjectId().toString(),
+          id: 'entity1-id',
           name: 'intent',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
         entity2: {
-          id: new ObjectId().toString(),
+          id: 'entity2-id',
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
       });
-      jest.spyOn(NlpValue, 'getValueMap').mockReturnValue({
+      jest.spyOn(NlpValueOrmEntity, 'getValueMap').mockReturnValue({
         intent1: {
-          id: new ObjectId().toString(),
+          id: 'value1-id',
           value: 'test-intent',
-          entity: 'entity1', // Add the required entity field
+          entity: 'entity1-id',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
           metadata: {},
+          foreignId: null,
         },
         value2: {
-          id: new ObjectId().toString(),
+          id: 'value2-id',
           value: 'test-value',
-          entity: 'entity2', // Add the required entity field
+          entity: 'entity2-id',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
           metadata: {},
+          foreignId: null,
         },
       });
 
@@ -189,9 +182,8 @@ describe('BaseNlpHelper', () => {
 
     it('should throw an error if intent entity is missing', async () => {
       const entities: NlpEntityFull[] = [
-        { _id: 'entity2', name: 'test-entity' },
+        { id: 'entity2-id', name: 'test-entity' },
       ] as unknown as NlpEntityFull[];
-
       const samples: NlpSampleFull[] = [
         {
           text: 'test-text',
@@ -200,15 +192,16 @@ describe('BaseNlpHelper', () => {
         },
       ] as unknown as NlpSampleFull[];
 
-      jest.spyOn(NlpEntity, 'getEntityMap').mockReturnValue({
+      jest.spyOn(NlpEntityOrmEntity, 'getEntityMap').mockReturnValue({
         entity2: {
-          id: new ObjectId().toString(),
+          id: 'entity2-id',
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
           weight: 1,
+          foreignId: null,
         },
       });
 
@@ -227,7 +220,6 @@ describe('BaseNlpHelper', () => {
           { value: 'green', expressions: ['emerald', 'lime'] },
         ],
       } as any;
-
       const result = helper.extractKeywordBasedSlots(
         'The sky is azure and emerald',
         entity,
@@ -255,7 +247,6 @@ describe('BaseNlpHelper', () => {
         name: 'color',
         values: [{ value: 'blue', expressions: ['أزرق', 'ازرق', 'زرقاء'] }],
       } as any;
-
       const result = helper.extractKeywordBasedSlots('السماء زرقاء', entity);
       expect(result).toEqual([
         {
@@ -296,7 +287,6 @@ describe('BaseNlpHelper', () => {
           { value: 'green', expressions: ['emerald', 'lime'] },
         ],
       } as any;
-
       const result = helper.extractKeywordBasedSlots(
         `The sky is "azure" and "emerald"`,
         entity,
@@ -352,7 +342,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'Order 123 and 456 now!',
         entity,
@@ -391,7 +380,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'My CODE is HEX BOT!',
         entity,
@@ -421,7 +409,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'clé USB est endommagée',
         entity,
@@ -451,7 +438,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'comment réparer un clé USB endommagée?',
         entity,
@@ -478,7 +464,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'هذا الحاسوب معطب',
         entity,
@@ -505,7 +490,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'كيف يمكن إصلاح هذا العطب؟',
         entity,
@@ -537,7 +521,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as NlpEntityFull;
-
       const result = helper.extractPatternBasedSlots(
         'The word "où" (where)',
         entity,
@@ -573,7 +556,6 @@ describe('BaseNlpHelper', () => {
           },
         ],
       } as any;
-
       const result = helper.extractPatternBasedSlots('test', entity);
       expect(result).toEqual([]);
     });

@@ -5,22 +5,31 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { LanguageDto } from '../dto/language.dto';
-import { Language } from '../schemas/language.schema';
+import {
+  Language,
+  LanguageDtoConfig,
+  LanguageTransformerDto,
+} from '../dto/language.dto';
+import { LanguageOrmEntity } from '../entities/language.entity';
 
 @Injectable()
-export class LanguageRepository extends BaseRepository<
-  Language,
-  never,
-  never,
-  LanguageDto
+export class LanguageRepository extends BaseOrmRepository<
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDtoConfig
 > {
-  constructor(@InjectModel(Language.name) readonly model: Model<Language>) {
-    super(model, Language);
+  constructor(
+    @InjectRepository(LanguageOrmEntity)
+    repository: Repository<LanguageOrmEntity>,
+  ) {
+    super(repository, [], {
+      PlainCls: Language,
+      FullCls: Language,
+    });
   }
 }

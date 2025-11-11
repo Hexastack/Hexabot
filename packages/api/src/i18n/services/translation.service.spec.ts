@@ -4,16 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BlockOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { SettingType } from '@/setting/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Block } from '../../chat/schemas/block.schema';
-import { BlockOptions } from '../../chat/schemas/types/options';
+import { Block } from '../../chat/dto/block.dto';
 import { BlockService } from '../../chat/services/block.service';
 import { TranslationRepository } from '../repositories/translation.repository';
 import { TranslationService } from '../services/translation.service';
@@ -30,6 +30,8 @@ describe('TranslationService', () => {
         {
           provide: TranslationRepository,
           useValue: {
+            isFindOptions: jest.fn().mockReturnValue(false),
+            getEventEmitter: jest.fn().mockReturnValue(undefined),
             findAll: jest.fn().mockResolvedValue([
               {
                 key: 'test',
@@ -74,13 +76,6 @@ describe('TranslationService', () => {
               .fn()
               .mockImplementation((criteria: { translatable?: boolean }) =>
                 [
-                  {
-                    translatable: false,
-                    group: 'default',
-                    value: 'Global fallback',
-                    label: 'global_fallback',
-                    type: SettingType.checkbox,
-                  },
                   {
                     translatable: true,
                     group: 'default',
@@ -137,13 +132,13 @@ describe('TranslationService', () => {
       trigger_channels: [],
       trigger_labels: [],
       nextBlocks: [],
-      category: '673f82f4bafd1e2a00e7e53e',
+      category: '51b4f7d2-ff67-433d-9c02-1f2345678901',
       starts_conversation: false,
       builtin: false,
       capture_vars: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      id: '673f8724007f1087c96d30d0',
+      id: '51b4f7d2-ff67-433d-9c02-1f2345678902',
       position: { x: 702, y: 321.8333282470703 },
       message: {
         plugin: 'ollama-plugin',

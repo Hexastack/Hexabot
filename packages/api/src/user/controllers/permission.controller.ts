@@ -15,32 +15,30 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { PermissionCreateDto } from '../dto/permission.dto';
 import {
-  Permission,
-  PermissionFull,
-  PermissionPopulate,
-  PermissionStub,
-} from '../schemas/permission.schema';
+  PermissionCreateDto,
+  PermissionDtoConfig,
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { PermissionOrmEntity } from '../entities/permission.entity';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 
 @Controller('permission')
-export class PermissionController extends BaseController<
-  Permission,
-  PermissionStub,
-  PermissionPopulate,
-  PermissionFull
+export class PermissionController extends BaseOrmController<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionDtoConfig
 > {
   constructor(
-    private readonly permissionService: PermissionService,
+    protected readonly permissionService: PermissionService,
     private readonly roleService: RoleService,
     private readonly modelService: ModelService,
   ) {
@@ -51,7 +49,7 @@ export class PermissionController extends BaseController<
    * Retrieves permissions based on optional filters and populates relationships if requested.
    *
    * @param populate - List of related entities to populate ('model', 'role').
-   * @param filters - Filter conditions to apply when fetching permissions.
+   * @param options - TypeORM query options to apply when fetching permissions.
    *
    * @returns A list of permissions, potentially populated with related entities.
    */
@@ -60,28 +58,28 @@ export class PermissionController extends BaseController<
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<Permission>({
-        allowedFields: ['model', 'role'],
+      new TypeOrmSearchFilterPipe<PermissionOrmEntity>({
+        allowedFields: ['model.id', 'role.id', 'relation'],
       }),
     )
-    filters: TFilterQuery<Permission>,
+    options?: FindManyOptions<PermissionOrmEntity>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.permissionService.findAndPopulate(filters)
-      : await this.permissionService.find(filters);
+    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
+
+    return shouldPopulate
+      ? await this.permissionService.findAndPopulate(options)
+      : await this.permissionService.find(options);
   }
 
   /**
    * Creates a new permission entity.
    *
    * Validates the input data and ensures the role and model exist before creation.
-   * CSRF protection is applied to prevent unauthorized requests.
    *
    * @param permission - The data transfer object (DTO) containing the details for the new permission.
    *
    * @returns The created permission.
    */
-
   @Post()
   async create(@Body() permission: PermissionCreateDto) {
     const role = await this.roleService.findOne(permission.role);
@@ -101,13 +99,11 @@ export class PermissionController extends BaseController<
    * Deletes a permission entity by its ID.
    *
    * Attempts to delete the permission and logs a warning if the permission is not found.
-   * CSRF protection is applied, and a 204 HTTP response is returned upon successful deletion.
    *
    * @param id - The ID of the permission to delete.
    *
    * @returns The result of the deletion operation.
    */
-
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -116,6 +112,7 @@ export class PermissionController extends BaseController<
       this.logger.warn(`Unable to delete Permission by id ${id}`);
       throw new NotFoundException(`Permission with ID ${id} not found`);
     }
+
     return result;
   }
 }

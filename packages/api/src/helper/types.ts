@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ExtensionSetting } from '@/setting/schemas/types';
+import { AnySetting, ExtensionSetting } from '@/setting/types';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseFlowEscapeHelper from './lib/base-flow-escape-helper';
@@ -138,7 +138,11 @@ export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
   Map<string, H>
 >;
 
-export type HelperSetting<N extends HelperName = HelperName> =
-  ExtensionSetting<{
+export type HelperSetting<N extends HelperName = HelperName> = ExtensionSetting<
+  {
     group: HyphenToUnderscore<N>;
-  }>;
+    weight?: number;
+  },
+  AnySetting,
+  'id' | 'createdAt' | 'updatedAt' | 'group' | 'weight'
+>;

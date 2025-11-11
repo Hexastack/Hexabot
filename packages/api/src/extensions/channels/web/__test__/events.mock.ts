@@ -4,11 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FileType } from '@/chat/schemas/types/attachment';
-import {
-  IncomingMessageType,
-  StdEventType,
-} from '@/chat/schemas/types/message';
+import { FileType } from '@/chat/types/attachment';
+import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 
 import { Web } from '../types';
 
@@ -46,7 +43,6 @@ const webEventLocation: Web.IncomingMessage = {
   mid: 'web-event-location',
   read: true,
 };
-
 const webEventFile: Web.Event = {
   type: Web.IncomingMessageType.file,
   data: {
@@ -59,26 +55,23 @@ const webEventFile: Web.Event = {
   mid: 'web-event-file',
   read: true,
 };
-
 const payloadChannelData = {
   isSocket: true,
   ipAddress: '0.0.0.0',
 };
-
 const textChannelData = {
   isSocket: false,
   ipAddress: '1.1.1.1',
 };
-
 const locationChannelData = {
   isSocket: true,
   ipAddress: '2.2.2.2',
 };
-
 const fileChannelData = {
   isSocket: false,
   ipAddress: '3.3.3.3',
 };
+const TEST_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
 
 export const webEvents: [string, Web.IncomingMessage, any][] = [
   [
@@ -147,14 +140,14 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
         attachment: {
           type: FileType.image,
           payload: {
-            id: '9'.repeat(24),
+            id: TEST_ATTACHMENT_ID,
           },
         },
       },
       message: {
         attachment: {
           payload: {
-            id: '9'.repeat(24),
+            id: TEST_ATTACHMENT_ID,
           },
           type: FileType.image,
         },

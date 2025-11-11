@@ -17,27 +17,29 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
+import { PopulatePipe } from '@/utils/pipes/populate.pipe';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
+  LabelGroup,
   LabelGroupCreateDto,
+  LabelGroupDtoConfig,
+  LabelGroupFull,
+  LabelGroupTransformerDto,
   LabelGroupUpdateDto,
 } from '../dto/label-group.dto';
-import { LabelGroup } from '../schemas/label-group.schema';
+import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 import { LabelGroupService } from '../services/label-group.service';
 
 @Controller('labelgroup')
-export class LabelGroupController extends BaseController<
-  LabelGroup,
-  LabelGroup,
-  never,
-  never
+export class LabelGroupController extends BaseOrmController<
+  LabelGroupOrmEntity,
+  LabelGroupTransformerDto,
+  LabelGroupDtoConfig
 > {
   constructor(private readonly labelGroupService: LabelGroupService) {
     super(labelGroupService);
@@ -49,11 +51,21 @@ export class LabelGroupController extends BaseController<
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<LabelGroup>,
-    @Query(new SearchFilterPipe<LabelGroup>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<LabelGroup>,
-  ) {
-    return await this.labelGroupService.find(filters, pageQuery);
+    @Query(PopulatePipe)
+    populate: string[],
+    @Query(
+      new TypeOrmSearchFilterPipe<LabelGroupOrmEntity>({
+        allowedFields: ['name'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<LabelGroupOrmEntity>,
+  ): Promise<LabelGroup[] | LabelGroupFull[]> {
+    const queryOptions = options ?? {};
+
+    return this.canPopulate(populate)
+      ? await this.labelGroupService.findAndPopulate(queryOptions)
+      : await this.labelGroupService.find(queryOptions);
   }
 
   /**
@@ -63,13 +75,13 @@ export class LabelGroupController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<LabelGroup>({
+      new TypeOrmSearchFilterPipe<LabelGroupOrmEntity>({
         allowedFields: ['name'],
       }),
     )
-    filters?: TFilterQuery<LabelGroup>,
-  ) {
-    return await this.count(filters);
+    options?: FindManyOptions<LabelGroupOrmEntity>,
+  ): Promise<{ count: number }> {
+    return await this.count(options ?? {});
   }
 
   /**
@@ -77,13 +89,20 @@ export class LabelGroupController extends BaseController<
    * @returns A promise that resolves to a label group.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const doc = await this.labelGroupService.findOne(id);
-    if (!doc) {
+  async findOne(
+    @Param('id') id: string,
+    @Query(PopulatePipe)
+    populate: string[],
+  ): Promise<LabelGroup | LabelGroupFull> {
+    const record = this.canPopulate(populate)
+      ? await this.labelGroupService.findOneAndPopulate(id)
+      : await this.labelGroupService.findOne(id);
+    if (!record) {
       this.logger.warn(`Unable to find Label Group by id ${id}`);
       throw new NotFoundException(`Label Group with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   /**
@@ -91,7 +110,7 @@ export class LabelGroupController extends BaseController<
    * @returns A promise that resolves to the created label group.
    */
   @Post()
-  async create(@Body() labelGroup: LabelGroupCreateDto) {
+  async create(@Body() labelGroup: LabelGroupCreateDto): Promise<LabelGroup> {
     return await this.labelGroupService.create(labelGroup);
   }
 
@@ -103,7 +122,7 @@ export class LabelGroupController extends BaseController<
   async updateOne(
     @Param('id') id: string,
     @Body() labelGroupUpdate: LabelGroupUpdateDto,
-  ) {
+  ): Promise<LabelGroup> {
     return await this.labelGroupService.updateOne(id, labelGroupUpdate);
   }
 
@@ -113,12 +132,13 @@ export class LabelGroupController extends BaseController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
     const result = await this.labelGroupService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Label Group by id ${id}`);
       throw new NotFoundException(`Label Group with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -134,7 +154,7 @@ export class LabelGroupController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.labelGroupService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -145,6 +165,7 @@ export class LabelGroupController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted Label Groups with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

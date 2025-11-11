@@ -10,7 +10,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 
 import { ContentField } from '../dto/contentType.dto';
 
@@ -37,6 +37,7 @@ export class ValidateRequiredFields implements ValidatorConstraintInterface {
 
       if (!field) {
         errors.push(`Field ${requiredField.name} is required.`);
+
         return;
       }
 

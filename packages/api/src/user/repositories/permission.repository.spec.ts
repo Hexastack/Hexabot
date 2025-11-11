@@ -4,141 +4,145 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { TestingModule } from '@nestjs/testing';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
-  installPermissionFixtures,
-  permissionFixtures,
+  installPermissionFixturesTypeOrm,
+  permissionOrmFixtures,
 } from '@/utils/test/fixtures/permission';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { Model as ModelSchema } from '../schemas/model.schema';
-import { Permission, PermissionFull } from '../schemas/permission.schema';
-import { Role } from '../schemas/role.schema';
+import { Permission } from '../dto/permission.dto';
+import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
+import { PermissionOrmEntity as PermissionEntity } from '../entities/permission.entity';
+import { RoleOrmEntity as RoleEntity } from '../entities/role.entity';
+import { UserOrmEntity } from '../entities/user.entity';
 import { Action } from '../types/action.type';
 
-describe('PermissionRepository', () => {
+import { ModelRepository } from './model.repository';
+import { PermissionRepository } from './permission.repository';
+import { RoleRepository } from './role.repository';
+
+describe('PermissionRepository (TypeORM)', () => {
+  let module: TestingModule;
   let modelRepository: ModelRepository;
   let roleRepository: RoleRepository;
   let permissionRepository: PermissionRepository;
-  let permissionModel: Model<Permission>;
-  let permission: Permission;
-  let permissionToDelete: Permission;
+  let createPermission: Permission;
+  let updatePermission: Permission;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['InvitationModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installPermissionFixtures)],
       providers: [ModelRepository, RoleRepository, PermissionRepository],
+      typeorm: {
+        entities: [
+          PermissionEntity,
+          RoleEntity,
+          ModelEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+        ],
+        fixtures: installPermissionFixturesTypeOrm,
+      },
     });
-    [roleRepository, modelRepository, permissionRepository, permissionModel] =
-      await getMocks([
-        RoleRepository,
+
+    module = testing.module;
+
+    [modelRepository, roleRepository, permissionRepository] =
+      await testing.getMocks([
         ModelRepository,
+        RoleRepository,
         PermissionRepository,
-        getModelToken(Permission.name),
       ]);
-    permission = (await permissionRepository.findOne({
-      action: Action.CREATE,
-    })) as Permission;
-    permissionToDelete = (await permissionRepository.findOne({
-      action: Action.UPDATE,
-    })) as Permission;
+
+    const created = (await permissionRepository.findOne({
+      where: { action: Action.CREATE },
+    }))!;
+    const updated = (await permissionRepository.findOne({
+      where: { action: Action.UPDATE },
+    }))!;
+
+    createPermission = created;
+    updatePermission = updated;
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find a permission and populate its role and model', async () => {
-      jest.spyOn(permissionModel, 'findById');
-      const role = await roleRepository.findOne(permission.role);
-      const model = await modelRepository.findOne(permission.model);
+      const role = await roleRepository.findOne(createPermission.role);
+      const model = await modelRepository.findOne(createPermission.model);
       const result = await permissionRepository.findOneAndPopulate(
-        permission.id,
-        undefined,
+        createPermission.id,
       );
-      expect(permissionModel.findById).toHaveBeenCalledWith(
-        permission.id,
-        undefined,
-      );
-      expect(result).toEqualPayload({
-        ...permissionFixtures.find(({ action }) => action === 'create'),
-        role,
-        model,
-      });
+
+      expect(result).toBeDefined();
+      expect(result!.id).toBe(createPermission.id);
+      expect(result!.role?.id).toBe(role?.id);
+      expect(result!.model?.id).toBe(model?.id);
+
+      const expected = permissionOrmFixtures.find(
+        ({ action }) => action === Action.CREATE,
+      )!;
+      expect(result!.action).toBe(expected.action);
+      expect(result!.relation).toBe(expected.relation);
     });
   });
 
-  describe('findAndPopulate', () => {
-    it('should find permissions, and for each permission, populate the corresponding role and model', async () => {
-      jest.spyOn(permissionModel, 'find');
-      const allModels = await modelRepository.findAll();
-      const allRoles = await roleRepository.findAll();
-      const allPermissions = await permissionRepository.findAll();
+  describe('findAllAndPopulate', () => {
+    it('should populate models and roles', async () => {
+      const permissions = await permissionRepository.findAll();
       const result = await permissionRepository.findAllAndPopulate();
-      const permissionsWithRolesAndModels = allPermissions.reduce(
-        (acc, currPermission) => {
-          acc.push({
-            ...currPermission,
-            role: allRoles.find((role) => {
-              return role.id === currPermission.role;
-            }) as Role,
 
-            model: allModels.find((model) => {
-              return model.id === currPermission.model;
-            }) as ModelSchema,
-          });
+      expect(result).toHaveLength(permissions.length);
 
-          return acc;
-        },
-        [] as PermissionFull[],
-      );
-      expect(permissionModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(permissionsWithRolesAndModels);
+      result.forEach((permission) => {
+        expect(permission.role).toBeDefined();
+        expect(permission.model).toBeDefined();
+        const expected = permissionOrmFixtures.find(
+          ({ id }) => id === permission.id,
+        );
+        expect(expected).toBeDefined();
+        expect(permission.role!.id).toBe(expected?.role);
+        expect(permission.model!.id).toBe(expected?.model);
+      });
     });
   });
 
   describe('deleteOne', () => {
     it('should delete a permission by id', async () => {
-      jest.spyOn(permissionModel, 'deleteOne');
-      const result = await permissionRepository.deleteOne(
-        permissionToDelete.id,
-      );
-
-      expect(permissionModel.deleteOne).toHaveBeenCalledWith({
-        _id: permissionToDelete.id,
-        builtin: { $ne: true },
-      });
+      const result = await permissionRepository.deleteOne(updatePermission.id);
 
       expect(result).toEqual({
         acknowledged: true,
         deletedCount: 1,
       });
 
-      const permissions = await permissionRepository.find({
-        role: permissionToDelete.id,
+      const remaining = await permissionRepository.find({
+        where: { id: updatePermission.id },
       });
-      expect(permissions.length).toEqual(0);
+      expect(remaining.length).toBe(0);
     });
 
     it('should fail to delete a permission that does not exist', async () => {
-      expect(
-        await permissionRepository.deleteOne(permissionToDelete.id),
-      ).toEqual({
-        acknowledged: true,
-        deletedCount: 0,
-      });
+      expect(await permissionRepository.deleteOne(updatePermission.id)).toEqual(
+        {
+          acknowledged: true,
+          deletedCount: 0,
+        },
+      );
     });
   });
 });

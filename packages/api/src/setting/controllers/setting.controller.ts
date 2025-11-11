@@ -5,19 +5,27 @@
  */
 
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { Setting } from '../schemas/setting.schema';
+import {
+  Setting,
+  SettingDtoConfig,
+  SettingTransformerDto,
+  SettingUpdateDto,
+} from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
 @Controller('setting')
-export class SettingController extends BaseController<Setting> {
-  constructor(private readonly settingService: SettingService) {
+export class SettingController extends BaseOrmController<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig
+> {
+  constructor(protected readonly settingService: SettingService) {
     super(settingService);
   }
 
@@ -32,14 +40,14 @@ export class SettingController extends BaseController<Setting> {
   @Get()
   async find(
     @Query(
-      new SearchFilterPipe<Setting>({
+      new TypeOrmSearchFilterPipe<SettingOrmEntity>({
         allowedFields: ['group'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<Setting>,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Setting>,
+    options: FindManyOptions<SettingOrmEntity>,
   ) {
-    return await this.settingService.find(filters, pageQuery);
+    return await this.settingService.find(options);
   }
 
   /**
@@ -50,11 +58,10 @@ export class SettingController extends BaseController<Setting> {
    *
    * @returns The updated setting.
    */
-
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
-    @Body() settingUpdateDto: { value: any },
+    @Body() settingUpdateDto: SettingUpdateDto,
   ): Promise<Setting> {
     return await this.settingService.updateOne(id, settingUpdateDto);
   }

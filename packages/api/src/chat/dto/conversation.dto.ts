@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -14,17 +15,60 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
-import { Context } from './../schemas/types/context';
+import { Context } from './../types/context';
+import { Block } from './block.dto';
+import { Subscriber } from './subscriber.dto';
+
+@Exclude()
+export class ConversationStub extends BaseStub {
+  @Expose()
+  active!: boolean;
+
+  @Expose()
+  context!: Context;
+}
+
+@Exclude()
+export class Conversation extends ConversationStub {
+  @Expose({ name: 'senderId' })
+  sender!: string;
+
+  @Expose({ name: 'currentBlockId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  current?: string | null;
+
+  @Expose({ name: 'nextBlockIds' })
+  next!: string[];
+}
+
+@Exclude()
+export class ConversationFull extends ConversationStub {
+  @Expose()
+  @Type(() => Subscriber)
+  sender!: Subscriber;
+
+  @Expose()
+  @Type(() => Block)
+  current: Block;
+
+  @Expose()
+  @Type(() => Block)
+  next!: Block[];
+}
 
 export class ConversationCreateDto {
   @ApiProperty({ description: 'Conversation sender', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsObjectId({
-    message: 'Sender must be a valid objectId',
+  @IsUUIDv4({
+    message: 'Sender must be a valid UUID',
   })
   sender: string;
 
@@ -41,21 +85,31 @@ export class ConversationCreateDto {
   @ApiProperty({ description: 'Current conversation', type: String })
   @IsOptional()
   @IsString()
-  @IsObjectId({
-    message: 'Current must be a valid objectId',
+  @IsUUIDv4({
+    message: 'Current must be a valid UUID',
   })
   current?: string | null;
 
   @ApiProperty({ description: 'next conversation', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({
+  @IsUUIDv4({
     each: true,
-    message: 'next must be a valid objectId',
+    message: 'next must be a valid UUID',
   })
   next?: string[];
 }
 
-export type ConversationDto = DtoConfig<{
-  create: ConversationCreateDto;
+export type ConversationTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Conversation;
+  FullCls: typeof ConversationFull;
 }>;
+
+export class ConversationUpdateDto extends PartialType(ConversationCreateDto) {}
+
+export type ConversationDtoConfig = DtoActionConfig<{
+  create: ConversationCreateDto;
+  update: ConversationUpdateDto;
+}>;
+
+export type ConversationDto = ConversationDtoConfig;

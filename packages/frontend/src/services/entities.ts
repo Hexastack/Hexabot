@@ -176,14 +176,14 @@ export const ContentTypeEntity = new schema.Entity(
 
 export const ContentEntity = new schema.Entity(
   EntityType.CONTENT,
-  { entity: ContentTypeEntity },
+  { contentType: ContentTypeEntity },
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,
   },
 );
 
-export const SettingEntity = new schema.Entity(EntityType.SETTING, {
+export const SettingEntity = new schema.Entity(EntityType.SETTING, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
 });
@@ -258,7 +258,6 @@ export const BlockEntity = new schema.Entity(
   {
     trigger_labels: [LabelEntity],
     assign_labels: [LabelEntity],
-    assignTo: [UserEntity],
     category: CategoryEntity,
   },
   {

@@ -17,46 +17,38 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  BlockCreateDto,
-  BlockSearchQueryDto,
-  BlockUpdateDto,
-} from '../dto/block.dto';
-import {
   Block,
+  BlockCreateDto,
+  BlockDtoConfig,
   BlockFull,
-  BlockPopulate,
-  BlockStub,
+  BlockSearchQueryDto,
+  BlockTransformerDto,
+  BlockUpdateDto,
   SearchRankedBlock,
-} from '../schemas/block.schema';
+} from '../dto/block.dto';
+import { BlockOrmEntity } from '../entities/block.entity';
 import { BlockService } from '../services/block.service';
-import { CategoryService } from '../services/category.service';
-import { LabelService } from '../services/label.service';
 
 @Controller('Block')
-export class BlockController extends BaseController<
-  Block,
-  BlockStub,
-  BlockPopulate,
-  BlockFull
+export class BlockController extends BaseOrmController<
+  BlockOrmEntity,
+  BlockTransformerDto,
+  BlockDtoConfig
 > {
   constructor(
     private readonly blockService: BlockService,
-    private readonly categoryService: CategoryService,
-    private readonly labelService: LabelService,
     private readonly userService: UserService,
     private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
@@ -64,7 +56,7 @@ export class BlockController extends BaseController<
   }
 
   /**
-   * Text search for blocks using MongoDB text index.
+   * Text search for blocks.
    *
    * Example: GET /block/search?q=UserSearchPhrase&limit=50
    *
@@ -93,13 +85,24 @@ export class BlockController extends BaseController<
   async find(
     @Query(PopulatePipe)
     populate: string[],
-    @Query(new SearchFilterPipe<Block>({ allowedFields: ['category'] }))
-    filters: TFilterQuery<Block>,
-    @Query(PageQueryPipe) pageQuery?: PageQueryDto<Block>,
+    @Query(
+      new TypeOrmSearchFilterPipe<BlockOrmEntity>({
+        allowedFields: [
+          'category.id',
+          'name',
+          'starts_conversation',
+          'builtin',
+        ],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<BlockOrmEntity>,
   ): Promise<Block[] | BlockFull[]> {
+    const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
-      ? await this.blockService.findAndPopulate(filters, pageQuery)
-      : await this.blockService.find(filters, pageQuery);
+      ? await this.blockService.findAndPopulate(queryOptions)
+      : await this.blockService.find(queryOptions);
   }
 
   /**
@@ -157,6 +160,7 @@ export class BlockController extends BaseController<
                 args: defaultSettings.reduce(
                   (acc, setting) => {
                     acc[setting.label] = setting.value;
+
                     return acc;
                   },
                   {} as { [key: string]: any },
@@ -167,6 +171,7 @@ export class BlockController extends BaseController<
               typeof p.effects === 'object' ? Object.keys(p.effects) : [],
           };
         });
+
       return await Promise.all(plugins);
     } catch (e) {
       this.logger.error(e);
@@ -218,14 +223,15 @@ export class BlockController extends BaseController<
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Block | BlockFull> {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.blockService.findOneAndPopulate(id)
       : await this.blockService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   /**
@@ -236,39 +242,7 @@ export class BlockController extends BaseController<
    */
   @Post()
   async create(@Body() block: BlockCreateDto): Promise<Block> {
-    this.validate({
-      dto: block,
-      allowedIds: {
-        category: block.category
-          ? (await this.categoryService.findOne(block.category))?.id
-          : null,
-        attachedBlock: block.attachedBlock
-          ? (await this.blockService.findOne(block.attachedBlock))?.id
-          : null,
-        nextBlocks: (
-          await this.blockService.find({
-            _id: {
-              $in: block.nextBlocks,
-            },
-          })
-        ).map(({ id }) => id),
-        assign_labels: (
-          await this.labelService.find({
-            _id: {
-              $in: block.assign_labels,
-            },
-          })
-        ).map(({ id }) => id),
-        trigger_labels: (
-          await this.labelService.find({
-            _id: {
-              $in: block.trigger_labels,
-            },
-          })
-        ).map(({ id }) => id),
-      },
-    });
-    // TODO: the validate function doesn't support nested objects, we need to refactor it to support nested objects
+    // TODO: typeorm fk constraint doesn't support nested objects, we need to refactor it to support nested objects
     if (block.options?.assignTo) {
       const user = await this.userService.findOne(block.options.assignTo);
       if (!user) {
@@ -293,9 +267,7 @@ export class BlockController extends BaseController<
       throw new BadRequestException('No IDs provided  to perform the update');
     }
     const updates = await this.blockService.updateMany(
-      {
-        _id: { $in: body.ids },
-      },
+      { where: { id: In(body.ids) } },
       body.payload,
     );
 
@@ -331,6 +303,7 @@ export class BlockController extends BaseController<
       this.logger.warn(`Unable to delete Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -346,7 +319,7 @@ export class BlockController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.blockService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -355,6 +328,7 @@ export class BlockController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted blocks with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

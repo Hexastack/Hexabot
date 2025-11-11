@@ -116,6 +116,7 @@ export class LocalAuthController extends BaseAuthController {
   async signup(@Body() userCreateDto: UserCreateDto) {
     try {
       await this.userService.create(userCreateDto);
+
       return { success: true };
     } catch (error) {
       this.logger.error(error);
@@ -164,7 +165,9 @@ export class LocalAuthController extends BaseAuthController {
         first_name: userCreateDto.first_name,
       });
 
-      await this.invitationService.deleteOne({ email: decodedToken.email });
+      await this.invitationService.deleteOne({
+        where: { email: decodedToken.email },
+      });
     } catch (e) {
       this.logger.error(
         'Could not send email',

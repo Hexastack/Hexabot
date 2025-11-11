@@ -11,23 +11,22 @@ import { Cache } from 'cache-manager';
 
 import { PERMISSION_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { PermissionDto } from '../dto/permission.dto';
-import { PermissionRepository } from '../repositories/permission.repository';
 import {
-  Permission,
+  PermissionDtoConfig,
   PermissionFull,
-  PermissionPopulate,
-} from '../schemas/permission.schema';
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { PermissionRepository } from '../repositories/permission.repository';
 import { PermissionsTree } from '../types/permission.type';
 
 @Injectable()
-export class PermissionService extends BaseService<
-  Permission,
-  PermissionPopulate,
-  PermissionFull,
-  PermissionDto
+export class PermissionService extends BaseOrmService<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionDtoConfig
 > {
   constructor(
     readonly repository: PermissionRepository,
@@ -55,26 +54,32 @@ export class PermissionService extends BaseService<
    */
   @Cacheable(PERMISSION_CACHE_KEY)
   async getPermissions(): Promise<PermissionsTree> {
-    const currentModels = await this.findAllAndPopulate();
-    return this.buildTree(currentModels);
+    const currentPermissions = await this.findAllAndPopulate();
+
+    return this.buildTree(currentPermissions);
   }
 
   /**
    * Builds a tree structure of permissions based on roles and models.
    *
-   * @param permissions - Array of full permission objects.
+   * @param permissions - Array of permission entities.
    *
    * @returns A tree structure mapping roles and models to actions.
    */
   buildTree(permissions: PermissionFull[]): PermissionsTree {
-    return permissions.reduce((acc, p) => {
-      const role = p.role.id;
-      const model = p.model.identity;
+    return permissions.reduce<PermissionsTree>((acc, p) => {
+      const role = p.role?.id;
+      const model = p.model?.identity ?? p.model?.id;
+
+      if (!role || !model) {
+        return acc;
+      }
 
       acc[role] = acc[role] || {};
       acc[role][model] = acc[role][model] || [];
 
       acc[role][model].push(p.action);
+
       return acc;
     }, {});
   }

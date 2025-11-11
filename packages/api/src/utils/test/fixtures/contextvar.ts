@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
-import { ContextVarCreateDto } from '@/chat/dto/context-var.dto';
-import { ContextVar, ContextVarModel } from '@/chat/schemas/context-var.schema';
+import { ContextVar, ContextVarCreateDto } from '@/chat/dto/context-var.dto';
+import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -46,10 +46,21 @@ export const contextVarFixtures = getFixturesWithDefaultValues<
   defaultValues: contentVarDefaultValues,
 });
 
-export const installContextVarFixtures = async () => {
-  const ContextVar = mongoose.model(
-    ContextVarModel.name,
-    ContextVarModel.schema,
+export const installContextVarFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(ContextVarOrmEntity);
+
+  if (await repository.count()) {
+    return await repository.find();
+  }
+
+  const entities = contextVarFixtures.map((fixture) =>
+    repository.create({
+      ...fixture,
+      permanent: fixture.permanent ?? false,
+    }),
   );
-  return await ContextVar.insertMany(contextVarFixtures);
+
+  return await repository.save(entities);
 };

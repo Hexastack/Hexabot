@@ -4,168 +4,216 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
-import { ContentOptions } from '@/chat/schemas/types/options';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { TestingModule } from '@nestjs/testing';
+
+import { BlockService } from '@/chat/services/block.service';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { ContentOptions } from '@/chat/types/options';
+import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,
-  installContentFixtures,
+  installContentFixturesTypeOrm,
 } from '@/utils/test/fixtures/content';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
+import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
-import { Content } from '../schemas/content.schema';
 
 import { ContentTypeService } from './content-type.service';
 import { ContentService } from './content.service';
 
-describe('ContentService', () => {
+describe('ContentService (TypeORM)', () => {
+  let module: TestingModule;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
-  let contentRepository: ContentRepository;
+  let logger: LoggerService;
+  const createdContentIds: string[] = [];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installContentFixtures)],
+    const { module: testingModule, getMocks } = await buildTestingMocks({
       providers: [
+        ContentService,
+        ContentRepository,
         ContentTypeService,
+        ContentTypeRepository,
         {
-          provide: I18nService,
+          provide: BlockService,
           useValue: {
-            t: jest.fn().mockImplementation((t) => t),
+            findOne: jest.fn(() => null),
           },
         },
       ],
+      typeorm: [
+        {
+          entities: [ContentOrmEntity, ContentTypeOrmEntity],
+          fixtures: [
+            installContentTypeFixturesTypeOrm,
+            installContentFixturesTypeOrm,
+          ],
+        },
+      ],
     });
-    [contentService, contentTypeService, contentRepository] = await getMocks([
+    module = testingModule;
+    [contentService, contentTypeService] = await getMocks([
       ContentService,
       ContentTypeService,
-      ContentRepository,
     ]);
+    logger = (contentService as any).logger as LoggerService;
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    if (createdContentIds.length > 0) {
+      await Promise.all(
+        createdContentIds.map(async (id) => {
+          await contentService.deleteOne(id);
+        }),
+      );
+      createdContentIds.length = 0;
+    }
+  });
 
   describe('findOneAndPopulate', () => {
-    it('should return a content and populate its corresponding content type', async () => {
-      const findSpy = jest.spyOn(contentRepository, 'findOneAndPopulate');
-      const content = await contentService.findOne({ title: 'Jean' });
-
-      const contentType = await contentTypeService.findOne(content!.entity);
-      const result = await contentService.findOneAndPopulate(content!.id);
-      expect(findSpy).toHaveBeenCalledWith(content!.id, undefined);
-      expect(result).toEqualPayload({
-        ...contentFixtures.find(({ title }) => title === 'Jean'),
-        entity: contentType,
+    it('returns a content with its content type', async () => {
+      const targetTitle = contentFixtures[0].title;
+      const [target] = await contentService.find({
+        where: { title: targetTitle },
+        take: 1,
       });
+      expect(target).toBeDefined();
+
+      const result = await contentService.findOneAndPopulate(target.id);
+
+      expect(result).toBeDefined();
+      expect(result?.title).toBe(targetTitle);
+      expect(result?.contentType?.id).toBe(target.contentType);
+    });
+
+    it('returns null when content is missing', async () => {
+      const result = await contentService.findOneAndPopulate(
+        '00000000-0000-4000-8000-000000000000',
+      );
+
+      expect(result).toBeNull();
     });
   });
 
-  describe('find', () => {
-    const pageQuery = getPageQuery<Content>({ limit: 1, sort: ['_id', 'asc'] });
-    it('should return contents and populate their corresponding content types', async () => {
-      const findSpy = jest.spyOn(contentRepository, 'findAndPopulate');
-      const results = await contentService.findAndPopulate({}, pageQuery);
-      const contentType = await contentTypeService.findOne(
-        results[0].entity.id,
-      );
-      expect(findSpy).toHaveBeenCalledWith({}, pageQuery, undefined);
-      expect(results).toEqualPayload([
-        {
-          ...contentFixtures.find(({ title }) => title === 'Jean'),
-          entity: contentType,
-        },
-      ]);
+  describe('findAndPopulate', () => {
+    it('returns contents with their types', async () => {
+      const results = await contentService.findAndPopulate({
+        take: 5,
+        skip: 0,
+      });
+
+      expect(results.length).toBeGreaterThan(0);
+      expect(
+        results.every(
+          (content) =>
+            typeof content.contentType === 'object' &&
+            content.contentType !== null &&
+            typeof content.contentType.id === 'string',
+        ),
+      ).toBe(true);
+    });
+  });
+
+  describe('textSearch', () => {
+    it('matches content by keyword', async () => {
+      const keyword =
+        contentFixtures[0].title?.split(' ')[0].toLowerCase() || '';
+      const results = await contentService.textSearch(keyword);
+
+      expect(
+        results.some((content) => content.title === contentFixtures[0].title),
+      ).toBe(true);
     });
   });
 
   describe('getContent', () => {
-    const contentOptions: ContentOptions = {
+    const baseOptions: ContentOptions = {
       display: OutgoingMessageFormat.list,
+      buttons: [],
       fields: {
         title: 'title',
-        subtitle: 'description',
-        image_url: 'image',
+        subtitle: null,
+        image_url: null,
       },
-      buttons: [],
-      limit: 10,
+      limit: 3,
     };
 
-    it('should get content that is published', async () => {
-      const actualData = await contentService.find(
-        { status: true },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(contentOptions, 0);
-      expect(content?.elements).toEqualPayload(flattenedElements, [
-        ...IGNORED_TEST_FIELDS,
-        'payload',
-      ]);
+    it('returns paginated content list ordered by creation date', async () => {
+      const total = await contentService.count({ where: { status: true } });
+      const result = await contentService.getContent(baseOptions, 0);
+
+      expect(result.elements.length).toBeGreaterThan(0);
+      expect(result.pagination).toEqual({
+        total,
+        skip: 0,
+        limit: baseOptions.limit,
+      });
     });
 
-    it('should get content for a specific entity', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.find(
-        { status: true, entity: contentType!.id },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          entity: contentType!.id,
-        },
-        0,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements);
-    });
+    it('throws when no content matches the query', async () => {
+      const warnSpy = jest.spyOn(logger, 'warn');
+      const errorSpy = jest.spyOn(logger, 'error');
 
-    it('should get content using query', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.find(
-        { status: true, entity: contentType!.id, title: /^Jean/ },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          query: { title: /^Jean/ },
-        },
-        0,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements);
-    });
+      await expect(
+        contentService.getContent(
+          {
+            ...baseOptions,
+            entity: '00000000-0000-4000-8000-000000000001',
+          },
+          0,
+        ),
+      ).rejects.toThrow('No content found');
 
-    it('should get content skiping 2 elements', async () => {
-      const actualData = await contentService.find(
-        { status: true },
-        { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
+      expect(warnSpy).toHaveBeenCalledWith('No content found', {
+        status: true,
+        contentType: { id: '00000000-0000-4000-8000-000000000001' },
+      });
+      expect(errorSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('parseAndSaveDataset', () => {
+    it('stores rows parsed from CSV as content records', async () => {
+      const [existingContentType] = await contentTypeService.find({ take: 1 });
+      expect(existingContentType).toBeDefined();
+
+      const csv =
+        'title,status,description,subtitle\nDemo,true,Description,Subtitle';
+      const created = await contentService.parseAndSaveDataset(
+        csv,
+        existingContentType,
       );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          query: {},
-          entity: undefined,
-          limit: 2,
+
+      expect(created).toBeDefined();
+      if (!created) {
+        throw new Error('Expected dataset parsing to create content records');
+      }
+
+      createdContentIds.push(...created.map((content) => content.id));
+      expect(created).toHaveLength(1);
+      expect(created[0]).toMatchObject({
+        title: 'Demo',
+        contentType: existingContentType.id,
+        status: true,
+        dynamicFields: {
+          description: 'Description',
+          subtitle: 'Subtitle',
         },
-        2,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements, [
-        ...IGNORED_TEST_FIELDS,
-        'payload',
-      ]);
+      });
     });
   });
 });

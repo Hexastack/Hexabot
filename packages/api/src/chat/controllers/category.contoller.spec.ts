@@ -4,195 +4,233 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 
-import { I18nService } from '@/i18n/services/i18n.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { In } from 'typeorm';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   categoryFixtures,
-  installCategoryFixtures,
+  installCategoryFixturesTypeOrm,
 } from '@/utils/test/fixtures/category';
-import { getPageQuery } from '@/utils/test/pagination';
-import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
+import {
+  Category,
+  CategoryCreateDto,
+  CategoryUpdateDto,
+} from '../dto/category.dto';
 import { CategoryService } from '../services/category.service';
 
-import { Category } from './../schemas/category.schema';
 import { CategoryController } from './category.controller';
 
-describe('CategoryController', () => {
+describe('CategoryController (TypeORM)', () => {
+  let module: TestingModule;
   let categoryController: CategoryController;
   let categoryService: CategoryService;
-  let category: Category;
-  let categoryToDelete: Category;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [CategoryController],
-      imports: [rootMongooseTestModule(installCategoryFixtures)],
-      providers: [
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-      ],
+      typeorm: {
+        entities: [
+          CategoryOrmEntity,
+          BlockOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          SubscriberOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          ConversationOrmEntity,
+        ],
+        fixtures: installCategoryFixturesTypeOrm,
+      },
     });
-    [categoryService, categoryController] = await getMocks([
-      CategoryService,
+
+    module = testing.module;
+
+    [categoryController, categoryService] = await testing.getMocks([
       CategoryController,
+      CategoryService,
     ]);
-    category = (await categoryService.findOne({
-      label: 'test category 1',
-    })) as Category;
-    categoryToDelete = (await categoryService.findOne({
-      label: 'test category 2',
-    })) as Category;
   });
 
   afterEach(jest.clearAllMocks);
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  describe('findPage', () => {
-    it('should return an array of categories', async () => {
-      const pageQuery = getPageQuery<Category>();
-      const result = await categoryController.findPage(pageQuery, {});
+  describe('filterCount', () => {
+    it('should count categories', async () => {
+      const expectedCount = await categoryService.count({});
+      const countSpy = jest.spyOn(categoryService, 'count');
+      const result = await categoryController.filterCount();
 
-      expect(result).toEqualPayload(categoryFixtures.sort(sortRowsBy));
+      expect(countSpy).toHaveBeenCalledWith({});
+      expect(result).toEqual({ count: expectedCount });
     });
   });
 
-  describe('count', () => {
-    it('should count categories', async () => {
-      jest.spyOn(categoryService, 'count');
-      const result = await categoryController.filterCount();
+  describe('findPage', () => {
+    it('should find categories', async () => {
+      const expected = await categoryService.find({});
+      const findSpy = jest.spyOn(categoryService, 'find');
+      const result = await categoryController.findPage({});
 
-      expect(categoryService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: categoryFixtures.length });
+      expect(findSpy).toHaveBeenCalledWith({});
+      expect(result).toEqualPayload(expected);
     });
   });
 
   describe('findOne', () => {
     it('should return the existing category', async () => {
-      jest.spyOn(categoryService, 'findOne');
-      const category = (await categoryService.findOne({
-        label: 'test category 1',
-      })) as Category;
-      const result = await categoryController.findOne(category.id);
-
-      expect(categoryService.findOne).toHaveBeenCalledWith(category.id);
-      expect(result).toEqualPayload({
-        ...categoryFixtures.find(({ label }) => label === 'test category 1'),
+      const target = await categoryService.findOne({
+        where: { label: categoryFixtures[0].label },
       });
+      expect(target).toBeDefined();
+
+      const findOneSpy = jest.spyOn(categoryService, 'findOne');
+      const result = await categoryController.findOne(target!.id);
+
+      expect(findOneSpy).toHaveBeenCalledWith(target!.id);
+      expect(result).toEqualPayload(categoryFixtures[0]);
+    });
+
+    it('should throw a NotFoundException when category does not exist', async () => {
+      const id = randomUUID();
+      const findOneSpy = jest
+        .spyOn(categoryService, 'findOne')
+        .mockResolvedValueOnce(null);
+
+      await expect(categoryController.findOne(id)).rejects.toThrow(
+        new NotFoundException(`Category with ID ${id} not found`),
+      );
+      expect(findOneSpy).toHaveBeenCalledWith(id);
     });
   });
 
   describe('create', () => {
-    it('should return created category', async () => {
-      jest.spyOn(categoryService, 'create');
-      const categoryCreateDto: CategoryCreateDto = {
-        label: 'categoryLabel2',
-        builtin: true,
-        zoom: 100,
-        offset: [0, 0],
+    it('should create a category', async () => {
+      const payload: CategoryCreateDto = {
+        label: `category-${Math.random().toString(36).slice(2, 10)}`,
+        builtin: false,
+        zoom: 150,
+        offset: [10, 20],
       };
-      const result = await categoryController.create(categoryCreateDto);
+      const createSpy = jest.spyOn(categoryService, 'create');
+      const result = await categoryController.create(payload);
 
-      expect(categoryService.create).toHaveBeenCalledWith(categoryCreateDto);
-      expect(result).toEqualPayload(categoryCreateDto);
+      expect(createSpy).toHaveBeenCalledWith(payload);
+      expect(result).toEqualPayload(payload);
+
+      await categoryService.deleteOne(result.id);
+    });
+  });
+
+  describe('updateOne', () => {
+    it('should update an existing category', async () => {
+      const created = await categoryService.create({
+        label: `category-${Math.random().toString(36).slice(2, 10)}`,
+        builtin: false,
+      });
+      const updates: CategoryUpdateDto = {
+        zoom: 80,
+        offset: [5, 5],
+      };
+      const updateSpy = jest.spyOn(categoryService, 'updateOne');
+      const result = await categoryController.updateOne(created.id, updates);
+
+      expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
+      expect(result.id).toBe(created.id);
+      expect(result.zoom).toBe(updates.zoom);
+      expect(result.offset).toEqual(updates.offset);
+
+      await categoryService.deleteOne(result.id);
     });
   });
 
   describe('deleteOne', () => {
     it('should delete a category by id', async () => {
-      jest.spyOn(categoryService, 'deleteOne');
-      const result = await categoryController.deleteOne(categoryToDelete.id);
-      expect(categoryService.deleteOne).toHaveBeenCalledWith(
-        categoryToDelete.id,
-      );
-      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+      const deletable = await categoryService.create({
+        label: `category-${Math.random().toString(36).slice(2, 10)}`,
+        builtin: false,
+      });
+      const deleteSpy = jest.spyOn(categoryService, 'deleteOne');
+      const result = await categoryController.deleteOne(deletable.id);
+
+      expect(deleteSpy).toHaveBeenCalledWith(deletable.id);
+      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+
+      const lookup = await categoryService.findOne(deletable.id);
+      expect(lookup).toBeNull();
     });
 
-    it('should throw a NotFoundException when attempting to delete a category by id', async () => {
-      jest.spyOn(categoryService, 'deleteOne');
+    it('should throw a NotFoundException when deletion result is empty', async () => {
+      const id = randomUUID();
+      const deleteSpy = jest
+        .spyOn(categoryService, 'deleteOne')
+        .mockResolvedValueOnce({ acknowledged: true, deletedCount: 0 });
 
-      const result = categoryController.deleteOne(categoryToDelete.id);
-      expect(categoryService.deleteOne).toHaveBeenCalledWith(
-        categoryToDelete.id,
+      await expect(categoryController.deleteOne(id)).rejects.toThrow(
+        new NotFoundException(`Category with ID ${id} not found`),
       );
-      await expect(result).rejects.toThrow(
-        new NotFoundException(
-          `Category with ID ${categoryToDelete.id} not found`,
-        ),
-      );
+      expect(deleteSpy).toHaveBeenCalledWith(id);
     });
   });
 
   describe('deleteMany', () => {
     it('should delete multiple categories by ids', async () => {
-      const deleteResult = { acknowledged: true, deletedCount: 2 };
-      jest.spyOn(categoryService, 'deleteMany').mockResolvedValue(deleteResult);
-
-      const result = await categoryController.deleteMany([
-        category.id,
-        categoryToDelete.id,
+      const createdCategories: Category[] = await categoryService.createMany([
+        { label: `category-${Math.random().toString(36).slice(2, 10)}` },
+        { label: `category-${Math.random().toString(36).slice(2, 10)}` },
       ]);
+      const ids = createdCategories.map(({ id }) => id);
+      const result = await categoryController.deleteMany(ids);
 
-      expect(categoryService.deleteMany).toHaveBeenCalledWith({
-        _id: { $in: [category.id, categoryToDelete.id] },
+      expect(result).toEqualPayload({
+        acknowledged: true,
+        deletedCount: ids.length,
       });
-      expect(result).toEqual(deleteResult);
+
+      const remaining = await categoryService.find({
+        where: { id: In(ids) },
+      });
+      expect(remaining).toHaveLength(0);
     });
 
-    it('should throw a NotFoundException when no categories are deleted', async () => {
-      const deleteResult = { acknowledged: true, deletedCount: 0 };
-      jest.spyOn(categoryService, 'deleteMany').mockResolvedValue(deleteResult);
+    it('should throw a NotFoundException when provided IDs do not exist', async () => {
+      const ids = [randomUUID(), randomUUID()];
 
-      await expect(
-        categoryController.deleteMany([category.id, categoryToDelete.id]),
-      ).rejects.toThrow(
+      await expect(categoryController.deleteMany(ids)).rejects.toThrow(
         new NotFoundException('Categories with provided IDs not found'),
       );
-
-      expect(categoryService.deleteMany).toHaveBeenCalledWith({
-        _id: { $in: [category.id, categoryToDelete.id] },
-      });
     });
 
     it('should throw a BadRequestException when no ids are provided', async () => {
       await expect(categoryController.deleteMany([])).rejects.toThrow(
         new BadRequestException('No IDs provided for deletion.'),
       );
-    });
-  });
-
-  describe('updateOne', () => {
-    const categoryUpdateDto: CategoryUpdateDto = {
-      builtin: false,
-    };
-    it('should return updated category', async () => {
-      jest.spyOn(categoryService, 'updateOne');
-      const result = await categoryController.updateOne(
-        category.id,
-        categoryUpdateDto,
-      );
-
-      expect(categoryService.updateOne).toHaveBeenCalledWith(
-        category.id,
-        categoryUpdateDto,
-      );
-      expect(result).toEqualPayload({
-        ...categoryFixtures.find(({ label }) => label === 'test category 1'),
-        ...categoryUpdateDto,
-      });
     });
   });
 });

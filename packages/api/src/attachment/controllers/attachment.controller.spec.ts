@@ -13,6 +13,7 @@ import {
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { Request } from 'express';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -23,17 +24,14 @@ import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,
-  installAttachmentFixtures,
+  installAttachmentFixturesTypeOrm,
 } from '@/utils/test/fixtures/attachment';
-import { installSettingFixtures } from '@/utils/test/fixtures/setting';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Attachment } from '../dto/attachment.dto';
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
-import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import {
   AttachmentAccess,
@@ -49,18 +47,29 @@ describe('AttachmentController', () => {
   let attachmentToDelete: Attachment;
   let helperService: HelperService;
   let settingService: SettingService;
+  const TEST_USER_ID = '99999999-9999-4999-9999-999999999999';
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [AttachmentController],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installSettingFixtures();
-          await installAttachmentFixtures();
-        }),
+      providers: [
+        {
+          provide: PermissionService,
+          useValue: { findOne: jest.fn() },
+        },
+        {
+          provide: ModelService,
+          useValue: { findOne: jest.fn() },
+        },
       ],
-      providers: [PermissionService, ModelService],
+      typeorm: {
+        entities: [AttachmentOrmEntity],
+        fixtures: [
+          installSettingFixturesTypeOrm,
+          installAttachmentFixturesTypeOrm,
+        ],
+      },
     });
     [attachmentController, attachmentService, helperService, settingService] =
       await getMocks([
@@ -72,7 +81,9 @@ describe('AttachmentController', () => {
     const [loggerService] = await resolveMocks([LoggerService]);
 
     attachmentToDelete = (await attachmentService.findOne({
-      name: 'store1.jpg',
+      where: {
+        name: 'store1.jpg',
+      },
     }))!;
 
     helperService.register(
@@ -80,20 +91,51 @@ describe('AttachmentController', () => {
     );
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeTypeOrmConnections();
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
 
+  describe('findPage', () => {
+    it('should forward TypeORM options to the service', async () => {
+      const findSpy = jest.spyOn(attachmentService, 'find');
+      const name = attachmentFixtures[0].name;
+      const options = {
+        where: { name },
+        take: 5,
+        skip: 0,
+      };
+      const result = await attachmentController.findPage(options);
+
+      expect(findSpy).toHaveBeenCalledWith(options);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        name,
+        type: attachmentFixtures[0].type,
+        resourceRef: attachmentFixtures[0].resourceRef,
+        access: attachmentFixtures[0].access,
+      });
+    });
+  });
+
   describe('count', () => {
     it('should count attachments', async () => {
-      jest.spyOn(attachmentService, 'count');
-      const result = await attachmentController.filterCount();
+      const countSpy = jest.spyOn(attachmentService, 'count');
+      const name = attachmentFixtures[0].name;
+      const result = await attachmentController.filterCount({
+        where: { name },
+      });
 
-      expect(attachmentService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: attachmentFixtures.length });
+      expect(countSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { name },
+        }),
+      );
+      expect(result.count).toBe(1);
     });
   });
 
@@ -120,7 +162,7 @@ describe('AttachmentController', () => {
           file: [attachmentFile],
         },
         {
-          session: { passport: { user: { id: '9'.repeat(24) } } },
+          session: { passport: { user: { id: TEST_USER_ID } } },
         } as unknown as Request,
         { resourceRef: AttachmentResourceRef.BlockAttachment },
       );
@@ -133,7 +175,7 @@ describe('AttachmentController', () => {
         resourceRef: AttachmentResourceRef.BlockAttachment,
         access: AttachmentAccess.Public,
         createdByRef: AttachmentCreatedByRef.User,
-        createdBy: '9'.repeat(24),
+        createdBy: TEST_USER_ID,
       });
       expect(result).toEqualPayload(
         [
@@ -141,10 +183,10 @@ describe('AttachmentController', () => {
             ...attachment,
             resourceRef: AttachmentResourceRef.BlockAttachment,
             createdByRef: AttachmentCreatedByRef.User,
-            createdBy: '9'.repeat(24),
+            createdBy: TEST_USER_ID,
           },
         ],
-        [...IGNORED_TEST_FIELDS, 'location', 'url'],
+        [...IGNORED_TEST_FIELDS, 'location', 'url', 'channel'],
       );
     });
   });
@@ -162,7 +204,9 @@ describe('AttachmentController', () => {
     it('should download the attachment by id', async () => {
       jest.spyOn(attachmentService, 'findOne');
       const storedAttachment = (await attachmentService.findOne({
-        name: 'store1.jpg',
+        where: {
+          name: 'store1.jpg',
+        },
       }))!;
       const result = await attachmentController.download({
         id: storedAttachment.id,

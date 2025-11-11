@@ -25,28 +25,33 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
+import { FindManyOptions } from 'typeorm';
 
 import { config } from '@/config';
 import { Roles } from '@/utils/decorators/roles.decorator';
-import { BaseController } from '@/utils/generics/base-controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
+  Attachment,
   AttachmentContextParamDto,
   AttachmentDownloadDto,
+  AttachmentDtoConfig,
+  AttachmentTransformerDto,
 } from '../dto/attachment.dto';
+import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
-import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
 @Controller('attachment')
 @UseGuards(AttachmentGuard)
-export class AttachmentController extends BaseController<Attachment> {
-  constructor(private readonly attachmentService: AttachmentService) {
+export class AttachmentController extends BaseOrmController<
+  AttachmentOrmEntity,
+  AttachmentTransformerDto,
+  AttachmentDtoConfig
+> {
+  constructor(protected readonly attachmentService: AttachmentService) {
     super(attachmentService);
   }
 
@@ -58,43 +63,43 @@ export class AttachmentController extends BaseController<Attachment> {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Attachment>({
+      new TypeOrmSearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    filters?: TFilterQuery<Attachment>,
+    options?: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return await this.count(filters);
+    return super.count(options);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Attachment> {
-    const doc = await this.attachmentService.findOne(id);
-    if (!doc) {
+    const attachment = await this.attachmentService.findOne(id);
+    if (!attachment) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
-    return doc;
+
+    return attachment;
   }
 
   /**
    * Retrieves all attachments based on specified filters.
    *
-   * @param pageQuery - The pagination to apply when retrieving attachments.
-   * @param filters - The filters to apply when retrieving attachments.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A promise that resolves to an array of attachments matching the filters.
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
     @Query(
-      new SearchFilterPipe<Attachment>({
+      new TypeOrmSearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<Attachment>,
+    options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return await this.attachmentService.find(filters, pageQuery);
+    return await this.attachmentService.find(options);
   }
 
   /**

@@ -4,78 +4,90 @@
  * Full terms: see LICENSE.md.
  */
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language } from '@/i18n/schemas/language.schema';
+import { Language } from '@/i18n/dto/language.dto';
+import { LanguageService } from '@/i18n/services/language.service';
+import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import {
-  installNlpSampleEntityFixtures,
+  installNlpSampleEntityFixturesTypeOrm,
   nlpSampleEntityFixtures,
 } from '@/utils/test/fixtures/nlpsampleentity';
 import { nlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
-import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity } from '../dto/nlp-entity.dto';
 import {
   NlpSampleEntity,
+  NlpSampleEntityCreateDto,
   NlpSampleEntityFull,
-} from '../schemas/nlp-sample-entity.schema';
-import { NlpSample } from '../schemas/nlp-sample.schema';
-import { NlpValue, NlpValueStub } from '../schemas/nlp-value.schema';
+} from '../dto/nlp-sample-entity.dto';
+import { NlpSample } from '../dto/nlp-sample.dto';
+import { NlpValue } from '../dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
+import { NlpSampleState } from '../types';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
 import { NlpValueService } from './nlp-value.service';
 
-describe('NlpSampleEntityService', () => {
+describe('NlpSampleEntityService (TypeORM)', () => {
   let nlpSampleEntityService: NlpSampleEntityService;
-  let nlpSampleEntityRepository: NlpSampleEntityRepository;
-  let nlpSampleEntities: NlpSampleEntity[];
-  let nlpEntityRepository: NlpEntityRepository;
-  let languageRepository: LanguageRepository;
-  let nlpEntities: NlpEntity[];
-  let languages: Language[];
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
+  let languageService: LanguageService;
+  let nlpSampleEntities: NlpSampleEntity[];
+  let nlpEntities: NlpEntity[];
+  let languages: Language[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['NlpSampleModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
-      providers: [NlpSampleEntityService, LanguageRepository],
+      providers: [
+        NlpSampleEntityService,
+        NlpEntityService,
+        NlpValueService,
+        LanguageService,
+      ],
+      typeorm: {
+        entities: [
+          NlpEntityOrmEntity,
+          NlpValueOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+        ],
+        fixtures: installNlpSampleEntityFixturesTypeOrm,
+      },
     });
+
     [
       nlpSampleEntityService,
-      nlpSampleEntityRepository,
-      nlpEntityRepository,
-      languageRepository,
       nlpEntityService,
       nlpValueService,
-    ] = await getMocks([
+      languageService,
+    ] = await testing.getMocks([
       NlpSampleEntityService,
-      NlpSampleEntityRepository,
-      NlpEntityRepository,
-      LanguageRepository,
       NlpEntityService,
       NlpValueService,
+      LanguageService,
     ]);
-    nlpSampleEntities = await nlpSampleEntityRepository.findAll();
-    nlpEntities = await nlpEntityRepository.findAll();
-    languages = await languageRepository.findAll();
+
+    nlpSampleEntities = await nlpSampleEntityService.findAll();
+    nlpEntities = await nlpEntityService.findAll();
+    languages = await languageService.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
     it('should return a nlp SampleEntity with populate', async () => {
@@ -90,20 +102,19 @@ describe('NlpSampleEntityService', () => {
           ...nlpSampleFixtures[0],
           language: languages[nlpSampleFixtures[0].language!].id,
         },
+        start: nlpSampleEntityFixtures[0].start || null,
+        end: nlpSampleEntityFixtures[0].end || null,
       };
-      expect(result).toEqualPayload(sampleEntityWithPopulate);
+      expect(result).toEqualPayload(sampleEntityWithPopulate, [
+        ...IGNORED_TEST_FIELDS,
+        'metadata',
+      ]);
     });
   });
 
   describe('findAndPopulate', () => {
     it('should return all nlp sample entities with populate', async () => {
-      const pageQuery = getPageQuery<NlpSampleEntity>({
-        sort: ['value', 'asc'],
-      });
-      const result = await nlpSampleEntityService.findAndPopulate(
-        {},
-        pageQuery,
-      );
+      const result = await nlpSampleEntityService.findAndPopulate({});
       const nlpValueFixturesWithEntities = nlpValueFixtures.reduce(
         (acc, curr) => {
           const ValueWithEntities = {
@@ -114,9 +125,10 @@ describe('NlpSampleEntityService', () => {
             metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
+
           return acc;
         },
-        [] as TFixtures<NlpValueStub>[],
+        [] as any,
       );
       nlpValueFixturesWithEntities[2] = {
         ...nlpValueFixturesWithEntities[2],
@@ -133,11 +145,17 @@ describe('NlpSampleEntityService', () => {
               ...nlpSampleFixtures[curr.sample],
               language: languages[nlpSampleFixtures[curr.sample].language].id,
             },
+            start: curr.start || null,
+            end: curr.end || null,
           };
           acc.push(sampleEntityWithPopulate);
+
           return acc;
         }, [] as TFixtures<NlpSampleEntityFull>[]);
-      expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate);
+      expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate, [
+        ...IGNORED_TEST_FIELDS,
+        'metadata',
+      ]);
     });
   });
 
@@ -171,7 +189,13 @@ describe('NlpSampleEntityService', () => {
         entities,
       );
       expect(nlpSampleEntityService.createMany).toHaveBeenCalledWith([
-        { sample: sample.id, entity: '10', value: '20', start: 0, end: 5 },
+        {
+          sample: sample.id,
+          entity: '10',
+          value: '20',
+          start: 0,
+          end: 5,
+        },
       ]);
       expect(result).toEqual('Expected Result');
     });
@@ -182,7 +206,7 @@ describe('NlpSampleEntityService', () => {
         text: 'Hello world',
         language: null,
         trained: false,
-        type: 'train',
+        type: NlpSampleState.train,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -211,7 +235,6 @@ describe('NlpSampleEntityService', () => {
         value: 'AI',
         expressions: ['amazing'],
       } as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's1',
@@ -245,7 +268,6 @@ describe('NlpSampleEntityService', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's2',
@@ -272,7 +294,6 @@ describe('NlpSampleEntityService', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's3',
@@ -313,7 +334,6 @@ describe('NlpSampleEntityService', () => {
         value: 'science',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's4',
@@ -354,7 +374,6 @@ describe('NlpSampleEntityService', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       // Should not match "AI-powered" since it's not a standalone word
       const expected: NlpSampleEntityCreateDto[] = [];
 
@@ -371,7 +390,6 @@ describe('NlpSampleEntityService', () => {
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's7',
@@ -406,14 +424,12 @@ describe('NlpSampleEntityService', () => {
         id: 's10',
         text: 'Find the,AI, in this text.',
       } as NlpSample;
-
       const value = {
         id: 'v10',
         entity: 'e10',
         value: 'AI',
         expressions: [],
       } as unknown as NlpValue;
-
       const expected: NlpSampleEntityCreateDto[] = [
         {
           sample: 's10',

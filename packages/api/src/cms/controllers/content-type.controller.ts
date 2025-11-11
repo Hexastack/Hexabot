@@ -16,23 +16,28 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
+  ContentType,
   ContentTypeCreateDto,
+  ContentTypeDtoConfig,
+  ContentTypeTransformerDto,
   ContentTypeUpdateDto,
 } from '../dto/contentType.dto';
-import { ContentType } from '../schemas/content-type.schema';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeService } from '../services/content-type.service';
 
 @Controller('contenttype')
-export class ContentTypeController extends BaseController<ContentType> {
-  constructor(private readonly contentTypeService: ContentTypeService) {
+export class ContentTypeController extends BaseOrmController<
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig
+> {
+  constructor(protected readonly contentTypeService: ContentTypeService) {
     super(contentTypeService);
   }
 
@@ -51,35 +56,42 @@ export class ContentTypeController extends BaseController<ContentType> {
   }
 
   /**
-   * Retrieves a paginated list of content types based on query parameters.
+   * Retrieves a list of content types based on TypeORM query options.
    *
-   * @param pageQuery - The pagination options for the query.
-   * @param filters - The query filters applied to the content types (e.g., by name).
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
-   * @returns A paginated list of content types matching the provided filters.
+   * @returns Content types matching the provided query options.
    */
   @Get()
-  async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentType>,
-    @Query(new SearchFilterPipe<ContentType>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<ContentType>,
+  async find(
+    @Query(
+      new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
+        allowedFields: ['name'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return await this.contentTypeService.find(filters, pageQuery);
+    return await this.contentTypeService.find(options);
   }
 
   /**
-   * Retrieves the count of content types matching the provided filters.
+   * Retrieves the count of content types matching the provided options.
    *
-   * @param filters - The filters applied to the count query.
+   * @param options - Filters applied to the count query.
    *
    * @returns The number of content types matching the filters.
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<ContentType>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<ContentType>,
+    @Query(
+      new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
+        allowedFields: ['name'],
+      }),
+    )
+    options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return await this.count(filters);
+    return super.count(options);
   }
 
   /**
@@ -98,6 +110,7 @@ export class ContentTypeController extends BaseController<ContentType> {
       );
       throw new NotFoundException(`Content type with id ${id} not found`);
     }
+
     return foundContentType;
   }
 
@@ -111,7 +124,7 @@ export class ContentTypeController extends BaseController<ContentType> {
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const removedType = await this.contentTypeService.deleteCascadeOne(id);
+    const removedType = await this.contentTypeService.deleteOne(id);
 
     if (removedType.deletedCount === 0) {
       this.logger.warn(
@@ -119,6 +132,7 @@ export class ContentTypeController extends BaseController<ContentType> {
       );
       throw new NotFoundException(`Content type with id ${id} not found`);
     }
+
     return removedType;
   }
 
@@ -134,7 +148,7 @@ export class ContentTypeController extends BaseController<ContentType> {
   async updateOne(
     @Body() contentTypeDto: ContentTypeUpdateDto,
     @Param('id') id: string,
-  ) {
+  ): Promise<ContentType> {
     return await this.contentTypeService.updateOne(id, contentTypeDto);
   }
 }

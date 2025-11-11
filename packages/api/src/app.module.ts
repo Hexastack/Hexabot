@@ -11,8 +11,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 import {
@@ -29,6 +29,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
+import { TypeormConfigService } from './database/typeorm-config.service';
 import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
@@ -41,7 +42,6 @@ import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
-import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
 
 const i18nOptions: I18nOptions = {
@@ -69,23 +69,6 @@ const i18nOptions: I18nOptions = {
         ]
       : []),
     MailerModule,
-    MongooseModule.forRoot(config.mongo.uri, {
-      dbName: config.mongo.dbName,
-      autoIndex: config.env !== 'production', // Disable in production
-      connectionFactory: (connection) => {
-        connection.plugin(idPlugin);
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-virtuals'));
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-getters'));
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        connection.plugin(require('mongoose-lean-defaults').default);
-        return connection;
-      },
-    }),
     NlpModule,
     CmsModule,
     UserModule,
@@ -99,6 +82,7 @@ const i18nOptions: I18nOptions = {
     LoggerModule,
     WebsocketModule,
     EventEmitterModule.forRoot({
+      global: true,
       // set this to `true` to use wildcards
       wildcard: true,
       // the delimiter used to segment namespaces
@@ -131,11 +115,18 @@ const i18nOptions: I18nOptions = {
         ],
       }),
     }),
+    TypeOrmModule.forRootAsync({
+      useClass: TypeormConfigService,
+    }),
     MigrationModule,
     ExtensionModule,
     ...extraModules,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: Ability }, AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: Ability },
+    TypeormConfigService,
+    AppService,
+  ],
 })
 export class HexabotModule {}

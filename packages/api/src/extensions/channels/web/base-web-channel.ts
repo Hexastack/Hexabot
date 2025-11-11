@@ -15,9 +15,11 @@ import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
+import { Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/dto/attachment.dto';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -28,15 +30,17 @@ import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import {
   Subscriber,
+  SubscriberCreateDto,
   SubscriberFull,
   SubscriberStub,
-} from '@/chat/schemas/subscriber.schema';
-import { AttachmentRef } from '@/chat/schemas/types/attachment';
-import { Button, ButtonType, PayloadType } from '@/chat/schemas/types/button';
+} from '@/chat/dto/subscriber.dto';
+import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
+import { MessageService } from '@/chat/services/message.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
+import { AttachmentRef } from '@/chat/types/attachment';
+import { Button, ButtonType, PayloadType } from '@/chat/types/button';
 import {
   AnyMessage,
   ContentElement,
@@ -52,11 +56,9 @@ import {
   StdOutgoingMessage,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/schemas/types/message';
-import { BlockOptions } from '@/chat/schemas/types/options';
-import { MessageService } from '@/chat/services/message.service';
-import { SubscriberService } from '@/chat/services/subscriber.service';
-import { Content } from '@/cms/schemas/content.schema';
+} from '@/chat/types/message';
+import { BlockOptions } from '@/chat/types/options';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -136,7 +138,9 @@ export default abstract class BaseWebChannelHandler<
         await client.join(profile.foreign_id);
         const messagesHistory =
           await this.messageService.findHistoryUntilDate(profile);
-        messages = await this.formatMessages(messagesHistory.reverse());
+        messages = await this.formatMessages(
+          messagesHistory.reverse() as unknown as AnyMessage[],
+        );
       }
 
       this.logger.debug('WS connected .. sending settings');
@@ -170,7 +174,6 @@ export default abstract class BaseWebChannelHandler<
             message: 'Internal Server Error',
           }
     ) as SocketResponse;
-
     const subscriber = socket.request.session.web?.profile as
       | Subscriber
       | undefined;
@@ -195,6 +198,7 @@ export default abstract class BaseWebChannelHandler<
     if ('type' in incoming.message) {
       if (incoming.message.type === PayloadType.location) {
         const coordinates = incoming.message.coordinates;
+
         return {
           type: Web.IncomingMessageType.location,
           data: {
@@ -280,13 +284,14 @@ export default abstract class BaseWebChannelHandler<
     const formattedMessages: Web.Message[] = [];
 
     for (const anyMessage of messages) {
+      const messageMid = anyMessage.mid ?? this.generateId();
       if (this.isIncomingMessage(anyMessage)) {
         const message = await this.formatIncomingHistoryMessage(anyMessage);
         formattedMessages.push({
           ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid,
+          mid: messageMid,
           createdAt: anyMessage.createdAt,
         });
       } else {
@@ -295,7 +300,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid || this.generateId(),
+          mid: messageMid,
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
         });
@@ -325,8 +330,12 @@ export default abstract class BaseWebChannelHandler<
         until,
         n,
       );
-      return await this.formatMessages(messages.reverse());
+
+      return await this.formatMessages(
+        messages.reverse() as unknown as AnyMessage[],
+      );
     }
+
     return [];
   }
 
@@ -350,8 +359,10 @@ export default abstract class BaseWebChannelHandler<
         since,
         n,
       );
-      return await this.formatMessages(messages);
+
+      return await this.formatMessages(messages as unknown as AnyMessage[]);
     }
+
     return [];
   }
 
@@ -388,6 +399,7 @@ export default abstract class BaseWebChannelHandler<
           return new URL(origin.trim()).origin;
         } catch (error) {
           this.logger.error(`Invalid URL in allowed domains: ${origin}`, error);
+
           return null;
         }
       })
@@ -434,6 +446,7 @@ export default abstract class BaseWebChannelHandler<
   ) {
     if (!req.session.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
+
       return res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -446,6 +459,7 @@ export default abstract class BaseWebChannelHandler<
         'Mixed channel request or invalid session data!',
         req.session,
       );
+
       return res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -492,6 +506,7 @@ export default abstract class BaseWebChannelHandler<
         throw new Error('Subscriber session was not persisted in DB');
       }
       req.session.web.profile = subscriber;
+
       return subscriber;
     }
 
@@ -503,6 +518,7 @@ export default abstract class BaseWebChannelHandler<
       assignedAt: null,
       lastvisit: new Date(),
       retainedFrom: new Date(),
+      avatar: null,
       channel: {
         name: this.getName(),
         ...this.getChannelAttributes(req),
@@ -513,6 +529,7 @@ export default abstract class BaseWebChannelHandler<
       gender: 'male',
       country: '',
       labels: [],
+      context: { vars: {} },
     };
     const subscriber = await this.subscriberService.create(newProfile);
     // Init session
@@ -529,6 +546,7 @@ export default abstract class BaseWebChannelHandler<
       messageQueue: [],
       polling: false,
     };
+
     return profile;
   }
 
@@ -542,6 +560,7 @@ export default abstract class BaseWebChannelHandler<
     // Polling not authorized when using websockets
     if (this.isSocketRequest(req)) {
       this.logger.warn('Polling not authorized when using websockets');
+
       return res
         .status(403)
         .json({ err: 'Polling not authorized when using websockets' });
@@ -549,6 +568,7 @@ export default abstract class BaseWebChannelHandler<
     // Session must be active
     if (!(req.session && req.session.web && req.session.web?.profile?.id)) {
       this.logger.warn('Must be connected to poll messages');
+
       return res
         .status(403)
         .json({ err: 'Polling not authorized : Must be connected' });
@@ -557,6 +577,7 @@ export default abstract class BaseWebChannelHandler<
     // Can only request polling once at a time
     if (req.session && req.session.web && req.session.web.polling) {
       this.logger.warn('Poll rejected ... already requested');
+
       return res
         .status(403)
         .json({ err: 'Poll rejected ... already requested' });
@@ -578,9 +599,11 @@ export default abstract class BaseWebChannelHandler<
           }, retrials * 1000);
         } else if (req.session.web) {
           req.session.web.polling = false;
+
           return res.status(200).json(messages.map((msg) => ['message', msg]));
         } else {
           this.logger.error('Polling failed .. no session data');
+
           return res.status(500).json({ err: 'No session data' });
         }
       } catch (err) {
@@ -588,6 +611,7 @@ export default abstract class BaseWebChannelHandler<
           req.session.web.polling = false;
         }
         this.logger.error('Polling failed', err);
+
         return res.status(500).json({ err: 'Polling failed' });
       }
     };
@@ -621,9 +645,11 @@ export default abstract class BaseWebChannelHandler<
           ? req.query.since // Long polling case
           : req.body?.since || undefined; // Websocket case
       const messages = await this.fetchHistory(req, criteria);
+
       return res.status(200).json({ profile, messages });
     } catch (err) {
       this.logger.warn('Unable to subscribe ', err);
+
       return res.status(500).json({ err: 'Unable to subscribe' });
     }
   }
@@ -643,6 +669,7 @@ export default abstract class BaseWebChannelHandler<
 
       if (!req.session.web?.profile?.id) {
         this.logger.debug('No session');
+
         return null;
       }
 
@@ -653,6 +680,7 @@ export default abstract class BaseWebChannelHandler<
         !data.file
       ) {
         this.logger.debug('No files provided');
+
         return null;
       }
 
@@ -693,12 +721,14 @@ export default abstract class BaseWebChannelHandler<
     try {
       if (!req.session.web?.profile?.id) {
         this.logger.debug('Upload denied, no session is defined');
+
         return null;
       }
 
       // Check if any file is provided
       if (!req.file) {
         this.logger.debug('No files provided');
+
         return null;
       }
 
@@ -732,6 +762,7 @@ export default abstract class BaseWebChannelHandler<
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('No session provided');
+
       return null;
     }
 
@@ -793,6 +824,7 @@ export default abstract class BaseWebChannelHandler<
     if (!req.body) {
       this.logger.debug('Empty body');
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
+
       return;
     } else {
       // Parse json form data (in case of content-type multipart/form-data)
@@ -805,7 +837,6 @@ export default abstract class BaseWebChannelHandler<
     this.validateSession(req, res, async (profile) => {
       // Set data in file upload case
       const body: Web.IncomingMessage = req.body;
-
       const channelAttrs = this.getChannelAttributes(req);
       const event = new WebEventWrapper<N>(this, body, channelAttrs);
       if (event._adapter.eventType === StdEventType.message) {
@@ -816,12 +847,13 @@ export default abstract class BaseWebChannelHandler<
             if (attachment) {
               event._adapter.attachment = attachment;
               event._adapter.raw.data = {
-                type: Attachment.getTypeByMime(attachment.type),
+                type: AttachmentOrmEntity.getTypeByMime(attachment.type),
                 url: await this.getPublicUrl(attachment),
               };
             }
           } catch (err) {
             this.logger.warn('Unable to upload file ', err);
+
             return res
               .status(403)
               .json({ err: 'Web Channel Handler : File upload failed!' });
@@ -838,6 +870,7 @@ export default abstract class BaseWebChannelHandler<
             delivery: true,
           };
           this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+
           return res.status(200).json(event._adapter.raw);
         } else {
           // Generate unique ID and handle message
@@ -847,11 +880,15 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile as Subscriber);
+      event.setSender(profile as unknown as Subscriber);
 
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile as Subscriber, type, event._adapter.raw);
+        this.broadcast(
+          profile as unknown as Subscriber,
+          type,
+          event._adapter.raw,
+        );
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);
@@ -888,6 +925,7 @@ export default abstract class BaseWebChannelHandler<
               this.logger.debug('connected .. sending settings');
               try {
                 const menu = await this.menuService.getTree();
+
                 return res.status(200).json({
                   menu,
                   server_date: new Date().toISOString(),
@@ -895,6 +933,7 @@ export default abstract class BaseWebChannelHandler<
                 });
               } catch (err) {
                 this.logger.warn('Unable to retrieve menu ', err);
+
                 return res.status(500).json({ err: 'Unable to retrieve menu' });
               }
             case 'polling':
@@ -902,12 +941,14 @@ export default abstract class BaseWebChannelHandler<
               return this.getMessageQueue(req, res as Response);
             default:
               this.logger.error('Webhook received unknown command');
+
               return res
                 .status(500)
                 .json({ err: 'Webhook received unknown command' });
           }
         } else if (req.query._disconnect) {
           req.session.web = undefined;
+
           return res.status(200).json({ _disconnect: true });
         } else {
           // Handle webhook subscribe requests
@@ -919,6 +960,7 @@ export default abstract class BaseWebChannelHandler<
       }
     } catch (err) {
       this.logger.warn('Request check failed', err);
+
       return res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -1022,6 +1064,7 @@ export default abstract class BaseWebChannelHandler<
         } as Web.OutgoingFileMessageData,
       };
     }
+
     return payload;
   }
 
@@ -1069,7 +1112,9 @@ export default abstract class BaseWebChannelHandler<
           // Get built-in or an external URL from custom field
           const urlField = fields.url;
           btn.url =
-            urlField && item[urlField] ? item[urlField] : Content.getUrl(item);
+            urlField && item[urlField]
+              ? item[urlField]
+              : ContentOrmEntity.getUrl(item);
           if (!btn.url.startsWith('http')) {
             btn.url = 'https://' + btn.url;
           }
@@ -1086,7 +1131,7 @@ export default abstract class BaseWebChannelHandler<
           ) {
             btn.payload = btn.title + ':' + item[fields.action_payload];
           } else {
-            const postback = Content.getPayload(item);
+            const postback = ContentOrmEntity.getPayload(item);
             btn.payload = btn.title + ':' + postback;
           }
         }
@@ -1148,6 +1193,7 @@ export default abstract class BaseWebChannelHandler<
           top_element_style: options.content?.top_element_style,
         }
       : {};
+
     return {
       type: Web.OutgoingMessageType.list,
       data: {
@@ -1181,6 +1227,7 @@ export default abstract class BaseWebChannelHandler<
 
     // Populate items (elements/cards) with content
     const elements = await this._formatElements(data, options);
+
     return {
       type: Web.OutgoingMessageType.carousel,
       data: {
@@ -1234,8 +1281,7 @@ export default abstract class BaseWebChannelHandler<
     content: any,
     excludedRooms: string[] = [],
   ): void {
-    const channelData =
-      Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
+    const channelData = subscriber.channel;
     if (channelData.isSocket) {
       this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
@@ -1264,7 +1310,6 @@ export default abstract class BaseWebChannelHandler<
       options,
     );
     const subscriber = event.getSender();
-
     const message: Web.OutgoingMessage = {
       ...messageBase,
       mid: this.generateId(),
@@ -1274,6 +1319,7 @@ export default abstract class BaseWebChannelHandler<
     };
     const next = async (): Promise<any> => {
       this.broadcast(subscriber, StdEventType.message, message);
+
       return { mid: message.mid };
     };
 
@@ -1286,6 +1332,7 @@ export default abstract class BaseWebChannelHandler<
         typeof options.typing === 'number' ? options.typing : autoTimeout;
       try {
         await this.sendTypingIndicator(subscriber, timeout);
+
         return next();
       } catch (err) {
         this.logger.error('Failed in sending typing indicator ', err);
@@ -1310,6 +1357,7 @@ export default abstract class BaseWebChannelHandler<
         this.broadcast(recipient, StdEventType.typing, true);
         setTimeout(() => {
           this.broadcast(recipient, StdEventType.typing, false);
+
           return resolve();
         }, timeout);
       } catch (err) {
@@ -1337,8 +1385,9 @@ export default abstract class BaseWebChannelHandler<
     } = sender;
     const subscriber: SubscriberCreateDto = {
       ...rest,
-      channel: Subscriber.getChannelData(sender),
+      channel: sender.channel,
     };
+
     return subscriber;
   }
 
@@ -1349,7 +1398,10 @@ export default abstract class BaseWebChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(attachment: Attachment, req: Request) {
+  public async hasDownloadAccess(
+    attachment: AttachmentOrmEntity,
+    req: Request,
+  ) {
     const subscriberId = req.session.web?.profile?.id as string;
     if (attachment.access === AttachmentAccess.Public) {
       return true;
@@ -1357,6 +1409,7 @@ export default abstract class BaseWebChannelHandler<
       this.logger.warn(
         `Unauthorized access attempt to attachment ${attachment.id}`,
       );
+
       return false;
     } else if (
       attachment.createdByRef === AttachmentCreatedByRef.Subscriber &&
@@ -1367,15 +1420,25 @@ export default abstract class BaseWebChannelHandler<
     } else {
       // Or, he would like to access an attachment sent to him privately
       const message = await this.messageService.findOne({
-        ['recipient' as any]: subscriberId,
-        $or: [
-          { 'message.attachment.payload.id': attachment.id },
-          {
-            'message.attachment': {
-              $elemMatch: { 'payload.id': attachment.id },
-            },
-          },
-        ],
+        where: {
+          recipient: { id: subscriberId },
+          // "message" is your JSONB column
+          message: Raw(
+            (alias) => `
+              (
+                jsonb_typeof(${alias}->'attachment') = 'object'
+                AND (${alias}->'attachment'->'payload'->>'id') = :attId
+              ) OR (
+                jsonb_typeof(${alias}->'attachment') = 'array'
+                AND EXISTS (
+                  SELECT 1 FROM jsonb_array_elements(${alias}->'attachment') a
+                  WHERE a->'payload'->>'id' = :attId
+                )
+              )
+            `,
+            { attId: attachment.id },
+          ),
+        },
       });
 
       return !!message;

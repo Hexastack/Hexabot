@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -14,7 +15,41 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+import { Block } from './block.dto';
+
+@Exclude()
+export class CategoryStub extends BaseStub {
+  @Expose()
+  label!: string;
+
+  @Expose()
+  builtin!: boolean;
+
+  @Expose()
+  zoom!: number;
+
+  @Expose()
+  offset!: [number, number];
+}
+
+@Exclude()
+export class Category extends CategoryStub {
+  @Exclude()
+  blocks?: never;
+}
+
+@Exclude()
+export class CategoryFull extends CategoryStub {
+  @Expose()
+  @Type(() => Block)
+  blocks?: Block[];
+}
 
 export class CategoryCreateDto {
   @ApiProperty({ description: 'Category label', type: String })
@@ -40,6 +75,14 @@ export class CategoryCreateDto {
 
 export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {}
 
-export type CategoryDto = DtoConfig<{
-  create: CategoryCreateDto;
+export type CategoryTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Category;
+  FullCls: typeof CategoryFull;
 }>;
+
+export type CategoryDtoConfig = DtoActionConfig<{
+  create: CategoryCreateDto;
+  update: CategoryUpdateDto;
+}>;
+
+export type CategoryDto = CategoryDtoConfig;

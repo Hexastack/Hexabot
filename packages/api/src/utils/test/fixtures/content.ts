@@ -4,16 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
-import { ContentCreateDto } from '@/cms/dto/content.dto';
-import { Content, ContentModel } from '@/cms/schemas/content.schema';
+import { Content, ContentCreateDto } from '@/cms/dto/content.dto';
+import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
-import { installAttachmentFixtures } from './attachment';
-import { installContentTypeFixtures } from './contenttype';
+import {
+  contentTypeOrmFixtures,
+  installContentTypeFixturesTypeOrm,
+} from './contenttype';
 
 type TContentFixtures = FixturesTypeBuilder<Content, ContentCreateDto>;
 
@@ -32,7 +35,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '0',
+    contentType: '0',
   },
   {
     title: 'Adaptateur',
@@ -44,7 +47,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '0',
+    contentType: '0',
     status: false,
   },
   {
@@ -58,7 +61,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '0',
+    contentType: '0',
   },
   {
     title: 'Kitten Heel',
@@ -70,7 +73,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '0',
+    contentType: '0',
   },
   {
     title: 'A Collection of Nameless',
@@ -83,7 +86,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '0',
+    contentType: '0',
   },
   {
     title: 'Pizza Hut',
@@ -95,7 +98,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '1',
+    contentType: '1',
   },
   {
     title: 'store 1',
@@ -107,7 +110,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '2',
+    contentType: '2',
   },
   {
     title: 'store 2',
@@ -119,7 +122,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '2',
+    contentType: '2',
   },
   {
     title: 'store 3',
@@ -131,7 +134,7 @@ const contents: TContentFixtures['values'][] = [
         },
       },
     },
-    entity: '2',
+    contentType: '2',
   },
 ];
 
@@ -142,22 +145,65 @@ export const contentFixtures = getFixturesWithDefaultValues<
   defaultValues: contentDefaultValues,
 });
 
-export const installContentFixtures = async () => {
-  const attachments = await installAttachmentFixtures();
-  const contentTypes = await installContentTypeFixtures();
-  const Content = mongoose.model(ContentModel.name, ContentModel.schema);
-  return await Content.insertMany(
-    contentFixtures.map((contentFixture) => {
-      const attachment = attachments.find(
-        ({ name }) => name === `${contentFixture.title.replace(' ', '')}.jpg`,
+// eslint-disable-next-line prettier/prettier
+export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] = contentFixtures.map(
+  ({ contentType, ...fixture }) => ({
+    ...fixture,
+    contentTypeId: contentType,
+    // eslint-disable-next-line prettier/prettier
+  }),
+);
+
+export const installContentFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<void> => {
+  const contentRepository = dataSource.getRepository(ContentOrmEntity);
+  const existingContents = await contentRepository.count();
+  if (existingContents > 0) {
+    return;
+  }
+
+  await installContentTypeFixturesTypeOrm(dataSource);
+  const contentTypeRepository = dataSource.getRepository(ContentTypeOrmEntity);
+  const contentTypes = await contentTypeRepository.find({
+    order: { name: 'ASC' },
+  });
+  const entities = contentOrmFixtures.map((fixture) => {
+    const {
+      contentTypeId: rawContentTypeId,
+      contentType: rawContentType,
+      ...rest
+    } = fixture as DeepPartial<ContentOrmEntity> & {
+      contentTypeId?: string;
+      contentType?: unknown;
+    };
+    const entity =
+      rawContentTypeId ??
+      (typeof rawContentType === 'string' ? rawContentType : undefined);
+    const index = Number(entity);
+    const fallbackName =
+      !Number.isNaN(index) && contentTypeOrmFixtures[index]
+        ? contentTypeOrmFixtures[index].name
+        : undefined;
+    const target = contentTypes.find(
+      (type) =>
+        type.id === entity ||
+        type.name === entity ||
+        (fallbackName ? type.name === fallbackName : false),
+    );
+
+    if (!target) {
+      throw new Error(
+        `Unable to resolve content type for fixture contentType reference: ${entity}`,
       );
-      if (attachment) {
-        contentFixture.dynamicFields.image.payload.id = attachment.id;
-      }
-      return {
-        ...contentFixture,
-        entity: contentTypes[parseInt(contentFixture.entity)].id,
-      };
-    }),
-  );
+    }
+
+    return contentRepository.create({
+      ...rest,
+      contentType: target,
+      contentTypeId: target.id,
+    });
+  });
+
+  await contentRepository.save(entities);
 };

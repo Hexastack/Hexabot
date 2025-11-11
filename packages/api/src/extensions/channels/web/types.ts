@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SubscriberFull } from '@/chat/schemas/subscriber.schema';
-import { Button, WebUrlButton } from '@/chat/schemas/types/button';
-import { FileType } from '@/chat/schemas/types/message';
-import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
+import { SubscriberFull } from '@/chat/dto/subscriber.dto';
+import { Button, WebUrlButton } from '@/chat/types/button';
+import { FileType } from '@/chat/types/message';
+import { StdQuickReply } from '@/chat/types/quick-reply';
 
 export namespace Web {
   export type RequestSession = {

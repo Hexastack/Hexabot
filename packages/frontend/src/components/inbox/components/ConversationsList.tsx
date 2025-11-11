@@ -12,9 +12,8 @@ import { useEffect } from "react";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
-import { RouterType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
-import { ISubscriber } from "@/types/subscriber.types";
 import { normalizeDate } from "@/utils/date";
 
 import { useChat } from "../hooks/ChatContext";
@@ -25,7 +24,7 @@ import { Avatars } from "./Avatars";
 
 export const SubscribersList = (props: {
   channels: string[];
-  searchPayload: SearchPayload<ISubscriber>;
+  searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
 }) => {
   const router = useAppRouter();
@@ -72,14 +71,9 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                const nextQuery = {
-                  ...router.query,
-                  subscriber: subscriber.id,
-                };
 
                 router.push({
                   pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
-                  query: nextQuery,
                 });
               }}
               className="changeColor"

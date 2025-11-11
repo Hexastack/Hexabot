@@ -4,17 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException, ExecutionContext } from '@nestjs/common';
+import {
+  BadRequestException,
+  ExecutionContext,
+  NotFoundException,
+} from '@nestjs/common';
+import { Request } from 'express';
 
-import { Model } from '@/user/schemas/model.schema';
-import { Permission } from '@/user/schemas/permission.schema';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { Model } from '@/user/dto/model.dto';
+import { Permission } from '@/user/dto/permission.dto';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
+import { TModel } from '@/user/types/model.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment } from '../mocks/attachment.mock';
-import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
 
@@ -25,6 +31,39 @@ describe('AttachmentGuard', () => {
   let permissionService: PermissionService;
   let modelService: ModelService;
   let attachmentService: AttachmentService;
+
+  const modelIdByIdentity: Partial<Record<TModel, string>> = {
+    attachment: 'attachment-model-id',
+    block: 'block-model-id',
+    content: 'content-model-id',
+    message: 'message-model-id',
+    setting: 'setting-model-id',
+    subscriber: 'subscriber-model-id',
+    user: 'user-model-id',
+  };
+  const buildContext = (request: Partial<Request>) =>
+    ({
+      switchToHttp: jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue(request),
+      }),
+    }) as unknown as ExecutionContext;
+  const mockModelFindOne = () =>
+    jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
+      const identity = (criteria as { where?: { identity?: TModel } }).where
+        ?.identity;
+      const id =
+        identity !== undefined ? modelIdByIdentity[identity] : undefined;
+      if (!id) {
+        return Promise.reject(
+          new Error(`Unexpected model identity: ${identity}`),
+        );
+      }
+
+      return Promise.resolve({
+        id,
+        identity,
+      } as Model);
+    });
 
   beforeEach(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -58,54 +97,39 @@ describe('AttachmentGuard', () => {
     it('should allow GET requests with valid ref', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
       const mockRef = [AttachmentResourceRef.UserAvatar];
-
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
-        return typeof criteria === 'string' ||
-          !['user', 'attachment'].includes(criteria.identity)
-          ? Promise.reject('Invalid #1')
-          : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
-            } as Model);
-      });
-
-      jest
+      const modelFindOne = mockModelFindOne();
+      const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['user-id', 'attachment-id'].includes(criteria.model) ||
-            criteria.action !== Action.READ
-            ? Promise.reject('Invalid #2')
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.READ,
-                role: 'admin-id',
-              } as Permission);
-        });
-
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            query: { where: { resourceRef: mockRef } },
-            method: 'GET',
-            user: mockUser,
-          }),
-        }),
-      } as unknown as ExecutionContext;
-
+        .mockResolvedValue({} as Permission);
+      const mockExecutionContext = buildContext({
+        query: { where: { resourceRef: mockRef } },
+        method: 'GET',
+        user: mockUser,
+      });
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
+
+      expect(modelFindOne).toHaveBeenCalledTimes(1);
+      expect(modelFindOne).toHaveBeenCalledWith({
+        where: { identity: 'user' },
+      });
+
+      expect(permissionFindOne).toHaveBeenCalledTimes(1);
+      const [{ where }] = permissionFindOne.mock.calls[0] as [
+        { where: Record<string, any> },
+      ];
+      expect(where?.model?.id).toBe(modelIdByIdentity.user);
+      expect(where?.action).toBe(Action.READ);
+      const roleOperator = (where?.role as any)?.id;
+      expect(roleOperator?._type).toBe('in');
+      expect(roleOperator?._value).toEqual(mockUser.roles);
     });
 
     it('should throw BadRequestException for GET requests with invalid ref', async () => {
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            query: { where: { resourceRef: 'invalid_ref' } },
-            method: 'GET',
-          }),
-        }),
-      } as unknown as ExecutionContext;
+      const mockExecutionContext = buildContext({
+        query: { where: { resourceRef: 'invalid_ref' } },
+        method: 'GET',
+      });
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
         BadRequestException,
@@ -114,167 +138,156 @@ describe('AttachmentGuard', () => {
 
     it('should allow GET requests with valid id', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
+      const attachmentId = '06662f1d-f396-4ed1-875a-6a118bd7ade5';
 
-      jest
-        .spyOn(attachmentService, 'findOne')
-        .mockImplementation((criteria) => {
-          return criteria !== '9'.repeat(24)
-            ? Promise.reject('Invalid ID')
-            : Promise.resolve({
-                id: '9'.repeat(24),
-                resourceRef: AttachmentResourceRef.UserAvatar,
-              } as Attachment);
-        });
-
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
-        return typeof criteria === 'string' ||
-          !['user', 'attachment'].includes(criteria.identity)
-          ? Promise.reject('Invalid #1')
-          : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
-            } as Model);
-      });
-
-      jest
+      jest.spyOn(attachmentService, 'findOne').mockResolvedValue({
+        id: attachmentId,
+        resourceRef: AttachmentResourceRef.UserAvatar,
+      } as AttachmentOrmEntity);
+      const modelFindOne = mockModelFindOne();
+      const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['user-id', 'attachment-id'].includes(criteria.model) ||
-            criteria.action !== Action.READ
-            ? Promise.reject('Invalid #2')
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.READ,
-                role: 'admin-id',
-              } as Permission);
-        });
-
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            params: { id: '9'.repeat(24) },
-            method: 'GET',
-            user: mockUser,
-          }),
-        }),
-      } as unknown as ExecutionContext;
-
+        .mockResolvedValue({} as Permission);
+      const mockExecutionContext = buildContext({
+        params: { id: attachmentId },
+        method: 'GET',
+        user: mockUser,
+      });
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
+
+      expect(modelFindOne).toHaveBeenCalledTimes(1);
+      expect(modelFindOne).toHaveBeenCalledWith({
+        where: { identity: 'user' },
+      });
+
+      expect(permissionFindOne).toHaveBeenCalledTimes(1);
+      const [{ where }] = permissionFindOne.mock.calls[0] as [
+        { where: Record<string, any> },
+      ];
+      expect(where?.model?.id).toBe(modelIdByIdentity.user);
+      expect(where?.action).toBe(Action.READ);
+      const roleOperator = (where?.role as any)?.id;
+      expect(roleOperator?._type).toBe('in');
+      expect(roleOperator?._value).toEqual(mockUser.roles);
     });
 
     it('should allow POST requests with a valid ref', async () => {
       const mockUser = { roles: ['editor-id'] } as any;
-
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
-        return typeof criteria === 'string' ||
-          !['block', 'attachment'].includes(criteria.identity)
-          ? Promise.reject()
-          : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
-            } as Model);
-      });
-
-      jest
+      const modelFindOne = mockModelFindOne();
+      const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['block-id', 'attachment-id'].includes(criteria.model)
-            ? Promise.reject()
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.CREATE,
-                role: 'editor-id',
-              } as Permission);
-        });
-
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            query: { resourceRef: AttachmentResourceRef.BlockAttachment },
-            method: 'POST',
-            user: mockUser,
-          }),
-        }),
-      } as unknown as ExecutionContext;
-
+        .mockResolvedValue({} as Permission);
+      const mockExecutionContext = buildContext({
+        query: { resourceRef: AttachmentResourceRef.BlockAttachment },
+        method: 'POST',
+        user: mockUser,
+      });
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
+
+      expect(modelFindOne).toHaveBeenCalledTimes(2);
+      expect(modelFindOne).toHaveBeenNthCalledWith(1, {
+        where: { identity: 'block' },
+      });
+      expect(modelFindOne).toHaveBeenNthCalledWith(2, {
+        where: { identity: 'attachment' },
+      });
+
+      expect(permissionFindOne).toHaveBeenCalledTimes(2);
+      const permissionWhereCalls = permissionFindOne.mock.calls.map(
+        ([args]) => (args as { where: Record<string, any> }).where,
+      );
+      expect(permissionWhereCalls).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            model: { id: modelIdByIdentity.block },
+            action: Action.UPDATE,
+          }),
+          expect.objectContaining({
+            model: { id: modelIdByIdentity.attachment },
+            action: Action.CREATE,
+          }),
+        ]),
+      );
+      permissionWhereCalls.forEach((where) => {
+        const roleOperator = (where.role as any).id;
+        expect(roleOperator?._type).toBe('in');
+        expect(roleOperator?._value).toEqual(mockUser.roles);
+      });
     });
 
     it('should throw NotFoundException for DELETE requests with invalid attachment ID', async () => {
       jest.spyOn(attachmentService, 'findOne').mockResolvedValue(null);
 
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            method: 'DELETE',
-            params: { id: 'invalid-id' },
-          }),
-        }),
-      } as unknown as ExecutionContext;
+      const mockExecutionContext = buildContext({
+        method: 'DELETE',
+        params: { id: '86693f56-1c22-4d10-b11e-3b1b0c9a8558' },
+      });
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        BadRequestException,
+        NotFoundException,
       );
     });
 
     it('should allow DELETE requests with valid attachment and context', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
-
-      jest.spyOn(attachmentService, 'findOne').mockResolvedValue(attachment);
-
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
-        return typeof criteria === 'string' ||
-          !['block', 'attachment'].includes(criteria.identity)
-          ? Promise.reject('Invalid X')
-          : Promise.resolve({
-              identity: criteria.identity,
-              id: `${criteria.identity}-id`,
-            } as Model);
-      });
+      const attachmentWithUuid = {
+        ...attachment,
+        id: '5a1ea13e-63ef-48da-9afb-7b4d0533b1a0',
+      } as AttachmentOrmEntity;
 
       jest
+        .spyOn(attachmentService, 'findOne')
+        .mockResolvedValue(attachmentWithUuid);
+
+      const modelFindOne = mockModelFindOne();
+      const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['block-id', 'attachment-id'].includes(criteria.model) ||
-            (criteria.model === 'block-id' &&
-              criteria.action !== Action.UPDATE) ||
-            (criteria.model === 'attachment-id' &&
-              criteria.action !== Action.DELETE)
-            ? Promise.reject('Invalid Y')
-            : Promise.resolve({
-                model: criteria.model,
-                action: criteria.action,
-                role: 'admin-id',
-              } as Permission);
-        });
-
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            method: 'DELETE',
-            params: { id: attachment.id },
-            user: mockUser,
-          }),
-        }),
-      } as unknown as ExecutionContext;
-
+        .mockResolvedValue({} as Permission);
+      const mockExecutionContext = buildContext({
+        method: 'DELETE',
+        params: { id: attachmentWithUuid.id },
+        user: mockUser,
+      });
       const result = await guard.canActivate(mockExecutionContext);
       expect(result).toBe(true);
+
+      expect(modelFindOne).toHaveBeenCalledTimes(2);
+      expect(modelFindOne).toHaveBeenNthCalledWith(1, {
+        where: { identity: 'block' },
+      });
+      expect(modelFindOne).toHaveBeenNthCalledWith(2, {
+        where: { identity: 'attachment' },
+      });
+
+      expect(permissionFindOne).toHaveBeenCalledTimes(2);
+      const permissionWhereCalls = permissionFindOne.mock.calls.map(
+        ([args]) => (args as { where: Record<string, any> }).where,
+      );
+      expect(permissionWhereCalls).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            model: { id: modelIdByIdentity.block },
+            action: Action.UPDATE,
+          }),
+          expect.objectContaining({
+            model: { id: modelIdByIdentity.attachment },
+            action: Action.DELETE,
+          }),
+        ]),
+      );
+      permissionWhereCalls.forEach((where) => {
+        const roleOperator = (where.role as any).id;
+        expect(roleOperator?._type).toBe('in');
+        expect(roleOperator?._value).toEqual(mockUser.roles);
+      });
     });
 
     it('should throw BadRequestException for unsupported HTTP methods', async () => {
-      const mockExecutionContext = {
-        switchToHttp: jest.fn().mockReturnValue({
-          getRequest: jest.fn().mockReturnValue({
-            method: 'PUT',
-          }),
-        }),
-      } as unknown as ExecutionContext;
+      const mockExecutionContext = buildContext({
+        method: 'PUT',
+      });
 
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
         BadRequestException,

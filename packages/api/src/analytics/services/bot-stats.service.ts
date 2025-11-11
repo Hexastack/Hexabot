@@ -6,18 +6,92 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { plainToInstance } from 'class-transformer';
+import { InsertEvent, UpdateEvent } from 'typeorm';
 
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
+import {
+  Subscriber,
+  Subscriber as SubscriberDto,
+} from '@/chat/dto/subscriber.dto';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { config } from '@/config';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import {
+  BotStatsActionDto,
+  BotStatsTransformerDto,
+} from '../dto/bot-stats.dto';
+import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
-import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
 
 @Injectable()
-export class BotStatsService extends BaseService<BotStats> {
-  constructor(readonly repository: BotStatsRepository) {
+export class BotStatsService extends BaseOrmService<
+  BotStatsOrmEntity,
+  BotStatsTransformerDto,
+  BotStatsActionDto,
+  BotStatsRepository
+> {
+  constructor(
+    readonly repository: BotStatsRepository,
+    private readonly logger: LoggerService,
+  ) {
     super(repository);
+  }
+
+  @OnEvent('hook:subscriber:preCreate')
+  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
+    const entity = event.entity;
+    if (!entity) {
+      return;
+    }
+
+    const subscriber = plainToInstance(SubscriberDto, entity, {
+      exposeUnsetFields: false,
+    });
+
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      BotStatsType.new_users,
+      'New users',
+      subscriber,
+    );
+  }
+
+  @OnEvent('hook:subscriber:preUpdate')
+  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
+    const entity = event.entity as Partial<SubscriberOrmEntity> | undefined;
+    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
+
+    if (!entity || !previous) {
+      return;
+    }
+
+    const newAssignedTo = entity.assignedTo?.id;
+    const previousAssignedTo = previous.assignedTo?.id;
+
+    if (newAssignedTo === previousAssignedTo) {
+      return;
+    }
+
+    const newAssignmentExists = Boolean(newAssignedTo);
+    const previousAssignmentExists = Boolean(previousAssignedTo);
+
+    if (newAssignmentExists && previousAssignmentExists) {
+      return;
+    }
+
+    const previousSubscriber = plainToInstance(SubscriberDto, previous, {
+      exposeUnsetFields: false,
+    });
+
+    if (previousSubscriber) {
+      this.eventEmitter.emit(
+        'hook:analytics:passation',
+        previousSubscriber,
+        newAssignmentExists,
+      );
+    }
   }
 
   /**
@@ -33,7 +107,7 @@ export class BotStatsService extends BaseService<BotStats> {
     from: Date,
     to: Date,
     types: BotStatsType[],
-  ): Promise<BotStats[]> {
+  ): Promise<BotStatsOrmEntity[]> {
     return await this.repository.findMessages(from, to, types);
   }
 
@@ -113,7 +187,7 @@ export class BotStatsService extends BaseService<BotStats> {
 
     try {
       const insight = await this.findOneOrCreate(
-        { day: { $lte: day, $gte: day }, type, name },
+        { where: { day, type, name } },
         { day, type, name, value: 0 },
       );
 

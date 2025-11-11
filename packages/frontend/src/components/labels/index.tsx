@@ -5,29 +5,23 @@
  */
 
 import { faTags } from "@fortawesome/free-solid-svg-icons";
-import { Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
-import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { ILabel } from "@/types/label.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -38,18 +32,6 @@ export const Labels = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const { onSearch, searchPayload, searchText } = useSearch<EntityType.LABEL>(
-    {
-      $or: ["name", "title"],
-    },
-    { syncUrl: true },
-  );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.LABEL, format: Format.FULL },
-    {
-      params: searchPayload,
-    },
-  );
   const options = {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -143,7 +125,6 @@ export const Labels = () => {
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-
       headerAlign: "left",
     },
     {
@@ -175,51 +156,33 @@ export const Labels = () => {
   };
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faTags} title={t("title.labels")}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          <ButtonActionsGroup
-            entity={EntityType.LABEL}
-            buttons={[
-              {
-                permissionAction: PermissionAction.CREATE,
-                onClick: () =>
-                  dialogs.open(LabelFormDialog, { defaultValues: null }),
-              },
-              {
-                permissionAction: PermissionAction.DELETE,
-                onClick: async () => {
-                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                    mode: "selection",
-                    count: selectedLabels.length,
-                  });
+    <GenericDataGrid
+      entity={EntityType.LABEL}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          onClick: () => dialogs.open(LabelFormDialog, { defaultValues: null }),
+        },
+        {
+          permissionAction: PermissionAction.DELETE,
+          onClick: async () => {
+            const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+              mode: "selection",
+              count: selectedLabels.length,
+            });
 
-                  if (isConfirmed) {
-                    deleteLabels(selectedLabels);
-                  }
-                },
-                disabled: !selectedLabels.length,
-              },
-            ]}
-          />
-        </Grid>
-      </PageHeader>
-      <DataGrid
-        columns={columns}
-        {...dataGridProps}
-        checkboxSelection
-        onRowSelectionModelChange={handleSelectionChange}
-      />
-    </Grid>
+            if (isConfirmed) {
+              deleteLabels(selectedLabels);
+            }
+          },
+          disabled: !selectedLabels.length,
+        },
+      ]}
+      columns={columns}
+      headerIcon={faTags}
+      searchParams={{ $or: ["name", "title"], syncUrl: true }}
+      headerI18nTitle="title.labels"
+      selectionChangeHandler={handleSelectionChange}
+    />
   );
 };

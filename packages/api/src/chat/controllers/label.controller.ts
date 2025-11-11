@@ -17,30 +17,29 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
 import {
   Label,
+  LabelCreateDto,
+  LabelDtoConfig,
   LabelFull,
-  LabelPopulate,
-  LabelStub,
-} from '../schemas/label.schema';
+  LabelTransformerDto,
+  LabelUpdateDto,
+} from '../dto/label.dto';
+import { LabelOrmEntity } from '../entities/label.entity';
 import { LabelService } from '../services/label.service';
 
 @Controller('label')
-export class LabelController extends BaseController<
-  Label,
-  LabelStub,
-  LabelPopulate,
-  LabelFull
+export class LabelController extends BaseOrmController<
+  LabelOrmEntity,
+  LabelTransformerDto,
+  LabelDtoConfig
 > {
   constructor(private readonly labelService: LabelService) {
     super(labelService);
@@ -48,15 +47,21 @@ export class LabelController extends BaseController<
 
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Label>,
     @Query(PopulatePipe)
     populate: string[],
-    @Query(new SearchFilterPipe<Label>({ allowedFields: ['name', 'title'] }))
-    filters: TFilterQuery<Label>,
-  ) {
+    @Query(
+      new TypeOrmSearchFilterPipe<LabelOrmEntity>({
+        allowedFields: ['name', 'title', 'builtin'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<LabelOrmEntity>,
+  ): Promise<Label[] | LabelFull[]> {
+    const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
-      ? await this.labelService.findAndPopulate(filters, pageQuery)
-      : await this.labelService.find(filters, pageQuery);
+      ? await this.labelService.findAndPopulate(queryOptions)
+      : await this.labelService.find(queryOptions);
   }
 
   /**
@@ -66,13 +71,13 @@ export class LabelController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Label>({
-        allowedFields: ['name', 'title'],
+      new TypeOrmSearchFilterPipe<LabelOrmEntity>({
+        allowedFields: ['name', 'title', 'builtin', 'group.id'],
       }),
     )
-    filters?: TFilterQuery<Label>,
-  ) {
-    return await this.count(filters);
+    options?: FindManyOptions<LabelOrmEntity>,
+  ): Promise<{ count: number }> {
+    return await this.count(options ?? {});
   }
 
   @Get(':id')
@@ -80,19 +85,20 @@ export class LabelController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
-  ) {
-    const doc = this.canPopulate(populate)
+  ): Promise<Label | LabelFull> {
+    const record = this.canPopulate(populate)
       ? await this.labelService.findOneAndPopulate(id)
       : await this.labelService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Label by id ${id}`);
       throw new NotFoundException(`Label with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   @Post()
-  async create(@Body() label: LabelCreateDto) {
+  async create(@Body() label: LabelCreateDto): Promise<Label> {
     return await this.labelService.create(label);
   }
 
@@ -100,18 +106,19 @@ export class LabelController extends BaseController<
   async updateOne(
     @Param('id') id: string,
     @Body() labelUpdate: LabelUpdateDto,
-  ) {
+  ): Promise<Label> {
     return await this.labelService.updateOne(id, labelUpdate);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
     const result = await this.labelService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Label by id ${id}`);
       throw new NotFoundException(`Label with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -127,7 +134,7 @@ export class LabelController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.labelService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -136,6 +143,7 @@ export class LabelController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted Labels with IDs: ${ids}`);
+
     return deleteResult;
   }
 }

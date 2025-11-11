@@ -5,63 +5,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { MenuDto } from '../dto/menu.dto';
 import {
   Menu,
-  MENU_POPULATE,
-  MenuDocument,
+  MenuDtoConfig,
   MenuFull,
-  MenuPopulate,
-} from '../schemas/menu.schema';
-import { MenuType } from '../schemas/types/menu';
+  MenuTransformerDto,
+} from '../dto/menu.dto';
+import { MenuOrmEntity } from '../entities/menu.entity';
 
 @Injectable()
-export class MenuRepository extends BaseRepository<
-  Menu,
-  MenuPopulate,
-  MenuFull,
-  MenuDto
+export class MenuRepository extends BaseOrmRepository<
+  MenuOrmEntity,
+  MenuTransformerDto,
+  MenuDtoConfig
 > {
-  constructor(@InjectModel(Menu.name) readonly model: Model<Menu>) {
-    super(model, Menu, MENU_POPULATE, MenuFull);
-  }
-
-  /**
-   * Pre-create validation hook that checks the `MenuDocument` before it is created.
-   * It throws an error if certain fields (like `type` or `payload`) are missing or illegally modified.
-   *
-   * @param doc - The document to be validated before creation.
-   */
-  async preCreate(_doc: MenuDocument) {
-    if (_doc) {
-      const modifiedPaths = _doc.modifiedPaths();
-      if (!_doc?.isNew) {
-        if (modifiedPaths.includes('type'))
-          throw new Error("Illegal Update: can't update type");
-      }
-
-      switch (_doc.type) {
-        case MenuType.postback:
-          if (!modifiedPaths.includes('payload'))
-            throw new Error(
-              "Menu Validation Error: doesn't include payload for type postback",
-            );
-
-          break;
-        case MenuType.web_url:
-          if (!modifiedPaths.includes('url'))
-            throw new Error(
-              "Menu Validation Error: doesn't include url for type web_url",
-            );
-          break;
-        default:
-          break;
-      }
-    }
+  constructor(
+    @InjectRepository(MenuOrmEntity)
+    repository: Repository<MenuOrmEntity>,
+  ) {
+    super(repository, [], {
+      PlainCls: Menu,
+      FullCls: MenuFull,
+    });
   }
 }

@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -13,14 +14,68 @@ import {
   IsString,
 } from 'class-validator';
 
+import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import {
   StdIncomingMessage,
   StdOutgoingMessage,
   validMessageTextSchema,
-} from '../schemas/types/message';
+} from '../types/message';
+
+import { Subscriber } from './subscriber.dto';
+
+@Exclude()
+export class MessageStub extends BaseStub {
+  @Expose()
+  @Transform(({ value }) => (value == null ? undefined : value))
+  mid?: string | null;
+
+  @Expose()
+  message!: StdOutgoingMessage | StdIncomingMessage;
+
+  @Expose()
+  read!: boolean;
+
+  @Expose()
+  delivery!: boolean;
+
+  @Expose()
+  handover!: boolean;
+}
+
+@Exclude()
+export class Message extends MessageStub {
+  @Expose({ name: 'senderId' })
+  sender?: string | null;
+
+  @Expose({ name: 'recipientId' })
+  recipient?: string | null;
+
+  @Expose({ name: 'sentById' })
+  sentBy?: string | null;
+}
+
+@Exclude()
+export class MessageFull extends MessageStub {
+  @Expose()
+  @Type(() => Subscriber)
+  sender?: Subscriber | null;
+
+  @Expose()
+  @Type(() => Subscriber)
+  recipient?: Subscriber | null;
+
+  @Expose()
+  @Type(() => User)
+  sentBy?: User | null;
+}
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })
@@ -36,19 +91,19 @@ export class MessageCreateDto {
   @ApiPropertyOptional({ description: 'Message sender', type: String })
   @IsString()
   @IsOptional()
-  @IsObjectId({ message: 'Sender must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'Sender must be a valid UUID' })
   sender?: string;
 
   @ApiPropertyOptional({ description: 'Message recipient', type: String })
   @IsString()
   @IsOptional()
-  @IsObjectId({ message: 'Recipient must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'Recipient must be a valid UUID' })
   recipient?: string;
 
   @ApiPropertyOptional({ description: 'Message sent by', type: String })
   @IsString()
   @IsOptional()
-  @IsObjectId({ message: 'SentBy must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'SentBy must be a valid UUID' })
   sentBy?: string;
 
   @ApiProperty({ description: 'Message', type: Object })
@@ -76,3 +131,15 @@ export class MessageCreateDto {
 }
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
+
+export type MessageTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Message;
+  FullCls: typeof MessageFull;
+}>;
+
+export type MessageDtoConfig = DtoActionConfig<{
+  create: MessageCreateDto;
+  update: MessageUpdateDto;
+}>;
+
+export type MessageDto = MessageDtoConfig;

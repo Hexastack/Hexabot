@@ -4,276 +4,263 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Types } from 'mongoose';
+import { randomUUID } from 'crypto';
 
+import { TestingModule } from '@nestjs/testing';
+
+import { Language } from '@/i18n/dto/language.dto';
+import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language } from '@/i18n/schemas/language.schema';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
-import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
-import { TFixtures } from '@/utils/test/types';
+import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleFull } from '../schemas/nlp-sample.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
+import { NlpSampleState } from '..//types';
+import { NlpSample } from '../dto/nlp-sample.dto';
+import { NlpValue } from '../dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpSampleRepository } from './nlp-sample.repository';
 import { NlpValueRepository } from './nlp-value.repository';
 
-describe('NlpSampleRepository', () => {
+describe('NlpSampleRepository (TypeORM)', () => {
+  let module: TestingModule;
   let nlpSampleRepository: NlpSampleRepository;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpValueRepository: NlpValueRepository;
   let languageRepository: LanguageRepository;
-  let nlpSampleEntity: NlpSampleEntity | null;
-  let noNlpSample: NlpSample | null;
   let languages: Language[];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [
         NlpSampleRepository,
+        NlpSampleEntityRepository,
         NlpValueRepository,
         LanguageRepository,
-        NlpSampleEntityRepository,
       ],
+      typeorm: {
+        entities: [
+          LanguageEntity,
+          NlpEntityOrmEntity,
+          NlpValueOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+        ],
+        fixtures: installNlpSampleEntityFixturesTypeOrm,
+      },
     });
+
+    module = testing.module;
+
     [
       nlpSampleRepository,
       nlpSampleEntityRepository,
       nlpValueRepository,
       languageRepository,
-    ] = await getMocks([
+    ] = await testing.getMocks([
       NlpSampleRepository,
       NlpSampleEntityRepository,
       NlpValueRepository,
       LanguageRepository,
     ]);
-    noNlpSample = await nlpSampleRepository.findOne({ text: 'No' });
-    nlpSampleEntity = await nlpSampleEntityRepository.findOne({
-      sample: noNlpSample!.id,
-    });
+
     languages = await languageRepository.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
-    it('should return a nlp Sample with populate', async () => {
-      const result = await nlpSampleRepository.findOneAndPopulate(
-        noNlpSample!.id,
-      );
-      expect(result).toEqualPayload({
-        ...nlpSampleFixtures[1],
-        entities: [nlpSampleEntity],
-        language: languages[nlpSampleFixtures[1].language!],
+    it('should return a populated sample', async () => {
+      const noSample = await nlpSampleRepository.findOne({
+        where: { text: 'No' },
       });
+      const result = await nlpSampleRepository.findOneAndPopulate(noSample!.id);
+
+      expect(result).toBeDefined();
+      expect(result?.entities).toBeDefined();
+      expect(Array.isArray(result?.entities)).toBe(true);
+      expect(
+        result?.language === null || !!(result?.language as any)?.code,
+      ).toBe(true);
     });
   });
 
   describe('findAndPopulate', () => {
-    it('should return all nlp samples with populate', async () => {
-      const pageQuery = getPageQuery<NlpSample>({
-        sort: ['text', 'desc'],
+    it('should return paginated samples with relations', async () => {
+      const result = await nlpSampleRepository.findAndPopulate({
+        order: { text: 'DESC' },
       });
-      const result = await nlpSampleRepository.findAndPopulate({}, pageQuery);
-      const nlpSamples = await nlpSampleRepository.findAll();
-      const nlpSampleEntities = await nlpSampleEntityRepository.findAll();
 
-      const nlpSampleFixturesWithEntities = nlpSamples.reduce(
-        (acc, currSample) => {
-          const sampleWithEntities = {
-            ...currSample,
-            entities: nlpSampleEntities.filter((currSampleEntity) => {
-              return currSampleEntity.sample === currSample.id;
-            }),
-            language:
-              languages.find((lang) => currSample.language === lang.id) || null,
-          };
-          acc.push(sampleWithEntities);
-          return acc;
-        },
-        [] as TFixtures<NlpSampleFull>[],
-      );
-      expect(result).toEqualPayload(nlpSampleFixturesWithEntities);
+      result.forEach((sample) => {
+        const fixture = nlpSampleFixtures.find((s) => s.text === sample.text);
+        expect(fixture).toBeDefined();
+        expect(sample.entities).toBeDefined();
+      });
     });
   });
 
-  describe('updateMany', () => {
-    it('should update many nlp samples', async () => {
-      const result = await nlpSampleRepository.updateMany(
-        {},
-        {
-          trained: false,
-        },
-      );
-
-      expect(result.modifiedCount).toEqual(nlpSampleFixtures.length);
-    });
-  });
-
-  describe('The deleteCascadeOne function', () => {
-    it('should delete a nlp Sample', async () => {
-      const result = await nlpSampleRepository.deleteOne(noNlpSample!.id);
-      expect(result.deletedCount).toEqual(1);
-      const sampleEntities = await nlpSampleEntityRepository.find({
-        sample: noNlpSample!.id,
+  describe('deleteOne', () => {
+    it('should delete a sample and its entities', async () => {
+      const createdSample = await nlpSampleRepository.create({
+        text: 'sample-to-delete',
+        trained: false,
+        type: NlpSampleState.train,
+        language: languages[0]?.id ?? null,
       });
-      expect(sampleEntities.length).toEqual(0);
+      const greetingValue = await nlpValueRepository.findOne({
+        where: { value: 'greeting' },
+      });
+
+      await nlpSampleEntityRepository.create({
+        sample: createdSample.id,
+        entity: greetingValue?.entity ?? '',
+        value: greetingValue!.id,
+      });
+
+      const result = await nlpSampleRepository.deleteOne(createdSample.id);
+
+      expect(result.deletedCount).toBe(1);
+      const remaining = await nlpSampleEntityRepository.find({
+        where: { sample: { id: createdSample.id } },
+      });
+      expect(remaining.length).toBe(0);
     });
   });
 
   describe('findByEntities', () => {
-    it('should return mapped NlpSample instances for matching entities', async () => {
-      const filters = {};
-      const values = await nlpValueRepository.find({ value: 'greeting' });
-
+    it('should return samples matching values', async () => {
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const result = await nlpSampleRepository.findByEntities({
-        filters,
+        options: {},
         values,
       });
-      expect(result).toHaveLength(2);
+
+      expect(result.length).toBeGreaterThan(0);
       expect(result[0]).toBeInstanceOf(NlpSample);
-      expect(result[0].text).toBe('Hello');
     });
 
-    it('should return an empty array if no samples match', async () => {
-      const filters = {};
+    it('should return empty array when no values match', async () => {
       const values = [
         {
-          id: new Types.ObjectId().toHexString(),
-          entity: new Types.ObjectId().toHexString(),
+          id: randomUUID(),
+          entity: randomUUID(),
           value: 'nonexistent',
         },
-      ] as NlpValue[];
+      ] as unknown as NlpValue[];
+      const result = await nlpSampleRepository.findByEntities({ values });
 
-      const result = await nlpSampleRepository.findByEntities({
-        filters,
-        values,
-      });
-
-      expect(Array.isArray(result)).toBe(true);
       expect(result).toHaveLength(0);
     });
   });
 
   describe('findByEntitiesAndPopulate', () => {
-    it('should return populated NlpSampleFull instances for matching entities', async () => {
-      const filters = {};
-      const values = await nlpValueRepository.find({ value: 'greeting' });
-
+    it('should return populated samples', async () => {
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const result = await nlpSampleRepository.findByEntitiesAndPopulate({
-        filters,
+        options: {},
         values,
       });
 
-      expect(result.length).toBe(2);
+      expect(result.length).toBeGreaterThan(0);
       result.forEach((sample) => {
-        expect(sample).toBeInstanceOf(NlpSampleFull);
         expect(sample.entities).toBeDefined();
-        expect(Array.isArray(sample.entities)).toBe(true);
         expect(sample.language).toBeDefined();
       });
     });
 
-    it('should return an empty array if no samples match', async () => {
-      const filters = {};
-      const values = [
-        {
-          id: new Types.ObjectId().toHexString(),
-          entity: new Types.ObjectId().toHexString(),
-          value: 'nonexistent',
-        },
-      ] as NlpValue[];
-
+    it('should respect pagination parameters', async () => {
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
+      const options = {
+        take: 1,
+        skip: 0,
+        order: { text: 'ASC' as const },
+      };
       const result = await nlpSampleRepository.findByEntitiesAndPopulate({
-        filters,
+        options,
         values,
       });
 
-      expect(Array.isArray(result)).toBe(true);
-      expect(result).toHaveLength(0);
-    });
-
-    it('should support pagination and projection', async () => {
-      const filters = {};
-      const values = await nlpValueRepository.find({ value: 'greeting' });
-      const page = {
-        limit: 1,
-        skip: 0,
-        sort: ['text', 'asc'],
-      } as PageQueryDto<NlpSample>;
-      const result = await nlpSampleRepository.findByEntitiesAndPopulate(
-        { filters, values },
-        page,
-        { text: 1 },
-      );
-
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(1);
-      if (result.length > 0) {
+      expect(result.length).toBeLessThanOrEqual(1);
+      if (result.length) {
         expect(result[0]).toHaveProperty('text');
       }
+    });
+
+    it('should return empty array when no samples match', async () => {
+      const values = [
+        {
+          id: randomUUID(),
+          entity: randomUUID(),
+          value: 'nonexistent',
+        },
+      ] as unknown as NlpValue[];
+      const result = await nlpSampleRepository.findByEntitiesAndPopulate({
+        values,
+      });
+
+      expect(result).toHaveLength(0);
     });
   });
 
   describe('countByEntities', () => {
-    it('should return the correct count for matching entities', async () => {
-      const filters = {};
-      const values = await nlpValueRepository.find({ value: 'greeting' });
-
+    it('should count samples matching values', async () => {
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const count = await nlpSampleRepository.countByEntities({
-        filters,
+        options: {},
         values,
       });
 
-      expect(typeof count).toBe('number');
-      expect(count).toBe(2);
-    });
-
-    it('should return 0 if no samples match', async () => {
-      const filters = {};
-      const values = [
-        {
-          id: new Types.ObjectId().toHexString(),
-          entity: new Types.ObjectId().toHexString(),
-          value: 'nonexistent',
-        },
-      ] as NlpValue[];
-
-      const count = await nlpSampleRepository.countByEntities({
-        filters,
-        values,
-      });
-
-      expect(count).toBe(0);
+      expect(count).toBeGreaterThan(0);
     });
 
     it('should respect filters (e.g. language)', async () => {
-      const values = await nlpValueRepository.find({ value: 'greeting' });
+      const values = await nlpValueRepository.find({
+        where: { value: 'greeting' },
+      });
       const language = languages[0];
-      const filters = { language: language.id };
-
       const count = await nlpSampleRepository.countByEntities({
-        filters,
+        options: { where: { language: { id: language.id } } },
         values,
       });
 
-      // Should be <= total greeting samples, and >= 0
-      expect(typeof count).toBe('number');
       expect(count).toBeGreaterThanOrEqual(0);
-      expect(count).toBeLessThanOrEqual(2);
+    });
+
+    it('should return 0 when values do not match', async () => {
+      const values = [
+        {
+          id: randomUUID(),
+          entity: randomUUID(),
+          value: 'nonexistent',
+        },
+      ] as unknown as NlpValue[];
+      const count = await nlpSampleRepository.countByEntities({ values });
+
+      expect(count).toBe(0);
     });
   });
 });

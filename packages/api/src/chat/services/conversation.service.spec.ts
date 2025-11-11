@@ -4,82 +4,124 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { installContextVarFixtures } from '@/utils/test/fixtures/contextvar';
-import { installConversationTypeFixtures } from '@/utils/test/fixtures/conversation';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
+import { ContextVarRepository } from '@/chat/repositories/context-var.repository';
+import { ConversationRepository } from '@/chat/repositories/conversation.repository';
+import { LabelGroupRepository } from '@/chat/repositories/label-group.repository';
+import { LabelRepository } from '@/chat/repositories/label.repository';
+import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
+import { ContextVarService } from '@/chat/services/context-var.service';
+import { ConversationService } from '@/chat/services/conversation.service';
+import { LabelService } from '@/chat/services/label.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
+import { OutgoingMessageFormat } from '@/chat/types/message';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { UserRepository } from '@/user/repositories/user.repository';
+import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
+import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
-import { Block } from '../schemas/block.schema';
-import { OutgoingMessageFormat } from '../schemas/types/message';
+import { Block } from '../dto/block.dto';
 
-import { ConversationService } from './conversation.service';
-import { SubscriberService } from './subscriber.service';
-
-describe('ConversationService', () => {
+describe('ConversationService (TypeORM)', () => {
+  let module: TestingModule;
   let conversationService: ConversationService;
   let subscriberService: SubscriberService;
-  // let labelService: LabelService;
-  // let subscriberRepository: SubscriberRepository;
-  // let allSubscribers: Subscriber[];
-  // let allLabels: Label[];
-  // let labelsWithUsers: LabelFull[];
+
+  const attachmentServiceMock: jest.Mocked<Pick<AttachmentService, 'store'>> = {
+    store: jest.fn(),
+  };
+  const gatewayMock: jest.Mocked<
+    Pick<WebsocketGateway, 'joinNotificationSockets'>
+  > = {
+    joinNotificationSockets: jest.fn(),
+  };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installContextVarFixtures();
-          await installConversationTypeFixtures();
-        }),
-      ],
       providers: [
         ConversationService,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        ConversationRepository,
+        ContextVarService,
+        ContextVarRepository,
+        SubscriberService,
+        SubscriberRepository,
+        LabelService,
+        LabelRepository,
+        LabelGroupRepository,
+        UserRepository,
+        { provide: AttachmentService, useValue: attachmentServiceMock },
+        { provide: WebsocketGateway, useValue: gatewayMock },
       ],
+      typeorm: {
+        entities: [
+          ConversationOrmEntity,
+          ContextVarOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: [
+          installContextVarFixturesTypeOrm,
+          installConversationFixturesTypeOrm,
+        ],
+      },
     });
-    [conversationService, subscriberService] = await getMocks([
+
+    module = testing.module;
+    [conversationService, subscriberService] = await testing.getMocks([
       ConversationService,
       SubscriberService,
     ]);
-    // allSubscribers = await subscriberRepository.findAll();
-    // allLabels = await labelRepository.findAll();
-    // labelsWithUsers = allLabels.map((label) => ({
-    //   ...label,
-    //   users: allSubscribers,
-    // }));
   });
 
   afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('ConversationService.storeContextData', () => {
     it('should enrich the conversation context and persist conversation + subscriber (permanent)', async () => {
       const subscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
-        sender: subscriber.id,
+        where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: -1, context_var: 'phone' }],
       } as Block;
-
       const mockPhone = '+1 514 678 9873';
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
         getText: jest.fn().mockReturnValue(mockPhone),
@@ -104,27 +146,27 @@ describe('ConversationService', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
-        conversation!,
+        conversation,
         next,
         event,
         true,
       );
 
-      // ---- Assertions ------------------------------------------------------
       expect(result.context.channel).toBe('messenger-channel');
       expect(result.context.text).toBe(mockPhone);
       expect(result.context.vars.phone).toBe(mockPhone);
-      expect(result.context.user).toEqual({
-        id: subscriber.id,
-        first_name: subscriber.first_name,
-        last_name: subscriber.last_name,
-        language: subscriber.language,
-      });
+      expect(result.context.user).toEqual(
+        expect.objectContaining({
+          id: subscriber.id,
+          first_name: subscriber.first_name,
+          last_name: subscriber.last_name,
+          language: subscriber.language,
+        }),
+      );
 
       const updatedSubscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
 
       expect(updatedSubscriber.context.vars?.phone).toBe(mockPhone);
@@ -134,17 +176,15 @@ describe('ConversationService', () => {
 
     it('should capture an NLP entity value into context vars (non-permanent)', async () => {
       const subscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
-        sender: subscriber.id,
+        where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: 'country_code', context_var: 'country' }],
       } as Block;
-
       const mockMessage = 'Are you from the US?';
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
@@ -177,7 +217,6 @@ describe('ConversationService', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
         conversation,
         next,
@@ -187,24 +226,22 @@ describe('ConversationService', () => {
 
       expect(result.context.vars.country).toBe('US');
       const updatedSubscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
       expect(updatedSubscriber.context.vars?.country).toBe(undefined);
     });
 
     it('should capture user coordinates when message type is "location"', async () => {
       const subscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
-        sender: subscriber.id,
+        where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [{ entity: 'country_code', context_var: 'country' }],
       } as Block;
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('location'),
         getText: jest.fn().mockReturnValue(''),
@@ -229,7 +266,6 @@ describe('ConversationService', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result = await conversationService.storeContextData(
         conversation,
         next,
@@ -244,12 +280,11 @@ describe('ConversationService', () => {
 
     it('should increment skip when VIEW_MORE payload is received for list/carousel blocks', async () => {
       const subscriber = (await subscriberService.findOne({
-        foreign_id: 'foreign-id-messenger',
+        where: { foreign_id: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
-        sender: subscriber.id,
+        where: { sender: { id: subscriber.id } },
       }))!;
-
       const next = {
         id: 'block-1',
         capture_vars: [],
@@ -260,7 +295,6 @@ describe('ConversationService', () => {
           },
         },
       } as unknown as Block;
-
       const event = {
         getMessageType: jest.fn().mockReturnValue('message'),
         getText: jest.fn().mockReturnValue('I would like to see the products'),
@@ -285,7 +319,6 @@ describe('ConversationService', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
       const result1 = await conversationService.storeContextData(
         conversation,
         next,
@@ -318,8 +351,6 @@ describe('ConversationService', () => {
         }),
         setSender: jest.fn(),
       } as unknown as EventWrapper<any, any>;
-
-      // Second call to ensure the offset keeps growing
       const result2 = await conversationService.storeContextData(
         conversation,
         next,

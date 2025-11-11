@@ -117,13 +117,14 @@ export class ValidateAccountService {
     });
 
     await this.userService.updateOne(
-      { email: decodedToken.email },
+      { where: { email: decodedToken.email } },
       { state: true },
     );
     try {
     } catch (_e) {
       throw new InternalServerErrorException('Could confirm email');
     }
+
     return {};
   }
 }

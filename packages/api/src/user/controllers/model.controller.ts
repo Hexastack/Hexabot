@@ -5,27 +5,23 @@
  */
 
 import { Controller, Get, Query } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Model,
-  ModelFull,
-  ModelPopulate,
-  ModelStub,
-} from '../schemas/model.schema';
+import { ModelDtoConfig, ModelTransformerDto } from '../dto/model.dto';
+import { ModelOrmEntity } from '../entities/model.entity';
 import { ModelService } from '../services/model.service';
 
 @Controller('model')
-export class ModelController extends BaseController<
-  Model,
-  ModelStub,
-  ModelPopulate,
-  ModelFull
+export class ModelController extends BaseOrmController<
+  ModelOrmEntity,
+  ModelTransformerDto,
+  ModelDtoConfig
 > {
-  constructor(private readonly modelService: ModelService) {
+  constructor(protected readonly modelService: ModelService) {
     super(modelService);
   }
 
@@ -44,10 +40,15 @@ export class ModelController extends BaseController<
   async find(
     @Query(PopulatePipe)
     populate: string[],
-    filters: TFilterQuery<Model>,
+    @Query(
+      new TypeOrmSearchFilterPipe<ModelOrmEntity>({
+        allowedFields: ['name', 'identity'],
+      }),
+    )
+    options?: FindManyOptions<ModelOrmEntity>,
   ) {
     return this.canPopulate(populate)
-      ? await this.modelService.findAndPopulate(filters)
-      : await this.modelService.find(filters);
+      ? await this.modelService.findAndPopulate(options)
+      : await this.modelService.find(options);
   }
 }

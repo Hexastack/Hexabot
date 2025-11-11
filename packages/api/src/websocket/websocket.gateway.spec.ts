@@ -8,10 +8,6 @@ import { INestApplication } from '@nestjs/common';
 import { Session } from 'express-session';
 import { Socket, io } from 'socket.io-client';
 
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
@@ -28,13 +24,6 @@ describe('WebsocketGateway', () => {
   beforeAll(async () => {
     const { module } = await buildTestingMocks({
       providers: [WebsocketGateway, SocketEventDispatcherService],
-      imports: [
-        rootMongooseTestModule(({ uri, dbName }) => {
-          process.env.MONGO_URI = uri;
-          process.env.MONGO_DB = dbName;
-          return Promise.resolve();
-        }),
-      ],
     });
     app = module.createNestApplication();
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
@@ -63,7 +52,6 @@ describe('WebsocketGateway', () => {
 
   afterAll(async () => {
     await app.close();
-    await closeInMongodConnection();
   });
 
   afterEach(jest.clearAllMocks);
@@ -90,7 +78,6 @@ describe('WebsocketGateway', () => {
 
   it('should emit "OK" on "healthcheck"', async () => {
     const [socket1] = sockets;
-
     const connectionPromise = new Promise<void>((resolve) => {
       socket1.on('connect', () => {
         socket1.emit('healthcheck', 'Hello world!');
@@ -165,7 +152,6 @@ describe('WebsocketGateway', () => {
   it('should allow users to join the global "Message" room', async () => {
     const [, admin2ClientSocket, admin3ClientSocket, subscriberSocket] =
       sockets;
-
     const onSubscriberConnect = new Promise<void>((resolve) =>
       subscriberSocket.on('connect', resolve),
     );
@@ -259,14 +245,12 @@ describe('WebsocketGateway', () => {
         resolve();
       });
     });
-
     const onMessagePromise3 = new Promise<void>((resolve) => {
       admin3ClientSocket.on('message', async ({ data }) => {
         expect(data).toBe('The subscriber message');
         resolve();
       });
     });
-
     const onSubscriberMessagePromise = new Promise<void>((resolve, reject) => {
       subscriberSocket.on('message', async () => {
         reject();

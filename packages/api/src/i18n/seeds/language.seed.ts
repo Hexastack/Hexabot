@@ -4,22 +4,44 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 
-import { BaseSeeder } from '@/utils/generics/base-seeder';
+import {
+  DEFAULT_LANGUAGE_CACHE_KEY,
+  LANGUAGES_CACHE_KEY,
+} from '@/utils/constants/cache';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { LanguageDto } from '../dto/language.dto';
+import {
+  LanguageCreateDto,
+  LanguageDtoConfig,
+  LanguageTransformerDto,
+} from '../dto/language.dto';
+import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
-import { Language } from '../schemas/language.schema';
 
 @Injectable()
-export class LanguageSeeder extends BaseSeeder<
-  Language,
-  never,
-  never,
-  LanguageDto
+export class LanguageSeeder extends BaseOrmSeeder<
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDtoConfig
 > {
-  constructor(private readonly languageRepository: LanguageRepository) {
+  constructor(
+    languageRepository: LanguageRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {
     super(languageRepository);
+  }
+
+  async seed(models: LanguageCreateDto[]): Promise<boolean> {
+    const seeded = await super.seed(models);
+    if (seeded) {
+      await this.cacheManager.del(LANGUAGES_CACHE_KEY);
+      await this.cacheManager.del(DEFAULT_LANGUAGE_CACHE_KEY);
+    }
+
+    return seeded;
   }
 }

@@ -5,15 +5,15 @@
  */
 
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { BotStatsController } from './controllers/bot-stats.controller';
+import { BotStatsOrmEntity } from './entities/bot-stats.entity';
 import { BotStatsRepository } from './repositories/bot-stats.repository';
-import { BotStatsModel } from './schemas/bot-stats.schema';
 import { BotStatsService } from './services/bot-stats.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([BotStatsModel])],
+  imports: [TypeOrmModule.forFeature([BotStatsOrmEntity])],
   controllers: [BotStatsController],
   providers: [BotStatsService, BotStatsRepository],
 })

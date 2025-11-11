@@ -25,6 +25,7 @@ function recursivelyOmitKeys(obj: any, keysToIgnore: string[]): any {
         acc[key] = obj[key];
       }
     }
+
     return acc;
   }, {});
 }
@@ -33,9 +34,7 @@ expect.extend({
   toEqualPayload(received, expected, keysToIgnore = IGNORED_TEST_FIELDS) {
     const receivedStripped = recursivelyOmitKeys(received, keysToIgnore);
     const expectedStripped = recursivelyOmitKeys(expected, keysToIgnore);
-
     const pass = this.equals(receivedStripped, expectedStripped);
-
     const diffString = diff(expectedStripped, receivedStripped, {
       expand: this.expand,
     });

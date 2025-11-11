@@ -4,23 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseSchema } from '../generics/base-schema';
+import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-export type TOptionalPropertyOf<T> = Exclude<
-  {
-    [K in keyof T]: T extends Record<K, T[K]> ? never : K;
-  }[keyof T],
-  undefined
->;
+type BaseFixtureEntity = Pick<BaseOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 //fixtures types
-export type TFixtures<T> = Omit<T, keyof BaseSchema> & {
-  createdAt?: BaseSchema['createdAt'];
+export type TFixtures<T> = Omit<T, keyof BaseFixtureEntity> & {
+  createdAt?: BaseFixtureEntity['createdAt'];
 };
 
-export type TFixturesDefaultValues<T, S = TFixtures<T>> = {
-  [key in TOptionalPropertyOf<S>]?: S[key];
-} & { createdAt?: BaseSchema['createdAt'] };
+export type TFixturesDefaultValues<T, S = TFixtures<T>> = Partial<S>;
 
 export type TOptionalPropertyFrom<O extends object, O1 extends object> = Pick<
   O1,
@@ -30,7 +23,7 @@ export type TOptionalPropertyFrom<O extends object, O1 extends object> = Pick<
 
 export type OptionalProperties<T, K extends keyof T> = Omit<
   T,
-  K | keyof BaseSchema
+  K | keyof BaseFixtureEntity
 > &
   Partial<Pick<T, K>>;
 

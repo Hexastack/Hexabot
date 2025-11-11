@@ -7,12 +7,17 @@
 import { useCallback, useMemo } from "react";
 import {
   NavigateOptions,
+  Params,
   To,
   useLocation,
   useNavigate,
   useParams,
+  useRoutes,
   useSearchParams,
 } from "react-router-dom";
+
+import { routes } from "@/routes";
+import { RouteObjectItem } from "@/routes/routeConfig";
 
 export type QueryValue = string | string[] | undefined;
 
@@ -27,9 +32,18 @@ export interface AppRouter {
   asPath: string;
   query: Record<string, QueryValue>;
   isReady: boolean;
-  push: (url: To | UrlObject, state?: NavigateOptions["state"]) => Promise<boolean>;
-  replace: (url: To | UrlObject, state?: NavigateOptions["state"]) => Promise<boolean>;
+  push: (
+    url: To | UrlObject,
+    state?: NavigateOptions["state"],
+  ) => Promise<boolean>;
+  replace: (
+    url: To | UrlObject,
+    state?: NavigateOptions["state"],
+  ) => Promise<boolean>;
   reload: () => void;
+  params: Readonly<Params<string>>;
+  routeObject: RouteObjectItem;
+  element: React.ReactElement | null;
 }
 
 const buildSearchString = (query?: Record<string, QueryValue>) => {
@@ -62,7 +76,11 @@ const buildSearchString = (query?: Record<string, QueryValue>) => {
 const resolveUrlObject = (url: UrlObject): string => {
   const pathname = url.pathname || "/";
   const search = buildSearchString(url.query);
-  const hash = url.hash ? (url.hash.startsWith("#") ? url.hash : `#${url.hash}`) : "";
+  const hash = url.hash
+    ? url.hash.startsWith("#")
+      ? url.hash
+      : `#${url.hash}`
+    : "";
 
   return `${pathname}${search}${hash}`;
 };
@@ -78,6 +96,8 @@ export const useAppRouter = (): AppRouter => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
+  const element = useRoutes(routes);
+  const { match } = element?.props;
   const [searchParams] = useSearchParams();
   const query = useMemo<Record<string, QueryValue>>(() => {
     const queryEntries: Record<string, QueryValue> = {};
@@ -133,5 +153,8 @@ export const useAppRouter = (): AppRouter => {
     push,
     replace,
     reload,
+    params,
+    element,
+    routeObject: match.route,
   };
 };

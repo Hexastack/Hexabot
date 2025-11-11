@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsIn,
   IsMimeType,
@@ -18,14 +18,62 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
-import { ObjectIdDto } from '@/utils/dto/object-id.dto';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '../types';
+
+@Exclude()
+export class AttachmentStub extends BaseStub {
+  @Expose()
+  name!: string;
+
+  @Expose()
+  type!: string;
+
+  @Expose()
+  size!: number;
+
+  @Expose()
+  location!: string;
+
+  @Expose()
+  channel?: Partial<Record<ChannelName, any>>;
+
+  @Expose()
+  createdByRef?: AttachmentCreatedByRef;
+
+  @Expose()
+  resourceRef!: AttachmentResourceRef;
+
+  @Expose()
+  access!: AttachmentAccess;
+
+  @Expose()
+  url: string;
+}
+
+@Exclude()
+export class Attachment extends AttachmentStub {
+  @Expose()
+  createdBy?: string | null;
+}
+
+@Exclude()
+export class AttachmentFull extends AttachmentStub {
+  @Expose()
+  @Type(() => User)
+  createdBy: User | undefined;
+}
 
 export class AttachmentMetadataDto {
   /**
@@ -106,7 +154,7 @@ export class AttachmentMetadataDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsObjectId({ message: 'Owner must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'CreatedBy must be a valid UUID' })
   createdBy: string;
 }
 
@@ -120,7 +168,11 @@ export class AttachmentCreateDto extends AttachmentMetadataDto {
   location: string;
 }
 
-export class AttachmentDownloadDto extends ObjectIdDto {
+export class AttachmentDownloadDto {
+  @ApiPropertyOptional({ description: 'Identifier', type: String })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
+  id: string;
+
   /**
    * Attachment file name
    */
@@ -153,3 +205,12 @@ export class AttachmentContextParamDto {
   @IsOptional()
   access?: AttachmentAccess;
 }
+
+export type AttachmentTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Attachment;
+  FullCls: typeof AttachmentFull;
+}>;
+
+export type AttachmentDtoConfig = DtoActionConfig<{
+  create: AttachmentCreateDto;
+}>;

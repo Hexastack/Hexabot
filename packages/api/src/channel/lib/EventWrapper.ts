@@ -4,15 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
-import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import { SubscriberChannelData } from '@/chat/schemas/types/channel';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { SubscriberChannelData } from '@/chat/types/channel';
 import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/schemas/types/message';
-import { Payload } from '@/chat/schemas/types/quick-reply';
+} from '@/chat/types/message';
+import { Payload } from '@/chat/types/quick-reply';
 import { NLU } from '@/helper/types';
 
 import { ChannelName } from '../types';
@@ -26,7 +26,7 @@ export default abstract class EventWrapper<
     eventType: StdEventType;
     messageType?: IncomingMessageType;
     raw: E;
-    attachments?: Attachment[];
+    attachments?: AttachmentOrmEntity[];
   },
   E,
   N extends ChannelName = ChannelName,
@@ -263,6 +263,7 @@ export default abstract class EventWrapper<
     } else if ('serialized_text' in message) {
       return message.serialized_text;
     }
+
     return '';
   }
 

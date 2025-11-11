@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsObject,
@@ -13,8 +14,55 @@ import {
   Matches,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+import { LabelGroup } from './label-group.dto';
+import { Subscriber } from './subscriber.dto';
+
+@Exclude()
+export class LabelStub extends BaseStub {
+  @Expose()
+  title!: string;
+
+  @Expose()
+  name!: string;
+
+  @Expose()
+  @Transform(({ value }) => (value == null ? undefined : value))
+  label_id?: Record<string, any> | null;
+
+  @Expose()
+  @Transform(({ value }) => (value == null ? undefined : value))
+  description?: string | null;
+
+  @Expose()
+  builtin!: boolean;
+}
+
+@Exclude()
+export class Label extends LabelStub {
+  @Expose({ name: 'groupId' })
+  group?: string | null;
+
+  @Exclude()
+  users?: never;
+}
+
+@Exclude()
+export class LabelFull extends LabelStub {
+  @Expose()
+  @Type(() => Subscriber)
+  users?: Subscriber[];
+
+  @Expose()
+  @Type(() => LabelGroup)
+  group?: LabelGroup | null;
+}
 
 export class LabelCreateDto {
   @ApiProperty({ description: 'Label title', type: String })
@@ -35,7 +83,7 @@ export class LabelCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsObjectId({ message: 'group must be a valid ObjectId' })
+  @IsUUIDv4({ message: 'group must be a valid UUID' })
   group?: string | null;
 
   @ApiPropertyOptional({ description: 'Label description', type: String })
@@ -51,6 +99,14 @@ export class LabelCreateDto {
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
 
-export type LabelDto = DtoConfig<{
-  create: LabelCreateDto;
+export type LabelTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Label;
+  FullCls: typeof LabelFull;
 }>;
+
+export type LabelDtoConfig = DtoActionConfig<{
+  create: LabelCreateDto;
+  update: LabelUpdateDto;
+}>;
+
+export type LabelDto = LabelDtoConfig;

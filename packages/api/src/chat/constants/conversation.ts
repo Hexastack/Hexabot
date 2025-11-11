@@ -4,12 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '../schemas/subscriber.schema';
-import { Context } from '../schemas/types/context';
+import { Subscriber } from '../dto/subscriber.dto';
+import { Context } from '../types/context';
 
 export function getDefaultConversationContext(): Context {
   return {
     vars: {}, // Used for capturing vars from user entries
+    channel: null,
+    text: null,
+    payload: null,
+    nlp: null,
     user: {
       first_name: '',
       last_name: '',

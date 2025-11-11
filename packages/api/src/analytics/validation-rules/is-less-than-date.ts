@@ -27,6 +27,7 @@ export function IsLessThanDate(
           if (relatedValue) {
             return value <= relatedValue;
           }
+
           return true;
         },
       },

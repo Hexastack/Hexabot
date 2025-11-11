@@ -5,215 +5,135 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Model, PipelineStage, SortOrder, Types } from 'mongoose';
+import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { Format } from '@/utils/types/format.types';
 
-import { NlpValueDto } from '../dto/nlp-value.dto';
+import { NlpSampleState } from '..//types';
 import {
-  NLP_VALUE_POPULATE,
   NlpValue,
+  NlpValueDtoConfig,
   NlpValueFull,
   NlpValueFullWithCount,
-  NlpValuePopulate,
+  NlpValueTransformerDto,
   NlpValueWithCount,
   TNlpValueCount,
-} from '../schemas/nlp-value.schema';
+} from '../dto/nlp-value.dto';
+import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 
 @Injectable()
-export class NlpValueRepository extends BaseRepository<
-  NlpValue,
-  NlpValuePopulate,
-  NlpValueFull,
-  NlpValueDto
+export class NlpValueRepository extends BaseOrmRepository<
+  NlpValueOrmEntity,
+  NlpValueTransformerDto,
+  NlpValueDtoConfig
 > {
-  constructor(@InjectModel(NlpValue.name) readonly model: Model<NlpValue>) {
-    super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
-  }
-
-  private getSortDirection(sortOrder: SortOrder) {
-    return typeof sortOrder === 'number'
-      ? sortOrder
-      : sortOrder.toString().toLowerCase() === 'desc'
-        ? -1
-        : 1;
-  }
-
   /**
-   * Performs an aggregation to retrieve NLP values with their sample counts.
-   * * The aggregation:
-   * - Applies filter criteria on NLP values.
-   * - Optionally applies `$and` conditions, including entity-based filters.
-   * - Joins with the `nlpsampleentities` collection to link values to samples.
-   * - Joins with the `nlpsamples` collection and restricts results to samples
-   *   where `type = "train"`.
-   * - Counts the number of associated training samples per NLP value.
-   * - Optionally enriches the result with the linked `entity` document if
-   *   the format is set to FULL.
-   * - Applies pagination (skip, limit) and sorting.
-   *
-   * @param format - The format can be full or stub
-   * @param pageQuery - The pagination parameters
-   * @param filterQuery - The filter criteria
-   * @returns Aggregated Nlp Value results with sample counts
+   * Initializes the repository with relations and DTO classes used for value entities.
+   * @param repository The TypeORM repository for `NlpValueOrmEntity`.
    */
-  private async aggregateWithCount<F extends Format>(
-    format: F,
-    {
-      limit = 10,
-      skip = 0,
-      sort = ['createdAt', 'desc'],
-    }: PageQueryDto<NlpValue>,
-    { $and = [], ...rest }: TFilterQuery<NlpValue>,
-  ): Promise<TNlpValueCount<F>[]> {
-    const pipeline: PipelineStage[] = [
-      {
-        $match: {
-          ...rest,
-          ...($and.length
-            ? {
-                $and: $and.map(({ entity, ...rest }) => ({
-                  ...rest,
-                  ...(entity
-                    ? { entity: new Types.ObjectId(String(entity)) }
-                    : {}),
-                })),
-              }
-            : {}),
-        },
-      },
-      {
-        $lookup: {
-          from: 'nlpsampleentities',
-          localField: '_id',
-          foreignField: 'value',
-          as: '_sampleEntities',
-        },
-      },
-      {
-        $unwind: {
-          path: '$_sampleEntities',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $lookup: {
-          from: 'nlpsamples',
-          localField: '_sampleEntities.sample',
-          foreignField: '_id',
-          as: '_samples',
-        },
-      },
-      {
-        $unwind: {
-          path: '$_samples',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: '$_id',
-          _originalDoc: {
-            $first: {
-              $unsetField: { input: '$$ROOT', field: 'nlpSamplesCount' },
-            },
-          },
-          nlpSamplesCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $ifNull: ['$_sampleEntities', false] },
-                    { $eq: ['$_samples.type', 'train'] },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-        },
-      },
-      {
-        $replaceWith: {
-          $mergeObjects: [
-            '$_originalDoc',
-            { nlpSamplesCount: '$nlpSamplesCount' },
-          ],
-        },
-      },
-      ...(format === Format.FULL
-        ? [
-            {
-              $lookup: {
-                from: 'nlpentities',
-                localField: 'entity',
-                foreignField: '_id',
-                as: 'entity',
-              },
-            },
-            {
-              $unwind: '$entity',
-            },
-          ]
-        : []),
-      {
-        $sort: {
-          [sort[0]]: this.getSortDirection(sort[1]),
-          _id: this.getSortDirection(sort[1]),
-        },
-      },
-      {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-    ];
-
-    return await this.model.aggregate<TNlpValueCount<F>>(pipeline).exec();
+  constructor(
+    @InjectRepository(NlpValueOrmEntity)
+    repository: Repository<NlpValueOrmEntity>,
+  ) {
+    super(repository, ['entity'], {
+      PlainCls: NlpValue,
+      FullCls: NlpValueFull,
+    });
   }
 
   /**
-   * Retrieves NLP values along with their sample counts, applying pagination,
-   * filtering, and formatting.
-   *
-   * @param format - Specifies whether the result should be in FULL or STUB format.
-   * @param pageQuery - Pagination parameters (limit, skip, sort).
-   * @param filterQuery - Filtering criteria for NLP values and entities.
-   * @returns A promise that resolves to a list of NLP value results with their training sample counts,
-   *          typed according to the requested format.
-   * @throws Logs and rethrows any errors that occur during aggregation or transformation.
+   * Retrieves values with the count of linked training samples, using the requested format.
+   * @param format Determines whether plain or full DTOs are returned.
+   * @param options Optional TypeORM find options to refine filtering, sorting, or pagination.
+   * @returns Array of values enriched with their linked training sample counts.
+   * @throws Logs the underlying error before rethrowing when the query fails.
    */
   async findWithCount<F extends Format>(
     format: F,
-    pageQuery: PageQueryDto<NlpValue>,
-    filterQuery: TFilterQuery<NlpValue>,
+    options: FindManyOptions<NlpValueOrmEntity> = {},
   ): Promise<TNlpValueCount<F>[]> {
     try {
-      const aggregatedResults = await this.aggregateWithCount(
-        format,
-        pageQuery,
-        filterQuery,
-      );
+      const results = await this.buildCountQuery(format, options).getMany();
 
-      if (format === Format.FULL) {
-        return plainToInstance(NlpValueFullWithCount, aggregatedResults, {
-          excludePrefixes: ['_'],
-        }) as TNlpValueCount<F>[];
-      }
+      return results.map((entity) => {
+        const payload = {
+          ...entity,
+          nlpSamplesCount: entity.nlpSamplesCount ?? 0,
+        };
+        const dto =
+          format === Format.FULL
+            ? plainToInstance(NlpValueFullWithCount, payload)
+            : plainToInstance(NlpValueWithCount, payload);
 
-      return plainToInstance(NlpValueWithCount, aggregatedResults, {
-        excludePrefixes: ['_'],
-      }) as TNlpValueCount<F>[];
+        return dto as TNlpValueCount<F>;
+      });
     } catch (error) {
-      this.logger.error(`Error in : ${error.message}`, error);
+      this.logger.error(`Error in findWithCount: ${error.message}`, error);
       throw error;
     }
+  }
+
+  /**
+   * Builds the query used to load values alongside their linked training sample counts.
+   * @param format Determines which relations are joined and selected.
+   * @param options Optional TypeORM find options to apply to the query builder.
+   * @returns A query builder prepared with the requested joins, ordering, and pagination.
+   */
+  private buildCountQuery(
+    format: Format,
+    options: FindManyOptions<NlpValueOrmEntity>,
+  ): SelectQueryBuilder<NlpValueOrmEntity> {
+    const qb = this.repository.createQueryBuilder('value');
+
+    if (format === Format.FULL) {
+      qb.leftJoinAndSelect('value.entity', 'entity');
+    } else {
+      qb.leftJoin('value.entity', 'entity');
+    }
+
+    qb.loadRelationCountAndMap(
+      'value.nlpSamplesCount',
+      'value.sampleEntities',
+      'sampleEntity',
+      (relationQb) =>
+        relationQb
+          .leftJoin('sampleEntity.sample', 'sample')
+          .where('sample.type = :trainType', {
+            trainType: NlpSampleState.train,
+          }),
+    );
+
+    const findOptions: FindManyOptions<NlpValueOrmEntity> = {};
+
+    if (options.where) {
+      findOptions.where = options.where;
+    }
+
+    const hasOrder = options.order && Object.keys(options.order).length > 0;
+
+    if (hasOrder) {
+      findOptions.order = options.order;
+    }
+
+    if (Object.keys(findOptions).length > 0) {
+      qb.setFindOptions(findOptions);
+    }
+
+    if (!hasOrder) {
+      qb.addOrderBy('value.createdAt', 'DESC');
+    }
+
+    if (typeof options.skip === 'number') {
+      qb.skip(options.skip);
+    }
+
+    if (typeof options.take === 'number') {
+      qb.take(options.take);
+    }
+
+    return qb;
   }
 }

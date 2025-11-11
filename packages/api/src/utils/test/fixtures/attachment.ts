@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -28,7 +28,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '9'.repeat(24),
+    createdBy: '99999999-9999-4999-9999-999999999999',
   },
   {
     name: 'store2.jpg',
@@ -43,14 +43,14 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '9'.repeat(24),
+    createdBy: '99999999-9999-4999-9999-999999999999',
   },
 ];
 
-export const installAttachmentFixtures = async () => {
-  const Attachment = mongoose.model(
-    AttachmentModel.name,
-    AttachmentModel.schema,
-  );
-  return await Attachment.insertMany(attachmentFixtures);
+export const installAttachmentFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(AttachmentOrmEntity);
+  const entities = repository.create(attachmentFixtures);
+  await repository.save(entities);
 };

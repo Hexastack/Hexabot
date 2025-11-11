@@ -5,27 +5,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { PermissionDto } from '../dto/permission.dto';
 import {
   Permission,
-  PERMISSION_POPULATE,
+  PermissionDtoConfig,
   PermissionFull,
-  PermissionPopulate,
-} from '../schemas/permission.schema';
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { PermissionOrmEntity } from '../entities/permission.entity';
 
 @Injectable()
-export class PermissionRepository extends BaseRepository<
-  Permission,
-  PermissionPopulate,
-  PermissionFull,
-  PermissionDto
+export class PermissionRepository extends BaseOrmRepository<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionDtoConfig
 > {
-  constructor(@InjectModel(Permission.name) readonly model: Model<Permission>) {
-    super(model, Permission, PERMISSION_POPULATE, PermissionFull);
+  constructor(
+    @InjectRepository(PermissionOrmEntity)
+    repository: Repository<PermissionOrmEntity>,
+  ) {
+    super(repository, ['model', 'role'], {
+      PlainCls: Permission,
+      FullCls: PermissionFull,
+    });
   }
 }

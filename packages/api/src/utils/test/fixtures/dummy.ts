@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { DummyCreateDto } from '@/utils/test/dummy/dto/dummy.dto';
-import { DummyModel } from '@/utils/test/dummy/schemas/dummy.schema';
+import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 
 export const dummyFixtures: DummyCreateDto[] = [
   {
@@ -24,7 +24,11 @@ export const dummyFixtures: DummyCreateDto[] = [
   },
 ];
 
-export const installDummyFixtures = async () => {
-  const Dummy = mongoose.model(DummyModel.name, DummyModel.schema);
-  return await Dummy.insertMany(dummyFixtures);
+export const installDummyFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<DummyOrmEntity[]> => {
+  const repository = dataSource.getRepository(DummyOrmEntity);
+  const entities = repository.create(dummyFixtures);
+
+  return await repository.save(entities);
 };

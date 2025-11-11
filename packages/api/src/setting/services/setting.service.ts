@@ -16,18 +16,28 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { SettingCreateDto } from '../dto/setting.dto';
+import {
+  Setting,
+  SettingCreateDto,
+  SettingDtoConfig,
+  SettingTransformerDto,
+} from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
-import { Setting } from '../schemas/setting.schema';
-import { TextSetting } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
+import { TextSetting } from '../types';
 
 @Injectable()
-export class SettingService extends BaseService<Setting> {
+export class SettingService extends BaseOrmService<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig,
+  SettingRepository
+> {
   constructor(
-    readonly repository: SettingRepository,
+    repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly seeder: SettingSeeder,
   ) {
@@ -40,8 +50,8 @@ export class SettingService extends BaseService<Setting> {
    * @param group - The group of settings to check.
    * @param data - The array of settings to seed if none exist.
    */
-  async seedIfNotExist(group: string, data: SettingCreateDto[]) {
-    const count = await this.count({ group });
+  async seedIfNotExist(group: string, data: SettingCreateDto[]): Promise<void> {
+    const count = await this.count({ where: { group } });
     if (count === 0) {
       await this.seeder.seed(data);
     }
@@ -52,8 +62,11 @@ export class SettingService extends BaseService<Setting> {
    *
    * @returns A grouped object of settings.
    */
-  async load() {
-    const settings = await this.findAll(['weight', 'asc']);
+  async load(): Promise<Record<string, Setting[]>> {
+    const settings = await this.findAll({
+      order: { weight: 'ASC' },
+    });
+
     return this.group(settings);
   }
 
@@ -67,11 +80,11 @@ export class SettingService extends BaseService<Setting> {
    * @returns A `Settings` object organized by group.
    */
   public buildTree(settings: Setting[]): Settings {
-    return settings.reduce((acc: Settings, s: Setting) => {
-      const groupKey = s.group || 'undefinedGroup';
+    return settings.reduce((acc: Settings, setting: Setting) => {
+      const groupKey = setting.group || 'undefinedGroup';
 
       acc[groupKey] = acc[groupKey] || {};
-      acc[groupKey][s.label] = s.value;
+      acc[groupKey][setting.label] = setting.value;
 
       return acc;
     }, {} as Settings);
@@ -86,13 +99,15 @@ export class SettingService extends BaseService<Setting> {
    * @returns A record where each key is a group and each value is an array of settings.
    */
   public group(settings: Setting[]): Record<string, Setting[]> {
-    return (
-      settings?.reduce((acc, curr) => {
+    return settings.reduce(
+      (acc, curr) => {
         const group = acc[curr.group] || [];
         group.push(curr);
         acc[curr.group] = group;
+
         return acc;
-      }, {}) || {}
+      },
+      {} as Record<string, Setting[]>,
     );
   }
 
@@ -108,9 +123,9 @@ export class SettingService extends BaseService<Setting> {
   /**
    * Clears the settings cache
    */
-  async clearCache() {
-    this.cacheManager.del(SETTING_CACHE_KEY);
-    this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
+  async clearCache(): Promise<void> {
+    await this.cacheManager.del(SETTING_CACHE_KEY);
+    await this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
   }
 
   /**
@@ -118,8 +133,8 @@ export class SettingService extends BaseService<Setting> {
    * and invalidates the cache for settings when triggered.
    */
   @OnEvent('hook:setting:*')
-  async handleSettingUpdateEvent() {
-    this.clearCache();
+  async handleSettingUpdateEvent(): Promise<void> {
+    await this.clearCache();
   }
 
   /**
@@ -135,13 +150,13 @@ export class SettingService extends BaseService<Setting> {
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
   async getAllowedOrigins(): Promise<string[]> {
     const settings = (await this.find({
-      label: 'allowed_domains',
+      where: { label: 'allowed_domains' },
     })) as TextSetting[];
-
     const allowedDomains = settings.flatMap((setting) =>
-      setting.value.split(',').filter((o) => !!o),
+      (typeof setting.value === 'string' ? setting.value : '')
+        .split(',')
+        .filter((origin) => origin),
     );
-
     const uniqueOrigins = new Set([
       ...config.security.cors.allowOrigins,
       ...config.sockets.onlyAllowOrigins,
@@ -160,6 +175,7 @@ export class SettingService extends BaseService<Setting> {
   @Cacheable(SETTING_CACHE_KEY)
   async getSettings(): Promise<Settings> {
     const settings = await this.findAll();
+
     return this.buildTree(settings);
   }
 }

@@ -8,25 +8,35 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
-import { BaseService } from '@/utils/generics/base-service';
+import { SettingType } from '@/setting/types';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Block } from '../../chat/schemas/block.schema';
+import { Block } from '../../chat/dto/block.dto';
 import { BlockService } from '../../chat/services/block.service';
+import {
+  TranslationDtoConfig,
+  TranslationTransformerDto,
+} from '../dto/translation.dto';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { Translation } from '../schemas/translation.schema';
 
 @Injectable()
-export class TranslationService extends BaseService<Translation> {
+export class TranslationService extends BaseOrmService<
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDtoConfig
+> {
   constructor(
-    readonly repository: TranslationRepository,
+    repository: TranslationRepository,
     private readonly blockService: BlockService,
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly i18n: I18nService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
     this.resetI18nTranslations();
@@ -151,6 +161,7 @@ export class TranslationService extends BaseService<Translation> {
     ) {
       strings = strings.concat(block.options.fallback.message);
     }
+
     return strings;
   }
 
@@ -180,9 +191,10 @@ export class TranslationService extends BaseService<Translation> {
    */
   async getSettingStrings(): Promise<string[]> {
     const translatableSettings = await this.settingService.find({
-      translatable: true,
+      where: { translatable: true },
     });
     const settings = await this.settingService.getSettings();
+
     return Object.values(settings)
       .map((group: Record<string, string | string[]>) => Object.entries(group))
       .flat()

@@ -10,7 +10,7 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -24,20 +24,121 @@ import {
 } from 'class-validator';
 import { z } from 'zod';
 
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { SanitizeQueryPipe } from '@/utils/pipes/sanitize-query.pipe';
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
-import { CaptureVar, captureVarSchema } from '../schemas/types/capture-var';
-import {
-  BlockMessage,
-  blockMessageObjectSchema,
-} from '../schemas/types/message';
-import { BlockOptions, BlockOptionsSchema } from '../schemas/types/options';
-import { Pattern, patternSchema } from '../schemas/types/pattern';
-import { Position, positionSchema } from '../schemas/types/position';
+import { CaptureVar, captureVarSchema } from '../types/capture-var';
+import { BlockMessage, blockMessageObjectSchema } from '../types/message';
+import { BlockOptions, BlockOptionsSchema } from '../types/options';
+import { Pattern, patternSchema } from '../types/pattern';
+import { Position, positionSchema } from '../types/position';
+
+import { Category } from './category.dto';
+import { Label } from './label.dto';
+
+@Exclude()
+export class BlockStub extends BaseStub {
+  @Expose()
+  name!: string;
+
+  @Expose()
+  patterns!: Pattern[];
+
+  @Expose()
+  outcomes!: string[];
+
+  @Expose()
+  trigger_channels!: string[];
+
+  @Expose()
+  options: BlockOptions;
+
+  @Expose()
+  message!: BlockMessage;
+
+  @Expose()
+  starts_conversation!: boolean;
+
+  @Expose()
+  capture_vars!: CaptureVar[];
+
+  @Expose()
+  @Transform(({ value }) => (value == null ? undefined : value))
+  position?: Position | null;
+
+  @Expose()
+  builtin!: boolean;
+}
+
+@Exclude()
+export class Block extends BlockStub {
+  @Expose({ name: 'triggerLabelIds' })
+  trigger_labels!: string[];
+
+  @Expose({ name: 'assignLabelIds' })
+  assign_labels!: string[];
+
+  @Expose({ name: 'nextBlockIds' })
+  nextBlocks!: string[];
+
+  @Expose({ name: 'attachedBlockId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  attachedBlock?: string | null;
+
+  @Expose({ name: 'categoryId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  category?: string | null;
+
+  @Exclude()
+  previousBlocks?: never;
+
+  @Exclude()
+  attachedToBlock?: never;
+}
+
+@Exclude()
+export class BlockFull extends BlockStub {
+  @Expose()
+  @Type(() => Label)
+  trigger_labels!: Label[];
+
+  @Expose()
+  @Type(() => Label)
+  assign_labels!: Label[];
+
+  @Expose()
+  @Type(() => Block)
+  nextBlocks!: Block[];
+
+  @Expose()
+  @Type(() => Block)
+  attachedBlock?: Block | null;
+
+  @Expose()
+  @Type(() => Category)
+  category?: Category | null;
+
+  @Expose()
+  @Type(() => Block)
+  previousBlocks?: Block[];
+
+  @Expose()
+  @Type(() => Block)
+  attachedToBlock?: Block | null;
+}
+
+@Exclude()
+export class SearchRankedBlock extends Block {
+  @Expose()
+  score!: number;
+}
 
 export class BlockCreateDto {
   @ApiProperty({ description: 'Block name', type: String })
@@ -61,13 +162,13 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Trigger label must be a valid objectId' })
+  @IsUUIDv4({ each: true, message: 'Trigger label must be a valid UUID' })
   trigger_labels?: string[] = [];
 
   @ApiPropertyOptional({ description: 'Block assign labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Assign label must be a valid objectId' })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
   assign_labels?: string[] = [];
 
   @ApiPropertyOptional({ description: 'Block trigger channels', type: Array })
@@ -89,21 +190,21 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'next blocks', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Next block must be a valid objectId' })
+  @IsUUIDv4({ each: true, message: 'Next block must be a valid UUID' })
   nextBlocks?: string[];
 
   @ApiPropertyOptional({ description: 'attached blocks', type: String })
   @IsOptional()
   @IsString()
-  @IsObjectId({
-    message: 'Attached block must be a valid objectId',
+  @IsUUIDv4({
+    message: 'Attached block must be a valid UUID',
   })
   attachedBlock?: string | null;
 
   @ApiProperty({ description: 'Block category', type: String })
   @IsNotEmpty()
   @IsString()
-  @IsObjectId({ message: 'Category must be a valid objectId' })
+  @IsUUIDv4({ message: 'Category must be a valid UUID' })
   category: string | null;
 
   @ApiPropertyOptional({
@@ -156,13 +257,13 @@ export class BlockUpdateDto extends PartialType(
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Trigger label must be a valid objectId' })
+  @IsUUIDv4({ each: true, message: 'Trigger label must be a valid UUID' })
   trigger_labels?: string[];
 
   @ApiPropertyOptional({ description: 'Block assign labels', type: Array })
   @IsOptional()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Assign label must be a valid objectId' })
+  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
   assign_labels?: string[];
 
   @ApiPropertyOptional({ description: 'Block trigger channels', type: Array })
@@ -170,10 +271,6 @@ export class BlockUpdateDto extends PartialType(
   @IsOptional()
   trigger_channels?: string[];
 }
-
-export type BlockDto = DtoConfig<{
-  create: BlockCreateDto;
-}>;
 
 export class BlockSearchQueryDto {
   @ApiPropertyOptional({
@@ -206,6 +303,18 @@ export class BlockSearchQueryDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  @IsObjectId({ message: 'Category must be a valid objectId' })
+  @IsUUIDv4({ message: 'Category must be a valid UUID' })
   category?: string;
 }
+
+export type BlockTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Block;
+  FullCls: typeof BlockFull;
+}>;
+
+export type BlockDtoConfig = DtoActionConfig<{
+  create: BlockCreateDto;
+  update: BlockUpdateDto;
+}>;
+
+export type BlockDto = BlockDtoConfig;

@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 import {
   OutgoingMessageFormat,
   StdOutgoingTextEnvelope,
-} from '@/chat/schemas/types/message';
+} from '@/chat/types/message';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
@@ -41,6 +41,7 @@ export class DummyPlugin extends BaseBlockPlugin<PluginSetting[]> {
         text: 'Hello world !',
       },
     };
+
     return envelope;
   }
 }

@@ -5,19 +5,29 @@
  */
 
 import { JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
-import {
-  IncomingMessageType,
-  StdEventType,
-} from '@/chat/schemas/types/message';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageService } from '@/chat/services/message.service';
+import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
+import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 import { WEB_CHANNEL_NAME } from '../settings';
@@ -25,12 +35,39 @@ import WebEventWrapper from '../wrapper';
 
 import { webEvents } from './events.mock';
 
+const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+
 describe(`Web event wrapper`, () => {
+  let module: TestingModule;
   let handler: WebChannelHandler;
+  const menuServiceMock = {
+    getTree: jest.fn().mockResolvedValue([]),
+  } as jest.Mocked<Pick<MenuService, 'getTree'>>;
+  const attachmentServiceMock = {
+    findOne: jest.fn(),
+    store: jest.fn(),
+    create: jest.fn(),
+  } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
+  const websocketGatewayMock = {
+    broadcast: jest.fn(),
+    joinNotificationSockets: jest.fn(),
+  } as jest.Mocked<
+    Pick<WebsocketGateway, 'broadcast' | 'joinNotificationSockets'>
+  >;
+  const messageServiceMock = {
+    findHistoryUntilDate: jest.fn(),
+    findHistorySinceDate: jest.fn(),
+    findLastMessages: jest.fn(),
+  } as jest.Mocked<
+    Pick<
+      MessageService,
+      'findHistoryUntilDate' | 'findHistorySinceDate' | 'findLastMessages'
+    >
+  >;
+
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installSubscriberFixtures)],
       providers: [
         JwtService,
         WebChannelHandler,
@@ -40,14 +77,54 @@ describe(`Web event wrapper`, () => {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
+        {
+          provide: MenuService,
+          useValue: menuServiceMock,
+        },
+        {
+          provide: AttachmentService,
+          useValue: attachmentServiceMock,
+        },
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
+        },
+        {
+          provide: MessageService,
+          useValue: messageServiceMock,
+        },
       ],
+      typeorm: {
+        entities: [
+          AttachmentOrmEntity,
+          MessageOrmEntity,
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          MenuOrmEntity,
+        ],
+        fixtures: installSubscriberFixturesTypeOrm,
+      },
     });
-    [handler] = await getMocks([WebChannelHandler]);
+    module = testing.module;
+    [handler] = await testing.getMocks([WebChannelHandler]);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
-    jest.clearAllMocks();
-    await closeInMongodConnection();
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
   });
 
   test.each(webEvents)('should wrap event : %s', (_testCase, e, expected) => {
@@ -62,10 +139,10 @@ describe(`Web event wrapper`, () => {
       event._adapter.messageType === IncomingMessageType.attachments
     ) {
       event._adapter.attachment = {
-        id: '9'.repeat(24),
+        id: ATTACHMENT_ID,
         type: 'image/png',
         name: 'filename.extension',
-      } as Attachment;
+      } as AttachmentOrmEntity;
     }
 
     expect(event.getChannelData()).toEqual({

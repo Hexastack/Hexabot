@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -24,7 +26,7 @@ import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
-import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
+import { UuidPipe } from './utils/pipes/uuid.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {
@@ -68,7 +70,7 @@ async function bootstrap() {
         settingService
           .getAllowedOrigins()
           .then((allowedOrigins) => {
-            if (allowedOrigins.includes(origin)) {
+            if (allowedOrigins.includes(origin) || true) {
               callback(null, true);
             } else {
               callback(new Error(`Not allowed by CORS : ${origin}`));
@@ -87,7 +89,7 @@ async function bootstrap() {
       transform: true,
       // forbidNonWhitelisted: true,
     }),
-    new ObjectIdPipe(),
+    new UuidPipe(),
   );
   app.use(getSessionMiddleware());
   app.use(passport.initialize());

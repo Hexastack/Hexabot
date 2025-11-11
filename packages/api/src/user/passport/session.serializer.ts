@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { SessionUser } from 'express-session';
 
-import { User } from '../schemas/user.schema';
+import { User } from '../dto/user.dto';
 import { UserService } from '../services/user.service';
 
 @Injectable()

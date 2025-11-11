@@ -4,12 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
-import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
-import { Content } from '@/cms/schemas/content.schema';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ButtonType, PayloadType } from '@/chat/types/button';
+import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
@@ -17,13 +26,21 @@ import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { Web } from '@/extensions/channels/web/types';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import {
   blockFixtures,
-  installBlockFixtures,
+  installBlockFixturesTypeOrm,
 } from '@/utils/test/fixtures/block';
-import { installContentFixtures } from '@/utils/test/fixtures/content';
-import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
+import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
+import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
 import {
   blockEmpty,
   blockGetStarted,
@@ -46,23 +63,20 @@ import {
   mockNlpGreetingFullNameEntities,
   mockNlpGreetingNameEntities,
 } from '@/utils/test/mocks/nlp';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Block, BlockFull } from '../dto/block.dto';
+import { Category } from '../dto/category.dto';
+import { Subscriber } from '../dto/subscriber.dto';
 import { BlockRepository } from '../repositories/block.repository';
-import { Block, BlockFull } from '../schemas/block.schema';
-import { Category } from '../schemas/category.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
-import { FileType } from '../schemas/types/attachment';
-import { Context } from '../schemas/types/context';
+import { FileType } from '../types/attachment';
+import { Context } from '../types/context';
 import {
   OutgoingMessageFormat,
   StdOutgoingListMessage,
-} from '../schemas/types/message';
-import { QuickReplyType } from '../schemas/types/quick-reply';
+} from '../types/message';
+import { QuickReplyType } from '../types/quick-reply';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
@@ -91,7 +105,10 @@ function makeMockBlock(overrides: Partial<Block>): Block {
   };
 }
 
-describe('BlockService', () => {
+const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+
+describe('BlockService (TypeORM)', () => {
+  let module: TestingModule;
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
   let category: Category;
@@ -102,16 +119,8 @@ describe('BlockService', () => {
   let contentTypeService: ContentTypeService;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      models: ['LabelModel'],
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installContentFixtures();
-          await installBlockFixtures();
-          await installNlpValueFixtures();
-        }),
-      ],
       providers: [
         BlockService,
         ContentTypeService,
@@ -125,44 +134,79 @@ describe('BlockService', () => {
           },
         },
       ],
+      typeorm: {
+        entities: [
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          LabelGroupOrmEntity,
+          LabelOrmEntity,
+          SubscriberOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          ContentOrmEntity,
+          ContentTypeOrmEntity,
+          NlpEntityOrmEntity,
+          NlpSampleOrmEntity,
+          NlpSampleEntityOrmEntity,
+          NlpValueOrmEntity,
+        ],
+        fixtures: [
+          installContentFixturesTypeOrm,
+          installBlockFixturesTypeOrm,
+          installNlpValueFixturesTypeOrm,
+        ],
+      },
     });
+
+    module = testing.module;
+
     [
       blockService,
       contentService,
       contentTypeService,
       categoryRepository,
       blockRepository,
-    ] = await getMocks([
+    ] = await testing.getMocks([
       BlockService,
       ContentService,
       ContentTypeService,
       CategoryRepository,
       BlockRepository,
     ]);
-    category = (await categoryRepository.findOne({ label: 'default' }))!;
-    hasPreviousBlocks = (await blockRepository.findOne({
-      name: 'hasPreviousBlocks',
+    category = (await categoryRepository.findOne({
+      where: { label: 'default' },
     }))!;
-    block = (await blockRepository.findOne({ name: 'hasNextBlocks' }))!;
+    hasPreviousBlocks = (await blockRepository.findOne({
+      where: { name: 'hasPreviousBlocks' },
+    }))!;
+    block = (await blockRepository.findOne({
+      where: { name: 'hasNextBlocks' },
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find one block by id, and populate its trigger_labels, assign_labels,attachedBlock,category,nextBlocks', async () => {
       jest.spyOn(blockRepository, 'findOneAndPopulate');
       const result = await blockService.findOneAndPopulate(block.id);
 
-      expect(blockRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        block.id,
-        undefined,
-      );
+      expect(blockRepository.findOneAndPopulate).toHaveBeenCalledWith(block.id);
       expect(result).toEqualPayload({
         ...blockFixtures.find(({ name }) => name === 'hasNextBlocks'),
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],
+        attachedBlock: null,
         attachedToBlock: null,
       });
     });
@@ -179,14 +223,11 @@ describe('BlockService', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [block] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedBlock: null,
         attachedToBlock: null,
       }));
 
-      expect(blockRepository.findAndPopulate).toHaveBeenCalledWith(
-        {},
-        undefined,
-        undefined,
-      );
+      expect(blockRepository.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(blocksWithCategory);
     });
   });
@@ -216,7 +257,6 @@ describe('BlockService', () => {
       },
       mockWebChannelData,
     );
-
     const webEventAmbiguous = new WebEventWrapper(
       handlerMock,
       {
@@ -399,13 +439,11 @@ describe('BlockService', () => {
         // no match
         blockGetStarted,
       ];
-
       // Spy on calculateBlockScore to check if it's called
       const calculateBlockScoreSpy = jest.spyOn(
         blockService,
         'calculateNluPatternMatchScore',
       );
-
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
@@ -470,7 +508,6 @@ describe('BlockService', () => {
         },
         blockGetStarted,
       ];
-
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
@@ -499,7 +536,6 @@ describe('BlockService', () => {
         mockNlpGreetingNameEntities,
         FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
-
       const scoreWithPenalty = blockService.calculateNluPatternMatchScore(
         mockNlpGreetingAnyNamePatterns,
         mockNlpGreetingNameEntities,
@@ -572,7 +608,7 @@ describe('BlockService', () => {
           attachment: {
             type: FileType.file,
             payload: {
-              id: '9'.repeat(24),
+              id: ATTACHMENT_ID,
               url: 'http://link.to/the/file',
             },
           },
@@ -647,7 +683,6 @@ describe('BlockService', () => {
           'Hello {{context.user.first_name}}, your phone is {{context.vars.phone}} and your favorite color is {{context.vars.color}}',
         ],
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -675,7 +710,6 @@ describe('BlockService', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -702,7 +736,6 @@ describe('BlockService', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -740,7 +773,6 @@ describe('BlockService', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -771,7 +803,6 @@ describe('BlockService', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -817,7 +848,6 @@ describe('BlockService', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -855,7 +885,6 @@ describe('BlockService', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -892,7 +921,6 @@ describe('BlockService', () => {
           },
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -930,7 +958,6 @@ describe('BlockService', () => {
           ],
         },
       });
-
       const env = await blockService.processMessage(
         block,
         ctx,
@@ -967,7 +994,6 @@ describe('BlockService', () => {
       const spyCheckDeprecated = jest
         .spyOn(blockService as any, 'checkDeprecatedAttachmentUrl')
         .mockImplementation(() => {});
-
       const block = makeMockBlock({
         message: {
           attachment: {
@@ -990,7 +1016,7 @@ describe('BlockService', () => {
 
     it('should process list message (with limit = 2 and skip = 0)', async () => {
       const contentType = (await contentTypeService.findOne({
-        name: 'Product',
+        where: { name: 'Product' },
       }))!;
       blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
@@ -1003,11 +1029,16 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.find(
-        { status: true, entity: contentType.id },
-        { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = elements.map(Content.toElement);
+      const elements = await contentService.find({
+        where: {
+          status: true,
+          contentType: { id: contentType.id },
+        },
+        skip: 0,
+        take: 2,
+        order: { createdAt: 'DESC' },
+      });
+      const flattenedElements = elements.map(ContentOrmEntity.toElement);
       expect(result.format).toEqualPayload(
         blockProductListMock.options.content!.display,
       );
@@ -1024,7 +1055,7 @@ describe('BlockService', () => {
 
     it('should process list message (with limit = 2 and skip = 2)', async () => {
       const contentType = (await contentTypeService.findOne({
-        name: 'Product',
+        where: { name: 'Product' },
       }))!;
       blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
@@ -1037,11 +1068,16 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.find(
-        { status: true, entity: contentType.id },
-        { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = elements.map(Content.toElement);
+      const elements = await contentService.find({
+        where: {
+          status: true,
+          contentType: { id: contentType.id },
+        },
+        skip: 2,
+        take: 2,
+        order: { createdAt: 'DESC' },
+      });
+      const flattenedElements = elements.map(ContentOrmEntity.toElement);
       expect(result.format).toEqual(
         blockProductListMock.options.content?.display,
       );
@@ -1117,10 +1153,10 @@ describe('BlockService', () => {
       // Mock the repository to throw an error
       jest
         .spyOn(blockRepository, 'search')
-        .mockRejectedValue(new Error('MongoDB connection error'));
+        .mockRejectedValue(new Error('Connection error'));
 
       await expect(blockService.search('test', 10)).rejects.toThrow(
-        'MongoDB connection error',
+        'Connection error',
       );
     });
   });

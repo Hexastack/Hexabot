@@ -9,36 +9,43 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
-import { BaseSchema } from '@/utils/generics/base-schema';
-import { BaseSeeder } from '@/utils/generics/base-seeder';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
+import { SettingDtoConfig, SettingTransformerDto } from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
-import { Setting } from '../schemas/setting.schema';
+
+type SeedSetting = Omit<SettingOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Injectable()
-export class SettingSeeder extends BaseSeeder<Setting> {
+export class SettingSeeder extends BaseOrmSeeder<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig
+> {
   constructor(
-    private readonly settingRepository: SettingRepository,
+    settingRepository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(settingRepository);
   }
 
-  async seed(models: Omit<Setting, keyof BaseSchema>[]): Promise<boolean> {
-    const grouppedModels = models.reduce(
+  async seed(models: SeedSetting[]): Promise<boolean> {
+    const grouped = models.reduce<Record<string, SeedSetting[]>>(
       (acc, model) => {
-        if (!acc[model.group]) acc[model.group] = [model];
-        else acc[model.group].push(model);
+        acc[model.group] = acc[model.group] || [];
+        acc[model.group].push(model);
 
         return acc;
       },
-      {} as Record<string, Omit<Setting, keyof BaseSchema>[]>,
+      {},
     );
 
-    Object.entries(grouppedModels).forEach(async ([group, models]) => {
-      if ((await this.repository.count({ group })) === 0)
-        await this.repository.createMany(models);
-    });
+    for (const [group, settings] of Object.entries(grouped)) {
+      if (await this.isEmpty({ where: { group } })) {
+        await this.repository.createMany(settings);
+      }
+    }
 
     await this.cacheManager.del(SETTING_CACHE_KEY);
 

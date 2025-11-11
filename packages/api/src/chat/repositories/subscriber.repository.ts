@@ -5,98 +5,83 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindManyOptions, Repository, UpdateEvent } from 'typeorm';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
-import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+import { DtoTransformer } from '@/utils/types/dto.types';
 
-import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
-  SUBSCRIBER_POPULATE,
-  SubscriberDocument,
+  SubscriberDtoConfig,
   SubscriberFull,
-  SubscriberPopulate,
-} from '../schemas/subscriber.schema';
+  SubscriberTransformerDto,
+  SubscriberUpdateDto,
+} from '../dto/subscriber.dto';
+import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 
 @Injectable()
-export class SubscriberRepository extends BaseRepository<
-  Subscriber,
-  SubscriberPopulate,
-  SubscriberFull,
-  SubscriberDto
+export class SubscriberRepository extends BaseOrmRepository<
+  SubscriberOrmEntity,
+  SubscriberTransformerDto,
+  SubscriberDtoConfig
 > {
-  constructor(@InjectModel(Subscriber.name) readonly model: Model<Subscriber>) {
-    super(model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
+  constructor(
+    @InjectRepository(SubscriberOrmEntity)
+    repository: Repository<SubscriberOrmEntity>,
+  ) {
+    super(repository, ['labels', 'assignedTo', 'avatar'], {
+      PlainCls: Subscriber,
+      FullCls: SubscriberFull,
+    });
   }
 
   /**
-   * Emits events related to the creation of a new subscriber.
+   * Runs before a subscriber update to detect assignment changes and emit the appropriate events.
    *
-   * @param created - The newly created subscriber document.
+   * @param event - The TypeORM update event describing the current and previous entity state.
    */
-  async postCreate(created: SubscriberDocument): Promise<void> {
-    this.eventEmitter.emit(
-      'hook:stats:entry',
-      BotStatsType.new_users,
-      'New users',
-      created,
-    );
-  }
+  async beforeUpdate(event: UpdateEvent<SubscriberOrmEntity>): Promise<void> {
+    const entity = event.entity as SubscriberOrmEntity | undefined;
+    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
 
-  /**
-   * Emits events before updating a subscriber. Specifically handles the
-   * assignment of the subscriber and triggers appropriate events.
-   *
-   * @param _query - The Mongoose query object for finding and updating a subscriber.
-   * @param criteria - The filter criteria used to find the subscriber.
-   * @param updates - The update data, which may include fields like `assignedTo`.
-   */
-  async preUpdate(
-    _query: Query<
-      Document<Subscriber, any, any>,
-      Document<Subscriber, any, any>,
-      unknown,
-      Subscriber,
-      'findOneAndUpdate'
-    >,
-    criteria: TFilterQuery<Subscriber>,
-    updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<Subscriber, any, any>>,
-  ): Promise<void> {
-    const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
-
-    if ('assignedTo' in subscriberUpdates) {
-      // In case of a handover or handback, emit events
-      const oldSubscriber = await this.findOne(criteria);
-
-      if (!oldSubscriber) {
-        throw new Error('Something went wrong: subscriber does not exist');
-      }
-
-      if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
-        this.eventEmitter.emit(
-          'hook:subscriber:assign',
-          subscriberUpdates,
-          oldSubscriber,
+    if (entity && previous) {
+      const updatedColumns = event.updatedColumns ?? [];
+      const updatedRelations = event.updatedRelations ?? [];
+      const assignmentUpdated =
+        updatedColumns.some(
+          ({ propertyName }) => propertyName === 'assignedTo',
+        ) ||
+        updatedRelations.some(
+          ({ propertyName }) => propertyName === 'assignedTo',
         );
 
-        if (!(subscriberUpdates.assignedTo && oldSubscriber?.assignedTo)) {
-          this.eventEmitter.emit(
-            'hook:analytics:passation',
-            oldSubscriber,
-            !!subscriberUpdates?.assignedTo,
+      if (assignmentUpdated) {
+        const newAssignedTo = entity?.id;
+        const previousAssignedTo = previous?.id;
+
+        if (newAssignedTo !== previousAssignedTo) {
+          const previousSubscriber = this.getTransformer(
+            DtoTransformer.PlainCls,
+          )(previous);
+          const subscriberUpdates: SubscriberUpdateDto = {
+            assignedTo: newAssignedTo ?? null,
+          };
+
+          this.eventEmitter?.emit(
+            'hook:subscriber:assign',
+            subscriberUpdates,
+            previousSubscriber,
           );
-          subscriberUpdates.assignedAt = new Date();
+
+          const newAssignmentExists = Boolean(newAssignedTo);
+          const previousAssignmentExists = Boolean(previousAssignedTo);
+
+          if (!(newAssignmentExists && previousAssignmentExists)) {
+            const assignedAt = new Date();
+            subscriberUpdates.assignedAt = assignedAt;
+            entity.assignedAt = assignedAt;
+          }
         }
       }
     }
@@ -109,11 +94,14 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @returns The constructed query object.
    */
-  findByForeignIdQuery(id: string) {
-    return this.findQuery(
-      { foreign_id: id },
-      { skip: 0, limit: 1, sort: ['lastvisit', 'desc'] },
-    );
+  private createForeignIdOptions(
+    id: string,
+  ): FindManyOptions<SubscriberOrmEntity> {
+    return {
+      where: { foreign_id: id },
+      order: { lastvisit: 'DESC' },
+      take: 1,
+    };
   }
 
   /**
@@ -124,8 +112,9 @@ export class SubscriberRepository extends BaseRepository<
    * @returns The found subscriber entity, or `null` if no subscriber is found.
    */
   async findOneByForeignId(id: string): Promise<Subscriber | null> {
-    const query = this.findByForeignIdQuery(id);
-    const [result] = await this.execute(query, Subscriber);
+    const results = await this.find(this.createForeignIdOptions(id));
+    const [result] = results;
+
     return result || null;
   }
 
@@ -137,8 +126,9 @@ export class SubscriberRepository extends BaseRepository<
    * @returns The found subscriber entity with populated fields.
    */
   async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
-    const query = this.findByForeignIdQuery(id).populate(this.populatePaths);
-    const [result] = await this.execute(query, SubscriberFull);
+    const results = await this.findAndPopulate(this.createForeignIdOptions(id));
+    const [result] = results;
+
     return result;
   }
 
@@ -154,7 +144,12 @@ export class SubscriberRepository extends BaseRepository<
     id: string,
     updates: SubscriberUpdateDto,
   ): Promise<Subscriber> {
-    return await this.updateOne({ foreign_id: id }, updates);
+    return await this.updateOne(
+      {
+        where: { foreign_id: id },
+      },
+      updates,
+    );
   }
 
   /**
@@ -167,8 +162,9 @@ export class SubscriberRepository extends BaseRepository<
   async handBackByForeignIdQuery(foreignId: string): Promise<Subscriber> {
     return await this.updateOne(
       {
-        foreign_id: foreignId,
-        assignedTo: { $ne: null },
+        where: {
+          foreign_id: foreignId,
+        },
       },
       {
         assignedTo: null,
@@ -190,8 +186,9 @@ export class SubscriberRepository extends BaseRepository<
   ): Promise<Subscriber> {
     return await this.updateOne(
       {
-        foreign_id: foreignId,
-        assignedTo: { $ne: userId },
+        where: {
+          foreign_id: foreignId,
+        },
       },
       {
         assignedTo: userId,
@@ -209,36 +206,49 @@ export class SubscriberRepository extends BaseRepository<
    * @param labelsToPush - Label IDs to add.
    * @param labelsToPull - Optional label IDs to remove before adding.
    *
-   * @returns The subscriber document (pre-update by default), or `null` if not found.
+   * @returns The subscriber object (pre-update by default), or `null` if not found.
    */
   async updateLabels(
     subscriberId: string,
     labelsToPush: string[],
     labelsToPull: string[] = [],
-  ) {
-    if (labelsToPull.length > 0) {
-      const updateResult = await this.model.updateOne(
-        { _id: subscriberId },
-        { $pull: { labels: { $in: labelsToPull } } },
-      );
+  ): Promise<Subscriber> {
+    const subscriber = await this.findOne(subscriberId);
 
-      if (updateResult.matchedCount === 0) {
-        throw new Error(`Unable to pull subscriber labels : ${subscriberId}`);
+    if (!subscriber) {
+      throw new Error(`Unable to resolve subscriber ${subscriberId}`);
+    }
+
+    const relationQuery = this.repository
+      .createQueryBuilder()
+      .relation(SubscriberOrmEntity, 'labels')
+      .of(subscriberId);
+    const existingIds = new Set(subscriber.labels);
+
+    if (labelsToPull.length) {
+      await relationQuery.remove(labelsToPull);
+      labelsToPull.forEach((id) => existingIds.delete(id));
+    }
+
+    const labelIdsToAdd = Array.from(new Set(labelsToPush)).filter((id) => {
+      const shouldAdd = !existingIds.has(id);
+      if (shouldAdd) {
+        existingIds.add(id);
       }
+
+      return shouldAdd;
+    });
+
+    if (labelIdsToAdd.length) {
+      await relationQuery.add(labelIdsToAdd);
     }
 
-    const query = this.model.findOneAndUpdate(
-      { _id: subscriberId },
-      { $addToSet: { labels: { $each: labelsToPush } } },
-      { new: true },
-    );
+    const refreshed = await this.findOne(subscriberId);
 
-    const result = await this.executeOne(query, Subscriber);
-
-    if (!result) {
-      throw new Error(`Unable to assign subscriber labels : ${subscriberId}`);
+    if (!refreshed) {
+      throw new Error(`Unable to reload subscriber ${subscriberId}`);
     }
 
-    return result;
+    return refreshed;
   }
 }

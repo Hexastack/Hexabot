@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -14,10 +15,46 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
-import { MenuType } from '../schemas/types/menu';
+import { MenuType } from '../entities/menu.entity';
+
+@Exclude()
+export class MenuStub extends BaseStub {
+  @Expose()
+  title!: string;
+
+  @Expose()
+  type!: MenuType;
+
+  @Expose()
+  payload?: string | null;
+
+  @Expose()
+  url?: string | null;
+}
+
+@Exclude()
+export class Menu extends MenuStub {
+  @Expose({ name: 'parentId' })
+  parent?: string | null;
+}
+
+@Exclude()
+export class MenuFull extends MenuStub {
+  @Expose()
+  @Type(() => Menu)
+  parent?: Menu | null;
+
+  @Expose()
+  @Type(() => Menu)
+  children?: Menu[];
+}
 
 export class MenuCreateDto {
   @ApiProperty({ description: 'Menu title', type: String })
@@ -28,8 +65,8 @@ export class MenuCreateDto {
   @ApiPropertyOptional({ description: 'Menu parent', type: String })
   @IsOptional()
   @IsString()
-  @IsObjectId({
-    message: 'Parent must be a valid objectId',
+  @IsUUIDv4({
+    message: 'Parent must be a valid UUID',
   })
   parent?: string;
 
@@ -56,8 +93,16 @@ export class MenuCreateDto {
   url?: string;
 }
 
+export class MenuUpdateDto extends PartialType(MenuCreateDto) {}
+
 export class MenuQueryDto extends PartialType(MenuCreateDto) {}
 
-export type MenuDto = DtoConfig<{
+export type MenuTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Menu;
+  FullCls: typeof MenuFull;
+}>;
+
+export type MenuDtoConfig = DtoActionConfig<{
   create: MenuCreateDto;
+  update: MenuUpdateDto;
 }>;

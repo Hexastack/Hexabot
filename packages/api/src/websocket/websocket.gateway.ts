@@ -22,9 +22,9 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
-import { MessageFull } from '@/chat/schemas/message.schema';
-import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
-import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
+import { MessageFull } from '@/chat/dto/message.dto';
+import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
+import { OutgoingMessage, StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionMiddleware } from '@/utils/constants/session-middleware';
@@ -138,6 +138,7 @@ export class WebsocketGateway
       getSessionStore().set(sid, newSession, (err) => {
         if (err) {
           this.logger.error('Error saving session:', err);
+
           return reject(new Error('Unable to establish a new socket session'));
         }
 
@@ -160,6 +161,7 @@ export class WebsocketGateway
           > To work around this, either supply a cookie manually, or ignore this message and use an
           > approach other than sessions-- e.g. an auth token.)
         `);
+
         return resolve();
       });
     });
@@ -171,6 +173,7 @@ export class WebsocketGateway
   ): void {
     getSessionStore().get(sessionID, (err, session) => {
       this.logger.verbose('Retrieved socket session', err || session);
+
       return next(err, session);
     });
   }
@@ -187,7 +190,6 @@ export class WebsocketGateway
           const signedSid =
             's:' + signature.sign(sessionId, config.session.secret);
           const cookie = request.session.cookie;
-
           // Send session ID to client to set cookie
           const cookies = Cookie.serialize(config.session.name, signedSid, {
             path: cookie.path,
@@ -210,6 +212,7 @@ export class WebsocketGateway
         if (config.env === 'test') {
           await this.createAndStoreSession(client);
           next();
+
           return;
         }
         const session = client.request.session;
@@ -295,6 +298,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -311,6 +315,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -327,6 +332,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -343,6 +349,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -359,6 +366,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -375,6 +383,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 
@@ -391,6 +400,7 @@ export class WebsocketGateway
       request,
       response,
     );
+
     return response.getPromise();
   }
 

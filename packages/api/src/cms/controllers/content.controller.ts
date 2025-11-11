@@ -19,34 +19,32 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FindManyOptions } from 'typeorm';
 
-import { BaseController } from '@/utils/generics/base-controller';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
 import {
   Content,
-  ContentFull,
-  ContentPopulate,
-  ContentStub,
-} from '../schemas/content.schema';
+  ContentCreateDto,
+  ContentDtoConfig,
+  ContentTransformerDto,
+  ContentUpdateDto,
+} from '../dto/content.dto';
+import { ContentOrmEntity } from '../entities/content.entity';
 
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
 @Controller('content')
-export class ContentController extends BaseController<
-  Content,
-  ContentStub,
-  ContentPopulate,
-  ContentFull
+export class ContentController extends BaseOrmController<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig
 > {
   constructor(
-    private readonly contentService: ContentService,
+    protected readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
   ) {
     super(contentService);
@@ -58,20 +56,10 @@ export class ContentController extends BaseController<
    *
    * @param contentDto - The DTO containing the content data to be created.
    *
-   * @returns The created content document.
+   * @returns The created content record.
    */
   @Post()
   async create(@Body() contentDto: ContentCreateDto): Promise<Content> {
-    // Find the content type that corresponds to the given content
-    const contentType = await this.contentTypeService.findOne(
-      contentDto.entity,
-    );
-    this.validate({
-      dto: contentDto,
-      allowedIds: {
-        entity: contentType?.id,
-      },
-    });
     return await this.contentService.create(contentDto);
   }
 
@@ -79,7 +67,7 @@ export class ContentController extends BaseController<
    * Imports content from a CSV file based on the provided content type and file ID.
    *
    * @param idTargetContentType - The content type to match the CSV data against.   *
-   * @returns A promise that resolves to the newly created content documents.
+   * @returns A promise that resolves to the newly created content records.
    */
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
@@ -104,49 +92,51 @@ export class ContentController extends BaseController<
 
     return await this.contentService.parseAndSaveDataset(
       datasetContent,
-      targetContentType,
       contentType,
     );
   }
 
   /**
-   * Retrieves paginated content based on filters and optional population of related entities.
+   * Retrieves content based on query options with optional population of related entities.
    *
-   * @param pageQuery - Pagination parameters.
    * @param populate - Fields to populate in the query.
-   * @param filters - Filters for content retrieval.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
-   * @returns Paginated content list.
+   * @returns Content list.
    */
   @Get()
-  async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Content>,
+  async find(
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<Content>({ allowedFields: ['entity', 'title'] }),
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
+        allowedFields: ['contentType.id', 'title'],
+        defaultSort: ['createdAt', 'desc'],
+      }),
     )
-    filters: TFilterQuery<Content>,
+    options: FindManyOptions<ContentOrmEntity>,
   ) {
     return this.canPopulate(populate)
-      ? await this.contentService.findAndPopulate(filters, pageQuery)
-      : await this.contentService.find(filters, pageQuery);
+      ? await this.contentService.findAndPopulate(options)
+      : await this.contentService.find(options);
   }
 
   /**
-   * Counts the filtered number of contents based on the provided filters.
+   * Counts the filtered number of contents based on the provided options.
    *
-   * @param filters - Optional filters for counting content.
+   * @param options - Filters applied to the count query.
    *
    * @returns The count of content matching the filters.
    */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Content>({ allowedFields: ['entity', 'title'] }),
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
+        allowedFields: ['contentType.id', 'title'],
+      }),
     )
-    filters?: TFilterQuery<Content>,
+    options?: FindManyOptions<ContentOrmEntity>,
   ) {
-    return await this.count(filters);
+    return super.count(options);
   }
 
   /**
@@ -155,28 +145,29 @@ export class ContentController extends BaseController<
    * @param id - The ID of the content to retrieve.
    * @param populate - Fields to populate in the query.
    *
-   * @returns The requested content document.
+   * @returns The requested content record.
    */
   @Get(':id')
   async findOne(
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const content = this.canPopulate(populate)
       ? await this.contentService.findOneAndPopulate(id)
       : await this.contentService.findOne(id);
 
-    if (!doc) {
+    if (!content) {
       this.logger.warn(
         `Failed to fetch content with id ${id}. Content not found.`,
       );
       throw new NotFoundException(`Content of id ${id} not found`);
     }
-    return doc;
+
+    return content;
   }
 
   /**
-   * Deletes a content document by ID.
+   * Deletes a content record by ID.
    *
    * @param id - The ID of the content to delete.
    *
@@ -192,39 +183,55 @@ export class ContentController extends BaseController<
       );
       throw new NotFoundException(`Content of id ${id} not found`);
     }
+
     return removedContent;
   }
 
   /**
    * Retrieves content based on content type ID with optional pagination.
    *
-   * @param contentType - The content type ID to filter by.
-   * @param pageQuery - Pagination parameters.
+   * @param contentTypeId - The content type ID to filter by.
+   * @param options - Query options applied to the lookup.
    *
-   * @returns List of content documents matching the content type.
+   * @returns List of content records matching the content type.
    */
   @Get('/type/:id')
   async findByType(
-    @Param('id') contentType: string,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Content>,
+    @Param('id') contentTypeId: string,
+    @Query(
+      new TypeOrmSearchFilterPipe<ContentOrmEntity>({
+        allowedFields: [],
+        defaultSort: ['createdAt', 'desc'],
+      }),
+    )
+    options: FindManyOptions<ContentOrmEntity>,
   ): Promise<Content[]> {
-    const type = await this.contentTypeService.findOne(contentType);
+    const type = await this.contentTypeService.findOne(contentTypeId);
     if (!type) {
       this.logger.warn(
-        `Failed to find content with contentType ${contentType}. ContentType not found.`,
+        `Failed to find content with contentType ${contentTypeId}. ContentType not found.`,
       );
-      throw new NotFoundException(`ContentType of id ${contentType} not found`);
+      throw new NotFoundException(
+        `ContentType of id ${contentTypeId} not found`,
+      );
     }
-    return await this.contentService.find({ entity: contentType }, pageQuery);
+
+    return await this.contentService.find({
+      ...options,
+      where: {
+        ...(options?.where ?? {}),
+        contentType: { id: contentTypeId },
+      },
+    });
   }
 
   /**
-   * Updates a content document by ID, after filtering dynamic fields to match the associated content type.
+   * Updates a content record by ID, after filtering dynamic fields to match the associated content type.
    *
    * @param contentDto - The DTO containing the updated content data.
    * @param id - The ID of the content to update.
    *
-   * @returns The updated content document.
+   * @returns The updated content record.
    */
   @Patch(':id')
   async updateOne(

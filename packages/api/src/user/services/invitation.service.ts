@@ -14,22 +14,24 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { InvitationCreateDto } from '../dto/invitation.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
 import {
   Invitation,
-  InvitationFull,
-  InvitationPopulate,
-} from '../schemas/invitation.schema';
+  InvitationCreateDto,
+  InvitationDtoConfig,
+  InvitationTransformerDto,
+} from '../dto/invitation.dto';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { InvitationRepository } from '../repositories/invitation.repository';
 
 @Injectable()
-export class InvitationService extends BaseService<
-  Invitation,
-  InvitationPopulate,
-  InvitationFull
+export class InvitationService extends BaseOrmService<
+  InvitationOrmEntity,
+  InvitationTransformerDto,
+  InvitationDtoConfig
 > {
   constructor(
     @Inject(InvitationRepository)
@@ -38,6 +40,7 @@ export class InvitationService extends BaseService<
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
     private readonly mailerService: MailerService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -80,8 +83,13 @@ export class InvitationService extends BaseService<
       );
       throw new InternalServerErrorException('Could not send email');
     }
-    const newInvitation = await super.create({ ...dto, token: jwt });
-    return { ...newInvitation, token: jwt };
+    const payload: InvitationCreateDto = {
+      ...dto,
+      roles: [...dto.roles],
+    };
+    const newInvitation = await super.create({ ...payload, token: jwt });
+
+    return { ...newInvitation, token: jwt, roles: [...payload.roles] };
   }
 
   /**

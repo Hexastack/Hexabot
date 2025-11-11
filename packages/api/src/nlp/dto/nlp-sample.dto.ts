@@ -4,65 +4,145 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
-  IsIn,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+import { Language } from '@/i18n/dto/language.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
-import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
+import { NlpSampleEntityValue, NlpSampleState } from '..//types';
+
+import { NlpSampleEntity } from './nlp-sample-entity.dto';
+
+@Exclude()
+export class NlpSampleStub extends BaseStub {
+  @Expose()
+  text!: string;
+
+  @Expose()
+  trained!: boolean;
+
+  @Expose()
+  type!: NlpSampleState;
+
+  @Expose()
+  language?: string | Language | null;
+}
+
+@Exclude()
+export class NlpSample extends NlpSampleStub {
+  @Expose({ name: 'languageId' })
+  language?: string | null;
+
+  @Exclude()
+  entities?: never;
+}
+
+@Exclude()
+export class NlpSampleFull extends NlpSampleStub {
+  @Expose({ name: 'language' })
+  @Type(() => Language)
+  language?: Language | null;
+
+  @Expose()
+  @Type(() => NlpSampleEntity)
+  entities!: NlpSampleEntity[];
+}
 
 export class NlpSampleCreateDto {
   @ApiProperty({ description: 'NLP sample text', type: String })
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   text: string;
 
   @ApiPropertyOptional({
-    description: 'If NLP sample is trained',
+    description: 'If the sample has already been used for training',
     type: Boolean,
   })
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   trained?: boolean;
 
   @ApiPropertyOptional({
-    description: 'NLP sample type',
-    enum: Object.values(NlpSampleState),
+    description: 'NLP sample origin',
+    enum: NlpSampleState,
   })
-  @IsString()
-  @IsIn(Object.values(NlpSampleState))
   @IsOptional()
-  type?: keyof typeof NlpSampleState;
+  @IsEnum(NlpSampleState)
+  type?: NlpSampleState;
 
-  @ApiProperty({ description: 'NLP sample language id', type: String })
-  @IsString()
+  @ApiProperty({
+    description: 'Language identifier associated to the sample',
+    type: String,
+  })
   @IsNotEmpty()
-  @IsObjectId({ message: 'Language must be a valid ObjectId' })
+  @IsString()
+  @IsUUIDv4({ message: 'Language must be a valid UUID' })
   language: string;
 }
 
-export class NlpSampleDto extends NlpSampleCreateDto {
+export class NlpSampleDto {
+  @ApiProperty({ description: 'NLP sample text', type: String })
+  @IsNotEmpty()
+  @IsString()
+  text: string;
+
   @ApiPropertyOptional({
-    description: 'nlp sample entities',
+    description: 'If the sample has already been used for training',
+    type: Boolean,
   })
   @IsOptional()
-  entities?: NlpSampleEntityValue[];
+  @IsBoolean()
+  trained?: boolean;
 
-  @ApiProperty({ description: 'NLP sample language code', type: String })
-  @IsString()
+  @ApiPropertyOptional({
+    description: 'NLP sample origin',
+    enum: NlpSampleState,
+  })
+  @IsOptional()
+  @IsEnum(NlpSampleState)
+  type?: NlpSampleState;
+
+  @ApiProperty({
+    description: 'Language code associated to the sample',
+    type: String,
+  })
   @IsNotEmpty()
-  language: string;
+  @IsString()
+  languageCode: string;
+
+  @ApiPropertyOptional({
+    description: 'Entities tagged in the sample text',
+    isArray: true,
+    type: [Object],
+  })
+  @IsOptional()
+  @IsArray()
+  entities?: NlpSampleEntityValue[];
 }
 
 export class NlpSampleUpdateDto extends PartialType(NlpSampleCreateDto) {}
 
-export type TNlpSampleDto = DtoConfig<{
+export type NlpSampleTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof NlpSample;
+  FullCls: typeof NlpSampleFull;
+}>;
+
+export type TNlpSampleDto = DtoActionConfig<{
   create: NlpSampleCreateDto;
+  update: NlpSampleUpdateDto;
 }>;

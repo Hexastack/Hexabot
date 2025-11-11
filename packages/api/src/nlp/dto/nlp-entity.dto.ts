@@ -4,89 +4,134 @@
  * Full terms: see LICENSE.md.
  */
 
+import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsIn,
+  IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   Matches,
-  Validate,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
-import { Lookup, LookupStrategy } from '../schemas/types';
+import { Lookup, LookupStrategy } from '..//types';
+
+import { NlpValue } from './nlp-value.dto';
+
+@Exclude()
+export class NlpEntityStub extends BaseStub {
+  @Expose()
+  @Transform(({ value, obj }) => {
+    const resolved = value ?? obj?.foreign_id ?? null;
+
+    return resolved === null ? undefined : resolved;
+  })
+  foreignId?: string | null;
+
+  @Expose()
+  name!: string;
+
+  @Expose()
+  lookups!: Lookup[];
+
+  @Expose()
+  @Transform(({ value }) => (value === null ? undefined : value))
+  doc?: string | null;
+
+  @Expose()
+  builtin!: boolean;
+
+  @Expose()
+  weight!: number;
+}
+
+@Exclude()
+export class NlpEntity extends NlpEntityStub {
+  @Exclude()
+  values?: never;
+}
+
+@Exclude()
+export class NlpEntityFull extends NlpEntityStub {
+  @Expose()
+  @Type(() => NlpValue)
+  values!: NlpValue[];
+}
 
 export class NlpEntityCreateDto {
-  @ApiProperty({ description: 'Name of the nlp entity', type: String })
+  @ApiProperty({ description: 'Name of the NLP entity', type: String })
   @Matches(/^[a-zA-Z0-9_]+$/, {
     message: 'Only alphanumeric characters and underscores are allowed.',
   })
   @IsNotEmpty()
+  @IsString()
   name: string;
 
   @ApiPropertyOptional({
+    description: 'Lookup strategies for the entity',
     isArray: true,
-    enum: Object.values(LookupStrategy),
+    enum: LookupStrategy,
+    default: [LookupStrategy.keywords],
   })
-  @IsArray()
-  @IsIn(Object.values(LookupStrategy), { each: true })
   @IsOptional()
+  @IsArray()
+  @IsEnum(LookupStrategy, { each: true })
   lookups?: Lookup[];
 
-  @ApiPropertyOptional({ type: String })
-  @IsString()
+  @ApiPropertyOptional({
+    description: 'Entity description',
+    type: String,
+  })
   @IsOptional()
+  @IsString()
   doc?: string;
 
-  @ApiPropertyOptional({ description: 'Nlp entity is builtin', type: Boolean })
-  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Foreign identifier for the entity',
+    type: String,
+  })
   @IsOptional()
+  @IsString()
+  foreignId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Indicates if the entity is built-in',
+    type: Boolean,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
   builtin?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Nlp entity associated weight for next block triggering',
+    description:
+      'Weight used to determine the next block to trigger in the flow',
     type: Number,
+    minimum: 1,
   })
   @IsOptional()
-  @Validate((value: number) => value > 0, {
-    message: 'Weight must be a strictly positive number',
-  })
-  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @IsPositive({ message: 'Weight must be a strictly positive number' })
   weight?: number;
 }
 
-export class NlpEntityUpdateDto {
-  @ApiPropertyOptional({ description: 'Name of the nlp entity', type: String })
-  @Matches(/^[a-zA-Z0-9_]+$/, {
-    message: 'Only alphanumeric characters and underscores are allowed.',
-  })
-  @IsString()
-  @IsOptional()
-  name?: string;
+export class NlpEntityUpdateDto extends PartialType(NlpEntityCreateDto) {}
 
-  @ApiPropertyOptional({ type: String })
-  @IsString()
-  @IsOptional()
-  foreign_id?: string;
+export type NlpEntityTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof NlpEntity;
+  FullCls: typeof NlpEntityFull;
+}>;
 
-  @ApiPropertyOptional({
-    description: 'Nlp entity associated weight for next block triggering',
-    type: Number,
-  })
-  @IsOptional()
-  @Validate((value: number) => value > 0, {
-    message: 'Weight must be a strictly positive number',
-  })
-  @IsNumber({ allowNaN: false, allowInfinity: false })
-  weight?: number;
-}
-
-export type NlpEntityDto = DtoConfig<{
+export type NlpEntityDtoConfig = DtoActionConfig<{
   create: NlpEntityCreateDto;
   update: NlpEntityUpdateDto;
 }>;

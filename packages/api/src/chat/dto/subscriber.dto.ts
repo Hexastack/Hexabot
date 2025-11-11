@@ -5,24 +5,101 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
+import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
-
 import {
-  channelDataSchema,
-  SubscriberChannelData,
-} from '../schemas/types/channel';
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+import { channelDataSchema, SubscriberChannelData } from '../types/channel';
+import { SubscriberContext } from '../types/subscriberContext';
+
+import { Label } from './label.dto';
+
+@Exclude()
+export class SubscriberStub extends BaseStub {
+  @Expose()
+  first_name!: string;
+
+  @Expose()
+  last_name!: string;
+
+  @Expose()
+  locale: string | null;
+
+  @Expose()
+  timezone: number = 0;
+
+  @Expose()
+  language: string | null;
+
+  @Expose()
+  gender: string | null;
+
+  @Expose()
+  country: string | null;
+
+  @Expose()
+  foreign_id: string;
+
+  @Expose()
+  assignedAt: Date | null;
+
+  @Expose()
+  lastvisit: Date | null;
+
+  @Expose()
+  retainedFrom: Date | null;
+
+  @Expose()
+  channel!: SubscriberChannelData<ChannelName>;
+
+  @Expose()
+  context!: SubscriberContext;
+}
+
+@Exclude()
+export class Subscriber extends SubscriberStub {
+  @Expose({ name: 'labelIds' })
+  labels!: string[];
+
+  @Expose({ name: 'assignedToId' })
+  assignedTo: string | null;
+
+  @Expose({ name: 'avatarId' })
+  avatar: string | null;
+}
+
+@Exclude()
+export class SubscriberFull extends SubscriberStub {
+  @Expose()
+  @Type(() => Label)
+  labels!: Label[];
+
+  @Expose()
+  @Type(() => User)
+  assignedTo: User | null;
+
+  @Expose()
+  @Type(() => Attachment)
+  avatar: Attachment | null;
+}
 
 export class SubscriberCreateDto {
   @ApiProperty({ description: 'Subscriber first name', type: String })
@@ -38,37 +115,37 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
   @IsString()
-  locale?: string;
+  locale: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber timezone', type: Number })
   @IsOptional()
   @IsNumber()
-  timezone?: number;
+  timezone: number;
 
   @ApiPropertyOptional({ description: 'Subscriber language', type: String })
   @IsNotEmpty()
   @IsString()
-  language: string;
+  language: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber gender', type: String })
   @IsOptional()
   @IsString()
-  gender?: string;
+  gender: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber country', type: String })
   @IsOptional()
   @IsString()
-  country?: string;
+  country: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreign_id?: string;
+  foreign_id: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsNotEmpty()
   @IsArray()
-  @IsObjectId({ each: true, message: 'Label must be a valid ObjectId' })
+  @IsUUIDv4({ each: true, message: 'Label must be a valid UUID' })
   labels: string[];
 
   @ApiPropertyOptional({
@@ -78,8 +155,8 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsObjectId({ message: 'AssignedTo must be a valid ObjectId' })
-  assignedTo?: string | null;
+  @IsUUIDv4({ message: 'AssignedTo must be a valid UUID' })
+  assignedTo: string | null = null;
 
   @ApiPropertyOptional({
     description: 'Subscriber assigned at',
@@ -88,7 +165,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  assignedAt?: Date | null;
+  assignedAt: Date | null;
 
   @ApiPropertyOptional({
     description: 'Subscriber last visit',
@@ -96,7 +173,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  lastvisit?: Date;
+  lastvisit: Date | null;
 
   @ApiPropertyOptional({
     description: 'Subscriber retained from',
@@ -104,7 +181,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  retainedFrom?: Date;
+  retainedFrom: Date | null;
 
   @ApiProperty({
     description: 'Subscriber channel',
@@ -121,12 +198,25 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsString()
-  @IsObjectId({ message: 'Avatar Attachment ID must be a valid ObjectId' })
-  avatar?: string | null = null;
+  @IsUUIDv4({ message: 'Avatar Attachment ID must be a valid UUID' })
+  avatar: string | null = null;
+
+  @ApiPropertyOptional({ description: 'Context', type: Object })
+  @IsOptional()
+  @IsObject()
+  context: SubscriberContext;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
-export type SubscriberDto = DtoConfig<{
-  create: SubscriberCreateDto;
+export type SubscriberTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Subscriber;
+  FullCls: typeof SubscriberFull;
 }>;
+
+export type SubscriberDtoConfig = DtoActionConfig<{
+  create: SubscriberCreateDto;
+  update: SubscriberUpdateDto;
+}>;
+
+export type SubscriberDto = SubscriberDtoConfig;

@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { LanguageCreateDto } from '@/i18n/dto/language.dto';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 
 export const languageFixtures: LanguageCreateDto[] = [
   {
@@ -24,7 +24,18 @@ export const languageFixtures: LanguageCreateDto[] = [
   },
 ];
 
-export const installLanguageFixtures = async () => {
-  const Language = mongoose.model(LanguageModel.name, LanguageModel.schema);
-  return await Language.insertMany(languageFixtures);
+export const installLanguageFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(LanguageOrmEntity);
+  LanguageOrmEntity.registerEntityManagerProvider(() => repository.manager);
+
+  const existing = await repository.find();
+  if (existing.length) {
+    return existing;
+  }
+
+  const entities = repository.create(languageFixtures);
+
+  return await repository.save(entities);
 };

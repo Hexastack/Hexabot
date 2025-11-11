@@ -6,8 +6,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { In } from 'typeorm';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
+import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { HelperService } from '@/helper/helper.service';
 import { FlowEscape, HelperType } from '@/helper/types';
@@ -15,16 +16,16 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { getDefaultConversationContext } from '../constants/conversation';
+import { BlockFull } from '../dto/block.dto';
+import { Conversation, ConversationFull } from '../dto/conversation.dto';
 import { MessageCreateDto } from '../dto/message.dto';
-import { BlockFull } from '../schemas/block.schema';
-import { Conversation, ConversationFull } from '../schemas/conversation.schema';
-import { Context } from '../schemas/types/context';
+import { Context } from '../types/context';
 import {
   IncomingMessageType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
-} from '../schemas/types/message';
-import { FallbackOptions } from '../schemas/types/options';
+} from '../types/message';
+import { FallbackOptions } from '../types/options';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -152,7 +153,6 @@ export class BotService {
     try {
       const context = convo.context || getDefaultConversationContext();
       const recipient = event.getSender();
-
       const envelope = await this.blockService.processMessage(
         block,
         context,
@@ -182,6 +182,7 @@ export class BotService {
               'No attached block to be found with id ' + block.attachedBlock,
             );
           }
+
           return await this.triggerBlock(event, convo, attachedBlock, fallback);
         } catch (err) {
           this.logger.error('Unable to retrieve attached block', err);
@@ -241,6 +242,7 @@ export class BotService {
           }
         } catch (err) {
           this.logger.error('Unable to continue the flow', convo, err);
+
           return;
         }
       } else {
@@ -288,10 +290,12 @@ export class BotService {
         );
 
       await this.triggerBlock(event, updatedConversation, next, fallback);
+
       return true;
     } catch (err) {
       this.logger.error('Unable to proceed to the next block!', err);
       this.eventEmitter.emit('hook:conversation:end', convo);
+
       return false;
     }
   }
@@ -315,8 +319,9 @@ export class BotService {
     const canHaveMultipleMatches = !fallbackOptions?.active;
     // Find the next block that matches
     const nextBlocks = await this.blockService.findAndPopulate({
-      _id: { $in: convo.next.map(({ id }) => id) },
+      where: { id: In(convo.next.map(({ id }) => id)) },
     });
+
     return await this.blockService.match(
       nextBlocks,
       event,
@@ -338,6 +343,7 @@ export class BotService {
   ): boolean {
     const fallbackOptions = this.blockService.getFallbackOptions(convo.current);
     const maxAttempts = fallbackOptions?.max_attempts ?? 0;
+
     return (
       event.getMessageType() === IncomingMessageType.message &&
       !!fallbackOptions?.active &&
@@ -386,6 +392,7 @@ export class BotService {
         // We'll end the conversation but this message is probably lost in time and space.
         this.logger.debug('No matching block found to call next ', convo.id);
         this.eventEmitter.emit('hook:conversation:end', convo);
+
         return false;
       }
     } catch (err) {
@@ -448,6 +455,7 @@ export class BotService {
               if (prop === 'getText') {
                 return () => result.coercedOption + '';
               }
+
               return Reflect.get(target, prop, receiver);
             },
           });
@@ -455,6 +463,7 @@ export class BotService {
             convo,
             proxiedEvent,
           );
+
           return { nextBlock: matchedBlock, fallback: false };
         }
 
@@ -469,6 +478,7 @@ export class BotService {
               message: [result.repromptMessage],
             };
           }
+
           return { nextBlock: fallbackBlock, fallback: true };
       }
     } catch (err) {
@@ -476,6 +486,7 @@ export class BotService {
         'Unable to handle flow escape, using default local fallback ...',
         err,
       );
+
       return { nextBlock: fallbackBlock, fallback: true };
     }
   }
@@ -495,12 +506,12 @@ export class BotService {
     const subscriber = event.getSender();
     try {
       const conversation = await this.conversationService.findOneAndPopulate({
-        sender: subscriber.id,
-        active: true,
+        where: { sender: { id: subscriber.id }, active: true },
       });
       // No active conversation found
       if (!conversation) {
         this.logger.debug('No active conversation found ', subscriber.id);
+
         return false;
       }
 
@@ -510,12 +521,14 @@ export class BotService {
         'Existing conversations',
       );
       this.logger.debug('Conversation has been captured! Responding ...');
+
       return await this.handleOngoingConversationMessage(conversation, event);
     } catch (err) {
       this.logger.error(
         'An error occurred when searching for a conversation ',
         err,
       );
+
       return null;
     }
   }
@@ -560,6 +573,7 @@ export class BotService {
           subscriber.id,
           block.name,
         );
+
         return await this.triggerBlock(
           event,
           updatedConversation,
@@ -614,7 +628,7 @@ export class BotService {
       // Search for entry blocks
       try {
         const blocks = await this.blockService.findAndPopulate({
-          starts_conversation: true,
+          where: { starts_conversation: true },
         });
 
         if (!blocks.length) {
@@ -637,6 +651,7 @@ export class BotService {
             // Otherwise, send a simple text message as defined in global settings
             try {
               const fallbackBlock = await this.getGlobalFallbackBlock(settings);
+
               return this.startConversation(event, fallbackBlock);
             } catch (err) {
               this.logger.warn(
@@ -663,7 +678,6 @@ export class BotService {
                 outcomes: [],
                 trigger_channels: [],
               };
-
               const envelope = await this.blockService.processMessage(
                 globalFallbackBlock,
                 getDefaultConversationContext(),
@@ -677,6 +691,7 @@ export class BotService {
               );
             }
           }
+
           // Do nothing ...
           return;
         }

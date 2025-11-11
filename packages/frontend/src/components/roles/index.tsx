@@ -5,26 +5,19 @@
  */
 
 import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { IRole } from "@/types/role.types";
@@ -37,19 +30,6 @@ export const Roles = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<EntityType.ROLE>(
-    {
-      $iLike: ["name"],
-    },
-    { syncUrl: true },
-  );
-  const { dataGridProps } = useFind(
-    { entity: EntityType.ROLE },
-    {
-      params: searchPayload,
-    },
-  );
   const { mutate: deleteRole } = useDelete(EntityType.ROLE, {
     onError: (error) => {
       toast.error(error);
@@ -79,7 +59,6 @@ export const Roles = () => {
         },
         requires: [PermissionAction.UPDATE],
       },
-
       {
         label: ActionColumnLabel.Delete,
         action: async ({ id }) => {
@@ -130,36 +109,24 @@ export const Roles = () => {
   ];
 
   return (
-    <Grid container gap={3} flexDirection="column">
-      <PageHeader title={t("title.roles")} icon={faUniversalAccess}>
-        <Grid
-          justifyContent="flex-end"
-          gap={1}
-          container
-          alignItems="center"
-          flexShrink={0}
-          width="max-content"
-        >
-          <Grid item>
-            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-          </Grid>
-          {hasPermission(EntityType.ROLE, PermissionAction.CREATE) ? (
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              sx={{
-                float: "right",
-              }}
-              onClick={() =>
-                dialogs.open(RoleFormDialog, { defaultValues: null })
-              }
-            >
-              {t("button.add")}
-            </Button>
-          ) : null}
-        </Grid>
-      </PageHeader>
-      <DataGrid columns={columns} {...dataGridProps} />
-    </Grid>
+    <GenericDataGrid
+      entity={EntityType.ROLE}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          children: t("button.add"),
+          onClick: () => {
+            dialogs.open(RoleFormDialog, { defaultValues: null });
+          },
+        },
+      ]}
+      columns={columns}
+      headerIcon={faUniversalAccess}
+      searchParams={{
+        $iLike: ["name"],
+        syncUrl: true,
+      }}
+      headerI18nTitle="title.roles"
+    />
   );
 };

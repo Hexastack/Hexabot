@@ -56,6 +56,7 @@ export class HelperService {
     if (!helpers.has(name)) {
       throw new Error('Uknown type of helpers');
     }
+
     return helpers.get(name) as TypeOfHelper<T>;
   }
 
@@ -93,7 +94,6 @@ export class HelperService {
     C extends new (...args: any[]) => TypeOfHelper<T>,
   >(type: T, cls: C) {
     const helpers = this.getAllByType(type);
-
     const helper = helpers.find((h) => h instanceof cls);
 
     if (!helper) {
@@ -111,7 +111,6 @@ export class HelperService {
    */
   async getDefaultNluHelper() {
     const settings = await this.settingService.getSettings();
-
     const defaultHelper = this.get(
       HelperType.NLU,
       settings.chatbot_settings.default_nlu_helper as HelperName,
@@ -132,7 +131,6 @@ export class HelperService {
    */
   async getDefaultLlmHelper() {
     const settings = await this.settingService.getSettings();
-
     const defaultHelper = this.get(
       HelperType.LLM,
       settings.chatbot_settings.default_llm_helper as HelperName,
@@ -167,7 +165,6 @@ export class HelperService {
     const defaultHelperName = settings.chatbot_settings[
       defaultHelperKey
     ] as HelperName;
-
     const defaultHelper = this.get<T>(type, defaultHelperName);
 
     if (!defaultHelper) {

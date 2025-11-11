@@ -42,6 +42,7 @@ export const fileExists = (filePath: string): boolean => {
     return existsSync(filePath);
   } catch (_e) {
     new Logger(`Attachment Model : Unable to locate file: ${filePath}`);
+
     return false;
   }
 };
@@ -78,6 +79,7 @@ export const getStreamableFile = ({
 export const generateUniqueFilename = (originalname: string) => {
   const extension = extname(originalname);
   const name = originalname.slice(0, -extension.length);
+
   return `${name}-${uuidv4()}${extension}`;
 };
 

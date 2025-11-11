@@ -16,42 +16,38 @@ import {
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { FindManyOptions } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
-import { BaseController } from '@/utils/generics/base-controller';
-import { BaseSchema } from '@/utils/generics/base-schema';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { MessageCreateDto } from '../dto/message.dto';
 import {
   Message,
+  MessageCreateDto,
+  MessageDtoConfig,
   MessageFull,
-  MessagePopulate,
-  MessageStub,
-} from '../schemas/message.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+  MessageTransformerDto,
+} from '../dto/message.dto';
+import { MessageOrmEntity } from '../entities/message.entity';
+import { MessageService } from '../services/message.service';
+import { SubscriberService } from '../services/subscriber.service';
 import {
-  AnyMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
   StdOutgoingTextMessage,
-} from '../schemas/types/message';
-import { MessageService } from '../services/message.service';
-import { SubscriberService } from '../services/subscriber.service';
+} from '../types/message';
 
 @Controller('message')
-export class MessageController extends BaseController<
-  AnyMessage,
-  MessageStub,
-  MessagePopulate,
-  MessageFull
+export class MessageController extends BaseOrmController<
+  MessageOrmEntity,
+  MessageTransformerDto,
+  MessageDtoConfig
 > {
   constructor(
     private readonly messageService: MessageService,
@@ -61,19 +57,32 @@ export class MessageController extends BaseController<
     super(messageService);
   }
 
+  /** Retrieves messages using TypeORM filters and optional relation population. */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<AnyMessage>,
     @Query(PopulatePipe)
     populate: string[],
     @Query(
-      new SearchFilterPipe<Message>({ allowedFields: ['recipient', 'sender'] }),
+      new TypeOrmSearchFilterPipe<MessageOrmEntity>({
+        allowedFields: [
+          'sender.id',
+          'recipient.id',
+          'sentBy.id',
+          'mid',
+          'read',
+          'delivery',
+          'handover',
+        ],
+        defaultSort: ['createdAt', 'desc'],
+      }),
     )
-    filters: TFilterQuery<Message>,
-  ) {
+    options: FindManyOptions<MessageOrmEntity>,
+  ): Promise<Message[] | MessageFull[]> {
+    const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
-      ? await this.messageService.findAndPopulate(filters, pageQuery)
-      : await this.messageService.find(filters, pageQuery);
+      ? await this.messageService.findAndPopulate(queryOptions)
+      : await this.messageService.find(queryOptions);
   }
 
   /**
@@ -83,13 +92,21 @@ export class MessageController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Message>({
-        allowedFields: ['recipient', 'sender'],
+      new TypeOrmSearchFilterPipe<MessageOrmEntity>({
+        allowedFields: [
+          'sender.id',
+          'recipient.id',
+          'sentBy.id',
+          'mid',
+          'read',
+          'delivery',
+          'handover',
+        ],
       }),
     )
-    filters?: TFilterQuery<Message>,
-  ) {
-    return await this.count(filters);
+    options?: FindManyOptions<MessageOrmEntity>,
+  ): Promise<{ count: number }> {
+    return await this.count(options ?? {});
   }
 
   @Get(':id')
@@ -97,15 +114,16 @@ export class MessageController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
-  ) {
-    const doc = this.canPopulate(populate)
+  ): Promise<Message | MessageFull> {
+    const record = this.canPopulate(populate)
       ? await this.messageService.findOneAndPopulate(id)
       : await this.messageService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find Message by id ${id}`);
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   @Post()
@@ -127,7 +145,7 @@ export class MessageController extends BaseController<
       );
     }
 
-    const channelData = Subscriber.getChannelData(subscriber);
+    const channelData = subscriber.channel;
 
     if (!this.channelService.findChannel(channelData.name)) {
       throw new BadRequestException(`Subscriber channel not found`);
@@ -149,15 +167,17 @@ export class MessageController extends BaseController<
     try {
       const { mid } = await channelHandler.sendMessage(event, envelope, {}, {});
       // Trigger sent message event
-      const sentMessage: Omit<OutgoingMessage, keyof BaseSchema> = {
+      const sentMessage: Omit<OutgoingMessage, keyof BaseOrmEntity> = {
         mid,
         recipient: subscriber.id,
         message: messageDto.message as StdOutgoingMessage,
         sentBy: req.session.passport?.user?.id,
         read: false,
         delivery: false,
+        handover: false,
       };
       this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+
       return {
         success: true,
       };

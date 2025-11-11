@@ -6,18 +6,17 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { UserDto } from '../dto/user.dto';
+import { UserDtoConfig, UserTransformerDto } from '../dto/user.dto';
+import { UserOrmEntity } from '../entities/user.entity';
 import { UserRepository } from '../repositories/user.repository';
-import { User, UserFull, UserPopulate } from '../schemas/user.schema';
 
 @Injectable()
-export class UserService extends BaseService<
-  User,
-  UserPopulate,
-  UserFull,
-  UserDto
+export class UserService extends BaseOrmService<
+  UserOrmEntity,
+  UserTransformerDto,
+  UserDtoConfig
 > {
   constructor(readonly repository: UserRepository) {
     super(repository);

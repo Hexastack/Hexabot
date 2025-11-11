@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Menu } from '../schemas/menu.schema';
-import { AnyMenu, MenuTree, MenuType } from '../schemas/types/menu';
+import { Menu } from '../dto/menu.dto';
+import { AnyMenu, MenuTree, MenuType } from '../types/menu-types';
 
 const verifyMenu = (
   menu: AnyMenu<Menu> & {
@@ -33,11 +33,13 @@ const verifyMenu = (
 
 export const verifyTree = (menuTree?: MenuTree) => {
   if (!Array.isArray(menuTree)) return true;
+
   return !menuTree.some((v) => {
     const valid = verifyMenu(v);
     if (valid && v.type === MenuType.nested) {
       return !verifyTree(v.call_to_actions);
     }
+
     return !valid;
   });
 };

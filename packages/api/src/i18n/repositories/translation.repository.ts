@@ -5,18 +5,31 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Translation } from '../../i18n/schemas/translation.schema';
+import {
+  Translation,
+  TranslationDtoConfig,
+  TranslationTransformerDto,
+} from '../dto/translation.dto';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 
 @Injectable()
-export class TranslationRepository extends BaseRepository<Translation> {
+export class TranslationRepository extends BaseOrmRepository<
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDtoConfig
+> {
   constructor(
-    @InjectModel(Translation.name) readonly model: Model<Translation>,
+    @InjectRepository(TranslationOrmEntity)
+    repository: Repository<TranslationOrmEntity>,
   ) {
-    super(model, Translation);
+    super(repository, [], {
+      PlainCls: Translation,
+      FullCls: Translation,
+    });
   }
 }

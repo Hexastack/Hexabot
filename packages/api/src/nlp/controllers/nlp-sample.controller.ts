@@ -26,42 +26,38 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { FindManyOptions, In } from 'typeorm';
 import { z } from 'zod';
 
 import {
   NlpValueMatchPattern,
   nlpValueMatchPatternSchema,
-} from '@/chat/schemas/types/pattern';
+} from '@/chat/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
-import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { BaseOrmController } from '@/utils/generics/base-orm.controller';
+import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 import { ZodQueryParamPipe } from '@/utils/pipes/zod.pipe';
-import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
+import { NlpSampleState } from '..//types';
 import {
-  NlpSample,
+  NlpSampleDto,
   NlpSampleFull,
-  NlpSamplePopulate,
-  NlpSampleStub,
-} from '../schemas/nlp-sample.schema';
-import { NlpSampleState } from '../schemas/types';
+  NlpSampleTransformerDto,
+  TNlpSampleDto,
+} from '../dto/nlp-sample.dto';
+import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 
 @Controller('nlpsample')
-export class NlpSampleController extends BaseController<
-  NlpSample,
-  NlpSampleStub,
-  NlpSamplePopulate,
-  NlpSampleFull,
+export class NlpSampleController extends BaseOrmController<
+  NlpSampleOrmEntity,
+  NlpSampleTransformerDto,
   TNlpSampleDto
 > {
   constructor(
@@ -109,12 +105,11 @@ export class NlpSampleController extends BaseController<
     @Query('type') type?: NlpSampleState,
   ) {
     const samples = await this.nlpSampleService.findAndPopulate(
-      type ? { type } : {},
+      type ? { where: { type } } : {},
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
     const result = await helper.format(samples, entities);
-
     // Sending the JSON data as a file
     const readable = Readable.from(JSON.stringify(result));
 
@@ -139,17 +134,15 @@ export class NlpSampleController extends BaseController<
     @Body()
     {
       entities: nlpEntities,
-      language: languageCode,
+      languageCode,
       ...createNlpSampleDto
     }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
       language: language.id,
     });
-
     const entities = nlpEntities
       ? await this.nlpSampleEntityService.storeSampleEntities(
           nlpSample,
@@ -167,18 +160,18 @@ export class NlpSampleController extends BaseController<
   /**
    * Counts the filtered number of NLP samples.
    *
-   * @param filters - The filters to apply when counting samples.
+   * @param options - The filters to apply when counting samples.
    *
    * @returns The count of samples that match the filters.
    */
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<NlpSample>({
-        allowedFields: ['text', 'type', 'language'],
+      new TypeOrmSearchFilterPipe<NlpSampleOrmEntity>({
+        allowedFields: ['text', 'type', 'language.id'],
       }),
     )
-    filters: TFilterQuery<NlpSample> = {},
+    options: FindManyOptions<NlpSampleOrmEntity> = {},
     @Query(
       new ZodQueryParamPipe(
         z.array(nlpValueMatchPatternSchema),
@@ -188,9 +181,10 @@ export class NlpSampleController extends BaseController<
     patterns: NlpValueMatchPattern[] = [],
   ) {
     const count = await this.nlpSampleService.countByPatterns({
-      filters,
+      options,
       patterns,
     });
+
     return {
       count,
     };
@@ -206,6 +200,7 @@ export class NlpSampleController extends BaseController<
   @Get('message')
   async message(@Query('text') text: string) {
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
     return helper.predict(text);
   }
 
@@ -217,16 +212,19 @@ export class NlpSampleController extends BaseController<
   @Get('train')
   async train() {
     const { samples, entities } =
-      await this.nlpSampleService.getAllSamplesAndEntitiesByType('train');
+      await this.nlpSampleService.getAllSamplesAndEntitiesByType(
+        NlpSampleState.train,
+      );
 
     try {
       const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const response = await helper.train?.(samples, entities);
       // Mark samples as trained
       await this.nlpSampleService.updateMany(
-        { type: 'train' },
+        { where: { type: NlpSampleState.train } },
         { trained: true },
       );
+
       return response;
     } catch (err) {
       this.logger.error(err);
@@ -244,9 +242,11 @@ export class NlpSampleController extends BaseController<
   @Get('evaluate')
   async evaluate() {
     const { samples, entities } =
-      await this.nlpSampleService.getAllSamplesAndEntitiesByType('test');
-
+      await this.nlpSampleService.getAllSamplesAndEntitiesByType(
+        NlpSampleState.test,
+      );
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
     return await helper.evaluate?.(samples, entities);
   }
 
@@ -263,35 +263,36 @@ export class NlpSampleController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate)
+    const record = this.canPopulate(populate)
       ? await this.nlpSampleService.findOneAndPopulate(id)
       : await this.nlpSampleService.findOne(id);
-    if (!doc) {
+    if (!record) {
       this.logger.warn(`Unable to find NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
-    return doc;
+
+    return record;
   }
 
   /**
    * Finds a paginated list of NLP samples.
    *
-   * @param pageQuery - The query for pagination.
    * @param populate - Fields to populate in the returned samples.
-   * @param filters - Filters to apply when fetching samples.
+   * @param options - Filters, pagination, and sorting options.
+   * @param patterns - NLP value match constraints.
    *
    * @returns A paginated list of NLP samples.
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpSample>,
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<NlpSample>({
-        allowedFields: ['text', 'type', 'language'],
+      new TypeOrmSearchFilterPipe<NlpSampleOrmEntity>({
+        allowedFields: ['text', 'type', 'language.id'],
+        defaultSort: ['createdAt', 'desc'],
       }),
     )
-    filters: TFilterQuery<NlpSample>,
+    options: FindManyOptions<NlpSampleOrmEntity>,
     @Query(
       new ZodQueryParamPipe(
         z.array(nlpValueMatchPatternSchema),
@@ -300,15 +301,17 @@ export class NlpSampleController extends BaseController<
     )
     patterns: NlpValueMatchPattern[] = [],
   ) {
+    const queryOptions = options ?? {};
+
     return this.canPopulate(populate)
-      ? await this.nlpSampleService.findByPatternsAndPopulate(
-          { filters, patterns },
-          pageQuery,
-        )
-      : await this.nlpSampleService.findByPatterns(
-          { filters, patterns },
-          pageQuery,
-        );
+      ? await this.nlpSampleService.findByPatternsAndPopulate({
+          options: queryOptions,
+          patterns,
+        })
+      : await this.nlpSampleService.findByPatterns({
+          options: queryOptions,
+          patterns,
+        });
   }
 
   /**
@@ -323,17 +326,17 @@ export class NlpSampleController extends BaseController<
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
-    @Body() { entities, language: languageCode, ...sampleAttrs }: NlpSampleDto,
+    @Body()
+    { entities, languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
       language: language.id,
       trained: false,
     });
 
-    await this.nlpSampleEntityService.deleteMany({ sample: id });
+    await this.nlpSampleEntityService.deleteMany({ where: { sample: { id } } });
 
     const updatedSampleEntities =
       await this.nlpSampleEntityService.storeSampleEntities(
@@ -359,11 +362,12 @@ export class NlpSampleController extends BaseController<
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
-    const result = await this.nlpSampleService.deleteCascadeOne(id);
+    const result = await this.nlpSampleService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete NLP Sample by id ${id}`);
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
+
     return result;
   }
 
@@ -380,7 +384,7 @@ export class NlpSampleController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.nlpSampleService.deleteMany({
-      _id: { $in: ids },
+      where: { id: In(ids) },
     });
 
     if (deleteResult.deletedCount === 0) {
@@ -391,6 +395,7 @@ export class NlpSampleController extends BaseController<
     }
 
     this.logger.log(`Successfully deleted NLP samples with IDs: ${ids}`);
+
     return deleteResult;
   }
 
@@ -398,6 +403,7 @@ export class NlpSampleController extends BaseController<
   @UseInterceptors(FileInterceptor('file'))
   async importFile(@UploadedFile() file: Express.Multer.File) {
     const datasetContent = file.buffer.toString('utf-8');
+
     return await this.nlpSampleService.parseAndSaveDataset(datasetContent);
   }
 }

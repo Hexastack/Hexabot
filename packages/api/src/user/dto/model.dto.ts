@@ -5,10 +5,44 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsObject, IsString, IsOptional } from 'class-validator';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
+
+import { Permission } from './permission.dto';
+
+@Exclude()
+export class ModelStub extends BaseStub {
+  @Expose()
+  name: string;
+
+  @Expose()
+  identity: string;
+
+  @Expose()
+  attributes: object;
+
+  @Expose()
+  relation?: TRelation;
+}
+
+@Exclude()
+export class Model extends ModelStub {}
+
+@Exclude()
+export class ModelFull extends ModelStub {
+  @Expose()
+  @Type(() => Permission)
+  permissions?: Permission[];
+}
 
 export class ModelCreateDto {
   @ApiProperty({ description: 'Name of the model', type: String })
@@ -38,3 +72,12 @@ export class ModelCreateDto {
   @IsOptional()
   relation?: TRelation;
 }
+
+export type ModelTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Model;
+  FullCls: typeof ModelFull;
+}>;
+
+export type ModelDtoConfig = DtoActionConfig<{
+  create: ModelCreateDto;
+}>;

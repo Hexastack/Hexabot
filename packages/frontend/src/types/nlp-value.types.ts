@@ -20,6 +20,11 @@ export interface INlpValueAttributes {
   nlpSamplesCount?: number;
 }
 
+export interface INlpValueFilters {
+  value: string;
+  doc: string;
+}
+
 export interface INlpValueStub extends IBaseSchema, INlpValueAttributes {}
 export interface INlpValue extends INlpValueStub, IFormat<Format.BASIC> {}
 

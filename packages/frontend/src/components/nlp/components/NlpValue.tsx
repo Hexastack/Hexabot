@@ -49,7 +49,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const { onSearch, searchPayload, searchText } =
     useSearch<EntityType.NLP_VALUE>(
       {
-        $eq: [{ entity: entityId }],
+        $eq: [{ "entity.id": entityId }],
         $or: ["doc", "value"],
       },
       { syncUrl: true },

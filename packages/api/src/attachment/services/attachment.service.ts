@@ -8,16 +8,26 @@ import { Readable, Stream } from 'stream';
 
 import { Injectable, StreamableFile } from '@nestjs/common';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { AttachmentMetadataDto } from '../dto/attachment.dto';
+import {
+  Attachment,
+  AttachmentDtoConfig,
+  AttachmentMetadataDto,
+  AttachmentStub,
+  AttachmentTransformerDto,
+} from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { Attachment } from '../schemas/attachment.schema';
 
 @Injectable()
-export class AttachmentService extends BaseService<Attachment> {
+export class AttachmentService extends BaseOrmService<
+  AttachmentOrmEntity,
+  AttachmentTransformerDto,
+  AttachmentDtoConfig
+> {
   constructor(
     readonly repository: AttachmentRepository,
     private readonly helperService: HelperService,
@@ -44,19 +54,23 @@ export class AttachmentService extends BaseService<Attachment> {
       HelperType.STORAGE,
     );
     const dto = await storageHelper.store(file, metadata);
+
     return await this.create(dto);
   }
 
   /**
    * Downloads the specified attachment using the default storage helper.
    *
-   * @param The attachment object containing the metadata required for the download.
+   * @param attachment - The attachment object containing the metadata required for the download.
    * @returns A promise resolving to a `StreamableFile` instance of the downloaded attachment.
    */
-  async download(attachment: Attachment): Promise<StreamableFile> {
+  async download<A extends AttachmentStub>(
+    attachment: A,
+  ): Promise<StreamableFile> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.download(attachment);
   }
 
@@ -66,10 +80,13 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param attachment - The attachment object containing the metadata required to locate the file.
    * @returns A promise resolving to the file content as a `Buffer`, or `undefined` if the file cannot be read.
    */
-  async readAsBuffer(attachment: Attachment): Promise<Buffer | undefined> {
+  async readAsBuffer<A extends AttachmentStub>(
+    attachment: A,
+  ): Promise<Buffer | undefined> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.readAsBuffer(attachment);
   }
 
@@ -79,10 +96,13 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param attachment - The attachment object containing the metadata required to locate the file.
    * @returns A promise resolving to the file content as a `Stream`, or `undefined` if the file cannot be read.
    */
-  async readAsStream(attachment: Attachment): Promise<Stream | undefined> {
+  async readAsStream<A extends AttachmentStub>(
+    attachment: A,
+  ): Promise<Stream | undefined> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
+
     return await storageHelper.readAsStream(attachment);
   }
 }

@@ -4,295 +4,306 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { randomUUID } from 'crypto';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { Attachment } from '@/attachment/schemas/attachment.schema';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { User } from '@/user/schemas/user.schema';
-import { NOT_FOUND_ID } from '@/utils/constants/mock';
+import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { BlockOrmEntity } from '@/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
+import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
-  installSubscriberFixtures,
+  installSubscriberFixturesTypeOrm,
   subscriberFixtures,
 } from '@/utils/test/fixtures/subscriber';
-import { getPageQuery } from '@/utils/test/pagination';
-import { sortRowsBy } from '@/utils/test/sort';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Label } from '../schemas/label.schema';
-import { Subscriber, SubscriberFull } from '../schemas/subscriber.schema';
-
-import { LabelRepository } from './label.repository';
 import { SubscriberRepository } from './subscriber.repository';
 
-describe('SubscriberRepository', () => {
+describe('SubscriberRepository (TypeORM)', () => {
+  let module: TestingModule;
+  let dataSource: DataSource;
   let subscriberRepository: SubscriberRepository;
-  let subscriberModel: Model<Subscriber>;
-  let labelRepository: LabelRepository;
-  let userRepository: UserRepository;
-  let attachmentRepository: AttachmentRepository;
-  let allLabels: Label[];
-  let allUsers: User[];
-  let allSubscribers: Subscriber[];
-  let allAttachments: Attachment[];
-  let subscribersWithPopulatedFields: SubscriberFull[];
+  let repository: Repository<SubscriberOrmEntity>;
+  let labelRepository: Repository<LabelOrmEntity>;
+  let existingLabels: LabelOrmEntity[] = [];
+  let existingUsers: UserOrmEntity[] = [];
+
+  const createdSubscriberIds: string[] = [];
+  const createdLabelIds: string[] = [];
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installSubscriberFixtures)],
-      providers: [
-        SubscriberRepository,
-        LabelRepository,
-        UserRepository,
-        AttachmentRepository,
-      ],
+      providers: [SubscriberRepository],
+      typeorm: {
+        entities: [
+          SubscriberOrmEntity,
+          LabelOrmEntity,
+          LabelGroupOrmEntity,
+          BlockOrmEntity,
+          CategoryOrmEntity,
+          ConversationOrmEntity,
+          AttachmentOrmEntity,
+          UserOrmEntity,
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+        ],
+        fixtures: installSubscriberFixturesTypeOrm,
+      },
     });
-    [
-      subscriberRepository,
-      labelRepository,
-      userRepository,
-      attachmentRepository,
-      subscriberModel,
-    ] = await getMocks([
-      SubscriberRepository,
-      LabelRepository,
-      UserRepository,
-      AttachmentRepository,
-      getModelToken(Subscriber.name),
-    ]);
 
-    allLabels = await labelRepository.findAll();
-    allSubscribers = await subscriberRepository.findAll();
-    allUsers = await userRepository.findAll();
-    allAttachments = await attachmentRepository.findAll();
-    subscribersWithPopulatedFields = allSubscribers.map((subscriber) => ({
-      ...subscriber,
-      labels: allLabels.filter((label) => subscriber.labels.includes(label.id)),
-      assignedTo:
-        allUsers.find(({ id }) => subscriber.assignedTo === id) || null,
-      avatar: allAttachments.find(({ id }) => subscriber.avatar === id) || null,
-    }));
+    module = testing.module;
+
+    dataSource = module.get(DataSource);
+    [subscriberRepository] = await testing.getMocks([SubscriberRepository]);
+    repository = module.get<Repository<SubscriberOrmEntity>>(
+      getRepositoryToken(SubscriberOrmEntity),
+    );
+    labelRepository = module.get<Repository<LabelOrmEntity>>(
+      getRepositoryToken(LabelOrmEntity),
+    );
+
+    const fixtures = await installSubscriberFixturesTypeOrm(dataSource);
+    existingLabels = fixtures.labels;
+    existingUsers = fixtures.users;
+
+    if (!existingLabels.length) {
+      throw new Error('Expected label fixtures to be available');
+    }
+    if (!existingUsers.length) {
+      throw new Error('Expected user fixtures to be available');
+    }
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    if (createdSubscriberIds.length > 0) {
+      await repository.delete(createdSubscriberIds);
+      createdSubscriberIds.length = 0;
+    }
+    if (createdLabelIds.length > 0) {
+      await labelRepository.delete(createdLabelIds);
+      createdLabelIds.length = 0;
+    }
+  });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  describe('findOneAndPopulate', () => {
-    it('should find one subscriber by id,and populate its labels', async () => {
-      jest.spyOn(subscriberModel, 'findById');
-      const subscriber = (await subscriberRepository.findOne({
-        first_name: 'Jhon',
-      }))!;
-      const allLabels = await labelRepository.findAll();
-      const result = await subscriberRepository.findOneAndPopulate(
-        subscriber.id,
+  const createPersistedSubscriber = async (
+    overrides: Partial<SubscriberOrmEntity> = {},
+  ): Promise<SubscriberOrmEntity> => {
+    const subscriber = repository.create({
+      first_name: `Test-${randomUUID().slice(0, 8)}`,
+      last_name: 'User',
+      foreign_id: `foreign-${randomUUID()}`,
+      locale: 'en_EN',
+      language: 'en',
+      country: 'FR',
+      timezone: 0,
+      channel: { name: 'web-channel' },
+      context: { vars: {} },
+      lastvisit: new Date(),
+      retainedFrom: new Date(),
+      labels: existingLabels.slice(0, 2).map(
+        ({ id }) =>
+          ({
+            id,
+          }) as Pick<LabelOrmEntity, 'id'> & LabelOrmEntity,
+      ),
+      assignedTo: existingUsers[0]
+        ? ({
+            id: existingUsers[0].id,
+          } as Pick<UserOrmEntity, 'id'> & UserOrmEntity)
+        : null,
+      ...overrides,
+    });
+    const saved = await repository.save(subscriber);
+    createdSubscriberIds.push(saved.id);
+
+    return saved;
+  };
+  const createPersistedLabel = async (): Promise<LabelOrmEntity> => {
+    const unique = randomUUID();
+    const label = labelRepository.create({
+      title: `Generated Label ${unique}`,
+      name: `generated_label_${unique}`,
+      builtin: false,
+      label_id: {
+        messenger: `messenger_${unique}`,
+        web: `web_${unique}`,
+        twitter: `twitter_${unique}`,
+        dimelo: `dimelo_${unique}`,
+      },
+      description: null,
+    });
+    const saved = await labelRepository.save(label);
+    createdLabelIds.push(saved.id);
+
+    return saved;
+  };
+
+  describe('findOneByForeignId', () => {
+    it('returns the most recent subscriber matching a foreign id', async () => {
+      const fixture = subscriberFixtures.find(
+        ({ foreign_id }) => foreign_id === 'foreign-id-web-1',
       );
-      const subscriberWithLabels = {
-        ...subscriberFixtures.find(
-          ({ first_name }) => first_name === subscriber.first_name,
-        ),
-        labels: allLabels.filter((label) =>
-          subscriber.labels.includes(label.id),
-        ),
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
-        context: undefined,
-      };
+      if (!fixture?.foreign_id) {
+        throw new Error('Expected fixture "foreign-id-web-1" to exist');
+      }
 
-      expect(subscriberModel.findById).toHaveBeenCalledWith(
-        subscriber.id,
-        undefined,
+      const subscriber = await subscriberRepository.findOneByForeignId(
+        fixture.foreign_id,
       );
-      expect(result).toEqualPayload(subscriberWithLabels);
+
+      expect(subscriber).not.toBeNull();
+      expect(subscriber).toMatchObject({
+        foreign_id: fixture.foreign_id,
+        first_name: fixture.first_name,
+        last_name: fixture.last_name,
+        language: fixture.language,
+      });
+      expect(subscriber!.labels).toHaveLength(existingLabels.length);
+      expect(subscriber!.assignedTo ?? null).toBe(existingUsers[0].id);
+    });
+
+    it('returns null when no subscriber matches the foreign id', async () => {
+      const subscriber = await subscriberRepository.findOneByForeignId(
+        `missing-${randomUUID()}`,
+      );
+      expect(subscriber).toBeNull();
     });
   });
 
-  describe('findAndPopulate', () => {
-    const pageQuery = getPageQuery<Subscriber>();
-    it('should find subscribers, and foreach subscriber populate the corresponding labels', async () => {
-      jest.spyOn(subscriberModel, 'find');
-      const result = await subscriberRepository.findAndPopulate({}, pageQuery);
-
-      expect(subscriberModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(
-        subscribersWithPopulatedFields.sort(sortRowsBy),
+  describe('findOneByForeignIdAndPopulate', () => {
+    it('returns a populated subscriber matching the foreign id', async () => {
+      const fixture = subscriberFixtures.find(
+        ({ foreign_id }) => foreign_id === 'foreign-id-web-2',
       );
+      if (!fixture?.foreign_id) {
+        throw new Error('Expected fixture "foreign-id-web-2" to exist');
+      }
+
+      const subscriber =
+        await subscriberRepository.findOneByForeignIdAndPopulate(
+          fixture.foreign_id,
+        );
+
+      expect(subscriber).not.toBeNull();
+      expect(subscriber!.foreign_id).toBe(fixture.foreign_id);
+      expect(subscriber!.first_name).toBe(fixture.first_name);
+      expect(subscriber!.labels.map((label) => label.id).sort()).toEqual(
+        existingLabels.map((label) => label.id).sort(),
+      );
+      expect(subscriber!.assignedTo?.id ?? null).toBe(existingUsers[0].id);
+      expect(subscriber!.avatar ?? null).toBeNull();
     });
   });
 
-  describe('findAllAndPopulate', () => {
-    it('should return all subscribers, and foreach subscriber populate the corresponding labels', async () => {
-      jest.spyOn(subscriberModel, 'find');
-      const result = await subscriberRepository.findAllAndPopulate();
-
-      expect(subscriberModel.find).toHaveBeenCalledWith({}, undefined);
-      expect(result).toEqualPayload(
-        subscribersWithPopulatedFields.sort(sortRowsBy),
+  describe('updateOneByForeignIdQuery', () => {
+    it('updates a subscriber matching the provided foreign id', async () => {
+      const entity = await createPersistedSubscriber({
+        timezone: 2,
+      });
+      const updated = await subscriberRepository.updateOneByForeignIdQuery(
+        entity.foreign_id ?? '',
+        { timezone: 9 },
       );
+
+      expect(updated.id).toBe(entity.id);
+      expect(updated.timezone).toBe(9);
+
+      const reloaded = await repository.findOne({
+        where: { id: entity.id },
+      });
+      expect(reloaded?.timezone).toBe(9);
+    });
+  });
+
+  describe('handBackByForeignIdQuery & handOverByForeignIdQuery', () => {
+    it('unassigns then assigns a subscriber by foreign id', async () => {
+      const entity = await createPersistedSubscriber();
+      const assignedUser = existingUsers[0];
+      const unassigned = await subscriberRepository.handBackByForeignIdQuery(
+        entity.foreign_id ?? '',
+      );
+      expect(unassigned.assignedTo).toBeNull();
+
+      const reassigned = await subscriberRepository.handOverByForeignIdQuery(
+        entity.foreign_id ?? '',
+        assignedUser.id,
+      );
+
+      expect(reassigned.assignedTo).toBe(assignedUser.id);
+
+      const reloaded = await repository.findOne({
+        where: { id: entity.id },
+        relations: ['assignedTo'],
+      });
+      expect(reloaded?.assignedTo?.id ?? null).toBe(assignedUser.id);
     });
   });
 
   describe('updateLabels', () => {
-    it('should add labels without duplicates when labelsToPull is empty', async () => {
-      const subscriber = await subscriberRepository.findOne({
-        first_name: 'Maynard',
+    it('removes requested labels, adds new ones once, and returns updated ids', async () => {
+      const initialLabelIds = existingLabels
+        .slice(0, 2)
+        .map((label) => label.id);
+      const entity = await createPersistedSubscriber({
+        labels: initialLabelIds.map(
+          (id) =>
+            ({
+              id,
+            }) as Pick<LabelOrmEntity, 'id'> & LabelOrmEntity,
+        ),
       });
-
-      expect(subscriber).toBeTruthy();
-
-      // one existing label (if any) and one new label not already present
-      const existingLabelId = (subscriber!.labels || [])[0] || allLabels[0].id;
-      const newLabel = await labelRepository.create({
-        title: 'New Label',
-        name: 'NEW_LABEL',
-      });
-
-      const labelsToPush = [existingLabelId, newLabel!.id, newLabel!.id]; // duplicates on purpose
-
-      // Act
-      const result = await subscriberRepository.updateLabels(
-        subscriber!.id,
-        labelsToPush,
-        [],
-      );
-
-      // Assert
-      const updated = await subscriberRepository.findOne(subscriber!.id);
-      expect(updated).toBeTruthy();
-
-      // Existing labels remain
-      expect(updated).toEqual(result);
-      expect(updated!.labels).toEqual(
-        expect.arrayContaining(subscriber!.labels),
-      );
-      // New label present only once
-      const occurrences = updated!.labels.filter(
-        (x) => x === newLabel!.id,
-      ).length;
-      expect(occurrences).toBe(1);
-    });
-
-    it('should pull provided labels then push the new ones when labelsToPull is not empty', async () => {
-      // Use another subscriber to avoid interference with the previous test
-      const subscriber = await subscriberRepository.findOne({
-        first_name: 'Queen',
-      });
-
-      const labelToRemove = subscriber!.labels[0];
-      const newLabel = await labelRepository.create({
-        title: 'Royal',
-        name: 'ROYAL',
-      });
-
-      const prevLabels = [...subscriber!.labels];
-
-      await subscriberRepository.updateLabels(
-        subscriber!.id,
-        [newLabel!.id, newLabel!.id],
+      const labelToRemove = initialLabelIds[0];
+      const newLabel = await createPersistedLabel();
+      const updated = await subscriberRepository.updateLabels(
+        entity.id,
+        [newLabel.id, newLabel.id],
         [labelToRemove],
       );
 
-      const updated = await subscriberRepository.findOne(subscriber!.id);
-      expect(updated).toBeTruthy();
+      expect(updated.labels).toContain(newLabel.id);
+      expect(updated.labels).not.toContain(labelToRemove);
+      expect(
+        updated.labels.filter((labelId) => labelId === newLabel.id).length,
+      ).toBe(1);
 
-      // We add and remove a new one : count should remain the same
-      expect(updated!.labels.length).toEqual(subscriber?.labels.length);
-      // Removed label is gone
-      expect(updated!.labels).not.toContain(labelToRemove);
-      // New label present
-      expect(updated!.labels).toContain(newLabel!.id);
-      // Other labels remain unchanged
-      const remainingPrev = prevLabels.filter((l) => l !== labelToRemove);
-      expect(updated!.labels).toEqual(expect.arrayContaining(remainingPrev));
+      const reloaded = await repository.findOne({
+        where: { id: entity.id },
+        relations: ['labels'],
+      });
+      expect(reloaded).not.toBeNull();
+
+      const reloadedLabelIds = (reloaded?.labels ?? []).map(
+        (label) => label.id,
+      );
+      expect(reloadedLabelIds).toContain(newLabel.id);
+      expect(reloadedLabelIds).not.toContain(labelToRemove);
     });
 
-    it('should throw if subscriber does not exist during pull stage', async () => {
+    it('throws when the subscriber cannot be resolved', async () => {
       await expect(
-        subscriberRepository.updateLabels(
-          NOT_FOUND_ID,
-          ['1'.repeat(24)],
-          ['2'.repeat(24)],
-        ),
-      ).rejects.toThrow(`Unable to pull subscriber labels : ${NOT_FOUND_ID}`);
-    });
-
-    it('should throw if subscriber does not exist during add stage', async () => {
-      await expect(
-        subscriberRepository.updateLabels(NOT_FOUND_ID, ['1'.repeat(24)], []),
-      ).rejects.toThrow(`Unable to assign subscriber labels : ${NOT_FOUND_ID}`);
-    });
-  });
-
-  describe('updateOne', () => {
-    it('should execute preUpdate hook and emit events on assignedTo change', async () => {
-      // Arrange: Set up a mock subscriber
-      const oldSubscriber = {
-        ...subscriberFixtures[0], // Mocked existing subscriber
-        assignedTo: null,
-      } as Subscriber;
-
-      const updates = { assignedTo: '9'.repeat(24) }; // Change assigned user;
-
-      jest
-        .spyOn(subscriberRepository, 'findOne')
-        .mockResolvedValue(oldSubscriber);
-      jest.spyOn(subscriberRepository.eventEmitter, 'emit');
-
-      await subscriberRepository.updateOne(oldSubscriber.id, updates);
-
-      expect(subscriberRepository.eventEmitter.emit).toHaveBeenCalledWith(
-        'hook:subscriber:assign',
-        expect.anything(),
-        expect.anything(),
-      );
-      expect(subscriberRepository.eventEmitter.emit).toHaveBeenCalledWith(
-        'hook:analytics:passation',
-        expect.anything(),
-        true, // Because assignedTo has changed
-      );
-    });
-
-    it('should not emit events if assignedTo remains unchanged', async () => {
-      const oldSubscriber = {
-        ...subscriberFixtures[0],
-        assignedTo: '8'.repeat(24),
-      } as Subscriber;
-
-      const updates = { assignedTo: '8'.repeat(24) }; // Same user;
-
-      jest
-        .spyOn(subscriberRepository, 'findOne')
-        .mockResolvedValue(oldSubscriber);
-      jest.spyOn(subscriberRepository.eventEmitter, 'emit');
-
-      await subscriberRepository.updateOne(oldSubscriber.id, updates);
-
-      expect(subscriberRepository.eventEmitter.emit).not.toHaveBeenCalledWith(
-        'hook:subscriber:assign',
-        expect.anything(),
-        expect.anything(),
-      );
-      expect(subscriberRepository.eventEmitter.emit).not.toHaveBeenCalledWith(
-        'hook:analytics:passation',
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-
-    it('should throw an error if the subscriber does not exist', async () => {
-      jest.spyOn(subscriberRepository, 'findOne').mockResolvedValue(null);
-
-      await expect(
-        subscriberRepository.updateOne('0'.repeat(24), {
-          $set: { assignedTo: 'user-456' },
-        }),
-      ).rejects.toThrow();
+        subscriberRepository.updateLabels(randomUUID(), [], []),
+      ).rejects.toThrow(/Unable to resolve subscriber/);
     });
   });
 });

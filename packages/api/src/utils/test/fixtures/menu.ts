@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
 import { MenuCreateDto } from '@/cms/dto/menu.dto';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { MenuType } from '@/cms/schemas/types/menu';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
+import { MenuType } from '@/cms/types/menu';
 
 export const websiteMenuFixture: MenuCreateDto = {
   type: MenuType.web_url,
@@ -98,33 +98,85 @@ export const accountMenuFixtures: MenuCreateDto[] = [
   },
 ];
 
-export const installMenuFixtures = async () => {
-  const Menu = mongoose.model(MenuModel.name, MenuModel.schema);
+export const installMenuFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<void> => {
+  const repository = dataSource.getRepository(MenuOrmEntity);
+  MenuOrmEntity.registerEntityManagerProvider(() => repository.manager);
 
-  const docs = await Menu.insertMany(rootMenuFixtures);
+  const count = await repository.count();
+  if (count > 0) {
+    return;
+  }
 
-  const offerDocs = await Menu.insertMany(
-    offersMenuFixtures.map((m) => ({
-      ...m,
-      parent: m.parent ? docs[parseInt(m.parent)].id : undefined,
-    })),
+  const resolveParentId = (
+    parent: string | undefined,
+    collection: MenuOrmEntity[],
+  ) => {
+    if (!parent) {
+      return undefined;
+    }
+    const idx = Number(parent);
+    if (!Number.isInteger(idx) || !collection[idx]) {
+      throw new Error(`Unable to resolve menu parent for index: ${parent}`);
+    }
+
+    return collection[idx].id;
+  };
+  const toParentRelation = (id?: string): DeepPartial<MenuOrmEntity> | null =>
+    id ? ({ id } as DeepPartial<MenuOrmEntity>) : null;
+  const roots = await repository.save(
+    repository.create(
+      rootMenuFixtures.map(
+        (menu): DeepPartial<MenuOrmEntity> => ({
+          title: menu.title,
+          type: menu.type,
+          payload: menu.payload,
+          url: menu.url,
+        }),
+      ),
+    ),
+  );
+  const offers = await repository.save(
+    repository.create(
+      offersMenuFixtures.map(
+        (menu): DeepPartial<MenuOrmEntity> => ({
+          title: menu.title,
+          type: menu.type,
+          payload: menu.payload,
+          url: menu.url,
+          parent: toParentRelation(resolveParentId(menu.parent, roots)),
+        }),
+      ),
+    ),
+  );
+  const all = [...roots, ...offers];
+
+  await repository.save(
+    repository.create(
+      devicesMenuFixtures.map(
+        (menu): DeepPartial<MenuOrmEntity> => ({
+          title: menu.title,
+          type: menu.type,
+          payload: menu.payload,
+          url: menu.url,
+          parent: toParentRelation(resolveParentId(menu.parent, all)),
+        }),
+      ),
+    ),
   );
 
-  const allDocs = docs.concat(offerDocs);
-
-  await Menu.insertMany(
-    devicesMenuFixtures.map((m) => ({
-      ...m,
-      parent: m.parent ? allDocs[parseInt(m.parent)].id : undefined,
-    })),
-  );
-
-  return await Menu.insertMany(
-    accountMenuFixtures.map((m) => {
-      return {
-        ...m,
-        parent: m.parent ? docs[parseInt(m.parent)].id : undefined,
-      };
-    }),
+  await repository.save(
+    repository.create(
+      accountMenuFixtures.map(
+        (menu): DeepPartial<MenuOrmEntity> => ({
+          title: menu.title,
+          type: menu.type,
+          payload: menu.payload,
+          url: menu.url,
+          parent: toParentRelation(resolveParentId(menu.parent, roots)),
+        }),
+      ),
+    ),
   );
 };

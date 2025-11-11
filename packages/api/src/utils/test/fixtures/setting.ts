@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
-import { SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingType } from '@/setting/schemas/types';
+import { SettingOrmEntity } from '@/setting/entities/setting.entity';
+import { SettingType } from '@/setting/types';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [
@@ -116,6 +116,7 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '',
     type: SettingType.text,
     weight: 14,
+    translatable: true,
   },
   {
     group: 'local_storage_helper',
@@ -126,7 +127,8 @@ export const settingFixtures: SettingCreateDto[] = [
   },
 ];
 
-export const installSettingFixtures = async () => {
-  const Setting = mongoose.model(SettingModel.name, SettingModel.schema);
-  return await Setting.insertMany(settingFixtures);
+export const installSettingFixturesTypeOrm = async (dataSource: DataSource) => {
+  const repository = dataSource.getRepository(SettingOrmEntity);
+  const entities = repository.create(settingFixtures);
+  await repository.save(entities);
 };

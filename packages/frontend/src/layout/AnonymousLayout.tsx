@@ -6,8 +6,6 @@
 
 import { Grid } from "@mui/material";
 
-import { ChatWidget } from "@/app-components/widget/ChatWidget";
-
 import { LayoutProps } from ".";
 
 import { Content } from "./content";
@@ -23,6 +21,5 @@ export const AnonymousLayout: React.FC<LayoutProps> = ({
     <Content sx={sxContent} {...rest}>
       {children}
     </Content>
-    <ChatWidget />
   </Grid>
 );

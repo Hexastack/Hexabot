@@ -17,6 +17,7 @@ import {
 import {
   IBlock,
   IBlockAttributes,
+  IBLockFilters,
   IBlockFull,
   IBlockSearchResult,
   ICustomBlockSettingFilters,
@@ -25,7 +26,12 @@ import {
 import { ICategory, ICategoryAttributes } from "./category.types";
 import { IChannel, IChannelAttributes } from "./channel.types";
 import { IContentType, IContentTypeAttributes } from "./content-type.types";
-import { IContent, IContentAttributes, IContentFull } from "./content.types";
+import {
+  IContent,
+  IContentAttributes,
+  IContentFilters,
+  IContentFull,
+} from "./content.types";
 import { IContextVar, IContextVarAttributes } from "./context-var.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
@@ -37,7 +43,12 @@ import {
   IMenuNodeFull,
 } from "./menu-tree.types";
 import { IMenuItem, IMenuItemAttributes, IMenuItemFull } from "./menu.types";
-import { IMessage, IMessageAttributes, IMessageFull } from "./message.types";
+import {
+  IMessage,
+  IMessageAttributes,
+  IMessageFilters,
+  IMessageFull,
+} from "./message.types";
 import { IModel, IModelAttributes, IModelFull } from "./model.types";
 import {
   INlpEntity,
@@ -59,6 +70,7 @@ import {
 import {
   INlpValue,
   INlpValueAttributes,
+  INlpValueFilters,
   INlpValueFull,
 } from "./nlp-value.types";
 import {
@@ -72,6 +84,7 @@ import { ISetting, ISettingAttributes } from "./setting.types";
 import {
   ISubscriber,
   ISubscriberAttributes,
+  ISubscriberFilters,
   ISubscriberFull,
 } from "./subscriber.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
@@ -108,7 +121,7 @@ export const POPULATE_BY_TYPE = {
     "attachedToBlock",
     "assign_labels",
     "trigger_labels",
-    "assignTo",
+    "category",
   ],
   [EntityType.BLOCK_SEARCH]: [],
   [EntityType.NLP_SAMPLE]: ["language", "entities"],
@@ -154,7 +167,12 @@ interface IEntityTypes<
 }
 
 export interface IEntityMapTypes {
-  [EntityType.BLOCK]: IEntityTypes<IBlock, IBlockAttributes, never, IBlockFull>;
+  [EntityType.BLOCK]: IEntityTypes<
+    IBlock,
+    IBlockAttributes,
+    IBLockFilters,
+    IBlockFull
+  >;
   [EntityType.BLOCK_SEARCH]: IEntityTypes<
     IBlockSearchResult,
     never,
@@ -165,7 +183,7 @@ export interface IEntityMapTypes {
   [EntityType.CONTENT]: IEntityTypes<
     IContent,
     IContentAttributes,
-    never,
+    IContentFilters,
     IContentFull
   >;
   [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
@@ -209,7 +227,7 @@ export interface IEntityMapTypes {
   [EntityType.NLP_VALUE]: IEntityTypes<
     INlpValue,
     INlpValueAttributes,
-    never,
+    INlpValueFilters,
     INlpValueFull
   >;
   [EntityType.NLP_SAMPLE_ENTITY]: IEntityTypes<
@@ -229,7 +247,7 @@ export interface IEntityMapTypes {
   [EntityType.SUBSCRIBER]: IEntityTypes<
     ISubscriber,
     ISubscriberAttributes,
-    never,
+    ISubscriberFilters,
     ISubscriberFull
   >;
   [EntityType.LANGUAGE]: IEntityTypes<ILanguage, ILanguageAttributes>;
@@ -243,7 +261,7 @@ export interface IEntityMapTypes {
   [EntityType.MESSAGE]: IEntityTypes<
     IMessage,
     IMessageAttributes,
-    never,
+    IMessageFilters,
     IMessageFull
   >;
   [EntityType.CHANNEL]: IEntityTypes<IChannel, IChannelAttributes>;
@@ -272,6 +290,16 @@ type AllNever<T> = {
   [K in keyof T]: never;
 };
 
+export type SearchFilters<
+  TE extends THook["entity"],
+  TF extends THook<{ entity: TE }>["full"] = THook<{ entity: TE }>["full"],
+  TP extends Populate<TE> = Populate<TE>,
+> = TNestedPaths<{
+  [K in TP & keyof TF]?: TF[K] extends unknown[]
+    ? { id: string }[]
+    : { id: string };
+}>;
+
 export type THook<
   G extends IDynamicProps = IDynamicProps,
   TE extends keyof IEntityMapTypes = G["entity"],
@@ -282,7 +310,7 @@ export type THook<
 > = {
   full: TType<TE>["full"];
   basic: TType<TE>["basic"];
-  filters: TType<TE>["filters"];
+  filters: TType<TE>["filters"] & SearchFilters<TE>;
   params: TP;
   entity: TE;
   populate: TPopulateTypeFromFormat<G>;
@@ -293,8 +321,8 @@ export type TNestedPaths<T> = {
   [K in Path<T>]: PathValue<T, K>;
 };
 
-export interface IFindConfigProps<T = unknown> {
-  params?: SearchPayload<T>;
+export interface IFindConfigProps<TE extends THook["entity"]> {
+  params?: SearchPayload<TE>;
   hasCount?: boolean;
   initialSortState?: GridSortModel;
   initialPaginationState?: GridPaginationModel;

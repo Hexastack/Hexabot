@@ -6,22 +6,20 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseSeeder } from '@/utils/generics/base-seeder';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { PermissionDto } from '../dto/permission.dto';
-import { PermissionRepository } from '../repositories/permission.repository';
 import {
-  Permission,
-  PermissionFull,
-  PermissionPopulate,
-} from '../schemas/permission.schema';
+  PermissionDtoConfig,
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
+import { PermissionOrmEntity } from '../entities/permission.entity';
+import { PermissionRepository } from '../repositories/permission.repository';
 
 @Injectable()
-export class PermissionSeeder extends BaseSeeder<
-  Permission,
-  PermissionPopulate,
-  PermissionFull,
-  PermissionDto
+export class PermissionSeeder extends BaseOrmSeeder<
+  PermissionOrmEntity,
+  PermissionTransformerDto,
+  PermissionDtoConfig
 > {
   constructor(private readonly permissionRepository: PermissionRepository) {
     super(permissionRepository);

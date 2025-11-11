@@ -9,9 +9,9 @@ import Handlebars from 'handlebars';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
-import { AttachmentPayload } from '../schemas/types/attachment';
-import { Button, ButtonType } from '../schemas/types/button';
-import { Context, TemplateContext } from '../schemas/types/context';
+import { AttachmentPayload } from '../types/attachment';
+import { Button, ButtonType } from '../types/button';
+import { Context, TemplateContext } from '../types/context';
 import {
   ContentElement,
   ContentPagination,
@@ -22,9 +22,9 @@ import {
   StdOutgoingQuickRepliesEnvelope,
   StdOutgoingSystemEnvelope,
   StdOutgoingTextEnvelope,
-} from '../schemas/types/message';
-import { ContentOptions } from '../schemas/types/options';
-import { StdQuickReply } from '../schemas/types/quick-reply';
+} from '../types/message';
+import { ContentOptions } from '../types/options';
+import { StdQuickReply } from '../types/quick-reply';
 
 import { getEnvelopeBuilder } from './envelope-builder';
 
@@ -76,11 +76,11 @@ export class EnvelopeFactory {
       context: { ...context },
       contact: { ...settings.contact },
     };
-
     // Compile and run the Handlebars template
     const compileTemplate = Handlebars.compile(
       EnvelopeFactory.toHandlebars(text),
     );
+
     return compileTemplate(templateContext);
   }
 
@@ -94,7 +94,7 @@ export class EnvelopeFactory {
   public processText(text: string | string[]): string {
     let result = Array.isArray(text) ? getRandomElement(text) : text;
     result = this.i18n.t(result, {
-      lang: this.context.user.language,
+      lang: this.context.user.language || undefined,
       defaultValue: result,
     });
     result = EnvelopeFactory.compileHandlebarsTemplate(
@@ -102,6 +102,7 @@ export class EnvelopeFactory {
       this.context,
       this.settings,
     );
+
     return result;
   }
 
@@ -128,6 +129,7 @@ export class EnvelopeFactory {
   buildTextEnvelope(text: string | string[]): StdOutgoingTextEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.text);
     const processedText = this.processText(text);
+
     return builder.setText(processedText).build();
   }
 
@@ -244,6 +246,7 @@ export class EnvelopeFactory {
     pagination: ContentPagination,
   ): StdOutgoingListEnvelope {
     const builder = this.getBuilder(format);
+
     return builder
       .setOptions(options)
       .setElements(elements)
@@ -266,6 +269,7 @@ export class EnvelopeFactory {
     data?: unknown,
   ): StdOutgoingSystemEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.system);
+
     return builder.setOutcome(outcome).setData(data).build();
   }
 }

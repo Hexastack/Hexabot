@@ -6,21 +6,21 @@
 
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 
 import { NlpEntityController } from './controllers/nlp-entity.controller';
 import { NlpSampleController } from './controllers/nlp-sample.controller';
 import { NlpValueController } from './controllers/nlp-value.controller';
+import { NlpEntityOrmEntity } from './entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from './entities/nlp-sample-entity.entity';
+import { NlpSampleOrmEntity } from './entities/nlp-sample.entity';
+import { NlpValueOrmEntity } from './entities/nlp-value.entity';
 import { NlpEntityRepository } from './repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from './repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from './repositories/nlp-sample.repository';
 import { NlpValueRepository } from './repositories/nlp-value.repository';
-import { NlpEntityModel } from './schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from './schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from './schemas/nlp-sample.schema';
-import { NlpValueModel } from './schemas/nlp-value.schema';
 import { NlpEntitySeeder } from './seeds/nlp-entity.seed';
 import { NlpValueSeeder } from './seeds/nlp-value.seed';
 import { NlpEntityService } from './services/nlp-entity.service';
@@ -31,11 +31,11 @@ import { NlpService } from './services/nlp.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      NlpEntityModel,
-      NlpValueModel,
-      NlpSampleModel,
-      NlpSampleEntityModel,
+    TypeOrmModule.forFeature([
+      NlpEntityOrmEntity,
+      NlpValueOrmEntity,
+      NlpSampleOrmEntity,
+      NlpSampleEntityOrmEntity,
     ]),
     AttachmentModule,
     HttpModule,

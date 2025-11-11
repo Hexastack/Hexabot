@@ -6,35 +6,50 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { FieldType } from '@/setting/types';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentTypeDto } from '../dto/contentType.dto';
+import {
+  ContentType,
+  ContentTypeDtoConfig,
+  ContentTypeTransformerDto,
+} from '../dto/contentType.dto';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentType } from '../schemas/content-type.schema';
+
+const DEFAULT_FIELDS: NonNullable<ContentTypeOrmEntity['fields']> = [
+  {
+    name: 'title',
+    label: 'Title',
+    type: FieldType.text,
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    type: FieldType.checkbox,
+  },
+];
 
 @Injectable()
-export class ContentTypeService extends BaseService<
-  ContentType,
-  never,
-  never,
-  ContentTypeDto
+export class ContentTypeService extends BaseOrmService<
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig,
+  ContentTypeRepository
 > {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
   }
 
-  /**
-   * Deletes a specific content type by its ID, using cascade deletion.
-   *
-   * This method triggers the deletion of a single `ContentType` entity
-   * from the repository. If there are any related content, they will be
-   * deleted accordingly.
-   *
-   * @param id - The ID of the `ContentType` to be deleted.
-   *
-   * @returns A promise that resolves when the deletion is complete.
-   */
-  async deleteCascadeOne(id: string) {
-    return await this.repository.deleteOne(id);
+  async create(payload: ContentTypeDtoConfig['create']): Promise<ContentType> {
+    const fields =
+      payload.fields && payload.fields.length > 0
+        ? payload.fields
+        : DEFAULT_FIELDS;
+
+    return await super.create({
+      ...payload,
+      fields,
+    });
   }
 }

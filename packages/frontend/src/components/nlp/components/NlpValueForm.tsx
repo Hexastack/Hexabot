@@ -15,7 +15,6 @@ import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -52,14 +51,10 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { query } = useAppRouter();
   const { refetch: refetchEntity } = useGet(nlpEntity?.id!, {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const entityIdentifier = Array.isArray(query.id)
-    ? query.id.at(-1)
-    : query.id;
   const canHaveSynonyms = nlpEntity?.lookups.includes(LookupStrategy.keywords);
   const isPattern = nlpEntity?.lookups.includes(LookupStrategy.pattern);
   const { mutate: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
@@ -104,8 +99,8 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
   const onSubmitForm = async (params: INlpValueAttributes) => {
     if (nlpValue) {
       updateNlpValue({ id: nlpValue.id, params });
-    } else {
-      createNlpValue({ ...params, entity: String(entityIdentifier) });
+    } else if (nlpEntity?.id) {
+      createNlpValue({ ...params, entity: nlpEntity.id });
     }
   };
 
