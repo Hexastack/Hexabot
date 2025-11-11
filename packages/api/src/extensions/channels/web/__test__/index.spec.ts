@@ -249,10 +249,12 @@ describe('WebChannelHandler', () => {
       assignedAt: null,
       assignedTo: null,
       channel: {
-        agent: req.headers['user-agent'],
-        ipAddress: '0.0.0.0',
-        isSocket: false,
         name: 'web-channel',
+        data: {
+          agent: req.headers['user-agent'],
+          isSocket: false,
+          ipAddress: '0.0.0.0',
+        },
       },
       country: '',
       first_name: req.query.first_name,

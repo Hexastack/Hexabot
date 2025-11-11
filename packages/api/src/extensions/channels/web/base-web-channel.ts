@@ -521,7 +521,7 @@ export default abstract class BaseWebChannelHandler<
       avatar: null,
       channel: {
         name: this.getName(),
-        ...this.getChannelAttributes(req),
+        data: this.getChannelAttributes(req),
       },
       language: '',
       locale: '',
