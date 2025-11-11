@@ -1282,7 +1282,7 @@ export default abstract class BaseWebChannelHandler<
     excludedRooms: string[] = [],
   ): void {
     const channelData = subscriber.channel;
-    if (channelData.isSocket) {
+    if (channelData.data?.isSocket) {
       this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
       // Do nothing, messages will be retrieved via polling

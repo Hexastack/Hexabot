@@ -21,10 +21,17 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { SubscriberChannelData } from '../types/channel';
 import { SubscriberContext } from '../types/subscriberContext';
 
 import { LabelOrmEntity } from './label.entity';
+
+export class SubscriberChannel {
+  @Column()
+  name: string;
+
+  @JsonColumn()
+  data: any;
+}
 
 @Entity({ name: 'subscribers' })
 @Index(['first_name'])
@@ -108,8 +115,8 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
   private readonly avatarId?: string | null;
 
-  @JsonColumn()
-  channel!: SubscriberChannelData;
+  @Column(() => SubscriberChannel)
+  channel!: SubscriberChannel;
 
   @JsonColumn()
   context: SubscriberContext = { vars: {} };

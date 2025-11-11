@@ -218,7 +218,8 @@ export const installConversationFixturesTypeOrm = async (
         assignedAt: senderEntity.assignedAt ?? null,
         lastvisit: senderEntity.lastvisit ?? null,
         retainedFrom: senderEntity.retainedFrom ?? null,
-        channel: senderEntity.channel,
+        // @todo : remove any
+        channel: senderEntity.channel as any,
         context: senderEntity.context,
       },
     };

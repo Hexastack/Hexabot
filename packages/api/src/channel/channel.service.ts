@@ -180,7 +180,7 @@ export class ChannelService {
           avatar: null,
           channel: {
             name: CONSOLE_CHANNEL_NAME,
-            isSocket: true,
+            data: { isSocket: true },
           },
           context: { vars: {} },
         },

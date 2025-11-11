@@ -8,14 +8,17 @@ import { z } from 'zod';
 
 import { ChannelName } from '@/channel/types';
 
+// @todo : rename
 export type SubscriberChannelData<C extends ChannelName = 'unknown-channel'> =
   C extends 'unknown-channel'
     ? { name: ChannelName }
     : {
         name: C;
       } & {
-        // Channel's specific attributes
-        [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][P];
+        data?: {
+          // Channel's specific attributes
+          [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][P];
+        };
       };
 
 export const channelDataSchema = z
