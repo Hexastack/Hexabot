@@ -12,7 +12,7 @@ import { merge } from "@/utils/object";
 
 import { useEntityApiClient } from "../useApiClient";
 
-import { useNormalizeAndCache } from "./helpers";
+import { isSameEntity, useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
 
 export const useUpdate = <
@@ -31,15 +31,31 @@ export const useUpdate = <
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
+  const queryClient = useQueryClient();
+  const { invalidate = true, ...otherOptions } = options || {};
 
   return useMutation({
     mutationFn: async ({ id, params }) => {
       const data = await api.update(id, params);
       const { entities, result } = normalizeAndCache(data);
+      // Invalidate all counts & collections
+
+      if (invalidate) {
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) => {
+            const [qType, qEntity] = queryKey;
+
+            return (
+              (qType === QueryType.count || qType === QueryType.collection) &&
+              isSameEntity(qEntity, entity)
+            );
+          },
+        });
+      }
 
       return entities[entity]?.[result] as unknown as TBasic;
     },
-    ...options,
+    ...otherOptions,
   });
 };
 
