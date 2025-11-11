@@ -26,18 +26,21 @@ export interface PermissionProviderProps {
 export const PermissionProvider = ({
   children,
 }: PermissionProviderProps): JSX.Element => {
-  const { data, isLoading } = useUserPermissions();
+  const { data, isLoading, isFetching } = useUserPermissions();
   const permissionMap = useMemo(
     () =>
-      data?.permissions.reduce((acc, { model, action }) => {
-        if (!(model in acc)) {
-          acc[model] = [];
-        }
+      data?.permissions.reduce(
+        (acc, { model, action }) => {
+          if (!(model in acc)) {
+            acc[model] = [];
+          }
 
-        acc[model]?.push(action);
+          acc[model]?.push(action);
 
-        return acc;
-      }, {} as { [key in EntityType]?: PermissionAction[] }),
+          return acc;
+        },
+        {} as { [key in EntityType]?: PermissionAction[] },
+      ),
     [data?.permissions],
   );
   const getAllowedActions = useCallback(
@@ -47,7 +50,7 @@ export const PermissionProvider = ({
     [permissionMap],
   );
 
-  if (isLoading) return <Progress />;
+  if (isLoading || isFetching) return <Progress />;
 
   return (
     <PermissionContext.Provider

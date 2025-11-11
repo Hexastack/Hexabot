@@ -6,6 +6,9 @@
 
 import { BoxProps } from "@mui/material";
 
+import { EntityType } from "@/services/types";
+import { PermissionAction } from "@/types/permission.types";
+
 import { AnonymousLayout } from "./AnonymousLayout";
 import { AuthenticatedLayout } from "./AuthenticatedLayout";
 
@@ -17,6 +20,7 @@ export type LayoutProps = IContentPaddingProps & {
   children: JSX.Element;
   sxContent?: BoxProps;
   isPublicRoute?: boolean;
+  requiredPermissions?: [EntityType, PermissionAction][];
 };
 export const Layout: React.FC<LayoutProps> = ({
   children,

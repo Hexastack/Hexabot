@@ -36,6 +36,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@fontsource/roboto/900.css";
 import "eazychart-css";
+import ErrorBoundary from "./errors/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,7 +76,9 @@ ReactDOM.createRoot(rootElement).render(
                         <SettingsProvider>
                           <DialogsProvider>
                             <SocketProvider>
-                              <App />
+                              <ErrorBoundary>
+                                <App />
+                              </ErrorBoundary>
                             </SocketProvider>
                           </DialogsProvider>
                         </SettingsProvider>
