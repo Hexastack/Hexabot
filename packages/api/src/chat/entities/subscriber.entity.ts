@@ -29,7 +29,7 @@ export class SubscriberChannel {
   @Column()
   name: string;
 
-  @JsonColumn()
+  @JsonColumn({ nullable: true })
   data: any;
 }
 
