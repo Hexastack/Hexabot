@@ -19,6 +19,9 @@ type TCacheConfig = {
   host: string;
   port: number;
   type: 'memory' | 'redis';
+  protocol: string;
+  user: string;
+  password: string;
 };
 type TDatabaseType = 'sqlite' | 'postgres' | 'mongodb';
 type TDatabaseConfig = {

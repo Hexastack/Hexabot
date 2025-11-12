@@ -105,7 +105,9 @@ const i18nOptions: I18nOptions = {
         // first store is primary, subsequent stores are secondary/fallback
         stores: [
           config.cache.type === 'redis'
-            ? new KeyvRedis(`${config.cache.host}:${config.cache.port}`)
+            ? new KeyvRedis(
+                `${config.cache.protocol}//${config.cache.user}:${config.cache.password}@${config.cache.host}:${config.cache.port}`,
+              )
             : new Keyv({
                 store: new CacheableMemory({
                   ttl: config.cache.ttl,

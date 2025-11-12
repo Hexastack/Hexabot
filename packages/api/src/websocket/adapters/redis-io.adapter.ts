@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { InternalServerErrorException } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
-import { createClient } from 'redis';
+import { createClient, RedisClientOptions } from 'redis';
 import { ServerOptions } from 'socket.io';
 
 import { config } from '@/config';
@@ -16,13 +15,8 @@ export class RedisIoAdapter extends IoAdapter {
   private adapter: ReturnType<typeof createAdapter>;
 
   async connectToRedis(): Promise<void> {
-    if (config.cache.host !== 'redis') {
-      throw new InternalServerErrorException(
-        `Unable to run connect to redis host is ${config.cache.host} instead of 'redis'`,
-      );
-    }
     // @todo : add zod validation
-    const redisConfig = {
+    const redisConfig: RedisClientOptions = {
       socket: {
         host: config.cache.host,
         port: config.cache.port,
