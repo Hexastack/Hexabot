@@ -5,7 +5,7 @@
  */
 
 import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
 
@@ -13,7 +13,8 @@ import { useVisualEditor } from "./useVisualEditor";
 
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
-  const router = useAppRouter();
+  const { query } = useAppRouter();
+  const { blockIds } = query;
   const { getNode, fitView } = useReactFlow();
   const { selectNodes, selectedNodeIds, openSearchPanel, setToFocusIds } =
     useVisualEditor();
@@ -45,21 +46,18 @@ export const useFocusBlock = () => {
       }
     }
   };
+  const blockIdsParams = useMemo(
+    () =>
+      !blockIds?.length || !nodesInitialized || typeof blockIds !== "string"
+        ? []
+        : blockIds.toString().split(",").filter(getNode),
+    [nodesInitialized, blockIds],
+  );
 
   useEffect(() => {
-    const { blockIds } = router.query;
-
-    if (nodesInitialized && typeof blockIds === "string" && blockIds?.length) {
-      const nodesIds = blockIds.split(",").filter(getNode);
-
-      selectNodes(nodesIds);
-      if (openSearchPanel) {
-        animateFocus(nodesIds);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodesInitialized, router.query]);
+    selectNodes(blockIdsParams);
+    openSearchPanel && animateFocus(blockIdsParams);
+  }, [blockIdsParams]);
 
   return {
     animateFocus,
