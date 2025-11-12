@@ -6,15 +6,15 @@ NC='\033[0m' # No Color
 
 
 run_checks() {
-    local path=$1
+    local path=packages/$1
     local changes=$(git diff --cached --name-only | grep "^${path}/" || true)
     if [ -n "$changes" ]; then
         echo "${BLUE}Running ${path} checks and tests...${NC}"
         cd ./${path} 
-        npm run typecheck
+        pnpm typecheck
         npx lint-staged
-        if [ "$path" = "api" ]; then
-            npm run test:half # Run API specific tests
+        if [ "$path" = "packages/api" ]; then
+            pnpm test:half # Run API specific tests
         fi
         cd - > /dev/null
     else
