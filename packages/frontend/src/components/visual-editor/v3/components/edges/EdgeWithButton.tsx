@@ -90,7 +90,7 @@ export const EdgeWithButton = ({
   return (
     <>
       <BaseEdge path={path} markerEnd={markerEnd} style={style} />
-      {source.includes("-") ? null : (
+      {source.includes("startPoint-") ? null : (
         <EdgeLabelRenderer>
           <div
             data-link-id={id}
