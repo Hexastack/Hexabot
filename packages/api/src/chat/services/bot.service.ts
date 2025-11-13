@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In } from 'typeorm';
@@ -12,7 +13,6 @@ import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { HelperService } from '@/helper/helper.service';
 import { FlowEscape, HelperType } from '@/helper/types';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { getDefaultConversationContext } from '../constants/conversation';

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Handlebars from 'handlebars';
@@ -13,7 +14,6 @@ import { HelperService } from '@/helper/helper.service';
 import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
 import { HelperType, LLM, NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { SettingService } from '@/setting/services/setting.service';

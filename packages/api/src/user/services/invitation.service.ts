@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import {
   Inject,
   Injectable,
@@ -14,7 +15,6 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 

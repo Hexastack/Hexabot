@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { LoggerService } from '@/logger/logger.service';
+import { LoggerService } from '@hexabot/logger';
+
 import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';

@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { In, InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { HelperService } from '@/helper/helper.service';
 import { HelperType, NLU } from '@/helper/types';
-import { LoggerService } from '@/logger/logger.service';
 
 import { NlpEntity, NlpEntityFull } from '../dto/nlp-entity.dto';
 import { NlpValue, NlpValueFull } from '../dto/nlp-value.dto';

@@ -6,9 +6,9 @@
 
 import path from 'path';
 
+import { LoggerService } from '@hexabot/logger';
 import { OnModuleInit } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { HyphenToUnderscore } from '@/utils/types/extension';

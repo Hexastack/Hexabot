@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -26,7 +27,6 @@ import { MessageFull } from '@/chat/dto/message.dto';
 import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { OutgoingMessage, StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { getSessionMiddleware } from '@/utils/constants/session-middleware';
 import { getSessionStore } from '@/utils/constants/session-store';
 

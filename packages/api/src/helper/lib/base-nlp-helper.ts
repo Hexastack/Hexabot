@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { escapeRegExp } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
-import { LoggerService } from '@/logger/logger.service';
 import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpSample, NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';

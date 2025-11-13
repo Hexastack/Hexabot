@@ -6,11 +6,11 @@
 
 import { randomUUID } from 'crypto';
 
+import { LoggerService } from '@hexabot/logger';
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { BlockService } from '@/chat/services/block.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,
   installContentFixturesTypeOrm,

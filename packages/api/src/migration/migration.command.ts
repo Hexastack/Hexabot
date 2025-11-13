@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Command, CommandRunner } from 'nest-commander';
-
-import { LoggerService } from '@/logger/logger.service';
 
 import { MigrationService } from './migration.service';
 import { MigrationAction } from './types';

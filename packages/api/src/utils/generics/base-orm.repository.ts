@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Inject, NotFoundException } from '@nestjs/common';
 import {
   EventEmitter2,
@@ -28,7 +29,6 @@ import {
 } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { LoggerService } from '@/logger/logger.service';
 import { flatten } from '@/utils/helpers/flatten';
 
 import {

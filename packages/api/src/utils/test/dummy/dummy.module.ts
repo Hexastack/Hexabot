@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Module } from '@nestjs/common';
-
-import { LoggerService } from '@/logger/logger.service';
 
 import { DummyRepository } from './repositories/dummy.repository';
 import { DummyService } from './services/dummy.service';

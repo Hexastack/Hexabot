@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 import { In, Like } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 

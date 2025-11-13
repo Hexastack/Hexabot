@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
   Inject,
@@ -18,7 +19,6 @@ import { compareSync } from 'bcryptjs';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 
 import { UserRequestResetDto, UserResetPasswordDto } from '../dto/user.dto';

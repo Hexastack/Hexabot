@@ -9,6 +9,7 @@ import os from 'os';
 import { join, normalize, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
+import { LoggerService } from '@hexabot/logger';
 import {
   Injectable,
   NotFoundException,
@@ -31,7 +32,6 @@ import {
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
 import BaseStorageHelper from '@/helper/lib/base-storage-helper';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { LOCAL_STORAGE_HELPER_NAME } from './settings';

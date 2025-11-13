@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { TestingModule } from '@nestjs/testing';
 
 import { BlockService } from '@/chat/services/block.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
-import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,
   installContentFixturesTypeOrm,

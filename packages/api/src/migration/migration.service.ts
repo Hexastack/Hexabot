@@ -7,6 +7,7 @@
 import fs from 'fs';
 import { join } from 'path';
 
+import { LoggerService } from '@hexabot/logger';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -16,7 +17,6 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { MetadataService } from '@/setting/services/metadata.service';
 
 import { MigrationOrmEntity } from './migration.entity';

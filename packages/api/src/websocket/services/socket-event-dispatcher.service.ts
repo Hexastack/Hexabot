@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import {
   HttpException,
   HttpStatus,
@@ -16,8 +17,6 @@ import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Mutex } from 'async-mutex';
 import { Socket } from 'socket.io';
-
-import { LoggerService } from '@/logger/logger.service';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
 import { SocketRequest } from '../utils/socket-request';

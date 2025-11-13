@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
@@ -14,7 +15,6 @@ import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { BlockService } from '@/chat/services/block.service';
-import { LoggerService } from '@/logger/logger.service';
 import { FieldType } from '@/setting/types';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';

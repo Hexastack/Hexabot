@@ -6,6 +6,7 @@
 
 import path, { join } from 'path';
 
+import { LoggerModule } from '@hexabot/logger';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
@@ -34,7 +35,6 @@ import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
-import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';

@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
+
 import { AnyMessage } from '@/chat/types/message';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';

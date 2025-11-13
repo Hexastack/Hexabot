@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
+
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BlockStub } from '@/chat/dto/block.dto';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';

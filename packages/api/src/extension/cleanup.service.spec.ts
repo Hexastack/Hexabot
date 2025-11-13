@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { TestingModule } from '@nestjs/testing';
 
 import { ChannelService } from '@/channel/channel.service';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { LoggerService } from '@/logger/logger.service';
 import { Setting } from '@/setting/dto/setting.dto';
 import { SettingService } from '@/setting/services/setting.service';
 import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';

@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
-import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 import {
   SocketGet,
