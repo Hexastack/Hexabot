@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnySetting, ExtensionSetting } from '@hexabot/setting/types';
+import { AnySetting, ExtensionSetting } from '@hexabot/setting';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
 

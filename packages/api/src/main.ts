@@ -8,7 +8,7 @@ import 'dotenv/config';
 
 import { config, csrf } from '@hexabot/config';
 import { UuidPipe } from '@hexabot/core/pipes';
-import { SettingService } from '@hexabot/setting/services/setting.service';
+import { SettingService } from '@hexabot/setting';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';

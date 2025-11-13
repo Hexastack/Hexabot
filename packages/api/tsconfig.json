@@ -6,7 +6,6 @@
       "./types"
     ],
     "module": "commonjs",
-    "moduleResolution": "node",
     "allowJs": true,
     "declaration": true,
     "removeComments": true,

@@ -8,7 +8,7 @@ import { join } from 'path';
 
 import { CONFIG_I18N_PATH, ConfigModule, config } from '@hexabot/config';
 import { LoggerModule } from '@hexabot/logger';
-import { SettingModule } from '@hexabot/setting/setting.module';
+import { SettingModule } from '@hexabot/setting';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
