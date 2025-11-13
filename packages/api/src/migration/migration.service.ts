@@ -9,6 +9,7 @@ import { join } from 'path';
 
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
+import { MetadataService } from '@hexabot/setting/services/metadata.service';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -17,7 +18,6 @@ import { kebabCase } from 'lodash';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { MetadataService } from '@/setting/services/metadata.service';
 
 import { MigrationOrmEntity } from './migration.entity';
 import {

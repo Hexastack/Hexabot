@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, EnumColumn } from '@hexabot/core/database';
 import { Column, Entity, Index } from 'typeorm';
-
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 
 export enum BotStatsType {
   outgoing = 'outgoing',

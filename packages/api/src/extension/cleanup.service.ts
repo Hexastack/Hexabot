@@ -6,12 +6,12 @@
 
 import { DeleteResult } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { Injectable } from '@nestjs/common';
 import { In, Like } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { TCriteria, TExtractExtension, TExtractNamespace } from './types';
 

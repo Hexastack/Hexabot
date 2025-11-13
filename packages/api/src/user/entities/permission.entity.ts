@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, EnumColumn } from '@hexabot/core/database';
 import { AsRelation } from '@hexabot/core/decorators';
 import {
   Column,
@@ -14,8 +14,6 @@ import {
   ManyToOne,
   RelationId,
 } from 'typeorm';
-
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';

@@ -5,6 +5,7 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -14,7 +15,6 @@ import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import BaseWebChannelHandler from '../web/base-web-channel';

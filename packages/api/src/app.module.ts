@@ -6,8 +6,9 @@
 
 import { join } from 'path';
 
-import { ConfigModule, CONFIG_I18N_PATH, config } from '@hexabot/config';
+import { CONFIG_I18N_PATH, ConfigModule, config } from '@hexabot/config';
 import { LoggerModule } from '@hexabot/logger';
+import { SettingModule } from '@hexabot/setting';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
@@ -39,7 +40,6 @@ import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';
-import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';

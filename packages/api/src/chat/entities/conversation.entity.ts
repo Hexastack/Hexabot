@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, JsonColumn } from '@hexabot/core/database';
 import { AsRelation } from '@hexabot/core/decorators';
 import {
   Column,
@@ -15,8 +15,6 @@ import {
   ManyToOne,
   RelationId,
 } from 'typeorm';
-
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 
 import { getDefaultConversationContext } from '../constants/conversation';
 import { Context } from '../types/context';

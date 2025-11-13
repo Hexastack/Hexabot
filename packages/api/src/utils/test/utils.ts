@@ -5,6 +5,8 @@
  */
 
 import { LoggerModule, LoggerService } from '@hexabot/logger';
+import { MetadataOrmEntity, SettingModule } from '@hexabot/setting';
+import { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, ModuleMetadata, Provider } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -13,9 +15,6 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
-import { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import { SettingModule } from '@/setting/setting.module';
 
 import { registerTypeOrmDataSource } from './test';
 

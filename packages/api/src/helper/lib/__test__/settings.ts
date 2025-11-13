@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingType } from '@hexabot/setting/types';
+
 import { HelperSetting } from '@/helper/types';
-import { SettingType } from '@/setting/types';
 
 export const TEST_HELPER_NAME = 'test-helper';
 

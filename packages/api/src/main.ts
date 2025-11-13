@@ -8,6 +8,7 @@ import 'dotenv/config';
 
 import { config, csrf } from '@hexabot/config';
 import { UuidPipe } from '@hexabot/core/pipes';
+import { SettingService } from '@hexabot/setting';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -23,7 +24,6 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { seedDatabase } from './seeder';
-import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';

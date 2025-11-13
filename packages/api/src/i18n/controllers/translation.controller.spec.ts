@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { NotFoundException } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
@@ -11,7 +12,6 @@ import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import {

@@ -4,13 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingService } from '@hexabot/setting/services/setting.service';
+import { SettingType } from '@hexabot/setting/types';
+
 import { BlockOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingService } from '@/setting/services/setting.service';
-import { SettingType } from '@/setting/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Block } from '../../chat/dto/block.dto';

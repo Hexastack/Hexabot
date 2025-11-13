@@ -5,14 +5,12 @@
  */
 
 import { config } from '@hexabot/config';
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, EnumColumn, JsonColumn } from '@hexabot/core/database';
 import { Expose } from 'class-transformer';
 import { Column, Entity, Index } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { buildURL } from '@/utils/helpers/URL';
 
 import {

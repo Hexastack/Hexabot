@@ -7,7 +7,7 @@
 import { BaseOrmEntity } from '@hexabot/core/database';
 import { Column, Entity, Index } from 'typeorm';
 
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import { JsonColumn } from '@hexabot/core/database';
 
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })

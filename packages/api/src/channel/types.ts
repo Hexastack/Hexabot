@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnySetting, ExtensionSetting } from '@/setting/types';
+import { AnySetting, ExtensionSetting } from '@hexabot/setting';
+
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 export type ChannelName = `${string}-channel`;

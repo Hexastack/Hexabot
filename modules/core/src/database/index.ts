@@ -11,3 +11,4 @@ export * from './base-orm/base-orm.controller';
 export * from './base-orm/base-orm.service';
 export * from './base-orm/base-orm.repository';
 export * from './base-orm/base-orm.seeder';
+export * from './decorators';

@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MetadataCreateDto } from '@hexabot/setting/dto/metadata.dto';
+import { MetadataOrmEntity } from '@hexabot/setting/entities/metadata.entity';
 import { DataSource } from 'typeorm';
-
-import { MetadataCreateDto } from '@/setting/dto/metadata.dto';
-import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 
 const metadataFixtures: MetadataCreateDto[] = [
   {

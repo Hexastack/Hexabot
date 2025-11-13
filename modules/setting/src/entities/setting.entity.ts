@@ -8,8 +8,8 @@ import { BaseOrmEntity } from '@hexabot/core/database';
 import { BadRequestException } from '@nestjs/common';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
 
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import { EnumColumn } from '@hexabot/core/database';
+import { JsonColumn } from '@hexabot/core/database';
 
 import { SettingType } from '../types';
 
