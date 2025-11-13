@@ -10,7 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { MailerModule } from '@/mailer/mailer.module';
+import { MailerModule } from '@hexabot/mailer';
 
 import { LocalAuthController } from './controllers/auth.controller';
 import { ModelController } from './controllers/model.controller';

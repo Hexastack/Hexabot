@@ -1,0 +1,40 @@
+{
+  "name": "@hexabot/mailer",
+  "private": true,
+  "version": "2.3.0",
+  "description": "Shared NestJS mailer module wrapping SMTP + templating for Hexabot services.",
+  "license": "FCL-1.0-ALv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "pnpm run build"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "peerDependencies": {
+    "@hexabot/config": "workspace:*",
+    "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "nodemailer": "^7.0.9"
+  },
+  "devDependencies": {
+    "@hexabot/config": "workspace:*",
+    "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "nodemailer": "^7.0.9",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.1.3"
+  }
+}

@@ -15,7 +15,7 @@ import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { MailerService } from '@/mailer/mailer.service';
+import { MailerService } from '@hexabot/mailer';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   installInvitationFixturesTypeOrm,

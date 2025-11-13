@@ -36,7 +36,7 @@ import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
-import { MailerModule } from './mailer/mailer.module';
+import { MailerModule } from '@hexabot/mailer';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';

@@ -20,7 +20,7 @@ import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { MailerService } from '@/mailer/mailer.service';
+import { MailerService } from '@hexabot/mailer';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
