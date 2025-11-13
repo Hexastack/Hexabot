@@ -4,11 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import path from 'node:path';
+
 import moduleAlias from 'module-alias';
 import { CommandFactory } from 'nest-commander';
 
 moduleAlias.addAliases({
   '@': __dirname,
+  '@hexabot/chat': path.join(__dirname, 'chat'),
 });
 
 import { HexabotModule } from './app.module';

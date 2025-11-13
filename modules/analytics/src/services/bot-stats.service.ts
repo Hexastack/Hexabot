@@ -15,8 +15,8 @@ import { InsertEvent, UpdateEvent } from 'typeorm';
 import {
   Subscriber,
   Subscriber as SubscriberDto,
-} from '@/chat/dto/subscriber.dto';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+} from '@hexabot/chat/dto/subscriber.dto';
+import { SubscriberOrmEntity } from '@hexabot/chat/entities/subscriber.entity';
 
 import {
   BotStatsActionDto,

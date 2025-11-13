@@ -1,0 +1,72 @@
+{
+  "name": "@hexabot/analytics",
+  "private": true,
+  "version": "2.3.0",
+  "description": "Hexabot analytics domain module (bot statistics entities, DTOs, services).",
+  "license": "FCL-1.0-ALv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "pnpm run build"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2"
+  },
+  "peerDependencies": {
+    "@hexabot/config": "workspace:*",
+    "@hexabot/core": "workspace:*",
+    "@hexabot/logger": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/event-emitter": "^3.0.1",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "typeorm": "^0.3.27"
+  },
+  "devDependencies": {
+    "@hexabot/config": "workspace:*",
+    "@hexabot/core": "workspace:*",
+    "@hexabot/logger": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/event-emitter": "^3.0.1",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/testing": "^11.1.6",
+    "@nestjs/typeorm": "^11.0.0",
+    "@types/jest": "^30.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "jest": "^30.2.0",
+    "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.5",
+    "typeorm": "^0.3.27",
+    "typescript": "^5.1.3"
+  }
+}

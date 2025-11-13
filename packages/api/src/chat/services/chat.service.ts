@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BotStatsType } from '@hexabot/analytics/entities/bot-stats.entity';
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { In, InsertEvent, UpdateEvent } from 'typeorm';
 
-import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';

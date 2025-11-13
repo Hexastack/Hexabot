@@ -6,6 +6,8 @@
 
 import 'dotenv/config';
 
+import path from 'node:path';
+
 import { config, csrf } from '@hexabot/config';
 import { UuidPipe } from '@hexabot/core/pipes';
 import { SettingService } from '@hexabot/setting';
@@ -19,6 +21,7 @@ import passport from 'passport';
 
 moduleAlias.addAliases({
   '@': __dirname,
+  '@hexabot/chat': path.join(__dirname, 'chat'),
 });
 
 import { AppInstance } from './app.instance';

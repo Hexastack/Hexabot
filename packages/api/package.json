@@ -49,6 +49,7 @@
     "*.{js,ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
   "dependencies": {
+    "@hexabot/analytics": "workspace:*",
     "@hexabot/config": "workspace:*",
     "@hexabot/core": "workspace:*",
     "@hexabot/logger": "workspace:*",
@@ -185,7 +186,8 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/$1"
+      "@/(.*)": "<rootDir>/$1",
+      "@hexabot/chat/(.*)": "<rootDir>/chat/$1"
     }
   },
   "engines": {

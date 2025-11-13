@@ -8,7 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { UpdateEvent } from 'typeorm';
 
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { SubscriberOrmEntity } from '@hexabot/chat/entities/subscriber.entity';
 import {
   botstatsFixtures,
   installBotStatsFixturesTypeOrm,

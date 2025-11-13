@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { DataSource } from 'typeorm';
-
-import { BotStatsCreateDto } from '@/analytics/dto/bot-stats.dto';
+import { BotStatsCreateDto } from '@hexabot/analytics/dto/bot-stats.dto';
 import {
   BotStatsOrmEntity,
   BotStatsType,
-} from '@/analytics/entities/bot-stats.entity';
+} from '@hexabot/analytics/entities/bot-stats.entity';
+import { DataSource } from 'typeorm';
 
 export const botstatsFixtures: BotStatsCreateDto[] = [
   {

@@ -4,6 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import type {
+  BotStatsOrmEntity,
+  BotStatsType,
+} from '@hexabot/analytics/entities/bot-stats.entity';
+import type { THydratedDocument } from '@hexabot/core/types';
+import type { Setting } from '@hexabot/setting/dto/setting.dto';
+import type { MetadataOrmEntity } from '@hexabot/setting/entities/metadata.entity';
+import type { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
+import type { DEFAULT_SETTINGS } from '@hexabot/setting/seeds/setting.seed-model';
 import type { HttpException } from '@nestjs/common';
 import type { OnEventType } from '@nestjs/event-emitter';
 import type { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
@@ -19,10 +28,6 @@ import type { Session as ExpressSession } from 'express-session';
 import type { Socket } from 'socket.io';
 import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
-import type {
-  BotStatsOrmEntity,
-  BotStatsType,
-} from '@/analytics/entities/bot-stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import type EventWrapper from '@/channel/lib/EventWrapper';
 import type { BlockFull } from '@/chat/dto/block.dto';
@@ -50,17 +55,12 @@ import type { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import type { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
 import type { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
 import type { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import type { Setting } from '@hexabot/setting/dto/setting.dto';
-import type { MetadataOrmEntity } from '@hexabot/setting/entities/metadata.entity';
-import type { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
-import type { DEFAULT_SETTINGS } from '@hexabot/setting/seeds/setting.seed-model';
 import type { InvitationOrmEntity } from '@/user/entities/invitation.entity';
 import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
-import type { THydratedDocument } from '@hexabot/core/types';
 
 type AnyEventWrapper = EventWrapper<any, any>;
 

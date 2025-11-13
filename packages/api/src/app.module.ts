@@ -6,6 +6,7 @@
 
 import { join } from 'path';
 
+import { AnalyticsModule } from '@hexabot/analytics';
 import { CONFIG_I18N_PATH, ConfigModule, config } from '@hexabot/config';
 import { LoggerModule } from '@hexabot/logger';
 import { SettingModule } from '@hexabot/setting';
@@ -24,7 +25,6 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 
-import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AttachmentModule } from './attachment/attachment.module';
