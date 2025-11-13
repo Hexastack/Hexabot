@@ -27,7 +27,18 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
+      "@hexabot/attachment/*": ["src/attachment/*"],
+      "@hexabot/channel/*": ["src/channel/*"],
       "@hexabot/chat/*": ["src/chat/*"],
+      "@hexabot/cms/*": ["src/cms/*"],
+      "@hexabot/extensions/*": ["src/extensions/*"],
+      "@hexabot/helper/*": ["src/helper/*"],
+      "@hexabot/i18n/*": ["src/i18n/*"],
+      "@hexabot/migration/*": ["src/migration/*"],
+      "@hexabot/nlp/*": ["src/nlp/*"],
+      "@hexabot/plugins/*": ["src/plugins/*"],
+      "@hexabot/user/*": ["src/user/*"],
+      "@hexabot/utils/*": ["src/utils/*"],
       "@/*": ["src/*", "src/.hexabot/*", "src/extra/*"],
       "hexabot/src/*": ["src/*", "src/.hexabot/*"]
     }

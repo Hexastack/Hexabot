@@ -6,11 +6,11 @@
 
 import { DataSource } from 'typeorm';
 
-import { PermissionCreateDto } from '@/user/dto/permission.dto';
-import { ModelOrmEntity as ModelEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity as PermissionEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
-import { Action } from '@/user/types/action.type';
+import { PermissionCreateDto } from '@hexabot/user/dto/permission.dto';
+import { ModelOrmEntity as ModelEntity } from '@hexabot/user/entities/model.entity';
+import { PermissionOrmEntity as PermissionEntity } from '@hexabot/user/entities/permission.entity';
+import { RoleOrmEntity as RoleEntity } from '@hexabot/user/entities/role.entity';
+import { Action } from '@hexabot/user/types/action.type';
 
 import { installModelFixturesTypeOrm, modelOrmFixtures } from './model';
 import { installRoleFixturesTypeOrm, roleOrmFixtures } from './role';

@@ -32,10 +32,10 @@ import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
-import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installContextVarFixturesTypeOrm } from '@hexabot/dev/fixtures/contextvar';
+import { installConversationFixturesTypeOrm } from '@hexabot/dev/fixtures/conversation';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Block } from '../dto/block.dto';

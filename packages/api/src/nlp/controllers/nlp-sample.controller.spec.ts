@@ -11,11 +11,11 @@ import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { Language } from '@/i18n/dto/language.dto';
 import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
-import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
-import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { TFixtures } from '@/utils/test/types';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { nlpSampleFixtures } from '@hexabot/dev/fixtures/nlpsample';
+import { installNlpSampleEntityFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { TFixtures } from '@hexabot/dev/types';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpSampleState } from '..//types';
 import { NlpSampleDto, NlpSampleFull } from '../dto/nlp-sample.dto';

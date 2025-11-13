@@ -6,9 +6,9 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { NlpValueCreateDto } from '@/nlp/dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
+import { NlpValueCreateDto } from '@hexabot/nlp/dto/nlp-value.dto';
+import { NlpEntityOrmEntity } from '@hexabot/nlp/entities/nlp-entity.entity';
+import { NlpValueOrmEntity } from '@hexabot/nlp/entities/nlp-value.entity';
 
 import {
   installNlpEntityFixturesTypeOrm,

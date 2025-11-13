@@ -17,8 +17,8 @@ import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { MigrationOrmEntity } from './migration.entity';
 import { MigrationService } from './migration.service';

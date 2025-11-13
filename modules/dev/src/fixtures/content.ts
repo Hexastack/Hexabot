@@ -6,9 +6,9 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { Content, ContentCreateDto } from '@/cms/dto/content.dto';
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
+import { Content, ContentCreateDto } from '@hexabot/cms/dto/content.dto';
+import { ContentTypeOrmEntity } from '@hexabot/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@hexabot/cms/entities/content.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

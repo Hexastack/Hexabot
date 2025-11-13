@@ -7,7 +7,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { buildTestingMocks } from '@/utils/test/utils';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { HexabotModule } from './../src/app.module';
 

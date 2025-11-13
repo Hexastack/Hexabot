@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { NLU } from '@/helper/types';
+import { NLU } from '@hexabot/helper/types';
 
 export const mockNlpGreetingNameEntities: NLU.ScoredEntities = {
   entities: [

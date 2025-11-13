@@ -6,9 +6,9 @@
 
 import { DataSource } from 'typeorm';
 
-import { Label, LabelCreateDto } from '@/chat/dto/label.dto';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { Label, LabelCreateDto } from '@hexabot/chat/dto/label.dto';
+import { LabelGroupOrmEntity } from '@hexabot/chat/entities/label-group.entity';
+import { LabelOrmEntity } from '@hexabot/chat/entities/label.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

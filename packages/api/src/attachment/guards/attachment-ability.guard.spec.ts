@@ -18,7 +18,7 @@ import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { attachment } from '../mocks/attachment.mock';
 import { AttachmentService } from '../services/attachment.service';

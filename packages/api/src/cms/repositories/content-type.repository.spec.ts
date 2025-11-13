@@ -13,8 +13,8 @@ import { DataSource } from 'typeorm';
 
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { ContentTypeRepository } from './content-type.repository';
 import { ContentRepository } from './content.repository';

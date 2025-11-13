@@ -9,9 +9,9 @@ import { TestingModule } from '@nestjs/testing';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installNlpSampleEntityFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';

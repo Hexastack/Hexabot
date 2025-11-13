@@ -8,7 +8,7 @@ import { INestApplication } from '@nestjs/common';
 import { Session } from 'express-session';
 import { Socket, io } from 'socket.io-client';
 
-import { buildTestingMocks } from '@/utils/test/utils';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';

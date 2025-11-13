@@ -24,6 +24,12 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
+      "@hexabot/dev": [
+        "./src"
+      ],
+      "@hexabot/dev/*": [
+        "./src/*"
+      ],
       "@hexabot/attachment/*": [
         "../../packages/api/src/attachment/*"
       ],

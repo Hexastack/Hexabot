@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { Message, MessageCreateDto } from '@/chat/dto/message.dto';
-import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { Message, MessageCreateDto } from '@hexabot/chat/dto/message.dto';
+import { MessageOrmEntity } from '@hexabot/chat/entities/message.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder, TFixturesDefaultValues } from '../types';

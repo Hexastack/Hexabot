@@ -5,5 +5,10 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@/(.*)": "<rootDir>/../src/$1",
+    "@hexabot/chat/(.*)": "<rootDir>/../src/chat/$1",
+    "@hexabot/(attachment|channel|cms|extensions|helper|i18n|migration|nlp|plugins|user|utils)/(.*)": "<rootDir>/../src/$1/$2"
   }
 }

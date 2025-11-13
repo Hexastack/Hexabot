@@ -6,11 +6,11 @@
 
 import { DataSource } from 'typeorm';
 
-import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { ConversationCreateDto } from '@hexabot/chat/dto/conversation.dto';
+import { Subscriber } from '@hexabot/chat/dto/subscriber.dto';
+import { BlockOrmEntity } from '@hexabot/chat/entities/block.entity';
+import { ConversationOrmEntity } from '@hexabot/chat/entities/conversation.entity';
+import { SubscriberOrmEntity } from '@hexabot/chat/entities/subscriber.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { getLastTypeOrmDataSource } from '../test';

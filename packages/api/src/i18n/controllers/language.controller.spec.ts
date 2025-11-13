@@ -11,9 +11,9 @@ import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installLanguageFixturesTypeOrm,
   languageFixtures,
-} from '@/utils/test/fixtures/language';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/language';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Language, LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';

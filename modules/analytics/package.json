@@ -52,6 +52,7 @@
   "devDependencies": {
     "@hexabot/config": "workspace:*",
     "@hexabot/core": "workspace:*",
+    "@hexabot/dev": "workspace:*",
     "@hexabot/logger": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/event-emitter": "^3.0.1",

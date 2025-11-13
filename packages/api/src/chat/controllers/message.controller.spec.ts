@@ -25,9 +25,9 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installMessageFixturesTypeOrm,
   messageFixtures,
-} from '@/utils/test/fixtures/message';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/message';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Message, MessageFull } from '../dto/message.dto';

@@ -21,9 +21,9 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contentTypeOrmFixtures,
   installContentTypeFixturesTypeOrm,
-} from '@/utils/test/fixtures/contenttype';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { ContentField } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';

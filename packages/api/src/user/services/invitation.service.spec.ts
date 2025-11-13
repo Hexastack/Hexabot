@@ -16,15 +16,15 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
 import {
   installInvitationFixturesTypeOrm,
   invitationsFixtures,
-} from '@/utils/test/fixtures/invitation';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
-import { roleFixtureIds } from '@/utils/test/fixtures/role';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/invitation';
+import { installLanguageFixturesTypeOrm } from '@hexabot/dev/fixtures/language';
+import { roleFixtureIds } from '@hexabot/dev/fixtures/role';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { InvitationOrmEntity } from '../entities/invitation.entity';

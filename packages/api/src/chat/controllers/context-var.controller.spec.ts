@@ -25,9 +25,9 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contextVarFixtures,
   installContextVarFixturesTypeOrm,
-} from '@/utils/test/fixtures/contextvar';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/contextvar';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import {
   ContextVar,

@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { ModelCreateDto } from '@/user/dto/model.dto';
-import { ModelOrmEntity as ModelEntity } from '@/user/entities/model.entity';
+import { ModelCreateDto } from '@hexabot/user/dto/model.dto';
+import { ModelOrmEntity as ModelEntity } from '@hexabot/user/entities/model.entity';
 
 type ModelOrmFixture = ModelCreateDto & { id: string };
 

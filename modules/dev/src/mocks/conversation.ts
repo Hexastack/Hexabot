@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Block, BlockStub } from '@/chat/dto/block.dto';
-import { ConversationFull } from '@/chat/dto/conversation.dto';
-import { Context } from '@/chat/types/context';
-import { SubscriberContext } from '@/chat/types/subscriberContext';
+import { Block, BlockStub } from '@hexabot/chat/dto/block.dto';
+import { ConversationFull } from '@hexabot/chat/dto/conversation.dto';
+import { Context } from '@hexabot/chat/types/context';
+import { SubscriberContext } from '@hexabot/chat/types/subscriberContext';
 
 import { quickRepliesBlock, textBlock } from './block';
 import { modelInstance } from './misc';

@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { DummyCreateDto } from '@/utils/test/dummy/dto/dummy.dto';
-import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
+import { DummyCreateDto } from '@hexabot/dev/dummy/dto/dummy.dto';
+import { DummyOrmEntity } from '@hexabot/dev/dummy/entities/dummy.entity';
 
 export const dummyFixtures: DummyCreateDto[] = [
   {

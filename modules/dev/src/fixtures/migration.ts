@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { MigrationOrmEntity } from '@/migration/migration.entity';
-import { MigrationAction } from '@/migration/types';
+import { MigrationOrmEntity } from '@hexabot/migration/migration.entity';
+import { MigrationAction } from '@hexabot/migration/types';
 
 const migrationFixtures: Array<Partial<MigrationOrmEntity>> = [
   {

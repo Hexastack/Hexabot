@@ -10,9 +10,9 @@ import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.en
 import {
   installNlpSampleEntityFixturesTypeOrm,
   nlpSampleEntityFixtures,
-} from '@/utils/test/fixtures/nlpsampleentity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
 import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';

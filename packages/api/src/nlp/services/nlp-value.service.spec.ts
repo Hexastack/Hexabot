@@ -8,9 +8,9 @@ import { randomUUID } from 'crypto';
 
 import { FindManyOptions } from 'typeorm';
 
-import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installNlpSampleEntityFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpEntity } from '../dto/nlp-entity.dto';

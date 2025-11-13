@@ -7,8 +7,8 @@
 import { FieldType } from '@hexabot/setting/types';
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { ContentType, ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentType, ContentTypeCreateDto } from '@hexabot/cms/dto/contentType.dto';
+import { ContentTypeOrmEntity } from '@hexabot/cms/entities/content-type.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

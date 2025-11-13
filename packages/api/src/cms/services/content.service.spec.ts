@@ -13,10 +13,10 @@ import { ContentOptions } from '@/chat/types/options';
 import {
   contentFixtures,
   installContentFixturesTypeOrm,
-} from '@/utils/test/fixtures/content';
-import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/contenttype';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/content';
+import { installContentTypeFixturesTypeOrm } from '@hexabot/dev/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentOrmEntity } from '../entities/content.entity';

@@ -6,10 +6,10 @@
 
 import { DataSource } from 'typeorm';
 
-import { User, UserCreateDto } from '@/user/dto/user.dto';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
-import { hash } from '@/user/utilities/bcryptjs';
+import { User, UserCreateDto } from '@hexabot/user/dto/user.dto';
+import { RoleOrmEntity } from '@hexabot/user/entities/role.entity';
+import { UserOrmEntity } from '@hexabot/user/entities/user.entity';
+import { hash } from '@hexabot/user/utilities/bcryptjs';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';

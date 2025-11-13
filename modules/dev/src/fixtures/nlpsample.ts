@@ -6,10 +6,10 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { NlpSample, NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
-import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import { NlpSampleState } from '@/nlp/types';
+import { LanguageOrmEntity } from '@hexabot/i18n/entities/language.entity';
+import { NlpSample, NlpSampleCreateDto } from '@hexabot/nlp/dto/nlp-sample.dto';
+import { NlpSampleOrmEntity } from '@hexabot/nlp/entities/nlp-sample.entity';
+import { NlpSampleState } from '@hexabot/nlp/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

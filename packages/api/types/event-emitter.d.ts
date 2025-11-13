@@ -60,7 +60,7 @@ import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
-import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
+import type { DummyOrmEntity } from '@hexabot/dev/dummy/entities/dummy.entity';
 
 type AnyEventWrapper = EventWrapper<any, any>;
 

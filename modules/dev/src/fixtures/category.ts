@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { Category, CategoryCreateDto } from '@/chat/dto/category.dto';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
+import { Category, CategoryCreateDto } from '@hexabot/chat/dto/category.dto';
+import { CategoryOrmEntity } from '@hexabot/chat/entities/category.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

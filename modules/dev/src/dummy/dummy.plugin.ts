@@ -10,10 +10,10 @@ import { Injectable } from '@nestjs/common';
 import {
   OutgoingMessageFormat,
   StdOutgoingTextEnvelope,
-} from '@/chat/types/message';
-import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
-import { PluginService } from '@/plugins/plugins.service';
-import { PluginBlockTemplate, PluginSetting } from '@/plugins/types';
+} from '@hexabot/chat/types/message';
+import { BaseBlockPlugin } from '@hexabot/plugins/base-block-plugin';
+import { PluginService } from '@hexabot/plugins/plugins.service';
+import { PluginBlockTemplate, PluginSetting } from '@hexabot/plugins/types';
 
 @Injectable()
 export class DummyPlugin extends BaseBlockPlugin<PluginSetting[]> {

@@ -14,7 +14,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity } from '@hexabot/i18n/entities/language.entity';
 
 import { registerTypeOrmDataSource } from './test';
 

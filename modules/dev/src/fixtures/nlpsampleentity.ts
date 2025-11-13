@@ -6,11 +6,11 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { NlpSampleEntityCreateDto } from '@/nlp/dto/nlp-sample-entity.dto';
-import type { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
-import type { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import type { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
+import { NlpSampleEntityCreateDto } from '@hexabot/nlp/dto/nlp-sample-entity.dto';
+import type { NlpEntityOrmEntity } from '@hexabot/nlp/entities/nlp-entity.entity';
+import { NlpSampleEntityOrmEntity } from '@hexabot/nlp/entities/nlp-sample-entity.entity';
+import type { NlpSampleOrmEntity } from '@hexabot/nlp/entities/nlp-sample.entity';
+import type { NlpValueOrmEntity } from '@hexabot/nlp/entities/nlp-value.entity';
 
 import { installNlpEntityFixturesTypeOrm } from './nlpentity';
 import { installNlpSampleFixturesTypeOrm } from './nlpsample';

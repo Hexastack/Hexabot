@@ -21,14 +21,14 @@ import { HelperService } from '@/helper/helper.service';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
 import {
   attachmentFixtures,
   installAttachmentFixturesTypeOrm,
-} from '@/utils/test/fixtures/attachment';
-import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/attachment';
+import { installSettingFixturesTypeOrm } from '@hexabot/dev/fixtures/setting';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Attachment } from '../dto/attachment.dto';
 import { attachment, attachmentFile } from '../mocks/attachment.mock';

@@ -6,12 +6,12 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { Block, BlockCreateDto } from '@/chat/dto/block.dto';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { FileType } from '@/chat/types/attachment';
-import { ButtonType } from '@/chat/types/button';
-import { QuickReplyType } from '@/chat/types/quick-reply';
+import { Block, BlockCreateDto } from '@hexabot/chat/dto/block.dto';
+import { BlockOrmEntity } from '@hexabot/chat/entities/block.entity';
+import { CategoryOrmEntity } from '@hexabot/chat/entities/category.entity';
+import { FileType } from '@hexabot/chat/types/attachment';
+import { ButtonType } from '@hexabot/chat/types/button';
+import { QuickReplyType } from '@hexabot/chat/types/quick-reply';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

@@ -13,13 +13,13 @@ import { ConversationRepository } from '@/chat/repositories/conversation.reposit
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
+import { installLanguageFixturesTypeOrm } from '@hexabot/dev/fixtures/language';
 import {
   installTranslationFixturesTypeOrm,
   translationFixtures,
-} from '@/utils/test/fixtures/translation';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/translation';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';

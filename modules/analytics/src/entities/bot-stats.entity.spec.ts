@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { botstatsFixtures } from '@/utils/test/fixtures/botstats';
+import { botstatsFixtures } from '@hexabot/dev/fixtures/botstats';
 
 import { BotStatsOrmEntity, BotStatsType } from './bot-stats.entity';
 

@@ -10,9 +10,9 @@ import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   installInvitationFixturesTypeOrm,
   invitationsFixtures,
-} from '@/utils/test/fixtures/invitation';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/invitation';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { ModelOrmEntity } from '../entities/model.entity';

@@ -8,9 +8,9 @@ import { randomUUID } from 'crypto';
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
-import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installNlpValueFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpvalue';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpEntity, NlpEntityFull } from '../dto/nlp-entity.dto';
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';

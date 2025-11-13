@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { ContextVar, ContextVarCreateDto } from '@/chat/dto/context-var.dto';
-import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
+import { ContextVar, ContextVarCreateDto } from '@hexabot/chat/dto/context-var.dto';
+import { ContextVarOrmEntity } from '@hexabot/chat/entities/context-var.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

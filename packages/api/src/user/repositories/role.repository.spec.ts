@@ -10,11 +10,11 @@ import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   installPermissionFixturesTypeOrm,
   permissionOrmFixtures,
-} from '@/utils/test/fixtures/permission';
-import { roleFixtureIds } from '@/utils/test/fixtures/role';
-import { userFixtureIds } from '@/utils/test/fixtures/user';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/permission';
+import { roleFixtureIds } from '@hexabot/dev/fixtures/role';
+import { userFixtureIds } from '@hexabot/dev/fixtures/user';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Role } from '../dto/role.dto';
 import { ModelOrmEntity } from '../entities/model.entity';

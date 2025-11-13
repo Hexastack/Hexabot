@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { LanguageCreateDto } from '@/i18n/dto/language.dto';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { LanguageCreateDto } from '@hexabot/i18n/dto/language.dto';
+import { LanguageOrmEntity } from '@hexabot/i18n/entities/language.entity';
 
 export const languageFixtures: LanguageCreateDto[] = [
   {

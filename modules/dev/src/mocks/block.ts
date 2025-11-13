@@ -7,16 +7,16 @@
 import {
   customerLabelsMock,
   labelMock,
-} from '@/channel/lib/__test__/label.mock';
-import { BlockFull } from '@/chat/dto/block.dto';
-import { FileType } from '@/chat/types/attachment';
-import { ButtonType, PayloadType } from '@/chat/types/button';
-import { CaptureVar } from '@/chat/types/capture-var';
-import { OutgoingMessageFormat } from '@/chat/types/message';
-import { BlockOptions, ContentOptions } from '@/chat/types/options';
-import { NlpPattern, Pattern } from '@/chat/types/pattern';
-import { QuickReplyType } from '@/chat/types/quick-reply';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
+} from '@hexabot/channel/lib/__test__/label.mock';
+import { BlockFull } from '@hexabot/chat/dto/block.dto';
+import { FileType } from '@hexabot/chat/types/attachment';
+import { ButtonType, PayloadType } from '@hexabot/chat/types/button';
+import { CaptureVar } from '@hexabot/chat/types/capture-var';
+import { OutgoingMessageFormat } from '@hexabot/chat/types/message';
+import { BlockOptions, ContentOptions } from '@hexabot/chat/types/options';
+import { NlpPattern, Pattern } from '@hexabot/chat/types/pattern';
+import { QuickReplyType } from '@hexabot/chat/types/quick-reply';
+import { WEB_CHANNEL_NAME } from '@hexabot/extensions/channels/web/settings';
 
 import { modelInstance } from './misc';
 

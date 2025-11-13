@@ -8,9 +8,9 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installPermissionFixturesTypeOrm } from '@hexabot/dev/fixtures/permission';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Model } from '../dto/model.dto';
 import {

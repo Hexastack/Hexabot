@@ -6,9 +6,9 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { MenuCreateDto } from '@/cms/dto/menu.dto';
-import { MenuOrmEntity } from '@/cms/entities/menu.entity';
-import { MenuType } from '@/cms/types/menu';
+import { MenuCreateDto } from '@hexabot/cms/dto/menu.dto';
+import { MenuOrmEntity } from '@hexabot/cms/entities/menu.entity';
+import { MenuType } from '@hexabot/cms/types/menu';
 
 export const websiteMenuFixture: MenuCreateDto = {
   type: MenuType.web_url,

@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { customerLabelsMock } from '@/channel/lib/__test__/label.mock';
-import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
+import { customerLabelsMock } from '@hexabot/channel/lib/__test__/label.mock';
+import { Subscriber, SubscriberFull } from '@hexabot/chat/dto/subscriber.dto';
 
 import { modelInstance } from './misc';
 

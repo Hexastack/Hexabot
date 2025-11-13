@@ -29,9 +29,9 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   blockFixtures,
   installBlockFixturesTypeOrm,
-} from '@/utils/test/fixtures/block';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/block';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { BlockCreateDto, BlockFull } from '../dto/block.dto';
 

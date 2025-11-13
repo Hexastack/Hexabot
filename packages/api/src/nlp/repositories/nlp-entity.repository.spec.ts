@@ -11,10 +11,10 @@ import { In } from 'typeorm';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
+import { installNlpValueFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpvalue';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpEntity } from '../dto/nlp-entity.dto';
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';

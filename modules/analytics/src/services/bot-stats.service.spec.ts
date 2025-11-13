@@ -12,9 +12,9 @@ import { SubscriberOrmEntity } from '@hexabot/chat/entities/subscriber.entity';
 import {
   botstatsFixtures,
   installBotStatsFixturesTypeOrm,
-} from '@/utils/test/fixtures/botstats';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/botstats';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';

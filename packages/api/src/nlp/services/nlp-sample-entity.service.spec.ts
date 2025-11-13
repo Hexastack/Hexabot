@@ -6,16 +6,16 @@
 
 import { Language } from '@/i18n/dto/language.dto';
 import { LanguageService } from '@/i18n/services/language.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
+import { nlpSampleFixtures } from '@hexabot/dev/fixtures/nlpsample';
 import {
   installNlpSampleEntityFixturesTypeOrm,
   nlpSampleEntityFixtures,
-} from '@/utils/test/fixtures/nlpsampleentity';
-import { nlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { TFixtures } from '@/utils/test/types';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/nlpsampleentity';
+import { nlpValueFixtures } from '@hexabot/dev/fixtures/nlpvalue';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { TFixtures } from '@hexabot/dev/types';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { NlpEntity } from '../dto/nlp-entity.dto';
 import {

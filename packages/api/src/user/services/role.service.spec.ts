@@ -7,10 +7,10 @@
 import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installPermissionFixturesTypeOrm } from '@hexabot/dev/fixtures/permission';
+import { roleFixtureIds, roleOrmFixtures } from '@hexabot/dev/fixtures/role';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Permission } from '../dto/permission.dto';
 import { Role } from '../dto/role.dto';

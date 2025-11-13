@@ -34,12 +34,12 @@ import { UserService } from '@/user/services/user.service';
 import {
   blockFixtures,
   installBlockFixturesTypeOrm,
-} from '@/utils/test/fixtures/block';
-import { installCategoryFixturesTypeOrm } from '@/utils/test/fixtures/category';
-import { installLabelFixturesTypeOrm } from '@/utils/test/fixtures/label';
-import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/block';
+import { installCategoryFixturesTypeOrm } from '@hexabot/dev/fixtures/category';
+import { installLabelFixturesTypeOrm } from '@hexabot/dev/fixtures/label';
+import { installNlpSampleEntityFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpsampleentity';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import {

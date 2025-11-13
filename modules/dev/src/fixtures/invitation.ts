@@ -6,10 +6,10 @@
 
 import { DataSource } from 'typeorm';
 
-import { Invitation } from '@/user/dto/invitation.dto';
-import { InvitationOrmEntity as InvitationEntity } from '@/user/entities/invitation.entity';
-import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
-import { hash } from '@/user/utilities/hash';
+import { Invitation } from '@hexabot/user/dto/invitation.dto';
+import { InvitationOrmEntity as InvitationEntity } from '@hexabot/user/entities/invitation.entity';
+import { RoleOrmEntity as RoleEntity } from '@hexabot/user/entities/role.entity';
+import { hash } from '@hexabot/user/utilities/hash';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixtures } from '../types';

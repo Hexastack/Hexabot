@@ -24,9 +24,9 @@ import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installSubscriberFixturesTypeOrm } from '@hexabot/dev/fixtures/subscriber';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';

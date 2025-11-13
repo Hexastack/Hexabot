@@ -10,9 +10,9 @@ import { FindManyOptions, In } from 'typeorm';
 import {
   installNlpValueFixturesTypeOrm,
   nlpValueFixtures,
-} from '@/utils/test/fixtures/nlpvalue';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/nlpvalue';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValue } from '../dto/nlp-value.dto';

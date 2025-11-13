@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { TranslationUpdateDto } from '@/i18n/dto/translation.dto';
-import { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
+import { TranslationUpdateDto } from '@hexabot/i18n/dto/translation.dto';
+import { TranslationOrmEntity } from '@hexabot/i18n/entities/translation.entity';
 
 export const translationFixtures: TranslationUpdateDto[] = [
   {

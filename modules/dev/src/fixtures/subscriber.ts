@@ -6,10 +6,10 @@
 
 import { DataSource } from 'typeorm';
 
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
+import { Subscriber, SubscriberCreateDto } from '@hexabot/chat/dto/subscriber.dto';
+import { LabelOrmEntity } from '@hexabot/chat/entities/label.entity';
+import { SubscriberOrmEntity } from '@hexabot/chat/entities/subscriber.entity';
+import { UserOrmEntity } from '@hexabot/user/entities/user.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

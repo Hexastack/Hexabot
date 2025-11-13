@@ -31,22 +31,22 @@ import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { installBlockFixturesTypeOrm } from '@/utils/test/fixtures/block';
-import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
-import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
-import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
-import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
-import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
-import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
+import { installBlockFixturesTypeOrm } from '@hexabot/dev/fixtures/block';
+import { installContentFixturesTypeOrm } from '@hexabot/dev/fixtures/content';
+import { installContextVarFixturesTypeOrm } from '@hexabot/dev/fixtures/contextvar';
+import { installConversationFixturesTypeOrm } from '@hexabot/dev/fixtures/conversation';
+import { installNlpSampleEntityFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpsampleentity';
+import { installSettingFixturesTypeOrm } from '@hexabot/dev/fixtures/setting';
+import { installSubscriberFixturesTypeOrm } from '@hexabot/dev/fixtures/subscriber';
 import {
   buttonsBlock,
   mockWebChannelData,
   quickRepliesBlock,
   textBlock,
-} from '@/utils/test/mocks/block';
-import { conversationGetStarted } from '@/utils/test/mocks/conversation';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/mocks/block';
+import { conversationGetStarted } from '@hexabot/dev/mocks/conversation';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { BlockFull } from '../dto/block.dto';
 import { Conversation, ConversationFull } from '../dto/conversation.dto';

@@ -12,9 +12,9 @@ import { TestingModule } from '@nestjs/testing';
 import { ChannelService } from '@/channel/channel.service';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installSettingFixturesTypeOrm } from '@hexabot/dev/fixtures/setting';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { CleanupService } from './cleanup.service';
 import { TNamespace } from './types';

@@ -27,6 +27,67 @@ importers:
         specifier: ^2.2.3
         version: 2.5.8
 
+  modules/analytics:
+    dependencies:
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.2
+        version: 0.14.2
+    devDependencies:
+      '@hexabot/config':
+        specifier: workspace:*
+        version: link:../config
+      '@hexabot/core':
+        specifier: workspace:*
+        version: link:../core
+      '@hexabot/dev':
+        specifier: workspace:*
+        version: link:../dev
+      '@hexabot/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@nestjs/common':
+        specifier: ^11.1.6
+        version: 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/event-emitter':
+        specifier: ^3.0.1
+        version: 3.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
+      '@nestjs/mapped-types':
+        specifier: ^2.1.0
+        version: 2.1.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+      '@nestjs/swagger':
+        specifier: ^11.2.0
+        version: 11.2.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+      '@nestjs/testing':
+        specifier: ^11.1.6
+        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(@nestjs/platform-express@11.1.6)
+      '@nestjs/typeorm':
+        specifier: ^11.0.0
+        version: 11.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.27(babel-plugin-macros@3.1.0)(mongodb@6.20.0(socks@2.8.7))(pg@8.16.3)(redis@5.8.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3)))
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      jest:
+        specifier: ^30.2.0
+        version: 30.2.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3))
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.5(@babel/core@7.28.4)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.4))(jest-util@30.2.0)(jest@30.2.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3)))(typescript@5.9.3)
+      typeorm:
+        specifier: ^0.3.27
+        version: 0.3.27(babel-plugin-macros@3.1.0)(mongodb@6.20.0(socks@2.8.7))(pg@8.16.3)(redis@5.8.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3))
+      typescript:
+        specifier: ^5.1.3
+        version: 5.9.3
+
   modules/config:
     dependencies:
       csrf-sync:
@@ -116,6 +177,64 @@ importers:
         specifier: ^5.1.3
         version: 5.9.3
 
+  modules/dev:
+    dependencies:
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.2
+        version: 0.14.2
+    devDependencies:
+      '@hexabot/analytics':
+        specifier: workspace:*
+        version: link:../analytics
+      '@hexabot/core':
+        specifier: workspace:*
+        version: link:../core
+      '@hexabot/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@hexabot/setting':
+        specifier: workspace:*
+        version: link:../setting
+      '@nestjs/cache-manager':
+        specifier: ^3.0.1
+        version: 3.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(cache-manager@7.2.4)(keyv@5.5.3)(rxjs@7.8.2)
+      '@nestjs/common':
+        specifier: ^11.1.6
+        version: 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/event-emitter':
+        specifier: ^3.0.1
+        version: 3.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
+      '@nestjs/testing':
+        specifier: ^11.1.6
+        version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(@nestjs/platform-express@11.1.6)
+      '@nestjs/typeorm':
+        specifier: ^11.0.0
+        version: 11.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.27(babel-plugin-macros@3.1.0)(mongodb@6.20.0(socks@2.8.7))(pg@8.16.3)(redis@5.8.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3)))
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      jest:
+        specifier: ^30.2.0
+        version: 30.2.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3))
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.5(@babel/core@7.28.4)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.4))(jest-util@30.2.0)(jest@30.2.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3)))(typescript@5.9.3)
+      typeorm:
+        specifier: ^0.3.27
+        version: 0.3.27(babel-plugin-macros@3.1.0)(mongodb@6.20.0(socks@2.8.7))(pg@8.16.3)(redis@5.8.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.12.12)(typescript@5.9.3))
+      typescript:
+        specifier: ^5.1.3
+        version: 5.9.3
+
   modules/logger:
     devDependencies:
       '@nestjs/common':
@@ -149,6 +268,9 @@ importers:
       '@hexabot/core':
         specifier: workspace:*
         version: link:../core
+      '@hexabot/dev':
+        specifier: workspace:*
+        version: link:../dev
       '@nestjs/cache-manager':
         specifier: ^3.0.1
         version: 3.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(cache-manager@7.2.4)(keyv@5.5.3)(rxjs@7.8.2)
@@ -188,6 +310,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@hexabot/analytics':
+        specifier: workspace:*
+        version: link:../../modules/analytics
       '@hexabot/config':
         specifier: workspace:*
         version: link:../../modules/config
@@ -373,6 +498,9 @@ importers:
       '@compodoc/compodoc':
         specifier: ^1.1.31
         version: 1.1.31(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)(keycharm@0.4.0)(typescript@5.9.3)(vis-data@8.0.3(uuid@9.0.1)(vis-util@6.0.0(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)))(vis-util@6.0.0(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1))
+      '@hexabot/dev':
+        specifier: workspace:*
+        version: link:../../modules/dev
       '@nestjs/cli':
         specifier: ^11.0.10
         version: 11.0.10(@types/node@20.12.12)

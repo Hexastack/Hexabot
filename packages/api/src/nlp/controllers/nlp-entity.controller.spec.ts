@@ -12,15 +12,15 @@ import {
 } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
+import { nlpEntityFixtures } from '@hexabot/dev/fixtures/nlpentity';
 import {
   installNlpValueFixturesTypeOrm,
   nlpValueFixtures,
-} from '@/utils/test/fixtures/nlpvalue';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { TFixtures } from '@/utils/test/types';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/nlpvalue';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { TFixtures } from '@hexabot/dev/types';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import {
   NlpEntity,

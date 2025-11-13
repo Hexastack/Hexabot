@@ -38,9 +38,9 @@ import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import {
   blockFixtures,
   installBlockFixturesTypeOrm,
-} from '@/utils/test/fixtures/block';
-import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
-import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
+} from '@hexabot/dev/fixtures/block';
+import { installContentFixturesTypeOrm } from '@hexabot/dev/fixtures/content';
+import { installNlpValueFixturesTypeOrm } from '@hexabot/dev/fixtures/nlpvalue';
 import {
   blockEmpty,
   blockGetStarted,
@@ -53,18 +53,18 @@ import {
   mockNlpGreetingPatterns,
   mockNlpGreetingWrongNamePatterns,
   mockWebChannelData,
-} from '@/utils/test/mocks/block';
+} from '@hexabot/dev/mocks/block';
 import {
   contextBlankInstance,
   subscriberContextBlankInstance,
-} from '@/utils/test/mocks/conversation';
+} from '@hexabot/dev/mocks/conversation';
 import {
   mockNlpFirstNameEntities,
   mockNlpGreetingFullNameEntities,
   mockNlpGreetingNameEntities,
-} from '@/utils/test/mocks/nlp';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/mocks/nlp';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Block, BlockFull } from '../dto/block.dto';
 import { Category } from '../dto/category.dto';

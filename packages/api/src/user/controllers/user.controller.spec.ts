@@ -19,11 +19,11 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
+import { installLanguageFixturesTypeOrm } from '@hexabot/dev/fixtures/language';
+import { installPermissionFixturesTypeOrm } from '@hexabot/dev/fixtures/permission';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { Role } from '../dto/role.dto';

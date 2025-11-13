@@ -9,10 +9,10 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installPermissionFixturesTypeOrm } from '@hexabot/dev/fixtures/permission';
+import { roleFixtureIds, roleOrmFixtures } from '@hexabot/dev/fixtures/role';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Role, RoleCreateDto, RoleFull, RoleUpdateDto } from '../dto/role.dto';
 import { ModelOrmEntity } from '../entities/model.entity';

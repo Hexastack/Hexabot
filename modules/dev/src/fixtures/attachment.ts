@@ -6,13 +6,13 @@
 
 import { DataSource } from 'typeorm';
 
-import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentCreateDto } from '@hexabot/attachment/dto/attachment.dto';
+import { AttachmentOrmEntity } from '@hexabot/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
-} from '@/attachment/types';
+} from '@hexabot/attachment/types';
 
 export const attachmentFixtures: AttachmentCreateDto[] = [
   {

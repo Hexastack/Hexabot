@@ -110,6 +110,7 @@
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.31",
+    "@hexabot/dev": "workspace:*",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.6",
@@ -187,7 +188,8 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "@/(.*)": "<rootDir>/$1",
-      "@hexabot/chat/(.*)": "<rootDir>/chat/$1"
+      "@hexabot/chat/(.*)": "<rootDir>/chat/$1",
+      "@hexabot/(attachment|channel|cms|extensions|helper|i18n|migration|nlp|plugins|user|utils)/(.*)": "<rootDir>/$1/$2"
     }
   },
   "engines": {

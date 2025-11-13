@@ -25,9 +25,9 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installSubscriberFixturesTypeOrm,
   subscriberFixtures,
-} from '@/utils/test/fixtures/subscriber';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/subscriber';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber, SubscriberFull } from '../dto/subscriber.dto';

@@ -23,9 +23,9 @@ import {
   groupedLabelFixtures,
   installLabelGroupFixturesTypeOrm,
   labelGroupFixtures,
-} from '@/utils/test/fixtures/label-group';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/label-group';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { LabelGroupRepository } from './label-group.repository';
 import { LabelRepository } from './label.repository';

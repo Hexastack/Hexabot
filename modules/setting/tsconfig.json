@@ -21,7 +21,49 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@hexabot/attachment/*": [
+        "../../packages/api/src/attachment/*"
+      ],
+      "@hexabot/channel/*": [
+        "../../packages/api/src/channel/*"
+      ],
+      "@hexabot/chat/*": [
+        "../../packages/api/src/chat/*"
+      ],
+      "@hexabot/cms/*": [
+        "../../packages/api/src/cms/*"
+      ],
+      "@hexabot/extensions/*": [
+        "../../packages/api/src/extensions/*"
+      ],
+      "@hexabot/helper/*": [
+        "../../packages/api/src/helper/*"
+      ],
+      "@hexabot/i18n/*": [
+        "../../packages/api/src/i18n/*"
+      ],
+      "@hexabot/migration/*": [
+        "../../packages/api/src/migration/*"
+      ],
+      "@hexabot/nlp/*": [
+        "../../packages/api/src/nlp/*"
+      ],
+      "@hexabot/plugins/*": [
+        "../../packages/api/src/plugins/*"
+      ],
+      "@hexabot/user/*": [
+        "../../packages/api/src/user/*"
+      ],
+      "@hexabot/utils/*": [
+        "../../packages/api/src/utils/*"
+      ],
+      "@/*": [
+        "../../packages/api/src/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",

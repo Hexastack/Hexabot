@@ -9,9 +9,9 @@ import { TestingModule } from '@nestjs/testing';
 import {
   installMenuFixturesTypeOrm,
   rootMenuFixtures,
-} from '@/utils/test/fixtures/menu';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/menu';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 

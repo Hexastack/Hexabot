@@ -9,7 +9,7 @@ import { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
 import { SettingType } from '@hexabot/setting/types';
 import { DataSource } from 'typeorm';
 
-import { getRandom } from '@/utils/helpers/safeRandom';
+import { getRandom } from '@hexabot/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [
   {

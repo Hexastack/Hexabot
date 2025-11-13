@@ -6,8 +6,8 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { NlpEntityCreateDto } from '@/nlp/dto/nlp-entity.dto';
-import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
+import { NlpEntityCreateDto } from '@hexabot/nlp/dto/nlp-entity.dto';
+import { NlpEntityOrmEntity } from '@hexabot/nlp/entities/nlp-entity.entity';
 
 export const nlpEntityFixtures: NlpEntityCreateDto[] = [
   {

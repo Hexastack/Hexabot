@@ -6,7 +6,7 @@
 
 import { diff } from 'jest-diff';
 
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
 
 function recursivelyOmitKeys(obj: any, keysToIgnore: string[]): any {
   if (typeof obj !== 'object' || obj === null) {

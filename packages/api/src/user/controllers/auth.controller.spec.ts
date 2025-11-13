@@ -22,11 +22,11 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { roleFixtureIds } from '@/utils/test/fixtures/role';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installLanguageFixturesTypeOrm } from '@hexabot/dev/fixtures/language';
+import { installPermissionFixturesTypeOrm } from '@hexabot/dev/fixtures/permission';
+import { roleFixtureIds } from '@hexabot/dev/fixtures/role';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { Role } from '../dto/role.dto';

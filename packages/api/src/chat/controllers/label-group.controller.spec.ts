@@ -23,9 +23,9 @@ import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installLabelGroupFixturesTypeOrm,
   labelGroupFixtures,
-} from '@/utils/test/fixtures/label-group';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/label-group';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { LabelGroupCreateDto } from '../dto/label-group.dto';
 import { LabelGroupService } from '../services/label-group.service';

@@ -6,8 +6,8 @@
 
 import { LoggerModule } from '@hexabot/logger';
 
-import { DummyPlugin } from '@/utils/test/dummy/dummy.plugin';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { DummyPlugin } from '@hexabot/dev/dummy/dummy.plugin';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { BaseBlockPlugin } from './base-block-plugin';
 import { PluginService } from './plugins.service';

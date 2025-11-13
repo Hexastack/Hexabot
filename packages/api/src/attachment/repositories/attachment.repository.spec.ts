@@ -9,13 +9,13 @@ import { randomUUID } from 'crypto';
 import { config } from '@hexabot/config';
 import { TestingModule } from '@nestjs/testing';
 
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { IGNORED_TEST_FIELDS } from '@hexabot/dev/constants';
 import {
   attachmentFixtures,
   installAttachmentFixturesTypeOrm,
-} from '@/utils/test/fixtures/attachment';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/attachment';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import {

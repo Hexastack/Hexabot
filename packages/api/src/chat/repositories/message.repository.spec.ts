@@ -20,9 +20,9 @@ import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { installMessageFixturesTypeOrm } from '@hexabot/dev/fixtures/message';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { MessageRepository } from './message.repository';
 

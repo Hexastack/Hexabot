@@ -6,8 +6,8 @@
 
 import { DataSource } from 'typeorm';
 
-import { RoleCreateDto } from '@/user/dto/role.dto';
-import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
+import { RoleCreateDto } from '@hexabot/user/dto/role.dto';
+import { RoleOrmEntity as RoleEntity } from '@hexabot/user/entities/role.entity';
 
 type RoleOrmFixture = RoleCreateDto & { id: string };
 

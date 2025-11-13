@@ -10,9 +10,9 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import {
   installSettingFixturesTypeOrm,
   settingFixtures,
-} from '@/utils/test/fixtures/setting';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '@hexabot/dev/fixtures/setting';
+import { closeTypeOrmConnections } from '@hexabot/dev/test';
+import { buildTestingMocks } from '@hexabot/dev/utils';
 
 import { Setting } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
