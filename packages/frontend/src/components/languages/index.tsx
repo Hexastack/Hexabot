@@ -8,7 +8,6 @@ import { Flag } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -19,6 +18,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -35,17 +35,16 @@ export const Languages = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const hasPermission = useHasPermission();
   const { mutate: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      queryClient.invalidateQueries([
-        QueryType.collection,
-        EntityType.LANGUAGE,
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [QueryType.collection, EntityType.LANGUAGE],
+      });
       toast.success(t("message.success_save"));
     },
   });

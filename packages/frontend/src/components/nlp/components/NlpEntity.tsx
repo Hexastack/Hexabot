@@ -7,7 +7,6 @@
 import { Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -21,6 +20,10 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
+import {
+  useTanstackMutation,
+  useTanstackQueryClient,
+} from "@/hooks/crud/useTanstack";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -39,7 +42,7 @@ const NlpEntity = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const router = useAppRouter();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { mutate: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -58,7 +61,7 @@ const NlpEntity = () => {
     },
   });
   const { apiClient } = useApiClient();
-  const { mutate: annotateSamples } = useMutation({
+  const { mutate: annotateSamples } = useTanstackMutation({
     mutationFn: async (entityId: string) => {
       await apiClient.annotateNlpSamples(entityId);
     },
@@ -66,10 +69,9 @@ const NlpEntity = () => {
       toast.error(t("message.nlp_sample_annotation_failure"));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries([
-        QueryType.collection,
-        EntityType.NLP_SAMPLE,
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [QueryType.collection, EntityType.NLP_SAMPLE],
+      });
       setSelectedNlpEntities([]);
       toast.success(t("message.nlp_sample_annotation_success"));
     },
@@ -96,8 +98,7 @@ const NlpEntity = () => {
     [
       {
         label: ActionColumnLabel.Values,
-        action: (row) =>
-          router.push(`/nlp/nlp-entities/${row.id}/nlpValues`),
+        action: (row) => router.push(`/nlp/nlp-entities/${row.id}/nlpValues`),
         requires: [PermissionAction.READ],
       },
       {

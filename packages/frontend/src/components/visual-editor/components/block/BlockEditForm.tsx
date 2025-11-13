@@ -9,13 +9,13 @@ import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import { FormControlLabel, Grid, Switch, Tab, Tabs } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -96,17 +96,16 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
       required: t("message.name_is_required"),
     },
   };
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const onSubmitForm = (params: IBlockAttributes) => {
     if (block) {
       const oldBlock = getBlockFromCache(block.id);
 
       updateBlock({ id: block.id, params }).then(() => {
         if (oldBlock?.starts_conversation !== params.starts_conversation) {
-          queryClient.invalidateQueries([
-            QueryType.collection,
-            EntityType.BLOCK,
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: [QueryType.collection, EntityType.BLOCK],
+          });
         }
       });
     }

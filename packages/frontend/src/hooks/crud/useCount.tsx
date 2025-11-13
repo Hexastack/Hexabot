@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
-
 import { EntityType, QueryType } from "@/services/types";
 import { THook } from "@/types/base.types";
+import { UseQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
+
+import { useTanstackQuery } from "./useTanstack";
 
 export const useCount = <TE extends THook["entity"]>(
   entity: TE,
@@ -21,12 +22,12 @@ export const useCount = <TE extends THook["entity"]>(
       { count: number },
       [QueryType, EntityType, string]
     >,
-    "queryFn"
+    "queryFn" | "queryKey"
   >,
 ) => {
   const api = useEntityApiClient(entity);
 
-  return useQuery({
+  return useTanstackQuery({
     ...options,
     queryFn: () => api.count({ where: params }),
     queryKey: [QueryType.count, entity, JSON.stringify(params)],

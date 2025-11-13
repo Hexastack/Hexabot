@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import { FC, Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useQuery } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -29,6 +28,7 @@ import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import Selectable from "@/app-components/inputs/Selectable";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTanstackQuery } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useNlp } from "@/hooks/useNlp";
@@ -148,12 +148,20 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
     }, 400),
     [setValue],
   );
-  const { isLoading } = useQuery({
+  const { data: prediction, isLoading } = useTanstackQuery({
     queryKey: ["nlp-prediction", currentText],
     queryFn: async () => {
       return await apiClient.predictNlp(currentText);
     },
-    onSuccess: (prediction) => {
+    enabled:
+      // Inbox sample update
+      nlpDatasetSample?.type === "inbox" ||
+      // New sample
+      (!nlpDatasetSample && !!currentText),
+  });
+
+  useEffect(() => {
+    if (prediction) {
       const predictedTraitEntities: INlpDatasetTraitEntity[] =
         prediction.entities.filter((e) => allTraitEntities.has(e.entity));
       const predictedKeywordEntities = prediction.entities.filter((e) =>
@@ -170,13 +178,8 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
       setValue("traitEntities", predictedTraitEntities);
       setValue("keywordEntities", predictedKeywordEntities);
       setPatternEntities(predictedPatternEntities);
-    },
-    enabled:
-      // Inbox sample update
-      nlpDatasetSample?.type === "inbox" ||
-      // New sample
-      (!nlpDatasetSample && !!currentText),
-  });
+    }
+  }, [prediction]);
   const findInsertIndex = (newItem: INlpDatasetKeywordEntity): number => {
     const index = keywordEntities.findIndex(
       (entity) => entity.start && newItem.start && entity.start > newItem.start,

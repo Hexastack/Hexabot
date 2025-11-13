@@ -6,10 +6,10 @@
 
 import { CssBaseline } from "@mui/material";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "@/App";
@@ -44,7 +44,7 @@ const queryClient = new QueryClient({
       retry: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      cacheTime: Infinity,
+      // cacheTime: Infinity,
     },
   },
 });
@@ -86,7 +86,10 @@ ReactDOM.createRoot(rootElement).render(
                     </AuthProvider>
                   </BroadcastChannelProvider>
                 </ApiClientProvider>
-                <ReactQueryDevtools initialIsOpen={false} />
+                <ReactQueryDevtools
+                  initialIsOpen={false}
+                  buttonPosition="bottom-left"
+                />
               </QueryClientProvider>
             </StyledEngineProvider>
           </ToastProvider>

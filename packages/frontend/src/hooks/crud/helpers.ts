@@ -5,11 +5,12 @@
  */
 
 import { normalize } from "normalizr";
-import { useQueryClient } from "react-query";
 
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema, IEntityMapTypes } from "@/types/base.types";
+
+import { useTanstackQueryClient } from "./useTanstack";
 
 export const useNormalizeAndCache = <
   TData extends IBaseSchema,
@@ -18,7 +19,7 @@ export const useNormalizeAndCache = <
 >(
   entity: keyof IEntityMapTypes,
 ) => {
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
 
   return (data: TData | TData[]) => {
     if (!(entity in ENTITY_MAP)) {

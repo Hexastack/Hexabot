@@ -4,16 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseInfiniteQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { toPageQueryPayload } from "../usePagination";
 
 import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
+import { useTanstackInfiniteQuery } from "./useTanstack";
 
 const PAGE_SIZE = 20;
 
@@ -56,9 +56,7 @@ export const useNormalizedInfiniteQuery = <
     initialPaginationState,
     initialSortState,
   );
-  // @TODO : fix the following
-  // @ts-ignore
-  const { data: infiniteData, ...infiniteQuery } = useInfiniteQuery({
+  const { data: infiniteData, ...infiniteQuery } = useTanstackInfiniteQuery({
     queryKey: [QueryType.infinite, entity, JSON.stringify(config?.params)],
     initialPageParam: {
       limit: PAGE_SIZE,

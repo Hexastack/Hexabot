@@ -8,7 +8,6 @@ import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useQueryClient } from "react-query";
 import { Link as RouterLink } from "react-router-dom";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -23,6 +22,7 @@ import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -40,7 +40,7 @@ export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useAppRouter();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT, {
@@ -87,7 +87,7 @@ export const Contents = () => {
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
-  const { mutate: importDataset, isLoading } = useImport(
+  const { mutate: importDataset, isPending } = useImport(
     EntityType.CONTENT,
     {
       onError: () => {
@@ -192,7 +192,7 @@ export const Contents = () => {
               accept="text/csv"
               label={t("button.import")}
               onChange={handleImportChange}
-              isLoading={isLoading}
+              isLoading={isPending}
             />
           ),
         },
