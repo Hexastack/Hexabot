@@ -5,7 +5,7 @@
  */
 
 import { QueryType, TMutationOptions, TSetCacheProps } from "@/services/types";
-import { IBaseSchema, IEntityMapTypes, THook, TType } from "@/types/base.types";
+import { IEntityMapTypes, THook, TType } from "@/types/base.types";
 import { merge } from "@/utils/object";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -16,9 +16,8 @@ import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useUpdate = <
   TE extends THook["entity"],
-  TAttr = THook<{ entity: TE }>["attributes"],
-  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
-  TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
+  TAttr extends THook["attributes"] = THook<{ entity: TE }>["attributes"],
+  TBasic extends THook["basic"] = THook<{ entity: TE }>["basic"],
 >(
   entity: TE,
   options?: TMutationOptions<
@@ -28,8 +27,8 @@ export const useUpdate = <
     TBasic
   >,
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
+  const api = useEntityApiClient(entity);
+  const normalizeAndCache = useNormalizeAndCache<string>(entity);
   const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
@@ -52,7 +51,7 @@ export const useUpdate = <
         });
       }
 
-      return entities[entity]?.[result] as unknown as TBasic;
+      return entities[entity]?.[result] as TBasic;
     },
     ...otherOptions,
   });

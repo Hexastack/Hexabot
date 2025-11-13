@@ -57,6 +57,7 @@ import {
   INlpEntityFull,
 } from "./nlp-entity.types";
 import {
+  INlpDatasetSampleAttributes,
   INlpSample,
   INlpSampleAttributes,
   INlpSampleFilters,
@@ -220,7 +221,7 @@ export interface IEntityMapTypes {
   >;
   [EntityType.NLP_SAMPLE]: IEntityTypes<
     INlpSample,
-    INlpSampleAttributes,
+    INlpSampleAttributes | INlpDatasetSampleAttributes,
     INlpSampleFilters,
     INlpSampleFull
   >;
