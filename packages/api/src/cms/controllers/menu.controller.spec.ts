@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { InternalServerErrorException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   installMenuFixturesTypeOrm,
   offerMenuFixture,

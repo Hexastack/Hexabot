@@ -2,3 +2,4 @@ packages:
   - "packages/api"
   - "packages/frontend"
   - "packages/widget"
+  - "modules/*"

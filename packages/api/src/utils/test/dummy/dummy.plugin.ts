@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 
 import {
   OutgoingMessageFormat,
   StdOutgoingTextEnvelope,
 } from '@/chat/types/message';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate, PluginSetting } from '@/plugins/types';

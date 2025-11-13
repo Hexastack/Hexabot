@@ -6,12 +6,12 @@
 
 import { join } from 'path';
 
+import { LoggerModule } from '@hexabot/logger';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { LoggerModule } from '@/logger/logger.module';
 
 import { MigrationCommand } from './migration.command';
 import { MigrationOrmEntity } from './migration.entity';

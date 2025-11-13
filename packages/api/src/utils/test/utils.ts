@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerModule, LoggerService } from '@hexabot/logger';
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, ModuleMetadata, Provider } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -12,8 +13,6 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { LoggerModule } from '@/logger/logger.module';
-import { LoggerService } from '@/logger/logger.service';
 import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModule } from '@/setting/setting.module';

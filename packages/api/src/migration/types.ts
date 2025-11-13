@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { HttpService } from '@nestjs/axios';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 
 import type { MigrationOrmEntity } from './migration.entity';
 

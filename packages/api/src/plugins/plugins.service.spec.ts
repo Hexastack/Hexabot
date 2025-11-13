@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { LoggerModule } from '@/logger/logger.module';
+import { LoggerModule } from '@hexabot/logger';
+
 import { DummyPlugin } from '@/utils/test/dummy/dummy.plugin';
 import { buildTestingMocks } from '@/utils/test/utils';
 

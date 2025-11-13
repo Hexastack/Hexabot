@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import { INestApplicationContext } from '@nestjs/common';
 
 import { CategorySeeder } from './chat/seeds/category.seed';
@@ -14,7 +15,6 @@ import { LanguageSeeder } from './i18n/seeds/language.seed';
 import { languageModels } from './i18n/seeds/language.seed-model';
 import { TranslationSeeder } from './i18n/seeds/translation.seed';
 import { translationModels } from './i18n/seeds/translation.seed-model';
-import { LoggerService } from './logger/logger.service';
 import { NlpEntitySeeder } from './nlp/seeds/nlp-entity.seed';
 import { nlpEntityModels } from './nlp/seeds/nlp-entity.seed-model';
 import { NlpValueSeeder } from './nlp/seeds/nlp-value.seed';

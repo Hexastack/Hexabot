@@ -6,6 +6,7 @@
 
 import path from 'path';
 
+import { LoggerService } from '@hexabot/logger';
 import {
   ForbiddenException,
   Inject,
@@ -36,7 +37,6 @@ import {
   StdOutgoingMessage,
 } from '@/chat/types/message';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { buildURL } from '@/utils/helpers/URL';

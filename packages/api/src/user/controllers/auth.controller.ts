@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
   Body,
@@ -24,7 +25,6 @@ import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
