@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Config, config } from '@hexabot/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
-import { config } from '@/config';
-import { Config } from '@/config/types';
 import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,

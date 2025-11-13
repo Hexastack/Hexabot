@@ -6,6 +6,7 @@
 
 import fs from 'fs';
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import { HttpService } from '@nestjs/axios';
 import { ModuleRef } from '@nestjs/core';
@@ -13,7 +14,6 @@ import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { config } from '@/config';
 import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { MetadataRepository } from '@/setting/repositories/metadata.repository';
 import { MetadataService } from '@/setting/services/metadata.service';

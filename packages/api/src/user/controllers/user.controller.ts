@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import {
   Body,
   Controller,
@@ -32,7 +33,6 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { config } from '@/config';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';

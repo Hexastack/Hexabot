@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { Expose } from 'class-transformer';
 import { Column, Entity, Index } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
-import { config } from '@/config';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';

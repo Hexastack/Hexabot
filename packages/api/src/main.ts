@@ -6,6 +6,7 @@
 
 import 'dotenv/config';
 
+import { config, csrf } from '@hexabot/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -20,8 +21,6 @@ moduleAlias.addAliases({
 
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
-import { config } from './config';
-import { csrf } from './config/csrf';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';

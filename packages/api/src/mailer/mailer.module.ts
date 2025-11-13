@@ -6,6 +6,7 @@
 
 import path from 'path';
 
+import { config } from '@hexabot/config';
 import { Global, Module } from '@nestjs/common';
 import {
   ISendMailOptions,
@@ -14,8 +15,6 @@ import {
 } from '@nestjs-modules/mailer';
 import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-
-import { config } from '@/config';
 
 import { MailerService } from './mailer.service';
 
