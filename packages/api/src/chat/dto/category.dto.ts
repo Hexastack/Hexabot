@@ -4,6 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@hexabot/core/database';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
@@ -14,12 +19,6 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
 
 import { Block } from './block.dto';
 

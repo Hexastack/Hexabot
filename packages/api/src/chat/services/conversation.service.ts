@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { getDefaultConversationContext } from '../constants/conversation';
 import { Block, BlockFull } from '../dto/block.dto';

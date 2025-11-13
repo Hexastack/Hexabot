@@ -4,6 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@hexabot/core/database';
+import { IsUUIDv4 } from '@hexabot/core/decorators';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
@@ -17,12 +23,6 @@ import {
 } from 'class-validator';
 
 import { Language } from '@/i18n/dto/language.dto';
-import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
 

@@ -6,12 +6,12 @@
 
 import { Readable, Stream } from 'stream';
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { Injectable, StreamableFile } from '@nestjs/common';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   Attachment,

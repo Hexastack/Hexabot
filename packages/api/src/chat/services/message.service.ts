@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,
   SocketPost,

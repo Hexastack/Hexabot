@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmRepository } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpSampleState } from '..//types';

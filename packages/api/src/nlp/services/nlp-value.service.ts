@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpSampleEntityValue } from '..//types';

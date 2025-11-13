@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmSeeder } from '@hexabot/core/database';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
@@ -12,7 +13,6 @@ import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
 } from '@/utils/constants/cache';
-import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
 import {
   LanguageCreateDto,

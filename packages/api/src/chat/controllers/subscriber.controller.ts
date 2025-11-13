@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmController } from '@hexabot/core/database';
+import { PopulatePipe, TypeOrmSearchFilterPipe } from '@hexabot/core/pipes';
 import {
   Body,
   Controller,
@@ -17,10 +19,7 @@ import {
 import { FindManyOptions } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
-import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Subscriber,

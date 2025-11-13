@@ -6,6 +6,12 @@
 
 import { Readable } from 'stream';
 
+import { BaseOrmController, DeleteResult } from '@hexabot/core/database';
+import {
+  PopulatePipe,
+  TypeOrmSearchFilterPipe,
+  ZodQueryParamPipe,
+} from '@hexabot/core/pipes';
 import {
   BadRequestException,
   Body,
@@ -36,11 +42,6 @@ import {
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
-import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
-import { ZodQueryParamPipe } from '@/utils/pipes/zod.pipe';
 
 import { NlpSampleState } from '..//types';
 import {

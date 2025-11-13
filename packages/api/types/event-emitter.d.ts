@@ -60,7 +60,7 @@ import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
-import type { THydratedDocument } from '@/utils/types/filter.types';
+import type { THydratedDocument } from '@hexabot/core/types';
 
 type AnyEventWrapper = EventWrapper<any, any>;
 

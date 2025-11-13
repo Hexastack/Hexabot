@@ -6,11 +6,7 @@
 
 import { LoggerService } from '@hexabot/logger';
 import { Inject, NotFoundException } from '@nestjs/common';
-import {
-  EventEmitter2,
-  IHookEntities,
-  TNormalizedEvents,
-} from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
@@ -28,8 +24,8 @@ import {
   UpdateEvent,
 } from 'typeorm';
 
-import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { flatten } from '@/utils/helpers/flatten';
+import { BaseOrmEntity } from '../entities/base.entity';
+import { flatten } from '../utils/flatten';
 
 import {
   DtoAction,
@@ -423,12 +419,12 @@ export abstract class BaseOrmRepository<
   protected getEventName(
     metadata: EntityMetadata,
     suffix: EHook,
-  ): `hook:${IHookEntities}:${TNormalizedEvents}` {
+  ): HookEventName {
     const entityName =
       camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
       'entity';
 
-    return `hook:${entityName}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
+    return `hook:${entityName}:${suffix}` as HookEventName;
   }
 
   protected async emitHook(
@@ -487,3 +483,7 @@ type OrmLifecycleEvent<Entity extends BaseOrmEntity> =
   | InsertEvent<Entity>
   | UpdateEvent<Entity>
   | RemoveEvent<Entity>;
+
+type HookEntityName = string;
+type HookEventSuffix = EHook | '*';
+type HookEventName = `hook:${HookEntityName}:${HookEventSuffix}`;

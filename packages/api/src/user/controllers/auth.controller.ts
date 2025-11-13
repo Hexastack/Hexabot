@@ -5,6 +5,7 @@
  */
 
 import { config } from '@hexabot/config';
+import { Roles } from '@hexabot/core/decorators';
 import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
@@ -24,8 +25,6 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
-
-import { Roles } from '@/utils/decorators/roles.decorator';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { UserCreateDto } from '../dto/user.dto';

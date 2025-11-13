@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 
@@ -18,7 +19,6 @@ import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import {

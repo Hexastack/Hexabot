@@ -4,16 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { PartialType } from '@nestjs/mapped-types';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @Exclude()
 export class LanguageStub extends BaseStub {

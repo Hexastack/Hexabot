@@ -4,16 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-
-import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { IsUUIDv4 } from '@hexabot/core/decorators';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { NlpEntity } from './nlp-entity.dto';
 import { NlpSample } from './nlp-sample.dto';

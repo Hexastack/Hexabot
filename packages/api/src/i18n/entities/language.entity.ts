@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
 import {
   BeforeInsert,
   BeforeRemove,
@@ -12,8 +13,6 @@ import {
   Entity,
   Index,
 } from 'typeorm';
-
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 @Entity({ name: 'languages' })
 export class LanguageOrmEntity extends BaseOrmEntity {

@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmRepository, DtoTransformer } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
-
-import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Message,

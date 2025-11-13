@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
+import { AsRelation } from '@hexabot/core/decorators';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -18,8 +20,6 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 export enum MenuType {
   web_url = 'web_url',

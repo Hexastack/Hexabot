@@ -5,11 +5,11 @@
  */
 
 import { config, csrf } from '@hexabot/config';
+import { Roles } from '@hexabot/core/decorators';
 import { Controller, Get, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AppService } from './app.service';
-import { Roles } from './utils/decorators/roles.decorator';
 
 @Controller()
 export class AppController {

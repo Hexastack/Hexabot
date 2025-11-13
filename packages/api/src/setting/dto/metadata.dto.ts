@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
-import { IsNotEmpty, IsString } from 'class-validator';
-
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 @Exclude()
 export class MetadataStub extends BaseStub {

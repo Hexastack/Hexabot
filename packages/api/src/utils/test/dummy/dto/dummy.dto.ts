@@ -4,16 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Exclude, Expose } from 'class-transformer';
-import { IsObject, IsOptional, IsString } from 'class-validator';
-
 import {
   BaseStub,
   DtoAction,
   DtoActionConfig,
   DtoTransformer,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { Exclude, Expose } from 'class-transformer';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 @Exclude()
 export class DummyStub extends BaseStub {

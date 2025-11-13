@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
+import { Cacheable } from '@hexabot/core/decorators';
 import { LoggerService } from '@hexabot/logger';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
@@ -19,8 +21,6 @@ import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
 } from '@/utils/constants/cache';
-import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { LanguageDtoConfig, LanguageTransformerDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';

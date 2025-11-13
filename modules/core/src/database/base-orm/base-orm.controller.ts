@@ -8,7 +8,7 @@ import { LoggerService } from '@hexabot/logger';
 import { Inject } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
-import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { BaseOrmEntity } from '../entities/base.entity';
 
 import { DtoActionConfig, DtoTransformerConfig } from '../types/dto.types';
 

@@ -4,6 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@hexabot/core/database';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
@@ -17,12 +22,6 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
-
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
 
 import { Lookup, LookupStrategy } from '..//types';
 

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
@@ -17,7 +18,6 @@ import { FindManyOptions, FindOptionsOrder, InsertEvent } from 'typeorm';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageService } from '@/i18n/services/language.service';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
 import { NlpEntityFull } from '../dto/nlp-entity.dto';

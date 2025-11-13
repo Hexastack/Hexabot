@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { flatten } from './flatten';
+import { flatten } from '@hexabot/core/database';
 
 describe('flatten', () => {
   it('should support a nested object with one nested level', () => {

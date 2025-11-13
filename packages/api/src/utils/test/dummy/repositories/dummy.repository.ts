@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmRepository } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-
-import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import { Dummy, DummyDtoConfig, DummyTransformerDto } from '../dto/dummy.dto';
 import { DummyOrmEntity } from '../entities/dummy.entity';
