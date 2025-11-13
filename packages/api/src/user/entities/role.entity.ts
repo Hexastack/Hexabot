@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
 import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
-
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { PermissionOrmEntity } from './permission.entity';
 import { UserOrmEntity } from './user.entity';

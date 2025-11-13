@@ -1,0 +1,97 @@
+{
+  "name": "@hexabot/core",
+  "private": true,
+  "version": "2.3.0",
+  "description": "Shared core NestJS utilities (database abstractions, DTO helpers, ...).",
+  "license": "FCL-1.0-ALv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
+    "clean": "rimraf dist",
+    "prepare": "pnpm run build",
+    "test": "jest --config jest.config.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./database": {
+      "types": "./dist/database/index.d.ts",
+      "default": "./dist/database/index.js"
+    },
+    "./pipes": {
+      "types": "./dist/pipes/index.d.ts",
+      "default": "./dist/pipes/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./decorators": {
+      "types": "./dist/decorators/index.d.ts",
+      "default": "./dist/decorators/index.js"
+    },
+    "./helpers": {
+      "types": "./dist/helpers/index.d.ts",
+      "default": "./dist/helpers/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "database": [
+        "dist/database/index.d.ts"
+      ],
+      "pipes": [
+        "dist/pipes/index.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
+      ],
+      "decorators": [
+        "dist/decorators/index.d.ts"
+      ],
+      "helpers": [
+        "dist/helpers/index.d.ts"
+      ]
+    }
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "lodash": "^4.17.21",
+    "cache-manager": "^7.2.4",
+    "class-validator": "^0.14.2",
+    "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@hexabot/logger": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/event-emitter": "^3.0.1",
+    "cache-manager": "^7.2.4",
+    "class-validator": "^0.14.2",
+    "typeorm": "^0.3.27",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@hexabot/logger": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/event-emitter": "^3.0.1",
+    "@nestjs/testing": "^11.1.6",
+    "@types/jest": "^29.5.14",
+    "jest": "^30.2.0",
+    "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.0.1",
+    "cache-manager": "^7.2.4",
+    "class-validator": "^0.14.2",
+    "zod": "^3.24.1",
+    "sqlite3": "^5.1.7",
+    "ts-jest": "^29.4.5",
+    "typeorm": "^0.3.27",
+    "typescript": "^5.1.3"
+  }
+}

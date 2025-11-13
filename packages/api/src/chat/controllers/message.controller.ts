@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmController, BaseOrmEntity } from '@hexabot/core/database';
+import { PopulatePipe, TypeOrmSearchFilterPipe } from '@hexabot/core/pipes';
 import {
   BadRequestException,
   Body,
@@ -20,10 +22,6 @@ import { FindManyOptions } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Message,

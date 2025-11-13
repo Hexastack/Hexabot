@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
+import { AsRelation } from '@hexabot/core/decorators';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -13,9 +15,6 @@ import {
   ManyToMany,
   RelationId,
 } from 'typeorm';
-
-import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { hash } from '../utilities/hash';
 

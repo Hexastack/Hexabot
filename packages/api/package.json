@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@hexabot/config": "workspace:*",
+    "@hexabot/core": "workspace:*",
     "@hexabot/logger": "workspace:*",
     "@keyv/redis": "^5.1.3",
     "@nestjs-modules/mailer": "^2.0.2",

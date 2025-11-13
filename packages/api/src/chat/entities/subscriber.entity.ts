@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
+import { AsRelation } from '@hexabot/core/decorators';
 import {
   Column,
   Entity,
@@ -17,9 +19,7 @@ import {
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { SubscriberContext } from '../types/subscriberContext';
 

@@ -6,7 +6,7 @@
 
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
-import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { BaseOrmEntity } from '../entities/base.entity';
 
 import {
   DtoAction,

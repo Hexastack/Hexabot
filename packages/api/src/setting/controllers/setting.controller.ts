@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmController } from '@hexabot/core/database';
+import { TypeOrmSearchFilterPipe } from '@hexabot/core/pipes';
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
-
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Setting,

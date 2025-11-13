@@ -5,6 +5,8 @@
  */
 
 import { Config, config } from '@hexabot/config';
+import { BaseOrmService } from '@hexabot/core/database';
+import { Cacheable } from '@hexabot/core/decorators';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -14,8 +16,6 @@ import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
-import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   Setting,

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
+import { AsRelation } from '@hexabot/core/decorators';
 import {
   Column,
   Entity,
@@ -12,9 +14,6 @@ import {
   ManyToOne,
   RelationId,
 } from 'typeorm';
-
-import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { NlpEntityOrmEntity } from './nlp-entity.entity';
 import { NlpSampleOrmEntity } from './nlp-sample.entity';

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { BaseOrmEntity } from '@hexabot/core/database';
 
 type BaseFixtureEntity = Pick<BaseOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 

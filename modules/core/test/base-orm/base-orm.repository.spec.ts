@@ -4,62 +4,44 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'reflect-metadata';
 import { randomUUID } from 'crypto';
 
 import { NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TestingModule } from '@nestjs/testing';
 import { In, InsertEvent, RemoveEvent, Repository, UpdateEvent } from 'typeorm';
 
-import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
-import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
+import { EHook } from '../../src/database';
 import {
+  DummyOrmEntity,
+  DummyRepository,
   dummyFixtures,
-  installDummyFixturesTypeOrm,
-} from '@/utils/test/fixtures/dummy';
+  seedDummyFixtures,
+} from '../support/dummy';
 import {
-  closeTypeOrmConnections,
-  getLastTypeOrmDataSource,
-} from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
-
-import { EHook } from './base-orm.repository';
+  createDummyTestingContext,
+  destroyDummyTestingContext,
+  DummyTestingContext,
+} from '../support/testing-module';
 
 describe('BaseOrmRepository', () => {
+  let context: DummyTestingContext;
   let dummyRepository: DummyRepository;
-  let module: TestingModule;
   let ormRepository: Repository<DummyOrmEntity>;
   let baselineEntities: DummyOrmEntity[];
 
   beforeAll(async () => {
-    const { module: testingModule, getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      providers: [DummyRepository],
-      typeorm: {
-        entities: [DummyOrmEntity],
-        fixtures: installDummyFixturesTypeOrm,
-      },
-    });
-
-    module = testingModule;
-    [dummyRepository] = await getMocks([DummyRepository]);
-
-    const dataSource = getLastTypeOrmDataSource();
-    ormRepository = dataSource.getRepository(DummyOrmEntity);
+    context = await createDummyTestingContext();
+    dummyRepository = context.dummyRepository;
+    ormRepository = context.dataSource.getRepository(DummyOrmEntity);
   });
 
   beforeEach(async () => {
-    await ormRepository.clear();
-    baselineEntities = await ormRepository.save(
-      ormRepository.create(dummyFixtures),
-    );
+    baselineEntities = await seedDummyFixtures(context.dataSource);
   });
 
   afterAll(async () => {
-    if (module) {
-      await module.close();
-    }
-    await closeTypeOrmConnections();
+    await destroyDummyTestingContext(context);
   });
 
   describe('utility methods', () => {
@@ -226,14 +208,14 @@ describe('BaseOrmRepository', () => {
         { shouldFlatten: true },
       );
 
-      expect(result.dynamicField).toEqualPayload({
+      expect(result.dynamicField).toEqual({
         foo: 'bar',
         nested: { initial: false, extra: 'value' },
         newProp: 42,
       });
 
       const stored = await ormRepository.findOne({ where: { id: target.id } });
-      expect(stored?.dynamicField).toEqualPayload({
+      expect(stored?.dynamicField).toEqual({
         foo: 'bar',
         nested: { initial: false, extra: 'value' },
         newProp: 42,
@@ -279,7 +261,7 @@ describe('BaseOrmRepository', () => {
       const target = baselineEntities[0];
       const result = await dummyRepository.deleteOne(target.id);
 
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       const stored = await ormRepository.findOne({ where: { id: target.id } });
       expect(stored).toBeNull();
     });
@@ -289,7 +271,7 @@ describe('BaseOrmRepository', () => {
       const options = { where: { id: target.id } };
       const result = await dummyRepository.deleteOne(options);
 
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       const stored = await ormRepository.findOne({ where: { id: target.id } });
       expect(stored).toBeNull();
     });
@@ -300,7 +282,7 @@ describe('BaseOrmRepository', () => {
         where: { id: In(targetIds) },
       });
 
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 2 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 2 });
       const remaining = await ormRepository.find();
       expect(remaining).toHaveLength(dummyFixtures.length - 2);
     });
@@ -535,7 +517,7 @@ describe('BaseOrmRepository', () => {
         where: { id: In([randomUUID()]) },
       });
 
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 0 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 0 });
       expect(emitSpy).not.toHaveBeenCalled();
     });
   });

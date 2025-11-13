@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Roles } from '@hexabot/core/decorators';
 import { Controller, Get, Param } from '@nestjs/common';
-
-import { Roles } from '@/utils/decorators/roles.decorator';
 
 import { HelperService } from './helper.service';
 import { HelperType } from './types';

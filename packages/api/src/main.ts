@@ -7,6 +7,7 @@
 import 'dotenv/config';
 
 import { config, csrf } from '@hexabot/config';
+import { UuidPipe } from '@hexabot/core/pipes';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -25,7 +26,6 @@ import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
-import { UuidPipe } from './utils/pipes/uuid.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {

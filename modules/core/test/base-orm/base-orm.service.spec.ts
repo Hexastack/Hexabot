@@ -4,44 +4,34 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'reflect-metadata';
 import { randomUUID } from 'crypto';
 
-import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
-import { Dummy } from '@/utils/test/dummy/dto/dummy.dto';
-import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
-import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
-import { DummyService } from '@/utils/test/dummy/services/dummy.service';
 import {
+  Dummy,
+  DummyRepository,
+  DummyService,
   dummyFixtures,
-  installDummyFixturesTypeOrm,
-} from '@/utils/test/fixtures/dummy';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+} from '../support/dummy';
+import {
+  createDummyTestingContext,
+  destroyDummyTestingContext,
+  DummyTestingContext,
+} from '../support/testing-module';
 
 describe('BaseOrmService', () => {
-  let module: TestingModule;
+  let context: DummyTestingContext;
   let dummyRepository: DummyRepository;
   let dummyService: DummyService;
   let baseline: Dummy[];
   let firstEntity: Dummy;
 
   beforeAll(async () => {
-    const { module: testingModule, getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      providers: [DummyService],
-      typeorm: {
-        entities: [DummyOrmEntity],
-        fixtures: installDummyFixturesTypeOrm,
-      },
-    });
-
-    module = testingModule;
-    [dummyRepository, dummyService] = await getMocks([
-      DummyRepository,
-      DummyService,
-    ]);
+    context = await createDummyTestingContext();
+    dummyRepository = context.dummyRepository;
+    dummyService = context.dummyService;
   });
 
   beforeEach(async () => {
@@ -55,10 +45,7 @@ describe('BaseOrmService', () => {
   });
 
   afterAll(async () => {
-    if (module) {
-      await module.close();
-    }
-    await closeTypeOrmConnections();
+    await destroyDummyTestingContext(context);
   });
 
   describe('utilities', () => {
@@ -257,7 +244,7 @@ describe('BaseOrmService', () => {
       const result = await dummyService.deleteOne(firstEntity.id);
 
       expect(deleteOneSpy).toHaveBeenCalledWith(firstEntity.id);
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       expect(await dummyRepository.count()).toBe(dummyFixtures.length - 1);
     });
 
@@ -267,7 +254,7 @@ describe('BaseOrmService', () => {
       const result = await dummyService.deleteOne(options);
 
       expect(deleteOneSpy).toHaveBeenCalledWith(options);
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       expect(await dummyRepository.count()).toBe(dummyFixtures.length - 1);
     });
 
@@ -278,7 +265,7 @@ describe('BaseOrmService', () => {
       const result = await dummyService.deleteMany(options);
 
       expect(deleteManySpy).toHaveBeenCalledWith(options);
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 2 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 2 });
       expect(await dummyRepository.count()).toBe(
         dummyFixtures.length - targetIds.length,
       );
@@ -289,7 +276,7 @@ describe('BaseOrmService', () => {
       const result = await dummyService.deleteMany();
 
       expect(deleteManySpy).toHaveBeenCalledWith(undefined);
-      expect(result).toEqualPayload({
+      expect(result).toEqual({
         acknowledged: true,
         deletedCount: dummyFixtures.length,
       });
@@ -302,7 +289,7 @@ describe('BaseOrmService', () => {
       const result = await dummyService.deleteMany(options);
 
       expect(deleteManySpy).toHaveBeenCalledWith(options);
-      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 0 });
+      expect(result).toEqual({ acknowledged: true, deletedCount: 0 });
     });
   });
 });

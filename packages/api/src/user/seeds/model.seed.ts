@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmSeeder } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
-
-import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
 import { ModelDtoConfig, ModelTransformerDto } from '../dto/model.dto';
 import { ModelOrmEntity } from '../entities/model.entity';

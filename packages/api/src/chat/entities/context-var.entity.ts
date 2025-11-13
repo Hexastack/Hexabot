@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
 import { ForbiddenException } from '@nestjs/common';
 import { BeforeRemove, Column, Entity, Index } from 'typeorm';
-
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { BlockOrmEntity } from './block.entity';
 

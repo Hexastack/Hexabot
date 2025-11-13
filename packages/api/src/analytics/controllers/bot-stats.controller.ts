@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmController } from '@hexabot/core/database';
 import { Controller, Get, Query } from '@nestjs/common';
-
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 
 import {
   BotStatsActionDto,

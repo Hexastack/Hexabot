@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { DeleteResult } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 import { In, Like } from 'typeorm';
@@ -11,7 +12,6 @@ import { In, Like } from 'typeorm';
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
 
 import { TCriteria, TExtractExtension, TExtractNamespace } from './types';
 

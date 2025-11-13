@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmController, DeleteResult } from '@hexabot/core/database';
+import { PopulatePipe, TypeOrmSearchFilterPipe } from '@hexabot/core/pipes';
 import {
   BadRequestException,
   Body,
@@ -23,10 +25,6 @@ import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
-import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
-import { PopulatePipe } from '@/utils/pipes/populate.pipe';
-import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Block,

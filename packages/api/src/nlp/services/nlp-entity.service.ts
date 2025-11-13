@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
+import { Cacheable } from '@hexabot/core/decorators';
 import { LoggerService } from '@hexabot/logger';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
@@ -12,8 +14,6 @@ import { Cache } from 'cache-manager';
 import { In } from 'typeorm';
 
 import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
-import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { Lookup, NlpCacheMap, NlpSampleEntityValue } from '..//types';
 import {

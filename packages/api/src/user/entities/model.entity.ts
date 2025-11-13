@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmEntity } from '@hexabot/core/database';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { TRelation } from '../types/index.type';
 

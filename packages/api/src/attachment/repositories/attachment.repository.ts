@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmRepository } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import {
   Attachment,

@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @Exclude()
 export class ContextVarStub extends BaseStub {

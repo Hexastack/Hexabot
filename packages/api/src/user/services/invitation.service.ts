@@ -5,6 +5,7 @@
  */
 
 import { config } from '@hexabot/config';
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import {
   Inject,
@@ -16,7 +17,6 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   Invitation,

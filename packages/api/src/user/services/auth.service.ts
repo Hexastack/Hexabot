@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { DtoTransformer } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 import { compareSync } from 'bcryptjs';
-
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import { User } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';

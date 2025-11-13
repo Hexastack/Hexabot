@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
@@ -11,7 +12,6 @@ import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
 import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   ContentCreateDto,

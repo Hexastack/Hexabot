@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BaseOrmService } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
 
 import { FieldType } from '@/setting/types';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   ContentType,

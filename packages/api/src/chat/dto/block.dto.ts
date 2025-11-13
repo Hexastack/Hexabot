@@ -5,6 +5,13 @@
  */
 
 import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@hexabot/core/database';
+import { IsUUIDv4, Validate } from '@hexabot/core/decorators';
+import { SanitizeQueryPipe } from '@hexabot/core/pipes';
+import {
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
@@ -23,15 +30,6 @@ import {
   Min,
 } from 'class-validator';
 import { z } from 'zod';
-
-import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { Validate } from '@/utils/decorators/validate.decorator';
-import { SanitizeQueryPipe } from '@/utils/pipes/sanitize-query.pipe';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
 
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import { CaptureVar, captureVarSchema } from '../types/capture-var';

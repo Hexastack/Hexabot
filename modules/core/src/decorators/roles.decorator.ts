@@ -6,6 +6,7 @@
 
 import { SetMetadata } from '@nestjs/common';
 
-import { TRole } from '@/user/entities/role.entity';
+export type RoleIdentifier = string;
 
-export const Roles = (...roles: TRole[]) => SetMetadata('roles', roles);
+export const Roles = (...roles: RoleIdentifier[]) =>
+  SetMetadata('roles', roles);

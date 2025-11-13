@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+} from '@hexabot/core/database';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
