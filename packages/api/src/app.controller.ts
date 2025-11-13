@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config, csrf } from '@hexabot/config';
 import { Controller, Get, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AppService } from './app.service';
-import { config } from './config';
-import { csrf } from './config/csrf';
 import { Roles } from './utils/decorators/roles.decorator';
 
 @Controller()

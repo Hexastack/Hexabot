@@ -5,7 +5,6 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      { "include": "config/i18n/**/*", "watchAssets": true },
       { "include": "templates/**/*.mjml", "watchAssets": true }
     ]
   }

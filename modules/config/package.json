@@ -1,0 +1,45 @@
+{
+  "name": "@hexabot/config",
+  "private": true,
+  "version": "2.3.0",
+  "description": "Shared configuration utilities and NestJS module used across Hexabot services.",
+  "license": "FCL-1.0-ALv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.json && pnpm run copy:i18n",
+    "dev": "tsc -w -p tsconfig.json",
+    "clean": "rimraf dist",
+    "copy:i18n": "node ./scripts/copy-i18n.mjs",
+    "prepare": "pnpm run build"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "csrf-sync": "^4.2.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/jwt": "^11.0.1",
+    "nodemailer": "^7.0.9",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/jwt": "^11.0.1",
+    "@types/express": "^5.0.3",
+    "nodemailer": "^7.0.9",
+    "rimraf": "^6.0.1",
+    "socket.io": "^4.8.1",
+    "typescript": "^5.1.3"
+  }
+}

@@ -6,6 +6,7 @@
 
 import { Url } from 'url';
 
+import { config } from '@hexabot/config';
 import {
   CanActivate,
   ExecutionContext,
@@ -15,8 +16,6 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-
-import { config } from '@/config';
 
 import { User } from '../dto/user.dto';
 import { TRole } from '../entities/role.entity';

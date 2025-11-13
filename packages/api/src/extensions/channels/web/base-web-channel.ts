@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
@@ -61,7 +62,6 @@ import {
 import { BlockOptions } from '@/chat/types/options';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
-import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';

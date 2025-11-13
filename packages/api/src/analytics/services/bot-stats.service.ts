@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -15,7 +16,6 @@ import {
   Subscriber as SubscriberDto,
 } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {

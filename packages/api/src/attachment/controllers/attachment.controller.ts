@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import {
   BadRequestException,
   Controller,
@@ -27,7 +28,6 @@ import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
 import { FindManyOptions } from 'typeorm';
 
-import { config } from '@/config';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';

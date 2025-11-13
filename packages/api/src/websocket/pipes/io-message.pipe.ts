@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import {
   ArgumentMetadata,
   BadRequestException,
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-
-import { config } from '@/config';
 
 import { Room } from '../types';
 

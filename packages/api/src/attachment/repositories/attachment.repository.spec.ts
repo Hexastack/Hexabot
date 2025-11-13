@@ -6,9 +6,9 @@
 
 import { randomUUID } from 'crypto';
 
+import { config } from '@hexabot/config';
 import { TestingModule } from '@nestjs/testing';
 
-import { config } from '@/config';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,

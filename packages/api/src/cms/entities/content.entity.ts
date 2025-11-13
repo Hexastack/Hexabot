@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -16,7 +17,6 @@ import {
 } from 'typeorm';
 
 import { ContentElement } from '@/chat/types/message';
-import { config } from '@/config';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';

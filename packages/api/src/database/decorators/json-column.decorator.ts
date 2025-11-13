@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { Column, ColumnOptions, ColumnType } from 'typeorm';
-
-import { config } from '@/config';
 
 type JsonColumnOptions = Omit<ColumnOptions, 'type'>;
 

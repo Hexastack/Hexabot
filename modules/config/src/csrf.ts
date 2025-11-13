@@ -5,9 +5,9 @@
  */
 
 import { csrfSync } from 'csrf-sync';
-import { Request } from 'express';
+import type { Request } from 'express';
 
-import { config } from '.';
+import { config } from './config';
 
 export const csrf = csrfSync({
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],

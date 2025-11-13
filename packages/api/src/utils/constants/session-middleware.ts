@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { RequestHandler } from 'express';
 import session from 'express-session';
-
-import { config } from '@/config';
 
 import { getSessionStore } from './session-store';
 

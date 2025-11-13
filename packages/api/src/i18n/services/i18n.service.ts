@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { Injectable } from '@nestjs/common';
 import {
   I18nService as NativeI18nService,
@@ -13,7 +14,6 @@ import {
 } from 'nestjs-i18n';
 import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
-import { config } from '@/config';
 import { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 
 @Injectable()

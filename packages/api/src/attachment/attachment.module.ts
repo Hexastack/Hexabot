@@ -6,11 +6,11 @@
 
 import { existsSync, mkdirSync } from 'fs';
 
+import { config } from '@hexabot/config';
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppInstance } from '@/app.instance';
-import { config } from '@/config';
 import { UserModule } from '@/user/user.module';
 
 import { AttachmentController } from './controllers/attachment.controller';

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import {
   BadRequestException,
@@ -24,7 +25,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
-import { config } from '@/config';
 import { Roles } from '@/utils/decorators/roles.decorator';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';

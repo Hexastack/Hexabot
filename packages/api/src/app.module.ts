@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import path, { join } from 'path';
+import { join } from 'path';
 
+import { ConfigModule, CONFIG_I18N_PATH, config } from '@hexabot/config';
 import { LoggerModule } from '@hexabot/logger';
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -29,7 +30,6 @@ import { AttachmentModule } from './attachment/attachment.module';
 import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
-import { config } from './config';
 import { TypeormConfigService } from './database/typeorm-config.service';
 import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
@@ -47,7 +47,7 @@ import { WebsocketModule } from './websocket/websocket.module';
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
   loaderOptions: {
-    path: path.join(__dirname, '/config/i18n/'),
+    path: CONFIG_I18N_PATH,
     watch: true,
   },
   resolvers: [
@@ -68,6 +68,7 @@ const i18nOptions: I18nOptions = {
           }),
         ]
       : []),
+    ConfigModule,
     MailerModule,
     NlpModule,
     CmsModule,

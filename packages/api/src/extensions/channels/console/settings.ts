@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
+
 import { ChannelSetting } from '@/channel/types';
-import { config } from '@/config';
 import { SettingType } from '@/setting/types';
 
 export const CONSOLE_CHANNEL_NAME = 'console-channel';

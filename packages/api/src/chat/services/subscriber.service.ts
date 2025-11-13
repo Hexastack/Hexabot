@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -18,7 +19,6 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,

@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { ServerOptions } from 'socket.io';
-
-import { config } from '@/config';
 
 export class RedisIoAdapter extends IoAdapter {
   private adapter: ReturnType<typeof createAdapter>;

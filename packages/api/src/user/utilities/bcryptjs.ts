@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { hashSync } from 'bcryptjs';
-
-import { config } from '@/config';
 
 export const hash = (plainPassword: string) =>
   hashSync(plainPassword, config.authentication.jwtOptions.salt);

@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { config } from '@hexabot/config';
 import { TypeormStore } from 'connect-typeorm';
 import session from 'express-session';
 import { DataSource } from 'typeorm';
 
 import { AppInstance } from '@/app.instance';
-import { config } from '@/config';
 import { SessionOrmEntity } from '@/user/entities/session.entity';
 
 const toSeconds = (milliseconds: number): number =>

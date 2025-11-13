@@ -8,11 +8,10 @@ import { createReadStream, existsSync } from 'fs';
 import { extname } from 'path';
 import { Readable } from 'stream';
 
+import { config } from '@hexabot/config';
 import { Logger, StreamableFile } from '@nestjs/common';
 import { StreamableFileOptions } from '@nestjs/common/file-stream/interfaces/streamable-options.interface';
 import { v4 as uuidv4 } from 'uuid';
-
-import { config } from '@/config';
 
 import { AttachmentResourceRef } from '../types';
 

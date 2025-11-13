@@ -49,6 +49,7 @@
     "*.{js,ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
   "dependencies": {
+    "@hexabot/config": "workspace:*",
     "@hexabot/logger": "workspace:*",
     "@keyv/redis": "^5.1.3",
     "@nestjs-modules/mailer": "^2.0.2",

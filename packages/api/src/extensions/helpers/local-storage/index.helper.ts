@@ -9,6 +9,7 @@ import os from 'os';
 import { join, normalize, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
+import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
 import {
   Injectable,
@@ -29,7 +30,6 @@ import {
   generateUniqueFilename,
   getStreamableFile,
 } from '@/attachment/utilities';
-import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
 import BaseStorageHelper from '@/helper/lib/base-storage-helper';
 import { SettingService } from '@/setting/services/setting.service';
