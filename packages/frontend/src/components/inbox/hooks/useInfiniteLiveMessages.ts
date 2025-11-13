@@ -5,22 +5,25 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { InfiniteData, useQueryClient } from "react-query";
 
 import { useNormalizeAndCache } from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { EntityType, QueryType } from "@/services/types";
 import { IMessage } from "@/types/message.types";
 import { SearchPayload } from "@/types/search.types";
+import { InfiniteData } from "@/types/tanstack.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { SocketMessageEvents } from "../types";
 
 import { useChat } from "./ChatContext";
 
+const PAGE_SIZE = 20;
+
 export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
   const params = useMemo<SearchPayload<EntityType.MESSAGE>>(
     () => ({
@@ -51,6 +54,20 @@ export const useInfinitedLiveMessages = () => {
       initialSortState: [{ field: "createdAt", sort: "desc" }],
     },
     {
+      initialPageParam: {
+        limit: PAGE_SIZE,
+        skip: 0,
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < PAGE_SIZE) {
+          return undefined;
+        }
+
+        return {
+          limit: PAGE_SIZE,
+          skip: allPages.length * PAGE_SIZE,
+        };
+      },
       enabled: !!activeChat?.id,
     },
   );

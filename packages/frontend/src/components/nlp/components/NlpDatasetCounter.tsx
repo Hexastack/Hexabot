@@ -33,7 +33,7 @@ const NlpDatasetCounter: React.FC = () => {
         title={`${t("label.total")}: ${
           train.isLoading
             ? `${t("charts.loading")}...`
-            : train.data?.count ?? t("charts.error")
+            : (train.data?.count ?? t("charts.error"))
         }`}
         description={`${t("label.training_set")}`}
       />
@@ -41,7 +41,7 @@ const NlpDatasetCounter: React.FC = () => {
         title={`${t("label.total")}: ${
           test.isLoading
             ? `${t("charts.loading")}...`
-            : test.data?.count ?? t("charts.error")
+            : (test.data?.count ?? t("charts.error"))
         }`}
         description={`${t("label.test_set")}`}
       />
@@ -49,7 +49,7 @@ const NlpDatasetCounter: React.FC = () => {
         title={`${t("label.total")}: ${
           entity.isLoading
             ? `${t("charts.loading")}...`
-            : entity.data?.count ?? t("charts.error")
+            : (entity.data?.count ?? t("charts.error"))
         }`}
         description={`${t("label.entities")}`}
       />

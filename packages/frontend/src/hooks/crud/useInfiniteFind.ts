@@ -4,15 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseInfiniteQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
+import { useTanstackInfiniteQuery } from "./useTanstack";
+
+const PAGE_SIZE = 20;
 
 export const useInfiniteFind = <
   T extends THook["params"],
@@ -28,21 +30,33 @@ export const useInfiniteFind = <
       string[],
       Error,
       string[],
-      TBasic[],
-      [QueryType, EntityType, string]
+      [QueryType, EntityType, string],
+      { limit: number; skip: number }
     >,
     "queryFn" | "onSuccess"
   > & { onSuccess?: (result: TBasic[]) => void },
 ) => {
-  const { onSuccess, queryKey, ...otherOptions } = options || {};
+  const { onSuccess, queryKey = [], ...otherOptions } = options || {};
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const normalizeAndCache = useNormalizeAndCache<TBasic | TFull, string[]>(
     entity,
   );
   const getFromCache = useGetFromCache(entity);
-  // @TODO : fix the following
-  // @ts-ignore
-  const { data: infiniteData, ...infiniteQuery } = useInfiniteQuery({
+  const { data: infiniteData, ...infiniteQuery } = useTanstackInfiniteQuery({
+    initialPageParam: {
+      limit: PAGE_SIZE,
+      skip: 0,
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PAGE_SIZE) {
+        return undefined;
+      }
+
+      return {
+        limit: PAGE_SIZE,
+        skip: allPages.length * PAGE_SIZE,
+      };
+    },
     queryKey,
     queryFn: async () => {
       const data = await api.find(
@@ -61,7 +75,7 @@ export const useInfiniteFind = <
 
       return result;
     },
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
     ...(otherOptions || {}),
   });
 

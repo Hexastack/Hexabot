@@ -8,7 +8,6 @@ import { faLanguage } from "@fortawesome/free-solid-svg-icons";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -18,6 +17,7 @@ import {
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
@@ -34,7 +34,7 @@ export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
@@ -49,16 +49,15 @@ export const Translations = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutate: checkRefreshTranslations, isLoading } =
+  const { mutate: checkRefreshTranslations, isPending } =
     useRefreshTranslations({
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
       onSuccess: () => {
-        queryClient.invalidateQueries([
-          QueryType.collection,
-          EntityType.TRANSLATION,
-        ]);
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.collection, EntityType.TRANSLATION],
+        });
         toast.success(t("message.success_translation_refresh"));
       },
     });
@@ -139,7 +138,7 @@ export const Translations = () => {
           children: t("button.refresh"),
           startIcon: <AutorenewIcon />,
           onClick: checkRefreshTranslations,
-          disabled: isLoading,
+          disabled: isPending,
         },
       ]}
       columns={columns}

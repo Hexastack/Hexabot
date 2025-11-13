@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation } from "react-query";
-
 import { TMutationOptions } from "@/services/types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 
+import { useTanstackMutation } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
 
 export const useRequestResetPassword = (
@@ -16,7 +15,7 @@ export const useRequestResetPassword = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation<void, Error, IResetRequest>({
+  return useTanstackMutation<void, Error, IResetRequest>({
     ...options,
     mutationFn: async (payload) => {
       return await apiClient.requestReset(payload);
@@ -30,7 +29,7 @@ export const useResetPassword = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation<void, Error, IResetPayload>({
+  return useTanstackMutation<void, Error, IResetPayload>({
     ...options,
     mutationFn: async (payload) => {
       return await apiClient.reset(token, payload);

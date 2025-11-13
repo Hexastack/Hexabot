@@ -11,13 +11,13 @@ import LanguageIcon from "@mui/icons-material/Language";
 import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
@@ -30,9 +30,9 @@ type ProfileFormProps = { user: IUser };
 
 export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { t } = useTranslate();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { toast } = useToast();
-  const { mutate: updateProfile, isLoading } = useUpdateProfile({
+  const { mutate: updateProfile, isPending } = useUpdateProfile({
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -204,7 +204,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
               type="submit"
               startIcon={<CheckIcon />}
               onClick={handleSubmit(onSubmitForm)}
-              disabled={isLoading}
+              disabled={isPending}
             >
               {t("button.save")}
             </Button>

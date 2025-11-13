@@ -51,7 +51,7 @@ export const Register = () => {
   const { t } = useTranslate();
   const router = useAppRouter();
   const { toast } = useToast();
-  const { mutate: acceptInvite, isLoading } = useAcceptInvite({
+  const { mutate: acceptInvite, isPending } = useAcceptInvite({
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -249,7 +249,7 @@ export const Register = () => {
                     type="submit"
                     endIcon={<KeyboardArrowRightIcon />}
                     onClick={handleSubmit(onSubmitForm)}
-                    disabled={isLoading || !isTermsAccepted}
+                    disabled={isPending || !isTermsAccepted}
                   >
                     {t("button.register")}
                   </Button>

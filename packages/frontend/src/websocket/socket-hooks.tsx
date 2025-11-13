@@ -12,11 +12,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { QueryOptions, useQuery } from "react-query";
 
+import { useTanstackQuery } from "@/hooks/crud/useTanstack";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/useToast";
+import { QueryOptions } from "@/types/tanstack.types";
 
 import { SocketIoClient } from "./SocketIoClient";
 
@@ -84,7 +85,7 @@ export const useSocketGetQuery = <T,>(
   options?: Omit<QueryOptions<T, Error, T, string[]>, "queryFn">,
 ) => {
   const { socket } = useSocket();
-  const query = useQuery({
+  const query = useTanstackQuery({
     ...options,
     queryKey: ["socket", "get", url],
     queryFn: async () => {

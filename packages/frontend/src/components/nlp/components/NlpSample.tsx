@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
-import { useQueryClient } from "react-query";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -41,6 +40,7 @@ import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useConfig } from "@/hooks/useConfig";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
@@ -73,7 +73,7 @@ export default function NlpSample() {
   const { toast } = useToast();
   const { t } = useTranslate();
   const dialogs = useDialogs();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>();
   const [patterns, setPatterns] = useState<NlpPattern[]>([]);
@@ -115,7 +115,7 @@ export default function NlpSample() {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutate: importDataset, isLoading } = useImport(
+  const { mutate: importDataset, isPending } = useImport(
     EntityType.NLP_SAMPLE,
     {
       onError: () => {
@@ -391,7 +391,7 @@ export default function NlpSample() {
                     accept="text/csv"
                     label={t("button.import")}
                     onChange={handleImportChange}
-                    isLoading={isLoading}
+                    isLoading={isPending}
                   />
                 ),
               },

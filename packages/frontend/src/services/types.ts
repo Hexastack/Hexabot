@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { UseMutationOptions } from "react-query";
+import { UseMutationOptions } from "@/types/tanstack.types";
 
 export enum EntityType {
   SUBSCRIBER = "Subscriber",

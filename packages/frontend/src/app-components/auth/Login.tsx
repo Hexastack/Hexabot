@@ -36,7 +36,7 @@ export const Login = () => {
   const { toast } = useToast();
   const router = useAppRouter();
   const { authenticate } = useAuth();
-  const { mutate: login, isLoading } = useLogin({
+  const { mutate: login, isPending } = useLogin({
     onSuccess: (data) => {
       if (data.state) authenticate(data);
       else {
@@ -137,7 +137,7 @@ export const Login = () => {
                   type="submit"
                   endIcon={<KeyboardArrowRightIcon />}
                   onClick={handleSubmit(onSubmitForm)}
-                  disabled={isLoading}
+                  disabled={isPending}
                 >
                   {t("button.login")}
                 </Button>

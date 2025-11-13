@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery, useQueryClient, UseQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import {
   IBaseSchema,
@@ -14,10 +12,12 @@ import {
   THook,
   TType,
 } from "@/types/base.types";
+import { UseQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { useNormalizeAndCache } from "./helpers";
+import { useTanstackQuery, useTanstackQueryClient } from "./useTanstack";
 
 export const useGet = <
   T extends THook["params"],
@@ -42,7 +42,7 @@ export const useGet = <
     entity,
   );
 
-  return useQuery({
+  return useTanstackQuery({
     queryFn: async () => {
       const data = await api.get(
         id,
@@ -64,7 +64,7 @@ export const useGetFromCache = <
 >(
   entity: E,
 ) => {
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
 
   return (id: string) => {
     const [qEntity] = entity.split("/");

@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation } from "react-query";
-
 import { TMutationOptions } from "@/services/types";
 
+import { useTanstackMutation } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
 
 export const useRefreshTranslations = (
@@ -22,7 +21,7 @@ export const useRefreshTranslations = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn() {
       return await apiClient.refreshTranslations();

@@ -75,6 +75,8 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
+    isError,
+    error,
     data: blockSearchResults = [],
     isLoading,
     isFetching,
@@ -93,12 +95,15 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       onSuccess() {
         setSelectedIndex(0);
       },
-      onError() {
-        toast.error(t("message.failed_to_load_blocks"));
-      },
     },
   );
   const isLoadingResults = isLoading || isFetching;
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(t("message.failed_to_load_blocks"));
+    }
+  }, [isError, error]);
 
   useEffect(() => {
     setOpenSearchPanel(open);

@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
+import { useEffect } from "react";
 
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { usePagination } from "../usePagination";
@@ -15,6 +16,7 @@ import { usePagination } from "../usePagination";
 import { useNormalizeAndCache } from "./helpers";
 import { useCount } from "./useCount";
 import { useGetFromCache } from "./useGet";
+import { useTanstackQuery } from "./useTanstack";
 
 export const useFind = <
   TP extends THook["params"],
@@ -53,7 +55,7 @@ export const useFind = <
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
   const enabled = !!countQuery.data || !hasCount;
-  const { data: ids, ...normalizedQuery } = useQuery({
+  const { data: ids, ...normalizedQuery } = useTanstackQuery({
     enabled,
     queryFn: async () => {
       const data =
@@ -68,16 +70,16 @@ export const useFind = <
       return result;
     },
     queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
-    onSuccess: (ids) => {
-      if (onSuccess) {
-        onSuccess(
-          (ids || []).map((id) => getFromCache(id) as unknown as TBasic),
-        );
-      }
-    },
-    keepPreviousData: true,
     ...otherOptions,
   });
+
+  useEffect(() => {
+    if (ids) {
+      onSuccess?.(
+        (ids || []).map((id) => getFromCache(id) as unknown as TBasic),
+      );
+    }
+  }, [ids]);
   const data = (ids || [])
     .map((id) => getFromCache(id) as unknown as TBasic)
     // @TODO : In case we deleted the items, but still present in collection

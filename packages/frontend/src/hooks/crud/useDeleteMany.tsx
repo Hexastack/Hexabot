@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
 import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useDeleteMany = <
   TE extends THook["entity"],
@@ -23,10 +22,10 @@ export const useDeleteMany = <
   options?: TMutationOptions<string, Error, string[], TBasic>,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
+  return useTanstackMutation({
     mutationFn: async (ids: string[]) => {
       const result = await api.deleteMany(ids);
 

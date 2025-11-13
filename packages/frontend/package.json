@@ -31,6 +31,7 @@
     "@mui/icons-material": "^5.15.16",
     "@mui/material": "^5.15.16",
     "@mui/x-data-grid": "^7.3.2",
+    "@tanstack/react-query": "^5.90.8",
     "@xyflow/react": "^12.8.5",
     "autolinker": "^4.1.5",
     "axios": "^1.12.2",
@@ -47,12 +48,12 @@
     "react-dom": "^18",
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
-    "react-query": "^3.39.3",
     "react-router-dom": "^6.26.2",
     "react-window": "^1.8.5",
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/react-window": "^1.8.5",
     "@types/node": "20.12.12",
     "@types/qs": "^6.9.15",

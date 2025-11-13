@@ -4,16 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery } from "react-query";
-
 import { StatsType } from "@/types/bot-stat.types";
 
+import { useTanstackQuery } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
 
 export const useFindStats = <T>(type: StatsType) => {
   const { apiClient } = useApiClient();
 
-  return useQuery({
+  return useTanstackQuery({
     queryKey: ["stats", type],
     queryFn: async () => {
       return await apiClient.getBotStats<T>(type);

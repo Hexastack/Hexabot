@@ -56,7 +56,7 @@ export const Main = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setSearchOpen] = useState(false);
   const { searchPayload } = useSearch<EntityType.BLOCK>({
-    $eq: [{ 'category.id': selectedCategoryId }],
+    $eq: [{ "category.id": selectedCategoryId }],
   });
   const { selectedCategory, setDefaultCategory } = useCategories();
   const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY);
@@ -66,7 +66,7 @@ export const Main = () => {
     { hasCount: false, params: searchPayload },
     {
       enabled: !!selectedCategoryId,
-      keepPreviousData: true,
+      placeholderData: (prev) => prev,
     },
   );
   const startEdges = useMemo(

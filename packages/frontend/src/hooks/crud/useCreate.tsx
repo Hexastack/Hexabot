@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
 import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useCreate = <
   TE extends THook["entity"],
@@ -23,11 +22,11 @@ export const useCreate = <
   options?: TMutationOptions<TBasic, Error, TAttr, TBasic>,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
+  return useTanstackMutation({
     mutationFn: async (variables: TAttr) => {
       const data = await api.create(variables);
       const { entities, result } = normalizeAndCache(data);

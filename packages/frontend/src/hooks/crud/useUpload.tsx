@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IBaseSchema, THook } from "@/types/base.types";
@@ -13,6 +11,7 @@ import { IBaseSchema, THook } from "@/types/base.types";
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useUpload = <
   TE extends THook["entity"],
@@ -29,11 +28,11 @@ export const useUpload = <
   >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
+  return useTanstackMutation({
     mutationFn: async ({ file, resourceRef }) => {
       const data = await api.upload(file, resourceRef);
       const { entities, result } = normalizeAndCache(data);

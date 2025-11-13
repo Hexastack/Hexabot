@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions, TSetCacheProps } from "@/services/types";
 import { IBaseSchema, IEntityMapTypes, THook, TType } from "@/types/base.types";
 import { merge } from "@/utils/object";
@@ -14,6 +12,7 @@ import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useUpdate = <
   TE extends THook["entity"],
@@ -31,10 +30,10 @@ export const useUpdate = <
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
+  return useTanstackMutation({
     mutationFn: async ({ id, params }) => {
       const data = await api.update(id, params);
       const { entities, result } = normalizeAndCache(data);
@@ -61,7 +60,7 @@ export const useUpdate = <
 
 export const useUpdateCache = <E extends keyof IEntityMapTypes>(entity: E) => {
   const getFromCache = useGetFromCache(entity);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
 
   return ({
     id,

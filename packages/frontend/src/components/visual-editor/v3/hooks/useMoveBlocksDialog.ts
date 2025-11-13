@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQueryClient } from "react-query";
-
 import { isSameEntity } from "@/hooks/crud/helpers";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
@@ -28,7 +27,7 @@ export const useMoveBlocksDialog = () => {
     selectedCategoryId,
     updateVisualEditorURL,
   } = useVisualEditor();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const { categories, getCategory, getCategoryIndex } = useCategories();
   const onCategoryChange = async (
