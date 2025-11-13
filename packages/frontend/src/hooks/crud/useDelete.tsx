@@ -5,7 +5,7 @@
  */
 
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, IEntityMapTypes, THook } from "@/types/base.types";
+import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
@@ -14,19 +14,17 @@ import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useDelete = <
   TE extends THook["entity"],
-  TAttr = THook<{ entity: TE }>["attributes"],
   TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
-  TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
   options?: TMutationOptions<string, Error, string, TBasic>,
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
+  const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
   return useTanstackMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id) => {
       const result = await api.delete(id);
 
       queryClient.removeQueries({
@@ -61,9 +59,7 @@ export const useDelete = <
   });
 };
 
-export const useDeleteFromCache = <E extends keyof IEntityMapTypes>(
-  entity: E,
-) => {
+export const useDeleteFromCache = <TE extends THook["entity"]>(entity: TE) => {
   const queryClient = useTanstackQueryClient();
 
   return (id: string) => {

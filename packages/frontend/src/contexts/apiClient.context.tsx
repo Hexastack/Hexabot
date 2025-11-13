@@ -5,12 +5,11 @@
  */
 
 import axios from "axios";
-import { createContext, ReactNode, FC } from "react";
+import { createContext, FC, ReactNode } from "react";
 
 import { getApiClientByEntity, useAxiosInstance } from "@/hooks/useApiClient";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
-import { EntityType } from "@/services/types";
-import { IBaseSchema } from "@/types/base.types";
+import { THook } from "@/types/base.types";
 
 interface ApiClientContextProps {
   children: ReactNode;
@@ -18,9 +17,9 @@ interface ApiClientContextProps {
 
 export interface ApiClientContext {
   apiClient: ApiClient;
-  getApiClientByEntity: <TAttr, TStub extends IBaseSchema, TFull = never>(
-    type: EntityType,
-  ) => EntityApiClient<TAttr, TStub, TFull>;
+  getApiClientByEntity: <TE extends THook["entity"]>(
+    entity: TE,
+  ) => EntityApiClient<TE>;
 }
 
 export const ApiClientContext = createContext<ApiClientContext>({

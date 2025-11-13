@@ -11,8 +11,7 @@ import { useContext, useMemo } from "react";
 import { ApiClientContext } from "@/contexts/apiClient.context";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient, ROUTES } from "@/services/api.class";
-import { EntityType } from "@/services/types";
-import { IBaseSchema } from "@/types/base.types";
+import { THook } from "@/types/base.types";
 import { IUser } from "@/types/user.types";
 
 import { useAppRouter } from "./useAppRouter";
@@ -89,21 +88,17 @@ export const useAxiosInstance = () => {
 
 export const entityApiClients = new Map();
 
-export const getApiClientByEntity = <
-  TAttr,
-  TStub extends IBaseSchema,
-  TFull = never,
->(
-  type: EntityType,
+export const getApiClientByEntity = <TE extends THook["entity"]>(
+  entity: TE,
   apiClient: ApiClient,
 ) => {
-  if (!entityApiClients.has(type)) {
-    const client = apiClient.buildEntityClient<TAttr, TStub, TFull>(type);
+  if (!entityApiClients.has(entity)) {
+    const client = apiClient.buildEntityClient<TE>(entity);
 
-    entityApiClients.set(type, client);
+    entityApiClients.set(entity, client);
   }
 
-  return entityApiClients.get(type) as EntityApiClient<TAttr, TStub, TFull>;
+  return entityApiClients.get(entity) as EntityApiClient<TE>;
 };
 
 export const useApiClient = (): ApiClientContext => {
@@ -116,14 +111,8 @@ export const useApiClient = (): ApiClientContext => {
   return context;
 };
 
-export const useEntityApiClient = <
-  TAttr,
-  TStub extends IBaseSchema,
-  TFull = never,
->(
-  type: EntityType,
-) => {
+export const useEntityApiClient = <TE extends THook["entity"]>(entity: TE) => {
   const { getApiClientByEntity } = useApiClient();
 
-  return getApiClientByEntity<TAttr, TStub, TFull>(type);
+  return getApiClientByEntity(entity);
 };

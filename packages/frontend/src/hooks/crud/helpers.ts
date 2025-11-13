@@ -8,16 +8,19 @@ import { normalize } from "normalizr";
 
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
-import { IBaseSchema, IEntityMapTypes } from "@/types/base.types";
+import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useTanstackQueryClient } from "./useTanstack";
 
 export const useNormalizeAndCache = <
-  TData extends IBaseSchema,
   TResult,
+  TE extends THook["entity"] = THook["entity"],
+  TBasic extends THook["basic"] = THook<{ entity: TE }>["basic"],
+  TFull extends THook["full"] = THook<{ entity: TE }>["full"],
+  TData = TBasic | TFull,
   TAny extends IBaseSchema = IBaseSchema,
 >(
-  entity: keyof IEntityMapTypes,
+  entity: TE,
 ) => {
   const queryClient = useTanstackQueryClient();
 

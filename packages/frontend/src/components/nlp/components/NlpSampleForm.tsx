@@ -47,9 +47,7 @@ import {
   INlpDatasetSample,
   INlpDatasetSampleAttributes,
   INlpDatasetTraitEntity,
-  INlpSample,
   INlpSampleFormAttributes,
-  INlpSampleFull,
   NlpSampleType,
 } from "@/types/nlp-sample.types";
 import { INlpValue } from "@/types/nlp-value.types";
@@ -72,9 +70,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
   };
   const { mutate: createSample } = useCreate<
     EntityType.NLP_SAMPLE,
-    INlpDatasetSampleAttributes,
-    INlpSample,
-    INlpSampleFull
+    INlpDatasetSampleAttributes
   >(EntityType.NLP_SAMPLE, {
     ...options,
     onSuccess: () => {

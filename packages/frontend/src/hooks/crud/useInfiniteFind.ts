@@ -18,9 +18,7 @@ const PAGE_SIZE = 20;
 
 export const useInfiniteFind = <
   T extends THook["params"],
-  TAttr extends THook<T>["attributes"],
   TBasic extends THook<T>["basic"],
-  TFull extends THook<T>["full"],
   P = THook<T>["populate"],
 >(
   { entity, format }: THook<T>["params"],
@@ -37,10 +35,8 @@ export const useInfiniteFind = <
   > & { onSuccess?: (result: TBasic[]) => void },
 ) => {
   const { onSuccess, queryKey = [], ...otherOptions } = options || {};
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const normalizeAndCache = useNormalizeAndCache<TBasic | TFull, string[]>(
-    entity,
-  );
+  const api = useEntityApiClient(entity);
+  const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
   const { data: infiniteData, ...infiniteQuery } = useTanstackInfiniteQuery({
     initialPageParam: {
