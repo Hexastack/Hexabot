@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { FieldType } from '@hexabot/setting/types';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { ContentType, ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { FieldType } from '@/setting/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

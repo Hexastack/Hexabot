@@ -7,6 +7,7 @@
 import { Readable, Stream } from 'stream';
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { StreamableFile } from '@nestjs/common';
 
 import {
@@ -14,7 +15,6 @@ import {
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
 import { HelperName, HelperType } from '../types';

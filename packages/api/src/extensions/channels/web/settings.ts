@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingType } from '@hexabot/setting/types';
+
 import { ChannelSetting } from '@/channel/types';
-import { SettingType } from '@/setting/types';
 
 export const WEB_CHANNEL_NAME = 'web-channel' as const;
 

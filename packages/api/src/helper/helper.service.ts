@@ -5,9 +5,8 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-
-import { SettingService } from '@/setting/services/setting.service';
 
 import BaseHelper from './lib/base-helper';
 import { HelperName, HelperRegistry, HelperType, TypeOfHelper } from './types';

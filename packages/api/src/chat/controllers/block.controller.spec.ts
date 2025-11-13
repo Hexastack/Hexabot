@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
@@ -25,7 +26,6 @@ import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';

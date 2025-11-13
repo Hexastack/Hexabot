@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, EnumColumn } from '@hexabot/core/database';
 import { AsRelation } from '@hexabot/core/decorators';
 import {
   Column,
@@ -15,7 +15,6 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 
 import { NlpSampleState } from '..//types';

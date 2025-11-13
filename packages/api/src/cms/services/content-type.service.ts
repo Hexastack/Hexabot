@@ -5,9 +5,8 @@
  */
 
 import { BaseOrmService } from '@hexabot/core/database';
+import { FieldType } from '@hexabot/setting/types';
 import { Injectable } from '@nestjs/common';
-
-import { FieldType } from '@/setting/types';
 
 import {
   ContentType,

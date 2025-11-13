@@ -5,6 +5,12 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import {
+  DEFAULT_METADATA,
+  DEFAULT_SETTINGS,
+  MetadataSeeder,
+  SettingSeeder,
+} from '@hexabot/setting';
 import { INestApplicationContext } from '@nestjs/common';
 
 import { CategorySeeder } from './chat/seeds/category.seed';
@@ -19,10 +25,6 @@ import { NlpEntitySeeder } from './nlp/seeds/nlp-entity.seed';
 import { nlpEntityModels } from './nlp/seeds/nlp-entity.seed-model';
 import { NlpValueSeeder } from './nlp/seeds/nlp-value.seed';
 import { nlpValueModels } from './nlp/seeds/nlp-value.seed-model';
-import { MetadataSeeder } from './setting/seeds/metadata.seed';
-import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
-import { SettingSeeder } from './setting/seeds/setting.seed';
-import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { PermissionCreateDto } from './user/dto/permission.dto';
 import { Role } from './user/dto/role.dto';
 import { ModelSeeder } from './user/seeds/model.seed';

@@ -4,11 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, JsonColumn } from '@hexabot/core/database';
 import { ForbiddenException } from '@nestjs/common';
 import { BeforeRemove, Column, Entity, Index, OneToMany } from 'typeorm';
-
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 
 import { ContentField } from '../dto/contentType.dto';
 

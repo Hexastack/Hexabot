@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { FieldType } from '@hexabot/setting/types';
 import { BadRequestException } from '@nestjs/common';
 import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-
-import { FieldType } from '@/setting/types';
 
 import { ContentField } from '../dto/contentType.dto';
 

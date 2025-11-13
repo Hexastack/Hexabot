@@ -5,7 +5,7 @@
  */
 
 import { config } from '@hexabot/config';
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, JsonColumn } from '@hexabot/core/database';
 import { AsRelation } from '@hexabot/core/decorators';
 import {
   BeforeInsert,
@@ -19,7 +19,6 @@ import {
 } from 'typeorm';
 
 import { ContentElement } from '@/chat/types/message';
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 
 import { Content } from '../dto/content.dto';
 

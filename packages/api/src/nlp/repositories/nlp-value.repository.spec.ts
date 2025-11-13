@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
-import { SettingService } from '@/setting/services/setting.service';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';

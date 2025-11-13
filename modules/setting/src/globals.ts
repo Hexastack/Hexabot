@@ -5,7 +5,15 @@
  */
 
 import { DEFAULT_SETTINGS } from './seeds/setting.seed-model';
-import { SettingByType, SettingSeed, SettingType } from './types';
+import { SettingByType, SettingType } from './types';
+
+type SettingSeedLike = {
+  group: string;
+  label: string;
+  type: SettingType;
+  value: unknown;
+  options?: string[];
+};
 
 declare global {
   type TNativeType<T> = T extends string
@@ -20,22 +28,25 @@ declare global {
             ? { [K in keyof T]: TNativeType<T[K]> }
             : T;
 
-  type SettingValue<K> = K['type'] extends SettingType.select
-    ? K['options'][number]
-    : TNativeType<K['value']>;
+  type SettingValue<K extends SettingSeedLike> =
+    K['type'] extends SettingType.select
+      ? NonNullable<K['options']>[number]
+      : TNativeType<K['value']>;
 
-  type SettingObject<T extends SettingSeed[]> = {
+  type SettingObject<T extends readonly SettingSeedLike[]> = {
     [K in T[number] as K['label']]: SettingValue<K>;
   };
 
-  type SettingMapByType<T extends SettingSeed[]> = {
+  type SettingMapByType<T extends readonly SettingSeedLike[]> = {
     [K in T[number] as K['label']]: SettingByType<K['type']>;
   };
 
-  type SettingTree<T extends SettingSeed[]> = {
+  type SettingTree<T extends readonly SettingSeedLike[]> = {
     [G in T[number] as G['group']]: {
       [K in T[number] as K['label']]: SettingValue<K>;
     };
   };
   interface Settings extends SettingTree<typeof DEFAULT_SETTINGS> {}
 }
+
+export {};

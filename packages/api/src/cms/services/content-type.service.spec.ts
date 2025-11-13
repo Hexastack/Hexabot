@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { FieldType } from '@hexabot/setting/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -13,7 +14,6 @@ import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { BlockService } from '@/chat/services/block.service';
-import { FieldType } from '@/setting/types';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';

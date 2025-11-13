@@ -5,9 +5,9 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 
 import { AnyMessage } from '@/chat/types/message';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
 import { HelperName, HelperType, LLM } from '../types';

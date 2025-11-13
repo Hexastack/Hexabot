@@ -7,10 +7,10 @@
 import util from 'util';
 
 import { config } from '@hexabot/config';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import type { ServerOptions } from 'socket.io';
 
 import { AppInstance } from '@/app.instance';
-import { SettingService } from '@/setting/services/setting.service';
 
 export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
   const opts: Partial<ServerOptions> = {

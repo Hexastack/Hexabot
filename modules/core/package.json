@@ -69,6 +69,7 @@
     "zod": "^3.24.1"
   },
   "peerDependencies": {
+    "@hexabot/config": "workspace:*",
     "@hexabot/logger": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/event-emitter": "^3.0.1",
@@ -78,6 +79,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@hexabot/config": "workspace:*",
     "@hexabot/logger": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/event-emitter": "^3.0.1",

@@ -11,6 +11,7 @@ import { Readable, Stream } from 'stream';
 
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import {
   Injectable,
   NotFoundException,
@@ -32,7 +33,6 @@ import {
 } from '@/attachment/utilities';
 import { HelperService } from '@/helper/helper.service';
 import BaseStorageHelper from '@/helper/lib/base-storage-helper';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { LOCAL_STORAGE_HELPER_NAME } from './settings';
 

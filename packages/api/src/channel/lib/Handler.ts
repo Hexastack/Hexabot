@@ -8,6 +8,7 @@ import path from 'path';
 
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import {
   ForbiddenException,
   Inject,
@@ -37,7 +38,6 @@ import {
   StdOutgoingEnvelope,
   StdOutgoingMessage,
 } from '@/chat/types/message';
-import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { buildURL } from '@/utils/helpers/URL';
 import { HyphenToUnderscore } from '@/utils/types/extension';

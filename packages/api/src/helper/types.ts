@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnySetting, ExtensionSetting } from '@/setting/types';
+import { AnySetting, ExtensionSetting } from '@hexabot/setting/types';
+
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseFlowEscapeHelper from './lib/base-flow-escape-helper';

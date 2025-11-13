@@ -5,6 +5,7 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { escapeRegExp } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,7 +14,6 @@ import { NlpSample, NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
 import { HelperName, HelperType, NLU } from '../types';

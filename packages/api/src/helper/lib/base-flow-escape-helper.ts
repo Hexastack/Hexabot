@@ -5,10 +5,10 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BlockStub } from '@/chat/dto/block.dto';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
 import { FlowEscape, HelperName, HelperType } from '../types';

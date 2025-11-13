@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingCreateDto } from '@hexabot/setting/dto/setting.dto';
+import { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
+import { SettingType } from '@hexabot/setting/types';
 import { DataSource } from 'typeorm';
 
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
-import { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import { SettingType } from '@/setting/types';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [

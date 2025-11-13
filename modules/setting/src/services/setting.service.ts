@@ -15,7 +15,7 @@ import { Cache } from 'cache-manager';
 import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
-} from '@/utils/constants/cache';
+} from '../constants/cache.constants';
 
 import {
   Setting,

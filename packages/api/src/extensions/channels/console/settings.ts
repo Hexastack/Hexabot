@@ -5,9 +5,9 @@
  */
 
 import { config } from '@hexabot/config';
+import { SettingType } from '@hexabot/setting/types';
 
 import { ChannelSetting } from '@/channel/types';
-import { SettingType } from '@/setting/types';
 
 export const CONSOLE_CHANNEL_NAME = 'console-channel';
 

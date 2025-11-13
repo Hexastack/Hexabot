@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, JsonColumn } from '@hexabot/core/database';
 import { Column, Entity } from 'typeorm';
-
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 
 @Entity({ name: 'dummy' })
 export class DummyOrmEntity extends BaseOrmEntity {

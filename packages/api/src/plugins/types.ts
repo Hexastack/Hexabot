@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AnySetting, ExtensionSetting } from '@hexabot/setting/types';
+
 import { ChannelEvent } from '@/channel/lib/EventWrapper';
 import { Block, BlockCreateDto } from '@/chat/dto/block.dto';
 import { Conversation } from '@/chat/dto/conversation.dto';
-import { AnySetting, ExtensionSetting } from '@/setting/types';
 
 export type PluginName = `${string}-plugin`;
 

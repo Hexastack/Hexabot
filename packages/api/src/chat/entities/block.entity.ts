@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseOrmEntity } from '@hexabot/core/database';
+import { BaseOrmEntity, JsonColumn } from '@hexabot/core/database';
 import { AsRelation } from '@hexabot/core/decorators';
+import { SettingOrmEntity } from '@hexabot/setting/entities/setting.entity';
 import { ConflictException } from '@nestjs/common';
 import {
   BeforeRemove,
@@ -20,9 +21,6 @@ import {
   OneToOne,
   RelationId,
 } from 'typeorm';
-
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 
 import { CaptureVar } from '../types/capture-var';
 import { BlockMessage } from '../types/message';

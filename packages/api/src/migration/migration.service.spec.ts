@@ -8,15 +8,15 @@ import fs from 'fs';
 
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
+import { MetadataOrmEntity } from '@hexabot/setting/entities/metadata.entity';
+import { MetadataRepository } from '@hexabot/setting/repositories/metadata.repository';
+import { MetadataService } from '@hexabot/setting/services/metadata.service';
 import { HttpService } from '@nestjs/axios';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
-import { MetadataRepository } from '@/setting/repositories/metadata.repository';
-import { MetadataService } from '@/setting/services/metadata.service';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 

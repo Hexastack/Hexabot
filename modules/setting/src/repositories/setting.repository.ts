@@ -6,7 +6,6 @@
 
 import { BaseOrmRepository, DtoTransformer } from '@hexabot/core/database';
 import { Injectable } from '@nestjs/common';
-import { IHookSettingsGroupLabelOperationMap } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateEvent } from 'typeorm';
 
@@ -43,8 +42,8 @@ export class SettingRepository extends BaseOrmRepository<
     const setting = this.getTransformer(DtoTransformer.PlainCls)(
       event.databaseEntity,
     );
-    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-    const label = setting.label as '*';
+    const group = setting.group ?? 'settings';
+    const label = setting.label ?? '*';
     this.eventEmitter.emit(`hook:${group}:${label}`, setting);
   }
 }

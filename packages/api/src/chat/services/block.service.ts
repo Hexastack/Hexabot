@@ -6,6 +6,7 @@
 
 import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -17,7 +18,6 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 

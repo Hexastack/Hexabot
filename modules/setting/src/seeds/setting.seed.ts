@@ -9,7 +9,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
-import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
+import { SETTING_CACHE_KEY } from '../constants/cache.constants';
 
 import { SettingDtoConfig, SettingTransformerDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';

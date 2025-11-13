@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EnumColumn } from '@hexabot/core/database';
 import {
   Column,
   CreateDateColumn,
@@ -12,8 +13,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 
 import { MigrationAction, MigrationVersion } from './types';
 

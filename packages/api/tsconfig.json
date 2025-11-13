@@ -5,7 +5,8 @@
       "../../node_modules/@types",
       "./types"
     ],
-    "module": "commonjs",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,

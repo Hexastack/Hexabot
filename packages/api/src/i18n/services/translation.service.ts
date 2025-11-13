@@ -6,14 +6,14 @@
 
 import { BaseOrmService } from '@hexabot/core/database';
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
+import { SettingType } from '@hexabot/setting/types';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { SettingService } from '@/setting/services/setting.service';
-import { SettingType } from '@/setting/types';
 
 import { Block } from '../../chat/dto/block.dto';
 import { BlockService } from '../../chat/services/block.service';

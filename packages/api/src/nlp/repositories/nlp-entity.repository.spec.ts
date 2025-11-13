@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
 import { closeTypeOrmConnections } from '@/utils/test/test';

@@ -5,13 +5,13 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 
 import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../../helper.service';
 import { HelperName } from '../../types';

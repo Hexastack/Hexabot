@@ -7,6 +7,7 @@
 import fs from 'fs';
 
 import { LoggerService } from '@hexabot/logger';
+import { SettingService } from '@hexabot/setting/services/setting.service';
 import {
   BadRequestException,
   MethodNotAllowedException,
@@ -17,7 +18,6 @@ import { Request } from 'express';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
