@@ -83,19 +83,13 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     error,
     isLoading,
     refetch,
+    isSuccess,
   } = useTanstackQuery<IUser, Error>({
     queryKey: [CURRENT_USER_KEY],
     queryFn: async () => {
       return await apiClient.getCurrentSession();
     },
   });
-
-  useEffect(() => {
-    if (user) {
-      updateLanguage(user.language);
-      authRedirection(!!user?.id);
-    }
-  }, [user]);
   const setUser = (data?: IUser) => {
     queryClient.setQueryData([CURRENT_USER_KEY], data);
   };
@@ -112,6 +106,13 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   useSubscribeBroadcastChannel("logout", () => {
     router.reload();
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      updateLanguage(user.language);
+      authRedirection(!!user.id);
+    }
+  }, [isSuccess, user]);
 
   if (isLoading) {
     return <Progress />;
