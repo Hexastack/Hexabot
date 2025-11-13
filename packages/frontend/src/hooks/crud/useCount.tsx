@@ -14,7 +14,7 @@ import { useTanstackQuery } from "./useTanstack";
 
 export const useCount = <TE extends THook["entity"]>(
   entity: TE,
-  params?: Partial<THook<{ entity: TE }>["basic"]>,
+  params?: THook<{ entity: TE }>["filters"],
   options?: Omit<
     UseQueryOptions<
       { count: number },
