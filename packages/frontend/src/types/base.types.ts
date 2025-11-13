@@ -310,7 +310,7 @@ export type THook<
 > = {
   full: TType<TE>["full"];
   basic: TType<TE>["basic"];
-  filters: TType<TE>["filters"] & SearchFilters<TE>;
+  filters: Partial<TType<TE>["filters"] & SearchFilters<TE>>;
   params: TP;
   entity: TE;
   populate: TPopulateTypeFromFormat<G>;
