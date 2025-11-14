@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import '@hexabot/setting/globals';
 import '../types/event-emitter';
 import '../types/express-session';
 

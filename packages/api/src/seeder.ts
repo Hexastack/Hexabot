@@ -5,12 +5,10 @@
  */
 
 import { LoggerService } from '@hexabot/logger';
-import {
-  DEFAULT_METADATA,
-  DEFAULT_SETTINGS,
-  MetadataSeeder,
-  SettingSeeder,
-} from '@hexabot/setting';
+import { MetadataSeeder } from '@hexabot/setting/seeds/metadata.seed';
+import { DEFAULT_METADATA } from '@hexabot/setting/seeds/metadata.seed-model';
+import { SettingSeeder } from '@hexabot/setting/seeds/setting.seed';
+import { DEFAULT_SETTINGS } from '@hexabot/setting/seeds/setting.seed-model';
 import { INestApplicationContext } from '@nestjs/common';
 
 import { CategorySeeder } from './chat/seeds/category.seed';
