@@ -59,8 +59,12 @@ export const Main = () => {
     $eq: [{ "category.id": selectedCategoryId }],
   });
   const { selectedCategory, setDefaultCategory } = useCategories();
-  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY);
-  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
+  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
+    invalidate: false,
+  });
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
+    invalidate: false,
+  });
   const { data: blocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
     { hasCount: false, params: searchPayload },
