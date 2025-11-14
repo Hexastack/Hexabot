@@ -5,9 +5,10 @@
  */
 
 import { MailerService } from '@hexabot/mailer';
+// eslint-disable-next-line import/order
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
