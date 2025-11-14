@@ -10,7 +10,7 @@ import { PluginName } from '@/plugins/types';
 
 import { Message } from '../dto/message.dto';
 
-import { attachmentPayloadSchema } from './attachment';
+import { attachmentPayloadSchema, FileType } from './attachment';
 import { buttonSchema, PayloadType } from './button';
 import { contentOptionsSchema } from './options';
 import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
@@ -61,21 +61,6 @@ export const outgoingMessageFormatSchema = z.nativeEnum(OutgoingMessageFormat);
 export type OutgoingMessageFormatLiteral = z.infer<
   typeof outgoingMessageFormatSchema
 >;
-
-/**
- * FileType enum is declared, and currently not used
- **/
-export enum FileType {
-  image = 'image',
-  video = 'video',
-  audio = 'audio',
-  file = 'file',
-  unknown = 'unknown',
-}
-
-export const fileTypeSchema = z.nativeEnum(FileType);
-
-export type FileTypeLiteral = z.infer<typeof fileTypeSchema>;
 
 export const payloadTypeSchema = z.nativeEnum(PayloadType);
 

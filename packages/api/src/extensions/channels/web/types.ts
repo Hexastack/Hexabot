@@ -5,8 +5,8 @@
  */
 
 import { SubscriberFull } from '@/chat/dto/subscriber.dto';
+import { FileType } from '@/chat/types/attachment';
 import { Button, WebUrlButton } from '@/chat/types/button';
-import { FileType } from '@/chat/types/message';
 import { StdQuickReply } from '@/chat/types/quick-reply';
 
 export namespace Web {

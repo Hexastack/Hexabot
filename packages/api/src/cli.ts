@@ -13,8 +13,14 @@ moduleAlias.addAliases({
 
 import { HexabotModule } from './app.module';
 
+const isCliContext =
+  `${process.env.HEXABOT_CLI ?? ''}`.toLowerCase() === 'true' ||
+  process.env.HEXABOT_CLI === '1';
+
 async function bootstrap() {
   await CommandFactory.run(HexabotModule);
 }
 
-bootstrap();
+if (isCliContext) {
+  bootstrap();
+}

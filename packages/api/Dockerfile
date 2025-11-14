@@ -21,6 +21,8 @@ RUN pnpm install --filter @hexabot/api... --prod=false
 FROM deps AS build
 
 COPY packages/api ./packages/api
+COPY packages/frontend ./packages/frontend
+COPY packages/widget ./packages/widget
 
 RUN pnpm --filter @hexabot/api run build
 

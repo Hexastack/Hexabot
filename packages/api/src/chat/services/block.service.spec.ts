@@ -45,7 +45,7 @@ import {
   blockEmpty,
   blockGetStarted,
   blockProductListMock,
-  blocks,
+  blockMocks as blocks,
   mockNlpAffirmationPatterns,
   mockNlpFirstNamePatterns,
   mockNlpGreetingAnyNamePatterns,

@@ -1,11 +1,21 @@
 {
   "name": "@hexabot/api",
   "private": true,
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "FCL-1.0-ALv2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
+    "dist",
     "src",
     "types",
     "!src/**/*.spec.ts",
@@ -20,8 +30,10 @@
     "cache:contrib": "rm -rf src/.hexabot/contrib && pnpm run cache:channels && pnpm run cache:helpers && pnpm run cache:plugins",
     "cache:custom": "mkdir -p src/.hexabot/custom/extensions",
     "cache:prepare": "pnpm run cache:contrib && pnpm run cache:custom",
-    "build": "pnpm run cache:prepare && nest build && pnpm run copy-types",
+    "build": "pnpm run cache:prepare && pnpm run frontend:build && nest build && pnpm run copy-types && pnpm run frontend:copy",
     "copy-types": "cp -R types dist/types",
+    "frontend:build": "node ./scripts/frontend-build.js",
+    "frontend:copy": "node ./scripts/frontend-copy.js",
     "clean": "rimraf dist coverage",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
     "start": "pnpm exec nest start",
@@ -101,10 +113,12 @@
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.27",
     "uuid": "^9.0.1",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.31",
+    "@hexabot/frontend": "workspace:*",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.6",
@@ -128,7 +142,6 @@
     "@types/uid-safe": "^2.1.5",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
-    "dotenv": "^16.3.1",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",

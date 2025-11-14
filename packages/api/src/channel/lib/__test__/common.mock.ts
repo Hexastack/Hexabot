@@ -10,9 +10,9 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { FileType } from '@/chat/types/attachment';
 import { ButtonType } from '@/chat/types/button';
 import {
-  FileType,
   OutgoingMessageFormat,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,

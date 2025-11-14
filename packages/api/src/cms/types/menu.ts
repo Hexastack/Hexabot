@@ -41,5 +41,3 @@ export type AnyMenu<T extends MenuOrmEntity = MenuOrmEntity> = Omit<
 export type MenuTree = (AnyMenu<MenuOrmEntity> & {
   call_to_actions?: MenuTree;
 })[];
-
-export { MenuType };

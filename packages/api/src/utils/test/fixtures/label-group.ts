@@ -27,7 +27,7 @@ export const labelGroupFixtures: TLabelGroupFixtures['values'][] = [
   },
 ];
 
-export const labels: TLabelFixtures['values'][] = [
+export const labelGroupLabels: TLabelFixtures['values'][] = [
   {
     name: 'FREE',
     title: 'Free',
@@ -45,7 +45,7 @@ export const labels: TLabelFixtures['values'][] = [
 export const groupedLabelFixtures = getFixturesWithDefaultValues<
   TLabelFixtures['values']
 >({
-  fixtures: labels,
+  fixtures: labelGroupLabels,
   defaultValues: contentLabelDefaultValues,
 });
 

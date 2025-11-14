@@ -6,8 +6,8 @@
 
 import { textMessage } from '@/channel/lib/__test__/common.mock';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
+import { FileType } from '@/chat/types/attachment';
 import { ButtonType } from '@/chat/types/button';
-import { FileType } from '@/chat/types/message';
 import { QuickReplyType } from '@/chat/types/quick-reply';
 
 import { Web } from '../types';

@@ -14,9 +14,9 @@ import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { MenuDtoConfig, MenuTransformerDto } from '../dto/menu.dto';
-import { MenuOrmEntity } from '../entities/menu.entity';
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
-import { AnyMenu, MenuTree, MenuType } from '../types/menu';
+import { AnyMenu, MenuTree } from '../types/menu';
 
 @Injectable()
 export class MenuService extends BaseOrmService<
