@@ -15,6 +15,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
+import { useCategories } from "../../hooks/useCategories";
 import { useCreateBlock } from "../../hooks/useCreateBlocks";
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
@@ -23,13 +24,14 @@ import { useVisualEditor } from "../../hooks/useVisualEditor";
 const ControlButton = ({
   children,
   selectedNodeIds,
+  disabled,
   ...rest
 }: ButtonProps & { selectedNodeIds: string[] }) => (
   <Button
     sx={{ fontSize: "11px" }}
     size="small"
     variant="contained"
-    disabled={selectedNodeIds.length <= 1}
+    disabled={disabled || selectedNodeIds.length <= 1}
     {...rest}
   >
     {children}
@@ -42,6 +44,7 @@ export const BulkButtonsGroup = () => {
   const { selectedNodeIds } = useVisualEditor();
   const { createNodes } = useCreateBlock();
   const { openMoveDialog } = useMoveBlocksDialog();
+  const { categories } = useCategories();
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const selectedItemsTranslation = useMemo(
     () =>
@@ -75,6 +78,7 @@ export const BulkButtonsGroup = () => {
               onClick={() => openMoveDialog()}
               startIcon={<MoveUp />}
               selectedNodeIds={selectedNodeIds}
+              disabled={categories.length < 2}
             >
               {t("button.move")}
             </ControlButton>
