@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MailerModule } from '@hexabot/mailer';
 import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { MailerModule } from '@hexabot/mailer';
 
 import { LocalAuthController } from './controllers/auth.controller';
 import { ModelController } from './controllers/model.controller';

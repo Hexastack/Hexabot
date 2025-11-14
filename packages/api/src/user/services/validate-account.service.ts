@@ -6,6 +6,7 @@
 
 import { config } from '@hexabot/config';
 import { LoggerService } from '@hexabot/logger';
+import { MailerService } from '@hexabot/mailer';
 import {
   Inject,
   Injectable,
@@ -16,7 +17,6 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { MailerService } from '@hexabot/mailer';
 
 import { UserCreateDto } from '../dto/user.dto';
 
