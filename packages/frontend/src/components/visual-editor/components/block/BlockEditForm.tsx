@@ -48,6 +48,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   const { toast } = useToast();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
+    invalidate: false,
     onError: (error) => {
       rest.onError?.();
       toast.error(error);
