@@ -99,10 +99,7 @@ export const routes: RouteObjectItem[] = [
     path: "/content/persistent-menu",
     Component: Menu,
     handle: {
-      requiredPermissions: [
-        [EntityType.MENU, PermissionAction.READ],
-        [EntityType.MENUTREE, PermissionAction.READ],
-      ],
+      requiredPermissions: [[EntityType.MENU, PermissionAction.READ]],
     },
   },
   {
