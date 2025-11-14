@@ -13,11 +13,21 @@ import type {
   QueryObserverResult,
   QueryOptions,
   RefetchOptions,
+  UseQueryOptions as TanstackUseQueryOptions,
   UseInfiniteQueryOptions,
   UseMutateFunction,
   UseMutationOptions,
-  UseQueryOptions,
 } from "@tanstack/react-query";
+
+interface UseQueryOptions<
+  TQueryFnData = unknown,
+  TError = DefaultError,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+> extends TanstackUseQueryOptions<TQueryFnData, TError, TData, TQueryKey> {
+  onError?: (err: DefaultError | null) => void;
+  onSuccess?: (data: TQueryFnData) => void;
+}
 
 export type {
   DefaultError,

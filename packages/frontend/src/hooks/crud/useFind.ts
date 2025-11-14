@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useEffect } from "react";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 import { UseQueryOptions } from "@/types/tanstack.types";
@@ -27,9 +25,9 @@ export const useFind = <
   { entity, format }: THook<TP>["params"],
   config?: IFindConfigProps<TE>,
   options?: Omit<
-    UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
-    "queryFn" | "queryKey" | "onSuccess"
-  > & { onSuccess?: (result: TBasic[]) => void },
+    UseQueryOptions<TBasic[], Error, TBasic[], [QueryType, EntityType, string]>,
+    "queryFn" | "queryKey"
+  >,
 ) => {
   const {
     params = {},
@@ -37,7 +35,7 @@ export const useFind = <
     initialSortState,
     initialPaginationState,
   } = config || {};
-  const { onSuccess, ...otherOptions } = options || {};
+  const { onError, onSuccess, ...otherOptions } = options || {};
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
@@ -52,7 +50,7 @@ export const useFind = <
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
   const enabled = !!countQuery.data || !hasCount;
-  const { data: ids, ...normalizedQuery } = useTanstackQuery({
+  const { data = [], ...normalizedQuery } = useTanstackQuery({
     enabled,
     queryFn: async () => {
       const data =
@@ -64,28 +62,25 @@ export const useFind = <
           : [];
       const { result } = normalizeAndCache(data);
 
-      return result;
+      return (
+        result
+          .map((id) => getFromCache(id) as TBasic)
+          // @TODO : In case we deleted the items, but still present in collection
+          .filter((d) => !!d)
+      );
     },
     queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
+    onError,
+    onSuccess,
     ...otherOptions,
   });
-
-  useEffect(() => {
-    if (ids) {
-      onSuccess?.((ids || []).map((id) => getFromCache(id) as TBasic));
-    }
-  }, [ids]);
-  const data = (ids || [])
-    .map((id) => getFromCache(id) as TBasic)
-    // @TODO : In case we deleted the items, but still present in collection
-    .filter((d) => !!d);
 
   return {
     ...normalizedQuery,
     data,
     dataGridProps: {
       ...dataGridPaginationProps,
-      rows: data || [],
+      rows: data,
       loading:
         normalizedQuery.isLoading ||
         normalizedQuery.isFetching ||

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { createContext, ReactNode, useEffect } from "react";
+import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
@@ -83,11 +83,12 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     error,
     isLoading,
     refetch,
-    isSuccess,
   } = useTanstackQuery<IUser, Error>({
+    queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
-    queryFn: async () => {
-      return await apiClient.getCurrentSession();
+    onSuccess: (data) => {
+      updateLanguage(data.language);
+      authRedirection(!!data.id);
     },
   });
   const setUser = (data?: IUser) => {
@@ -106,13 +107,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   useSubscribeBroadcastChannel("logout", () => {
     router.reload();
   });
-
-  useEffect(() => {
-    if (isSuccess) {
-      updateLanguage(user.language);
-      authRedirection(!!user.id);
-    }
-  }, [isSuccess, user]);
 
   if (isLoading) {
     return <Progress />;
