@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useEffect } from "react";
-
 import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
@@ -81,34 +79,15 @@ export const useLogout = (
   });
 };
 
-export const PERMISSIONS_STORAGE_KEY = "current-permissions";
-
 export const useUserPermissions = () => {
   const { apiClient } = useApiClient();
   const { user, isAuthenticated } = useAuth();
-  const queryClient = useTanstackQueryClient();
-  const query = useTanstackQuery({
+
+  return useTanstackQuery({
+    queryKey: ["readonly-user-permissions"],
+    queryFn: () => apiClient.getUserPermissions(user?.id!),
     enabled: isAuthenticated,
-    queryKey: [PERMISSIONS_STORAGE_KEY],
-    async queryFn() {
-      return await apiClient.getUserPermissions(user?.id as string);
-    },
-    initialData: {
-      roles: [],
-      permissions: [],
-    },
   });
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      query.refetch();
-    } else {
-      queryClient.removeQueries({ queryKey: [PERMISSIONS_STORAGE_KEY] });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  return query;
 };
 
 export const useAcceptInvite = (
