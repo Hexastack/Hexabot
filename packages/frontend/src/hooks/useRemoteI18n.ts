@@ -4,43 +4,34 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import i18n from "@/i18n/config";
 
+import { useTanstackQuery } from "./crud/useTanstack";
 import { useApiClient } from "./useApiClient";
 import { useAuth } from "./useAuth";
 
 export const useRemoteI18n = () => {
   const { isAuthenticated } = useAuth();
   const { apiClient } = useApiClient();
-  const isRemoteI18nLoaded = useRef(false);
+  const { data: additionalTranslations, isSuccess } = useTanstackQuery({
+    queryKey: ["readonly-i18n"],
+    queryFn: () => apiClient.fetchRemoteI18n(),
+    enabled: isAuthenticated,
+  });
 
   useEffect(() => {
-    const fetchRemoteI18n = async () => {
-      try {
-        const additionalTranslations = await apiClient.fetchRemoteI18n();
+    if (isSuccess) {
+      for (const namespace in additionalTranslations) {
+        const namespaceData = additionalTranslations[namespace];
 
-        Object.keys(additionalTranslations).forEach((namespace) => {
-          Object.keys(additionalTranslations[namespace]).forEach((lang) => {
-            i18n.addResourceBundle(
-              lang,
-              namespace,
-              additionalTranslations[namespace][lang],
-              true,
-              true,
-            );
-          });
-        });
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to fetch remote i18n translations:", error);
+        for (const lang in namespaceData) {
+          const translationData = namespaceData[lang];
+
+          i18n.addResourceBundle(lang, namespace, translationData, true, true);
+        }
       }
-    };
-
-    if (isAuthenticated && !isRemoteI18nLoaded.current) {
-      fetchRemoteI18n();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [additionalTranslations, isSuccess]);
 };
