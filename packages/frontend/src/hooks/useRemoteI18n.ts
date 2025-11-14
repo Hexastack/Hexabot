@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useEffect } from "react";
-
 import i18n from "@/i18n/config";
 
 import { useTanstackQuery } from "./crud/useTanstack";
@@ -15,16 +13,14 @@ import { useAuth } from "./useAuth";
 export const useRemoteI18n = () => {
   const { isAuthenticated } = useAuth();
   const { apiClient } = useApiClient();
-  const { data: additionalTranslations, isSuccess } = useTanstackQuery({
+
+  useTanstackQuery({
     queryKey: ["readonly-i18n"],
     queryFn: () => apiClient.fetchRemoteI18n(),
     enabled: isAuthenticated,
-  });
-
-  useEffect(() => {
-    if (isSuccess) {
-      for (const namespace in additionalTranslations) {
-        const namespaceData = additionalTranslations[namespace];
+    onSuccess: (data) => {
+      for (const namespace in data) {
+        const namespaceData = data[namespace];
 
         for (const lang in namespaceData) {
           const translationData = namespaceData[lang];
@@ -32,6 +28,6 @@ export const useRemoteI18n = () => {
           i18n.addResourceBundle(lang, namespace, translationData, true, true);
         }
       }
-    }
-  }, [additionalTranslations, isSuccess]);
+    },
+  });
 };

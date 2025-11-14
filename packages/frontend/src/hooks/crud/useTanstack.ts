@@ -10,6 +10,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import type {
   DefaultError,
@@ -26,10 +27,24 @@ export const useTanstackQuery = <
   options: Parameters<
     typeof useQuery<TQueryFnData, TError, TData, TQueryKey>
   >[0] & {
-    onError?: () => void;
+    onError?: (err: TError | null) => void;
+    onSuccess?: (data: TData) => void;
   },
   queryClient?: Parameters<typeof useQuery>[1],
-) => useQuery(options, queryClient);
+) => {
+  const { onError, onSuccess, ...restOptions } = options;
+  const result = useQuery(restOptions, queryClient);
+
+  useEffect(() => {
+    result.isError && onError?.(result.error);
+  }, [result.error, result.isError]);
+
+  useEffect(() => {
+    result.isSuccess && onSuccess?.(result.data);
+  }, [result.data, result.isSuccess]);
+
+  return result;
+};
 
 export const useTanstackQueryClient = (
   queryClient?: Parameters<typeof useQueryClient>[0],
@@ -60,6 +75,4 @@ export const useTanstackInfiniteQuery = <
     typeof useInfiniteQuery<TQueryFnData, TError, TData, TQueryKey, TPageParam>
   >[0],
   queryClient?: Parameters<typeof useInfiniteQuery>[1],
-) => {
-  return useInfiniteQuery(options, queryClient);
-};
+) => useInfiniteQuery(options, queryClient);
