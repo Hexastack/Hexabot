@@ -9,10 +9,11 @@ import { randomUUID } from 'crypto';
 import {
   BeforeInsert,
   BeforeUpdate,
-  Column,
   EntityManager,
   PrimaryColumn,
 } from 'typeorm';
+
+import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 
 export abstract class BaseOrmEntity {
   private static entityManagerProvider?: () => EntityManager;
@@ -20,10 +21,10 @@ export abstract class BaseOrmEntity {
   @PrimaryColumn()
   id!: string;
 
-  @Column({ name: 'created_at', nullable: true })
+  @DatetimeColumn({ name: 'created_at', nullable: true })
   createdAt!: Date;
 
-  @Column({ name: 'updated_at', nullable: true })
+  @DatetimeColumn({ name: 'updated_at', nullable: true })
   updatedAt!: Date;
 
   @BeforeInsert()

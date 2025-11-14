@@ -18,6 +18,8 @@ import { NlpModule } from '@/nlp/nlp.module';
 import { PluginService } from './plugins.service';
 
 @InjectDynamicProviders(
+  // Built-in plugins
+  'node_modules/@hexabot/api/dist/extensions/plugins/**/*.plugin.js',
   // Core & under dev plugins
   'dist/extensions/**/*.plugin.js',
   // Community extensions installed via npm

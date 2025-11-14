@@ -26,8 +26,8 @@ export class AppController {
   @Get('config')
   getConfig() {
     return {
-      apiUrl: `${config.apiBaseUrl}/api/`,
-      ssoEnabled: false, // @TODO: look into this
+      apiUrl: config.apiBaseUrl,
+      ssoEnabled: config.ssoEnabled,
       maxUploadSize: config.parameters.maxUploadSize,
     };
   }

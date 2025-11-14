@@ -17,10 +17,7 @@ export const csrf = csrfSync({
     (req.query?._csrf as string) ??
     undefined,
   skipCsrfProtection: (req) => {
-    const path =
-      config.mode === 'monolith'
-        ? req.path.replace(`/${config.apiPrefix}`, '')
-        : req.path;
+    const path = req.path.replace(`/api`, '');
 
     return config.security.csrfExclude.some((re) => re.test(path));
   },

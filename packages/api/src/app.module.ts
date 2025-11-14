@@ -45,11 +45,14 @@ import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';
 
-const compiledFrontendPath = join(__dirname, 'frontend');
+// Production "monolith" mode
+const compiledFrontendPath = join(__dirname, 'static');
+// Development monorepo mode
 const workspaceFrontendPath = join(__dirname, '..', '..', 'frontend', 'dist');
-const frontendRootPath = existsSync(compiledFrontendPath)
+const frontendStaticPath = existsSync(compiledFrontendPath)
   ? compiledFrontendPath
   : workspaceFrontendPath;
+// I18N options
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
   loaderOptions: {
@@ -67,10 +70,10 @@ type ModuleControllers = NonNullable<ModuleMetadata['controllers']>;
 type ModuleProviders = NonNullable<ModuleMetadata['providers']>;
 
 export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
-  ...(config.mode === 'monolith'
+  ...(existsSync(frontendStaticPath)
     ? [
         ServeStaticModule.forRoot({
-          rootPath: frontendRootPath,
+          rootPath: frontendStaticPath,
         }),
       ]
     : []),

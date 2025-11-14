@@ -10,7 +10,7 @@ const path = require('node:path');
 
 const apiRoot = path.resolve(__dirname, '..');
 const frontendDistSource = path.resolve(apiRoot, '..', 'frontend', 'dist');
-const frontendDistTarget = path.resolve(apiRoot, 'dist', 'frontend');
+const frontendDistTarget = path.resolve(apiRoot, 'dist', 'static');
 
 if (!fs.existsSync(frontendDistSource)) {
   console.error(

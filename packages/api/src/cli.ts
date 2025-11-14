@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import moduleAlias from 'module-alias';
 import { CommandFactory } from 'nest-commander';
 

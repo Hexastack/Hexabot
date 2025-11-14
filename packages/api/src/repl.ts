@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import { repl } from '@nestjs/core';
 
 import { HexabotModule } from './app.module';

@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import 'dotenv/config';
-
 import { Type, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -63,9 +61,7 @@ export async function createHexabotApplication<
 
   AppInstance.setApp(app);
 
-  if (config.mode === 'monolith') {
-    app.setGlobalPrefix(config.apiPrefix);
-  }
+  app.setGlobalPrefix('api');
 
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
@@ -81,7 +77,7 @@ export async function createHexabotApplication<
         settingService
           .getAllowedOrigins()
           .then((allowedOrigins) => {
-            if (allowedOrigins.includes(origin) || true) {
+            if (allowedOrigins.includes(origin)) {
               callback(null, true);
             } else {
               callback(new Error(`Not allowed by CORS : ${origin}`));

@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
@@ -95,13 +96,13 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.assignedTo)
   private readonly assignedToId: string | null;
 
-  @Column({ type: 'datetime', nullable: true })
+  @DatetimeColumn({ nullable: true })
   assignedAt: Date | null;
 
-  @Column({ type: 'datetime', nullable: true })
+  @DatetimeColumn({ nullable: true })
   lastvisit: Date | null;
 
-  @Column({ type: 'datetime', nullable: true })
+  @DatetimeColumn({ nullable: true })
   retainedFrom: Date | null;
 
   @ManyToOne(() => AttachmentOrmEntity, {

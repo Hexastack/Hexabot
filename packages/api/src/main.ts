@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import { HexabotModule } from './app.module';
 import { bootstrapHexabotApp } from './bootstrap';
 
