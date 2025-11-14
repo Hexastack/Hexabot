@@ -15,6 +15,7 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
+import { useCategories } from "../../hooks/useCategories";
 import { useCreateBlock } from "../../hooks/useCreateBlocks";
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
@@ -35,6 +36,7 @@ export const NodeControls = ({ blockId }: { blockId: string }) => {
   const { openEditDialog } = useEditBlockDialog();
   const { openMoveDialog } = useMoveBlocksDialog();
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
+  const { categories } = useCategories();
   const shouldDisableControlButton = useMemo(
     () => selectedNodeIds.length !== 1,
     [selectedNodeIds],
@@ -55,7 +57,7 @@ export const NodeControls = ({ blockId }: { blockId: string }) => {
         {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
           <StyledIconButton
             onClick={() => openMoveDialog()}
-            disabled={shouldDisableControlButton}
+            disabled={shouldDisableControlButton || categories.length < 2}
           >
             <TooltipIcon translationKey="button.move" icon={MoveUp} />
           </StyledIconButton>
