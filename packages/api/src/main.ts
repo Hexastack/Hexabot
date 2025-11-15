@@ -6,7 +6,7 @@
 
 import 'dotenv/config';
 
-import { HexabotModule } from './app.module';
+import { HexabotApplicationModule } from './app.module';
 import { bootstrapHexabotApp } from './bootstrap';
 
-bootstrapHexabotApp(HexabotModule);
+bootstrapHexabotApp(HexabotApplicationModule);

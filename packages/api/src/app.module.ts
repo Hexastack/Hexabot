@@ -142,9 +142,18 @@ export const HEXABOT_MODULE_PROVIDERS: ModuleProviders = [
   AppService,
 ];
 
-@Module({
-  imports: HEXABOT_MODULE_IMPORTS,
-  controllers: HEXABOT_MODULE_CONTROLLERS,
-  providers: HEXABOT_MODULE_PROVIDERS,
-})
-export class HexabotModule {}
+export const HexabotModule = (
+  metadata: ModuleMetadata = {},
+): ClassDecorator => {
+  const { imports = [], controllers = [], providers = [], ...rest } = metadata;
+
+  return Module({
+    ...rest,
+    imports: [...HEXABOT_MODULE_IMPORTS, ...imports],
+    controllers: [...HEXABOT_MODULE_CONTROLLERS, ...controllers],
+    providers: [...HEXABOT_MODULE_PROVIDERS, ...providers],
+  });
+};
+
+@HexabotModule()
+export class HexabotApplicationModule {}
