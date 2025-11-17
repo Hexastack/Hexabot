@@ -23,8 +23,8 @@ export class ModelOrmEntity extends BaseOrmEntity {
   @Column()
   identity!: string;
 
-  @JsonColumn()
-  attributes: Record<string, unknown> = {};
+  @JsonColumn({ default: '{}' })
+  attributes: Record<string, unknown>;
 
   @Column({ nullable: true })
   relation?: TRelation;

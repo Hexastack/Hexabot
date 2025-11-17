@@ -24,8 +24,8 @@ export class NlpEntityOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @JsonColumn()
-  lookups: Lookup[] = [LookupStrategy.keywords as Lookup];
+  @JsonColumn({ default: JSON.stringify([LookupStrategy.keywords]) })
+  lookups: Lookup[];
 
   @Column({ type: 'text', nullable: true })
   doc?: string | null;

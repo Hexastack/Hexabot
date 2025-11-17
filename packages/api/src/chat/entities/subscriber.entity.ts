@@ -119,6 +119,6 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @Column(() => SubscriberChannel)
   channel!: SubscriberChannel;
 
-  @JsonColumn()
-  context: SubscriberContext = { vars: {} };
+  @JsonColumn({ default: JSON.stringify({ vars: {} }) })
+  context: SubscriberContext;
 }

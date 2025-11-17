@@ -24,8 +24,8 @@ export class CategoryOrmEntity extends BaseOrmEntity {
   @Column({ type: 'integer', default: 100 })
   zoom!: number;
 
-  @JsonColumn()
-  offset: [number, number] = [0, 0];
+  @JsonColumn({ default: '[0, 0]' })
+  offset: [number, number];
 
   @OneToMany(() => BlockOrmEntity, (block) => block.category)
   blocks?: BlockOrmEntity[];
