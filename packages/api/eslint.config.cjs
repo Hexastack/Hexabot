@@ -31,11 +31,7 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
 
   return [
     {
-      ignores: [
-        'eslint.config.cjs',
-        'eslint.config-staged.cjs',
-        'add-extra-deps.js',
-      ],
+      ignores: ['eslint.config.cjs', 'eslint.config-staged.cjs'],
     },
     ...compat.extends(
       'plugin:@typescript-eslint/recommended',

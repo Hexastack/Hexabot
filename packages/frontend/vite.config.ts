@@ -9,6 +9,8 @@ import path from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const monorepoRoot = path.resolve(__dirname, "../..");
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -19,6 +21,9 @@ export default defineConfig({
   server: {
     host: true,
     port: 8080,
+    fs: {
+      allow: [monorepoRoot], // allow Vite to serve shared workspace deps like hoisted node_modules
+    },
     proxy: {
       "/api": {
         target: "http://localhost:3000/",

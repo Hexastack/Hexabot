@@ -15,8 +15,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChatWidget
       {...{
-        apiUrl: process.env.REACT_APP_WIDGET_API_URL || "http://localhost:8080",
-        channel: process.env.REACT_APP_WIDGET_CHANNEL || "web-channel",
+        apiUrl: "http://localhost:3000/api",
+        channel: "web-channel",
         language: "en",
       }}
     />

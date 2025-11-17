@@ -3,10 +3,9 @@ version: "3.9"
 services:
   widget:
     build:
-      context: ../packages/widget
+      context: ..
+      dockerfile: packages/widget/Dockerfile
       target: development
     pull_policy: build
     volumes:
       - ../packages/widget/src:/app/packages/widget/src
-    ports:
-      - ${APP_WIDGET_PORT}:5173

@@ -9,9 +9,9 @@ import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseFlowEscapeHelper from './lib/base-flow-escape-helper';
 import BaseHelper from './lib/base-helper';
-import BaseLlmHelper from './lib/base-llm-helper';
-import BaseNlpHelper from './lib/base-nlp-helper';
-import BaseStorageHelper from './lib/base-storage-helper';
+import { BaseLlmHelper } from './lib/base-llm-helper';
+import { BaseNlpHelper } from './lib/base-nlp-helper';
+import { BaseStorageHelper } from './lib/base-storage-helper';
 
 export namespace NLU {
   export interface ParseEntity {

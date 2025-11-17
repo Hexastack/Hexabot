@@ -14,7 +14,7 @@ import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../../helper.service';
 import { HelperName } from '../../types';
-import BaseNlpHelper from '../base-nlp-helper';
+import { BaseNlpHelper } from '../base-nlp-helper';
 
 // Mock services
 const mockLoggerService = {

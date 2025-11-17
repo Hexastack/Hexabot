@@ -7,7 +7,7 @@
 import { Config } from "../types/config.types";
 
 export const DEFAULT_CONFIG: Config = {
-  apiUrl: "http://localhost:4000",
+  apiUrl: "http://localhost:3000/api",
   channel: "console-channel",
   language: "en",
   maxUploadSize: 20 * 1024 * 1024, // 20 MB in bytes

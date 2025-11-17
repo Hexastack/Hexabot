@@ -10,7 +10,7 @@ import Handlebars from 'handlebars';
 
 import { AppInstance } from '@/app.instance';
 import { HelperService } from '@/helper/helper.service';
-import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
+import { BaseNlpHelper } from '@/helper/lib/base-nlp-helper';
 import { HelperType, LLM, NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';

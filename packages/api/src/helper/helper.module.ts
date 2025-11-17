@@ -17,14 +17,12 @@ import { HelperService } from './helper.service';
 
 @Global()
 @InjectDynamicProviders(
-  // Built-in helpers
+  // Built-in core helpers
   'node_modules/@hexabot/api/dist/extensions/helpers/**/*.helper.js',
-  // Core & under dev helpers
-  'dist/extensions/**/*.helper.js',
   // Community extensions installed via npm
-  'dist/.hexabot/contrib/extensions/helpers/**/*.helper.js',
-  // Custom extensions under dev
-  'dist/.hexabot/custom/extensions/helpers/**/*.helper.js',
+  'node_modules/hexabot-helper-*/**/*.helper.js',
+  // Custom & under dev helpers
+  'dist/extensions/helpers/**/*.helper.js',
 )
 @Module({
   imports: [HttpModule, NlpModule, CmsModule, ChatModule],

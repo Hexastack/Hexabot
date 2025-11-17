@@ -13,7 +13,7 @@ import { HelperName, HelperType, LLM } from '../types';
 
 import BaseHelper from './base-helper';
 
-export default abstract class BaseLlmHelper<
+export abstract class BaseLlmHelper<
   N extends HelperName = HelperName,
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.LLM;

@@ -60,7 +60,7 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
   @Column({ type: 'varchar', length: 56, nullable: true })
   country: string | null;
 
-  @Column({ type: 'varchar', length: 36 })
+  @Column({ type: 'varchar', length: 64 })
   foreign_id: string;
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.users, {

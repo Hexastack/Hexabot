@@ -21,7 +21,7 @@ import { HelperName, HelperType } from '../types';
 
 import BaseHelper from './base-helper';
 
-export default abstract class BaseStorageHelper<
+export abstract class BaseStorageHelper<
   N extends HelperName = HelperName,
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.STORAGE;

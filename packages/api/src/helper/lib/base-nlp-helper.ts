@@ -20,7 +20,7 @@ import { HelperName, HelperType, NLU } from '../types';
 
 import BaseHelper from './base-helper';
 
-export default abstract class BaseNlpHelper<
+export abstract class BaseNlpHelper<
   N extends HelperName = HelperName,
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.NLU;

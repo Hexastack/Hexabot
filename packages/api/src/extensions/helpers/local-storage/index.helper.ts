@@ -30,7 +30,7 @@ import {
 } from '@/attachment/utilities';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
-import BaseStorageHelper from '@/helper/lib/base-storage-helper';
+import { BaseStorageHelper } from '@/helper/lib/base-storage-helper';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
