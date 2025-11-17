@@ -40,11 +40,11 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
-  @JsonColumn()
-  patterns: Pattern[] = [];
+  @JsonColumn({ default: '[]' })
+  patterns: Pattern[];
 
-  @JsonColumn()
-  outcomes: string[] = [];
+  @JsonColumn({ default: '[]' })
+  outcomes: string[];
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.triggerBlocks, {
     cascade: false,
@@ -74,11 +74,11 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @RelationId((block: BlockOrmEntity) => block.assign_labels)
   private readonly assignLabelIds!: string[];
 
-  @JsonColumn()
-  trigger_channels: string[] = [];
+  @JsonColumn({ default: '[]' })
+  trigger_channels: string[];
 
-  @JsonColumn()
-  options: BlockOptions = {} as BlockOptions;
+  @JsonColumn({ default: '{}' })
+  options: BlockOptions;
 
   @JsonColumn()
   message!: BlockMessage;
@@ -130,8 +130,8 @@ export class BlockOrmEntity extends BaseOrmEntity {
   @Column({ default: false })
   starts_conversation!: boolean;
 
-  @JsonColumn()
-  capture_vars: CaptureVar[] = [];
+  @JsonColumn({ default: '[]' })
+  capture_vars: CaptureVar[];
 
   @JsonColumn({ nullable: true })
   position?: Position | null;

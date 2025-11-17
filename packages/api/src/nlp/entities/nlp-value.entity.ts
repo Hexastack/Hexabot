@@ -33,8 +33,8 @@ export class NlpValueOrmEntity extends BaseOrmEntity {
   @Column()
   value!: string;
 
-  @JsonColumn()
-  expressions: string[] = [];
+  @JsonColumn({ default: '[]' })
+  expressions: string[];
 
   @JsonColumn({ nullable: true })
   metadata?: NlpMetadata | null;
