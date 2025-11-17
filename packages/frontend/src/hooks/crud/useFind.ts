@@ -25,21 +25,21 @@ export const useFind = <
   { entity, format }: THook<TP>["params"],
   config?: IFindConfigProps<TE>,
   options?: Omit<
-    UseQueryOptions<TBasic[], Error, TBasic[], [QueryType, EntityType, string]>,
-    "queryFn" | "queryKey"
-  >,
+    UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
+    "queryFn" | "queryKey" | "onSuccess"
+  > & { onSuccess?: (result: TBasic[]) => void },
 ) => {
   const {
-    params = {},
+    params,
     hasCount = true,
     initialSortState,
     initialPaginationState,
   } = config || {};
-  const { onError, onSuccess, ...otherOptions } = options || {};
+  const { onSuccess, ...otherOptions } = options || {};
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
-  const countQuery = useCount(entity, params["where"], {
+  const countQuery = useCount(entity, params?.where, {
     enabled: hasCount,
   });
   const { dataGridPaginationProps, pageQueryPayload } = usePagination(
@@ -49,9 +49,8 @@ export const useFind = <
     hasCount,
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
-  const enabled = !!countQuery.data || !hasCount;
-  const { data = [], ...normalizedQuery } = useTanstackQuery({
-    enabled,
+  const { data: ids = [], ...normalizedQuery } = useTanstackQuery({
+    enabled: !!countQuery.data || !hasCount,
     queryFn: async () => {
       const data =
         !hasCount || (hasCount && !!countQuery.data?.count)
@@ -62,18 +61,18 @@ export const useFind = <
           : [];
       const { result } = normalizeAndCache(data);
 
-      return (
-        result
-          .map((id) => getFromCache(id) as TBasic)
-          // @TODO : In case we deleted the items, but still present in collection
-          .filter((d) => !!d)
-      );
+      return result;
     },
     queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
-    onError,
-    onSuccess,
+    onSuccess: (ids) => {
+      onSuccess?.(ids.map((id) => getFromCache(id) as TBasic));
+    },
     ...otherOptions,
   });
+  const data = ids
+    .map((id) => getFromCache(id) as TBasic)
+    // @TODO : In case we deleted the items, but still present in collection
+    .filter((d) => !!d);
 
   return {
     ...normalizedQuery,
