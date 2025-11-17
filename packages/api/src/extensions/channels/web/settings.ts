@@ -5,6 +5,7 @@
  */
 
 import { ChannelSetting } from '@/channel/types';
+import { config } from '@/config';
 import { SettingType } from '@/setting/types';
 
 export const WEB_CHANNEL_NAME = 'web-channel' as const;
@@ -15,7 +16,7 @@ export default [
   {
     group: WEB_CHANNEL_NAMESPACE,
     label: 'allowed_domains',
-    value: 'http://localhost:8080,http://localhost:4000,http://localhost:5173',
+    value: config.security.cors.allowOrigins.join(','),
     type: SettingType.text,
   },
   {

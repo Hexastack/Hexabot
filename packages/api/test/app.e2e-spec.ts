@@ -9,14 +9,14 @@ import request from 'supertest';
 
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { HexabotModule } from './../src/app.module';
+import { HexabotApplicationModule } from './../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
     const { module } = await buildTestingMocks({
-      imports: [HexabotModule],
+      imports: [HexabotApplicationModule],
     });
 
     app = module.createNestApplication();

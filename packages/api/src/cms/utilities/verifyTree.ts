@@ -5,11 +5,12 @@
  */
 
 import { Menu } from '../dto/menu.dto';
-import { AnyMenu, MenuTree, MenuType } from '../types/menu-types';
+import { MenuType } from '../entities/menu.entity';
+import { AnyMenuDto, MenuTreeDto } from '../types/menu-types';
 
 const verifyMenu = (
-  menu: AnyMenu<Menu> & {
-    call_to_actions?: MenuTree;
+  menu: AnyMenuDto<Menu> & {
+    call_to_actions?: MenuTreeDto;
   },
 ) => {
   // first check if menu is an object
@@ -31,7 +32,7 @@ const verifyMenu = (
     return true;
 };
 
-export const verifyTree = (menuTree?: MenuTree) => {
+export const verifyTree = (menuTree?: MenuTreeDto) => {
   if (!Array.isArray(menuTree)) return true;
 
   return !menuTree.some((v) => {

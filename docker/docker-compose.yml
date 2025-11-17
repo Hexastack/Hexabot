@@ -6,17 +6,17 @@ services:
     image: hexastack/hexabot-api:latest
     env_file: .env
     ports:
-      - ${API_PORT}:3000
+      - 3000:3000
     networks:
       - db-network
       - app-network
     volumes:
       - api-data:/app/uploads
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
     healthcheck:
-      test: "wget --spider http://localhost:3000/health"
+      test: "wget --spider http://127.0.0.1:3000/api/health"
       interval: 10s
       timeout: 10s
       retries: 5
@@ -27,33 +27,41 @@ services:
     image: hexastack/hexabot-ui:latest
     env_file: .env
     ports:
-      - ${APP_FRONTEND_PORT}:8080
+      - 8080:8080
     networks:
       - app-network
     depends_on:
       api:
         condition: service_healthy
 
-  mongo:
-    container_name: mongo
-    image: mongo:7.0
+  postgres:
+    container_name: ${DB_HOST:-postgres}
+    hostname: ${DB_HOST:-postgres}
+    image: postgres:16-alpine
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     networks:
-      - db-network
+      db-network:
+        aliases:
+          - ${DB_HOST:-postgres}
     healthcheck:
-      test: echo 'db.stats().ok' | mongosh localhost:27017 --quiet
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d ${DB_NAME} -U ${DB_USERNAME}"
+        ]
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 10s
     volumes:
-      - mongo-data:/data/db
+      - postgres-data:/var/lib/postgresql/data
 
 volumes:
-  mongo-data:
+  postgres-data:
   api-data:
 
 networks:

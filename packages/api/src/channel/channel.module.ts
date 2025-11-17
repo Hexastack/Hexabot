@@ -29,12 +29,12 @@ export interface ChannelModuleOptions {
 
 @Global()
 @InjectDynamicProviders(
-  // Core & under dev channels
-  'dist/extensions/**/*.channel.js',
+  // Built-in core channels
+  'node_modules/@hexabot/api/dist/extensions/channels/**/*.channel.js',
   // Community extensions installed via npm
-  'dist/.hexabot/contrib/extensions/channels/**/*.channel.js',
-  // Custom extensions under dev
-  'dist/.hexabot/custom/extensions/channels/**/*.channel.js',
+  'node_modules/hexabot-channel-*/**/*.channel.js',
+  // Custom & under dev channels
+  'dist/extensions/channels/**/*.channel.js',
 )
 @Module({
   imports: [ChatModule, AttachmentModule, CmsModule, HttpModule, JwtModule],

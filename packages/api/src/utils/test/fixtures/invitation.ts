@@ -9,7 +9,7 @@ import { DataSource } from 'typeorm';
 import { Invitation } from '@/user/dto/invitation.dto';
 import { InvitationOrmEntity as InvitationEntity } from '@/user/entities/invitation.entity';
 import { RoleOrmEntity as RoleEntity } from '@/user/entities/role.entity';
-import { hash } from '@/user/utilities/hash';
+import { sha256Hash } from '@/user/utilities/hash';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixtures } from '../types';
@@ -23,7 +23,7 @@ const invitations: InvitationOrmFixture[] = [
     id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     email: 'email@test.com',
     roles: [roleOrmFixtures[0].id],
-    token: hash('testtoken'),
+    token: sha256Hash('testtoken'),
   },
 ];
 

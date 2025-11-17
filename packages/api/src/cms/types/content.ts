@@ -9,7 +9,7 @@ import { ContentOrmEntity } from '../entities/content.entity';
 
 export type ContentPopulate = 'entity';
 
-export type ContentFull = Omit<ContentOrmEntity, 'entity'> & {
+export type ContentEntityWithType = Omit<ContentOrmEntity, 'entity'> & {
   entity: ContentTypeOrmEntity | null;
 };
 

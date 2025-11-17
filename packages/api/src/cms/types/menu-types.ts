@@ -5,41 +5,40 @@
  */
 
 import { Menu, MenuStub } from '../dto/menu.dto';
+import { MenuType } from '../entities/menu.entity';
 
-export enum MenuType {
-  web_url = 'web_url',
-  postback = 'postback',
-  nested = 'nested',
-}
 interface MenuAttrs {
   type: MenuType;
   payload?: unknown;
   url?: unknown;
 }
 
-export interface NestedMenuAttrs {
+export interface NestedMenuDtoAttrs {
   type: MenuType.nested;
   payload?: never;
   url?: never;
 }
 
-export interface PostbackMenuAttrs {
+export interface PostbackMenuDtoAttrs {
   type: MenuType.postback;
   payload: string;
   url?: never;
 }
 
-export interface WebUrlMenuAttrs {
+export interface WebUrlMenuDtoAttrs {
   type: MenuType.web_url;
   payload?: never;
   url: string;
 }
 
-type AnyMenuAttrs = NestedMenuAttrs | PostbackMenuAttrs | WebUrlMenuAttrs;
+type AnyMenuAttrs =
+  | NestedMenuDtoAttrs
+  | PostbackMenuDtoAttrs
+  | WebUrlMenuDtoAttrs;
 
-export type AnyMenu<T extends MenuStub = Menu> = Omit<T, keyof MenuAttrs> &
+export type AnyMenuDto<T extends MenuStub = Menu> = Omit<T, keyof MenuAttrs> &
   AnyMenuAttrs;
 
-export type MenuTree = (AnyMenu<Menu> & {
-  call_to_actions?: MenuTree;
+export type MenuTreeDto = (AnyMenuDto<Menu> & {
+  call_to_actions?: MenuTreeDto;
 })[];

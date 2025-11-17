@@ -17,7 +17,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { hash } from '../utilities/hash';
+import { sha256Hash } from '../utilities/hash';
 
 import { RoleOrmEntity } from './role.entity';
 
@@ -52,7 +52,7 @@ export class InvitationOrmEntity extends BaseOrmEntity {
       return;
     }
 
-    this.token = hash(this.token);
+    this.token = sha256Hash(this.token);
   }
 
   private static isHashed(value: string): boolean {

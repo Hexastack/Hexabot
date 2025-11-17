@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -40,7 +41,7 @@ export class BotStatsOrmEntity extends BaseOrmEntity {
   /**
    * Day based granularity for the captured insights.
    */
-  @Column()
+  @DatetimeColumn()
   day!: Date;
 
   /**

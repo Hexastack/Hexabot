@@ -4,11 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import 'dotenv/config';
+
 import { repl } from '@nestjs/core';
 
-import { HexabotModule } from './app.module';
+import { HexabotApplicationModule } from './app.module';
 
 async function bootstrap() {
-  await repl(HexabotModule);
+  await repl(HexabotApplicationModule);
 }
 bootstrap();

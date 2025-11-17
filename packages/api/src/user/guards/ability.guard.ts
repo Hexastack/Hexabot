@@ -16,8 +16,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
-import { config } from '@/config';
-
 import { User } from '../dto/user.dto';
 import { TRole } from '../entities/role.entity';
 import { PermissionService } from '../services/permission.service';
@@ -55,10 +53,7 @@ export class Ability implements CanActivate {
     const roleIds = Array.isArray(user.roles) ? user.roles : [];
 
     if (roleIds.length) {
-      const pathname =
-        config.mode === 'monolith'
-          ? _parsedUrl.pathname?.replace(`/${config.apiPrefix}`, '')
-          : _parsedUrl.pathname;
+      const pathname = _parsedUrl.pathname?.replace(`/api`, '');
 
       if (
         pathname &&

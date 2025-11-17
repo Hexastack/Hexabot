@@ -50,16 +50,15 @@ const sessionLimitSubquery =
 const sessionTtlSeconds = parseOptionalInt(process.env.SESSION_TTL_SECONDS);
 
 export const config: Config = {
-  mode: process.env.VITE_APP_MODE === 'monolith' ? 'monolith' : 'api-only',
-  apiPrefix: process.env.VITE_APP_MODE === 'monolith' ? 'api' : '',
   i18n: {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
-  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:8080/api',
+  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:3000/api',
   uiBaseUrl: process.env.FRONTEND_BASE_URL
     ? process.env.FRONTEND_BASE_URL
-    : 'http://localhost:8080', // default to local dev
+    : 'http://localhost:3000', // default to local dev
+  ssoEnabled: process.env.SSO_ENABLED === 'true',
   security: {
     httpsEnabled: process.env.HTTPS_ENABLED === 'true',
     trustProxy: process.env.HTTPS_ENABLED === 'true', // Nginx in use ?

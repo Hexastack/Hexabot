@@ -49,12 +49,11 @@ type SocketCookie =
   | boolean;
 
 export type Config = {
-  mode: 'api-only' | 'monolith';
-  apiPrefix: string;
   i18n: { translationFilename: string };
   appPath: string;
   apiBaseUrl: string;
   uiBaseUrl: string;
+  ssoEnabled: boolean;
   security: {
     httpsEnabled: boolean;
     trustProxy: boolean;

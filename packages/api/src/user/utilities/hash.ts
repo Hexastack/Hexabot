@@ -6,7 +6,5 @@
 
 import { createHash } from 'node:crypto';
 
-const hash = (value: string) =>
+export const sha256Hash = (value: string) =>
   createHash('sha256').update(value).digest('base64url');
-
-export { hash };

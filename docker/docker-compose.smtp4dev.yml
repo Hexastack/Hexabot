@@ -5,7 +5,7 @@ services:
     image: rnwood/smtp4dev:v3
     restart: always
     ports:
-      - ${APP_SMTP_4_DEV_PORT}:80
+      - 9002:80
       - "25:25"
       - "143:143"
     volumes:

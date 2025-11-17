@@ -385,7 +385,7 @@ export const blockCarouselMock = {
   options: blockCarouselOptions,
 } as unknown as BlockFull;
 
-export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];
+export const blockMocks: BlockFull[] = [blockGetStarted, blockEmpty];
 
 export const mockWebChannelData: SubscriberChannelDict[typeof WEB_CHANNEL_NAME] =
   {

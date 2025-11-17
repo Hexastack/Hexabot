@@ -20,6 +20,7 @@ export class LoggerService extends ConsoleLogger {
       logLevels: process.env.NODE_ENV?.includes('dev')
         ? ['log', 'debug', 'error', 'verbose', 'fatal', 'warn']
         : ['log', 'warn', 'error'],
+      prefix: 'Hexabot',
     });
   }
 
