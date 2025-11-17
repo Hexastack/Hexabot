@@ -85,6 +85,7 @@ export const Settings = () => {
     },
   );
   const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
+    invalidate: false,
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
