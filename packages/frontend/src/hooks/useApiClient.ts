@@ -19,8 +19,6 @@ import { useLogoutRedirection } from "./useAuth";
 import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
 
-const ME_ENDPOINT = `/api${ROUTES.ME}`;
-
 export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
@@ -58,14 +56,14 @@ export const useAxiosInstance = () => {
 
         if (
           error.response.status === 500 &&
-          error.request.responseURL.endsWith(ME_ENDPOINT)
+          error.request.responseURL.endsWith(`/api${ROUTES.ME}`)
         ) {
           clearInterval(timer);
 
           timer = setInterval(async () => {
-            const { data } = await axiosInstance.get<IUser>(ME_ENDPOINT);
+            const { status } = await axiosInstance.head<IUser>(ROUTES.ME);
 
-            if (data) {
+            if (status !== 500) {
               router.reload();
             }
           }, 2000);
