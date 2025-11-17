@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { usePagination } from "../usePagination";
@@ -15,20 +14,20 @@ import { usePagination } from "../usePagination";
 import { useNormalizeAndCache } from "./helpers";
 import { useCount } from "./useCount";
 import { useGetFromCache } from "./useGet";
+import { useTanstackQuery } from "./useTanstack";
 
 export const useFind = <
   TP extends THook["params"],
-  TBasic extends THook<TP>["basic"],
-  TAttr extends THook<TP>["attributes"],
-  TFull extends THook<TP>["full"],
+  TE extends THook<TP>["entity"] = THook<TP>["entity"],
+  TBasic extends THook<TP>["basic"] = THook<TP>["basic"],
   P = THook<TP>["populate"],
 >(
   { entity, format }: THook<TP>["params"],
-  config?: IFindConfigProps<THook<TP>["entity"]>,
+  config?: IFindConfigProps<TE>,
   options?: Omit<
-    UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
-    "queryFn" | "queryKey" | "onSuccess"
-  > & { onSuccess?: (result: TBasic[]) => void },
+    UseQueryOptions<TBasic[], Error, TBasic[], [QueryType, EntityType, string]>,
+    "queryFn" | "queryKey"
+  >,
 ) => {
   const {
     params = {},
@@ -36,11 +35,9 @@ export const useFind = <
     initialSortState,
     initialPaginationState,
   } = config || {};
-  const { onSuccess, ...otherOptions } = options || {};
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const normalizeAndCache = useNormalizeAndCache<TBasic | TFull, string[]>(
-    entity,
-  );
+  const { onError, onSuccess, ...otherOptions } = options || {};
+  const api = useEntityApiClient(entity);
+  const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
   const countQuery = useCount(entity, params["where"], {
     enabled: hasCount,
@@ -53,7 +50,7 @@ export const useFind = <
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
   const enabled = !!countQuery.data || !hasCount;
-  const { data: ids, ...normalizedQuery } = useQuery({
+  const { data = [], ...normalizedQuery } = useTanstackQuery({
     enabled,
     queryFn: async () => {
       const data =
@@ -65,30 +62,25 @@ export const useFind = <
           : [];
       const { result } = normalizeAndCache(data);
 
-      return result;
+      return (
+        result
+          .map((id) => getFromCache(id) as TBasic)
+          // @TODO : In case we deleted the items, but still present in collection
+          .filter((d) => !!d)
+      );
     },
     queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
-    onSuccess: (ids) => {
-      if (onSuccess) {
-        onSuccess(
-          (ids || []).map((id) => getFromCache(id) as unknown as TBasic),
-        );
-      }
-    },
-    keepPreviousData: true,
+    onError,
+    onSuccess,
     ...otherOptions,
   });
-  const data = (ids || [])
-    .map((id) => getFromCache(id) as unknown as TBasic)
-    // @TODO : In case we deleted the items, but still present in collection
-    .filter((d) => !!d);
 
   return {
     ...normalizedQuery,
     data,
     dataGridProps: {
       ...dataGridPaginationProps,
-      rows: data || [],
+      rows: data,
       loading:
         normalizedQuery.isLoading ||
         normalizedQuery.isFetching ||

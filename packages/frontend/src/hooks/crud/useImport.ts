@@ -4,32 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, THook } from "@/types/base.types";
+import { THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useImport = <
   TE extends THook["entity"],
   TAttr extends File = File,
-  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
+  TBasic extends THook["basic"] = THook<{ entity: TE }>["basic"],
 >(
   entity: TE,
   options: TMutationOptions<TBasic[], Error, TAttr, TBasic[]> = {},
   params: Record<string, any> = {},
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic>(entity);
-  const queryClient = useQueryClient();
-  const normalizeAndCache = useNormalizeAndCache<TBasic, string[], TBasic>(
-    entity,
-  );
+  const api = useEntityApiClient(entity);
+  const queryClient = useTanstackQueryClient();
+  const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const { invalidate = true, ...rest } = options;
 
-  return useMutation({
+  return useTanstackMutation({
     mutationFn: async (variables) => {
       const data = await api.import(variables, params);
       const { result, entities } = normalizeAndCache(data);
@@ -48,7 +45,7 @@ export const useImport = <
         });
       }
 
-      return result.map((id) => entities[entity][id]);
+      return result.map((id) => entities[entity][id]) as TBasic[];
     },
     ...rest,
   });

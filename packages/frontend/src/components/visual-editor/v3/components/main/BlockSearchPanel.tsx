@@ -90,11 +90,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     },
     {
       enabled: open && Boolean(searchText && searchText.trim().length > 0),
-      onSuccess() {
-        setSelectedIndex(0);
-      },
-      onError() {
+      onError: () => {
         toast.error(t("message.failed_to_load_blocks"));
+      },
+      onSuccess: () => {
+        setSelectedIndex(0);
       },
     },
   );

@@ -4,26 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useQuery, useQueryClient, UseQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
-import {
-  IBaseSchema,
-  IEntityMapTypes,
-  POPULATE_BY_TYPE,
-  THook,
-  TType,
-} from "@/types/base.types";
+import { POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { useNormalizeAndCache } from "./helpers";
+import { useTanstackQuery, useTanstackQueryClient } from "./useTanstack";
 
 export const useGet = <
   T extends THook["params"],
-  TAttr = THook<T>["attributes"],
-  TBasic extends IBaseSchema = THook<T>["basic"],
-  TFull extends IBaseSchema = THook<T>["full"],
+  TBasic extends THook["basic"] = THook<T>["basic"],
 >(
   id: string,
   { entity, format }: THook<T>["params"],
@@ -37,12 +29,10 @@ export const useGet = <
     "queryFn" | "queryKey"
   >,
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const normalizeAndCache = useNormalizeAndCache<TBasic | TFull, string>(
-    entity,
-  );
+  const api = useEntityApiClient(entity);
+  const normalizeAndCache = useNormalizeAndCache<string>(entity);
 
-  return useQuery({
+  return useTanstackQuery({
     queryFn: async () => {
       const data = await api.get(
         id,
@@ -50,7 +40,7 @@ export const useGet = <
       );
       const { entities, result } = normalizeAndCache(data);
 
-      return entities[entity]?.[result] as unknown as TBasic;
+      return entities[entity]?.[result];
     },
     queryKey: [QueryType.item, entity, id],
     enabled: options?.enabled && !!id,
@@ -58,19 +48,14 @@ export const useGet = <
   });
 };
 
-export const useGetFromCache = <
-  E extends keyof IEntityMapTypes,
-  TData extends IBaseSchema = TType<E>["basic"],
->(
-  entity: E,
-) => {
-  const queryClient = useQueryClient();
+export const useGetFromCache = <TE extends THook["entity"]>(entity: TE) => {
+  const queryClient = useTanstackQueryClient();
 
   return (id: string) => {
     const [qEntity] = entity.split("/");
 
     return queryClient.getQueryData([QueryType.item, qEntity, id]) as
-      | TData
+      | THook<{ entity: TE }>["basic"]
       | undefined;
   };
 };

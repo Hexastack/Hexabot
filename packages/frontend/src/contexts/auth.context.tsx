@@ -5,16 +5,13 @@
  */
 
 import { createContext, ReactNode } from "react";
-import {
-  QueryObserverResult,
-  RefetchOptions,
-  UseMutateFunction,
-  useQuery,
-  useQueryClient,
-} from "react-query";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
+import {
+  useTanstackQuery,
+  useTanstackQueryClient,
+} from "@/hooks/crud/useTanstack";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
@@ -22,6 +19,11 @@ import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  UseMutateFunction,
+} from "@/types/tanstack.types";
 import { IUser } from "@/types/user.types";
 import { hasPublicPath, isLoginPath } from "@/utils/URL";
 
@@ -48,7 +50,7 @@ export interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useAppRouter();
   const { i18n } = useTranslate();
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const updateLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };
@@ -81,18 +83,16 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     error,
     isLoading,
     refetch,
-  } = useQuery<IUser, Error>({
+  } = useTanstackQuery<IUser, Error>({
+    queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
-    queryFn: async () => {
-      return await apiClient.getCurrentSession();
-    },
-    onSuccess(data) {
+    onSuccess: (data) => {
       updateLanguage(data.language);
-      authRedirection(!!data?.id);
+      authRedirection(!!data.id);
     },
   });
   const setUser = (data?: IUser) => {
-    queryClient.setQueryData(CURRENT_USER_KEY, data);
+    queryClient.setQueryData([CURRENT_USER_KEY], data);
   };
   const authenticate = (user: IUser) => {
     updateLanguage(user.language);

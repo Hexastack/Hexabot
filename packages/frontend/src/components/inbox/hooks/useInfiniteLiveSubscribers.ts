@@ -5,14 +5,15 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { InfiniteData, useQueryClient } from "react-query";
 
 import { useNormalizeAndCache } from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
+import { InfiniteData } from "@/types/tanstack.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { AssignedTo, SocketSubscriberEvents } from "../types";
@@ -25,7 +26,7 @@ export const useInfiniteLiveSubscribers = (props: {
   const { user } = useAuth();
   const updateCachedSubscriber = useUpdateCache(EntityType.SUBSCRIBER);
   const normalizeAndCache = useNormalizeAndCache(EntityType.SUBSCRIBER);
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const params = {
     where: {
       // Firstname and lastname keyword search

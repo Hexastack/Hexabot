@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation } from "react-query";
-
 import { TMutationOptions } from "@/services/types";
 import {
   IInvitation,
@@ -13,6 +11,7 @@ import {
   IInvitationStub,
 } from "@/types/invitation.types";
 
+import { useTanstackMutation } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
 
 export const useSendInvitation = (
@@ -25,7 +24,7 @@ export const useSendInvitation = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation<IInvitation, Error, IInvitationAttributes>({
+  return useTanstackMutation<IInvitation, Error, IInvitationAttributes>({
     ...options,
     async mutationFn(payload: IInvitationAttributes) {
       return await apiClient.invite(payload);

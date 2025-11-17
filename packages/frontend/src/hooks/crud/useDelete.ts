@@ -4,31 +4,28 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
 import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
-export const useDeleteMany = <
+export const useDelete = <
   TE extends THook["entity"],
-  TAttr = THook<{ entity: TE }>["attributes"],
   TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
-  TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
-  options?: TMutationOptions<string, Error, string[], TBasic>,
+  options?: TMutationOptions<string, Error, string, TBasic>,
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const queryClient = useQueryClient();
+  const api = useEntityApiClient(entity);
+  const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
-    mutationFn: async (ids: string[]) => {
-      const result = await api.deleteMany(ids);
+  return useTanstackMutation({
+    mutationFn: async (id) => {
+      const result = await api.delete(id);
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {
@@ -37,13 +34,14 @@ export const useDeleteMany = <
           return (
             qType === QueryType.item &&
             isSameEntity(qEntity, entity) &&
-            ids.includes(qId as string)
+            qId === id
           );
         },
       });
 
+      // Invalidate all counts & collections
       if (invalidate) {
-        queryClient.invalidateQueries({
+        queryClient.removeQueries({
           predicate: ({ queryKey }) => {
             const [qType, qEntity] = queryKey;
 
@@ -59,4 +57,18 @@ export const useDeleteMany = <
     },
     ...otherOptions,
   });
+};
+
+export const useDeleteFromCache = <TE extends THook["entity"]>(entity: TE) => {
+  const queryClient = useTanstackQueryClient();
+
+  return (id: string) => {
+    queryClient.removeQueries({
+      predicate: ({ queryKey }) => {
+        const [qType, qEntity, qId] = queryKey;
+
+        return qType === QueryType.item && qEntity === entity && qId === id;
+      },
+    });
+  };
 };

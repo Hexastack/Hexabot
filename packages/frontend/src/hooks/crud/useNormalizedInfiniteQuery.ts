@@ -4,24 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
-
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
+import { UseInfiniteQueryOptions } from "@/types/tanstack.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { toPageQueryPayload } from "../usePagination";
 
 import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
+import { useTanstackInfiniteQuery } from "./useTanstack";
 
 const PAGE_SIZE = 20;
 
 export const useNormalizedInfiniteQuery = <
   T extends THook["params"],
-  TAttr extends THook<T>["attributes"],
   TBasic extends THook<T>["basic"],
-  TFull extends THook<T>["full"],
   P = THook<T>["populate"],
 >(
   { entity, format }: THook<T>["params"],
@@ -47,18 +45,14 @@ export const useNormalizedInfiniteQuery = <
     },
   ];
   const { onSuccess, ...otherOptions } = options || {};
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const normalizeAndCache = useNormalizeAndCache<TBasic | TFull, string[]>(
-    entity,
-  );
+  const api = useEntityApiClient(entity);
+  const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
   const initialPageParams = toPageQueryPayload(
     initialPaginationState,
     initialSortState,
   );
-  // @TODO : fix the following
-  // @ts-ignore
-  const { data: infiniteData, ...infiniteQuery } = useInfiniteQuery({
+  const { data: infiniteData, ...infiniteQuery } = useTanstackInfiniteQuery({
     queryKey: [QueryType.infinite, entity, JSON.stringify(config?.params)],
     initialPageParam: {
       limit: PAGE_SIZE,
@@ -81,9 +75,7 @@ export const useNormalizedInfiniteQuery = <
       const { entities, result } = normalizeAndCache(data);
 
       if (onSuccess) {
-        onSuccess(
-          Object.values(entities[entity] as unknown as Record<string, TBasic>),
-        );
+        onSuccess(Object.values(entities[entity] as Record<string, TBasic>));
       }
 
       return result;
@@ -107,7 +99,7 @@ export const useNormalizedInfiniteQuery = <
       ? {
           ...infiniteData,
           pages: (infiniteData?.pages || []).map((page) =>
-            page.map((id) => getFromCache(id) as unknown as TBasic),
+            page.map((id) => getFromCache(id) as TBasic),
           ),
         }
       : undefined,

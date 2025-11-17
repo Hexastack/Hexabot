@@ -17,6 +17,8 @@ import { generateId } from "@/utils/generateId";
 
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
+const PAGE_SIZE = 20;
+
 type AutoCompleteEntitySelectProps<
   Value,
   Label extends keyof Value = keyof Value,
@@ -88,7 +90,21 @@ const AutoCompleteEntitySelect = <
       hasCount: false,
     },
     {
-      keepPreviousData: true,
+      initialPageParam: {
+        limit: PAGE_SIZE,
+        skip: 0,
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < PAGE_SIZE) {
+          return undefined;
+        }
+
+        return {
+          limit: PAGE_SIZE,
+          skip: allPages.length * PAGE_SIZE,
+        };
+      },
+      placeholderData: (prev) => prev,
       queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
     },
   );
@@ -106,7 +122,7 @@ const AutoCompleteEntitySelect = <
       : ((flattenedData || []) as Value[]);
 
   useEffect(() => {
-    fetchNextPage({ pageParam: params });
+    fetchNextPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(searchPayload)]);
 

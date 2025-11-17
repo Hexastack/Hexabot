@@ -4,9 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-
 import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
@@ -19,6 +16,11 @@ import {
 import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
+import {
+  useTanstackMutation,
+  useTanstackQuery,
+  useTanstackQueryClient,
+} from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
 import { useAuth, useLogoutRedirection } from "../useAuth";
 import { useToast } from "../useToast";
@@ -30,13 +32,13 @@ export const useLogin = (
   const { apiClient } = useApiClient();
   const { postMessage } = useBroadcastChannel();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn(credentials) {
       return await apiClient.login(credentials);
     },
-    onSuccess: (data, variables, context) => {
-      options?.onSuccess?.(data, variables, context);
+    onSuccess: (data, variables, onMutateResult, context) => {
+      options?.onSuccess?.(data, variables, onMutateResult, context);
       postMessage({ event: "login" });
     },
   });
@@ -50,7 +52,7 @@ export const useLogout = (
     Error
   >,
 ) => {
-  const queryClient = useQueryClient();
+  const queryClient = useTanstackQueryClient();
   const { apiClient } = useApiClient();
   const { socket } = useSocket();
   const { logoutRedirection } = useLogoutRedirection();
@@ -58,7 +60,7 @@ export const useLogout = (
   const { t } = useTranslate();
   const { postMessage } = useBroadcastChannel();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn() {
       socket?.disconnect();
@@ -77,34 +79,15 @@ export const useLogout = (
   });
 };
 
-export const PERMISSIONS_STORAGE_KEY = "current-permissions";
-
 export const useUserPermissions = () => {
   const { apiClient } = useApiClient();
   const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
-  const query = useQuery({
+
+  return useTanstackQuery({
+    queryKey: ["readonly-user-permissions"],
+    queryFn: () => apiClient.getUserPermissions(user?.id!),
     enabled: isAuthenticated,
-    queryKey: [PERMISSIONS_STORAGE_KEY],
-    async queryFn() {
-      return await apiClient.getUserPermissions(user?.id as string);
-    },
-    initialData: {
-      roles: [],
-      permissions: [],
-    },
   });
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      query.refetch();
-    } else {
-      queryClient.removeQueries([PERMISSIONS_STORAGE_KEY]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  return query;
 };
 
 export const useAcceptInvite = (
@@ -118,7 +101,7 @@ export const useAcceptInvite = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn(payload) {
       return await apiClient.acceptInvite(payload);
@@ -131,7 +114,7 @@ export const useConfirmAccount = (
 ) => {
   const { apiClient } = useApiClient();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn(payload) {
       return await apiClient.confirmAccount(payload);
@@ -172,7 +155,7 @@ export const useUpdateProfile = (
   const { apiClient } = useApiClient();
   const { user } = useAuth();
 
-  return useMutation({
+  return useTanstackMutation({
     ...options,
     async mutationFn(payload) {
       return await apiClient.updateProfile(user?.id as string, payload);

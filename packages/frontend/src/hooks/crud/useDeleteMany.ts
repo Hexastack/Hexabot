@@ -4,45 +4,28 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useMutation, useQueryClient } from "react-query";
-
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, THook } from "@/types/base.types";
+import { THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity } from "./helpers";
+import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
-export const useUpdateMany = <
+export const useDeleteMany = <
   TE extends THook["entity"],
-  TAttr = THook<{ entity: TE }>["attributes"],
-  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
-  TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
+  TBasic extends THook["basic"] = THook<{ entity: TE }>["basic"],
 >(
   entity: TE,
-  options?: TMutationOptions<
-    string,
-    Error,
-    {
-      ids: string[];
-      payload: Partial<TAttr>;
-    },
-    TBasic
-  >,
+  options?: TMutationOptions<string, Error, string[], TBasic>,
 ) => {
-  const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
-  const queryClient = useQueryClient();
+  const api = useEntityApiClient(entity);
+  const queryClient = useTanstackQueryClient();
   const { invalidate = true, ...otherOptions } = options || {};
 
-  return useMutation({
-    mutationFn: async ({
-      ids,
-      payload,
-    }: {
-      ids: string[];
-      payload: Partial<TAttr>;
-    }) => {
-      const result = await api.updateMany(ids, payload);
+  return useTanstackMutation({
+    mutationFn: async (ids) => {
+      const result = await api.deleteMany(ids);
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {

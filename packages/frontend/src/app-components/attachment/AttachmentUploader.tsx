@@ -91,7 +91,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const dialogs = useDialogs();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const { toast } = useToast();
-  const { mutate: uploadAttachment, isLoading } = useUpload(
+  const { mutate: uploadAttachment, isPending } = useUpload(
     EntityType.ATTACHMENT,
     {
       onError: () => {
@@ -177,7 +177,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               alignItems="center"
               sx={{ padding: "20px" }}
             >
-              {isLoading ? (
+              {isPending ? (
                 <CircularProgress />
               ) : attachment ? (
                 <AttachmentThumbnail

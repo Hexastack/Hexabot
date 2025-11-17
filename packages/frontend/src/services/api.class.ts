@@ -9,6 +9,7 @@ import { AxiosInstance, AxiosResponse } from "axios";
 import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
+import { THook } from "@/types/base.types";
 import { StatsType } from "@/types/bot-stat.types";
 import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
@@ -274,18 +275,30 @@ export class ApiClient {
     return this.request;
   }
 
-  buildEntityClient<TAttr, TStub, TFull = never>(type: EntityType) {
-    return EntityApiClient.getInstance<TAttr, TStub, TFull>(this.request, type);
+  buildEntityClient<TE extends THook["entity"] = never>(entity: TE) {
+    return EntityApiClient.getInstance(this.request, entity);
   }
 }
 
-export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
-  constructor(request: AxiosInstance, private readonly type: EntityType) {
+export class EntityApiClient<
+  TE extends THook["entity"],
+  TBasic = THook<{ entity: TE }>["basic"],
+  TFull = THook<{ entity: TE }>["full"],
+  TAttr = THook<{ entity: TE }>["attributes"],
+  TFilters = THook<{ entity: TE }>["filters"],
+> extends ApiClient {
+  constructor(
+    request: AxiosInstance,
+    private readonly type: TE,
+  ) {
     super(request);
   }
 
-  static getInstance<TA, TS, TF>(request: AxiosInstance, type: EntityType) {
-    return new EntityApiClient<TA, TS, TF>(request, type);
+  static getInstance<TE extends THook["entity"]>(
+    request: AxiosInstance,
+    entity: TE,
+  ) {
+    return new EntityApiClient<TE>(request, entity);
   }
 
   /**
@@ -448,7 +461,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
   /**
    * Count elements.
    */
-  async count(params?: any) {
+  async count(params: { where?: TFilters }) {
     const { data } = await this.request.get<TCount>(
       `${ROUTES[this.type]}/count`,
       {
