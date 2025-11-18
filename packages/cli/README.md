@@ -18,7 +18,7 @@ Not yet familiar with [Hexabot](https://hexabot.ai/)? It's a open-source chatbot
 Install Hexabot CLI globally to have easy access to its commands:
 
 ```sh
-npm install -g hexabot-cli
+npm install -g @hexabot-ai/cli
 ```
 
 ### Usage

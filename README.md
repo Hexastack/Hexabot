@@ -87,7 +87,7 @@ PNPM is bundled with Node.js via Corepack. Enable it with `corepack enable pnpm@
 Install Hexabot CLI globally to have easy access to its commands:
 
 ```sh
-npm install -g hexabot-cli
+npm install -g @hexabot-ai/cli
 ```
 
 ### Usage
