@@ -50,12 +50,12 @@ export const GenericDataGrid = <
   entity: TE;
   buttons?: ButtonActionsGroupProps["buttons"];
   columns: GridColDef<THook<{ entity: TE }>["basic"]>[];
-  headerIcon: TMenuItem["Icon"];
+  headerIcon?: TMenuItem["Icon"];
   searchParams: TParamItem<TE> &
     SearchHookOptions & {
       getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;
     };
-  headerI18nTitle: TTranslationKeys;
+  headerI18nTitle?: TTranslationKeys;
   headerTitleChip?: string;
   headerLeftButtons?: React.ReactElement;
   headerFilterInputs?: React.ReactElement;
@@ -77,7 +77,7 @@ export const GenericDataGrid = <
         {headerLeftButtons}
         <PageHeader
           icon={headerIcon}
-          title={t(headerI18nTitle)}
+          title={headerI18nTitle && t(headerI18nTitle)}
           chip={
             headerTitleChip ? (
               <Chip label={headerTitleChip} size="medium" variant="title" />

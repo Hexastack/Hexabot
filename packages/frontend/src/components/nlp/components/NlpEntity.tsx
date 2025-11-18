@@ -4,22 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip, Grid } from "@mui/material";
+import { Chip } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
-import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
+import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
 import {
   useTanstackMutation,
   useTanstackQueryClient,
@@ -27,10 +24,9 @@ import {
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format, QueryType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -77,22 +73,6 @@ const NlpEntity = () => {
     },
   });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
-  const { onSearch, searchPayload, searchText } =
-    useSearch<EntityType.NLP_ENTITY>(
-      {
-        $or: ["name", "doc"],
-      },
-      { syncUrl: true },
-    );
-  const { dataGridProps: nlpEntityGrid } = useFind(
-    {
-      entity: EntityType.NLP_ENTITY,
-      format: Format.FULL,
-    },
-    {
-      params: searchPayload,
-    },
-  );
   const actionEntityColumns = useActionColumns<INlpEntity>(
     EntityType.NLP_ENTITY,
     [
@@ -130,7 +110,7 @@ const NlpEntity = () => {
     ],
     t("label.operations"),
   );
-  const nlpEntityColumns: GridColDef<INlpEntity>[] = [
+  const columns: GridColDef<INlpEntity>[] = [
     {
       flex: 1,
       field: "name",
@@ -205,51 +185,34 @@ const NlpEntity = () => {
   };
 
   return (
-    <Grid item xs={12}>
-      <Grid
-        justifyContent="flex-end"
-        gap={1}
-        container
-        alignItems="center"
-        flexShrink={0}
-      >
-        <Grid item>
-          <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-        </Grid>
-        <ButtonActionsGroup
-          entity={EntityType.NLP_ENTITY}
-          buttons={[
-            {
-              permissionAction: PermissionAction.CREATE,
-              onClick: () =>
-                dialogs.open(NlpEntityFormDialog, { defaultValues: null }),
-            },
-            {
-              permissionAction: PermissionAction.DELETE,
-              onClick: async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedNlpEntities.length,
-                });
+    <GenericDataGrid
+      entity={EntityType.NLP_ENTITY}
+      buttons={[
+        {
+          permissionAction: PermissionAction.CREATE,
+          onClick: () =>
+            dialogs.open(NlpEntityFormDialog, { defaultValues: null }),
+        },
+        {
+          permissionAction: PermissionAction.DELETE,
+          onClick: async () => {
+            const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+              mode: "selection",
+              count: selectedNlpEntities.length,
+            });
 
-                if (isConfirmed) {
-                  deleteNlpEntities(selectedNlpEntities);
-                }
-              },
-              disabled: !selectedNlpEntities.length,
-            },
-          ]}
-        />
-      </Grid>
-      <DataGrid
-        sx={{ mt: 3 }}
-        columns={nlpEntityColumns}
-        {...nlpEntityGrid}
-        isRowSelectable={({ row }) => !row.builtin}
-        checkboxSelection
-        onRowSelectionModelChange={handleSelectionChange}
-      />
-    </Grid>
+            if (isConfirmed) {
+              deleteNlpEntities(selectedNlpEntities);
+            }
+          },
+          disabled: !selectedNlpEntities.length,
+        },
+      ]}
+      columns={columns}
+      searchParams={{ $or: ["name", "doc"], syncUrl: true }}
+      selectionChangeHandler={handleSelectionChange}
+      isRowSelectable={({ row }) => !row.builtin}
+    />
   );
 };
 
