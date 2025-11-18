@@ -46,6 +46,42 @@ jobs:
       - name: 🛠️ build Frontend ...
         run: pnpm --filter @hexabot/frontend... run build
 
+  CLI-Checks:
+    name: CLI Checks
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: 🔎 Check out repository code ...
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
+      - name: ⏳ Setting Up Node ...
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: ⏳ Install workspace dependencies ...
+        run: pnpm install --frozen-lockfile
+
+      - name: 🖥 typecheck CLI ...
+        run: pnpm --filter @hexabot-ai/cli... run typecheck
+
+      - name: 🖋️ ESLint checks for CLI ...
+        run: pnpm --filter @hexabot-ai/cli... run lint
+
+      - name: 🔬 running unit tests for CLI ...
+        run: pnpm --filter @hexabot-ai/cli... run test
+
+      - name: 🛠️ build CLI ...
+        run: pnpm --filter @hexabot-ai/cli... run build
+
   API-Tests:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
