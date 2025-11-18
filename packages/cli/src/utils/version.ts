@@ -10,9 +10,10 @@ import { fileURLToPath } from 'url';
 
 const INITIAL_CLI_VERSION = '2.0.0';
 
-export const getCliVersion = (readFile: typeof fs.readFileSync = fs.readFileSync) => {
+export const getCliVersion = (
+  readFile: typeof fs.readFileSync = fs.readFileSync,
+) => {
   try {
-    // @ts-ignore ts-jest currently transpiles tests in CommonJS mode and flags import.meta access.
     const filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(filename);
     const packageJsonPath = path.join(__dirname, '../../package.json');

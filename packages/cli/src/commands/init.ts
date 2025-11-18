@@ -23,6 +23,7 @@ export const registerInitCommand = (program: Command) => {
 
       if (fs.existsSync(envPath)) {
         console.log(chalk.yellow('.env file already exists.'));
+
         return;
       }
 

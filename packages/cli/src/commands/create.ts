@@ -76,7 +76,6 @@ const fetchLatestReleaseTag = async (templateRepo: string) => {
 
   return data.tag_name;
 };
-
 const logSuccessMessage = (projectName: string) => {
   console.log('\n');
   console.log(chalk.green(`🎉 Project ${projectName} created successfully.`));
@@ -86,7 +85,9 @@ const logSuccessMessage = (projectName: string) => {
   console.log(chalk.yellow(`>> cd ${projectName}/`));
   console.log(chalk.gray(`2. Install dependencies:`));
   console.log(chalk.yellow(`>> npm i`));
-  console.log(chalk.gray(`3. Generate "docker/.env" file and customize config:`));
+  console.log(
+    chalk.gray(`3. Generate "docker/.env" file and customize config:`),
+  );
   console.log(chalk.yellow(`>> hexabot init`));
   console.log(chalk.gray(`4. Run 🤖:`));
   console.log(chalk.yellow(`>> hexabot dev --services ollama`));

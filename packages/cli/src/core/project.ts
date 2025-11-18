@@ -20,7 +20,9 @@ export const ensureDockerFolder = () => {
 
   if (!fs.existsSync(folder)) {
     console.error(
-      chalk.red(`Error: The '${DOCKER_FOLDER_NAME}' folder is not found in the current directory.`),
+      chalk.red(
+        `Error: The '${DOCKER_FOLDER_NAME}' folder is not found in the current directory.`,
+      ),
     );
     console.error(
       chalk.yellow(

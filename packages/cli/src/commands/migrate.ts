@@ -16,7 +16,9 @@ export const registerMigrateCommand = (program: Command) => {
     .action((args: string[] = []) => {
       ensureDockerFolder();
       const migrateArgs = args.join(' ').trim();
-      const command = migrateArgs ? `npm run migrate ${migrateArgs}` : 'npm run migrate';
+      const command = migrateArgs
+        ? `npm run migrate ${migrateArgs}`
+        : 'npm run migrate';
 
       dockerExec('api', command, '--user $(id -u):$(id -g)');
     });

@@ -24,7 +24,6 @@ const checkDocker = () => {
     process.exit(1);
   }
 };
-
 const checkNodeVersion = () => {
   try {
     const nodeVersion = execSync('node --version', {
@@ -36,6 +35,7 @@ const checkNodeVersion = () => {
 
     if (compareVersions(currentNodeVersion, REQUIRED_NODE_VERSION) >= 0) {
       console.log(chalk.green(`Node.js version is sufficient: ${nodeVersion}`));
+
       return;
     }
 
@@ -54,7 +54,6 @@ const checkNodeVersion = () => {
     process.exit(1);
   }
 };
-
 const compareVersions = (current: string, required: string) => {
   const currentParts = current.split('.').map(Number);
   const requiredParts = required.split('.').map(Number);

@@ -6,7 +6,11 @@
 
 import { Command } from 'commander';
 
-import { dockerCompose, generateComposeFiles, ComposeMode } from '../core/docker.js';
+import {
+  dockerCompose,
+  generateComposeFiles,
+  ComposeMode,
+} from '../core/docker.js';
 import { ensureDockerFolder } from '../core/project.js';
 import { parseServices } from '../utils/services.js';
 
@@ -43,13 +47,15 @@ const composeCommandDefinitions: ComposeCommandDefinition[] = [
   },
   {
     command: 'dev',
-    description: 'Start specified services in development mode with Docker Compose',
+    description:
+      'Start specified services in development mode with Docker Compose',
     lifecycle: 'up-build',
     mode: 'dev',
   },
   {
     command: 'start-prod',
-    description: 'Start specified services in production mode with Docker Compose',
+    description:
+      'Start specified services in production mode with Docker Compose',
     lifecycle: 'up',
     mode: 'prod',
   },
@@ -64,18 +70,20 @@ const composeCommandDefinitions: ComposeCommandDefinition[] = [
     lifecycle: 'down-volumes',
   },
 ];
-
 const runComposeCommand = (
   servicesInput: string,
   definition: ComposeCommandDefinition,
 ) => {
   const dockerFolder = ensureDockerFolder();
   const services = parseServices(servicesInput || '');
-  const composeArgs = generateComposeFiles(dockerFolder, services, definition.mode);
+  const composeArgs = generateComposeFiles(
+    dockerFolder,
+    services,
+    definition.mode,
+  );
   const lifecycleArgs = resolveLifecycleArgs(definition.lifecycle);
   dockerCompose(`${composeArgs} ${lifecycleArgs}`);
 };
-
 const resolveLifecycleArgs = (lifecycle: ComposeLifecycle) => {
   switch (lifecycle) {
     case 'up':
