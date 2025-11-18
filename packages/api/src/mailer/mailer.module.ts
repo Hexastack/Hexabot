@@ -10,31 +10,24 @@ import { Global, Module } from '@nestjs/common';
 import {
   ISendMailOptions,
   MAILER_OPTIONS,
+  MailerOptions,
   MailerModule as NestjsMailerModule,
 } from '@nestjs-modules/mailer';
-import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 import { config } from '@/config';
 
 import { MailerService } from './mailer.service';
+import { MjmlAdapter } from './mjml-adapter.class';
 
-const mailerOptions = {
+const mailerOptions: MailerOptions = {
   transport: new SMTPTransport({
     ...config.emails.smtp,
     logger: true,
     debug: false,
   }),
   template: {
-    adapter: new MjmlAdapter(
-      'handlebars',
-      {
-        inlineCssEnabled: false,
-      },
-      {
-        handlebar: {},
-      },
-    ),
+    adapter: new MjmlAdapter(),
     dir: path.join(process.cwd(), 'dist', 'templates'),
     options: {
       context: {
