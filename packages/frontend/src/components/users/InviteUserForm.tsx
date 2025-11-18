@@ -28,7 +28,7 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutate: sendInvitation } = useSendInvitation({
+  const { mutate: sendInvitation, isPending } = useSendInvitation({
     onSuccess: () => {
       rest.onSuccess?.();
       toast.success(t("message.success_invitation_sent"));
@@ -60,7 +60,14 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
     sendInvitation(params);
 
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
+    <Wrapper
+      onSubmit={handleSubmit(onSubmitForm)}
+      {...WrapperProps}
+      confirmButtonProps={{
+        ...WrapperProps?.confirmButtonProps,
+        disabled: isPending,
+      }}
+    >
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
