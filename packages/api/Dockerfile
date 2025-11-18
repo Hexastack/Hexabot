@@ -16,7 +16,7 @@ COPY packages/api/package.json packages/api/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
-RUN pnpm install --filter @hexabot/api... --prod=false
+RUN pnpm install --filter @hexabot-ai/api... --prod=false
 
 FROM deps AS build
 
@@ -24,7 +24,7 @@ COPY packages/api ./packages/api
 COPY packages/frontend ./packages/frontend
 COPY packages/widget ./packages/widget
 
-RUN pnpm --filter @hexabot/api run build
+RUN pnpm --filter @hexabot-ai/api run build
 
 FROM base AS development
 
@@ -36,7 +36,7 @@ COPY packages/api ./packages/api
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@hexabot/api", "run", "start:debug"]
+CMD ["pnpm", "--filter", "@hexabot-ai/api", "run", "start:debug"]
 
 FROM base AS production-deps
 
@@ -47,7 +47,7 @@ COPY packages/api/package.json packages/api/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
-RUN pnpm install --filter @hexabot/api... --prod
+RUN pnpm install --filter @hexabot-ai/api... --prod
 
 FROM base AS production
 

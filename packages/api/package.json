@@ -1,5 +1,5 @@
 {
-  "name": "@hexabot/api",
+  "name": "@hexabot-ai/api",
   "private": true,
   "version": "3.0.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
@@ -110,7 +110,7 @@
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.31",
-    "@hexabot/frontend": "workspace:*",
+    "@hexabot-ai/frontend": "workspace:*",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.6",

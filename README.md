@@ -69,7 +69,7 @@ pnpm dev              # run package dev servers in parallel
 pnpm build            # build all packages
 pnpm lint             # lint across the workspace
 pnpm test             # execute test suites
-pnpm --filter @hexabot/api run dev        # run a package script
+pnpm --filter @hexabot-ai/api run dev        # run a package script
 ```
 
 PNPM is bundled with Node.js via Corepack. Enable it with `corepack enable pnpm@9.12.0` if necessary.
