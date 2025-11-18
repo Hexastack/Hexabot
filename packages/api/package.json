@@ -23,7 +23,6 @@
   ],
   "scripts": {
     "dev": "pnpm run start:dev",
-    "postinstall": "patch-package",
     "build": "pnpm run frontend:build && nest build && pnpm run copy-types && pnpm run frontend:copy",
     "copy-types": "node ./scripts/copy-types.js",
     "frontend:build": "node ./scripts/frontend-build.js",
@@ -97,7 +96,6 @@
     "passport-anonymous": "^1.0.1",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "patch-package": "^8.0.1",
     "pg": "^8.13.1",
     "redis": "^5.8.3",
     "reflect-metadata": "^0.2.2",
