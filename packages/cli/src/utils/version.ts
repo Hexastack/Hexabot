@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-const INITIAL_CLI_VERSION = '2.0.0';
+const INITIAL_CLI_VERSION = '3.0.0';
 
 export const getCliVersion = (
   readFile: typeof fs.readFileSync = fs.readFileSync,

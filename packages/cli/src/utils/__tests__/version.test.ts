@@ -29,7 +29,7 @@ describe('getCliVersion', () => {
       throw new Error('file error');
     };
 
-    expect(getCliVersion(failingReader)).toBe('2.0.0');
+    expect(getCliVersion(failingReader)).toBe('3.0.0');
     expect(errorSpy).toHaveBeenCalled();
   });
 });

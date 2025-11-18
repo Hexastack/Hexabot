@@ -5,7 +5,7 @@ This document distills the current behavior of the Hexabot CLI and acts as a qui
 ## Runtime & Bootstrap
 
 - **Entry point**: `src/index.ts` renders the figlet banner (`printBanner()`, `src/ui/banner.ts`), runs `checkPrerequisites()` before any command registration, and is compiled to `dist/index.js`, which the `package.json` `bin.hexabot` field exposes as the `hexabot` binary.
-- **CLI factory**: `createCliProgram()` (`src/cli.ts`) instantiates the Commander program, sets the name/description, loads the version via `getCliVersion()` (`src/utils/version.ts`, falls back to `2.0.0` if package.json cannot be read), and wires in the `create`, `init`, compose, and `migrate` registrars.
+- **CLI factory**: `createCliProgram()` (`src/cli.ts`) instantiates the Commander program, sets the name/description, loads the version via `getCliVersion()` (`src/utils/version.ts`, falls back to `3.0.0` if package.json cannot be read), and wires in the `create`, `init`, compose, and `migrate` registrars.
 - **Prerequisite gate**: `checkPrerequisites()` (`src/core/prerequisites.ts`) runs `docker --version` and ensures Node.js ≥ 20.18.1 using `compareVersions()`. Any failure prints actionable instructions and exits before `program.parse()` executes.
 - **Working folder guard**: `ensureDockerFolder()` (`src/core/project.ts`) resolves `<cwd>/docker` and aborts with guidance if that folder is missing. Commands that touch env files or containers (`init`, compose lifecycles, `migrate`) call it up front so they only run inside a Hexabot project tree.
 
@@ -33,7 +33,7 @@ All Docker Compose lifecycle commands (`start`, `dev`, `start-prod`, `stop`, `de
 - **`parseServices(list)`** (`src/utils/services.ts`) trims whitespace, splits on commas, and strips empty tokens so CLI layers can safely pass empty defaults.
 - **`downloadAndExtractTemplate(url, destination)`** (`src/services/templates.ts`) grabs the release archive with Axios, writes it to `<destination>/template.zip`, extracts it with `decompress` using `strip: 1`, and deletes the temporary ZIP. Errors propagate back to the `create` command so it can log them.
 - **`validateProjectName(name)`** (`src/utils/validation.ts`) enforces lowercase names that start with a letter while still allowing digits and single dashes.
-- **`getCliVersion(readFile?)`** (`src/utils/version.ts`) loads `packages/cli/package.json` to derive the version Commander displays; if the read fails it falls back to `2.0.0` after logging the error.
+- **`getCliVersion(readFile?)`** (`src/utils/version.ts`) loads `packages/cli/package.json` to derive the version Commander displays; if the read fails it falls back to `3.0.0` after logging the error.
 
 ## Typical Workflow
 
