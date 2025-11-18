@@ -10,61 +10,108 @@ import chalk from 'chalk';
 
 const REQUIRED_NODE_VERSION = '20.18.1';
 
-export const checkPrerequisites = () => {
-  checkDocker();
-  checkNodeVersion();
-};
+export interface PrerequisiteOptions {
+  docker?: boolean;
+  silent?: boolean;
+  fatal?: boolean;
+}
 
-const checkDocker = () => {
-  try {
-    const dockerVersion = execSync('docker --version', { encoding: 'utf-8' });
-    console.log(chalk.green(`Docker is installed: ${dockerVersion.trim()}`));
-  } catch (_error) {
-    console.error(chalk.red('Docker is not installed. Please install Docker.'));
-    process.exit(1);
+export interface PrerequisiteCheckResult {
+  ok: boolean;
+  message: string;
+  details?: string;
+}
+
+export const checkPrerequisites = (options: PrerequisiteOptions = {}) => {
+  checkNodeVersion(options);
+  if (options.docker) {
+    checkDocker(options);
   }
 };
-const checkNodeVersion = () => {
+
+export const checkNodeVersion = (
+  options: PrerequisiteOptions = {},
+): PrerequisiteCheckResult => {
   try {
     const nodeVersion = execSync('node --version', {
       encoding: 'utf-8',
     }).trim();
-    const currentNodeVersion = nodeVersion.startsWith('v')
-      ? nodeVersion.slice(1)
-      : nodeVersion;
+    const currentNodeVersion = normalizeVersion(nodeVersion);
 
     if (compareVersions(currentNodeVersion, REQUIRED_NODE_VERSION) >= 0) {
-      console.log(chalk.green(`Node.js version is sufficient: ${nodeVersion}`));
+      const message = `Node.js ${nodeVersion} ✓`;
+      logSuccess(message, options);
 
-      return;
+      return { ok: true, message };
     }
 
-    console.error(
-      chalk.red(
-        `Node.js version must be at least ${REQUIRED_NODE_VERSION}. Current version: ${nodeVersion}. Please install or upgrade Node.js.`,
-      ),
-    );
-    process.exit(1);
-  } catch (_error) {
-    console.error(
-      chalk.red(
-        "Node.js is is not accessible or is not installed correctly. Please install Node.js version 20.18.1 or higher and ensure it is in your system's PATH.",
-      ),
-    );
-    process.exit(1);
+    const message = `Node.js version must be at least ${REQUIRED_NODE_VERSION}. Current version: ${nodeVersion}.`;
+    handleFailure(message, options);
+
+    return { ok: false, message };
+  } catch (error) {
+    const message =
+      "Node.js is not accessible or installed correctly. Install Node.js v20.18.1+ and ensure it's in your PATH.";
+
+    handleFailure(message, options, error);
+
+    return { ok: false, message, details: (error as Error).message };
   }
+};
+
+export const checkDocker = (
+  options: PrerequisiteOptions = {},
+): PrerequisiteCheckResult => {
+  try {
+    const dockerVersion = execSync('docker --version', {
+      encoding: 'utf-8',
+    }).trim();
+    const message = `Docker is installed: ${dockerVersion}`;
+    logSuccess(message, options);
+
+    return { ok: true, message };
+  } catch (error) {
+    const message =
+      'Docker is required for this command. Please install Docker.';
+    handleFailure(message, options, error);
+
+    return { ok: false, message, details: (error as Error).message };
+  }
+};
+
+const normalizeVersion = (version: string) => {
+  return version.startsWith('v') ? version.slice(1) : version;
 };
 const compareVersions = (current: string, required: string) => {
   const currentParts = current.split('.').map(Number);
   const requiredParts = required.split('.').map(Number);
 
   for (let i = 0; i < requiredParts.length; i++) {
-    if (currentParts[i] > requiredParts[i]) {
+    if ((currentParts[i] || 0) > (requiredParts[i] || 0)) {
       return 1;
-    } else if (currentParts[i] < requiredParts[i]) {
+    } else if ((currentParts[i] || 0) < (requiredParts[i] || 0)) {
       return -1;
     }
   }
 
   return 0;
+};
+const logSuccess = (message: string, options: PrerequisiteOptions) => {
+  if (!options.silent) {
+    console.log(chalk.green(message));
+  }
+};
+const handleFailure = (
+  message: string,
+  options: PrerequisiteOptions,
+  error?: unknown,
+) => {
+  console.error(chalk.red(message));
+
+  if (options.fatal !== false) {
+    if (error && options.silent) {
+      console.error(chalk.red((error as Error).message));
+    }
+    process.exit(1);
+  }
 };

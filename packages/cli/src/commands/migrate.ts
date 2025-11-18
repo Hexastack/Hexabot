@@ -7,6 +7,7 @@
 import { Command } from 'commander';
 
 import { dockerExec } from '../core/docker.js';
+import { checkDocker } from '../core/prerequisites.js';
 import { ensureDockerFolder } from '../core/project.js';
 
 export const registerMigrateCommand = (program: Command) => {
@@ -14,6 +15,7 @@ export const registerMigrateCommand = (program: Command) => {
     .command('migrate [args...]')
     .description('Run database migrations')
     .action((args: string[] = []) => {
+      checkDocker({ silent: true });
       ensureDockerFolder();
       const migrateArgs = args.join(' ').trim();
       const command = migrateArgs

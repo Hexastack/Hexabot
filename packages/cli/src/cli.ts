@@ -6,10 +6,14 @@
 
 import { Command } from 'commander';
 
-import { registerComposeCommands } from './commands/compose.js';
+import { registerCheckCommand } from './commands/check.js';
+import { registerConfigCommand } from './commands/config.js';
 import { registerCreateCommand } from './commands/create.js';
-import { registerInitCommand } from './commands/init.js';
+import { registerDevCommand } from './commands/dev.js';
+import { registerDockerCommand } from './commands/docker.js';
+import { registerEnvCommand } from './commands/env.js';
 import { registerMigrateCommand } from './commands/migrate.js';
+import { registerStartCommand } from './commands/start.js';
 import { getCliVersion } from './utils/version.js';
 
 export const createCliProgram = () => {
@@ -20,9 +24,13 @@ export const createCliProgram = () => {
     .description('A CLI to manage your Hexabot chatbot instance')
     .version(getCliVersion());
 
+  registerCheckCommand(program);
   registerCreateCommand(program);
-  registerInitCommand(program);
-  registerComposeCommands(program);
+  registerConfigCommand(program);
+  registerDevCommand(program);
+  registerDockerCommand(program);
+  registerEnvCommand(program);
+  registerStartCommand(program);
   registerMigrateCommand(program);
 
   return program;

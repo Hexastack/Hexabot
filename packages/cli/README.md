@@ -10,8 +10,8 @@ Not yet familiar with [Hexabot](https://hexabot.ai/)? It's a open-source chatbot
 ### Prerequisites
 
 - Node.js >= 20.18.1
-- npm (Node Package Manager)
-- Docker installed
+- One package manager (`npm`, `pnpm`, `yarn`, or `bun`)
+- Docker Desktop/Engine (only required when you pass `--docker` or use `hexabot docker ...`)
 
 ### Installation
 
@@ -23,145 +23,131 @@ npm install -g @hexabot-ai/cli
 
 ### Usage
 
-Once installed, you can use the `hexabot` command in your terminal. Here are some of the available commands:
+Once installed, you can use the `hexabot` command anywhere. The CLI focuses on a “zero to bot” flow: create a project, `cd` into it, and run `hexabot dev`. Docker is optional and available via `--docker` or the `hexabot docker ...` helpers.
 
 ### Commands
 
-#### `create <projectName>`
+#### `create <project-name>`
 
-Create a new Hexabot project.
-
-```sh
-hexabot create my-chatbot
-```
-
-Options:
-
-- `--template <template>`: Specify a GitHub repository in the format `GITHUB_USERNAME/GITHUB_REPO` to use a custom template.
-
-Example:
+Scaffold a new Hexabot project from the official NestJS starter template.
 
 ```sh
-hexabot create my-chatbot --template myusername/my-template-repo
+hexabot create support-bot
 ```
 
-#### `init`
+Common options:
 
-Initialize the environment by copying `.env.example` to `.env`.
+- `-t, --template <name>` – template repository. Use `org/repo` or shorthand `starter`.
+- `--pm <npm|pnpm|yarn|bun>` – force a package manager (auto-detected otherwise).
+- `--no-install` – skip running the package manager after scaffolding.
+- `--dev` – immediately run `hexabot dev` once creation is complete.
+- `--docker` – bootstrap the Docker env file and hint about Docker-first commands.
+- `--force` – allow scaffolding into a non-empty directory.
 
-```sh
-hexabot init
-```
+The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` (and `.env.docker` when `--docker` is passed).
 
 #### `dev`
 
-Start specified services in development mode with Docker Compose.
+Run the current project in development mode. Defaults to local (SQLite) development by running the configured package script (defaults to `npm run dev`).
 
 ```sh
-hexabot dev --services nlu,ollama
+# Local dev
+hexabot dev
+
+# Docker dev with Postgres profile
+hexabot dev --docker --services postgres
 ```
 
 Options:
 
-- `--services <services>`: Comma-separated list of services to enable.
+- `--docker` – run Docker Compose instead of the package script.
+- `--services <list>` – comma-separated Compose overlays/profiles to enable.
+- `-d, --detach` – detach Docker Compose.
+- `--env <file>` – custom env file for local dev (defaults to `.env`).
+- `--no-env-bootstrap` – skip copying `.env.example` files automatically.
+- `--pm <npm|pnpm|yarn|bun>` – temporarily override the package manager.
 
+#### `env`
+
+Helper commands to manage `.env` files.
+
+- `hexabot env init` – copy `.env.example` ➜ `.env`.
+- `hexabot env init --docker` – copy `.env.docker.example` ➜ `.env.docker`.
+- `hexabot env list` – show which env files exist or are missing.
+
+Flags: `--force` overwrites existing files when running `env init`.
+
+#### `docker`
+
+Quality-of-life wrappers around `docker compose` using the project’s `docker/` folder.
+
+- `hexabot docker up [--services <list>] [--build] [-d]`
+- `hexabot docker down [--services <list>] [--volumes]`
+- `hexabot docker logs [service] [-f | --since <1h>]`
+- `hexabot docker ps`
+- `hexabot docker start [--services <list>] [--build] [-d]` – convenience alias for `hexabot start --docker`
+
+The CLI automatically stitches together `docker-compose.yml` + `docker-compose.<service>.yml` overlays and can copy `.env.docker.example` on first run.
 
 #### `start`
 
-Start specified services with Docker Compose.
+Production-oriented variant of `dev`.
 
 ```sh
-hexabot start --services api,nlu
+hexabot start
+hexabot start --docker --services api,postgres --build
 ```
 
-Options:
+- Local mode runs the configured `start` script (defaults to `npm run start`).
+- Docker mode uses the “prod” compose overlays (e.g. `docker-compose.<service>.prod.yml`) so no dev-specific files are chained.
+- Pass `--env-bootstrap` if you still want the CLI to copy env examples automatically.
 
-- `--services <services>`: Comma-separated list of services to enable.
+#### `check`
 
+Run diagnostics for the current environment.
+
+```sh
+hexabot check
+hexabot check --docker-only
+```
+
+Outputs PASS/FAIL entries for Node.js version, project detection, env files, and optionally Docker.
+
+#### `config`
+
+Inspect or tweak `hexabot.config.json` without editing it manually.
+
+- `hexabot config show`
+- `hexabot config set <key> <value>` (supports dot notation, e.g. `docker.defaultServices "postgres,redis"`)
 
 #### `migrate [args...]`
 
-Run database migrations.
-
-```sh
-hexabot migrate
-```
-
-You can also pass additional arguments to the migration command.
-
-#### `start-prod`
-
-Start specified services in production mode with Docker Compose.
-
-```sh
-hexabot start-prod --services api,nlu
-```
-
-Options:
-
-- `--services <services>`: Comma-separated list of services to enable.
-
-#### `stop`
-
-Stop specified Docker Compose services.
-
-```sh
-hexabot stop --services api,nlu
-```
-
-Options:
-
-- `--services <services>`: Comma-separated list of services to stop.
-
-#### `destroy`
-
-Destroy specified Docker Compose services and remove volumes.
-
-```sh
-hexabot destroy --services api,nlu
-```
-
-Options:
-
-- `--services <services>`: Comma-separated list of services to destroy.
+Run database migrations inside the Docker `api` container. Any extra args are forwarded to `npm run migrate`.
 
 ## Example Workflow
 
-1. **Create a new project**:
+1. **Create a new project** (installs dependencies automatically unless `--no-install`):
 
    ```sh
-   hexabot create my-chatbot
+   npx @hexabot-ai/cli create support-bot
    ```
 
-   This will create a new folder `my-chatbot` with all necessary files to get started.
-
-2. **Navigate to your project folder**:
+2. **Enter the project and start local dev (SQLite, no Docker required)**:
 
    ```sh
-   cd my-chatbot
+   cd support-bot
+   hexabot dev
    ```
 
-3. **Install dependencies**:
+3. **Need infrastructure like Postgres or Redis? Opt in with Docker**:
 
    ```sh
-   npm install
+   hexabot dev --docker --services postgres,redis
+   # or manage Docker services directly
+   hexabot docker up --services postgres
    ```
 
-4. **Initialize environment**:
-
-   ```sh
-   hexabot init
-   ```
-
-   This command copies the `.env.example` file to `.env`, which you can edit to customize your configuration.
-
-5. **Run in development mode**:
-
-   ```sh
-   hexabot dev --services nlu,ollama
-   ```
-
-   This starts the required services in development mode.
+That’s it—`create → cd → dev` is the happy path, while Docker and env helpers remain available on demand.
 
 ## Documentation
 

@@ -10,7 +10,7 @@ import { checkPrerequisites } from './core/prerequisites.js';
 import { printBanner } from './ui/banner.js';
 
 printBanner();
-checkPrerequisites();
+checkPrerequisites({ silent: true });
 
 const program = createCliProgram();
 

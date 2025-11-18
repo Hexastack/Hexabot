@@ -7,6 +7,7 @@ const chalkMock = {
   red: passthrough,
   green: passthrough,
   bgYellow: passthrough,
+  gray: passthrough,
 };
 
 export default chalkMock;

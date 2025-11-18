@@ -9,6 +9,7 @@ import { Command } from 'commander';
 
 const dockerExec = jest.fn();
 const ensureDockerFolder = jest.fn();
+const checkDocker = jest.fn();
 
 jest.unstable_mockModule('../../core/docker.js', () => ({
   dockerExec,
@@ -16,6 +17,10 @@ jest.unstable_mockModule('../../core/docker.js', () => ({
 
 jest.unstable_mockModule('../../core/project.js', () => ({
   ensureDockerFolder,
+}));
+
+jest.unstable_mockModule('../../core/prerequisites.js', () => ({
+  checkDocker,
 }));
 
 let registerMigrateCommand: (program: Command) => void;

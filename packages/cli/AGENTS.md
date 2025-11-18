@@ -1,51 +1,64 @@
 # Hexabot CLI
 
-This document distills the current behavior of the Hexabot CLI and acts as a quick reference for extending or coordinating the CLI subcommands that orchestrate Hexabot projects.
+This file is the authoritative cheat-sheet for the Hexabot CLI. It summarizes the runtime bootstrap, core helpers, and per-command responsibilities so we can confidently extend or coordinate agent work without re-reading the entire codebase.
 
 ## Runtime & Bootstrap
 
-- **Entry point**: `src/index.ts` renders the figlet banner (`printBanner()`, `src/ui/banner.ts`), runs `checkPrerequisites()` before any command registration, and is compiled to `dist/index.js`, which the `package.json` `bin.hexabot` field exposes as the `hexabot` binary.
-- **CLI factory**: `createCliProgram()` (`src/cli.ts`) instantiates the Commander program, sets the name/description, loads the version via `getCliVersion()` (`src/utils/version.ts`, falls back to `3.0.0` if package.json cannot be read), and wires in the `create`, `init`, compose, and `migrate` registrars.
-- **Prerequisite gate**: `checkPrerequisites()` (`src/core/prerequisites.ts`) runs `docker --version` and ensures Node.js ≥ 20.18.1 using `compareVersions()`. Any failure prints actionable instructions and exits before `program.parse()` executes.
-- **Working folder guard**: `ensureDockerFolder()` (`src/core/project.ts`) resolves `<cwd>/docker` and aborts with guidance if that folder is missing. Commands that touch env files or containers (`init`, compose lifecycles, `migrate`) call it up front so they only run inside a Hexabot project tree.
+- **Entry point**: `src/index.ts` prints the banner (`printBanner()`) and calls `checkPrerequisites({ silent: true })` before instantiating the Commander program. That pre-flight verifies Node.js (see below) so user-facing commands can assume a supported runtime.
+- **CLI factory**: `createCliProgram()` (`src/cli.ts`) builds the `Command` instance, configures name/description/version (`getCliVersion()`), and registers `check`, `create`, `config`, `dev`, `docker`, `env`, `start`, and `migrate` commands.
+- **Prerequisite gate**: `checkPrerequisites()` / `checkNodeVersion()` / `checkDocker()` (`src/core/prerequisites.ts`) centralize system checks. The top-level bootstrap validates Node (>= 20.18.1) while Docker checks are performed by commands that actually need Docker.
+- **Project guard**: `assertHexabotProject()` / `isHexabotProject()` (`src/core/project.ts`) enforce that commands run inside a workspace whose `package.json` depends on `@hexabot-ai/api`. Docker-aware commands also call `ensureDockerFolder()` which ensures `<projectRoot>/docker/` exists before touching compose files.
+- **Service parsing**: `parseServices()` (`src/utils/services.ts`) normalizes the shared `--services` flag to a de-duped string array so Docker helpers can safely compose per-service overlays.
 
-All Docker Compose lifecycle commands (`start`, `dev`, `start-prod`, `stop`, `destroy`) share the `--services` option. Commander feeds it as a string (default `''`), which `parseServices()` (`src/utils/services.ts`) turns into the sanitized array that downstream helpers expect.
+## Configuration & Environment Model
+
+- **Config file**: `hexabot.config.json` lives at the project root and is managed by `src/core/config.ts`. `loadProjectConfig()` merges user overrides with defaults (`devScript`, `startScript`, compose path `docker/docker-compose.yml`, env filenames, and optional `packageManager`). `ensureProjectConfig()` writes the file when scaffolding and `updateProjectConfig()` persists dot-notation updates from the CLI.
+- **Env helpers**: `bootstrapEnvFile()`, `listEnvStatus()`, and `resolveEnvExample()` (`src/core/env.ts`) copy `*.example` files when needed and report which env files exist. Commands never manipulate env paths directly—they rely on the config struct.
+- **Package managers**: `normalizePackageManager()`, `detectPackageManager()`, `runPackageScript()`, and `installDependencies()` (`src/core/package-manager.ts`) keep npm/pnpm/yarn/bun handling consistent. `runPackageScript()` verifies the requested script exists in `package.json` before executing it.
+
+## Docker Compose helpers
+
+- **Compose resolution**: `resolveComposeFile()` ensures config paths are absolute, while `generateComposeFiles()` (`src/core/docker.ts`) builds the `-f` flag chain. It always starts with the base file, then per-service overlays (`docker-compose.<service>.yml`), optional service/mode overlays (`docker-compose.<service>.<dev|prod>.yml`), and finally the global `docker-compose.<mode>.yml` when it exists.
+- **Execution wrappers**: `dockerCompose()` and `dockerExec()` (same module) print highlighted commands, run them via `execSync`, and exit with code `1` on Docker failures.
 
 ## Subcommand Catalog
 
 | Command | Responsibilities | Options & IO | Implementation Notes |
 | --- | --- | --- | --- |
-| `create <projectName>` | Scaffold a new Hexabot project from the latest release of a template repo, emit onboarding hints. | `--template` overrides the default `hexastack/hexabot-template-starter`. Downloads the release ZIP via GitHub's API and extracts it into `<projectName>/`. | Implemented in `src/commands/create.ts`. Validates the slug via `validateProjectName()` (`src/utils/validation.ts`), ensures `<projectName>/` exists, fetches the latest tag from `https://api.github.com/repos/<repo>/releases/latest`, builds `https://github.com/<repo>/archive/refs/tags/<tag>.zip`, and streams it to `downloadAndExtractTemplate()` (`src/services/templates.ts`) which saves `template.zip`, decompresses with `strip: 1`, and deletes the archive. Successful runs print the bright "next steps" checklist. |
-| `init` | Duplicate `docker/.env.example` to `docker/.env` without overwriting an existing file. | No options. | `src/commands/init.ts` resolves the docker folder, checks for `docker/.env`, and copies `docker/.env.example` when needed; otherwise it logs a warning and exits cleanly. |
-| `start` | Compose and boot the requested services in the default stack. | `--services nlu,ollama` layers service-specific `docker-compose.<service>.yml` files; omitting the flag uses only `docker-compose.yml`. | Defined via `composeCommandDefinitions` in `src/commands/compose.ts` with lifecycle `up`. `runComposeCommand()` ensures the docker folder exists, feeds the sanitized services list into `generateComposeFiles()` (`src/core/docker.ts`) to build the ordered `-f` flags (base file + per-service overlays), then calls `dockerCompose("<flags> up -d")` to launch. |
-| `dev` | Same as `start`, but includes dev overlays and forces image rebuilds. | `--services` identical to `start`. | The compose definition sets `mode: 'dev'` and lifecycle `up-build`, so each service adds `docker-compose.<service>.dev.yml` if it exists, and the stack ends with `docker-compose.dev.yml`. The generated command becomes `docker compose <flags> up --build -d`. |
-| `migrate [args…]` | Proxy database migrations through the `api` container. | Optional trailing args get appended to `npm run migrate`. | `src/commands/migrate.ts` ensures the docker folder is present, joins the args into a single string, and executes `dockerExec('api', 'npm run migrate …', '--user $(id -u):$(id -g)')` so files written inside the container stay owned by the host user. |
-| `start-prod` | Launch production overlays. | Same options as `start`. | The compose definition uses `mode: 'prod'`, so `generateComposeFiles()` appends `docker-compose.<service>.prod.yml` per service (when present) and `docker-compose.prod.yml` before running `docker compose … up -d`. |
-| `stop` | Stop active services via `docker compose down`. | `--services` optionally narrows the compose file set. | Lifecycle `down` with no mode still runs the shared compose-file resolution logic so partial stacks can be torn down cleanly. |
-| `destroy` | Tear down services and remove volumes. | `--services` optional. | Lifecycle `down-volumes` adds the `-v` flag so `docker compose` removes any attached volumes after shutting down the services resolved by the given compose files. |
+| `check [--docker-only] [--no-docker]` | Run diagnostics for local Node version, Hexabot project detection, env files, and optionally Docker. | Flags narrow which checks run; outputs PASS/FAIL rows and sets exit code 1 if any check fails. | `src/commands/check.ts` calls `checkNodeVersion()`, `isHexabotProject()`, `loadProjectConfig()`, `listEnvStatus()`, and `checkDocker()` in sequence and prints results with chalk. |
+| `create <projectName>` | Scaffold a project from a GitHub template, configure package manager, bootstrap env files, install deps, and optionally start dev mode. | `--template`, `--pm`, `--no-install`, `--dev`, `--docker`, `--force`. Writes `hexabot.config.json` and new env files, installs deps (unless skipped), and can immediately run `hexabot dev`. | `src/commands/create.ts` validates the slug, downloads the latest release zip of `hexastack/hexabot-template-*` via `downloadAndExtractTemplate()`, ensures config/env files exist, installs dependencies via `installDependencies()`, and optionally calls `runDev()` for the new project. |
+| `config show` | Print the effective `hexabot.config.json` after merging defaults. | No flags; emits pretty-printed JSON. | `src/commands/config.ts` resolves the project root, asserts the workspace, and calls `loadProjectConfig()`. |
+| `config set <key> <value>` | Update nested config values via dot notation with type-aware parsing. | Supports booleans, numbers, JSON literals, comma lists (for `*Services` keys), and package-manager normalization. | Uses `parseValue()` + `buildOverride()` to construct overrides, writes via `updateProjectConfig()`, and echoes the new config. |
+| `dev [--docker] [--services] [-d] [--env] [--no-env-bootstrap] [--pm]` | Run the project in development mode using either the package script or Docker compose stack. | When not using Docker it runs the configured dev script (`dev` default) after optional env bootstrapping. Docker mode bootstraps the docker env file, resolves compose overlays, and runs `docker compose ... up --build [-d]`. | `src/commands/dev.ts` auto-detects the package manager, persists it into the config, handles env bootstrapping (local or docker), then either calls `runPackageScript()` or `runDockerDev()` (which uses `generateComposeFiles()` with mode `dev`). |
+| `start [--docker] [--services] [-d] [--build] [--env] [--env-bootstrap] [--pm]` | Production entry point mirroring `dev` but defaulting to the configured start script and prod compose overlays. | Local mode optionally bootstraps env files when `--env-bootstrap` is passed; Docker mode layers prod compose files, supports `--build`/`--detach`, and logs which services start. | `src/commands/start.ts` shares the package-manager persistence logic with `dev`. `runDockerStart()` enforces Docker availability, resolves compose overlays with mode `prod`, and shells out via `dockerCompose()`. |
+| ``docker up`` / ``docker down`` | Low-level Docker helpers for dev-mode compose stacks. | `up` supports `--services`, `--build`, `--detach`; `down` supports `--services` and `--volumes`. | `src/commands/docker.ts` ensures config + docker folder, resolves services (`parseServices()` with fallbacks to `config.docker.defaultServices`), bootstraps docker env files, and executes `docker compose ... up|down`. |
+| ``docker logs [service]`` / ``docker ps`` | Introspection helpers for the dev stack. | Logs accept `--follow`/`--since`. | Reuse `generateComposeFiles(..., 'dev')` plus targeted docker compose commands. |
+| ``docker start`` | Production-mode convenience wrapper for `hexabot start --docker`. | `--services`, `--detach`, `--build`, `--env-bootstrap`. | This subcommand simply calls `runStart({ docker: true, ... })` so behavior stays aligned with the main `start` command. |
+| `env init [--docker] [--force]` | Copy the configured `.env*` files from their `.example` counterparts. | By default bootstraps the local env; `--docker` switches to docker env paths; `--force` overwrites. | `src/commands/env.ts` calls `bootstrapEnvFile()` with the paths from the loaded config. |
+| `env list` | Show which env files exist. | None; prints ✓/✗ markers. | Uses `listEnvStatus()` results and chalk formatting. |
+| `migrate [args...]` | Execute database migrations inside the `api` container. | Arbitrary args are appended to `npm run migrate`. Requires a dockerized project root. | `src/commands/migrate.ts` checks Docker, ensures `docker/` exists, and runs `dockerExec('api', 'npm run migrate …', '--user $(id -u):$(id -g)')` so generated files share the host UID/GID. |
 
-## Shared Utilities
+## Shared Utilities & Services
 
-- **`ensureDockerFolder()` / `resolveDockerFolder()`** (`src/core/project.ts`) centralize the docker path resolution and the friendly "please cd into your project" failure mode.
-- **`checkPrerequisites()`** (`src/core/prerequisites.ts`) is the only place that shells out to verify Docker and Node.js availability before Commander parses user input.
-- **`generateComposeFiles(folder, services, mode?)`** (`src/core/docker.ts`) returns a space-delimited string of `-f` arguments starting with `docker-compose.yml`, followed by each `docker-compose.<service>.yml`, and then optional service-level and global dev/prod overlays when they exist on disk.
-- **`dockerCompose(args)`** and **`dockerExec(container, command, options?)`** (`src/core/docker.ts`) print the resolved commands with chalk highlighting, run them synchronously via `execSync`, and exit with code `1` and a terse error message when Docker fails.
-- **`parseServices(list)`** (`src/utils/services.ts`) trims whitespace, splits on commas, and strips empty tokens so CLI layers can safely pass empty defaults.
-- **`downloadAndExtractTemplate(url, destination)`** (`src/services/templates.ts`) grabs the release archive with Axios, writes it to `<destination>/template.zip`, extracts it with `decompress` using `strip: 1`, and deletes the temporary ZIP. Errors propagate back to the `create` command so it can log them.
-- **`validateProjectName(name)`** (`src/utils/validation.ts`) enforces lowercase names that start with a letter while still allowing digits and single dashes.
-- **`getCliVersion(readFile?)`** (`src/utils/version.ts`) loads `packages/cli/package.json` to derive the version Commander displays; if the read fails it falls back to `3.0.0` after logging the error.
+- **Template download**: `downloadAndExtractTemplate()` (`src/services/templates.ts`) fetches the release archive with `fetch`, saves it as `template.zip`, extracts using `decompress` (`strip: 1`), and then deletes the zip. `create` is the only consumer.
+- **Project metadata**: `readPackageJson()` (`src/core/project.ts`) powers package-manager validation and Hexabot project detection.
+- **Versioning**: `getCliVersion()` (`src/utils/version.ts`) reads `packages/cli/package.json` and defaults to `3.0.0` on failure.
 
 ## Typical Workflow
 
-1. `hexabot create my-bot` — bootstrap a project from the default template. The command enforces the naming convention, fetches the latest GitHub release, and unpacks it into `./my-bot/`.
-2. `cd my-bot && hexabot init` — copy environment defaults (`docker/.env.example → docker/.env`) before editing.
-3. `hexabot dev --services nlu,ollama` — compose the base stack, service overrides, any `*.dev.yml` overlays, and `docker-compose.dev.yml`, then run `docker compose … up --build -d`.
-4. `hexabot migrate` — run migrations inside the `api` container as the host user.
-5. `hexabot stop|destroy --services api` — stop or fully remove the targeted services and volumes via the shared compose resolver.
+1. `hexabot create my-bot --docker` — scaffold a workspace, persist the preferred package manager into `hexabot.config.json`, bootstrap both local and docker env files, and install dependencies.
+2. `cd my-bot`
+3. `hexabot check` — confirm Node/Docker availability, project structure, and env files before running heavier commands.
+4. `hexabot env init` — re-run if you need to refresh `.env` files (use `--docker` to target docker envs).
+5. `hexabot dev --docker --services postgres,ollama` — spin up the dev stack with the requested services and `docker-compose.<service>.dev.yml` overlays.
+6. `hexabot start` or `hexabot start --docker --services api` — run production scripts locally or via Docker.
+7. `hexabot docker down --volumes` / `hexabot migrate` / `hexabot env list` as needed for lifecycle management.
 
 ## Extending the CLI
 
-- **Adding a new subcommand**: Follow the existing pattern by creating `register<Feature>Command(program: Command)` modules under `src/commands/` and wiring them into `createCliProgram()` (`src/cli.ts`). That keeps help text, versioning, and registration centralized.
-- **Compose lifecycle tweaks**: Extend or modify `composeCommandDefinitions` in `src/commands/compose.ts` to add new lifecycle verbs (`up`, `up-build`, `down`, `down-volumes`) or new modes (`dev`, `prod`). The shared handler automatically inherits the `--services` option, docker-folder guard, and compose-file layering.
-- **Service-aware commands**: Always call `ensureDockerFolder()` before touching `docker/`, reuse `parseServices()`/`generateComposeFiles()` to respect the existing compose structure, and run shell operations through `dockerCompose()`/`dockerExec()` so logging and exit semantics stay consistent.
-- **Safety checks**: Keep the `printBanner()` + `checkPrerequisites()` flow at the top of `src/index.ts`, and update this file whenever a command or helper is added, removed, or materially changed so downstream automation can rely on up-to-date behavior.
+- Follow the established pattern under `src/commands/` by implementing `registerFooCommand(program: Command)` modules and wiring them up inside `createCliProgram()` so help/version wiring stays centralized.
+- Always gate project-specific commands with `assertHexabotProject()`, and guard docker-aware flows with both `checkDocker()` and `ensureDockerFolder()`.
+- Use `loadProjectConfig()` / `updateProjectConfig()` instead of hard-coding script names, env files, or compose paths. That keeps future overrides working automatically.
+- Share env initialization via `bootstrapEnvFile()` / `listEnvStatus()` and `--force` semantics rather than reimplementing file copies.
+- When adding compose-aware commands, rely on `parseServices()` and `generateComposeFiles()` so service overlays, dev/prod modes, and future compose conventions stay consistent.
+- Keep this AGENTS.md file updated whenever commands, defaults, or orchestrating helpers change so downstream automation never acts on stale assumptions.

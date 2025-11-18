@@ -12,30 +12,49 @@ import chalk from 'chalk';
 
 export type ComposeMode = 'dev' | 'prod';
 
+export const resolveComposeFile = (projectRoot: string, filePath: string) => {
+  return path.isAbsolute(filePath)
+    ? filePath
+    : path.join(projectRoot, filePath);
+};
+
 export const generateComposeFiles = (
-  folder: string,
+  baseComposeFile: string,
   services: string[],
   mode?: ComposeMode,
 ) => {
-  const files = [`-f ${path.join(folder, 'docker-compose.yml')}`];
+  if (!fs.existsSync(baseComposeFile)) {
+    console.error(
+      chalk.red(
+        `Docker compose file not found at ${baseComposeFile}. Update hexabot.config.json.`,
+      ),
+    );
+    process.exit(1);
+  }
+
+  const composeDir = path.dirname(baseComposeFile);
+  const files = [`-f ${baseComposeFile}`];
 
   services.forEach((service) => {
-    files.push(`-f ${path.join(folder, `docker-compose.${service}.yml`)}`);
+    const serviceFile = path.join(composeDir, `docker-compose.${service}.yml`);
+    if (fs.existsSync(serviceFile)) {
+      files.push(`-f ${serviceFile}`);
+    }
     if (mode) {
-      const serviceTypeFile = path.join(
-        folder,
+      const serviceModeFile = path.join(
+        composeDir,
         `docker-compose.${service}.${mode}.yml`,
       );
-      if (fs.existsSync(serviceTypeFile)) {
-        files.push(`-f ${serviceTypeFile}`);
+      if (fs.existsSync(serviceModeFile)) {
+        files.push(`-f ${serviceModeFile}`);
       }
     }
   });
 
   if (mode) {
-    const mainTypeFile = path.join(folder, `docker-compose.${mode}.yml`);
-    if (fs.existsSync(mainTypeFile)) {
-      files.push(`-f ${mainTypeFile}`);
+    const modeFile = path.join(composeDir, `docker-compose.${mode}.yml`);
+    if (fs.existsSync(modeFile)) {
+      files.push(`-f ${modeFile}`);
     }
   }
 
