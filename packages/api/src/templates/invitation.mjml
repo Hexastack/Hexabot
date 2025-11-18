@@ -34,7 +34,7 @@
         </mj-text>
 
         <mj-text font-size="16px" color="#000" font-family="helvetica"
-          >{{ appName }}</mj-text
+          >{{appName}}</mj-text
         >
       </mj-column>
     </mj-section>

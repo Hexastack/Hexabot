@@ -19,7 +19,6 @@ export class MjmlAdapter implements TemplateAdapter {
   ) => {
     try {
       const templatePath = path.join(
-        process.cwd(),
         options.template?.dir || '',
         mail.data.template || '',
       );
@@ -27,7 +26,7 @@ export class MjmlAdapter implements TemplateAdapter {
       const delegate = Handlebars.compile(content);
       const compiledHandlebars = delegate(mail.data.context);
       const mjml2html = await import('mjml');
-      const { errors, html } = mjml2html.default(compiledHandlebars);
+      const { errors, html } = await mjml2html.default(compiledHandlebars);
 
       if (errors.length) {
         throw 'Unable to compiling mjml';
