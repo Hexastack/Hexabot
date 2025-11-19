@@ -13,7 +13,7 @@ import { Title } from "./Title";
 
 export const PageHeader = (
   props: PropsWithChildren<{
-    title: string;
+    title?: string;
     icon: TMenuItem["Icon"];
     chip?: ReactNode;
   }>,
@@ -28,8 +28,7 @@ export const PageHeader = (
         width: "100%",
       }}
     >
-      <Title title={props.title} icon={props.icon} chip={props.chip} />
-
+      <Title title={props.title || ""} icon={props.icon} chip={props.chip} />
       {props.children}
     </Box>
   );
