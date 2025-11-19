@@ -17,7 +17,7 @@ import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
 
 /**
  * StdEventType enum is declared, and currently not used
- **/
+ */
 
 export enum StdEventType {
   message = 'message',
@@ -32,7 +32,7 @@ export enum StdEventType {
 
 /**
  * IncomingMessageType enum is declared, and currently not used
- **/
+ */
 export enum IncomingMessageType {
   message = 'message',
   postback = 'postback',
