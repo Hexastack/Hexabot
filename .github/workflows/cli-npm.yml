@@ -3,7 +3,7 @@ name: Publish Hexabot CLI NPM Package
 on:
   push:
     tags:
-      - "v*"
+      - "v2.*"
   workflow_dispatch:
 
 jobs:
