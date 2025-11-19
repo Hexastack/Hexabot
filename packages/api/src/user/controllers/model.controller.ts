@@ -32,7 +32,7 @@ export class ModelController extends BaseOrmController<
    * such as 'permissions', based on the request parameters.
    *
    * @param populate - An array of fields to populate in the returned `Model` entities.
-   * @param filters - Filters to apply when querying the `Model` entities.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
    * @returns The found `Model` entities, optionally populated with related data.
    */

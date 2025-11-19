@@ -49,9 +49,8 @@ export class SubscriberController extends BaseOrmController<
    * Retrieves a paginated list of subscribers based on provided query parameters.
    * Supports filtering, pagination, and population of related fields.
    *
-   * @param pageQuery - The pagination and sorting options.
    * @param populate - List of fields to populate in the response.
-   * @param filters - Search filters to apply on the Subscriber model.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A promise containing the paginated and optionally populated list of subscribers.
    */
   @Get()
@@ -84,7 +83,7 @@ export class SubscriberController extends BaseOrmController<
   /**
    * Retrieves the count of subscribers that match the provided search filters.
    *
-   * @param filters - Optional search filters to apply on the Subscriber model.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A promise containing the count of subscribers matching the filters.
    */
   @Get('count')

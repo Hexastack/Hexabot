@@ -78,7 +78,7 @@ export class BlockController extends BaseOrmController<
   /**
    * Finds blocks based on the provided query parameters.
    * @param populate - An array of fields to populate in the returned blocks.
-   * @param filters - Query filters to apply to the block search.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A Promise that resolves to an array of found blocks.
    */
   @Get()
