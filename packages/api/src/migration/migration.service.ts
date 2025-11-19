@@ -94,7 +94,7 @@ export class MigrationService implements OnApplicationBootstrap {
    * @returns True if using CLI
    */
   public get isCLI() {
-    return Boolean(process.env.HEXABOT_CLI);
+    return ['true', '1'].includes(process.env.HEXABOT_CLI || '');
   }
 
   /**
