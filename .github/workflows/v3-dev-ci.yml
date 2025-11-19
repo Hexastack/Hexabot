@@ -1,0 +1,43 @@
+name: v3 dev CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  quality-checks:
+    name: Run typecheck/lint/test/build for all packages
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: 🔎 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
+      - name: ⏳ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🧪 Typecheck (all packages via Turbo)
+        run: pnpm typecheck
+
+      - name: 🧹 Lint (all packages via Turbo)
+        run: pnpm lint
+
+      - name: 🔬 Unit tests (all packages via Turbo)
+        run: pnpm test
+
+      - name: 🛠️ Build (all packages via Turbo)
+        run: pnpm build
