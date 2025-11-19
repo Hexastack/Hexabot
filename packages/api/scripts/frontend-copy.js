@@ -14,7 +14,7 @@ const frontendDistTarget = path.resolve(apiRoot, 'dist', 'static');
 
 if (!fs.existsSync(frontendDistSource)) {
   console.error(
-    `[hexabot] Missing frontend build output at ${frontendDistSource}. Make sure @hexabot/frontend builds successfully.`,
+    `[hexabot] Missing frontend build output at ${frontendDistSource}. Make sure @hexabot-ai/frontend builds successfully.`,
   );
   process.exit(1);
 }

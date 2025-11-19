@@ -1,0 +1,63 @@
+{
+  "name": "@hexabot-ai/cli",
+  "version": "3.0.0",
+  "description": "Official Hexabot CLI for creating and managing AI chatbot/agent projects built with Hexabot.",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "hexabot": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "prepare": "npm run build",
+    "release:patch": "npm version patch && git push origin main --tags",
+    "release:minor": "npm version minor && git push origin main --tags",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix"
+  },
+  "keywords": [],
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only",
+  "lint-staged": {
+    "*.{ts}": "eslint --fix --config eslint.config-staged.cjs"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "decompress": "^4.2.1",
+    "degit": "^2.8.4",
+    "dotenv": "^16.4.5",
+    "figlet": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
+    "@types/decompress": "^4.2.7",
+    "@types/degit": "^2.8.6",
+    "@types/figlet": "^1.5.8",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.2"
+  }
+}

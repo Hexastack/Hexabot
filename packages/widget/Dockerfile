@@ -14,7 +14,7 @@ COPY packages/api/package.json packages/api/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
-RUN pnpm install --filter @hexabot/widget... --prod=false
+RUN pnpm install --filter @hexabot-ai/widget... --prod=false
 
 FROM deps AS development
 
@@ -30,7 +30,7 @@ COPY packages/widget ./packages/widget
 WORKDIR /app/packages/widget
 EXPOSE 5173
 
-CMD ["pnpm", "--filter", "@hexabot/widget", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["pnpm", "--filter", "@hexabot-ai/widget", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
 
 FROM deps AS builder
 
@@ -43,7 +43,7 @@ ENV VITE_WIDGET_CHANNEL=${VITE_WIDGET_CHANNEL}
 
 COPY packages/widget ./packages/widget
 
-RUN pnpm --filter @hexabot/widget... run build
+RUN pnpm --filter @hexabot-ai/widget... run build
 
 FROM node:20-alpine AS production
 

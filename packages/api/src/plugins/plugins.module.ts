@@ -19,7 +19,7 @@ import { PluginService } from './plugins.service';
 
 @InjectDynamicProviders(
   // Built-in core plugins
-  'node_modules/@hexabot/api/dist/extensions/plugins/**/*.plugin.js',
+  'node_modules/@hexabot-ai/api/dist/extensions/plugins/**/*.plugin.js',
   // Community extensions installed via npm
   'node_modules/hexabot-plugin-*/**/*.plugin.js',
   // Custom & under dev plugins

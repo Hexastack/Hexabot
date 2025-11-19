@@ -30,7 +30,7 @@ export interface ChannelModuleOptions {
 @Global()
 @InjectDynamicProviders(
   // Built-in core channels
-  'node_modules/@hexabot/api/dist/extensions/channels/**/*.channel.js',
+  'node_modules/@hexabot-ai/api/dist/extensions/channels/**/*.channel.js',
   // Community extensions installed via npm
   'node_modules/hexabot-channel-*/**/*.channel.js',
   // Custom & under dev channels

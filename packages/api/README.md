@@ -42,17 +42,17 @@ $ pnpm install
 Run all commands from the repository root so PNPM can resolve workspace dependencies:
 
 ```bash
-pnpm --filter @hexabot/api run dev          # start the API with watch mode
-pnpm --filter @hexabot/api run start:debug  # run with inspector attached
-pnpm --filter @hexabot/api run start:prod   # run the compiled build
+pnpm --filter @hexabot-ai/api run dev          # start the API with watch mode
+pnpm --filter @hexabot-ai/api run start:debug  # run with inspector attached
+pnpm --filter @hexabot-ai/api run start:prod   # run the compiled build
 ```
 
 ### Testing
 
 ```bash
-pnpm --filter @hexabot/api run test      # unit tests
-pnpm --filter @hexabot/api run test:e2e  # end-to-end tests
-pnpm --filter @hexabot/api run test:cov  # collect coverage
+pnpm --filter @hexabot-ai/api run test      # unit tests
+pnpm --filter @hexabot-ai/api run test:e2e  # end-to-end tests
+pnpm --filter @hexabot-ai/api run test:cov  # collect coverage
 ```
 
 ## Migrations
@@ -65,7 +65,7 @@ Check the Migration README file for more : [Migration Module](./src/migration/RE
 
 Access the Swagger API documentation by visiting the API url `/docs` once run it in development mode.
 
-It's also possible to access the API reference documentation by running `pnpm --filter @hexabot/api run doc`.
+It's also possible to access the API reference documentation by running `pnpm --filter @hexabot-ai/api run doc`.
 
 For detailed information about the API routes and usage, refer to the API documentation or visit [https://docs.hexabot.ai](https://docs.hexabot.ai).
 

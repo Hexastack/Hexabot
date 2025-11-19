@@ -18,7 +18,7 @@ import { HelperService } from './helper.service';
 @Global()
 @InjectDynamicProviders(
   // Built-in core helpers
-  'node_modules/@hexabot/api/dist/extensions/helpers/**/*.helper.js',
+  'node_modules/@hexabot-ai/api/dist/extensions/helpers/**/*.helper.js',
   // Community extensions installed via npm
   'node_modules/hexabot-helper-*/**/*.helper.js',
   // Custom & under dev helpers
