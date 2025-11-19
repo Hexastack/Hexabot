@@ -46,7 +46,7 @@ echo "Executing v3 alpha release: $RELEASE_TYPE"
 
 for pkg in "${VERSION_PACKAGES[@]}"; do
   echo "Bumping $pkg to next $RELEASE_TYPE (alpha)..."
-  pnpm --filter "$pkg" version "$RELEASE_TYPE" --preid alpha --git-tag-version false --commit-hooks false
+  pnpm --filter "$pkg" exec npm version "$RELEASE_TYPE" --preid alpha --git-tag-version false --commit-hooks false >/dev/null
 done
 
 NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/packages/api/package.json")
