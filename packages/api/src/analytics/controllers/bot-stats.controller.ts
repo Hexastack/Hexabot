@@ -20,7 +20,7 @@ import {
   ToLinesType,
 } from '../entities/bot-stats.entity';
 import { BotStatsService } from '../services/bot-stats.service';
-import { aMonthAgo } from '../utilities';
+import { aMonthAgo } from '../utilities/a-month-ago';
 
 @Controller('botstats')
 export class BotStatsController extends BaseOrmController<
