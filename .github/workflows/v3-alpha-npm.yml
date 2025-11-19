@@ -38,7 +38,7 @@ jobs:
           cache: pnpm
           registry-url: "https://registry.npmjs.org/"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
 
       - name: Install dependencies
         run: pnpm install --filter "${{ matrix.scope }}..." --prod=false
@@ -50,4 +50,4 @@ jobs:
         working-directory: ${{ matrix.working-directory }}
         run: npm publish --tag alpha --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
