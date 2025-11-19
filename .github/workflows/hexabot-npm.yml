@@ -3,7 +3,7 @@ name: Publish Hexabot (API Typescript) NPM Package
 on:
   push:
     tags:
-      - "v*"
+      - "v2.*"
   workflow_dispatch: # Allow manual trigger
 
 jobs:

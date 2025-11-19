@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import UiChatWidget from "@hexabot/widget/src/UiChatWidget";
+import UiChatWidget from "@hexabot-ai/widget/src/UiChatWidget";
 import { Avatar, Box } from "@mui/material";
 import { useMemo } from "react";
 

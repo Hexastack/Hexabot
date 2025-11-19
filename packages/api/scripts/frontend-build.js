@@ -18,7 +18,7 @@ const isTurboTask = Boolean(
 
 if (isTurboTask) {
   console.log(
-    '[hexabot] Turbo detected, relying on dependency graph for @hexabot/frontend build.',
+    '[hexabot] Turbo detected, relying on dependency graph for @hexabot-ai/frontend build.',
   );
   process.exit(0);
 }
@@ -26,8 +26,8 @@ if (isTurboTask) {
 const apiRoot = path.resolve(__dirname, '..');
 const workspaceRoot = path.resolve(apiRoot, '..', '..');
 
-console.log('[hexabot] Building @hexabot/frontend before Nest build...');
-execSync('pnpm --filter @hexabot/frontend build', {
+console.log('[hexabot] Building @hexabot-ai/frontend before Nest build...');
+execSync('pnpm --filter @hexabot-ai/frontend build', {
   cwd: workspaceRoot,
   stdio: 'inherit',
 });

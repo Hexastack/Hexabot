@@ -14,14 +14,14 @@ COPY packages/api/package.json packages/api/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
-RUN pnpm install --filter @hexabot/frontend... --prod=false
+RUN pnpm install --filter @hexabot-ai/frontend... --prod=false
 
 FROM deps AS builder
 
 COPY packages/frontend ./packages/frontend
 COPY packages/widget ./packages/widget
 
-RUN pnpm --filter @hexabot/frontend... run build
+RUN pnpm --filter @hexabot-ai/frontend... run build
 
 FROM base AS development
 
@@ -34,7 +34,7 @@ COPY packages/widget ./packages/widget
 WORKDIR /app/packages/frontend
 EXPOSE 8080
 
-CMD ["pnpm", "--filter", "@hexabot/frontend", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["pnpm", "--filter", "@hexabot-ai/frontend", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8080"]
 
 FROM nginx:1.27-alpine AS production
 

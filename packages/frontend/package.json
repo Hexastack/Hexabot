@@ -1,7 +1,7 @@
 {
-  "name": "@hexabot/frontend",
+  "name": "@hexabot-ai/frontend",
   "private": true,
-  "version": "2.3.0",
+  "version": "3.0.0-alpha.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "FCL-1.0-ALv2",
@@ -38,7 +38,7 @@
     "dayjs": "^1.11.13",
     "eazychart-css": "^0.2.1-alpha.0",
     "eazychart-react": "^0.8.0-alpha.0",
-    "@hexabot/widget": "workspace:*",
+    "@hexabot-ai/widget": "workspace:*",
     "i18next-http-backend": "^2.6.2",
     "normalizr": "^3.6.2",
     "notistack": "^3.0.1",
