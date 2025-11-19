@@ -1,0 +1,128 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
+
+import { config } from '@/config';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
+import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
+
+import {
+  Invitation,
+  InvitationCreateDto,
+  InvitationDtoConfig,
+  InvitationTransformerDto,
+} from '../dto/invitation.dto';
+import { InvitationOrmEntity } from '../entities/invitation.entity';
+import { InvitationRepository } from '../repositories/invitation.repository';
+
+@Injectable()
+export class InvitationService extends BaseOrmService<
+  InvitationOrmEntity,
+  InvitationTransformerDto,
+  InvitationDtoConfig
+> {
+  constructor(
+    @Inject(InvitationRepository)
+    readonly repository: InvitationRepository,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    protected readonly i18n: I18nService,
+    public readonly languageService: LanguageService,
+    private readonly mailerService: MailerService,
+    private readonly logger: LoggerService,
+  ) {
+    super(repository);
+  }
+
+  public readonly jwtSignOptions: JwtSignOptions = {
+    secret: config.invitation.jwtOptions.secret,
+    expiresIn: config.invitation.jwtOptions.expiresIn,
+    encoding: 'utf-8',
+  };
+
+  /**
+   * Creates a new invitation, generates a JWT token, and sends an invitation email to the recipient.
+   *
+   * @param dto - The data transfer object containing invitation information.
+   *
+   * @returns The newly created invitation with the generated token.
+   */
+  async create(dto: InvitationCreateDto): Promise<Invitation> {
+    const jwt = await this.sign({ ...dto });
+    try {
+      const defaultLanguage = await this.languageService.getDefaultLanguage();
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'invitation.mjml',
+        context: {
+          appName: config.parameters.appName,
+          appUrl: config.uiBaseUrl,
+          token: jwt,
+          // TODO: Which language should we use?
+          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
+        },
+        subject: this.i18n.t('invitation_subject'),
+      });
+    } catch (e) {
+      this.logger.error(
+        'Could not send email',
+        e.message,
+        e.stack,
+        'InvitationService',
+      );
+      throw new InternalServerErrorException('Could not send email');
+    }
+    const payload: InvitationCreateDto = {
+      ...dto,
+      roles: [...dto.roles],
+    };
+    const newInvitation = await super.create({ ...payload, token: jwt });
+
+    return { ...newInvitation, token: jwt, roles: [...payload.roles] };
+  }
+
+  /**
+   * Signs the invitation data using the provided JWT options.
+   *
+   * @param dto - The invitation data to sign.
+   *
+   * @returns The signed JWT token.
+   */
+  async sign(dto: InvitationCreateDto) {
+    return this.jwtService.signAsync(dto, this.jwtSignOptions);
+  }
+
+  /**
+   * Verifies the JWT token and returns the decoded invitation data.
+   *
+   * @param token - The JWT token to verify.
+   *
+   * @returns The decoded invitation data.
+   */
+  async verify(token: string): Promise<InvitationCreateDto> {
+    return this.jwtService.verifyAsync(
+      token,
+      this.jwtSignOptions as JwtVerifyOptions,
+    );
+  }
+
+  /**
+   * Throws an error when attempting to update an invitation.
+   *
+   * @throws Always throws an "Illegal Update" error.
+   */
+  async updateOne(..._: any): Promise<Invitation> {
+    throw new Error('Illegal Update');
+  }
+}

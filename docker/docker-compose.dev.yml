@@ -3,40 +3,43 @@ version: "3.8"
 services:
   api:
     build:
-      context: ../api
+      context: ../
+      dockerfile: ./packages/api/Dockerfile
       target: development
     pull_policy: build
     ports:
-      - ${API_PORT}:3000
+      - 3000:3000
       - 9229:9229 # vscode debug port
     volumes:
-      - ../api/src:/app/src
-      - ../api/migrations:/app/migrations
-      #- ../api/node_modules:/app/node_modules
+      - ../packages/api/src:/app/packages/api/src
+      - ../packages/api/migrations:/app/packages/api/migrations
+      #- ../packages/api/node_modules:/app/packages/api/node_modules
 
-  mongo:
+  postgres:
     ports:
-      - 27017:27017
+      - ${DB_PORT:-5432}:5432
 
-  mongo-express:
-    container_name: mongoUi
-    image: mongo-express:1-20
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:8.9
     restart: always
+    depends_on:
+      - postgres
     ports:
-      - ${APP_MONGO_EXPRESS_PORT}:8081
+      - 9000:80
     networks:
       - db-network
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USER}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
-      ME_CONFIG_MONGODB_URL: ${MONGO_URI}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
 
   hexabot-frontend:
     container_name: frontend
     build:
       context: ../
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: ./packages/frontend/Dockerfile
       target: development
     pull_policy: build
     volumes:
-      - ../frontend/:/app/frontend/
+      - ../packages/frontend/:/app/packages/frontend/

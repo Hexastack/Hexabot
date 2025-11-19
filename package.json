@@ -1,27 +1,32 @@
 {
-  "name": "hexabot",
+  "name": "@hexabot-ai/monorepo",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "widget"
-  ],
-  "version": "2.3.0",
+  "version": "3.0.0-alpha.3",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
-  "license": "AGPL-3.0-only",
+  "license": "FCL-1.0-ALv2",
+  "packageManager": "pnpm@9.12.0",
   "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "turbo run format",
+    "clean": "turbo run clean",
     "prepare": "husky",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:widget": "npm run dev --workspace=widget",
-    "release:api:patch": "cd api/ && npm version --git-tag-version false --commit-hooks false patch",
-    "release:api:minor": "cd api/ && npm version --git-tag-version false --commit-hooks false minor",
-    "release:patch": "npm run release:api:patch && npm version --git-tag-version false --commit-hooks false --workspaces patch",
-    "release:minor": "npm run release:api:minor && npm version --git-tag-version false --commit-hooks false --workspaces minor"
+    "release:api:patch": "pnpm --filter @hexabot-ai/api version patch --git-tag-version false --commit-hooks false",
+    "release:api:minor": "pnpm --filter @hexabot-ai/api version minor --git-tag-version false --commit-hooks false",
+    "release:patch": "pnpm run release:api:patch && pnpm --filter \"@hexabot-ai/frontend\" version patch --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/widget\" version patch --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/cli\" version patch --git-tag-version false --commit-hooks false",
+    "release:minor": "pnpm run release:api:minor && pnpm --filter \"@hexabot-ai/frontend\" version minor --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/widget\" version minor --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/cli\" version minor --git-tag-version false --commit-hooks false"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "husky": "^9.0.11"
+    "concurrently": "^9.2.1",
+    "husky": "^9.0.11",
+    "rimraf": "^6.0.1",
+    "turbo": "^2.2.3"
   },
   "engines": {
     "node": "^20.18.1"

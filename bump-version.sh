@@ -27,18 +27,18 @@ fi
 
 echo "Executing release: $RELEASE_TYPE"
 
-# Execute the appropriate npm release command
+# Execute the appropriate PNPM release command
 if [[ "$RELEASE_TYPE" == "patch" ]]; then
-  npm run release:patch
+  pnpm run release:patch
 elif [[ "$RELEASE_TYPE" == "minor" ]]; then
-  npm run release:minor
+  pnpm run release:minor
 fi
 
 # Retrieve the new version from package.json
-NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/api/package.json")
+NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/packages/api/package.json")
 
 if [ -z "$NEW_VERSION" ]; then
-  echo "Failed to retrieve the version from api/package.json."
+  echo "Failed to retrieve the version from packages/api/package.json."
   exit 1
 fi
 
