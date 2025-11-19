@@ -1,0 +1,51 @@
+name: Publish Hexabot V3 Alpha Packages
+
+on:
+  push:
+    tags:
+      - "v3.*-alpha.*"
+
+jobs:
+  publish-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - package: api
+            scope: "@hexabot-ai/api"
+            working-directory: packages/api
+          - package: cli
+            scope: "@hexabot-ai/cli"
+            working-directory: packages/cli
+          - package: widget
+            scope: "@hexabot-ai/widget"
+            working-directory: packages/widget
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org/"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --filter "${{ matrix.scope }}..." --prod=false
+
+      - name: Build the package
+        run: pnpm --filter "${{ matrix.scope }}..." run build
+
+      - name: Publish to npm
+        working-directory: ${{ matrix.working-directory }}
+        run: npm publish --tag alpha --access public
