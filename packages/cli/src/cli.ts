@@ -21,7 +21,7 @@ export const createCliProgram = () => {
 
   program
     .name('Hexabot')
-    .description('A CLI to manage your Hexabot chatbot instance')
+    .description('A CLI to manage your Hexabot project instance')
     .version(getCliVersion());
 
   registerCheckCommand(program);

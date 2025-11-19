@@ -7,6 +7,12 @@
 import chalk from 'chalk';
 import figlet from 'figlet';
 
+import { getCliVersion } from '../utils/version.js';
+
 export const printBanner = () => {
-  console.log(chalk.blue(figlet.textSync('Hexabot')));
+  const bannerText = chalk.blue(figlet.textSync('Hexabot'));
+  const versionText = chalk.gray(`CLI v${getCliVersion()}`);
+
+  console.log(bannerText);
+  console.log(versionText);
 };
