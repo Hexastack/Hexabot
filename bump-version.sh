@@ -12,9 +12,16 @@ fi
 
 RELEASE_TYPE=$1
 ROOT_DIR=$(pwd)
+TARGET_BRANCH="main"
 
 if [[ "$RELEASE_TYPE" != "patch" && "$RELEASE_TYPE" != "minor" ]]; then
   echo "Invalid release type. Use 'patch' or 'minor'."
+  exit 1
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
+  echo "This script must be executed from the '$TARGET_BRANCH' branch (current: $CURRENT_BRANCH)."
   exit 1
 fi
 
