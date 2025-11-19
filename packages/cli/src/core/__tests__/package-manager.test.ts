@@ -47,11 +47,9 @@ describe('normalizePackageManager', () => {
   });
 
   it('exits when the package manager is unsupported', () => {
-    const exitSpy = jest
-      .spyOn(process, 'exit')
-      .mockImplementation((() => {
-        throw new Error('exit:1');
-      }) as () => never);
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit:1');
+    }) as () => never);
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(() => normalizePackageManager('foo')).toThrow('exit:1');
@@ -112,16 +110,12 @@ describe('installDependencies & runPackageScript', () => {
 
   it('exits when the script is missing from package.json', () => {
     readPackageJson.mockReturnValue({ scripts: {} });
-    const exitSpy = jest
-      .spyOn(process, 'exit')
-      .mockImplementation((() => {
-        throw new Error('exit:1');
-      }) as () => never);
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit:1');
+    }) as () => never);
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => runPackageScript('npm', 'dev', projectRoot)).toThrow(
-      'exit:1',
-    );
+    expect(() => runPackageScript('npm', 'dev', projectRoot)).toThrow('exit:1');
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 });

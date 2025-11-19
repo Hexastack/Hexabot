@@ -110,13 +110,7 @@ describe('registerDockerCommand', () => {
 
   it('runs docker compose down with optional volume removal', async () => {
     const program = createProgram();
-    await program.parseAsync([
-      'node',
-      'test',
-      'docker',
-      'down',
-      '--volumes',
-    ]);
+    await program.parseAsync(['node', 'test', 'docker', 'down', '--volumes']);
 
     expect(dockerCompose).toHaveBeenCalledWith(
       expect.stringContaining('down -v'),
@@ -146,9 +140,7 @@ describe('registerDockerCommand', () => {
     const program = createProgram();
     await program.parseAsync(['node', 'test', 'docker', 'ps']);
 
-    expect(dockerCompose).toHaveBeenCalledWith(
-      expect.stringContaining('ps'),
-    );
+    expect(dockerCompose).toHaveBeenCalledWith(expect.stringContaining('ps'));
   });
 
   it('delegates to start command for docker start', async () => {

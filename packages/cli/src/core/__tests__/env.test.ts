@@ -10,11 +10,7 @@ import * as path from 'path';
 
 import { jest } from '@jest/globals';
 
-import {
-  bootstrapEnvFile,
-  listEnvStatus,
-  resolveEnvExample,
-} from '../env.js';
+import { bootstrapEnvFile, listEnvStatus, resolveEnvExample } from '../env.js';
 
 describe('env helpers', () => {
   let tempDir: string;
@@ -47,8 +43,9 @@ describe('env helpers', () => {
     fs.writeFileSync(path.join(tempDir, example), 'NEW=value');
     fs.writeFileSync(path.join(tempDir, target), 'OLD=value');
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-    const skipped = bootstrapEnvFile(tempDir, example, target, { quiet: false });
+    const skipped = bootstrapEnvFile(tempDir, example, target, {
+      quiet: false,
+    });
     expect(skipped).toBe(false);
     expect(fs.readFileSync(path.join(tempDir, target), 'utf-8')).toBe(
       'OLD=value',
@@ -93,8 +90,8 @@ describe('env helpers', () => {
     expect(resolveEnvExample(tempDir, envFile, defaultExample)).toBe(
       `${envFile}.example`,
     );
-    expect(
-      resolveEnvExample(tempDir, '.missing', defaultExample),
-    ).toBe(defaultExample);
+    expect(resolveEnvExample(tempDir, '.missing', defaultExample)).toBe(
+      defaultExample,
+    );
   });
 });

@@ -10,11 +10,11 @@ import * as path from 'path';
 
 import {
   ensureProjectConfig,
+  HexabotConfig,
   loadProjectConfig,
   resolveConfigPath,
   updateProjectConfig,
 } from '../config.js';
-import type { HexabotConfig } from '../config.js';
 
 describe('project config helpers', () => {
   let tempDir: string;
