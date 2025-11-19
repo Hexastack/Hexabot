@@ -20,7 +20,7 @@ Hexabot keeps two parallel release trains:
 
 ### Alpha (v3)
 
-Use `./bump-version-v3.sh <release-type>` from the `dev` branch to publish `@hexabot-ai/api`, `@hexabot-ai/cli`, and `@hexabot-ai/widget` under the `alpha` npm dist-tag. The script also bumps `@hexabot-ai/frontend` so its static build (copied into the API output) stays in sync, even though we do not publish the frontend package yet.
+Use `./bump-version-v3.sh <release-type>` from the `dev` branch to bump `@hexabot-ai/api`, `@hexabot-ai/cli`, and `@hexabot-ai/widget` before pushing a `v3.*-alpha.*` tag. The script also bumps `@hexabot-ai/frontend` so its static build (copied into the API output) stays in sync, even though we do not publish the frontend package yet. Publishing is handled by the **Publish Hexabot V3 Alpha Packages** workflow, which builds and publishes the three alpha packages with the `alpha` dist-tag as soon as the release tag is pushed.
 
 Allowed `<release-type>` values:
 
@@ -30,16 +30,16 @@ Allowed `<release-type>` values:
 
 What the script does:
 
-1. Ensures you are on a clean `dev` branch and authenticated with npm.
+1. Ensures you are on a clean `dev` branch.
 2. Bumps the version for the API, CLI, widget, and frontend packages with the `alpha` pre-release id (frontend is versioned but not published).
 3. Synchronizes the root `package.json` version.
-4. Runs `pnpm install`, builds each package, and publishes them with `pnpm publish --tag alpha`.
-5. Commits the version bump, tags it as `v<version>`, and pushes back to `origin dev`.
+4. Commits the version bump, tags it as `v<version>`, and pushes back to `origin dev`.
+
+Once the tag is pushed, GitHub Actions takes over to install dependencies, build, and publish the API, CLI, and widget packages under the `alpha` tag on npm.
 
 Before running:
 
 - Install dependencies (`pnpm install`) and ensure the repository is clean.
-- Authenticate with npm (`npm login` or use an `NPM_TOKEN`).
 
 Example alpha release that increments the current prerelease tag:
 
@@ -47,4 +47,4 @@ Example alpha release that increments the current prerelease tag:
 ./bump-version-v3.sh prerelease
 ```
 
-This will create/publish `@hexabot-ai/api`, `@hexabot-ai/cli`, and `@hexabot-ai/widget` tagged as `alpha` on npm while leaving the v2 workflow untouched.
+This will create the `v3.*-alpha.*` tag and automatically trigger the workflow that publishes `@hexabot-ai/api`, `@hexabot-ai/cli`, and `@hexabot-ai/widget` under the `alpha` dist-tag on npm while leaving the v2 workflow untouched.

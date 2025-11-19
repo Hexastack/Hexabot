@@ -42,11 +42,6 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! npm whoami >/dev/null 2>&1; then
-  echo "You must be logged into npm (npm whoami failed)."
-  exit 1
-fi
-
 echo "Executing v3 alpha release: $RELEASE_TYPE"
 
 for pkg in "${VERSION_PACKAGES[@]}"; do
@@ -71,23 +66,11 @@ if [[ -f "$ROOT_DIR/package.json" ]]; then
   update_version "$ROOT_DIR/package.json"
 fi
 
-echo "Installing dependencies to ensure build consistency..."
-pnpm install --frozen-lockfile
-
-echo "Building packages prior to publish..."
-for pkg in "${VERSION_PACKAGES[@]}"; do
-  pnpm --filter "$pkg" run build
-done
-
-echo "Publishing packages to npm under 'alpha' tag..."
-for pkg in "${PUBLISH_PACKAGES[@]}"; do
-  pnpm --filter "$pkg" publish --tag alpha --access public --no-git-checks
-done
-
 echo "Committing and tagging release..."
 git add .
 git commit -m "build(v3): v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 git push --no-verify origin "$TARGET_BRANCH" --tags
 
-echo "v3 alpha release ($NEW_VERSION) completed successfully."
+echo "Version bump completed for v3 alpha ($NEW_VERSION)."
+echo "GitHub Actions will publish the packages once the tag is pushed."
