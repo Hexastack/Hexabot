@@ -67,5 +67,3 @@ export * from './types/extension';
 export * from './types/filter.types';
 
 export * from './types/format.types';
-
-export * from './types/misc';
