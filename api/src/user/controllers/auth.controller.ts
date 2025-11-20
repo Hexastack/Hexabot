@@ -107,25 +107,6 @@ export class LocalAuthController extends BaseAuthController {
   }
 
   /**
-   * Handles the signup process for new users.
-   *
-   * @param userCreateDto - Data Transfer Object containing the new user's information.
-   *
-   * @returns Success status object upon successful signup.
-   */
-  @Roles('public')
-  @Post('signup')
-  async signup(@Body() userCreateDto: UserCreateDto) {
-    try {
-      await this.userService.create(userCreateDto);
-      return { success: true };
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException();
-    }
-  }
-
-  /**
    * Accepts an invitation and creates a new user based on the invitation token.
    * Verifies the token and ensures it matches the user details.
    *
