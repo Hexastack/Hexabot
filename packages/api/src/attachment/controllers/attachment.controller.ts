@@ -166,7 +166,7 @@ export class AttachmentController extends BaseOrmController<
   /**
    * Downloads an attachment identified by the provided parameters.
    *
-   * @param  params - The parameters identifying the attachment to download.
+   * @param params - The parameters identifying the attachment to download.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
   @Roles('public')

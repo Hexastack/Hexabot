@@ -115,8 +115,8 @@ export class BotStatsService extends BaseOrmService<
    * Retrieves the most popular blocks within a specified time range.
    * Popular blocks are those triggered the most frequently.
    *
-   * @param  from - The start date of the time range.
-   * @param  to - The end date of the time range.
+   * @param from - The start date of the time range.
+   * @param to - The end date of the time range.
    * @returns A promise that resolves with an array of popular blocks, each containing an `id` and the number of times it was triggered (`value`).
    */
   async findPopularBlocks(
