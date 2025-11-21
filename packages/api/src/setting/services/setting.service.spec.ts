@@ -6,11 +6,11 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { I18nService } from '@/i18n/services/i18n.service';
 import {
   installSettingFixturesTypeOrm,
   settingFixtures,
 } from '@/utils/test/fixtures/setting';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -48,15 +48,7 @@ describe('SettingService', () => {
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        SettingService,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-      ],
+      providers: [SettingService, I18nServiceProvider],
       typeorm: {
         fixtures: installSettingFixturesTypeOrm,
       },

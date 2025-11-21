@@ -18,6 +18,7 @@ import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModule } from '@/setting/setting.module';
 
+import { I18nServiceProvider } from './providers/i18n-service.provider';
 import { registerTypeOrmDataSource } from './test';
 
 type TTypeOrToken = [
@@ -297,7 +298,7 @@ export const buildTestingMocks = async ({
       SettingModule,
       ...imports,
     ],
-    providers: [...resolvedProviders, ...typeOrmProviders],
+    providers: [I18nServiceProvider, ...resolvedProviders, ...typeOrmProviders],
     controllers,
     ...rest,
   });
