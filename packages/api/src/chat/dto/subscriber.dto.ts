@@ -143,7 +143,6 @@ export class SubscriberCreateDto {
   foreign_id: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
-  @IsNotEmpty()
   @IsArray()
   @IsUUIDv4({ each: true, message: 'Label must be a valid UUID' })
   labels: string[];
