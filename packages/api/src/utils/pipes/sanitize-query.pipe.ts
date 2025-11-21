@@ -10,7 +10,7 @@ import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
  * Sanitizes user input for search queries to prevent injection attacks and remove unwanted characters.
  * It removes control characters, special characters that could be used in injection payloads,
  * and limits the length of the input to a specified maximum (default 1000 characters).
- **/
+ */
 
 // TODO: Centralize the maximum character limit for block text messages into an exportable constant to ensure consistency across the codebase
 const MAX_BLOCK_TEXT_MESSAGE_LENGTH = 1000;
