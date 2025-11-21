@@ -396,7 +396,7 @@ export class BlockService extends BaseOrmService<
    * If no block yields a positive score, the function returns `undefined`.
    *
    * @param blocks - A list of blocks to evaluate, each potentially containing NLP patterns.
-   * @param  scoredEntities - The scored NLU entities to use for pattern matching.
+   * @param scoredEntities - The scored NLU entities to use for pattern matching.
    *
    * @returns A promise that resolves to the block with the highest NLP match score,
    * or `undefined` if no suitable match is found.
