@@ -6,13 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+// eslint-disable-next-line import/order
+import { ISendMailOptions } from '@nestjs-modules/mailer';
+import { UnauthorizedException } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtService } from '@nestjs/jwt';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -72,6 +70,7 @@ describe('AuthController', () => {
         },
       ],
     });
+
     [authController, userService, invitationService, roleService, jwtService] =
       await getMocks([
         LocalAuthController,
@@ -97,58 +96,25 @@ describe('AuthController', () => {
 
   afterEach(jest.clearAllMocks);
 
-  describe('signup', () => {
-    it('should throw a BadRequestException', async () => {
-      jest.spyOn(userService, 'create');
-      const userCreateDto: UserCreateDto = {
-        username: 'test',
-        first_name: 'test',
-        last_name: 'test',
-        email: 'test@test.test',
-        password: 'test',
-        roles: ['invalid role value'],
-        avatar: null,
-      };
-
-      await expect(authController.signup(userCreateDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(userService.create).toHaveBeenCalledWith(userCreateDto);
-    });
-
-    it('should call userService.create with the correct parameters and return status ok', async () => {
-      jest.spyOn(userService, 'create');
-      const userCreateDto: UserCreateDto = {
-        username: 'test',
-        first_name: 'test',
-        last_name: 'test',
-        email: 'test@test.test',
-        password: 'test',
-        roles: ['659564cb4aa383c0d0dbc688'],
-        avatar: null,
-      };
-      const result = await authController.signup(userCreateDto);
-      expect(userService.create).toHaveBeenCalledWith(userCreateDto);
-      expect(result).toEqual({ success: true });
-    });
-  });
   describe('acceptInvite', () => {
     it('should throw a BadRequestException because token is invalid', async () => {
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, 'invalid token');
       expect(promise).rejects.toThrow(BadRequestException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
-    it('should throw a UnauthorizedException because token is expired', async () => {
+    it('should throw an UnauthorizedException because token is expired', async () => {
       const token = await jwtService.sign(baseUser, {
         ...invitationService.jwtSignOptions,
         expiresIn: '0s',
       });
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(UnauthorizedException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new UnauthorizedException('Token expired'),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
     it('should throw a BadRequestException because email does not match', async () => {
@@ -156,21 +122,25 @@ describe('AuthController', () => {
         { ...baseUser, email: 'test2@wrongMail.Com' },
         invitationService.jwtSignOptions,
       );
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(BadRequestException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new BadRequestException(`Email doesn't match invitation email`),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
     it('should throw a BadRequestException because role does not match', async () => {
       const token = await jwtService.sign(
-        { ...baseUser, role: 'invalid role' },
+        { ...baseUser, roles: ['invalid role'] },
         invitationService.jwtSignOptions,
       );
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(InternalServerErrorException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new BadRequestException('invitation roles do not match user roles'),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
   });
 });
