@@ -32,8 +32,7 @@ export class SettingController extends BaseOrmController<
   /**
    * Finds settings that match the provided filters and sorting options.
    *
-   * @param filters - Filters to apply when querying settings, limited to the `group` field.
-   * @param sort - Sorting options for the query.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
    * @returns A list of settings that match the criteria.
    */

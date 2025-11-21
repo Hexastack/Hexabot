@@ -191,9 +191,8 @@ export class ReadOnlyUserController extends BaseOrmController<
   /**
    * Retrieves a paginated list of users based on filters.
    *
-   * @param pageQuery - The pagination query object.
    * @param populate - An array of fields to populate.
-   * @param filters - Filters applied to the query.
+   * @param options - Combined filters, pagination, and sorting for the query.
    *
    * @returns A promise that resolves to a paginated list of users.
    */
