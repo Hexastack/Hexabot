@@ -45,8 +45,7 @@ export class CategoryController extends BaseOrmController<
 
   /**
    * Retrieves a paginated list of categories based on provided filters and pagination settings.
-   * @param pageQuery - The pagination settings.
-   * @param filters - The filters to apply to the category search.
+   * @param options - Combined filters, pagination, and sorting for the query.
    * @returns A Promise that resolves to a paginated list of categories.
    */
   @Get()

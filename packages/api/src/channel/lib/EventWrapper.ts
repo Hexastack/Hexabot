@@ -136,8 +136,8 @@ export default abstract class EventWrapper<
    * Returns an event attribute value, default value if it does exist
    *
    * @deprecated
-   * @param  attr - Event attribute name
-   * @param  otherwise - Default value if attribute does not exist
+   * @param attr - Event attribute name
+   * @param otherwise - Default value if attribute does not exist
    *
    * @returns The value of the specified attribute or the default value.
    */
@@ -297,7 +297,7 @@ export class GenericEventWrapper extends EventWrapper<
   /**
    * Constructor : channel's event wrapper
    *
-   * @param  handler - The channel's handler
+   * @param handler - The channel's handler
    * @param event - The message event received
    */
   constructor(handler: ChannelHandler, event: GenericEvent) {

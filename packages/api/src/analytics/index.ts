@@ -16,6 +16,6 @@ export * from './repositories/bot-stats.repository';
 
 export * from './services/bot-stats.service';
 
-export * from './utilities/index';
+export * from './utilities/a-month-ago';
 
 export * from './validation-rules/is-less-than-date';

@@ -4,10 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
@@ -127,50 +124,12 @@ describe('AuthController (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('signup', () => {
-    it('should throw a BadRequestException', async () => {
-      jest
-        .spyOn(userService, 'create')
-        .mockRejectedValueOnce(new Error('invalid role'));
-      const userCreateDto: UserCreateDto = {
-        username: 'test',
-        first_name: 'test',
-        last_name: 'test',
-        email: 'test@test.test',
-        password: 'test',
-        roles: ['invalid role value'],
-        avatar: null,
-      };
-
-      await expect(authController.signup(userCreateDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(userService.create).toHaveBeenCalledWith(userCreateDto);
-    });
-
-    it('should call userService.create with the correct parameters and return status ok', async () => {
-      jest.spyOn(userService, 'create');
-      const userCreateDto: UserCreateDto = {
-        username: 'test',
-        first_name: 'test',
-        last_name: 'test',
-        email: 'test@test.test',
-        password: 'test',
-        roles: [roleFixtureIds.admin],
-        avatar: null,
-      };
-      const result = await authController.signup(userCreateDto);
-      expect(userService.create).toHaveBeenCalledWith(userCreateDto);
-      expect(result).toEqual({ success: true });
-    });
-  });
-
   describe('acceptInvite', () => {
     it('should throw a BadRequestException because token is invalid', async () => {
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, 'invalid token');
       expect(promise).rejects.toThrow(BadRequestException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
     it('should throw an UnauthorizedException because token is expired', async () => {
@@ -178,10 +137,12 @@ describe('AuthController (TypeORM)', () => {
         ...invitationService.jwtSignOptions,
         expiresIn: '0s',
       });
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(UnauthorizedException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new UnauthorizedException('Token expired'),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
     it('should throw a BadRequestException because email does not match', async () => {
@@ -189,21 +150,25 @@ describe('AuthController (TypeORM)', () => {
         { ...baseUser, email: 'test2@wrongMail.Com' },
         invitationService.jwtSignOptions,
       );
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(BadRequestException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new BadRequestException(`Email doesn't match invitation email`),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
 
     it('should throw a BadRequestException because role does not match', async () => {
       const token = await jwtService.sign(
-        { ...baseUser, role: 'invalid role' },
+        { ...baseUser, roles: ['invalid role'] },
         invitationService.jwtSignOptions,
       );
-      jest.spyOn(authController, 'signup');
+      jest.spyOn(userService, 'create');
       const promise = authController.acceptInvite(baseUser, token);
-      expect(promise).rejects.toThrow(InternalServerErrorException);
-      expect(authController.signup).not.toHaveBeenCalled();
+      expect(promise).rejects.toThrow(
+        new BadRequestException('invitation roles do not match user roles'),
+      );
+      expect(userService.create).not.toHaveBeenCalled();
     });
   });
 });

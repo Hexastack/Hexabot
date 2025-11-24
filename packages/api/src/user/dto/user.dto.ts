@@ -13,6 +13,7 @@ import {
 } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsEmail,
@@ -117,7 +118,7 @@ export class UserCreateDto {
   password: string;
 
   @ApiProperty({ description: 'User roles', type: String })
-  @IsNotEmpty()
+  @ArrayNotEmpty()
   @IsArray()
   @IsUUIDv4({ each: true, message: 'Role must be a valid UUID' })
   roles: string[];

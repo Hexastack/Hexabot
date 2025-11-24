@@ -52,8 +52,8 @@ export class BlockRepository extends BaseOrmRepository<
   /**
    * Performs a full-text search on blocks using a case-insensitive LIKE pattern.
    *
-   * @param query    - Text to search for.
-   * @param limit    - Maximum number of results to return.
+   * @param query - Text to search for.
+   * @param limit - Maximum number of results to return.
    * @param category - Optional category filter.
    */
   async search(
