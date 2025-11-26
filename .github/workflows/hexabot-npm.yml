@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20" # Ensure it matches your project requirements
+          node-version: "20.18.1" # Ensure it matches your project requirements
           cache: "npm"
 
       - name: Install dependencies
@@ -48,7 +48,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           registry-url: "https://registry.npmjs.org/"
-          node-version: "20"
+          node-version: "20.18.1"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
