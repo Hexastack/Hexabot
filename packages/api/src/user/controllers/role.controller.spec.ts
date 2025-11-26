@@ -18,6 +18,7 @@ import { Role, RoleCreateDto, RoleFull, RoleUpdateDto } from '../dto/role.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -53,6 +54,7 @@ describe('RoleController (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,

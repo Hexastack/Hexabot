@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-// eslint-disable-next-line import/order
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -26,6 +25,7 @@ import { User } from '../dto/user.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
@@ -69,6 +69,7 @@ describe('ValidateAccountService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           UserOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,

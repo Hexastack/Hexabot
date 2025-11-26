@@ -18,6 +18,7 @@ import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 
 import { InvitationRepository } from './invitation.repository';
@@ -33,6 +34,7 @@ describe('InvitationRepository (TypeORM)', () => {
       providers: [RoleRepository, InvitationRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           InvitationOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,

@@ -17,6 +17,7 @@ import { Role } from '../dto/role.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -44,6 +45,7 @@ describe('RoleService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,
           ModelOrmEntity,

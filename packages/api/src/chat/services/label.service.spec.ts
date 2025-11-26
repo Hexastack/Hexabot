@@ -17,6 +17,7 @@ import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { labelFixtures } from '@/utils/test/fixtures/label';
@@ -44,6 +45,7 @@ describe('LabelService (TypeORM)', () => {
       providers: [LabelService, LabelRepository, SubscriberRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           LabelOrmEntity,
           LabelGroupOrmEntity,
           SubscriberOrmEntity,

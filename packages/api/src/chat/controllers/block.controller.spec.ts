@@ -29,6 +29,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserService } from '@/user/services/user.service';
 import {
@@ -158,6 +159,7 @@ describe('BlockController (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           BlockOrmEntity,
           CategoryOrmEntity,
           LabelOrmEntity,

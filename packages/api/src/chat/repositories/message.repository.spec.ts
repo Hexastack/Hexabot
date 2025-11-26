@@ -19,6 +19,7 @@ import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
 import { closeTypeOrmConnections } from '@/utils/test/test';
@@ -38,6 +39,7 @@ describe('MessageRepository (TypeORM)', () => {
       providers: [MessageRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           MessageOrmEntity,
           SubscriberOrmEntity,
           LabelOrmEntity,

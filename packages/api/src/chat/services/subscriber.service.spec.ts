@@ -21,6 +21,7 @@ import { User } from '@/user/dto/user.dto';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
@@ -90,6 +91,7 @@ describe('SubscriberService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           SubscriberOrmEntity,
           LabelOrmEntity,
           LabelGroupOrmEntity,

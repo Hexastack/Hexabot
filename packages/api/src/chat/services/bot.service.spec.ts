@@ -30,6 +30,7 @@ import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installBlockFixturesTypeOrm } from '@/utils/test/fixtures/block';
 import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
@@ -101,6 +102,7 @@ describe('BotService', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           ConversationOrmEntity,
           ContextVarOrmEntity,
           BlockOrmEntity,

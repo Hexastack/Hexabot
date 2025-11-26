@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-// eslint-disable-next-line import/order
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { compareSync } from 'bcryptjs';
 import { SentMessageInfo } from 'nodemailer';
 
@@ -28,6 +27,7 @@ import { User } from '../dto/user.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
@@ -74,6 +74,7 @@ describe('PasswordResetService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           UserOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,

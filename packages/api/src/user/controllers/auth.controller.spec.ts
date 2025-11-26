@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-// eslint-disable-next-line import/order
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { UnauthorizedException } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -32,6 +31,7 @@ import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -84,6 +84,7 @@ describe('AuthController (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           InvitationOrmEntity,
           RoleOrmEntity,
           UserOrmEntity,

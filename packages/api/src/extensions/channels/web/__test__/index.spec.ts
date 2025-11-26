@@ -31,6 +31,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
@@ -98,6 +99,7 @@ describe('WebChannelHandler', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           AttachmentOrmEntity,
           MessageOrmEntity,
           SubscriberOrmEntity,

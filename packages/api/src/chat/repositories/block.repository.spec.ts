@@ -25,6 +25,7 @@ import { SettingType } from '@/setting/types';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   blockFixtures,
@@ -73,6 +74,7 @@ describe('BlockRepository (TypeORM)', () => {
       ],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           BlockOrmEntity,
           CategoryOrmEntity,
           LabelOrmEntity,
@@ -185,7 +187,6 @@ describe('BlockRepository (TypeORM)', () => {
         last_name: 'User',
         locale: null,
         timezone: 0,
-        language: null,
         gender: null,
         country: null,
         foreign_id: randomUUID(),

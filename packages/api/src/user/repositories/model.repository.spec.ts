@@ -18,6 +18,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
 import { PermissionOrmEntity as PermissionEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 
 import { ModelRepository } from './model.repository';
@@ -35,6 +36,7 @@ describe('ModelRepository (TypeORM)', () => {
       providers: [ModelRepository, PermissionRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           ModelEntity,
           PermissionEntity,
           RoleOrmEntity,

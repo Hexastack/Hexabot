@@ -18,6 +18,7 @@ import { Permission } from '../dto/permission.dto';
 import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
 import { PermissionOrmEntity as PermissionEntity } from '../entities/permission.entity';
 import { RoleOrmEntity as RoleEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { Action } from '../types/action.type';
 
@@ -39,6 +40,7 @@ describe('PermissionRepository (TypeORM)', () => {
       providers: [ModelRepository, RoleRepository, PermissionRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           PermissionEntity,
           RoleEntity,
           ModelEntity,

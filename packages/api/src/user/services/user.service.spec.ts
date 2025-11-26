@@ -17,6 +17,7 @@ import { User as UserDto } from '../dto/user.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { RoleOrmEntity } from '../entities/role.entity';
+import { UserProfileOrmEntity } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
@@ -47,6 +48,7 @@ describe('UserService (TypeORM)', () => {
       providers: [UserService, RoleRepository, UserRepository],
       typeorm: {
         entities: [
+          UserProfileOrmEntity,
           UserOrmEntity,
           RoleOrmEntity,
           PermissionOrmEntity,
