@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AttachmentModule } from './attachment/attachment.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
@@ -58,6 +59,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
+    AuthorizationModule,
     MailerModule,
     MongooseModule.forRoot(config.mongo.uri, {
       dbName: config.mongo.dbName,
