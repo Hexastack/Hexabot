@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserModule } from '@/user/user.module';
 
 import { BlockController } from './controllers/block.controller';
@@ -51,6 +52,7 @@ import { SubscriberService } from './services/subscriber.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      UserProfileOrmEntity,
       CategoryOrmEntity,
       ContextVarOrmEntity,
       LabelOrmEntity,
@@ -59,7 +61,6 @@ import { SubscriberService } from './services/subscriber.service';
       MessageOrmEntity,
       SubscriberOrmEntity,
       ConversationOrmEntity,
-      SubscriberOrmEntity,
     ]),
     CmsModule,
     AttachmentModule,

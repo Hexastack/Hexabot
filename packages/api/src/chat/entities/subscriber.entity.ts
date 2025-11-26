@@ -5,9 +5,8 @@
  */
 
 import {
+  ChildEntity,
   Column,
-  Entity,
-  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -15,10 +14,9 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -34,25 +32,10 @@ export class SubscriberChannel {
   data: any;
 }
 
-@Entity({ name: 'subscribers' })
-@Index(['first_name'])
-@Index(['last_name'])
-@Index(['foreign_id'])
-export class SubscriberOrmEntity extends BaseOrmEntity {
-  @Column()
-  first_name!: string;
-
-  @Column()
-  last_name!: string;
-
+@ChildEntity()
+export class SubscriberOrmEntity extends UserProfileOrmEntity {
   @Column({ type: 'varchar', length: 5, nullable: true })
   locale: string | null;
-
-  @Column({ type: 'integer', default: 0 })
-  timezone: number;
-
-  @Column({ type: 'varchar', length: 5, nullable: true })
-  language: string | null;
 
   @Column({ type: 'varchar', length: 21, nullable: true })
   gender: string | null;
@@ -104,17 +87,6 @@ export class SubscriberOrmEntity extends BaseOrmEntity {
 
   @DatetimeColumn({ nullable: true })
   retainedFrom: Date | null;
-
-  @ManyToOne(() => AttachmentOrmEntity, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'avatar_id' })
-  @AsRelation()
-  avatar?: AttachmentOrmEntity | null;
-
-  @RelationId((subscriber: SubscriberOrmEntity) => subscriber.avatar)
-  private readonly avatarId?: string | null;
 
   @Column(() => SubscriberChannel)
   channel!: SubscriberChannel;
