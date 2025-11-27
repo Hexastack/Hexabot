@@ -28,6 +28,7 @@ import { diskStorage, memoryStorage } from 'multer';
 import { FindManyOptions } from 'typeorm';
 
 import { config } from '@/config';
+import { PopulatePipe } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -37,6 +38,7 @@ import {
   AttachmentContextParamDto,
   AttachmentDownloadDto,
   AttachmentDtoConfig,
+  AttachmentFull,
   AttachmentTransformerDto,
 } from '../dto/attachment.dto';
 import { AttachmentOrmEntity } from '../entities/attachment.entity';
@@ -73,8 +75,16 @@ export class AttachmentController extends BaseOrmController<
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Attachment> {
-    const attachment = await this.attachmentService.findOne(id);
+  async findOne(
+    @Query(PopulatePipe)
+    populate: string[],
+    @Param('id') id: string,
+  ): Promise<Attachment | AttachmentFull> {
+    const shouldPopulate = populate.includes('createdBy');
+    const attachment = shouldPopulate
+      ? await this.attachmentService.findOneAndPopulate(id)
+      : await this.attachmentService.findOne(id);
+
     if (!attachment) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
@@ -91,6 +101,8 @@ export class AttachmentController extends BaseOrmController<
    */
   @Get()
   async findPage(
+    @Query(PopulatePipe)
+    populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<AttachmentOrmEntity>({
         allowedFields: ['name', 'type', 'resourceRef'],
@@ -99,7 +111,11 @@ export class AttachmentController extends BaseOrmController<
     )
     options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return await this.attachmentService.find(options);
+    const shouldPopulate = populate.includes('createdBy');
+
+    return shouldPopulate
+      ? await this.attachmentService.findAndPopulate(options)
+      : await this.attachmentService.find(options);
   }
 
   /**

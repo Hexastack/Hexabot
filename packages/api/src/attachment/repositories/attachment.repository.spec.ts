@@ -9,11 +9,17 @@ import { randomUUID } from 'crypto';
 import { TestingModule } from '@nestjs/testing';
 
 import { config } from '@/config';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,
   installAttachmentFixturesTypeOrm,
 } from '@/utils/test/fixtures/attachment';
+import { installUserFixturesTypeOrm } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -30,15 +36,25 @@ describe('AttachmentRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: AttachmentRepository;
   const createdAttachmentIds = new Set<string>();
-  const CREATOR_UUID = '99999999-9999-4999-9999-999999999999';
+  const CREATOR_UUID = '66666666-6666-6666-6666-666666666666';
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [AttachmentRepository],
       typeorm: {
-        entities: [AttachmentOrmEntity],
-        fixtures: installAttachmentFixturesTypeOrm,
+        entities: [
+          RoleOrmEntity,
+          PermissionOrmEntity,
+          ModelOrmEntity,
+          UserOrmEntity,
+          AttachmentOrmEntity,
+          UserProfileOrmEntity,
+        ],
+        fixtures: [
+          installUserFixturesTypeOrm,
+          installAttachmentFixturesTypeOrm,
+        ],
       },
     });
 

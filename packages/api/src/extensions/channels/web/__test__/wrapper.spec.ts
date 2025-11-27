@@ -7,6 +7,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockOrmEntity } from '@/chat/entities/block.entity';
@@ -144,7 +145,7 @@ describe(`Web event wrapper`, () => {
         id: ATTACHMENT_ID,
         type: 'image/png',
         name: 'filename.extension',
-      } as AttachmentOrmEntity;
+      } as Attachment;
     }
 
     expect(event.getChannelData()).toEqual({

@@ -8,6 +8,7 @@ import { Stream } from 'node:stream';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 
+import { AttachmentCreateDto } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -22,12 +23,9 @@ const baseAttachment = {
     '/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
   resourceRef: AttachmentResourceRef.BlockAttachment,
   access: AttachmentAccess.Public,
-  id: '1f63d4ec-0993-4c57-9b51-1c8af7330001',
-  createdAt: new Date(),
-  updatedAt: new Date(),
   createdBy: '1',
   createdByRef: AttachmentCreatedByRef.User,
-} satisfies Partial<AttachmentOrmEntity>;
+} satisfies Partial<AttachmentCreateDto>;
 
 export const attachment: AttachmentOrmEntity = Object.assign(
   new AttachmentOrmEntity(),
