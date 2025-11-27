@@ -1,0 +1,32 @@
+{
+  "name": "@hexabot-ai/agentic",
+  "version": "3.0.0-alpha.3",
+  "description": "Schemas and utilities for the Hexabot agentic workflow DSL.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest --config jest.config.ts"
+  },
+  "files": [
+    "dist",
+    "example",
+    "src"
+  ],
+  "dependencies": {
+    "jsonata": "^2.1.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.6.2"
+  },
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "license": "FCL-1.0-ALv2"
+}

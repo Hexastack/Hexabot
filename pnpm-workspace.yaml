@@ -1,4 +1,5 @@
 packages:
+  - "packages/agentic"
   - "packages/api"
   - "packages/frontend"
   - "packages/cli"
