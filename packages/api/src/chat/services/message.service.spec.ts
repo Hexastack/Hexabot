@@ -6,20 +6,10 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Message, MessageFull } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { MessageOrmEntity } from '@/chat/entities/message.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageRepository } from '@/chat/repositories/message.repository';
 import { MessageService } from '@/chat/services/message.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installMessageFixturesTypeOrm,
   messageFixtures,
@@ -29,9 +19,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
-
-import { BlockOrmEntity } from '../entities/block.entity';
-import { CategoryOrmEntity } from '../entities/category.entity';
 
 describe('MessageService (TypeORM)', () => {
   let module: TestingModule;
@@ -67,20 +54,6 @@ describe('MessageService (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          MessageOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-        ],
         fixtures: installMessageFixturesTypeOrm,
       },
     });

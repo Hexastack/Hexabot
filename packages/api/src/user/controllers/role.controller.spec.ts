@@ -8,18 +8,12 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Role, RoleCreateDto, RoleFull, RoleUpdateDto } from '../dto/role.dto';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -53,14 +47,6 @@ describe('RoleController (TypeORM)', () => {
         ModelRepository,
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installPermissionFixturesTypeOrm,
       },
     });

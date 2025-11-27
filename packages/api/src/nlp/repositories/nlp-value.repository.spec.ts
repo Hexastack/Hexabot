@@ -9,7 +9,6 @@ import { TestingModule } from '@nestjs/testing';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { SettingService } from '@/setting/services/setting.service';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';
@@ -17,10 +16,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValue, NlpValueFull } from '../dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpValueService } from '../services/nlp-value.service';
 import { NlpService } from '../services/nlp.service';
 
@@ -61,13 +56,6 @@ describe('NlpValueRepository (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-          LanguageOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });

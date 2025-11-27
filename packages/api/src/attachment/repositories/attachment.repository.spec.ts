@@ -9,11 +9,6 @@ import { randomUUID } from 'crypto';
 import { TestingModule } from '@nestjs/testing';
 
 import { config } from '@/config';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,
@@ -23,7 +18,6 @@ import { installUserFixturesTypeOrm } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -43,14 +37,6 @@ describe('AttachmentRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [AttachmentRepository],
       typeorm: {
-        entities: [
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-          UserProfileOrmEntity,
-        ],
         fixtures: [
           installUserFixturesTypeOrm,
           installAttachmentFixturesTypeOrm,

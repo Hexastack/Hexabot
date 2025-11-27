@@ -94,9 +94,6 @@ describe('MigrationService', () => {
           },
         },
       ],
-      typeorm: {
-        entities: [MigrationOrmEntity, MetadataOrmEntity],
-      },
     });
 
     testingModule = mocks.module;

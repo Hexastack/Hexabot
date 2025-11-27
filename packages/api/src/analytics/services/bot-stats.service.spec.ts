@@ -16,7 +16,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
+import { BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
 
 import { BotStatsService } from './bot-stats.service';
@@ -44,7 +44,6 @@ describe('BotStatsService', () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       providers: [BotStatsService, BotStatsRepository],
       typeorm: {
-        entities: [BotStatsOrmEntity],
         fixtures: installBotStatsFixturesTypeOrm,
       },
     });

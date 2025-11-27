@@ -13,16 +13,10 @@ import {
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { Request } from 'express';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
@@ -70,14 +64,6 @@ describe('AttachmentController', () => {
         },
       ],
       typeorm: {
-        entities: [
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          UserProfileOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-        ],
         fixtures: [
           installSettingFixturesTypeOrm,
           installUserFixturesTypeOrm,

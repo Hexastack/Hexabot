@@ -9,8 +9,6 @@ import { TestingModule } from '@nestjs/testing';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
@@ -26,12 +24,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
-import { InvitationOrmEntity } from '../entities/invitation.entity';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
 
@@ -75,16 +67,6 @@ describe('InvitationService (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          InvitationOrmEntity,
-          RoleOrmEntity,
-          UserOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          LanguageOrmEntity,
-        ],
         fixtures: [
           installLanguageFixturesTypeOrm,
           installInvitationFixturesTypeOrm,

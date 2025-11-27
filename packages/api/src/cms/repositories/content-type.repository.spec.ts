@@ -10,8 +10,6 @@ import { ForbiddenException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { FieldType } from '@/setting/types';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -41,9 +39,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       providers: [ContentRepository, ContentTypeRepository],
-      typeorm: {
-        entities: [ContentTypeOrmEntity, ContentOrmEntity],
-      },
     });
 
     module = testing.module;

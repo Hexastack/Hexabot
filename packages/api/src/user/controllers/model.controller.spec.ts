@@ -6,17 +6,11 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ModelFull } from '../dto/model.dto';
-import { ModelOrmEntity as ModelEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { ModelService } from '../services/model.service';
@@ -41,14 +35,6 @@ describe('ModelController (TypeORM)', () => {
         PermissionRepository,
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          ModelEntity,
-          PermissionOrmEntity,
-          RoleOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installPermissionFixturesTypeOrm,
       },
     });

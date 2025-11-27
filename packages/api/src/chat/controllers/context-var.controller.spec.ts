@@ -10,19 +10,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contextVarFixtures,
   installContextVarFixturesTypeOrm,
@@ -52,21 +39,6 @@ describe('ContextVarController (TypeORM)', () => {
       autoInjectFrom: ['controllers'],
       controllers: [ContextVarController],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          ContextVarOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          SubscriberOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          ConversationOrmEntity,
-        ],
         fixtures: installContextVarFixturesTypeOrm,
       },
     });

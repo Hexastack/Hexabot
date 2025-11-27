@@ -11,9 +11,7 @@ import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { Request } from 'express';
 import { SentMessageInfo } from 'nodemailer';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
@@ -32,12 +30,6 @@ import {
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { InvitationOrmEntity } from '../entities/invitation.entity';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -108,16 +100,6 @@ describe('UserController (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          InvitationOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          LanguageOrmEntity,
-        ],
         fixtures: [
           installLanguageFixturesTypeOrm,
           installPermissionFixturesTypeOrm,
