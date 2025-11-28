@@ -122,4 +122,14 @@ export class MessageService extends BaseOrmService<
       limit,
     );
   }
+
+  /**
+   * Checks if a subscriber has the required permission to access the message including the attachment.
+   * @param subscriberId - The ID of the subscriber.
+   * @param attachmentId - The ID of the attachment
+   * @returns A promise that resolves to a boolean
+   */
+  async hasMessageAccess(subscriberId: string, attachmentId: string) {
+    return await this.repository.hasMessageAccess(subscriberId, attachmentId);
+  }
 }

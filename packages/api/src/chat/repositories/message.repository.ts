@@ -148,4 +148,64 @@ export class MessageRepository extends BaseOrmRepository<
 
     return results.map(toDto);
   }
+
+  /**
+   * Checks if a subscriber has the required permission to access the message including the attachment.
+   * @param subscriberId - The ID of the subscriber.
+   * @param attachmentId - The ID of the attachment
+   * @returns A promise that resolves to a boolean
+   */
+  async hasMessageAccess(subscriberId: string, attachmentId: string) {
+    const manager = this.repository.manager;
+    const databaseType = manager.connection.options.type;
+    const qb = this.repository
+      .createQueryBuilder('message')
+      .where('message.recipient_id = :subscriberId', { subscriberId });
+
+    if (['sqlite', 'better-sqlite3'].includes(databaseType)) {
+      qb.andWhere(
+        `(
+          (
+            json_type(json_extract(message.message, '$.attachment')) = 'object'
+            AND json_extract(message.message, '$.attachment.payload.id') = :attId
+          )
+          OR (
+            json_type(json_extract(message.message, '$.attachment')) = 'array'
+            AND EXISTS (
+              SELECT 1
+              FROM json_each(json_extract(message.message, '$.attachment')) AS a
+              WHERE json_extract(a.value, '$.payload.id') = :attId
+            )
+          )
+        )`,
+        { attId: attachmentId },
+      );
+    } else if (databaseType === 'postgres') {
+      const jsonColumn = '(message.message::jsonb)';
+
+      qb.andWhere(
+        `(
+          (
+            jsonb_typeof(${jsonColumn} -> 'attachment') = 'object'
+            AND (${jsonColumn} -> 'attachment' -> 'payload' ->> 'id') = :attId
+          )
+          OR (
+            jsonb_typeof(${jsonColumn} -> 'attachment') = 'array'
+            AND EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements(${jsonColumn} -> 'attachment') AS a
+              WHERE a -> 'payload' ->> 'id' = :attId
+            )
+          )
+        )`,
+        { attId: attachmentId },
+      );
+    } else {
+      throw new Error(`Unsupported database type: ${databaseType}`);
+    }
+
+    const messageCount = await qb.getCount();
+
+    return messageCount > 0;
+  }
 }
