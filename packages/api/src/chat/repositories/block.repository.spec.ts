@@ -20,7 +20,6 @@ import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
@@ -58,20 +57,9 @@ describe('BlockRepository (TypeORM)', () => {
   const createdSettingIds: string[] = [];
 
   beforeAll(async () => {
-    const settingServiceMock = {
-      getSettings: jest.fn().mockResolvedValue({
-        chatbot_settings: {},
-      }),
-    };
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        BlockRepository,
-        {
-          provide: SettingService,
-          useValue: settingServiceMock,
-        },
-      ],
+      providers: [BlockRepository],
       typeorm: {
         entities: [
           UserProfileOrmEntity,
