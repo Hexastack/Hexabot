@@ -32,7 +32,6 @@ describe('LanguageController', () => {
       providers: [LanguageService, LanguageRepository],
       controllers: [LanguageController],
       typeorm: {
-        entities: [LanguageOrmEntity],
         fixtures: installLanguageFixturesTypeOrm,
       },
     });

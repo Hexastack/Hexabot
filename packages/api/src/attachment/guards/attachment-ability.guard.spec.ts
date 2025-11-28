@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Model } from '@/user/dto/model.dto';
 import { Permission } from '@/user/dto/permission.dto';
 import { ModelService } from '@/user/services/model.service';
@@ -20,6 +19,7 @@ import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Attachment } from '../dto/attachment.dto';
 import { attachment } from '../mocks/attachment.mock';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
@@ -143,7 +143,7 @@ describe('AttachmentGuard', () => {
       jest.spyOn(attachmentService, 'findOne').mockResolvedValue({
         id: attachmentId,
         resourceRef: AttachmentResourceRef.UserAvatar,
-      } as AttachmentOrmEntity);
+      } as Attachment);
       const modelFindOne = mockModelFindOne();
       const permissionFindOne = jest
         .spyOn(permissionService, 'findOne')
@@ -235,7 +235,7 @@ describe('AttachmentGuard', () => {
       const attachmentWithUuid = {
         ...attachment,
         id: '5a1ea13e-63ef-48da-9afb-7b4d0533b1a0',
-      } as AttachmentOrmEntity;
+      } as Attachment;
 
       jest
         .spyOn(attachmentService, 'findOne')

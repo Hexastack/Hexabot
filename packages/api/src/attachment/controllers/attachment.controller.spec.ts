@@ -13,7 +13,6 @@ import {
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { Request } from 'express';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -27,6 +26,7 @@ import {
   installAttachmentFixturesTypeOrm,
 } from '@/utils/test/fixtures/attachment';
 import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
+import { installUserFixturesTypeOrm } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -47,7 +47,7 @@ describe('AttachmentController', () => {
   let attachmentToDelete: Attachment;
   let helperService: HelperService;
   let settingService: SettingService;
-  const TEST_USER_ID = '99999999-9999-4999-9999-999999999999';
+  const TEST_USER_ID = '66666666-6666-6666-6666-666666666666';
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
@@ -64,9 +64,9 @@ describe('AttachmentController', () => {
         },
       ],
       typeorm: {
-        entities: [AttachmentOrmEntity],
         fixtures: [
           installSettingFixturesTypeOrm,
+          installUserFixturesTypeOrm,
           installAttachmentFixturesTypeOrm,
         ],
       },
@@ -109,7 +109,7 @@ describe('AttachmentController', () => {
         take: 5,
         skip: 0,
       };
-      const result = await attachmentController.findPage(options);
+      const result = await attachmentController.findPage([], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toHaveLength(1);

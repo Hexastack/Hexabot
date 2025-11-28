@@ -18,10 +18,10 @@ import {
 import sanitizeFilename from 'sanitize-filename';
 
 import {
+  Attachment,
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentResourceRef } from '@/attachment/types';
 import {
   fileExists,
@@ -130,7 +130,7 @@ export default class LocalStorageHelper
    * @param attachment - The attachment to download.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  async download(attachment: AttachmentOrmEntity): Promise<StreamableFile> {
+  async download(attachment: Attachment): Promise<StreamableFile> {
     const rootDir = this.getRootDirByResourceRef(attachment.resourceRef);
     const path = resolve(join(rootDir, attachment.location));
 
@@ -157,9 +157,7 @@ export default class LocalStorageHelper
    * @param attachment - The attachment to download.
    * @returns A promise that resolves to a Buffer representing the attachment file.
    */
-  async readAsBuffer(
-    attachment: AttachmentOrmEntity,
-  ): Promise<Buffer | undefined> {
+  async readAsBuffer(attachment: Attachment): Promise<Buffer | undefined> {
     const path = resolve(
       join(
         this.getRootDirByResourceRef(attachment.resourceRef),
@@ -180,9 +178,7 @@ export default class LocalStorageHelper
    * @param attachment - The attachment to download.
    * @returns A promise that resolves to a Stream representing the attachment file.
    */
-  async readAsStream(
-    attachment: AttachmentOrmEntity,
-  ): Promise<Stream | undefined> {
+  async readAsStream(attachment: Attachment): Promise<Stream | undefined> {
     const path = resolve(
       join(
         this.getRootDirByResourceRef(attachment.resourceRef),

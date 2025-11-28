@@ -6,23 +6,11 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { LabelRepository } from '@/chat/repositories/label.repository';
 import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
 import { LabelService } from '@/chat/services/label.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installSubscriberFixturesTypeOrm,
   subscriberFixtures,
@@ -76,20 +64,6 @@ describe('SubscriberController (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          ConversationOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installSubscriberFixturesTypeOrm,
       },
     });

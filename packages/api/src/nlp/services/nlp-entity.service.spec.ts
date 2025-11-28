@@ -13,10 +13,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpEntity, NlpEntityFull } from '../dto/nlp-entity.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 
@@ -49,12 +45,6 @@ describe('NlpEntityService (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpValueFixturesTypeOrm,
       },
     });

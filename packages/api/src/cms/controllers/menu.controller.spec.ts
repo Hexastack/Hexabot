@@ -16,7 +16,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
+import { MenuType } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
 import { MenuService } from '../services/menu.service';
 
@@ -34,7 +34,6 @@ describe('MenuController (TypeORM)', () => {
       controllers: [MenuController],
       providers: [MenuService, MenuRepository],
       typeorm: {
-        entities: [MenuOrmEntity],
         fixtures: installMenuFixturesTypeOrm,
       },
     });

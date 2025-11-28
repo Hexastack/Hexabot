@@ -6,16 +6,8 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { ContextVarRepository } from '@/chat/repositories/context-var.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
@@ -27,11 +19,6 @@ import { ConversationService } from '@/chat/services/conversation.service';
 import { LabelService } from '@/chat/services/label.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
 import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
@@ -73,21 +60,6 @@ describe('ConversationService (TypeORM)', () => {
         { provide: WebsocketGateway, useValue: gatewayMock },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          ConversationOrmEntity,
-          ContextVarOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-        ],
         fixtures: [
           installContextVarFixturesTypeOrm,
           installConversationFixturesTypeOrm,

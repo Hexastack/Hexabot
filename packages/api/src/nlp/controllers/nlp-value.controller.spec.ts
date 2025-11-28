@@ -16,9 +16,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValue } from '../dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
 import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
@@ -39,12 +36,6 @@ describe('NlpValueController', () => {
       controllers: [NlpValueController],
       providers: [NlpValueService, NlpEntityService],
       typeorm: {
-        entities: [
-          NlpValueOrmEntity,
-          NlpEntityOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpValueFixturesTypeOrm,
       },
     });

@@ -6,7 +6,6 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { userFixtures } from '@/utils/test/fixtures/user';
@@ -14,11 +13,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { User as UserDto } from '../dto/user.dto';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 
@@ -47,14 +41,6 @@ describe('UserService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [UserService, RoleRepository, UserRepository],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installPermissionFixturesTypeOrm,
       },
     });

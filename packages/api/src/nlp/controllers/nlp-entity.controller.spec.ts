@@ -30,9 +30,6 @@ import {
 } from '../dto/nlp-entity.dto';
 import { NlpValue } from '../dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
@@ -51,12 +48,6 @@ describe('NlpEntityController', () => {
       controllers: [NlpEntityController],
       providers: [NlpEntityService, NlpValueService],
       typeorm: {
-        entities: [
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: async (dataSource) => {
           await installNlpValueFixturesTypeOrm(dataSource);
         },

@@ -25,10 +25,6 @@ import {
 } from '../dto/nlp-sample-entity.dto';
 import { NlpSample } from '../dto/nlp-sample.dto';
 import { NlpValue } from '../dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpSampleState } from '../types';
 
 import { NlpEntityService } from './nlp-entity.service';
@@ -54,12 +50,6 @@ describe('NlpSampleEntityService (TypeORM)', () => {
         LanguageService,
       ],
       typeorm: {
-        entities: [
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });

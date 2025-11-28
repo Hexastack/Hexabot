@@ -7,15 +7,10 @@
 import { TestingModule } from '@nestjs/testing';
 
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 
 import { NlpEntityService } from './nlp-entity.service';
@@ -38,13 +33,6 @@ describe('NlpSampleService (TypeORM)', () => {
         NlpValueService,
       ],
       typeorm: {
-        entities: [
-          LanguageOrmEntity,
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });
