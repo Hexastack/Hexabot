@@ -50,6 +50,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
     await dataSource.query(`
       CREATE TABLE IF NOT EXISTS blocks (
         id varchar PRIMARY KEY,
+        name varchar NOT NULL,
         options text NOT NULL,
         message text NOT NULL
       )
@@ -70,6 +71,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
         fields: buildRequiredFields(),
       });
       const blockId = `block-${randomUUID()}`;
+      const blockName = `block-name-${randomUUID()}`;
       const options = {
         content: {
           display: 'list',
@@ -84,8 +86,13 @@ describe('ContentTypeRepository (TypeORM)', () => {
         },
       };
       await dataSource.query(
-        `INSERT INTO blocks (id, options, message) VALUES (?, ?, ?)`,
-        [blockId, JSON.stringify(options), JSON.stringify(['Hello'])],
+        `INSERT INTO blocks (id, name, options, message) VALUES (?, ?, ?, ?)`,
+        [
+          blockId,
+          blockName,
+          JSON.stringify(options),
+          JSON.stringify(['Hello']),
+        ],
       );
 
       const escapeLikePattern = (value: string) =>

@@ -8,11 +8,9 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { ContentService } from '@/cms/services/content.service';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { UserService } from '@/user/services/user.service';
 import {
   blockFixtures,
@@ -21,6 +19,7 @@ import {
 import { installCategoryFixturesTypeOrm } from '@/utils/test/fixtures/category';
 import { installLabelFixturesTypeOrm } from '@/utils/test/fixtures/label';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -60,9 +59,6 @@ const userServiceMock = {
 const contentServiceMock = {};
 const languageServiceMock = {};
 const nlpServiceMock = {};
-const i18nServiceMock = {
-  t: jest.fn().mockImplementation((translationKey: string) => translationKey),
-};
 const FIELDS_TO_POPULATE = [
   'trigger_labels',
   'assign_labels',
@@ -136,8 +132,7 @@ describe('BlockController (TypeORM)', () => {
         { provide: ContentService, useValue: contentServiceMock },
         { provide: LanguageService, useValue: languageServiceMock },
         { provide: NlpService, useValue: nlpServiceMock },
-        { provide: SettingService, useValue: settingServiceMock },
-        { provide: I18nService, useValue: i18nServiceMock },
+        I18nServiceProvider,
       ],
       typeorm: {
         fixtures: [

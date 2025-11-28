@@ -12,8 +12,8 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { MessageService } from '@/chat/services/message.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
@@ -60,12 +60,7 @@ describe(`Web event wrapper`, () => {
       providers: [
         JwtService,
         WebChannelHandler,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        I18nServiceProvider,
         {
           provide: MenuService,
           useValue: menuServiceMock,

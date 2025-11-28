@@ -17,7 +17,6 @@ import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
 import {
   blockFixtures,
@@ -50,20 +49,9 @@ describe('BlockRepository (TypeORM)', () => {
   const createdSettingIds: string[] = [];
 
   beforeAll(async () => {
-    const settingServiceMock = {
-      getSettings: jest.fn().mockResolvedValue({
-        chatbot_settings: {},
-      }),
-    };
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        BlockRepository,
-        {
-          provide: SettingService,
-          useValue: settingServiceMock,
-        },
-      ],
+      providers: [BlockRepository],
       typeorm: {
         fixtures: installBlockFixturesTypeOrm,
       },

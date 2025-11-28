@@ -12,7 +12,6 @@ import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { HelperService } from '@/helper/helper.service';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { installBlockFixturesTypeOrm } from '@/utils/test/fixtures/block';
 import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
 import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
@@ -27,6 +26,7 @@ import {
   textBlock,
 } from '@/utils/test/mocks/block';
 import { conversationGetStarted } from '@/utils/test/mocks/conversation';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -70,12 +70,7 @@ describe('BotService', () => {
       autoInjectFrom: ['providers'],
       providers: [
         BotService,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        I18nServiceProvider,
         {
           provide: HelperService,
           useValue: helperServiceMock,

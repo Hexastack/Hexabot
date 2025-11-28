@@ -11,7 +11,6 @@ import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import {
@@ -25,7 +24,6 @@ import { TranslationUpdateDto } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { I18nService } from '../services/i18n.service';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
@@ -45,13 +43,6 @@ describe('TranslationController', () => {
         LanguageService,
         LanguageRepository,
         {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-            refreshDynamicTranslations: jest.fn(),
-          },
-        },
-        {
           provide: BlockService,
           useValue: {
             find: jest.fn().mockResolvedValue([]),
@@ -68,13 +59,6 @@ describe('TranslationController', () => {
           provide: ConversationRepository,
           useValue: {
             find: jest.fn(),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            find: jest.fn().mockResolvedValue([]),
-            getSettings: jest.fn().mockResolvedValue({}),
           },
         },
         {

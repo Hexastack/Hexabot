@@ -8,7 +8,6 @@ import { TestingModule } from '@nestjs/testing';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -33,16 +32,6 @@ describe('NlpService (TypeORM)', () => {
         NlpValueService,
         NlpSampleEntityService,
         LlmNluHelper,
-        {
-          provide: SettingService,
-          useValue: {
-            getSettings: jest.fn(() => ({
-              chatbot_settings: {
-                default_nlu_helper: 'llm-nlu-helper',
-              },
-            })),
-          },
-        },
       ],
       typeorm: {
         fixtures: installNlpSampleEntityFixturesTypeOrm,
