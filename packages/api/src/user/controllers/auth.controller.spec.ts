@@ -8,19 +8,17 @@ import { UnauthorizedException } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
-import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { MailerService } from '@/mailer/mailer.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { roleFixtureIds } from '@/utils/test/fixtures/role';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
+import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -53,11 +51,6 @@ describe('AuthController (TypeORM)', () => {
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
-    const mailerMock = {
-      sendMail(_options: ISendMailOptions): Promise<SentMessageInfo> {
-        return Promise.resolve('Mail sent successfully');
-      },
-    };
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],
@@ -71,16 +64,8 @@ describe('AuthController (TypeORM)', () => {
         UserRepository,
         LanguageService,
         LanguageRepository,
-        {
-          provide: MailerService,
-          useValue: mailerMock,
-        },
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        MailerServiceProvider,
+        I18nServiceProvider,
       ],
       typeorm: {
         entities: [
