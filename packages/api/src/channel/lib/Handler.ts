@@ -14,11 +14,11 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
-import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
+import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -349,10 +349,7 @@ export default abstract class ChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(
-    attachment: AttachmentOrmEntity,
-    _req: Request,
-  ) {
+  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
     return attachment.access === AttachmentAccess.Public;
   }
 
@@ -377,7 +374,7 @@ export default abstract class ChannelHandler<
         token,
         this.jwtSignOptions as JwtVerifyOptions,
       );
-      const attachment = plainToClass(AttachmentOrmEntity, result);
+      const attachment: Attachment = result;
       // Check access
       const canDownload = await this.hasDownloadAccess(attachment, req);
       if (!canDownload) {

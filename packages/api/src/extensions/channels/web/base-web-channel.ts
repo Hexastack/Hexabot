@@ -1398,10 +1398,7 @@ export default abstract class BaseWebChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(
-    attachment: AttachmentOrmEntity,
-    req: Request,
-  ) {
+  public async hasDownloadAccess(attachment: Attachment, req: Request) {
     const subscriberId = req.session.web?.profile?.id as string;
     if (attachment.access === AttachmentAccess.Public) {
       return true;
@@ -1418,6 +1415,7 @@ export default abstract class BaseWebChannelHandler<
       // Either subscriber wants to access the attachment he sent
       return true;
     } else {
+      //TODO add driverTypes compatibility
       // Or, he would like to access an attachment sent to him privately
       const message = await this.messageService.findOne({
         where: {

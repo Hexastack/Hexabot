@@ -20,7 +20,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
+import { MenuType } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
 
 import { MenuService } from './menu.service';
@@ -36,7 +36,6 @@ describe('MenuService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [MenuService, MenuRepository],
       typeorm: {
-        entities: [MenuOrmEntity],
         fixtures: installMenuFixturesTypeOrm,
       },
     });

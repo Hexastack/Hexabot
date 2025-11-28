@@ -125,7 +125,7 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber language', type: String })
   @IsNotEmpty()
   @IsString()
-  language: string | null;
+  language?: string | null;
 
   @ApiPropertyOptional({ description: 'Subscriber gender', type: String })
   @IsOptional()

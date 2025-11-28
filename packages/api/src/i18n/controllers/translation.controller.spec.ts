@@ -21,7 +21,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { LanguageOrmEntity } from '../entities/language.entity';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
@@ -71,11 +70,9 @@ describe('TranslationController', () => {
       ],
       typeorm: [
         {
-          entities: [TranslationOrmEntity],
           fixtures: installTranslationFixturesTypeOrm,
         },
         {
-          entities: [LanguageOrmEntity],
           fixtures: installLanguageFixturesTypeOrm,
         },
       ],

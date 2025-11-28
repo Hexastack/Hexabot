@@ -14,10 +14,10 @@ import {
   attachmentFixtures,
   installAttachmentFixturesTypeOrm,
 } from '@/utils/test/fixtures/attachment';
+import { installUserFixturesTypeOrm } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -30,15 +30,17 @@ describe('AttachmentRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: AttachmentRepository;
   const createdAttachmentIds = new Set<string>();
-  const CREATOR_UUID = '99999999-9999-4999-9999-999999999999';
+  const CREATOR_UUID = '66666666-6666-6666-6666-666666666666';
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [AttachmentRepository],
       typeorm: {
-        entities: [AttachmentOrmEntity],
-        fixtures: installAttachmentFixturesTypeOrm,
+        fixtures: [
+          installUserFixturesTypeOrm,
+          installAttachmentFixturesTypeOrm,
+        ],
       },
     });
 

@@ -9,9 +9,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageService } from '@/i18n/services/language.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -30,11 +28,6 @@ import {
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { InvitationOrmEntity } from '../entities/invitation.entity';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -93,15 +86,6 @@ describe('UserController (TypeORM)', () => {
         I18nServiceProvider,
       ],
       typeorm: {
-        entities: [
-          UserOrmEntity,
-          RoleOrmEntity,
-          InvitationOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          LanguageOrmEntity,
-        ],
         fixtures: [
           installLanguageFixturesTypeOrm,
           installPermissionFixturesTypeOrm,

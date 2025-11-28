@@ -6,19 +6,12 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   installInvitationFixturesTypeOrm,
   invitationsFixtures,
 } from '@/utils/test/fixtures/invitation';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { InvitationOrmEntity } from '../entities/invitation.entity';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 
 import { InvitationRepository } from './invitation.repository';
 import { RoleRepository } from './role.repository';
@@ -32,14 +25,6 @@ describe('InvitationRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [RoleRepository, InvitationRepository],
       typeorm: {
-        entities: [
-          InvitationOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installInvitationFixturesTypeOrm,
       },
     });

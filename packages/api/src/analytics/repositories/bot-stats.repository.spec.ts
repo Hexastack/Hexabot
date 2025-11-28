@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
+import { BotStatsType } from '../entities/bot-stats.entity';
 
 import { BotStatsRepository } from './bot-stats.repository';
 
@@ -27,7 +27,6 @@ describe('BotStatsRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [BotStatsRepository, EventEmitter2],
       typeorm: {
-        entities: [BotStatsOrmEntity],
         fixtures: installBotStatsFixturesTypeOrm,
       },
     });

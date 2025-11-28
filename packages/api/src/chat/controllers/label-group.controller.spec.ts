@@ -8,17 +8,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installLabelGroupFixturesTypeOrm,
@@ -42,19 +31,6 @@ describe('LabelGroupController', () => {
       autoInjectFrom: ['controllers'],
       controllers: [LabelGroupController],
       typeorm: {
-        entities: [
-          LabelGroupOrmEntity,
-          LabelOrmEntity,
-          SubscriberOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          ConversationOrmEntity,
-        ],
         fixtures: installLabelGroupFixturesTypeOrm,
       },
     });

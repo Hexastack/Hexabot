@@ -7,27 +7,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentService } from '@/cms/services/content.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserService } from '@/user/services/user.service';
 import {
   blockFixtures,
@@ -152,25 +135,6 @@ describe('BlockController (TypeORM)', () => {
         I18nServiceProvider,
       ],
       typeorm: {
-        entities: [
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          SubscriberOrmEntity,
-          ConversationOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-          ContentOrmEntity,
-          ContentTypeOrmEntity,
-        ],
         fixtures: [
           installCategoryFixturesTypeOrm,
           installLabelFixturesTypeOrm,

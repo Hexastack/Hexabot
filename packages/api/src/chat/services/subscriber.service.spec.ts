@@ -18,10 +18,6 @@ import {
 } from '@/attachment/types';
 import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/dto/user.dto';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
@@ -33,11 +29,6 @@ import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber } from '../dto/subscriber.dto';
-import { BlockOrmEntity } from '../entities/block.entity';
-import { CategoryOrmEntity } from '../entities/category.entity';
-import { LabelGroupOrmEntity } from '../entities/label-group.entity';
-import { LabelOrmEntity } from '../entities/label.entity';
-import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -89,18 +80,6 @@ describe('SubscriberService (TypeORM)', () => {
         { provide: LoggerService, useValue: loggerMock },
       ],
       typeorm: {
-        entities: [
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-        ],
         fixtures: [
           installLabelGroupFixturesTypeOrm,
           installSubscriberFixturesTypeOrm,

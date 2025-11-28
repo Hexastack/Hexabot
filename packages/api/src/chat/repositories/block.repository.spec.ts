@@ -11,20 +11,13 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '@/chat/constants/block';
 import { BlockOrmEntity } from '@/chat/entities/block.entity';
 import { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingType } from '@/setting/types';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   blockFixtures,
   installBlockFixturesTypeOrm,
@@ -60,19 +53,6 @@ describe('BlockRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [BlockRepository],
       typeorm: {
-        entities: [
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          SubscriberOrmEntity,
-          ConversationOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-        ],
         fixtures: installBlockFixturesTypeOrm,
       },
     });
@@ -173,7 +153,6 @@ describe('BlockRepository (TypeORM)', () => {
         last_name: 'User',
         locale: null,
         timezone: 0,
-        language: null,
         gender: null,
         country: null,
         foreign_id: randomUUID(),

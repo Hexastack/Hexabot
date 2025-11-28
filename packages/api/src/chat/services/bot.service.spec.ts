@@ -7,29 +7,11 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { webEventText } from '@/extensions/channels/web/__test__/events.mock';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { HelperService } from '@/helper/helper.service';
-import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installBlockFixturesTypeOrm } from '@/utils/test/fixtures/block';
 import { installContentFixturesTypeOrm } from '@/utils/test/fixtures/content';
 import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
@@ -95,26 +77,6 @@ describe('BotService', () => {
         },
       ],
       typeorm: {
-        entities: [
-          ConversationOrmEntity,
-          ContextVarOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-          ContentOrmEntity,
-          ContentTypeOrmEntity,
-        ],
         fixtures: [
           installSettingFixturesTypeOrm,
           installSubscriberFixturesTypeOrm,

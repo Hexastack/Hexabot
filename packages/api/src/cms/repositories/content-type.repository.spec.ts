@@ -10,8 +10,6 @@ import { ForbiddenException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
-import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { FieldType } from '@/setting/types';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -41,9 +39,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       providers: [ContentRepository, ContentTypeRepository],
-      typeorm: {
-        entities: [ContentTypeOrmEntity, ContentOrmEntity],
-      },
     });
 
     module = testing.module;
@@ -55,6 +50,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
     await dataSource.query(`
       CREATE TABLE IF NOT EXISTS blocks (
         id varchar PRIMARY KEY,
+        name varchar NOT NULL,
         options text NOT NULL,
         message text NOT NULL
       )
@@ -75,6 +71,7 @@ describe('ContentTypeRepository (TypeORM)', () => {
         fields: buildRequiredFields(),
       });
       const blockId = `block-${randomUUID()}`;
+      const blockName = `block-name-${randomUUID()}`;
       const options = {
         content: {
           display: 'list',
@@ -89,8 +86,13 @@ describe('ContentTypeRepository (TypeORM)', () => {
         },
       };
       await dataSource.query(
-        `INSERT INTO blocks (id, options, message) VALUES (?, ?, ?)`,
-        [blockId, JSON.stringify(options), JSON.stringify(['Hello'])],
+        `INSERT INTO blocks (id, name, options, message) VALUES (?, ?, ?, ?)`,
+        [
+          blockId,
+          blockName,
+          JSON.stringify(options),
+          JSON.stringify(['Hello']),
+        ],
       );
 
       const escapeLikePattern = (value: string) =>

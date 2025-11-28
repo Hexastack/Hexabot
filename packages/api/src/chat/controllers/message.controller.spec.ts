@@ -6,22 +6,10 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { ChannelService } from '@/channel/channel.service';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { MessageOrmEntity } from '@/chat/entities/message.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageRepository } from '@/chat/repositories/message.repository';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installMessageFixturesTypeOrm,
   messageFixtures,
@@ -79,20 +67,6 @@ describe('MessageController (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          MessageOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          ConversationOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installMessageFixturesTypeOrm,
       },
     });

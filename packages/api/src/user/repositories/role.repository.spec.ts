@@ -6,7 +6,6 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   installPermissionFixturesTypeOrm,
   permissionOrmFixtures,
@@ -17,10 +16,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Role } from '../dto/role.dto';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 
 import { PermissionRepository } from './permission.repository';
 import { RoleRepository } from './role.repository';
@@ -40,13 +35,6 @@ describe('RoleRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [UserRepository, RoleRepository, PermissionRepository],
       typeorm: {
-        entities: [
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-        ],
         fixtures: installPermissionFixturesTypeOrm,
       },
     });

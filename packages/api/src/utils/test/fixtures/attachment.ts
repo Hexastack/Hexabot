@@ -13,6 +13,7 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 
 export const attachmentFixtures: AttachmentCreateDto[] = [
   {
@@ -28,7 +29,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '99999999-9999-4999-9999-999999999999',
+    createdBy: '66666666-6666-6666-6666-666666666666',
   },
   {
     name: 'store2.jpg',
@@ -43,14 +44,23 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     resourceRef: AttachmentResourceRef.ContentAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
-    createdBy: '99999999-9999-4999-9999-999999999999',
+    createdBy: '66666666-6666-6666-6666-666666666666',
   },
 ];
 
 export const installAttachmentFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
+  const userRepository = dataSource.getRepository(UserOrmEntity);
   const repository = dataSource.getRepository(AttachmentOrmEntity);
-  const entities = repository.create(attachmentFixtures);
+  const user = await userRepository.findOne({
+    where: { username: 'admin' },
+  });
+  const entities = repository.create(
+    attachmentFixtures.map((a) => ({
+      ...a,
+      createdBy: user,
+    })),
+  );
   await repository.save(entities);
 };

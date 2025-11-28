@@ -9,7 +9,6 @@ import { In } from 'typeorm';
 
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { Language } from '@/i18n/dto/language.dto';
-import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
@@ -19,10 +18,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleState } from '..//types';
 import { NlpSampleDto, NlpSampleFull } from '../dto/nlp-sample.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
@@ -50,13 +45,6 @@ describe('NlpSampleController (TypeORM)', () => {
         LanguageService,
       ],
       typeorm: {
-        entities: [
-          LanguageEntity,
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });

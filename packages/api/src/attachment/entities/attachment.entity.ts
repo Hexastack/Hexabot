@@ -5,16 +5,26 @@
  */
 
 import { Expose } from 'class-transformer';
-import { Column, Entity, Index } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
+import { BaseOrmEntity } from '@/database';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
+import { AsRelation } from '@/utils';
 import { buildURL } from '@/utils/helpers/URL';
 
+import { Attachment } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -39,8 +49,16 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   @JsonColumn({ nullable: true })
   channel?: Partial<Record<ChannelName, any>>;
 
-  @Column({ name: 'created_by', type: 'varchar', nullable: true })
-  createdBy?: string | null;
+  @ManyToOne(() => UserProfileOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'created_by_id' })
+  @AsRelation()
+  createdBy?: UserProfileOrmEntity | null;
+
+  @RelationId((attachment: Attachment) => attachment.createdBy)
+  private readonly createdById?: string;
 
   @EnumColumn({
     name: 'created_by_ref',

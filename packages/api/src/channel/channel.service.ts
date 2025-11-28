@@ -168,7 +168,6 @@ export class ChannelService {
           first_name: req.session.passport.user.first_name || 'Anonymous',
           last_name: req.session.passport.user.last_name || 'Anonymous',
           locale: null,
-          language: null,
           gender: null,
           country: null,
           labels: [],

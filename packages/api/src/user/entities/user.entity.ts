@@ -7,55 +7,35 @@
 import {
   BeforeInsert,
   BeforeUpdate,
+  ChildEntity,
   Column,
-  Entity,
   Index,
-  JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   RelationId,
 } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { UserProvider } from '../types/user-provider.type';
 import { hash } from '../utilities/bcryptjs';
 
 import { RoleOrmEntity } from './role.entity';
+import { UserProfileOrmEntity } from './user-profile.entity';
 
-@Entity({ name: 'users' })
+@ChildEntity()
 @Index(['username'], { unique: true })
 @Index(['email'], { unique: true })
-export class UserOrmEntity extends BaseOrmEntity {
+export class UserOrmEntity extends UserProfileOrmEntity {
   @Column()
   username!: string;
-
-  @Column({ name: 'first_name' })
-  first_name!: string;
-
-  @Column({ name: 'last_name' })
-  last_name!: string;
 
   @Column()
   email!: string;
 
   @Column()
   password!: string;
-
-  @ManyToOne(() => AttachmentOrmEntity, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'avatar_id' })
-  @AsRelation()
-  avatar?: AttachmentOrmEntity | null;
-
-  @RelationId((user: UserOrmEntity) => user.avatar)
-  private readonly avatarId?: string | null;
 
   @ManyToMany(() => RoleOrmEntity, (role) => role.users, {
     cascade: false,
@@ -76,12 +56,6 @@ export class UserOrmEntity extends BaseOrmEntity {
 
   @Column({ default: true })
   state!: boolean;
-
-  @Column({ length: 2, default: 'en' })
-  language!: string;
-
-  @Column({ default: 'Europe/Berlin' })
-  timezone!: string;
 
   @Column({ name: 'reset_count', type: 'integer', default: 0 })
   resetCount!: number;

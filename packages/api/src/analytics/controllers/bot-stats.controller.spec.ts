@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
+import { BotStatsType } from '../entities/bot-stats.entity';
 
 import { BotStatsController } from './bot-stats.controller';
 
@@ -28,7 +28,6 @@ describe('BotStatsController', () => {
       controllers: [BotStatsController],
       providers: [EventEmitter2],
       typeorm: {
-        entities: [BotStatsOrmEntity],
         fixtures: installBotStatsFixturesTypeOrm,
       },
     });
