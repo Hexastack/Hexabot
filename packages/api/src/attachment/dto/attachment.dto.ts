@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsIn,
   IsMimeType,
@@ -20,6 +20,7 @@ import {
 import { ChannelName } from '@/channel/types';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { User } from '@/user/dto/user.dto';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -72,13 +73,9 @@ export class Attachment extends AttachmentStub {
 @Exclude()
 export class AttachmentFull extends AttachmentStub {
   @Expose({ name: 'createdBy' })
-  @Transform(({ value }) => {
-    if (value) {
-      const { password: _, ...rest } = value;
-
-      return rest;
-    }
-  })
+  @Type((options) =>
+    options?.object.createdBy instanceof UserOrmEntity ? User : Subscriber,
+  )
   createdBy?: User | Subscriber;
 }
 
