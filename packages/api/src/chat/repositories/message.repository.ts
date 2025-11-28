@@ -155,7 +155,10 @@ export class MessageRepository extends BaseOrmRepository<
    * @param attachmentId - The ID of the attachment
    * @returns A promise that resolves to a boolean
    */
-  async hasMessageAccess(subscriberId: string, attachmentId: string) {
+  async isAttachmentAccessibleBySubscriber(
+    subscriberId: string,
+    attachmentId: string,
+  ) {
     const manager = this.repository.manager;
     const databaseType = manager.connection.options.type;
     const qb = this.repository

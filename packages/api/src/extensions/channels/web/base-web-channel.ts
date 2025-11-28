@@ -1415,7 +1415,7 @@ export default abstract class BaseWebChannelHandler<
       return true;
     } else {
       // Or, he would like to access an attachment sent to him privately
-      return await this.messageService.hasMessageAccess(
+      return await this.messageService.isAttachmentAccessibleBySubscriber(
         subscriberId,
         attachment.id,
       );

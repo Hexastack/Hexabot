@@ -129,7 +129,13 @@ export class MessageService extends BaseOrmService<
    * @param attachmentId - The ID of the attachment
    * @returns A promise that resolves to a boolean
    */
-  async hasMessageAccess(subscriberId: string, attachmentId: string) {
-    return await this.repository.hasMessageAccess(subscriberId, attachmentId);
+  async isAttachmentAccessibleBySubscriber(
+    subscriberId: string,
+    attachmentId: string,
+  ) {
+    return await this.repository.isAttachmentAccessibleBySubscriber(
+      subscriberId,
+      attachmentId,
+    );
   }
 }
