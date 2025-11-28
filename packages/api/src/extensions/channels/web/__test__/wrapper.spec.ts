@@ -8,23 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { MessageOrmEntity } from '@/chat/entities/message.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
-import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuService } from '@/cms/services/menu.service';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
@@ -92,21 +79,6 @@ describe(`Web event wrapper`, () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          AttachmentOrmEntity,
-          MessageOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          MenuOrmEntity,
-        ],
         fixtures: installSubscriberFixturesTypeOrm,
       },
     });

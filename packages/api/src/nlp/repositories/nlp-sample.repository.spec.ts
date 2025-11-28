@@ -9,7 +9,6 @@ import { randomUUID } from 'crypto';
 import { TestingModule } from '@nestjs/testing';
 
 import { Language } from '@/i18n/dto/language.dto';
-import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixturesTypeOrm } from '@/utils/test/fixtures/nlpsampleentity';
@@ -19,10 +18,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { NlpSampleState } from '..//types';
 import { NlpSample } from '../dto/nlp-sample.dto';
 import { NlpValue } from '../dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
-import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpSampleRepository } from './nlp-sample.repository';
@@ -46,13 +41,6 @@ describe('NlpSampleRepository (TypeORM)', () => {
         LanguageRepository,
       ],
       typeorm: {
-        entities: [
-          LanguageEntity,
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });

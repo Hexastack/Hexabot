@@ -6,10 +6,17 @@
 
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, ModuleMetadata, Provider } from '@nestjs/common';
+import { SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
+import {
+  DataSource,
+  DataSourceOptions,
+  EntitySchema,
+  EntityTarget,
+  getMetadataArgsStorage,
+} from 'typeorm';
 
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LoggerModule } from '@/logger/logger.module';
@@ -154,6 +161,147 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
   return [...nestedDependencies];
 };
 const defaultProviders: Provider[] = [LoggerService];
+const TYPEORM_REPOSITORY_SUFFIX = 'Repository';
+
+type ProviderLike = Provider | undefined;
+
+const resolveEntityTargetName = (
+  target: EntityTarget<any>,
+): string | undefined => {
+  if (typeof target === 'function') {
+    return target.name;
+  }
+
+  if (typeof target === 'string') {
+    return target;
+  }
+
+  if (target instanceof EntitySchema) {
+    return (
+      target.options.name ??
+      (typeof target.options.target === 'function'
+        ? target.options.target.name
+        : undefined)
+    );
+  }
+
+  return undefined;
+};
+const buildEntityLookup = () => {
+  const storage = getMetadataArgsStorage();
+  const lookup = new Map<string, EntityTarget<any>>();
+
+  storage.tables.forEach((table) => {
+    const entityTarget = table.target as EntityTarget<any>;
+    if (!entityTarget) {
+      return;
+    }
+
+    const key = resolveEntityTargetName(entityTarget);
+    if (key) {
+      lookup.set(key, entityTarget);
+    }
+  });
+
+  return lookup;
+};
+const normalizeRepositoryToken = (token: string): string | undefined => {
+  if (!token.endsWith(TYPEORM_REPOSITORY_SUFFIX)) {
+    return undefined;
+  }
+
+  const withoutSuffix = token.slice(0, -TYPEORM_REPOSITORY_SUFFIX.length);
+  if (!withoutSuffix) {
+    return undefined;
+  }
+
+  const segments = withoutSuffix.split('_');
+
+  return segments[segments.length - 1] || undefined;
+};
+const resolveEntityFromToken = (
+  token: unknown,
+  lookup: Map<string, EntityTarget<any>>,
+): EntityTarget<any> | undefined => {
+  if (typeof token !== 'string') {
+    return undefined;
+  }
+
+  const normalized = normalizeRepositoryToken(token);
+  if (!normalized) {
+    return undefined;
+  }
+
+  return lookup.get(normalized);
+};
+const extractCustomInjectTokens = (target: ProviderLike): unknown[] => {
+  if (!target || typeof target !== 'function') {
+    return [];
+  }
+
+  const dependencies =
+    (Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, target) as
+      | { index: number; param?: unknown }[]
+      | undefined) ?? [];
+
+  return dependencies
+    .map((dependency) => dependency?.param)
+    .filter((dependency): dependency is unknown => dependency !== undefined);
+};
+const extractInjectTokensFromProvider = (provider: ProviderLike): unknown[] => {
+  if (!provider) {
+    return [];
+  }
+
+  if (typeof provider === 'function') {
+    return extractCustomInjectTokens(provider);
+  }
+
+  if (typeof provider === 'object') {
+    const tokens: unknown[] = [];
+
+    if ('useClass' in provider && typeof provider.useClass === 'function') {
+      tokens.push(...extractCustomInjectTokens(provider.useClass));
+    }
+
+    if ('inject' in provider && Array.isArray(provider.inject)) {
+      tokens.push(...provider.inject.filter(Boolean));
+    }
+
+    return tokens;
+  }
+
+  return [];
+};
+const registerMetadataEntities = (
+  currentEntities: Set<EntityTarget<any>>,
+  lookup: Map<string, EntityTarget<any>>,
+): void => {
+  lookup.forEach((entity) => currentEntities.add(entity));
+};
+const registerAutoDetectedTypeOrmEntities = (
+  currentEntities: Set<EntityTarget<any>>,
+  providers: Provider[],
+  controllers: ModuleMetadata['controllers'],
+  lookup: Map<string, EntityTarget<any>>,
+) => {
+  if (!lookup.size) {
+    return;
+  }
+
+  const controllerList = Array.isArray(controllers) ? controllers : [];
+  const tokens = [
+    ...providers.flatMap(extractInjectTokensFromProvider),
+    ...controllerList.flatMap(extractInjectTokensFromProvider),
+  ];
+
+  tokens.forEach((token) => {
+    const entity = resolveEntityFromToken(token, lookup);
+    if (entity) {
+      currentEntities.add(entity);
+    }
+  });
+};
 
 /**
  * Dynamically builds a NestJS TestingModule for unit tests with automated dependency resolution.
@@ -237,6 +385,14 @@ export const buildTestingMocks = async ({
     LanguageOrmEntity,
   ];
   const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
+  const entityLookup = buildEntityLookup();
+  registerMetadataEntities(typeOrmEntities, entityLookup);
+  registerAutoDetectedTypeOrmEntities(
+    typeOrmEntities,
+    providersList,
+    controllers,
+    entityLookup,
+  );
   let typeOrmOptions: Partial<DataSourceOptions> | undefined;
   const typeOrmFixtures: TypeOrmFixture[] = [];
   const typeOrmConfigs = Array.isArray(typeorm)

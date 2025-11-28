@@ -9,8 +9,6 @@ import { BadRequestException } from '@nestjs/common/exceptions/bad-request.excep
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageService } from '@/i18n/services/language.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
@@ -25,12 +23,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { Role } from '../dto/role.dto';
 import { UserCreateDto } from '../dto/user.dto';
-import { InvitationOrmEntity } from '../entities/invitation.entity';
-import { ModelOrmEntity } from '../entities/model.entity';
-import { PermissionOrmEntity } from '../entities/permission.entity';
-import { RoleOrmEntity } from '../entities/role.entity';
-import { UserProfileOrmEntity } from '../entities/user-profile.entity';
-import { UserOrmEntity } from '../entities/user.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
@@ -68,16 +60,6 @@ describe('AuthController (TypeORM)', () => {
         I18nServiceProvider,
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          InvitationOrmEntity,
-          RoleOrmEntity,
-          UserOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-          AttachmentOrmEntity,
-          LanguageOrmEntity,
-        ],
         fixtures: [
           installLanguageFixturesTypeOrm,
           installPermissionFixturesTypeOrm,

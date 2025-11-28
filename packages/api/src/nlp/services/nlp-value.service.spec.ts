@@ -15,9 +15,6 @@ import { Format } from '@/utils/types/format.types';
 
 import { NlpEntity } from '../dto/nlp-entity.dto';
 import { NlpValue, NlpValueFull } from '../dto/nlp-value.dto';
-import { NlpEntityOrmEntity } from '../entities/nlp-entity.entity';
-import { NlpSampleEntityOrmEntity } from '../entities/nlp-sample-entity.entity';
-import { NlpSampleOrmEntity } from '../entities/nlp-sample.entity';
 import { NlpValueOrmEntity } from '../entities/nlp-value.entity';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -46,12 +43,6 @@ describe('NlpValueService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [NlpValueService, NlpEntityService],
       typeorm: {
-        entities: [
-          NlpEntityOrmEntity,
-          NlpValueOrmEntity,
-          NlpSampleOrmEntity,
-          NlpSampleEntityOrmEntity,
-        ],
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
     });

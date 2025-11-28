@@ -18,8 +18,6 @@ import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/content
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentTypeOrmEntity } from '../entities/content-type.entity';
-import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
 
@@ -49,7 +47,6 @@ describe('ContentService (TypeORM)', () => {
       ],
       typeorm: [
         {
-          entities: [ContentOrmEntity, ContentTypeOrmEntity],
           fixtures: [
             installContentTypeFixturesTypeOrm,
             installContentFixturesTypeOrm,

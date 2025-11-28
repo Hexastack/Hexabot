@@ -6,19 +6,8 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
-import { LabelOrmEntity } from '@/chat/entities/label.entity';
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { BlockService } from '@/chat/services/block.service';
 import { FieldType } from '@/setting/types';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   contentTypeOrmFixtures,
   installContentTypeFixturesTypeOrm,
@@ -27,8 +16,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentField } from '../dto/contentType.dto';
-import { ContentTypeOrmEntity } from '../entities/content-type.entity';
-import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 
 import { ContentTypeService } from './content-type.service';
@@ -52,21 +39,6 @@ describe('ContentTypeService (TypeORM)', () => {
         },
       ],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          ContentTypeOrmEntity,
-          ContentOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          SubscriberOrmEntity,
-          UserOrmEntity,
-          AttachmentOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-        ],
         fixtures: installContentTypeFixturesTypeOrm,
       },
     });

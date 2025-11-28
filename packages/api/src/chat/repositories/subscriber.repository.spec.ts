@@ -10,17 +10,8 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { BlockOrmEntity } from '@/chat/entities/block.entity';
-import { CategoryOrmEntity } from '@/chat/entities/category.entity';
-import { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
-import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { ModelOrmEntity } from '@/user/entities/model.entity';
-import { PermissionOrmEntity } from '@/user/entities/permission.entity';
-import { RoleOrmEntity } from '@/user/entities/role.entity';
-import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   installSubscriberFixturesTypeOrm,
@@ -48,20 +39,6 @@ describe('SubscriberRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [SubscriberRepository],
       typeorm: {
-        entities: [
-          UserProfileOrmEntity,
-          SubscriberOrmEntity,
-          LabelOrmEntity,
-          LabelGroupOrmEntity,
-          BlockOrmEntity,
-          CategoryOrmEntity,
-          ConversationOrmEntity,
-          AttachmentOrmEntity,
-          UserOrmEntity,
-          RoleOrmEntity,
-          PermissionOrmEntity,
-          ModelOrmEntity,
-        ],
         fixtures: installSubscriberFixturesTypeOrm,
       },
     });
