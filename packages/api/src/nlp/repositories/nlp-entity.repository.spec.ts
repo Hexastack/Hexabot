@@ -10,9 +10,9 @@ import { In } from 'typeorm';
 
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installNlpValueFixturesTypeOrm } from '@/utils/test/fixtures/nlpvalue';
+import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -41,20 +41,7 @@ describe('NlpEntityRepository (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        NlpService,
-        LlmNluHelper,
-        {
-          provide: SettingService,
-          useValue: {
-            getSettings: jest.fn(() => ({
-              chatbot_settings: {
-                default_nlu_helper: 'llm-nlu-helper',
-              },
-            })),
-          },
-        },
-      ],
+      providers: [NlpService, LlmNluHelper, SettingServiceProvider],
       typeorm: {
         entities: [
           NlpEntityOrmEntity,

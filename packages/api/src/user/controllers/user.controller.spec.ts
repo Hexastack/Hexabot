@@ -4,24 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-// eslint-disable-next-line import/order
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
-import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
+import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -92,20 +89,8 @@ describe('UserController (TypeORM)', () => {
           provide: AttachmentService,
           useValue: attachmentServiceMock,
         },
-        {
-          provide: MailerService,
-          useValue: {
-            sendMail(_options: ISendMailOptions): Promise<SentMessageInfo> {
-              return Promise.resolve('Mail sent successfully');
-            },
-          },
-        },
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        MailerServiceProvider,
+        I18nServiceProvider,
       ],
       typeorm: {
         entities: [

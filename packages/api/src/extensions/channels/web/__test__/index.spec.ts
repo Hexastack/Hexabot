@@ -27,13 +27,13 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuService } from '@/cms/services/menu.service';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -77,12 +77,7 @@ describe('WebChannelHandler', () => {
       providers: [
         JwtService,
         WebChannelHandler,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        I18nServiceProvider,
         {
           provide: MenuService,
           useValue: menuServiceMock,

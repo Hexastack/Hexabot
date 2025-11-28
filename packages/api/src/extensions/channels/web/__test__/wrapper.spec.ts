@@ -19,12 +19,12 @@ import { MessageService } from '@/chat/services/message.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuService } from '@/cms/services/menu.service';
-import { I18nService } from '@/i18n/services/i18n.service';
 import { ModelOrmEntity } from '@/user/entities/model.entity';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
@@ -71,12 +71,7 @@ describe(`Web event wrapper`, () => {
       providers: [
         JwtService,
         WebChannelHandler,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
+        I18nServiceProvider,
         {
           provide: MenuService,
           useValue: menuServiceMock,

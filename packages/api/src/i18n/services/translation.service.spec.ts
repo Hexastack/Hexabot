@@ -9,8 +9,8 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
+import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Block } from '../../chat/dto/block.dto';
@@ -63,40 +63,7 @@ describe('TranslationService', () => {
             ]),
           },
         },
-        {
-          provide: SettingService,
-          useValue: {
-            getSettings: jest.fn().mockResolvedValue({
-              chatbot_settings: {
-                global_fallback: true,
-                fallback_message: ['Global fallback message'],
-              },
-            }),
-            find: jest
-              .fn()
-              .mockImplementation((criteria: { translatable?: boolean }) =>
-                [
-                  {
-                    translatable: true,
-                    group: 'default',
-                    value: 'Global fallback message',
-                    label: 'fallback_message',
-                    type: SettingType.text,
-                  },
-                ].filter((s) =>
-                  criteria && 'translatable' in criteria
-                    ? s.translatable === criteria.translatable
-                    : true,
-                ),
-              ),
-          },
-        },
-        {
-          provide: I18nService,
-          useValue: {
-            refreshDynamicTranslations: jest.fn(),
-          },
-        },
+        SettingServiceProvider,
       ],
     });
     [service, i18nService, pluginService] = await getMocks([
