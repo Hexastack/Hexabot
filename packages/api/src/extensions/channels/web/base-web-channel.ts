@@ -15,7 +15,6 @@ import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
-import { Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
@@ -1415,31 +1414,11 @@ export default abstract class BaseWebChannelHandler<
       // Either subscriber wants to access the attachment he sent
       return true;
     } else {
-      //TODO add driverTypes compatibility
       // Or, he would like to access an attachment sent to him privately
-      const message = await this.messageService.findOne({
-        where: {
-          recipient: { id: subscriberId },
-          // "message" is your JSONB column
-          message: Raw(
-            (alias) => `
-              (
-                jsonb_typeof(${alias}->'attachment') = 'object'
-                AND (${alias}->'attachment'->'payload'->>'id') = :attId
-              ) OR (
-                jsonb_typeof(${alias}->'attachment') = 'array'
-                AND EXISTS (
-                  SELECT 1 FROM jsonb_array_elements(${alias}->'attachment') a
-                  WHERE a->'payload'->>'id' = :attId
-                )
-              )
-            `,
-            { attId: attachment.id },
-          ),
-        },
-      });
-
-      return !!message;
+      return await this.messageService.isAttachmentAccessibleBySubscriber(
+        subscriberId,
+        attachment.id,
+      );
     }
   }
 
