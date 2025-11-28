@@ -7,7 +7,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { Request } from 'express';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
