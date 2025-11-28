@@ -29,7 +29,7 @@ describe('ModelService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [ModelService, PermissionRepository, ModelRepository],
+      providers: [ModelService, PermissionRepository],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

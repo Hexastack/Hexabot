@@ -11,8 +11,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ModelFull } from '../dto/model.dto';
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 
@@ -28,12 +26,7 @@ describe('ModelController (TypeORM)', () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [ModelController],
-      providers: [
-        ModelService,
-        PermissionService,
-        ModelRepository,
-        PermissionRepository,
-      ],
+      providers: [PermissionService],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

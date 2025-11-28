@@ -9,17 +9,9 @@ import { TestingModule } from '@nestjs/testing';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { ContextVarRepository } from '@/chat/repositories/context-var.repository';
-import { ConversationRepository } from '@/chat/repositories/conversation.repository';
-import { LabelGroupRepository } from '@/chat/repositories/label-group.repository';
-import { LabelRepository } from '@/chat/repositories/label.repository';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { ContextVarService } from '@/chat/services/context-var.service';
 import { ConversationService } from '@/chat/services/conversation.service';
-import { LabelService } from '@/chat/services/label.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
-import { UserRepository } from '@/user/repositories/user.repository';
 import { installContextVarFixturesTypeOrm } from '@/utils/test/fixtures/contextvar';
 import { installConversationFixturesTypeOrm } from '@/utils/test/fixtures/conversation';
 import { closeTypeOrmConnections } from '@/utils/test/test';
@@ -47,15 +39,6 @@ describe('ConversationService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [
         ConversationService,
-        ConversationRepository,
-        ContextVarService,
-        ContextVarRepository,
-        SubscriberService,
-        SubscriberRepository,
-        LabelService,
-        LabelRepository,
-        LabelGroupRepository,
-        UserRepository,
         { provide: AttachmentService, useValue: attachmentServiceMock },
         { provide: WebsocketGateway, useValue: gatewayMock },
       ],

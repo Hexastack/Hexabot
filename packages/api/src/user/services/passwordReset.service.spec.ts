@@ -9,8 +9,6 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { compareSync } from 'bcryptjs';
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -21,7 +19,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { User } from '../dto/user.dto';
-import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 
 import { PasswordResetService } from './passwordReset.service';
@@ -42,11 +39,6 @@ describe('PasswordResetService (TypeORM)', () => {
       imports: [JwtModule.register({})],
       providers: [
         PasswordResetService,
-        UserService,
-        UserRepository,
-        RoleRepository,
-        LanguageService,
-        LanguageRepository,
         MailerServiceProvider,
         I18nServiceProvider,
       ],

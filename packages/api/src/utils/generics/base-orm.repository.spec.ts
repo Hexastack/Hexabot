@@ -36,7 +36,6 @@ describe('BaseOrmRepository', () => {
       autoInjectFrom: ['providers'],
       providers: [DummyRepository],
       typeorm: {
-        entities: [DummyOrmEntity],
         fixtures: installDummyFixturesTypeOrm,
       },
     });

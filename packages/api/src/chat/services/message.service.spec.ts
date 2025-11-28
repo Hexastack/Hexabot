@@ -47,7 +47,6 @@ describe('MessageService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [
         MessageService,
-        MessageRepository,
         {
           provide: WebsocketGateway,
           useValue: websocketGatewayMock,

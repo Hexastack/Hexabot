@@ -42,7 +42,8 @@ describe('BotStatsService', () => {
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
-      providers: [BotStatsService, BotStatsRepository],
+      autoInjectFrom: ['providers'],
+      providers: [BotStatsService],
       typeorm: {
         fixtures: installBotStatsFixturesTypeOrm,
       },

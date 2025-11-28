@@ -7,8 +7,6 @@
 import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -19,8 +17,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { User } from '../dto/user.dto';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
 
 import { UserService } from './user.service';
 import { ValidateAccountService } from './validate-account.service';
@@ -37,11 +33,6 @@ describe('ValidateAccountService (TypeORM)', () => {
       imports: [JwtModule.register({})],
       providers: [
         ValidateAccountService,
-        UserService,
-        UserRepository,
-        RoleRepository,
-        LanguageService,
-        LanguageRepository,
         MailerServiceProvider,
         I18nServiceProvider,
       ],

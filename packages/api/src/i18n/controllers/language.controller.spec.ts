@@ -17,7 +17,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Language, LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
-import { LanguageRepository } from '../repositories/language.repository';
 import { LanguageService } from '../services/language.service';
 
 import { LanguageController } from './language.controller';
@@ -29,7 +28,7 @@ describe('LanguageController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      providers: [LanguageService, LanguageRepository],
+      autoInjectFrom: ['controllers'],
       controllers: [LanguageController],
       typeorm: {
         fixtures: installLanguageFixturesTypeOrm,

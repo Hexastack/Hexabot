@@ -21,7 +21,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MenuType } from '../entities/menu.entity';
-import { MenuRepository } from '../repositories/menu.repository';
 
 import { MenuService } from './menu.service';
 
@@ -34,7 +33,7 @@ describe('MenuService (TypeORM)', () => {
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [MenuService, MenuRepository],
+      providers: [MenuService],
       typeorm: {
         fixtures: installMenuFixturesTypeOrm,
       },

@@ -10,8 +10,6 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageService } from '@/i18n/services/language.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -28,16 +26,9 @@ import {
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
 import { PasswordResetService } from '../services/passwordReset.service';
-import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
-import { ValidateAccountService } from '../services/validate-account.service';
 
 import { InvitationService } from './../services/invitation.service';
 import { ReadWriteUserController } from './user.controller';
@@ -61,23 +52,10 @@ describe('UserController (TypeORM)', () => {
       upload: jest.fn(),
     };
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [ReadWriteUserController],
       imports: [JwtModule.register({})],
       providers: [
-        UserService,
-        RoleService,
-        InvitationService,
-        PermissionService,
-        PasswordResetService,
-        ValidateAccountService,
-        LanguageService,
-        LanguageRepository,
-        UserRepository,
-        RoleRepository,
-        InvitationRepository,
-        PermissionRepository,
-        ModelRepository,
         {
           provide: AttachmentService,
           useValue: attachmentServiceMock,

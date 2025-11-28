@@ -19,8 +19,6 @@ import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/content
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentRepository } from '../repositories/content.repository';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
 
@@ -39,12 +37,9 @@ describe('ContentController (TypeORM)', () => {
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [ContentController],
       providers: [
-        ContentService,
-        ContentTypeService,
-        ContentRepository,
-        ContentTypeRepository,
         {
           provide: BlockService,
           useFactory: () => blockServiceMock,

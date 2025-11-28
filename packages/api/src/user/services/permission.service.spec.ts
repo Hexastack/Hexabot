@@ -32,12 +32,7 @@ describe('PermissionService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        PermissionService,
-        RoleRepository,
-        ModelRepository,
-        PermissionRepository,
-      ],
+      providers: [PermissionService, RoleRepository, ModelRepository],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

@@ -12,19 +12,16 @@ import { ConversationRepository } from '@/chat/repositories/conversation.reposit
 import { BlockService } from '@/chat/services/block.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import {
   installTranslationFixturesTypeOrm,
   translationFixtures,
 } from '@/utils/test/fixtures/translation';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
-import { LanguageRepository } from '../repositories/language.repository';
-import { TranslationRepository } from '../repositories/translation.repository';
-import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 import { TranslationController } from './translation.controller';
@@ -36,12 +33,9 @@ describe('TranslationController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [TranslationController],
       providers: [
-        TranslationService,
-        TranslationRepository,
-        LanguageService,
-        LanguageRepository,
         {
           provide: BlockService,
           useValue: {
@@ -67,13 +61,11 @@ describe('TranslationController', () => {
             getPlugin: jest.fn(),
           },
         },
+        I18nServiceProvider,
       ],
       typeorm: [
         {
           fixtures: installTranslationFixturesTypeOrm,
-        },
-        {
-          fixtures: installLanguageFixturesTypeOrm,
         },
       ],
     });

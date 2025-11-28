@@ -13,10 +13,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 
-import { NlpEntityService } from './nlp-entity.service';
-import { NlpSampleEntityService } from './nlp-sample-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
-import { NlpValueService } from './nlp-value.service';
 
 describe('NlpSampleService (TypeORM)', () => {
   let module: TestingModule;
@@ -26,12 +23,7 @@ describe('NlpSampleService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        NlpSampleService,
-        NlpSampleEntityService,
-        NlpEntityService,
-        NlpValueService,
-      ],
+      providers: [NlpSampleService],
       typeorm: {
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },
