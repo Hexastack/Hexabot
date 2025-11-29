@@ -18,9 +18,6 @@ import {
   PermissionFull,
 } from '../dto/permission.dto';
 import { Role } from '../dto/role.dto';
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -42,16 +39,8 @@ describe('PermissionController (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [PermissionController],
-      providers: [
-        PermissionService,
-        RoleService,
-        ModelService,
-        PermissionRepository,
-        RoleRepository,
-        ModelRepository,
-      ],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

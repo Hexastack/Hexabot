@@ -31,12 +31,7 @@ describe('RoleService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        RoleService,
-        RoleRepository,
-        UserRepository,
-        PermissionRepository,
-      ],
+      providers: [RoleService, UserRepository, PermissionRepository],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

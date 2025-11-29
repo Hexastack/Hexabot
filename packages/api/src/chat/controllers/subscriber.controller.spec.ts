@@ -7,9 +7,6 @@
 import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LabelRepository } from '@/chat/repositories/label.repository';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { LabelService } from '@/chat/services/label.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import {
   installSubscriberFixturesTypeOrm,
@@ -47,13 +44,9 @@ describe('SubscriberController (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [SubscriberController],
       providers: [
-        SubscriberService,
-        SubscriberRepository,
-        LabelService,
-        LabelRepository,
         {
           provide: AttachmentService,
           useValue: attachmentServiceMock,

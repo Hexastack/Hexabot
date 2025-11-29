@@ -7,7 +7,6 @@
 import { TestingModule } from '@nestjs/testing';
 
 import { ChannelService } from '@/channel/channel.service';
-import { MessageRepository } from '@/chat/repositories/message.repository';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import {
@@ -48,11 +47,9 @@ describe('MessageController (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [MessageController],
       providers: [
-        MessageService,
-        MessageRepository,
         {
           provide: SubscriberService,
           useValue: subscriberServiceMock,

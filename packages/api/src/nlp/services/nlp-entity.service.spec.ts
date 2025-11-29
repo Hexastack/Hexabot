@@ -17,7 +17,6 @@ import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 
 import { NlpEntityService } from './nlp-entity.service';
-import { NlpValueService } from './nlp-value.service';
 
 const createCacheMock = () => ({
   del: jest.fn(),
@@ -38,7 +37,6 @@ describe('NlpEntityService (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [
         NlpEntityService,
-        NlpValueService,
         {
           provide: CACHE_MANAGER,
           useValue: cacheMock,

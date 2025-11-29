@@ -71,9 +71,7 @@ describe('SubscriberService (TypeORM)', () => {
       providers: [
         SubscriberService,
         LabelService,
-        LabelRepository,
         LabelGroupRepository,
-        SubscriberRepository,
         UserRepository,
         { provide: AttachmentService, useValue: attachmentServiceMock },
         { provide: WebsocketGateway, useValue: gatewayMock },

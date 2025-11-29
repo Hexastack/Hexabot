@@ -9,8 +9,6 @@ import { BadRequestException } from '@nestjs/common/exceptions/bad-request.excep
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageService } from '@/i18n/services/language.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -23,9 +21,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { Role } from '../dto/role.dto';
 import { UserCreateDto } from '../dto/user.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
 import { InvitationService } from '../services/invitation.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
@@ -47,18 +42,7 @@ describe('AuthController (TypeORM)', () => {
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],
       imports: [JwtModule.register({})],
-      providers: [
-        RoleService,
-        InvitationService,
-        UserService,
-        RoleRepository,
-        InvitationRepository,
-        UserRepository,
-        LanguageService,
-        LanguageRepository,
-        MailerServiceProvider,
-        I18nServiceProvider,
-      ],
+      providers: [RoleService, MailerServiceProvider, I18nServiceProvider],
       typeorm: {
         fixtures: [
           installLanguageFixturesTypeOrm,

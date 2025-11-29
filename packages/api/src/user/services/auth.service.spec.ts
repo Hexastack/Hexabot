@@ -11,11 +11,9 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { User } from '../dto/user.dto';
-import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 
 import { AuthService } from './auth.service';
-import { UserService } from './user.service';
 
 describe('AuthService (TypeORM)', () => {
   let module: TestingModule;
@@ -26,7 +24,7 @@ describe('AuthService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [AuthService, UserService, UserRepository, RoleRepository],
+      providers: [AuthService],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

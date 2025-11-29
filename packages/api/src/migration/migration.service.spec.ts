@@ -15,7 +15,6 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
-import { MetadataRepository } from '@/setting/repositories/metadata.repository';
 import { MetadataService } from '@/setting/services/metadata.service';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -61,10 +60,9 @@ describe('MigrationService', () => {
 
   beforeAll(async () => {
     const mocks = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
       providers: [
         MigrationService,
-        MetadataService,
-        MetadataRepository,
         {
           provide: LoggerService,
           useValue: {

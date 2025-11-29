@@ -7,8 +7,6 @@
 import { JwtModule, JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
@@ -45,9 +43,6 @@ describe('InvitationService (TypeORM)', () => {
       providers: [
         InvitationService,
         RoleRepository,
-        InvitationRepository,
-        LanguageService,
-        LanguageRepository,
         I18nServiceProvider,
         MailerServiceProvider,
       ],

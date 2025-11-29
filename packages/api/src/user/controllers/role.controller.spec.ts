@@ -14,10 +14,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Role, RoleCreateDto, RoleFull, RoleUpdateDto } from '../dto/role.dto';
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
@@ -37,15 +33,7 @@ describe('RoleController (TypeORM)', () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [RoleController],
-      providers: [
-        RoleService,
-        PermissionService,
-        UserService,
-        RoleRepository,
-        PermissionRepository,
-        UserRepository,
-        ModelRepository,
-      ],
+      providers: [PermissionService],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

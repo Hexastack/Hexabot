@@ -32,7 +32,6 @@ import {
   BlockUpdateDto,
 } from '../dto/block.dto';
 import { Category } from '../dto/category.dto';
-import { CategoryRepository } from '../repositories/category.repository';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { PayloadType } from '../types/button';
@@ -122,11 +121,10 @@ describe('BlockController (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [BlockController],
       providers: [
         CategoryService,
-        CategoryRepository,
         { provide: PluginService, useValue: pluginServiceMock },
         { provide: UserService, useValue: userServiceMock },
         { provide: ContentService, useValue: contentServiceMock },

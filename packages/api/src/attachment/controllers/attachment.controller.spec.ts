@@ -51,7 +51,7 @@ describe('AttachmentController', () => {
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [AttachmentController],
       providers: [
         {

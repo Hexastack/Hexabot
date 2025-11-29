@@ -13,7 +13,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { User as UserDto } from '../dto/user.dto';
-import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 
 import { UserService } from './user.service';
@@ -39,7 +38,7 @@ describe('UserService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [UserService, RoleRepository, UserRepository],
+      providers: [UserService],
       typeorm: {
         fixtures: installPermissionFixturesTypeOrm,
       },

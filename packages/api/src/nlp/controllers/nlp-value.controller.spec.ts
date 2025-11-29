@@ -32,9 +32,8 @@ describe('NlpValueController', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [NlpValueController],
-      providers: [NlpValueService, NlpEntityService],
       typeorm: {
         fixtures: installNlpValueFixturesTypeOrm,
       },

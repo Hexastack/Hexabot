@@ -18,10 +18,8 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleState } from '..//types';
 import { NlpSampleDto, NlpSampleFull } from '../dto/nlp-sample.dto';
-import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
-import { NlpValueService } from '../services/nlp-value.service';
 
 import { NlpSampleController } from './nlp-sample.controller';
 
@@ -35,15 +33,8 @@ describe('NlpSampleController (TypeORM)', () => {
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
-      autoInjectFrom: ['controllers', 'providers'],
+      autoInjectFrom: ['controllers'],
       controllers: [NlpSampleController],
-      providers: [
-        NlpSampleService,
-        NlpSampleEntityService,
-        NlpEntityService,
-        NlpValueService,
-        LanguageService,
-      ],
       typeorm: {
         fixtures: installNlpSampleEntityFixturesTypeOrm,
       },

@@ -30,7 +30,7 @@ describe('LabelService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [LabelService, LabelRepository, SubscriberRepository],
+      providers: [LabelService, SubscriberRepository],
       typeorm: {
         fixtures: installSubscriberFixturesTypeOrm,
       },
