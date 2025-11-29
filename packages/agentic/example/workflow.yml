@@ -52,6 +52,9 @@ defaults:
     retries:
       max_attempts: 2
       backoff_ms: 400
+      max_delay_ms: 10000
+      jitter: 0
+      multiplier: 1.5
     audit: true                        # example flag an engine could log for compliance
     guardrails:
       mode: standard                    # e.g., optional safety setting the engine could enforce
@@ -82,6 +85,10 @@ tasks:
       timeout_ms: 6000
       retries:
         max_attempts: 1
+        backoff_ms: 400
+        max_delay_ms: 3000
+        jitter: 0.05
+        multiplier: 1.2
 
   fetch_user_profile:
     description: "Look up CRM profile and recent cases for the authenticated user."
@@ -92,11 +99,6 @@ tasks:
     outputs:
       profile: "=$result.profile"
       recent_cases: "=$result.recent_cases"
-    settings:
-      timeout_ms: 4000
-      retries:
-        max_attempts: 2
-        backoff_ms: 300
 
   # Three distinct actions will run in parallel; their outputs will later be merged.
   search_recent_news:
@@ -168,7 +170,6 @@ tasks:
     settings:
       model: gpt-4o
       temperature: 0.35
-      timeout_ms: 9000
 
   route_by_intent:
     description: "Decide which downstream path to take using a branching table."
@@ -209,10 +210,6 @@ tasks:
     settings:
       model: gpt-4o-mini
       temperature: 0.3
-      timeout_ms: 8000
-      retries:
-        max_attempts: 2
-        backoff_ms: 250
 
   craft_sales_pitch:
     description: "Write a sales email using retrieved company insights."
@@ -229,7 +226,6 @@ tasks:
     settings:
       model: gpt-4o
       temperature: 0.55
-      timeout_ms: 9000
 
   escalate_to_human:
     description: "Open or update a human-agent ticket with full context."
@@ -242,8 +238,6 @@ tasks:
     outputs:
       ticket_id: "=$result.ticket_id"
       status: "=$result.status"
-    settings:
-      timeout_ms: 3000
 
   send_generic_summary:
     description: "Fallback response when no specialized branch applies."
@@ -256,8 +250,6 @@ tasks:
       message: "=$result.message"
     settings:
       model: gpt-4o-mini
-      temperature: 0.35
-      timeout_ms: 6000
 
   send_email_response:
     description: "Deliver the chosen response via email."
@@ -275,10 +267,6 @@ tasks:
     outputs:
       delivery_status: "=$result.status"
     settings:
-      timeout_ms: 3000
-      retries:
-        max_attempts: 3
-        backoff_ms: 400
       track_opens: true
 
   # Loop-specific tasks used by the for-each demo in the flow below.
@@ -295,7 +283,6 @@ tasks:
     settings:
       model: gpt-4o-mini
       temperature: 0.35
-      timeout_ms: 4000
 
   send_stakeholder_update:
     description: "Deliver FYI notes to stakeholders and capture acknowledgement."
@@ -307,10 +294,6 @@ tasks:
     outputs:
       delivery_status: "=$result.status"
       acknowledged: "=$result.acknowledged"         # e.g., bounce handler or reply classifier
-    settings:
-      timeout_ms: 2500
-      retries:
-        max_attempts: 1
 
 # Flow defines execution order, mixing sequential chains, parallel blocks, conditionals, waits, and loops.
 flow:

@@ -1,0 +1,61 @@
+import { ZodType, ZodTypeDef } from 'zod';
+import { WorkflowContext } from '../context';
+import { Settings } from '../dsl.types';
+import { WorkflowSuspendedError } from '../runtime-error';
+import { Deferred } from '../utils/deferred';
+
+export interface ActionMetadata<I, O, S extends Settings = Settings> {
+  name: string;
+  description: string;
+  inputSchema: ZodType<I, ZodTypeDef, unknown>;
+  outputSchema: ZodType<O, ZodTypeDef, unknown>;
+  settingsSchema?: ZodType<S, ZodTypeDef, unknown>;
+}
+
+export interface ActionExecutionArgs<I, C extends WorkflowContext = WorkflowContext, S extends Settings = Settings> {
+  input: I;
+  context: C;
+  settings: S;
+}
+
+export interface Action<
+  I,
+  O,
+  C extends WorkflowContext = WorkflowContext,
+  S extends Settings = Settings,
+> {
+  readonly name: string;
+  readonly description: string;
+  readonly inputSchema: ZodType<I, ZodTypeDef, unknown>;
+  readonly outputSchema: ZodType<O, ZodTypeDef, unknown>;
+  readonly settingSchema?: ZodType<S, ZodTypeDef, unknown>;
+
+  execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
+  parseInput(payload: unknown): I;
+  parseOutput(payload: unknown): O;
+  parseSettings(payload: unknown): S;
+  run(payload: unknown, context: C, settings?: Partial<S>): Promise<O>;
+}
+
+export type InferActionArgs<A extends Action<unknown, unknown, WorkflowContext, Settings>> = Parameters<
+  A['execute']
+>[0];
+
+export type InferActionInput<A extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<A>['input'];
+
+export type InferActionContext<A extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<A>['context'];
+
+export type InferActionOutput<A extends Action<unknown, unknown, WorkflowContext, Settings>> = Awaited<
+  ReturnType<A['execute']>
+>;
+
+export type InferActionSettings<S extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<S>['settings'];
+
+export interface SuspensionNotice {
+  error: WorkflowSuspendedError;
+  resume: Deferred<unknown>;
+}
+
+export type ActionExecutionOutcome<T> =
+  | { type: 'completed'; value: T }
+  | { type: 'suspended'; error: WorkflowSuspendedError };

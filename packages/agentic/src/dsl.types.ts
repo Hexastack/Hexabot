@@ -25,6 +25,17 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
+// Per-action timeout in milliseconds; 0 disables the timeout wrapper.
+export const DEFAULT_TIMEOUT_MS = 0;
+// Retry defaults: 3 attempts with exponential backoff starting at 25ms, capped at 10s, no jitter.
+export const DEFAULT_RETRY_SETTINGS = {
+  max_attempts: 3,
+  backoff_ms: 25,
+  max_delay_ms: 10_000,
+  jitter: 0,
+  multiplier: 1,
+} as const;
+
 export type InputField = {
   type: 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object';
   description?: string;
@@ -73,7 +84,14 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
 const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
   z
     .object({
-      type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object']),
+      type: z.enum([
+        'string',
+        'number',
+        'integer',
+        'boolean',
+        'array',
+        'object',
+      ]),
       description: z.string().optional(),
       enum: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
       items: InputFieldSchema.optional(),
@@ -105,17 +123,40 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
     }),
 );
 
+// Retry policy: exponential backoff per attempt, capped by max_delay_ms, with optional jitter multiplier.
 const RetriesSchema = z
   .object({
-    max_attempts: z.number().int().min(0),
-    backoff_ms: z.number().int().min(0).optional(),
+    max_attempts: z
+      .number()
+      .int()
+      .min(1)
+      .default(DEFAULT_RETRY_SETTINGS.max_attempts),
+    backoff_ms: z
+      .number()
+      .int()
+      .min(0)
+      .default(DEFAULT_RETRY_SETTINGS.backoff_ms),
+    max_delay_ms: z
+      .number()
+      .int()
+      .min(0)
+      .default(DEFAULT_RETRY_SETTINGS.max_delay_ms),
+    jitter: z
+      .number()
+      .min(0)
+      .default(DEFAULT_RETRY_SETTINGS.jitter),
+    multiplier: z
+      .number()
+      .min(1)
+      .default(DEFAULT_RETRY_SETTINGS.multiplier),
   })
   .strict();
 
+// Execution guardrails applied to every action invocation.
 export const SettingsSchema = z
   .object({
-    timeout_ms: z.number().int().positive().optional(),
-    retries: RetriesSchema.optional(),
+    timeout_ms: z.number().int().nonnegative().default(DEFAULT_TIMEOUT_MS),
+    retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })),
     audit: z.boolean().optional(),
     guardrails: z.object({ mode: z.string() }).optional(),
   })
