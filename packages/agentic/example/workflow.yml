@@ -258,11 +258,13 @@ tasks:
       to: "=$input.user_email"
       subject: "='Response for ' & $output.understand_request.intent & ' request'"
       body: >
-        = $route := $output.route_by_intent.route;
-        $route = 'draft_support_reply' ? $output.draft_support_reply.reply_markdown :
-        $route = 'craft_sales_pitch' ? $output.craft_sales_pitch.pitch_email :
-        $route = 'escalate_to_human' ? ('Ticket created: ' & $output.escalate_to_human.ticket_id) :
-        $output.send_generic_summary.message
+        = (
+          $route := $output.route_by_intent.route;
+          $route = 'draft_support_reply' ? $output.draft_support_reply.reply_markdown :
+          $route = 'craft_sales_pitch' ? $output.craft_sales_pitch.pitch_email :
+          $route = 'escalate_to_human' ? ('Ticket created: ' & $output.escalate_to_human.ticket_id) :
+          $output.send_generic_summary.message
+        )
       # The JSONata expression above chooses the body from prior outputs without separate templating.
     outputs:
       delivery_status: "=$result.status"
@@ -303,7 +305,7 @@ flow:
   - conditional:
       description: "Human-in-the-loop gate: pause the run until user replies with missing details."
       when:
-        - condition: "=$size($output.understand_request.missing_fields) > 0"
+        - condition: "=$count($output.understand_request.missing_fields) > 0"
           steps:
             - do: ask_for_missing_detail  # settings.await_user=true causes a checkpoint + wait-for-reply resume
         - else:
@@ -375,7 +377,7 @@ flow:
 outputs:
   delivered: "=$output.send_email_response.delivery_status"
   intent: "=$output.understand_request.intent"
-  missing_fields_resolved: "=$size($output.understand_request.missing_fields) = 0"
+  missing_fields_resolved: "=$count($output.understand_request.missing_fields) = 0"
   user_reply: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : null"
   research_brief: "=$output.synthesize_research.synthesized"
   ticket: "=$output.escalate_to_human.ticket_id" # may be null if no escalation occurred
