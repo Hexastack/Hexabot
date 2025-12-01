@@ -1,5 +1,22 @@
+/**
+ * Lifecycle of a workflow run:
+ * - idle: runner constructed but `start` not invoked.
+ * - running: set when `start` or `resume` begins executing steps.
+ * - suspended: an action called `workflow.suspend` (throws WorkflowSuspendedError); `resume` moves back to running.
+ * - finished: all steps completed and outputs were evaluated successfully.
+ * - failed: an uncaught error bubbled out of a step or continuation.
+ */
 export type WorkflowRunStatus = 'idle' | 'running' | 'suspended' | 'finished' | 'failed';
 
+/**
+ * Lifecycle of an individual action/step captured in snapshots:
+ * - pending: defined but not yet executed (default before runner touches the step).
+ * - running: inputs evaluated and action invoked.
+ * - suspended: action raised WorkflowSuspendedError via `workflow.suspend`; resumes to completed.
+ * - completed: action resolved (either immediately or after resume).
+ * - failed: action threw an error.
+ * - skipped: control flow bypassed the step (e.g., alternate branch or wait_any short-circuit).
+ */
 export type ActionStatus = 'pending' | 'running' | 'suspended' | 'completed' | 'failed' | 'skipped';
 
 export interface SuspensionOptions {

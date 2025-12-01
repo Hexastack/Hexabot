@@ -5,6 +5,7 @@ import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 import { ActionExecutionArgs } from './action';
 import { Action, ActionMetadata } from './action.types';
+import { WorkflowSuspendedError } from '../runtime-error';
 
 /**
  * Base implementation that enforces schema-validated input/output.
@@ -94,6 +95,10 @@ export abstract class AbstractAction<
         );
         return this.parseOutput(result);
       } catch (error) {
+        if (error instanceof WorkflowSuspendedError) {
+          throw error;
+        }
+
         attempt += 1;
 
         if (attempt >= maxAttempts) {
