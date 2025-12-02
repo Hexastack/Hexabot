@@ -38,10 +38,10 @@ Any string starting with `=` is parsed as JSONata; everything else is literal. E
 Actions wrap your IO or model calls. `defineAction` enforces schemas and merges settings.
 
 ```ts
-import { defineAction, Settings, WorkflowContext } from '@hexabot-ai/agentic';
+import { defineAction, Settings, BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
-class AppContext extends WorkflowContext {
+class AppContext extends BaseWorkflowContext {
   log(message: string, payload?: unknown) {
     console.log(message, payload);
   }
@@ -64,13 +64,13 @@ Settings are parsed and merged with workflow defaults before `execute` runs; ret
 ## Running a workflow from YAML
 
 ```ts
-import { Workflow, WorkflowEventEmitter, WorkflowContext } from '@hexabot-ai/agentic';
+import { Workflow, WorkflowEventEmitter, BaseWorkflowContext } from '@hexabot-ai/agentic';
 import fs from 'node:fs';
 
 const yamlSource = fs.readFileSync('workflow.yml', 'utf8');
 const actions = { call_api }; // keys are task.action names
 
-class AppContext extends WorkflowContext {}
+class AppContext extends BaseWorkflowContext {}
 
 const workflow = Workflow.fromYaml(yamlSource, actions);
 

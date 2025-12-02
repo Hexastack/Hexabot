@@ -1,11 +1,11 @@
 import { ZodType, ZodTypeDef } from 'zod';
-import { WorkflowContext } from '../context';
+import { BaseWorkflowContext } from '../context';
 import { Settings, SettingsSchema } from '../dsl.types';
+import { WorkflowSuspendedError } from '../runtime-error';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 import { ActionExecutionArgs } from './action';
 import { Action, ActionMetadata } from './action.types';
-import { WorkflowSuspendedError } from '../runtime-error';
 
 /**
  * Base implementation that enforces schema-validated input/output.
@@ -13,7 +13,7 @@ import { WorkflowSuspendedError } from '../runtime-error';
 export abstract class AbstractAction<
   I,
   O,
-  C extends WorkflowContext,
+  C extends BaseWorkflowContext,
   S extends Settings = Settings,
 > implements Action<I, O, C, S>
 {

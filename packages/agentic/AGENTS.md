@@ -46,7 +46,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - `max_concurrency` in loops is accepted in the DSL but not yet enforced by the in-process runner (treat it as a hint for now).
 - `timeout_ms: 0` disables timeouts. Default retries come from `DEFAULT_RETRY_SETTINGS` (3 attempts, exponential backoff starting at 25ms, capped at 10s, no jitter).
 - Outputs mapping is optional; when omitted the entire raw action result is stored under `$output.<task>`.
-- `WorkflowContext.workflow` is attached only while running; don’t hold references beyond execution.
+- `BaseWorkflowContext.workflow` is attached only while running; don’t hold references beyond execution.
 
 ## When extending the package
 - Add or adjust DSL shape in `packages/agentic/src/dsl.types.ts` and update `packages/agentic/DSL.md` plus the example workflow if behavior changes.

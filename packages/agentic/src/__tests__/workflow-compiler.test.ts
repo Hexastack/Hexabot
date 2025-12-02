@@ -1,25 +1,36 @@
 import { z } from 'zod';
 
 import type { Action } from '../action/action.types';
-import { WorkflowContext } from '../context';
+import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
 
-class TestContext extends WorkflowContext {}
+class TestContext extends BaseWorkflowContext {}
 
-const baseRetries = { max_attempts: 3, backoff_ms: 10, max_delay_ms: 100, jitter: 0, multiplier: 2 };
+const baseRetries = {
+  max_attempts: 3,
+  backoff_ms: 10,
+  max_delay_ms: 100,
+  jitter: 0,
+  multiplier: 2,
+};
 
-const createAction = (overrides: Partial<Action<unknown, unknown, WorkflowContext, Settings>> = {}) => {
-  const parseSettings = jest.fn((settings: unknown) =>
-    ({
-      timeout_ms: 0,
-      retries: baseRetries,
-      ...(settings as Record<string, unknown>),
-      parsed: true,
-    } as unknown as Settings & { parsed: boolean }),
-  ) as Action<unknown, unknown, WorkflowContext, Settings>['parseSettings'];
+const createAction = (
+  overrides: Partial<
+    Action<unknown, unknown, BaseWorkflowContext, Settings>
+  > = {},
+) => {
+  const parseSettings = jest.fn(
+    (settings: unknown) =>
+      ({
+        timeout_ms: 0,
+        retries: baseRetries,
+        ...(settings as Record<string, unknown>),
+        parsed: true,
+      }) as unknown as Settings & { parsed: boolean },
+  ) as Action<unknown, unknown, BaseWorkflowContext, Settings>['parseSettings'];
 
-  const action: Action<unknown, unknown, WorkflowContext, Settings> = {
+  const action: Action<unknown, unknown, BaseWorkflowContext, Settings> = {
     name: 'worker_action',
     description: 'test',
     inputSchema: z.any(),

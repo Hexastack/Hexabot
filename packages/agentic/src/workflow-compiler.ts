@@ -2,7 +2,7 @@ import type { ZodTypeAny } from 'zod';
 import { z } from 'zod';
 
 import type { Action } from './action/action.types';
-import type { WorkflowContext } from './context';
+import type { BaseWorkflowContext } from './context';
 import type {
   FlowStep,
   InputField,
@@ -105,7 +105,10 @@ const compileMapping = (
 /** Ensure every task references a provided action implementation. */
 const assertActionsBound = (
   tasks: Record<string, TaskDefinition>,
-  actions: Record<string, Action<unknown, unknown, WorkflowContext, Settings>>,
+  actions: Record<
+    string,
+    Action<unknown, unknown, BaseWorkflowContext, Settings>
+  >,
 ) => {
   const missing = Object.values(tasks)
     .map((task) => task.action)
@@ -124,7 +127,10 @@ const assertActionsBound = (
 /** Parse settings, compile inputs/outputs, and bind actions for each task. */
 const compileTasks = (
   definition: WorkflowDefinition,
-  actions: Record<string, Action<unknown, unknown, WorkflowContext, Settings>>,
+  actions: Record<
+    string,
+    Action<unknown, unknown, BaseWorkflowContext, Settings>
+  >,
 ): Record<string, CompiledTask> => {
   const compiled: Record<string, CompiledTask> = {};
   const defaultSettings = definition.defaults?.settings;
@@ -244,7 +250,10 @@ const compileFlowSteps = (
 /** Compile a workflow definition into structures consumable by the runtime. */
 export const compileWorkflow = (
   definition: WorkflowDefinition,
-  actions: Record<string, Action<unknown, unknown, WorkflowContext, Settings>>,
+  actions: Record<
+    string,
+    Action<unknown, unknown, BaseWorkflowContext, Settings>
+  >,
 ): CompiledWorkflow => {
   const inputParser = buildInputParser(definition.inputs?.schema);
   const tasks = compileTasks(definition, actions);

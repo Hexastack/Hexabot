@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
+import { BaseWorkflowContext } from '../../context';
 import { Settings } from '../../dsl.types';
-import { WorkflowContext } from '../../context';
 import { AbstractAction } from '../abstract-action';
 import { ActionExecutionArgs, ActionMetadata } from '../action.types';
 
@@ -11,7 +11,7 @@ const OutputSchema = z.object({ result: z.number() });
 type Input = z.infer<typeof InputSchema>;
 type Output = z.infer<typeof OutputSchema>;
 
-class TestContext extends WorkflowContext {
+class TestContext extends BaseWorkflowContext {
   constructor() {
     super();
   }

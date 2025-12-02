@@ -15,12 +15,12 @@ export type {
 } from './action/action.types';
 
 export {
-  WorkflowContext,
-  type WorkflowRuntimeControl,
-  type WorkflowRunStatus,
+  BaseWorkflowContext,
+  type ActionSnapshot,
   type ActionStatus,
   type SuspensionOptions,
-  type ActionSnapshot,
+  type WorkflowRunStatus,
+  type WorkflowRuntimeControl,
   type WorkflowSnapshot,
 } from './context';
 
@@ -28,10 +28,10 @@ export * from './dsl.types';
 export { WorkflowSuspendedError } from './runtime-error';
 
 export {
+  compileWorkflow,
   Workflow,
   WorkflowEventEmitter,
   WorkflowRunner,
-  compileWorkflow,
   type WorkflowResumeResult,
   type WorkflowRunOptions,
   type WorkflowStartResult,
@@ -40,23 +40,23 @@ export type { StepInfo, StepType, WorkflowEventMap } from './workflow-event-emit
 
 export type {
   BaseStep as CompiledBaseStep,
+  ConditionalBranch as CompiledConditionalBranch,
+  ConditionalStep as CompiledConditionalStep,
+  DoStep as CompiledDoStep,
+  LoopStep as CompiledLoopStep,
   CompiledMapping,
+  ParallelStep as CompiledParallelStep,
   CompiledStep,
   CompiledTask,
   CompiledValue,
   CompiledWorkflow,
-  ConditionalBranch as CompiledConditionalBranch,
-  ConditionalStep as CompiledConditionalStep,
-  DoStep as CompiledDoStep,
   EvaluationScope,
   ExecutionState,
-  LoopStep as CompiledLoopStep,
-  ParallelStep as CompiledParallelStep,
-  ResumeResult as WorkflowResumeOutcome,
   RunnerResumeArgs,
   RunnerStartArgs,
-  StartResult as WorkflowStartOutcome,
   Suspension,
+  ResumeResult as WorkflowResumeOutcome,
+  StartResult as WorkflowStartOutcome,
 } from './workflow-types';
 
 export {
@@ -66,7 +66,12 @@ export {
   mergeSettings,
 } from './workflow-values';
 
-export type { Deferred } from './utils/deferred';
 export { createDeferred } from './utils/deferred';
-export { assertSnakeCaseName, isSnakeCaseName, toSnakeCase } from './utils/naming';
+export type { Deferred } from './utils/deferred';
+export {
+  assertSnakeCaseName,
+  isSnakeCaseName,
+  toSnakeCase,
+} from './utils/naming';
 export { sleep, withTimeout } from './utils/timeout';
+

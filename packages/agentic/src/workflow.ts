@@ -1,6 +1,11 @@
 import type { Action } from './action/action.types';
-import type { WorkflowContext } from './context';
-import { Settings, WorkflowDefinition, WorkflowDefinitionSchema, validateWorkflow } from './dsl.types';
+import type { BaseWorkflowContext } from './context';
+import {
+  Settings,
+  WorkflowDefinition,
+  WorkflowDefinitionSchema,
+  validateWorkflow,
+} from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
 import { compileWorkflow } from './workflow-compiler';
 import { WorkflowRunner } from './workflow-runner';
@@ -34,7 +39,7 @@ export class Workflow {
     definition: WorkflowDefinition,
     actions: Record<
       string,
-      Action<unknown, unknown, WorkflowContext, Settings>
+      Action<unknown, unknown, BaseWorkflowContext, Settings>
     >,
   ): Workflow {
     const parsed = WorkflowDefinitionSchema.parse(definition);
@@ -50,7 +55,7 @@ export class Workflow {
     yaml: string,
     actions: Record<
       string,
-      Action<unknown, unknown, WorkflowContext, Settings>
+      Action<unknown, unknown, BaseWorkflowContext, Settings>
     >,
   ): Workflow {
     const validation = validateWorkflow(yaml);
@@ -70,7 +75,7 @@ export class Workflow {
    */
   async run(
     inputData: unknown,
-    context: WorkflowContext,
+    context: BaseWorkflowContext,
     options?: WorkflowRunOptions,
   ): Promise<Record<string, unknown>> {
     const runner = new WorkflowRunner(this.compiled, options);

@@ -2,9 +2,9 @@ import type { Expression } from 'jsonata';
 import type { ZodTypeAny } from 'zod';
 
 import type { Action } from './action/action.types';
+import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import type { Settings, TaskDefinition, WorkflowDefinition } from './dsl.types';
-import type { WorkflowContext, WorkflowSnapshot } from './context';
-import type { WorkflowEventEmitter, StepInfo } from './workflow-event-emitter';
+import type { StepInfo, WorkflowEventEmitter } from './workflow-event-emitter';
 
 /** Value representation used by the runtime after compilation. */
 export type CompiledValue =
@@ -19,7 +19,7 @@ export type CompiledTask = {
   name: string;
   definition: TaskDefinition;
   actionName: string;
-  action: Action<unknown, unknown, WorkflowContext, Settings>;
+  action: Action<unknown, unknown, BaseWorkflowContext, Settings>;
   inputs: CompiledMapping;
   outputs: CompiledMapping;
   settings: Settings;
@@ -83,7 +83,7 @@ export type LoopStep = BaseStep & {
 /** Scope passed to value evaluators, reflecting the live runtime state. */
 export type EvaluationScope = {
   input: Record<string, unknown>;
-  context: WorkflowContext;
+  context: BaseWorkflowContext;
   memory: Record<string, unknown>;
   output: Record<string, unknown>;
   iteration?: { item: unknown; index: number };
@@ -111,14 +111,34 @@ export type Suspension = {
 
 /** Result of starting a workflow run. */
 export type StartResult =
-  | { status: 'finished'; output: Record<string, unknown>; snapshot: WorkflowSnapshot }
-  | { status: 'suspended'; step: StepInfo; reason?: string; data?: unknown; snapshot: WorkflowSnapshot }
+  | {
+      status: 'finished';
+      output: Record<string, unknown>;
+      snapshot: WorkflowSnapshot;
+    }
+  | {
+      status: 'suspended';
+      step: StepInfo;
+      reason?: string;
+      data?: unknown;
+      snapshot: WorkflowSnapshot;
+    }
   | { status: 'failed'; error: unknown; snapshot: WorkflowSnapshot };
 
 /** Result of resuming a suspended workflow. */
 export type ResumeResult =
-  | { status: 'finished'; output: Record<string, unknown>; snapshot: WorkflowSnapshot }
-  | { status: 'suspended'; step: StepInfo; reason?: string; data?: unknown; snapshot: WorkflowSnapshot }
+  | {
+      status: 'finished';
+      output: Record<string, unknown>;
+      snapshot: WorkflowSnapshot;
+    }
+  | {
+      status: 'suspended';
+      step: StepInfo;
+      reason?: string;
+      data?: unknown;
+      snapshot: WorkflowSnapshot;
+    }
   | { status: 'failed'; error: unknown; snapshot: WorkflowSnapshot };
 
 /** Options that influence how the workflow runner behaves. */
@@ -134,7 +154,7 @@ export type WorkflowResumeResult = ResumeResult;
 /** Arguments required to start a run. */
 export type RunnerStartArgs = {
   inputData: unknown;
-  context: WorkflowContext;
+  context: BaseWorkflowContext;
   memory?: Record<string, unknown>;
 };
 

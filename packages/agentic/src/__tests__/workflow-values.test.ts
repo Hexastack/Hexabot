@@ -1,8 +1,13 @@
-import { WorkflowContext } from '../context';
+import { BaseWorkflowContext } from '../context';
 import type { Settings } from '../dsl.types';
-import { compileValue, evaluateMapping, evaluateValue, mergeSettings } from '../workflow-values';
+import {
+  compileValue,
+  evaluateMapping,
+  evaluateValue,
+  mergeSettings,
+} from '../workflow-values';
 
-class TestContext extends WorkflowContext {
+class TestContext extends BaseWorkflowContext {
   constructor(initial?: Record<string, unknown>) {
     super(initial);
   }
@@ -10,7 +15,9 @@ class TestContext extends WorkflowContext {
 
 describe('workflow values', () => {
   it('compiles expressions and evaluates against the runtime scope', async () => {
-    const compiled = compileValue('=$input.amount + $memory.offset + $iteration.index + $accumulator');
+    const compiled = compileValue(
+      '=$input.amount + $memory.offset + $iteration.index + $accumulator',
+    );
 
     const result = await evaluateValue(compiled, {
       input: { amount: 10 },
@@ -47,22 +54,36 @@ describe('workflow values', () => {
   });
 
   it('handles missing mappings and deep merges settings', async () => {
-    await expect(evaluateMapping(undefined, {
-      input: {},
-      context: new TestContext(),
-      memory: {},
-      output: {},
-    })).resolves.toEqual({});
+    await expect(
+      evaluateMapping(undefined, {
+        input: {},
+        context: new TestContext(),
+        memory: {},
+        output: {},
+      }),
+    ).resolves.toEqual({});
 
     const merged = mergeSettings(
       {
         timeout_ms: 10,
-        retries: { max_attempts: 3, backoff_ms: 10, max_delay_ms: 100, jitter: 0, multiplier: 2 },
+        retries: {
+          max_attempts: 3,
+          backoff_ms: 10,
+          max_delay_ms: 100,
+          jitter: 0,
+          multiplier: 2,
+        },
         audit: false,
         guardrails: { mode: 'default' },
       } satisfies Partial<Settings>,
       {
-        retries: { max_attempts: 5, backoff_ms: 10, max_delay_ms: 100, jitter: 0, multiplier: 1 },
+        retries: {
+          max_attempts: 5,
+          backoff_ms: 10,
+          max_delay_ms: 100,
+          jitter: 0,
+          multiplier: 1,
+        },
         audit: true,
         guardrails: { mode: 'strict' },
       },
@@ -70,7 +91,13 @@ describe('workflow values', () => {
 
     expect(merged).toEqual({
       timeout_ms: 10,
-      retries: { max_attempts: 5, backoff_ms: 10, max_delay_ms: 100, jitter: 0, multiplier: 1 },
+      retries: {
+        max_attempts: 5,
+        backoff_ms: 10,
+        max_delay_ms: 100,
+        jitter: 0,
+        multiplier: 1,
+      },
       audit: true,
       guardrails: { mode: 'strict' },
     });

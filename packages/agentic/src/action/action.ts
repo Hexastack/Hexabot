@@ -1,5 +1,5 @@
 import z, { ZodType, ZodTypeDef } from "zod";
-import { WorkflowContext } from "../context";
+import { BaseWorkflowContext } from '../context';
 import { Settings } from "../dsl.types";
 import { AbstractAction } from "./abstract-action";
 
@@ -11,13 +11,22 @@ export interface ActionMetadata<I, O, S = undefined> {
   settingsSchema?: ZodType<S, ZodTypeDef, unknown>;
 }
 
-export interface ActionExecutionArgs<I, C extends WorkflowContext, S = undefined> {
+export interface ActionExecutionArgs<
+  I,
+  C extends BaseWorkflowContext,
+  S = undefined,
+> {
   input: I;
   context: C;
   settings: S;
 }
 
-export type DefineActionParams<I, O, Ctx extends WorkflowContext, S = undefined> = {
+export type DefineActionParams<
+  I,
+  O,
+  Ctx extends BaseWorkflowContext,
+  S = undefined,
+> = {
   name: string;
   description?: string;
   inputSchema?: ZodType<I, ZodTypeDef, unknown>;
@@ -35,9 +44,12 @@ export type DefineActionParams<I, O, Ctx extends WorkflowContext, S = undefined>
  * @typeParam O - Action output type.
  * @typeParam Ctx - Workflow context type.
  */
-export function defineAction<I, O, Ctx extends WorkflowContext, S extends Settings>(
-  params: DefineActionParams<I, O, Ctx, S>
-) {
+export function defineAction<
+  I,
+  O,
+  Ctx extends BaseWorkflowContext,
+  S extends Settings,
+>(params: DefineActionParams<I, O, Ctx, S>) {
   /**
    * Concrete action generated for the supplied configuration options.
    */
@@ -46,17 +58,21 @@ export function defineAction<I, O, Ctx extends WorkflowContext, S extends Settin
       const metadata: ActionMetadata<I, O, S> = {
         name: params.name,
         description: params.description ?? '',
-        inputSchema: (params.inputSchema ?? (z.any() as ZodType<I, ZodTypeDef, unknown>)) as ZodType<
+        inputSchema: (params.inputSchema ??
+          (z.any() as ZodType<I, ZodTypeDef, unknown>)) as ZodType<
           I,
           ZodTypeDef,
           unknown
         >,
-        outputSchema: (params.outputSchema ?? (z.any() as ZodType<O, ZodTypeDef, unknown>)) as ZodType<
+        outputSchema: (params.outputSchema ??
+          (z.any() as ZodType<O, ZodTypeDef, unknown>)) as ZodType<
           O,
           ZodTypeDef,
           unknown
         >,
-        settingsSchema: params.settingSchema as ZodType<S, ZodTypeDef, unknown> | undefined
+        settingsSchema: params.settingSchema as
+          | ZodType<S, ZodTypeDef, unknown>
+          | undefined,
       };
 
       super(metadata);

@@ -56,7 +56,7 @@ export interface WorkflowRuntimeControl {
  * Extend this class in user-land to expose shared services such as loggers,
  * event emitters, database connections, or feature flags.
   */
-export abstract class WorkflowContext {
+export abstract class BaseWorkflowContext {
   private _workflowControl?: WorkflowRuntimeControl;
 
   /**

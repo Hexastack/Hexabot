@@ -1,4 +1,4 @@
-import { WorkflowContext } from '../src';
+import { BaseWorkflowContext } from '../src';
 
 export type ExampleContextState = {
   user_id: string;
@@ -8,7 +8,7 @@ export type ExampleContextState = {
   channel: string;
 };
 
-export class ExampleContext extends WorkflowContext {
+export class ExampleContext extends BaseWorkflowContext {
   user_id: string;
   account_tier: string;
   locale: string;

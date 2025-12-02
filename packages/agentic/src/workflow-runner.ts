@@ -1,21 +1,25 @@
 import type {
-  WorkflowContext,
-  WorkflowRuntimeControl,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
   ActionSnapshot,
+  BaseWorkflowContext,
   SuspensionOptions,
+  WorkflowRunStatus,
+  WorkflowRuntimeControl,
+  WorkflowSnapshot,
 } from './context';
 import { WorkflowSuspendedError } from './runtime-error';
-import type { StepInfo, WorkflowEventEmitter, WorkflowEventMap } from './workflow-event-emitter';
+import type {
+  StepInfo,
+  WorkflowEventEmitter,
+  WorkflowEventMap,
+} from './workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
   CompiledWorkflow,
+  ConditionalStep,
   DoStep,
   EvaluationScope,
   ExecutionState,
-  ConditionalStep,
   LoopStep,
   ParallelStep,
   ResumeResult,
@@ -84,12 +88,9 @@ export class WorkflowRunner {
   // Mutable execution state including input, memory, and outputs.
   private state?: ExecutionState;
   // Workflow context shared with actions for IO and side-effects.
-  private context?: WorkflowContext;
+  private context?: BaseWorkflowContext;
 
-  constructor(
-    compiled: CompiledWorkflow,
-    options?: WorkflowRunOptions,
-  ) {
+  constructor(compiled: CompiledWorkflow, options?: WorkflowRunOptions) {
     this.compiled = compiled;
     this.eventEmitter = options?.eventEmitter;
     this.runId = options?.runId;
@@ -138,7 +139,11 @@ export class WorkflowRunner {
     this.emit('workflow:start', { runId: this.runId });
 
     try {
-      const suspension = await this.executeFlow(this.compiled.flow, this.state, []);
+      const suspension = await this.executeFlow(
+        this.compiled.flow,
+        this.state,
+        [],
+      );
 
       if (suspension) {
         this.suspension = suspension;
@@ -150,7 +155,13 @@ export class WorkflowRunner {
           data: suspension.data,
         });
 
-        return { status: 'suspended', step: suspension.step, reason: suspension.reason, data: suspension.data, snapshot: this.getSnapshot() };
+        return {
+          status: 'suspended',
+          step: suspension.step,
+          reason: suspension.reason,
+          data: suspension.data,
+          snapshot: this.getSnapshot(),
+        };
       }
 
       const output = await this.evaluateWorkflowOutputs();
@@ -226,7 +237,10 @@ export class WorkflowRunner {
   }
 
   /** Emit an event if an emitter is provided. */
-  private emit<K extends keyof WorkflowEventMap>(event: K, payload: WorkflowEventMap[K]) {
+  private emit<K extends keyof WorkflowEventMap>(
+    event: K,
+    payload: WorkflowEventMap[K],
+  ) {
     this.eventEmitter?.emitEvent(event, payload);
   }
 
@@ -248,12 +262,20 @@ export class WorkflowRunner {
   }
 
   /** Build a stable step id that reflects the current loop iteration stack. */
-  private buildInstanceStepInfo(step: CompiledStep, iterationStack: number[]): StepInfo {
-    const suffix = iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : '';
+  private buildInstanceStepInfo(
+    step: CompiledStep,
+    iterationStack: number[],
+  ): StepInfo {
+    const suffix =
+      iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : '';
     return { ...step.stepInfo, id: `${step.stepInfo.id}${suffix}` };
   }
 
-  private markSnapshot(step: StepInfo, status: ActionSnapshot['status'], reason?: string) {
+  private markSnapshot(
+    step: StepInfo,
+    status: ActionSnapshot['status'],
+    reason?: string,
+  ) {
     this.snapshots[step.id] = {
       id: step.id,
       name: step.name,
@@ -375,7 +397,11 @@ export class WorkflowRunner {
         };
       }
 
-      this.markSnapshot(stepInfo, 'failed', error instanceof Error ? error.message : String(error));
+      this.markSnapshot(
+        stepInfo,
+        'failed',
+        error instanceof Error ? error.message : String(error),
+      );
       this.emit('step:error', { runId: this.runId, step: stepInfo, error });
       throw error;
     } finally {
@@ -392,7 +418,7 @@ export class WorkflowRunner {
     // Map task outputs through expressions; fall back to raw result when no mapping is provided.
     const scope: EvaluationScope = {
       input: state.input,
-      context: this.context as WorkflowContext,
+      context: this.context as BaseWorkflowContext,
       memory: state.memory,
       output: state.output,
       iteration: state.iteration,
@@ -469,11 +495,17 @@ export class WorkflowRunner {
       };
 
       const conditionResult =
-        branch.condition !== undefined ? await evaluateValue(branch.condition, scope) : true;
+        branch.condition !== undefined
+          ? await evaluateValue(branch.condition, scope)
+          : true;
 
       if (conditionResult) {
         // Execute only the first matching branch.
-        const suspension = await this.executeFlow(branch.steps, state, [...path, 'branch', index]);
+        const suspension = await this.executeFlow(branch.steps, state, [
+          ...path,
+          'branch',
+          index,
+        ]);
 
         if (suspension) {
           return {
@@ -532,7 +564,10 @@ export class WorkflowRunner {
         iterationStack: [...state.iterationStack, index],
       };
 
-      const suspension = await this.executeFlow(step.steps, iterationState, [...path, index]);
+      const suspension = await this.executeFlow(step.steps, iterationState, [
+        ...path,
+        index,
+      ]);
 
       if (suspension) {
         return {
@@ -545,14 +580,18 @@ export class WorkflowRunner {
 
             const postScope: EvaluationScope = {
               input: iterationState.input,
-              context: this.context as WorkflowContext,
+              context: this.context as BaseWorkflowContext,
               memory: iterationState.memory,
               output: iterationState.output,
               iteration: { item, index },
               accumulator,
             };
 
-            accumulator = await this.updateAccumulator(step, postScope, accumulator);
+            accumulator = await this.updateAccumulator(
+              step,
+              postScope,
+              accumulator,
+            );
 
             const shouldStop = await this.shouldStopLoop(step, postScope);
             if (shouldStop) {
@@ -565,7 +604,11 @@ export class WorkflowRunner {
 
             return this.executeLoop(
               step,
-              { ...iterationState, accumulator, iterationStack: state.iterationStack },
+              {
+                ...iterationState,
+                accumulator,
+                iterationStack: state.iterationStack,
+              },
               path,
               index + 1,
             );
@@ -575,7 +618,7 @@ export class WorkflowRunner {
 
       const postScope: EvaluationScope = {
         input: iterationState.input,
-        context: this.context as WorkflowContext,
+        context: this.context as BaseWorkflowContext,
         memory: iterationState.memory,
         output: iterationState.output,
         iteration: { item, index },
@@ -612,11 +655,17 @@ export class WorkflowRunner {
       return previous;
     }
 
-    return evaluateValue(step.accumulate.merge, { ...scope, accumulator: previous });
+    return evaluateValue(step.accumulate.merge, {
+      ...scope,
+      accumulator: previous,
+    });
   }
 
   /** Evaluate the loop `until` condition, defaulting to false when not provided. */
-  private async shouldStopLoop(step: LoopStep, scope: EvaluationScope): Promise<boolean> {
+  private async shouldStopLoop(
+    step: LoopStep,
+    scope: EvaluationScope,
+  ): Promise<boolean> {
     if (!step.until) {
       return false;
     }

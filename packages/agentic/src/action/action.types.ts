@@ -1,5 +1,5 @@
 import { ZodType, ZodTypeDef } from 'zod';
-import { WorkflowContext } from '../context';
+import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
 import { WorkflowSuspendedError } from '../runtime-error';
 import { Deferred } from '../utils/deferred';
@@ -12,7 +12,11 @@ export interface ActionMetadata<I, O, S extends Settings = Settings> {
   settingsSchema?: ZodType<S, ZodTypeDef, unknown>;
 }
 
-export interface ActionExecutionArgs<I, C extends WorkflowContext = WorkflowContext, S extends Settings = Settings> {
+export interface ActionExecutionArgs<
+  I,
+  C extends BaseWorkflowContext = BaseWorkflowContext,
+  S extends Settings = Settings,
+> {
   input: I;
   context: C;
   settings: S;
@@ -21,7 +25,7 @@ export interface ActionExecutionArgs<I, C extends WorkflowContext = WorkflowCont
 export interface Action<
   I,
   O,
-  C extends WorkflowContext = WorkflowContext,
+  C extends BaseWorkflowContext = BaseWorkflowContext,
   S extends Settings = Settings,
 > {
   readonly name: string;
@@ -37,19 +41,25 @@ export interface Action<
   run(payload: unknown, context: C, settings?: Partial<S>): Promise<O>;
 }
 
-export type InferActionArgs<A extends Action<unknown, unknown, WorkflowContext, Settings>> = Parameters<
-  A['execute']
->[0];
+export type InferActionArgs<
+  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
+> = Parameters<A['execute']>[0];
 
-export type InferActionInput<A extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<A>['input'];
+export type InferActionInput<
+  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
+> = InferActionArgs<A>['input'];
 
-export type InferActionContext<A extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<A>['context'];
+export type InferActionContext<
+  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
+> = InferActionArgs<A>['context'];
 
-export type InferActionOutput<A extends Action<unknown, unknown, WorkflowContext, Settings>> = Awaited<
-  ReturnType<A['execute']>
->;
+export type InferActionOutput<
+  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
+> = Awaited<ReturnType<A['execute']>>;
 
-export type InferActionSettings<S extends Action<unknown, unknown, WorkflowContext, Settings>> = InferActionArgs<S>['settings'];
+export type InferActionSettings<
+  S extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
+> = InferActionArgs<S>['settings'];
 
 export interface SuspensionNotice {
   error: WorkflowSuspendedError;

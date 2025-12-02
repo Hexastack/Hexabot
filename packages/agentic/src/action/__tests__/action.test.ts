@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { WorkflowContext } from '../../context';
+import { BaseWorkflowContext } from '../../context';
 import {
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
@@ -8,21 +8,24 @@ import {
 } from '../../dsl.types';
 import { AbstractAction } from '../abstract-action';
 import {
-    InferActionContext,
-    InferActionInput,
-    InferActionOutput,
-    InferActionSettings,
-    type Action,
-    type ActionExecutionArgs,
-    type ActionMetadata
+  InferActionContext,
+  InferActionInput,
+  InferActionOutput,
+  InferActionSettings,
+  type Action,
+  type ActionExecutionArgs,
+  type ActionMetadata,
 } from '../action.types';
 
-type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
 const expectType = <T extends true>(): void => {
   void (0 as unknown as T);
 };
 
-class DoubleContext extends WorkflowContext {
+class DoubleContext extends BaseWorkflowContext {
   constructor(public factor: number) {
     super();
   }

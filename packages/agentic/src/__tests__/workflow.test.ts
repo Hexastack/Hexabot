@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { Workflow, WorkflowEventEmitter } from '../workflow';
-import { WorkflowDefinition, Settings } from '../dsl.types';
 import { defineAction } from '../action/action';
-import { WorkflowContext } from '../context';
+import { BaseWorkflowContext } from '../context';
+import { Settings, WorkflowDefinition } from '../dsl.types';
+import { Workflow, WorkflowEventEmitter } from '../workflow';
 
-class TestContext extends WorkflowContext {
+class TestContext extends BaseWorkflowContext {
   constructor(initial?: Record<string, unknown>) {
     super(initial);
   }
