@@ -6,7 +6,7 @@
 
 import path from 'path';
 
-import { OnModuleInit } from '@nestjs/common';
+import { Inject, OnModuleInit } from '@nestjs/common';
 
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
@@ -23,11 +23,13 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
 
   protected abstract type: HelperType;
 
-  constructor(
-    name: N,
-    protected readonly settingService: SettingService,
-    protected readonly helperService: HelperService,
-  ) {
+  @Inject(SettingService)
+  protected readonly settingService: SettingService;
+
+  @Inject(HelperService)
+  protected readonly helperService: HelperService;
+
+  constructor(name: N) {
     super(name);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.settings = require(path.join(this.getPath(), 'settings')).default;

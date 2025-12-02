@@ -29,9 +29,7 @@ import {
   getStreamableFile,
 } from '@/attachment/utilities';
 import { config } from '@/config';
-import { HelperService } from '@/helper/helper.service';
 import { BaseStorageHelper } from '@/helper/lib/base-storage-helper';
-import { SettingService } from '@/setting/services/setting.service';
 
 import { LOCAL_STORAGE_HELPER_NAME } from './settings';
 
@@ -40,8 +38,8 @@ export default class LocalStorageHelper
   extends BaseStorageHelper<typeof LOCAL_STORAGE_HELPER_NAME>
   implements OnModuleInit
 {
-  constructor(settingService: SettingService, helperService: HelperService) {
-    super(LOCAL_STORAGE_HELPER_NAME, settingService, helperService);
+  constructor() {
+    super(LOCAL_STORAGE_HELPER_NAME);
   }
 
   getPath() {

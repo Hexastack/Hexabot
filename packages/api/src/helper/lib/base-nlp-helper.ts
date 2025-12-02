@@ -12,9 +12,7 @@ import { NlpSample, NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { SettingService } from '@/setting/services/setting.service';
 
-import { HelperService } from '../helper.service';
 import { HelperName, HelperType, NLU } from '../types';
 
 import BaseHelper from './base-helper';
@@ -24,12 +22,8 @@ export abstract class BaseNlpHelper<
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.NLU;
 
-  constructor(
-    name: N,
-    settingService: SettingService,
-    helperService: HelperService,
-  ) {
-    super(name, settingService, helperService);
+  constructor(name: N) {
+    super(name);
   }
 
   /**

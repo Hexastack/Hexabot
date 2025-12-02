@@ -68,9 +68,7 @@ describe('CleanupService', () => {
 
     initialSettings = await settingService.findAll();
 
-    helperService.register(
-      new LocalStorageHelper(settingService, helperService),
-    );
+    helperService.register(new LocalStorageHelper());
   });
 
   afterAll(async () => {

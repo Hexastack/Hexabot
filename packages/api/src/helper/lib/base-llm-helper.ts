@@ -5,9 +5,7 @@
  */
 
 import { AnyMessage } from '@/chat/types/message';
-import { SettingService } from '@/setting/services/setting.service';
 
-import { HelperService } from '../helper.service';
 import { HelperName, HelperType, LLM } from '../types';
 
 import BaseHelper from './base-helper';
@@ -17,12 +15,8 @@ export abstract class BaseLlmHelper<
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.LLM;
 
-  constructor(
-    name: N,
-    settingService: SettingService,
-    helperService: HelperService,
-  ) {
-    super(name, settingService, helperService);
+  constructor(name: N) {
+    super(name);
   }
 
   /**

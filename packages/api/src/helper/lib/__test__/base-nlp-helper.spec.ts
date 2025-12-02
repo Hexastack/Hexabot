@@ -6,6 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 
+import { HelperService } from '@/helper/helper.service';
 import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
@@ -32,7 +33,7 @@ describe('BaseNlpHelper', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      providers: [TestNlpHelper],
+      providers: [TestNlpHelper, HelperService],
     });
     [helper] = await getMocks([TestNlpHelper]);
   });
