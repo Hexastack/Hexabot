@@ -20,6 +20,8 @@ export * from './seeder';
 export * from './swagger';
 
 // Domain modules
+export * from './actions';
+
 export * from './analytics';
 
 export * from './attachment';
