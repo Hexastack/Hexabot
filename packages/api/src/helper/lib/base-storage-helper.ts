@@ -13,7 +13,6 @@ import {
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
@@ -30,9 +29,8 @@ export abstract class BaseStorageHelper<
     name: N,
     settingService: SettingService,
     helperService: HelperService,
-    logger: LoggerService,
   ) {
-    super(name, settingService, helperService, logger);
+    super(name, settingService, helperService);
   }
 
   /**

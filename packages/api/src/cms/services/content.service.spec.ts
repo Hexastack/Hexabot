@@ -55,7 +55,7 @@ describe('ContentService (TypeORM)', () => {
       ContentService,
       ContentTypeService,
     ]);
-    logger = (contentService as any).logger as LoggerService;
+    logger = contentService.logger;
   });
 
   afterAll(async () => {

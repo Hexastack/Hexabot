@@ -8,7 +8,6 @@ import path from 'path';
 
 import { OnModuleInit } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { HyphenToUnderscore } from '@/utils/types/extension';
@@ -28,7 +27,6 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
     name: N,
     protected readonly settingService: SettingService,
     protected readonly helperService: HelperService,
-    protected readonly logger: LoggerService,
   ) {
     super(name);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
