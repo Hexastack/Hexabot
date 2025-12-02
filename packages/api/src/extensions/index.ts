@@ -25,3 +25,11 @@ export * from './helpers/llm-nlu/settings';
 export * from './helpers/local-storage/index.helper';
 
 export * from './helpers/local-storage/settings';
+
+export * from './actions/messaging/text-message.action';
+
+export * from './actions/messaging/quick-replies.action';
+
+export * from './actions/messaging/buttons.action';
+
+export * from './actions/messaging/attachment.action';

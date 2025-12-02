@@ -21,6 +21,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
+      "@hexabot-ai/agentic": ["../agentic/src"],
+      "@hexabot-ai/agentic/*": ["../agentic/src/*"],
       "@/*": ["src/*", "src/.hexabot/*", "src/extra/*"],
       "hexabot/src/*": ["src/*", "src/.hexabot/*"]
     }

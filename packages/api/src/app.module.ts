@@ -22,6 +22,7 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 
+import { ActionsModule } from './actions/actions.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -86,6 +87,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   AnalyticsModule,
   ChatModule,
   ChannelModule,
+  ActionsModule,
   PluginsModule,
   HelperModule,
   LoggerModule,

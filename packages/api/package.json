@@ -54,6 +54,7 @@
     "*.{js,ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
   "dependencies": {
+    "@hexabot-ai/agentic": "workspace:*",
     "@keyv/redis": "^5.1.3",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
@@ -184,7 +185,9 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/$1"
+      "@/(.*)": "<rootDir>/$1",
+      "^@hexabot-ai/agentic$": "<rootDir>/../../agentic/src",
+      "^@hexabot-ai/agentic/(.*)$": "<rootDir>/../../agentic/src/$1"
     }
   },
   "engines": {
