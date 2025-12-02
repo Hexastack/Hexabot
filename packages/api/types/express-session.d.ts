@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SubscriberStub } from '@/chat/dto/subscriber.dto';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
 
 declare module 'express-session' {
   interface SessionUser {
@@ -20,7 +20,7 @@ declare module 'express-session' {
       user?: SessionUser;
     };
     web?: {
-      profile?: SubscriberStub;
+      profile?: Subscriber;
       isSocket: boolean;
       messageQueue: any[];
       polling: boolean;

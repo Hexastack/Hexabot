@@ -8,9 +8,10 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
@@ -19,22 +20,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import {
-  Subscriber,
-  SubscriberCreateDto,
-  SubscriberFull,
-  SubscriberStub,
-} from '@/chat/dto/subscriber.dto';
+import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
@@ -60,9 +54,6 @@ import { BlockOptions } from '@/chat/types/options';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
@@ -89,20 +80,20 @@ const upload = multer({
 export default abstract class BaseWebChannelHandler<
   N extends ChannelName,
 > extends ChannelHandler<N> {
-  constructor(
-    name: N,
-    settingService: SettingService,
-    channelService: ChannelService,
-    logger: LoggerService,
-    protected readonly eventEmitter: EventEmitter2,
-    protected readonly i18n: I18nService,
-    protected readonly subscriberService: SubscriberService,
-    public readonly attachmentService: AttachmentService,
-    protected readonly messageService: MessageService,
-    protected readonly menuService: MenuService,
-    protected readonly websocketGateway: WebsocketGateway,
-  ) {
-    super(name, settingService, channelService, logger);
+  @Inject(SubscriberService)
+  protected readonly subscriberService: SubscriberService;
+
+  @Inject(MessageService)
+  protected readonly messageService: MessageService;
+
+  @Inject(MenuService)
+  protected readonly menuService: MenuService;
+
+  @Inject(WebsocketGateway)
+  protected readonly websocketGateway: WebsocketGateway;
+
+  constructor(name: N) {
+    super(name);
   }
 
   /**
@@ -122,7 +113,6 @@ export default abstract class BaseWebChannelHandler<
   @OnEvent('hook:websocket:connection', { async: true })
   async onWebSocketConnection(client: Socket) {
     try {
-      const settings = await this.getSettings();
       const handshake = client.handshake;
       const { channel } = handshake.query;
       const profile = client.request.session.web?.profile;
@@ -138,11 +128,12 @@ export default abstract class BaseWebChannelHandler<
         const messagesHistory =
           await this.messageService.findHistoryUntilDate(profile);
         messages = await this.formatMessages(
-          messagesHistory.reverse() as unknown as AnyMessage[],
+          messagesHistory.reverse() as AnyMessage[],
         );
       }
 
       this.logger.debug('WS connected .. sending settings');
+      const settings = await this.getSettings();
 
       try {
         const menu = await this.menuService.getTree();
@@ -173,9 +164,7 @@ export default abstract class BaseWebChannelHandler<
             message: 'Internal Server Error',
           }
     ) as SocketResponse;
-    const subscriber = socket.request.session.web?.profile as
-      | Subscriber
-      | undefined;
+    const subscriber = socket.request.session.web?.profile;
 
     if (socket.handshake.query.channel !== this.getName() || !subscriber) {
       return;
@@ -330,9 +319,7 @@ export default abstract class BaseWebChannelHandler<
         n,
       );
 
-      return await this.formatMessages(
-        messages.reverse() as unknown as AnyMessage[],
-      );
+      return await this.formatMessages(messages.reverse() as AnyMessage[]);
     }
 
     return [];
@@ -359,7 +346,7 @@ export default abstract class BaseWebChannelHandler<
         n,
       );
 
-      return await this.formatMessages(messages as unknown as AnyMessage[]);
+      return await this.formatMessages(messages as AnyMessage[]);
     }
 
     return [];
@@ -375,8 +362,6 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
-    const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
-
     // Check if we have an origin header...
     if (!req.headers?.origin) {
       this.logger.debug('No origin ', req.headers);
@@ -389,6 +374,7 @@ export default abstract class BaseWebChannelHandler<
       throw new Error('CORS - Invalid origin!');
     }
 
+    const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
     // Get the allowed origins
     const origins: string[] = settings.allowed_domains.split(',');
     const foundOrigin = origins
@@ -441,7 +427,7 @@ export default abstract class BaseWebChannelHandler<
   private validateSession(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-    next: <S extends SubscriberStub>(profile: S) => void,
+    next: <S extends Subscriber>(profile: S) => void,
   ) {
     if (!req.session.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
@@ -493,12 +479,12 @@ export default abstract class BaseWebChannelHandler<
    */
   protected async getOrCreateSession(
     req: Request | SocketRequest,
-  ): Promise<SubscriberFull> {
+  ): Promise<Subscriber> {
     const data = req.query;
     // Subscriber has already a session
     const sessionProfile = req.session.web?.profile;
     if (sessionProfile) {
-      const subscriber = await this.subscriberService.findOneAndPopulate(
+      const subscriber = await this.subscriberService.findOne(
         sessionProfile.id,
       );
       if (!subscriber || !req.session.web) {
@@ -530,14 +516,7 @@ export default abstract class BaseWebChannelHandler<
       labels: [],
       context: { vars: {} },
     };
-    const subscriber = await this.subscriberService.create(newProfile);
-    // Init session
-    const profile: SubscriberFull = {
-      ...subscriber,
-      labels: [],
-      assignedTo: null,
-      avatar: null,
-    };
+    const profile = await this.subscriberService.create(newProfile);
 
     req.session.web = {
       profile,
@@ -879,15 +858,11 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile as unknown as Subscriber);
+      event.setSender(profile);
 
       const type = event.getEventType();
       if (type) {
-        this.broadcast(
-          profile as unknown as Subscriber,
-          type,
-          event._adapter.raw,
-        );
+        this.broadcast(profile, type, event._adapter.raw);
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);
@@ -913,12 +888,12 @@ export default abstract class BaseWebChannelHandler<
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
-    const settings = await this.getSettings();
     // Web Channel messaging can be done through websockets or long-polling
     try {
       await this.checkRequest(req, res);
       if (req.method === 'GET') {
         if (!this.isSocketRequest(req) && req.query._get) {
+          const settings = await this.getSettings();
           switch (req.query._get) {
             case 'settings':
               this.logger.debug('connected .. sending settings');
@@ -1398,7 +1373,7 @@ export default abstract class BaseWebChannelHandler<
    * @return True, if requester is authorized to download the attachment
    */
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
-    const subscriberId = req.session.web?.profile?.id as string;
+    const subscriberId = req.session.web?.profile?.id;
     if (attachment.access === AttachmentAccess.Public) {
       return true;
     } else if (!subscriberId) {
