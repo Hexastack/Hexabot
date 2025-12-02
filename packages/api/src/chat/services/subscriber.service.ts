@@ -18,7 +18,6 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,
@@ -55,7 +54,6 @@ export class SubscriberService extends BaseOrmService<
     protected readonly attachmentService: AttachmentService,
     protected readonly labelService: LabelService,
     private readonly gateway: WebsocketGateway,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

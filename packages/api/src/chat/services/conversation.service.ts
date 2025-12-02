@@ -7,7 +7,6 @@
 import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { getDefaultConversationContext } from '../constants/conversation';
@@ -38,7 +37,6 @@ export class ConversationService extends BaseOrmService<
     readonly repository: ConversationRepository,
     private readonly contextVarService: ContextVarService,
     private readonly subscriberService: SubscriberService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

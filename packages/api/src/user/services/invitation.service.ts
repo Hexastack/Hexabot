@@ -14,7 +14,6 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
@@ -40,7 +39,6 @@ export class InvitationService extends BaseOrmService<
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
     private readonly mailerService: MailerService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

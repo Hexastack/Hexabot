@@ -14,7 +14,6 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
@@ -35,7 +34,6 @@ export class LanguageService extends BaseOrmService<
   constructor(
     repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

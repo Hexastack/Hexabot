@@ -10,7 +10,6 @@ import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
 import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
@@ -32,10 +31,7 @@ export class ContentService extends BaseOrmService<
 > {
   private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
 
-  constructor(
-    readonly repository: ContentRepository,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(readonly repository: ContentRepository) {
     super(repository);
   }
 

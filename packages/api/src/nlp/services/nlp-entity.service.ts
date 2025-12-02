@@ -10,7 +10,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { In } from 'typeorm';
 
-import { LoggerService } from '@/logger/logger.service';
 import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -37,7 +36,6 @@ export class NlpEntityService extends BaseOrmService<
     readonly repository: NlpEntityRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly nlpValueService: NlpValueService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
