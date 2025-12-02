@@ -25,17 +25,18 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
-  const params = useMemo<SearchPayload<EntityType.MESSAGE>>(
-    () => ({
-      where: {
-        or: activeChat?.id
-          ? [
-              { recipient: { id: activeChat.id } },
-              { sender: { id: activeChat.id } },
-            ]
-          : [],
-      },
-    }),
+  const params = useMemo(
+    () =>
+      ({
+        where: {
+          or: activeChat?.id
+            ? [
+                { "recipient.id": activeChat.id },
+                { "sender.id": activeChat.id },
+              ]
+            : [],
+        },
+      }) satisfies SearchPayload<EntityType.MESSAGE>,
     [activeChat?.id],
   );
   const {
