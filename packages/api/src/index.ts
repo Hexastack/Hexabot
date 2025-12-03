@@ -60,6 +60,8 @@ export * from './user';
 
 export * from './websocket';
 
+export * from './workflow';
+
 export * from './utils';
 
 // Shared configuration

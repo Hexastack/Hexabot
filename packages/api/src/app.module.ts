@@ -45,6 +45,7 @@ import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { WorkflowModule } from './workflow/workflow.module';
 
 // Production "monolith" mode
 const compiledFrontendPath = join(__dirname, 'static');
@@ -88,6 +89,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   ChatModule,
   ChannelModule,
   ActionsModule,
+  WorkflowModule,
   PluginsModule,
   HelperModule,
   LoggerModule,
