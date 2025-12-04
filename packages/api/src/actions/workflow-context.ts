@@ -8,12 +8,24 @@ import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import EventWrapper from '@/channel/lib/EventWrapper';
+import { Context } from '@/chat/types/context';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class WorkflowContext extends BaseWorkflowContext {
+  event?: EventWrapper<any, any>;
+
+  subscriberId?: string;
+
+  conversationId?: string;
+
+  conversationContext?: Context;
+
+  runId?: string;
+
   constructor(
     private readonly i18n: I18nService,
     private readonly settings: SettingService,

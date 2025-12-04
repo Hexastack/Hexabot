@@ -10,10 +10,14 @@ import { TestingModule } from '@nestjs/testing';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import defaultWorkflowDefinition from '../defaults/default-workflow';
 import { Workflow } from '../dto/workflow.dto';
+import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
+import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 
+import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowService (TypeORM)', () => {
@@ -39,9 +43,14 @@ describe('WorkflowService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [WorkflowService, WorkflowRepository],
+      providers: [
+        WorkflowService,
+        WorkflowRepository,
+        WorkflowRunService,
+        WorkflowRunRepository,
+      ],
       typeorm: {
-        entities: [WorkflowOrmEntity],
+        entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
       },
     });
 
@@ -100,5 +109,25 @@ describe('WorkflowService (TypeORM)', () => {
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();
+  });
+
+  it('returns the latest workflow when one exists', async () => {
+    const picked = await workflowService.pickWorkflow();
+
+    expect(picked?.id).toBe(workflow.id);
+    expect(picked?.name).toBe(workflow.name);
+  });
+
+  it('creates and returns the default workflow when none exist', async () => {
+    await workflowRepository.deleteMany();
+
+    const picked = await workflowService.pickWorkflow();
+
+    expect(picked).not.toBeNull();
+    expect(picked).toMatchObject({
+      name: defaultWorkflowDefinition.workflow.name,
+      version: defaultWorkflowDefinition.workflow.version,
+      description: defaultWorkflowDefinition.workflow.description,
+    });
   });
 });

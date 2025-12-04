@@ -11,6 +11,7 @@ import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
+import { AgenticService } from './services/agentic.service';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowService } from './services/workflow.service';
 
@@ -23,12 +24,14 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
+    AgenticService,
   ],
   exports: [
     WorkflowRepository,
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
+    AgenticService,
   ],
 })
 export class WorkflowModule {}

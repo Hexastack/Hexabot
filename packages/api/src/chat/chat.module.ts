@@ -12,6 +12,7 @@ import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserModule } from '@/user/user.module';
+import { WorkflowModule } from '@/workflow/workflow.module';
 
 import { BlockController } from './controllers/block.controller';
 import { CategoryController } from './controllers/category.controller';
@@ -39,7 +40,6 @@ import { SubscriberRepository } from './repositories/subscriber.repository';
 import { CategorySeeder } from './seeds/category.seed';
 import { ContextVarSeeder } from './seeds/context-var.seed';
 import { BlockService } from './services/block.service';
-import { BotService } from './services/bot.service';
 import { CategoryService } from './services/category.service';
 import { ChatService } from './services/chat.service';
 import { ContextVarService } from './services/context-var.service';
@@ -66,6 +66,7 @@ import { SubscriberService } from './services/subscriber.service';
     AttachmentModule,
     UserModule,
     NlpModule,
+    WorkflowModule,
   ],
   controllers: [
     CategoryController,
@@ -96,7 +97,6 @@ import { SubscriberService } from './services/subscriber.service';
     ContextVarSeeder,
     ConversationService,
     ChatService,
-    BotService,
   ],
   exports: [
     SubscriberService,
