@@ -12,6 +12,7 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   WorkflowRun,
   WorkflowRunDtoConfig,
+  WorkflowRunFull,
   WorkflowRunTransformerDto,
 } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
@@ -118,6 +119,21 @@ export class WorkflowRunService extends BaseOrmService<
       status: 'failed',
       failedAt: new Date(),
       ...payload,
+    });
+  }
+
+  /**
+   * Find the latest suspended run for a subscriber.
+   *
+   * @param subscriberId - Identifier of the subscriber whose suspended run should be fetched.
+   * @returns The most recently suspended run populated with relations, or `null` when none exists.
+   */
+  async findSuspendedRunBySubscriber(
+    subscriberId: string,
+  ): Promise<WorkflowRunFull | null> {
+    return await this.findOneAndPopulate({
+      where: { subscriber: { id: subscriberId }, status: 'suspended' },
+      order: { suspendedAt: 'DESC', createdAt: 'DESC' },
     });
   }
 }
