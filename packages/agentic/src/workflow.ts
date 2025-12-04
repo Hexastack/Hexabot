@@ -1,5 +1,5 @@
 import type { Action } from './action/action.types';
-import type { BaseWorkflowContext } from './context';
+import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
   Settings,
   WorkflowDefinition,
@@ -8,8 +8,13 @@ import {
 } from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
 import { compileWorkflow } from './workflow-compiler';
+import { WorkflowEventEmitter } from './workflow-event-emitter';
 import { WorkflowRunner } from './workflow-runner';
-import type { CompiledWorkflow, WorkflowRunOptions } from './workflow-types';
+import type {
+  CompiledWorkflow,
+  ExecutionState,
+  WorkflowRunOptions,
+} from './workflow-types';
 
 export { compileWorkflow } from './workflow-compiler';
 export { WorkflowEventEmitter } from './workflow-event-emitter';
@@ -17,7 +22,7 @@ export { WorkflowRunner } from './workflow-runner';
 export type {
   WorkflowResumeResult,
   WorkflowRunOptions,
-  WorkflowStartResult,
+  WorkflowStartResult
 } from './workflow-types';
 
 /**
@@ -109,5 +114,20 @@ export class Workflow {
     options?: WorkflowRunOptions,
   ): Promise<WorkflowRunner> {
     return new WorkflowRunner(this.compiled, options);
+  }
+
+  /**
+   * Rebuild a runner from persisted state and snapshot, useful after restarts.
+   */
+  async buildRunnerFromState(options: {
+    state: ExecutionState;
+    context: BaseWorkflowContext;
+    snapshot: WorkflowSnapshot;
+    suspension?: { stepId: string; reason?: string | null; data?: unknown };
+    eventEmitter?: WorkflowEventEmitter;
+    runId?: string;
+    lastResumeData?: unknown;
+  }): Promise<WorkflowRunner> {
+    return WorkflowRunner.fromPersistedState(this.compiled, options);
   }
 }

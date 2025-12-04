@@ -1,12 +1,20 @@
 import type {
   ActionSnapshot,
+  ActionStatus,
   BaseWorkflowContext,
-  SuspensionOptions,
   WorkflowRunStatus,
-  WorkflowRuntimeControl,
   WorkflowSnapshot,
 } from './context';
-import { WorkflowSuspendedError } from './runtime-error';
+import { RunnerRuntimeControl } from './runner-runtime-control';
+import { executeConditional as runConditionalExecutor } from './step-executors/conditional-executor';
+import { executeDoStep as runDoExecutor } from './step-executors/do-executor';
+import { executeLoop as runLoopExecutor } from './step-executors/loop-executor';
+import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
+import type { StepExecutorEnv } from './step-executors/types';
+import {
+  rebuildSuspension,
+  type SuspensionRebuilderDeps,
+} from './suspension-rebuilder';
 import type {
   StepInfo,
   WorkflowEventEmitter,
@@ -16,12 +24,8 @@ import type {
   CompiledStep,
   CompiledTask,
   CompiledWorkflow,
-  ConditionalStep,
-  DoStep,
   EvaluationScope,
   ExecutionState,
-  LoopStep,
-  ParallelStep,
   ResumeResult,
   RunnerResumeArgs,
   RunnerStartArgs,
@@ -29,37 +33,7 @@ import type {
   Suspension,
   WorkflowRunOptions,
 } from './workflow-types';
-import { evaluateMapping, evaluateValue } from './workflow-values';
-
-/** Minimal wrapper that exposes runner controls to actions via the context. */
-class RunnerRuntimeControl implements WorkflowRuntimeControl {
-  private readonly runner: WorkflowRunner;
-
-  constructor(runner: WorkflowRunner) {
-    this.runner = runner;
-  }
-
-  get status(): WorkflowRunStatus {
-    return this.runner.getStatus();
-  }
-
-  get resumeData(): unknown {
-    return this.runner.getLastResumeData();
-  }
-
-  suspend<T = unknown>(options?: SuspensionOptions): Promise<T> {
-    const currentStep = this.runner.getCurrentStep();
-    throw new WorkflowSuspendedError(currentStep?.id ?? 'unknown', options);
-  }
-
-  resume(data?: unknown): void {
-    void this.runner.resume({ resumeData: data });
-  }
-
-  getSnapshot() {
-    return this.runner.getSnapshot();
-  }
-}
+import { evaluateMapping } from './workflow-values';
 
 /**
  * Executes a compiled workflow definition, tracking state, suspensions, and event hooks.
@@ -90,16 +64,32 @@ export class WorkflowRunner {
   // Workflow context shared with actions for IO and side-effects.
   private context?: BaseWorkflowContext;
 
+  /**
+   * Create a new runner for a compiled workflow definition.
+   *
+   * @param compiled The compiled workflow to execute.
+   * @param options Optional runner configuration such as event emitter and run id.
+   */
   constructor(compiled: CompiledWorkflow, options?: WorkflowRunOptions) {
     this.compiled = compiled;
     this.eventEmitter = options?.eventEmitter;
     this.runId = options?.runId;
   }
 
+  /**
+   * Get the current lifecycle status of the workflow run.
+   *
+   * @returns The status of the workflow execution.
+   */
   getStatus(): WorkflowRunStatus {
     return this.status;
   }
 
+  /**
+   * Snapshot the current workflow status and action states.
+   *
+   * @returns A snapshot representing the workflow and each action's status.
+   */
   getSnapshot(): WorkflowSnapshot {
     return {
       status: this.status,
@@ -107,10 +97,20 @@ export class WorkflowRunner {
     };
   }
 
+  /**
+   * Read the step currently being executed.
+   *
+   * @returns Metadata for the in-flight step, if any.
+   */
   getCurrentStep(): StepInfo | undefined {
     return this.currentStep;
   }
 
+  /**
+   * Access the last payload supplied to a resume call.
+   *
+   * @returns The most recent resume data, or undefined if none.
+   */
   getLastResumeData(): unknown {
     return this.lastResumeData;
   }
@@ -118,6 +118,9 @@ export class WorkflowRunner {
   /**
    * Begin executing the workflow from the first step.
    * Returns a status object describing whether execution finished, suspended, or failed.
+   *
+   * @param args Input payload, context, and optional memory to seed execution.
+   * @returns Execution result including status and snapshot.
    */
   async start(args: RunnerStartArgs): Promise<StartResult> {
     this.status = 'running';
@@ -138,12 +141,50 @@ export class WorkflowRunner {
 
     this.emit('workflow:start', { runId: this.runId });
 
+    const state = this.state;
+    if (!state) {
+      throw new Error('Workflow state not initialized.');
+    }
+
+    return this.runExecution(() =>
+      this.executeFlow(this.compiled.flow, state, []),
+    );
+  }
+
+  /**
+   * Resume a previously suspended workflow using the supplied resume data.
+   *
+   * @param args Data provided to resume the suspended step.
+   * @returns Execution result including status and snapshot.
+   */
+  async resume(args: RunnerResumeArgs): Promise<ResumeResult> {
+    if (this.status !== 'suspended' || !this.suspension) {
+      throw new Error('Cannot resume a workflow that is not suspended.');
+    }
+
+    if (!this.context || !this.state) {
+      throw new Error('Workflow state is not initialized.');
+    }
+
+    this.status = 'running';
+    this.lastResumeData = args.resumeData;
+
+    const suspension = this.suspension;
+
+    return this.runExecution(() => suspension.continue(args.resumeData));
+  }
+
+  /**
+   * Execute the provided workflow operation and normalize suspension, finish, and failure handling.
+   *
+   * @param execute Function that advances workflow execution and may return a suspension.
+   * @returns Result of the execution attempt.
+   */
+  private async runExecution(
+    execute: () => Promise<Suspension | void>,
+  ): Promise<StartResult> {
     try {
-      const suspension = await this.executeFlow(
-        this.compiled.flow,
-        this.state,
-        [],
-      );
+      const suspension = await execute();
 
       if (suspension) {
         this.suspension = suspension;
@@ -169,6 +210,9 @@ export class WorkflowRunner {
       this.suspension = undefined;
       this.currentStep = undefined;
       this.emit('workflow:finish', { runId: this.runId, output });
+      if (!this.context) {
+        throw new Error('Workflow context is not attached.');
+      }
       this.context.attachWorkflowRuntime(undefined);
 
       return { status: 'finished', output, snapshot: this.getSnapshot() };
@@ -177,66 +221,80 @@ export class WorkflowRunner {
       this.currentStep = undefined;
       this.emit('workflow:failure', { runId: this.runId, error });
       this.context?.attachWorkflowRuntime(undefined);
+
       return { status: 'failed', error, snapshot: this.getSnapshot() };
     }
   }
 
   /**
-   * Resume a previously suspended workflow using the supplied resume data.
+   * Rebuild a runner from persisted state, allowing hosts to resume after restarts.
+   *
+   * @param compiled The compiled workflow definition.
+   * @param options Persisted state and metadata needed to rebuild the runner.
+   * @returns A runner positioned to continue from the prior suspension or status.
    */
-  async resume(args: RunnerResumeArgs): Promise<ResumeResult> {
-    if (this.status !== 'suspended' || !this.suspension) {
-      throw new Error('Cannot resume a workflow that is not suspended.');
-    }
+  static async fromPersistedState(
+    compiled: CompiledWorkflow,
+    options: {
+      state: ExecutionState;
+      context: BaseWorkflowContext;
+      snapshot: WorkflowSnapshot;
+      suspension?: { stepId: string; reason?: string | null; data?: unknown };
+      eventEmitter?: WorkflowEventEmitter;
+      runId?: string;
+      lastResumeData?: unknown;
+    },
+  ): Promise<WorkflowRunner> {
+    const runner = new WorkflowRunner(compiled, {
+      eventEmitter: options.eventEmitter,
+      runId: options.runId,
+    });
 
-    if (!this.context || !this.state) {
-      throw new Error('Workflow state is not initialized.');
-    }
+    runner.state = {
+      input: options.state.input ?? {},
+      memory: options.state.memory ?? {},
+      output: options.state.output ?? {},
+      iteration: options.state.iteration,
+      accumulator: options.state.accumulator,
+      iterationStack: [...(options.state.iterationStack ?? [])],
+    };
+    runner.context = options.context;
+    runner.snapshots = options.snapshot.actions ?? {};
+    runner.status = options.snapshot.status ?? 'idle';
+    runner.lastResumeData = options.lastResumeData;
+    runner.runtimeControl = new RunnerRuntimeControl(runner);
+    options.context.attachWorkflowRuntime(runner.runtimeControl);
 
-    this.status = 'running';
-    this.lastResumeData = args.resumeData;
+    if (options.suspension) {
+      const suspension = rebuildSuspension(
+        runner.createSuspensionRebuilderDeps(),
+        {
+          state: runner.state,
+          stepId: options.suspension.stepId,
+          reason: options.suspension.reason ?? undefined,
+          data: options.suspension.data,
+        },
+      );
 
-    try {
-      const nextSuspension = await this.suspension.continue(args.resumeData);
-
-      if (nextSuspension) {
-        this.suspension = nextSuspension;
-        this.status = 'suspended';
-        this.emit('workflow:suspended', {
-          runId: this.runId,
-          step: nextSuspension.step,
-          reason: nextSuspension.reason,
-          data: nextSuspension.data,
-        });
-
-        return {
-          status: 'suspended',
-          step: nextSuspension.step,
-          reason: nextSuspension.reason,
-          data: nextSuspension.data,
-          snapshot: this.getSnapshot(),
-        };
+      if (!suspension) {
+        throw new Error(
+          `Unable to rebuild suspension for step ${options.suspension.stepId}`,
+        );
       }
 
-      const output = await this.evaluateWorkflowOutputs();
-      this.status = 'finished';
-      this.suspension = undefined;
-      this.currentStep = undefined;
-      this.emit('workflow:finish', { runId: this.runId, output });
-      this.context.attachWorkflowRuntime(undefined);
-
-      return { status: 'finished', output, snapshot: this.getSnapshot() };
-    } catch (error) {
-      this.status = 'failed';
-      this.currentStep = undefined;
-      this.emit('workflow:failure', { runId: this.runId, error });
-      this.context.attachWorkflowRuntime(undefined);
-
-      return { status: 'failed', error, snapshot: this.getSnapshot() };
+      runner.suspension = suspension;
+      runner.status = 'suspended';
     }
+
+    return runner;
   }
 
-  /** Emit an event if an emitter is provided. */
+  /**
+   * Emit an event if an emitter is provided.
+   *
+   * @param event The event name to emit.
+   * @param payload The event payload.
+   */
   private emit<K extends keyof WorkflowEventMap>(
     event: K,
     payload: WorkflowEventMap[K],
@@ -247,6 +305,9 @@ export class WorkflowRunner {
   /**
    * Evaluate and map the workflow outputs after all steps have completed.
    * Throws if the internal state or context were not initialized.
+   *
+   * @returns The evaluated workflow outputs.
+   * @throws When state or context are missing.
    */
   private async evaluateWorkflowOutputs(): Promise<Record<string, unknown>> {
     if (!this.state || !this.context) {
@@ -261,7 +322,13 @@ export class WorkflowRunner {
     });
   }
 
-  /** Build a stable step id that reflects the current loop iteration stack. */
+  /**
+   * Build a stable step id that reflects the current loop iteration stack.
+   *
+   * @param step The compiled step to annotate.
+   * @param iterationStack The loop stack representing nested iterations.
+   * @returns A step info object with an iteration-aware id.
+   */
   private buildInstanceStepInfo(
     step: CompiledStep,
     iterationStack: number[],
@@ -271,11 +338,14 @@ export class WorkflowRunner {
     return { ...step.stepInfo, id: `${step.stepInfo.id}${suffix}` };
   }
 
-  private markSnapshot(
-    step: StepInfo,
-    status: ActionSnapshot['status'],
-    reason?: string,
-  ) {
+  /**
+   * Record an action snapshot for the given step id.
+   *
+   * @param step The step being updated.
+   * @param status The new snapshot status.
+   * @param reason Optional reason to include when marking failure/suspension.
+   */
+  private markSnapshot(step: StepInfo, status: ActionStatus, reason?: string) {
     this.snapshots[step.id] = {
       id: step.id,
       name: step.name,
@@ -285,7 +355,67 @@ export class WorkflowRunner {
   }
 
   /**
+   * Construct the environment object passed to step executors.
+   *
+   * @returns A step executor environment bound to this runner.
+   * @throws When the workflow context is missing.
+   */
+  private createExecutorEnv(): StepExecutorEnv {
+    if (!this.context) {
+      throw new Error('Workflow context is not attached.');
+    }
+
+    return {
+      compiled: this.compiled,
+      context: this.context,
+      runId: this.runId,
+      buildInstanceStepInfo: (step, iterationStack) =>
+        this.buildInstanceStepInfo(step, iterationStack),
+      markSnapshot: (step, status, reason) =>
+        this.markSnapshot(step, status, reason),
+      emit: (event, payload) => this.emit(event, payload),
+      setCurrentStep: (step?: StepInfo) => {
+        this.currentStep = step;
+      },
+      captureTaskOutput: (task, state, result) =>
+        this.captureTaskOutput(task, state, result),
+      executeFlow: (steps, state, path, startIndex) =>
+        this.executeFlow(steps, state, path, startIndex),
+      executeStep: (step, state, path) => this.executeStep(step, state, path),
+    };
+  }
+
+  /**
+   * Build dependencies used to reconstruct a suspension from persisted state.
+   *
+   * @returns Dependency bag for suspension rebuilders.
+   */
+  private createSuspensionRebuilderDeps(): SuspensionRebuilderDeps {
+    return {
+      compiled: this.compiled,
+      context: this.context,
+      runId: this.runId,
+      createExecutorEnv: () => this.createExecutorEnv(),
+      buildInstanceStepInfo: (step, iterationStack) =>
+        this.buildInstanceStepInfo(step, iterationStack),
+      captureTaskOutput: (task, state, result) =>
+        this.captureTaskOutput(task, state, result),
+      markSnapshot: (step, status, reason) =>
+        this.markSnapshot(step, status, reason),
+      emit: (event, payload) => this.emit(event, payload),
+      executeFlow: (steps, state, path, startIndex) =>
+        this.executeFlow(steps, state, path, startIndex),
+    };
+  }
+
+  /**
    * Walk a list of compiled steps, threading state and returning a suspension when encountered.
+   *
+   * @param steps The steps to execute sequentially.
+   * @param state Mutable execution state shared across steps.
+   * @param path Path tokens leading to the current step for tracing.
+   * @param startIndex Index to resume from within the flow.
+   * @returns A suspension if execution pauses, otherwise void.
    */
   private async executeFlow(
     steps: CompiledStep[],
@@ -316,109 +446,49 @@ export class WorkflowRunner {
     return undefined;
   }
 
+  /**
+   * Execute a single compiled step by delegating to its executor.
+   *
+   * @param step The step to run.
+   * @param state The shared execution state.
+   * @param path Tokens describing the location of the step in the workflow.
+   * @returns A suspension if the step pauses execution, otherwise void.
+   */
   private async executeStep(
     step: CompiledStep,
     state: ExecutionState,
     path: Array<number | string>,
   ): Promise<Suspension | void> {
-    // Dispatch execution based on step kind; undefined means the branch finished.
+    const env = this.createExecutorEnv();
     switch (step.kind) {
       case 'do':
-        return this.executeDoStep(step, state, path);
+        return runDoExecutor(env, step, state, path);
       case 'parallel':
-        return this.executeParallel(step, state, path);
+        return runParallelExecutor(env, step, state, path);
       case 'conditional':
-        return this.executeConditional(step, state, path);
+        return runConditionalExecutor(env, step, state, path);
       case 'loop':
-        return this.executeLoop(step, state, path);
-      default:
-        return undefined;
+        return runLoopExecutor(env, step, state, path);
     }
   }
 
-  /** Execute a single task step, capturing outputs and handling suspension/errors. */
-  private async executeDoStep(
-    step: DoStep,
-    state: ExecutionState,
-    path: Array<number | string>,
-  ): Promise<Suspension | void> {
-    // Execute a single task and capture its output; suspension bubbles up when requested by the action.
-    if (!this.context) {
-      throw new Error('Workflow context is not attached.');
-    }
-
-    const task = this.compiled.tasks[step.taskName];
-    if (!task) {
-      throw new Error(`Task "${step.taskName}" is not defined.`);
-    }
-
-    const stepInfo = this.buildInstanceStepInfo(step, state.iterationStack);
-    const scope: EvaluationScope = {
-      input: state.input,
-      context: this.context,
-      memory: state.memory,
-      output: state.output,
-      iteration: state.iteration,
-      accumulator: state.accumulator,
-    };
-
-    // Inputs are evaluated prior to marking the step as running to catch expression errors early.
-    const inputs = await evaluateMapping(task.inputs, scope);
-    this.currentStep = stepInfo;
-    this.markSnapshot(stepInfo, 'running');
-    this.emit('step:start', { runId: this.runId, step: stepInfo });
-
-    try {
-      const result = await task.action.run(inputs, this.context, task.settings);
-      await this.captureTaskOutput(task, stepInfo, state, result);
-      this.markSnapshot(stepInfo, 'completed');
-      this.emit('step:success', { runId: this.runId, step: stepInfo });
-      return undefined;
-    } catch (error) {
-      if (error instanceof WorkflowSuspendedError) {
-        this.markSnapshot(stepInfo, 'suspended', error.reason);
-        this.emit('step:suspended', {
-          runId: this.runId,
-          step: stepInfo,
-          reason: error.reason,
-          data: error.data,
-        });
-
-        return {
-          step: stepInfo,
-          reason: error.reason,
-          data: error.data,
-          continue: async (resumeData: unknown) => {
-            await this.captureTaskOutput(task, stepInfo, state, resumeData);
-            this.markSnapshot(stepInfo, 'completed');
-            this.emit('step:success', { runId: this.runId, step: stepInfo });
-            return undefined;
-          },
-        };
-      }
-
-      this.markSnapshot(
-        stepInfo,
-        'failed',
-        error instanceof Error ? error.message : String(error),
-      );
-      this.emit('step:error', { runId: this.runId, step: stepInfo, error });
-      throw error;
-    } finally {
-      this.currentStep = undefined;
-    }
-  }
-
+  /**
+   * Map task outputs onto workflow output state and evaluate expressions as define in the YAML definition.
+   * @reviewed
+   * @param task The task whose outputs are being captured.
+   * @param state Current execution state to mutate.
+   * @param result Raw result returned by the task action.
+   */
   private async captureTaskOutput(
     task: CompiledTask,
-    stepInfo: StepInfo,
     state: ExecutionState,
     result: unknown,
   ) {
+    const env = this.createExecutorEnv();
     // Map task outputs through expressions; fall back to raw result when no mapping is provided.
     const scope: EvaluationScope = {
       input: state.input,
-      context: this.context as BaseWorkflowContext,
+      context: env.context,
       memory: state.memory,
       output: state.output,
       iteration: state.iteration,
@@ -428,249 +498,5 @@ export class WorkflowRunner {
 
     const mapped = await evaluateMapping(task.outputs, scope);
     state.output[task.name] = Object.keys(mapped).length > 0 ? mapped : result;
-  }
-
-  /**
-   * Execute a parallel block sequentially to maintain determinism while obeying wait_any/wait_all semantics.
-   * Suspension continuations resume the remaining work from the current index.
-   */
-  private async executeParallel(
-    step: ParallelStep,
-    state: ExecutionState,
-    path: Array<number | string>,
-    startIndex = 0,
-  ): Promise<Suspension | void> {
-    // Steps are executed sequentially to keep evaluation order deterministic; strategy controls early exit.
-    for (let index = startIndex; index < step.steps.length; index += 1) {
-      const child = step.steps[index];
-      const suspension = await this.executeStep(child, state, [...path, index]);
-      if (suspension) {
-        return {
-          ...suspension,
-          continue: async (resumeData: unknown) => {
-            const next = await suspension.continue(resumeData);
-            if (next) {
-              return next;
-            }
-
-            if (step.strategy === 'wait_any') {
-              return undefined;
-            }
-
-            return this.executeParallel(step, state, path, index + 1);
-          },
-        };
-      }
-
-      if (step.strategy === 'wait_any') {
-        return undefined;
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Evaluate branches until one matches and run its nested steps.
-   * Only the first truthy branch executes.
-   */
-  private async executeConditional(
-    step: ConditionalStep,
-    state: ExecutionState,
-    path: Array<number | string>,
-  ): Promise<Suspension | void> {
-    if (!this.context) {
-      throw new Error('Workflow context is not attached.');
-    }
-
-    for (let index = 0; index < step.branches.length; index += 1) {
-      const branch = step.branches[index];
-      const scope: EvaluationScope = {
-        input: state.input,
-        context: this.context,
-        memory: state.memory,
-        output: state.output,
-        iteration: state.iteration,
-        accumulator: state.accumulator,
-      };
-
-      const conditionResult =
-        branch.condition !== undefined
-          ? await evaluateValue(branch.condition, scope)
-          : true;
-
-      if (conditionResult) {
-        // Execute only the first matching branch.
-        const suspension = await this.executeFlow(branch.steps, state, [
-          ...path,
-          'branch',
-          index,
-        ]);
-
-        if (suspension) {
-          return {
-            ...suspension,
-            continue: async (resumeData: unknown) => {
-              const next = await suspension.continue(resumeData);
-              if (next) {
-                return next;
-              }
-              return undefined;
-            },
-          };
-        }
-
-        return undefined;
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Iterate through items produced by `forEach`, optionally aggregating values,
-   * and resume mid-loop when a child suspends.
-   */
-  private async executeLoop(
-    step: LoopStep,
-    state: ExecutionState,
-    path: Array<number | string>,
-    startIndex = 0,
-  ): Promise<Suspension | void> {
-    if (!this.context) {
-      throw new Error('Workflow context is not attached.');
-    }
-
-    const scope: EvaluationScope = {
-      input: state.input,
-      context: this.context,
-      memory: state.memory,
-      output: state.output,
-      iteration: state.iteration,
-      accumulator: state.accumulator,
-    };
-
-    const items = await evaluateValue(step.forEach.in, scope);
-    const iterable = Array.isArray(items) ? items : [];
-    let accumulator = step.accumulate?.initial ?? state.accumulator;
-
-    // Iterate through evaluated items; accumulator and iterationStack are threaded through.
-    for (let index = startIndex; index < iterable.length; index += 1) {
-      const item = iterable[index];
-      const iterationState: ExecutionState = {
-        ...state,
-        iteration: { item, index },
-        accumulator,
-        iterationStack: [...state.iterationStack, index],
-      };
-
-      const suspension = await this.executeFlow(step.steps, iterationState, [
-        ...path,
-        index,
-      ]);
-
-      if (suspension) {
-        return {
-          ...suspension,
-          continue: async (resumeData: unknown) => {
-            const next = await suspension.continue(resumeData);
-            if (next) {
-              return next;
-            }
-
-            const postScope: EvaluationScope = {
-              input: iterationState.input,
-              context: this.context as BaseWorkflowContext,
-              memory: iterationState.memory,
-              output: iterationState.output,
-              iteration: { item, index },
-              accumulator,
-            };
-
-            accumulator = await this.updateAccumulator(
-              step,
-              postScope,
-              accumulator,
-            );
-
-            const shouldStop = await this.shouldStopLoop(step, postScope);
-            if (shouldStop) {
-              state.accumulator = accumulator;
-              if (step.accumulate && step.name) {
-                state.output[step.name] = { [step.accumulate.as]: accumulator };
-              }
-              return undefined;
-            }
-
-            return this.executeLoop(
-              step,
-              {
-                ...iterationState,
-                accumulator,
-                iterationStack: state.iterationStack,
-              },
-              path,
-              index + 1,
-            );
-          },
-        };
-      }
-
-      const postScope: EvaluationScope = {
-        input: iterationState.input,
-        context: this.context as BaseWorkflowContext,
-        memory: iterationState.memory,
-        output: iterationState.output,
-        iteration: { item, index },
-        accumulator,
-      };
-
-      accumulator = await this.updateAccumulator(step, postScope, accumulator);
-
-      const shouldStop = await this.shouldStopLoop(step, postScope);
-      if (shouldStop) {
-        break;
-      }
-
-      state.output = iterationState.output;
-    }
-
-    if (step.accumulate && step.name) {
-      state.output[step.name] = { [step.accumulate.as]: accumulator };
-    }
-
-    if (step.accumulate) {
-      state.accumulator = accumulator;
-    }
-
-    return undefined;
-  }
-
-  private async updateAccumulator(
-    step: LoopStep,
-    scope: EvaluationScope,
-    previous: unknown,
-  ): Promise<unknown> {
-    if (!step.accumulate) {
-      return previous;
-    }
-
-    return evaluateValue(step.accumulate.merge, {
-      ...scope,
-      accumulator: previous,
-    });
-  }
-
-  /** Evaluate the loop `until` condition, defaulting to false when not provided. */
-  private async shouldStopLoop(
-    step: LoopStep,
-    scope: EvaluationScope,
-  ): Promise<boolean> {
-    if (!step.until) {
-      return false;
-    }
-
-    const result = await evaluateValue(step.until, scope);
-    return Boolean(result);
   }
 }

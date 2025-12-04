@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { defineAction } from '../action/action';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
+import type { ExecutionState } from '../workflow-types';
 import { compileWorkflow } from '../workflow-compiler';
 import { WorkflowEventEmitter } from '../workflow-event-emitter';
 import { WorkflowRunner } from '../workflow-runner';
@@ -197,5 +198,219 @@ describe('WorkflowRunner', () => {
     }
 
     await expect(runner.resume({ resumeData: {} })).rejects.toThrow('Cannot resume a workflow that is not suspended.');
+  });
+
+  it('resumes a suspended step and continues executing the remaining flow', async () => {
+    const suspendAction = defineAction<{ prompt: string }, { reply: string }, TestContext, Settings>({
+      name: 'resume_suspend_action',
+      inputSchema: z.object({ prompt: z.string() }),
+      outputSchema: z.object({ reply: z.string() }),
+      execute: async ({ context }) => {
+        await context.workflow.suspend({ reason: 'need_reply' });
+        return { reply: 'ignored' };
+      },
+    });
+
+    const followExecute = jest.fn(async ({ input }) => ({
+      formatted: input.message.toUpperCase(),
+    }));
+    const followAction = defineAction<{ message: string }, { formatted: string }, TestContext, Settings>({
+      name: 'follow_action',
+      inputSchema: z.object({ message: z.string() }),
+      outputSchema: z.object({ formatted: z.string() }),
+      execute: followExecute,
+    });
+
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'resume_flow', version: '1.0.0' },
+      tasks: {
+        wait_step: {
+          action: 'resume_suspend_action',
+          inputs: { prompt: '="Ping?"' },
+          outputs: { reply: '=$result.reply' },
+        },
+        follow_step: {
+          action: 'follow_action',
+          inputs: { message: '=$output.wait_step.reply' },
+          outputs: { formatted: '=$result.formatted' },
+        },
+      },
+      flow: [{ do: 'wait_step' }, { do: 'follow_step' }],
+      outputs: {
+        reply: '=$output.wait_step.reply',
+        formatted: '=$output.follow_step.formatted',
+      },
+    };
+
+    const compiled = compileWorkflow(definition, {
+      resume_suspend_action: suspendAction,
+      follow_action: followAction,
+    });
+    const runner = new WorkflowRunner(compiled);
+    const startResult = await runner.start({ inputData: {}, context: new TestContext() });
+
+    expect(startResult.status).toBe('suspended');
+    if (startResult.status !== 'suspended') {
+      throw new Error('workflow did not suspend');
+    }
+
+    expect(startResult.step.id).toBe('0:wait_step');
+    expect(runner.getSnapshot().actions['0:wait_step']?.status).toBe('suspended');
+
+    const resumeResult = await runner.resume({ resumeData: { reply: 'ok' } });
+    expect(resumeResult.status).toBe('finished');
+    if (resumeResult.status === 'finished') {
+      expect(resumeResult.output.reply).toBe('ok');
+      expect(resumeResult.output.formatted).toBe('OK');
+      expect(followExecute).toHaveBeenCalledTimes(1);
+      expect(runner.getSnapshot().actions['0:wait_step']?.status).toBe('completed');
+      expect(runner.getSnapshot().actions['1:follow_step']?.status).toBe('completed');
+    }
+  });
+
+  it('uses the raw task result when no outputs mapping is provided', async () => {
+    const rawAction = defineAction<{ value: string }, string, TestContext, Settings>({
+      name: 'raw_action',
+      inputSchema: z.object({ value: z.string() }),
+      outputSchema: z.string(),
+      execute: async ({ input }) => `echo:${input.value}`,
+    });
+
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'raw_output', version: '1.0.0' },
+      tasks: {
+        raw_step: { action: 'raw_action', inputs: { value: '="hello"' } },
+      },
+      flow: [{ do: 'raw_step' }],
+      outputs: { final: '=$output.raw_step' },
+    };
+
+    const compiled = compileWorkflow(definition, { raw_action: rawAction });
+    const runner = new WorkflowRunner(compiled);
+    const result = await runner.start({ inputData: {}, context: new TestContext() });
+
+    expect(result.status).toBe('finished');
+    if (result.status === 'finished') {
+      expect(result.output.final).toBe('echo:hello');
+      const runtimeState = (runner as unknown as { state: ExecutionState }).state;
+      expect(runtimeState?.output.raw_step).toBe('echo:hello');
+      expect(runner.getSnapshot().actions['0:raw_step']?.status).toBe('completed');
+    }
+  });
+
+  it('throws when a persisted suspension cannot be rebuilt', async () => {
+    const noopAction = defineAction<unknown, { ok: boolean }, TestContext, Settings>({
+      name: 'noop_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ ok: z.boolean() }),
+      execute: async () => ({ ok: true }),
+    });
+
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'unrebuildable', version: '1.0.0' },
+      tasks: {
+        only_step: { action: 'noop_action', inputs: {} },
+      },
+      flow: [{ do: 'only_step' }],
+      outputs: { ok: '=$output.only_step.ok' },
+    };
+
+    const compiled = compileWorkflow(definition, { noop_action: noopAction });
+    const persistedState: ExecutionState = {
+      input: {},
+      memory: {},
+      output: {},
+      iterationStack: [],
+    };
+
+    await expect(
+      WorkflowRunner.fromPersistedState(compiled, {
+        state: persistedState,
+        context: new TestContext(),
+        snapshot: { status: 'suspended', actions: {} },
+        suspension: { stepId: 'unknown.step', reason: null, data: undefined },
+      }),
+    ).rejects.toThrow('Unable to rebuild suspension for step unknown.step');
+  });
+
+  it('rebuilds loop suspension using the iteration suffix when iterationStack is missing', async () => {
+    const suspendAction = defineAction<{ prompt: string }, { reply: string }, TestContext, Settings>({
+      name: 'loop_suspend_action',
+      inputSchema: z.object({ prompt: z.string() }),
+      outputSchema: z.object({ reply: z.string() }),
+      execute: async ({ input, context }) => {
+        await context.workflow.suspend({
+          reason: 'awaiting_reply',
+          data: { prompt: input.prompt },
+        });
+        return { reply: 'ignored' };
+      },
+    });
+
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'suspended_loop', version: '1.0.0' },
+      tasks: {
+        wait_step: {
+          action: 'loop_suspend_action',
+          inputs: { prompt: '="Ping"' },
+          outputs: { reply: '=$result.reply' },
+        },
+      },
+      flow: [
+        {
+          loop: {
+            name: 'iterate',
+            for_each: { item: 'entry', in: '=$input.items' },
+            steps: [{ do: 'wait_step' }],
+          },
+        },
+      ],
+      outputs: { reply: '=$output.wait_step.reply' },
+      inputs: {
+        schema: {
+          items: { type: 'array', items: { type: 'string' } },
+        },
+      },
+    };
+
+    const compiled = compileWorkflow(definition, { loop_suspend_action: suspendAction });
+    const runner = new WorkflowRunner(compiled);
+    const context = new TestContext();
+
+    const startResult = await runner.start({ inputData: { items: ['first'] }, context });
+
+    expect(startResult.status).toBe('suspended');
+    if (startResult.status !== 'suspended') {
+      throw new Error('Workflow did not suspend as expected');
+    }
+
+    expect(startResult.step.id).toBe('0.iterate.0:wait_step[0]');
+
+    const runtimeState = (runner as unknown as { state: ExecutionState }).state;
+    const persistedState: ExecutionState = {
+      input: { ...runtimeState.input },
+      memory: { ...runtimeState.memory },
+      output: { ...runtimeState.output },
+      iteration: runtimeState.iteration,
+      accumulator: runtimeState.accumulator,
+      iterationStack: [],
+    };
+
+    const rebuilt = await WorkflowRunner.fromPersistedState(compiled, {
+      state: persistedState,
+      context: new TestContext(),
+      snapshot: startResult.snapshot,
+      suspension: {
+        stepId: startResult.step.id,
+        reason: startResult.reason ?? null,
+        data: startResult.data,
+      },
+    });
+
+    const resumeResult = await rebuilt.resume({ resumeData: { reply: 'Pong' } });
+    expect(resumeResult.status).toBe('finished');
+    if (resumeResult.status === 'finished') {
+      expect(resumeResult.output.reply).toBe('Pong');
+    }
   });
 });
