@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -36,7 +35,6 @@ export class TranslationService extends BaseOrmService<
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly i18n: I18nService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
     this.resetI18nTranslations();

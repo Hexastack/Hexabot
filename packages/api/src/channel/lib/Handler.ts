@@ -38,7 +38,6 @@ import {
 } from '@/chat/types/message';
 import { config } from '@/config';
 import { I18nService } from '@/i18n';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { buildURL } from '@/utils/helpers/URL';
@@ -65,9 +64,6 @@ export default abstract class ChannelHandler<
 
   @Inject(EventEmitter2)
   protected readonly eventEmitter: EventEmitter2;
-
-  @Inject(LoggerService)
-  protected readonly logger: LoggerService;
 
   @Inject(AttachmentService)
   public readonly attachmentService: AttachmentService;

@@ -16,7 +16,6 @@ import { FindManyOptions, FindOptionsOrder, InsertEvent } from 'typeorm';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { NlpValueMatchPattern } from '@/chat/types/pattern';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { NlpSampleEntityValue, NlpSampleState } from '..//types';
@@ -48,7 +47,6 @@ export class NlpSampleService extends BaseOrmService<
     private readonly nlpEntityService: NlpEntityService,
     private readonly nlpValueService: NlpValueService,
     private readonly languageService: LanguageService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

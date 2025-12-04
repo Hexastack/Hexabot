@@ -4,9 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Inject } from '@nestjs/common';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { LoggerService } from '@/logger/logger.service';
 
 import {
   DtoAction,
@@ -39,6 +41,9 @@ export abstract class BaseOrmService<
   get eventEmitter() {
     return this.repository.getEventEmitter();
   }
+
+  @Inject(LoggerService)
+  readonly logger: LoggerService;
 
   getRepository(): OrmRepository {
     return this.repository;

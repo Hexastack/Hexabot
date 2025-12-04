@@ -10,7 +10,6 @@ import {
   OutgoingMessageFormat,
   StdOutgoingTextEnvelope,
 } from '@/chat/types/message';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate, PluginSetting } from '@/plugins/types';
@@ -19,10 +18,7 @@ import { PluginBlockTemplate, PluginSetting } from '@/plugins/types';
 export class DummyPlugin extends BaseBlockPlugin<PluginSetting[]> {
   template: PluginBlockTemplate = { name: 'Dummy Plugin' };
 
-  constructor(
-    pluginService: PluginService,
-    private logger: LoggerService,
-  ) {
+  constructor(pluginService: PluginService) {
     super('dummy-plugin', pluginService);
 
     this.effects = {

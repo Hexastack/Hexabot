@@ -5,7 +5,6 @@
  */
 
 import { AnyMessage } from '@/chat/types/message';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
@@ -22,9 +21,8 @@ export abstract class BaseLlmHelper<
     name: N,
     settingService: SettingService,
     helperService: HelperService,
-    logger: LoggerService,
   ) {
-    super(name, settingService, helperService, logger);
+    super(name, settingService, helperService);
   }
 
   /**

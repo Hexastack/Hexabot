@@ -6,7 +6,6 @@
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BlockStub } from '@/chat/dto/block.dto';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
@@ -23,9 +22,8 @@ export default abstract class BaseFlowEscapeHelper<
     name: N,
     settingService: SettingService,
     helperService: HelperService,
-    logger: LoggerService,
   ) {
-    super(name, settingService, helperService, logger);
+    super(name, settingService, helperService);
   }
 
   /**

@@ -15,7 +15,6 @@ import { Request } from 'express';
 
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
@@ -50,7 +49,7 @@ describe('AttachmentController', () => {
   const TEST_USER_ID = '66666666-6666-6666-6666-666666666666';
 
   beforeAll(async () => {
-    const { getMocks, resolveMocks } = await buildTestingMocks({
+    const { getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [AttachmentController],
       providers: [
@@ -78,7 +77,6 @@ describe('AttachmentController', () => {
         HelperService,
         SettingService,
       ]);
-    const [loggerService] = await resolveMocks([LoggerService]);
 
     attachmentToDelete = (await attachmentService.findOne({
       where: {
@@ -87,7 +85,7 @@ describe('AttachmentController', () => {
     }))!;
 
     helperService.register(
-      new LocalStorageHelper(settingService, helperService, loggerService),
+      new LocalStorageHelper(settingService, helperService),
     );
   });
 
