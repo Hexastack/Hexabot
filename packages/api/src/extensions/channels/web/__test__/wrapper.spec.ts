@@ -9,6 +9,7 @@ import { TestingModule } from '@nestjs/testing';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { ChannelService } from '@/channel/channel.service';
 import { MessageService } from '@/chat/services/message.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
@@ -58,6 +59,7 @@ describe(`Web event wrapper`, () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
+        ChannelService,
         JwtService,
         WebChannelHandler,
         I18nServiceProvider,

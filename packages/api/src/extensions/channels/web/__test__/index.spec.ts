@@ -9,6 +9,7 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { ChannelService } from '@/channel/channel.service';
 import {
   attachmentMessage,
   buttonsMessage,
@@ -16,6 +17,7 @@ import {
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
+import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
@@ -63,6 +65,8 @@ describe('WebChannelHandler', () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
+        ChannelService,
+        MessageService,
         JwtService,
         WebChannelHandler,
         I18nServiceProvider,

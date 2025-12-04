@@ -13,6 +13,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
@@ -36,6 +37,7 @@ import {
   StdOutgoingMessage,
 } from '@/chat/types/message';
 import { config } from '@/config';
+import { I18nService } from '@/i18n';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
@@ -58,11 +60,26 @@ export default abstract class ChannelHandler<
 {
   private readonly settings: ChannelSetting<N>[];
 
+  @Inject(I18nService)
+  protected readonly i18n: I18nService;
+
+  @Inject(EventEmitter2)
+  protected readonly eventEmitter: EventEmitter2;
+
+  @Inject(LoggerService)
+  protected readonly logger: LoggerService;
+
   @Inject(AttachmentService)
   public readonly attachmentService: AttachmentService;
 
   @Inject(JwtService)
   protected readonly jwtService: JwtService;
+
+  @Inject(SettingService)
+  protected readonly settingService: SettingService;
+
+  @Inject(ChannelService)
+  protected readonly channelService: ChannelService;
 
   protected readonly jwtSignOptions: JwtSignOptions = {
     secret: config.parameters.signedUrl.secret,
@@ -71,12 +88,7 @@ export default abstract class ChannelHandler<
     encoding: 'utf-8',
   };
 
-  constructor(
-    name: N,
-    protected readonly settingService: SettingService,
-    private readonly channelService: ChannelService,
-    protected readonly logger: LoggerService,
-  ) {
+  constructor(name: N) {
     super(name);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.settings = require(path.join(this.getPath(), 'settings')).default;
