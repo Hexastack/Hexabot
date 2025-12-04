@@ -13,10 +13,7 @@ import {
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { LoggerService } from '@/logger/logger.service';
-import { SettingService } from '@/setting/services/setting.service';
 
-import { HelperService } from '../helper.service';
 import { HelperName, HelperType } from '../types';
 
 import BaseHelper from './base-helper';
@@ -26,13 +23,8 @@ export abstract class BaseStorageHelper<
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.STORAGE;
 
-  constructor(
-    name: N,
-    settingService: SettingService,
-    helperService: HelperService,
-    logger: LoggerService,
-  ) {
-    super(name, settingService, helperService, logger);
+  constructor(name: N) {
+    super(name);
   }
 
   /**

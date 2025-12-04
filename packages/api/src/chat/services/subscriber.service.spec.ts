@@ -16,7 +16,6 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
@@ -50,12 +49,6 @@ describe('SubscriberService (TypeORM)', () => {
   const gatewayMock = {
     joinNotificationSockets: jest.fn(),
   } as jest.Mocked<Pick<WebsocketGateway, 'joinNotificationSockets'>>;
-  const loggerMock = {
-    debug: jest.fn(),
-    error: jest.fn(),
-    log: jest.fn(),
-    warn: jest.fn(),
-  } as jest.Mocked<Pick<LoggerService, 'debug' | 'error' | 'log' | 'warn'>>;
   const attachmentServiceMock = {
     store: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'store'>>;
@@ -75,7 +68,6 @@ describe('SubscriberService (TypeORM)', () => {
         UserRepository,
         { provide: AttachmentService, useValue: attachmentServiceMock },
         { provide: WebsocketGateway, useValue: gatewayMock },
-        { provide: LoggerService, useValue: loggerMock },
       ],
       typeorm: {
         fixtures: [

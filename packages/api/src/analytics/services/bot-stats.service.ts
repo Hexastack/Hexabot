@@ -15,7 +15,6 @@ import {
 } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
@@ -32,10 +31,7 @@ export class BotStatsService extends BaseOrmService<
   BotStatsActionDto,
   BotStatsRepository
 > {
-  constructor(
-    readonly repository: BotStatsRepository,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(readonly repository: BotStatsRepository) {
     super(repository);
   }
 

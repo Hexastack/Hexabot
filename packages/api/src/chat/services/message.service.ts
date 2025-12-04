@@ -6,7 +6,6 @@
 
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   SocketGet,
@@ -39,7 +38,6 @@ export class MessageService extends BaseOrmService<
   constructor(
     readonly repository: MessageRepository,
     private readonly gateway: WebsocketGateway,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

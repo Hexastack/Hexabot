@@ -7,14 +7,19 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-import { OnModuleInit } from '@nestjs/common';
+import { Inject, OnModuleInit } from '@nestjs/common';
 import { I18nJsonLoader, I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
+
+import { LoggerService } from '@/logger/logger.service';
 
 import { ExtensionName, HyphenToUnderscore } from '../types/extension';
 
 export abstract class Extension implements OnModuleInit {
   private translations: I18nTranslation | Observable<I18nTranslation>;
+
+  @Inject(LoggerService)
+  protected readonly logger: LoggerService;
 
   constructor(public readonly name: ExtensionName) {}
 

@@ -9,7 +9,6 @@ import { TestingModule } from '@nestjs/testing';
 import { ChannelService } from '@/channel/channel.service';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
-import { LoggerService } from '@/logger/logger.service';
 import { Setting } from '@/setting/dto/setting.dto';
 import { SettingService } from '@/setting/services/setting.service';
 import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
@@ -33,7 +32,6 @@ describe('CleanupService', () => {
   let helperService: HelperService;
   let cleanupService: CleanupService;
   let settingService: SettingService;
-  let loggerService: LoggerService;
 
   const sortSettings = (settings: Setting[]) =>
     [...settings].sort((a, b) => {
@@ -68,13 +66,9 @@ describe('CleanupService', () => {
       HelperService,
     ]);
 
-    [loggerService] = await testing.resolveMocks([LoggerService]);
-
     initialSettings = await settingService.findAll();
 
-    helperService.register(
-      new LocalStorageHelper(settingService, helperService, loggerService),
-    );
+    helperService.register(new LocalStorageHelper());
   });
 
   afterAll(async () => {

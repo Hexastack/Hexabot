@@ -6,10 +6,7 @@
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BlockStub } from '@/chat/dto/block.dto';
-import { LoggerService } from '@/logger/logger.service';
-import { SettingService } from '@/setting/services/setting.service';
 
-import { HelperService } from '../helper.service';
 import { FlowEscape, HelperName, HelperType } from '../types';
 
 import BaseHelper from './base-helper';
@@ -19,13 +16,8 @@ export default abstract class BaseFlowEscapeHelper<
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.FLOW_ESCAPE;
 
-  constructor(
-    name: N,
-    settingService: SettingService,
-    helperService: HelperService,
-    logger: LoggerService,
-  ) {
-    super(name, settingService, helperService, logger);
+  constructor(name: N) {
+    super(name);
   }
 
   /**

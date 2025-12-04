@@ -4,33 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { LoggerService } from '@/logger/logger.service';
+import { Injectable } from '@nestjs/common';
+
+import { HelperService } from '@/helper/helper.service';
 import { NlpEntity, NlpEntityFull } from '@/nlp/dto/nlp-entity.dto';
 import { NlpSampleFull } from '@/nlp/dto/nlp-sample.dto';
 import { NlpValue, NlpValueFull } from '@/nlp/dto/nlp-value.dto';
 import { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
 import { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
-import { SettingService } from '@/setting/services/setting.service';
+import { buildTestingMocks } from '@/utils/test/utils';
 
-import { HelperService } from '../../helper.service';
-import { HelperName } from '../../types';
 import { BaseNlpHelper } from '../base-nlp-helper';
 
-// Mock services
-const mockLoggerService = {
-  log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-} as unknown as LoggerService;
-const mockSettingService = {
-  get: jest.fn(),
-} as unknown as SettingService;
-const mockHelperService = {
-  doSomething: jest.fn(),
-} as unknown as HelperService;
-
 // Concrete implementation for testing
-class TestNlpHelper extends BaseNlpHelper {
+@Injectable()
+class TestNlpHelper extends BaseNlpHelper<'test-helper'> {
   getPath(): string {
     return __dirname;
   }
@@ -43,13 +31,15 @@ class TestNlpHelper extends BaseNlpHelper {
 describe('BaseNlpHelper', () => {
   let helper: TestNlpHelper;
 
-  beforeEach(() => {
-    helper = new TestNlpHelper(
-      'test-helper' as HelperName,
-      mockSettingService,
-      mockHelperService,
-      mockLoggerService,
-    );
+  beforeAll(async () => {
+    const { getMocks } = await buildTestingMocks({
+      providers: [TestNlpHelper, HelperService],
+    });
+    [helper] = await getMocks([TestNlpHelper]);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('updateEntity', () => {

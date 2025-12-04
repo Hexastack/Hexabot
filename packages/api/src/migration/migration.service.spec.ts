@@ -64,14 +64,6 @@ describe('MigrationService', () => {
       providers: [
         MigrationService,
         {
-          provide: LoggerService,
-          useValue: {
-            log: jest.fn(),
-            error: jest.fn(),
-            warn: jest.fn(),
-          },
-        },
-        {
           provide: HttpService,
           useValue: {},
         },

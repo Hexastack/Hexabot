@@ -12,7 +12,6 @@ import { ContentService } from '@/cms/services/content.service';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
@@ -63,7 +62,6 @@ export class BlockService extends BaseOrmService<
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly nlpService: NlpService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
