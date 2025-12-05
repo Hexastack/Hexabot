@@ -6,7 +6,7 @@
 
 import { Action, BaseWorkflowContext, Settings } from '@hexabot-ai/agentic';
 
-import { WorkflowContext } from './workflow-context';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 export type ActionName = `${string}_${string}`;
 

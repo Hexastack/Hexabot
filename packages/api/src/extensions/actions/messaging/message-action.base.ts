@@ -8,7 +8,6 @@ import { ActionMetadata } from '@hexabot-ai/agentic';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { WorkflowContext } from '@/actions/workflow-context';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { getDefaultConversationContext } from '@/chat/constants/conversation';
@@ -20,12 +19,7 @@ import {
   StdIncomingMessage,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-
-export interface MessageActionContext extends WorkflowContext {
-  event: EventWrapper<any, any>;
-  conversationContext?: Context;
-  conversationId?: string;
-}
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 export type MessageActionOutput = StdIncomingMessage;
 
@@ -39,7 +33,7 @@ interface PreparedMessageContext {
 export abstract class MessageAction<I> extends BaseAction<
   I,
   MessageActionOutput,
-  MessageActionContext
+  WorkflowContext
 > {
   protected constructor(
     metadata: ActionMetadata<I, MessageActionOutput>,
@@ -48,7 +42,7 @@ export abstract class MessageAction<I> extends BaseAction<
     super(metadata, actionService);
   }
 
-  private ensureEvent(context: MessageActionContext) {
+  private ensureEvent(context: WorkflowContext) {
     if (!context.event) {
       throw new Error('Missing event on workflow context');
     }
@@ -90,7 +84,7 @@ export abstract class MessageAction<I> extends BaseAction<
   }
 
   protected async prepare(
-    context: MessageActionContext,
+    context: WorkflowContext,
   ): Promise<PreparedMessageContext> {
     const event = this.ensureEvent(context);
     const recipient = event.getSender();
@@ -120,13 +114,14 @@ export abstract class MessageAction<I> extends BaseAction<
   }
 
   protected async sendPreparedAndSuspend(
-    workflowContext: MessageActionContext,
+    workflowContext: WorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
     options?: any,
   ): Promise<MessageActionOutput> {
     const { event, recipient, conversationContext } = prepared;
-    const { eventEmitter, logger } = workflowContext.services;
+    const eventEmitter = workflowContext.eventEmitter!;
+    const { logger } = workflowContext.services;
 
     logger.debug('Sending action message ... ', event.getSenderForeignId());
     const response = await event
@@ -166,7 +161,7 @@ export abstract class MessageAction<I> extends BaseAction<
   }
 
   protected async sendAndSuspend(
-    workflowContext: MessageActionContext,
+    workflowContext: WorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
     options?: any,
   ): Promise<MessageActionOutput> {

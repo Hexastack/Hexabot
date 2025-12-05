@@ -8,7 +8,6 @@ import { Global, Module } from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { ActionService } from './actions.service';
-import { WorkflowContext } from './workflow-context';
 
 @Global()
 @InjectDynamicProviders(
@@ -20,7 +19,7 @@ import { WorkflowContext } from './workflow-context';
   'dist/extensions/actions/**/*.action.js',
 )
 @Module({
-  providers: [ActionService, WorkflowContext],
-  exports: [ActionService, WorkflowContext],
+  providers: [ActionService],
+  exports: [ActionService],
 })
 export class ActionsModule {}

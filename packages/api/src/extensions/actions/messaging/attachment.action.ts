@@ -12,11 +12,9 @@ import { ActionService } from '@/actions/actions.service';
 import { attachmentPayloadSchema } from '@/chat/types/attachment';
 import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import {
-  MessageAction,
-  MessageActionContext,
-} from '../messaging/message-action.base';
+import { MessageAction } from '../messaging/message-action.base';
 
 const attachmentInputSchema = z.object({
   attachment: attachmentPayloadSchema,
@@ -44,7 +42,7 @@ export class SendAttachmentAction extends MessageAction<AttachmentInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<AttachmentInput, MessageActionContext>) {
+  }: ActionExecutionArgs<AttachmentInput, WorkflowContext>) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildAttachmentEnvelope(
       input.attachment,

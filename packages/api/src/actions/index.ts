@@ -13,5 +13,3 @@ export * from './base-action';
 export * from './types';
 
 export * from './create-action';
-
-export * from './workflow-context';

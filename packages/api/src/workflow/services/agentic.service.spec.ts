@@ -5,11 +5,9 @@
  */
 
 import { Workflow as AgentWorkflow } from '@hexabot-ai/agentic';
-import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
-import { WorkflowContext } from '@/actions/workflow-context';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
@@ -21,6 +19,7 @@ import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
 
 import { AgenticService } from './agentic.service';
+import { WorkflowContext } from './workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
@@ -39,7 +38,17 @@ jest.mock('@hexabot-ai/agentic', () => {
   class MockWorkflowEventEmitter extends EventEmitter {}
 
   class MockBaseWorkflowContext {
+    state: Record<string, unknown>;
+
     workflow: any;
+
+    constructor(initial?: Record<string, unknown>) {
+      this.state = initial ?? {};
+    }
+
+    attachWorkflowRuntime(runtime: any) {
+      this.workflow = runtime;
+    }
   }
 
   return {
@@ -88,7 +97,7 @@ describe('AgenticService', () => {
   let workflowService: jest.Mocked<WorkflowService>;
   let workflowRunService: jest.Mocked<WorkflowRunService>;
   let actionService: jest.Mocked<ActionService>;
-  let moduleRef: jest.Mocked<ModuleRef>;
+  let workflowContext: jest.Mocked<WorkflowContext>;
   let logger: jest.Mocked<LoggerService>;
 
   const mockActions = [
@@ -113,9 +122,7 @@ describe('AgenticService', () => {
     actionService = {
       getAll: jest.fn(() => mockActions),
     } as unknown as jest.Mocked<ActionService>;
-    moduleRef = {
-      resolve: jest.fn(),
-    } as unknown as jest.Mocked<ModuleRef>;
+    workflowContext = new WorkflowContext() as jest.Mocked<WorkflowContext>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),
@@ -129,7 +136,7 @@ describe('AgenticService', () => {
         { provide: WorkflowService, useValue: workflowService },
         { provide: WorkflowRunService, useValue: workflowRunService },
         { provide: ActionService, useValue: actionService },
-        { provide: ModuleRef, useValue: moduleRef },
+        { provide: WorkflowContext, useValue: workflowContext },
         { provide: LoggerService, useValue: logger },
       ],
     });
@@ -140,6 +147,7 @@ describe('AgenticService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    workflowContext.state = {};
   });
 
   afterAll(async () => {
@@ -198,11 +206,6 @@ describe('AgenticService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as WorkflowRunFull;
-    const runtimeContext = {
-      services: {},
-      workflow: {},
-      persisted: 'context',
-    } as unknown as WorkflowContext;
     const runnerState = {
       input: { fromState: true },
       output: { collected: true },
@@ -239,7 +242,7 @@ describe('AgenticService', () => {
       ...run,
       status: 'suspended',
     } as any);
-    moduleRef.resolve.mockResolvedValue(runtimeContext);
+    workflowContext.state = { persisted: 'context' };
 
     await service.handleMessageEvent(event);
 
@@ -260,14 +263,13 @@ describe('AgenticService', () => {
         iteration: 1,
         accumulator: { count: 1 },
       },
-      context: runtimeContext,
+      context: workflowContext,
       snapshot: run.snapshot,
       suspension: {
         stepId: run.suspendedStep,
         reason: run.suspensionReason,
         data: run.suspensionData,
       },
-      eventEmitter: expect.anything(),
       runId: run.id,
       lastResumeData: run.lastResumeData,
     });
@@ -347,11 +349,6 @@ describe('AgenticService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as WorkflowRunFull;
-    const runtimeContext = {
-      services: {},
-      workflow: {},
-      existing: 'context',
-    } as unknown as WorkflowContext;
     const runnerState = {
       input: { hydrated: true },
       output: { fromState: true },
@@ -392,7 +389,7 @@ describe('AgenticService', () => {
       ...populatedRun,
       status: 'finished',
     } as any);
-    moduleRef.resolve.mockResolvedValue(runtimeContext);
+    workflowContext.state = { existing: 'context' };
 
     await service.handleMessageEvent(event);
 
@@ -411,7 +408,6 @@ describe('AgenticService', () => {
       metadata: { channel: { name: 'web', channel: 'test' } },
     });
     expect(workflowInstance.buildAsyncRunner).toHaveBeenCalledWith({
-      eventEmitter: expect.anything(),
       runId: populatedRun.id,
     });
     expect(workflowRunService.markRunning).toHaveBeenCalledWith(
@@ -424,7 +420,7 @@ describe('AgenticService', () => {
     );
     expect(runner.start).toHaveBeenCalledWith({
       inputData: expectedInput,
-      context: runtimeContext,
+      context: workflowContext,
       memory: workflow.definition.memory,
     });
     expect(workflowRunService.markFinished).toHaveBeenCalledWith(

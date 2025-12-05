@@ -11,8 +11,9 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import { MessageAction, MessageActionContext } from './message-action.base';
+import { MessageAction } from './message-action.base';
 
 const quickRepliesInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
@@ -42,7 +43,7 @@ export class SendQuickRepliesAction extends MessageAction<QuickRepliesInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<QuickRepliesInput, MessageActionContext>) {
+  }: ActionExecutionArgs<QuickRepliesInput, WorkflowContext>) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildQuickRepliesEnvelope(
       input.text,

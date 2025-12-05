@@ -12,9 +12,10 @@ import {
 } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 
+import { WorkflowContext } from '@/workflow/services/workflow-context';
+
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
-import { WorkflowContext } from './workflow-context';
 
 type CreateActionParams<
   I,

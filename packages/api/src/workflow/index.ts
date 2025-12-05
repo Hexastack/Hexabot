@@ -18,6 +18,8 @@ export * from './repositories/workflow.repository';
 
 export * from './repositories/workflow-run.repository';
 
+export * from './services/workflow-context';
+
 export * from './services/workflow.service';
 
 export * from './services/workflow-run.service';
