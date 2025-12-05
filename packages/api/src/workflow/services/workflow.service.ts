@@ -6,7 +6,6 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import defaultWorkflowDefinition from '../defaults/default-workflow';
@@ -30,10 +29,7 @@ export class WorkflowService extends BaseOrmService<
    *
    * @param repository - ORM repository used to manage workflow entities.
    */
-  constructor(
-    readonly repository: WorkflowRepository,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(readonly repository: WorkflowRepository) {
     super(repository);
   }
 
