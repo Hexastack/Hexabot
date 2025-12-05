@@ -19,7 +19,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
 
 const getFullName = (subscriber: ISubscriber | null) =>
-  `${subscriber?.first_name} ${subscriber?.last_name}`;
+  `${subscriber?.firstName} ${subscriber?.lastName}`;
 
 export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
   data: { defaultValues: subscriber },

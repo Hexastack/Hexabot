@@ -84,22 +84,18 @@ export const OptionsForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<
-                IUser,
-                "first_name" | "last_name",
-                false
-              >
+              <AutoCompleteEntitySelect<IUser, "firstName" | "lastName", false>
                 multiple={false}
                 searchFields={["first_name", "last_name"]}
                 entity={EntityType.USER}
                 format={Format.BASIC}
-                labelKey="first_name"
+                labelKey="firstName"
                 label={t("label.assign_to")}
                 onChange={(_e, selected) => {
                   onChange(selected?.id);
                 }}
                 getOptionLabel={(option) => {
-                  return `${option.first_name} ${option.last_name}`;
+                  return `${option.firstName} ${option.lastName}`;
                 }}
                 {...rest}
               />

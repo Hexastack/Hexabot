@@ -27,7 +27,7 @@ export const Inbox = () => {
   const { onSearch, searchPayload, searchText } =
     useSearch<EntityType.SUBSCRIBER>(
       {
-        $or: ["first_name", "last_name"],
+        $or: ["firstName", "lastName"],
       },
       { syncUrl: true },
     );

@@ -83,7 +83,7 @@ export const SubscribersList = (props: {
               {Avatars({ subscriber })}
               <Conversation.Content>
                 <div>
-                  {subscriber.first_name} {subscriber.last_name}
+                  {subscriber.firstName} {subscriber.lastName}
                 </div>
                 <div className="cs-conversation__info">
                   {normalizeDate(i18n.language, subscriber.lastvisit)}

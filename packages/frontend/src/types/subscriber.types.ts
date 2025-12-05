@@ -16,8 +16,8 @@ interface Channel {
 }
 
 export interface ISubscriberAttributes {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   locale: string;
   gender: string;
   labels: string[];
@@ -29,12 +29,12 @@ export interface ISubscriberAttributes {
   timezone?: number;
   language: string;
   country?: string;
-  foreign_id?: string;
+  foreignId?: string;
 }
 
 export interface ISubscriberFilters {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   channel: Channel;
 }
 

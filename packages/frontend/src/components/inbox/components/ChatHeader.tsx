@@ -18,7 +18,7 @@ export const ChatHeader = () => {
     <Grid container gap="7px" direction="row">
       <Grid>
         <Typography fontSize="1.17em" fontWeight={700}>
-          {subscriber?.first_name} {subscriber?.last_name} :
+          {subscriber?.firstName} {subscriber?.lastName} :
         </Typography>
       </Grid>
       <Grid gap="4px" container width="fit-content">
