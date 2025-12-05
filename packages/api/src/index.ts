@@ -52,8 +52,6 @@ export * from './migration';
 
 export * from './nlp';
 
-export * from './plugins';
-
 export * from './setting';
 
 export * from './user';

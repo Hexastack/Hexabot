@@ -6,14 +6,14 @@
 
 import { Controller, Get } from '@nestjs/common';
 
+import { ActionService } from '@/actions/actions.service';
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
-import { PluginService } from '@/plugins/plugins.service';
 
 @Controller('i18n')
 export class I18nController {
   constructor(
-    private readonly pluginService: PluginService,
+    private readonly actionService: ActionService,
     private readonly helperService: HelperService,
     private readonly channelService: ChannelService,
   ) {}
@@ -24,12 +24,21 @@ export class I18nController {
    */
   @Get()
   getTranslations() {
-    const plugins = this.pluginService.getAll();
+    const actions = this.actionService.getAll();
     const helpers = this.helperService.getAll();
     const channels = this.channelService.getAll();
+    const extensions: Array<{
+      getNamespace: () => string;
+      getTranslations: () => unknown;
+    }> = [...actions, ...helpers, ...channels];
 
-    return [...plugins, ...helpers, ...channels].reduce((acc, curr) => {
-      acc[curr.getNamespace()] = curr.getTranslations();
+    return extensions.reduce<Record<string, unknown>>((acc, curr) => {
+      const namespace = curr.getNamespace();
+      const translations = curr.getTranslations();
+
+      if (translations !== undefined) {
+        acc[namespace] = translations;
+      }
 
       return acc;
     }, {});

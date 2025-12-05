@@ -10,7 +10,6 @@ import { TestingModule } from '@nestjs/testing';
 import { ContentService } from '@/cms/services/content.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
 import { UserService } from '@/user/services/user.service';
 import {
   blockFixtures,
@@ -47,10 +46,6 @@ const DEFAULT_SETTINGS = {
 } as const;
 const settingServiceMock = {
   getSettings: jest.fn().mockResolvedValue(DEFAULT_SETTINGS),
-};
-const pluginServiceMock = {
-  getPlugin: jest.fn(),
-  getAllByType: jest.fn().mockReturnValue([]),
 };
 const userServiceMock = {
   findOne: jest.fn().mockResolvedValue(null),
@@ -125,7 +120,6 @@ describe('BlockController (TypeORM)', () => {
       controllers: [BlockController],
       providers: [
         CategoryService,
-        { provide: PluginService, useValue: pluginServiceMock },
         { provide: UserService, useValue: userServiceMock },
         { provide: ContentService, useValue: contentServiceMock },
         { provide: LanguageService, useValue: languageServiceMock },
@@ -181,8 +175,6 @@ describe('BlockController (TypeORM)', () => {
   });
 
   beforeEach(() => {
-    pluginServiceMock.getAllByType.mockReturnValue([]);
-    pluginServiceMock.getPlugin.mockReturnValue(undefined);
     settingServiceMock.getSettings.mockResolvedValue(DEFAULT_SETTINGS);
   });
 

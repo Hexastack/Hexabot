@@ -6,8 +6,6 @@
 
 import { z } from 'zod';
 
-import { PluginName } from '@/plugins/types';
-
 import { Message } from '../dto/message.dto';
 
 import { attachmentPayloadSchema, FileType } from './attachment';
@@ -137,17 +135,6 @@ export type StdOutgoingSystemMessage = z.infer<
   typeof stdOutgoingSystemMessageSchema
 >;
 
-export const pluginNameSchema = z
-  .string()
-  .regex(/-plugin$/) as z.ZodType<PluginName>;
-
-export const stdPluginMessageSchema = z.object({
-  plugin: pluginNameSchema,
-  args: z.record(z.any()),
-});
-
-export type StdPluginMessage = z.infer<typeof stdPluginMessageSchema>;
-
 export const blockMessageSchema = z.union([
   z.array(z.string()),
   stdOutgoingTextMessageSchema,
@@ -155,7 +142,6 @@ export const blockMessageSchema = z.union([
   stdOutgoingButtonsMessageSchema,
   stdOutgoingListMessageSchema,
   stdOutgoingAttachmentMessageSchema,
-  stdPluginMessageSchema,
 ]);
 
 export type BlockMessage = z.infer<typeof blockMessageSchema>;
@@ -340,20 +326,6 @@ const quickReplySchema = z
       }
     }
   });
-
-// pluginBlockMessageSchema in case of Plugin Block
-export const pluginBlockMessageSchema = z
-  .record(z.any())
-  .superRefine((data, ctx) => {
-    if (!('plugin' in data)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "The object must contain the 'plugin' attribute",
-        path: ['plugin'],
-      });
-    }
-  });
-
 // textBlockMessageSchema in case of Text Block
 const textBlockMessageSchema = z.string().max(1000);
 const buttonMessageSchema = z.object({
@@ -389,5 +361,4 @@ export const blockMessageObjectSchema = z.union([
   quickReplyMessageSchema,
   listBlockMessageSchema,
   attachmentBlockMessageSchema,
-  pluginBlockMessageSchema,
 ]);

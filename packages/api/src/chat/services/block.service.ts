@@ -13,8 +13,6 @@ import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -58,7 +56,6 @@ export class BlockService extends BaseOrmService<
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
     private readonly settingService: SettingService,
-    private readonly pluginService: PluginService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly nlpService: NlpService,
@@ -667,7 +664,7 @@ export class BlockService extends BaseOrmService<
     context: Context,
     subscriberContext: SubscriberContext,
     isLocalFallback = false,
-    conversationId?: string,
+    _convId?: string,
   ): Promise<StdOutgoingEnvelope> {
     const settings = await this.settingService.getSettings();
     const envelopeFactory = new EnvelopeFactory(
@@ -775,28 +772,14 @@ export class BlockService extends BaseOrmService<
         );
         throw err;
       }
-    } else if (block.message && 'plugin' in block.message) {
-      if (fallback) {
-        return envelopeFactory.buildTextEnvelope(fallback.message);
-      }
-
-      const plugin = this.pluginService.findPlugin(
-        PluginType.block,
-        block.message.plugin,
-      );
-      // Process custom plugin block
-      try {
-        const envelope = await plugin?.process(block, context, conversationId);
-
-        if (!envelope) {
-          throw new Error('Unable to find envelope');
-        }
-
-        return envelope;
-      } catch (e) {
-        this.logger.error('Plugin was unable to load/process ', e);
-        throw new Error(`Plugin Error - ${JSON.stringify(block.message)}`);
-      }
+    }
+    if (
+      block.message &&
+      typeof block.message === 'object' &&
+      'plugin' in (block.message as Record<string, unknown>)
+    ) {
+      this.logger.warn('Plugin blocks are no longer supported', block.message);
+      throw new Error('Plugin blocks are no longer supported.');
     }
     throw new Error('Invalid message format.');
   }

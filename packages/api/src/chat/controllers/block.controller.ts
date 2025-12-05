@@ -19,9 +19,6 @@ import {
 } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
-import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
-import { PluginService } from '@/plugins/plugins.service';
-import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
@@ -50,7 +47,6 @@ export class BlockController extends BaseOrmController<
   constructor(
     private readonly blockService: BlockService,
     private readonly userService: UserService,
-    private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
     super(blockService);
   }
@@ -103,111 +99,6 @@ export class BlockController extends BaseOrmController<
     return this.canPopulate(populate)
       ? await this.blockService.findAndPopulate(queryOptions)
       : await this.blockService.find(queryOptions);
-  }
-
-  /**
-   * Retrieves a custom block settings for a specific plugin.
-   *
-   * @param pluginName - The name of the plugin for which settings are to be retrieved.
-   *
-   * @returns An array containing the settings of the specified plugin.
-   */
-  @Get('customBlocks/settings')
-  async findSettings(@Query('plugin') pluginName: PluginName) {
-    try {
-      if (!pluginName) {
-        throw new BadRequestException(
-          'Plugin name must be supplied as a query param',
-        );
-      }
-
-      const plugin = this.pluginsService.getPlugin(
-        PluginType.block,
-        pluginName,
-      );
-
-      if (!plugin) {
-        throw new NotFoundException('Plugin Not Found');
-      }
-
-      return await plugin.getDefaultSettings();
-    } catch (e) {
-      this.logger.error('Unable to fetch plugin settings', e);
-      throw e;
-    }
-  }
-
-  /**
-   * Retrieves all custom blocks (plugins) along with their associated block template.
-   *
-   * @returns An array containing available custom blocks.
-   */
-  @Get('customBlocks')
-  async findAll() {
-    try {
-      const plugins = this.pluginsService
-        .getAllByType(PluginType.block)
-        .map(async (p) => {
-          const defaultSettings = await p.getDefaultSettings();
-
-          return {
-            id: p.getName(),
-            namespace: p.getNamespace(),
-            template: {
-              ...p.template,
-              message: {
-                plugin: p.name,
-                args: defaultSettings.reduce(
-                  (acc, setting) => {
-                    acc[setting.label] = setting.value;
-
-                    return acc;
-                  },
-                  {} as { [key: string]: any },
-                ),
-              },
-            },
-            effects:
-              typeof p.effects === 'object' ? Object.keys(p.effects) : [],
-          };
-        });
-
-      return await Promise.all(plugins);
-    } catch (e) {
-      this.logger.error(e);
-      throw e;
-    }
-  }
-
-  // @TODO : remove once old frontend is abandoned
-  /**
-   * Retrieves the effects of all plugins that have effects defined.
-   *
-   * @returns An array containing objects representing the effects of plugins.
-   */
-  @Get('effects')
-  findEffects(): {
-    name: string;
-    title: any;
-  }[] {
-    try {
-      const plugins = this.pluginsService.getAllByType(PluginType.block);
-      const effects = Object.keys(plugins)
-        .filter(
-          (plugin) =>
-            typeof plugins[plugin].effects === 'object' &&
-            Object.keys(plugins[plugin].effects).length > 0,
-        )
-        .map((plugin) => ({
-          name: plugin,
-          title: plugins[plugin].title,
-        }));
-
-      return effects;
-    } catch (e) {
-      this.logger.error(e);
-      throw e;
-    }
   }
 
   /**
