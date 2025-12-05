@@ -15,12 +15,10 @@ import { LoggerService } from '@/logger/logger.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { AgenticService } from '@/workflow/services/agentic.service';
 
-import { Conversation } from '../dto/conversation.dto';
 import { MessageCreateDto } from '../dto/message.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { OutgoingMessage } from '../types/message';
 
-import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 
@@ -29,42 +27,11 @@ export class ChatService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly logger: LoggerService,
-    private readonly conversationService: ConversationService,
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
     private readonly agenticService: AgenticService,
     private readonly websocketGateway: WebsocketGateway,
   ) {}
-
-  /**
-   * Ends a given conversation (sets active to false)
-   *
-   * @param convo - The conversation to end
-   */
-  @OnEvent('hook:conversation:end')
-  async handleEndConversation(convo: Conversation) {
-    try {
-      await this.conversationService.end(convo);
-      this.logger.debug('Conversation has ended successfully.', convo.id);
-    } catch (err) {
-      this.logger.error('Unable to end conversation !', convo.id, err);
-    }
-  }
-
-  /**
-   * Ends a given conversation (sets active to false)
-   *
-   * @param convoId - The conversation ID
-   */
-  @OnEvent('hook:conversation:close')
-  async handleCloseConversation(convoId: string) {
-    try {
-      await this.conversationService.deleteOne(convoId);
-      this.logger.debug('Conversation is closed successfully.', convoId);
-    } catch (err) {
-      this.logger.error('Unable to close conversation.', err);
-    }
-  }
 
   /**
    * Finds or creates a message and broadcast it to the websocket "Message" room
@@ -295,7 +262,7 @@ export class ChatService {
       this.eventEmitter.emit('hook:chatbot:received', event);
 
       if (subscriber?.assignedTo) {
-        this.logger.debug('Conversation taken over', subscriber.assignedTo);
+        this.logger.debug('Chat taken over', subscriber.assignedTo);
 
         return;
       }

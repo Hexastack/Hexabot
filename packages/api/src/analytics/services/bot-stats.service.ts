@@ -108,21 +108,6 @@ export class BotStatsService extends BaseOrmService<
   }
 
   /**
-   * Retrieves the most popular blocks within a specified time range.
-   * Popular blocks are those triggered the most frequently.
-   *
-   * @param from - The start date of the time range.
-   * @param to - The end date of the time range.
-   * @returns A promise that resolves with an array of popular blocks, each containing an `id` and the number of times it was triggered (`value`).
-   */
-  async findPopularBlocks(
-    from: Date,
-    to: Date,
-  ): Promise<{ id: string; value: number }[]> {
-    return await this.repository.findPopularBlocks(from, to);
-  }
-
-  /**
    * Handles the event to track user activity and emit statistics for loyalty, returning users, and retention.
    *
    * This method checks the last visit of the subscriber and emits relevant analytics events

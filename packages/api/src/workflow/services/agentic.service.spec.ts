@@ -250,7 +250,7 @@ describe('AgenticService', () => {
       stored: true,
       persisted: 'context',
       subscriberId: subscriber.id,
-      conversationId: run.id,
+      workflowId: workflow.id,
       runId: run.id,
     };
 
@@ -396,7 +396,7 @@ describe('AgenticService', () => {
     const expectedContext = {
       existing: 'context',
       subscriberId: subscriber.id,
-      conversationId: populatedRun.id,
+      workflowId: workflow.id,
       runId: populatedRun.id,
     };
     expect(workflowRunService.create).toHaveBeenCalledWith({

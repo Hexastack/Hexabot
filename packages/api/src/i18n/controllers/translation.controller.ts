@@ -112,10 +112,9 @@ export class TranslationController extends BaseOrmController<
         },
         {} as { [key: string]: string },
       );
-    // Scan Blocks
-    let strings = await this.translationService.getAllBlockStrings();
+    // Scan workflows and settings
+    let strings = await this.translationService.getAllWorkflowStrings();
     const settingStrings = await this.translationService.getSettingStrings();
-    // Scan global settings
     strings = strings.concat(settingStrings);
     // Filter unique and not empty messages
     strings = strings.filter((str, pos) => {

@@ -48,20 +48,28 @@ export class WorkflowContext extends BaseWorkflowContext<
     this.state.subscriberId = value;
   }
 
-  get conversationId(): string | undefined {
-    return this.state.conversationId as string | undefined;
+  get workflowId(): string | undefined {
+    return this.state.workflowId as string | undefined;
   }
 
-  set conversationId(value: string | undefined) {
-    this.state.conversationId = value;
+  set workflowId(value: string | undefined) {
+    this.state.workflowId = value;
   }
 
-  get conversationContext(): Context | undefined {
-    return this.state.conversationContext as Context | undefined;
+  get chatContext(): Context | undefined {
+    return this.state.chatContext as Context | undefined;
   }
 
-  set conversationContext(value: Context | undefined) {
-    this.state.conversationContext = value;
+  set chatContext(value: Context | undefined) {
+    this.state.chatContext = value;
+  }
+
+  get workflowRunId(): string | undefined {
+    return this.state.runId as string | undefined;
+  }
+
+  set workflowRunId(value: string | undefined) {
+    this.state.runId = value;
   }
 
   get runId(): string | undefined {
@@ -74,10 +82,24 @@ export class WorkflowContext extends BaseWorkflowContext<
 
   buildFromRun(run: WorkflowRunFull, event: EventWrapper<any, any>): this {
     this.hydrate(run.context);
+    const legacyContext = (this.state as any).conversationContext as
+      | Context
+      | undefined;
+    if (legacyContext && !this.chatContext) {
+      this.chatContext = legacyContext;
+    }
+    const legacyConversationId = (this.state as any).conversationId as
+      | string
+      | undefined;
+    if (legacyConversationId && !this.runId) {
+      this.runId = legacyConversationId;
+    }
+    delete (this.state as any).conversationContext;
+    delete (this.state as any).conversationId;
     this.event = event;
     this.subscriberId = run.subscriber?.id;
-    this.conversationId = run.id;
-    this.runId = run.id;
+    this.workflowId = run.workflow.id;
+    this.workflowRunId = run.id;
 
     return this;
   }

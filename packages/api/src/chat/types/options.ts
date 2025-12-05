@@ -35,7 +35,7 @@ export const fallbackOptionsSchema = z.object({
 
 export type FallbackOptions = z.infer<typeof fallbackOptionsSchema>;
 
-export const BlockOptionsSchema = z.object({
+export const ActionOptionsSchema = z.object({
   typing: z.number().optional(),
   content: contentOptionsSchema.optional(),
   fallback: fallbackOptionsSchema.optional(),
@@ -43,4 +43,4 @@ export const BlockOptionsSchema = z.object({
   effects: z.array(z.string()).optional(),
 });
 
-export type BlockOptions = z.infer<typeof BlockOptionsSchema>;
+export type ActionOptions = z.infer<typeof ActionOptionsSchema>;

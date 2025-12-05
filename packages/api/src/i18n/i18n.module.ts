@@ -22,7 +22,7 @@ import {
 } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
-import { ChatModule } from '@/chat/chat.module';
+import { WorkflowModule } from '@/workflow/workflow.module';
 
 import { I18nController } from './controllers/i18n.controller';
 import { LanguageController } from './controllers/language.controller';
@@ -62,7 +62,7 @@ export class I18nModule extends NativeI18nModule {
       module: I18nModule,
       imports: (imports || []).concat([
         TypeOrmModule.forFeature([LanguageOrmEntity, TranslationOrmEntity]),
-        ChatModule,
+        WorkflowModule,
       ]),
       controllers: (controllers || []).concat([
         LanguageController,

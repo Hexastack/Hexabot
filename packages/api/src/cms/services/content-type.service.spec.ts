@@ -6,7 +6,6 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { BlockService } from '@/chat/services/block.service';
 import { FieldType } from '@/setting/types';
 import {
   contentTypeOrmFixtures,
@@ -23,20 +22,11 @@ describe('ContentTypeService (TypeORM)', () => {
   let module: TestingModule;
   let service: ContentTypeService;
   const createdIds: string[] = [];
-  const blockServiceMock = {
-    findOne: jest.fn().mockResolvedValue(null),
-  };
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        ContentTypeService,
-        {
-          provide: BlockService,
-          useFactory: () => blockServiceMock,
-        },
-      ],
+      providers: [ContentTypeService],
       typeorm: {
         fixtures: installContentTypeFixturesTypeOrm,
       },

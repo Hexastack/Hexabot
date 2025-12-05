@@ -6,12 +6,6 @@
 
 export * from './chat.module';
 
-export * from './constants/block';
-
-export * from './constants/conversation';
-
-export * from './controllers/block.controller';
-
 export * from './controllers/category.controller';
 
 export * from './controllers/context-var.controller';
@@ -24,13 +18,9 @@ export * from './controllers/message.controller';
 
 export * from './controllers/subscriber.controller';
 
-export * from './dto/block.dto';
-
 export * from './dto/category.dto';
 
 export * from './dto/context-var.dto';
-
-export * from './dto/conversation.dto';
 
 export * from './dto/label-group.dto';
 
@@ -40,13 +30,9 @@ export * from './dto/message.dto';
 
 export * from './dto/subscriber.dto';
 
-export * from './entities/block.entity';
-
 export * from './entities/category.entity';
 
 export * from './entities/context-var.entity';
-
-export * from './entities/conversation.entity';
 
 export * from './entities/label-group.entity';
 
@@ -62,13 +48,9 @@ export * from './helpers/envelope-builder';
 
 export * from './helpers/envelope-factory';
 
-export * from './repositories/block.repository';
-
 export * from './repositories/category.repository';
 
 export * from './repositories/context-var.repository';
-
-export * from './repositories/conversation.repository';
 
 export * from './repositories/label-group.repository';
 
@@ -86,15 +68,11 @@ export * from './seeds/context-var.seed-model';
 
 export * from './seeds/context-var.seed';
 
-export * from './services/block.service';
-
 export * from './services/category.service';
 
 export * from './services/chat.service';
 
 export * from './services/context-var.service';
-
-export * from './services/conversation.service';
 
 export * from './services/label-group.service';
 

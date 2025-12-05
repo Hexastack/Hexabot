@@ -18,7 +18,6 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { BlockOrmEntity } from './block.entity';
 import { LabelGroupOrmEntity } from './label-group.entity';
 import { SubscriberOrmEntity } from './subscriber.entity';
 
@@ -55,12 +54,4 @@ export class LabelOrmEntity extends BaseOrmEntity {
   @ManyToMany(() => SubscriberOrmEntity, (subscriber) => subscriber.labels)
   @AsRelation({ allowArray: true })
   users?: SubscriberOrmEntity[];
-
-  @ManyToMany(() => BlockOrmEntity, (block) => block.trigger_labels)
-  @AsRelation({ allowArray: true })
-  triggerBlocks?: BlockOrmEntity[];
-
-  @ManyToMany(() => BlockOrmEntity, (block) => block.assign_labels)
-  @AsRelation({ allowArray: true })
-  assignedBlocks?: BlockOrmEntity[];
 }

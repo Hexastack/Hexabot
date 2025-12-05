@@ -63,11 +63,6 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'Block',
-    identity: 'block',
-    attributes: {},
-  },
-  {
     name: 'Category',
     identity: 'category',
     attributes: {},
@@ -88,11 +83,6 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'Conversation',
-    identity: 'conversation',
-    attributes: {},
-  },
-  {
     name: 'Message',
     identity: 'message',
     attributes: {},
@@ -110,6 +100,16 @@ export const modelModels: ModelCreateDto[] = [
   {
     name: 'Translation',
     identity: 'translation',
+    attributes: {},
+  },
+  {
+    name: 'Workflow',
+    identity: 'workflow',
+    attributes: {},
+  },
+  {
+    name: 'WorkflowRun',
+    identity: 'workflowrun',
     attributes: {},
   },
   {

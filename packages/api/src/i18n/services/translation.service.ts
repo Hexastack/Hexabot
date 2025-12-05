@@ -10,9 +10,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { Block } from '../../chat/dto/block.dto';
-import { BlockService } from '../../chat/services/block.service';
 import {
   TranslationDtoConfig,
   TranslationTransformerDto,
@@ -28,7 +27,7 @@ export class TranslationService extends BaseOrmService<
 > {
   constructor(
     repository: TranslationRepository,
-    private readonly blockService: BlockService,
+    private readonly workflowService: WorkflowService,
     private readonly settingService: SettingService,
     private readonly i18n: I18nService,
   ) {
@@ -42,79 +41,67 @@ export class TranslationService extends BaseOrmService<
   }
 
   /**
-   * Return any available string inside a given block (message, button titles, fallback messages, ...)
+   * Collect user-facing strings declared inside a workflow definition by
+   * recursively traversing its content and extracting string leaves while
+   * skipping structural keys (action identifiers, ids, etc).
    *
-   * @param block - The block to parse
-   *
-   * @returns An array of strings
+   * @param node - Arbitrary JSON node inside the workflow definition.
    */
-  async getBlockStrings(block: Block): Promise<string[]> {
-    let strings: string[] = [];
-
-    if (Array.isArray(block.message)) {
-      // Text Messages
-      strings = strings.concat(block.message);
-    } else if (typeof block.message === 'object') {
-      if ('plugin' in (block.message as Record<string, unknown>)) {
-        this.logger.warn(
-          'Plugin blocks are no longer supported; skipping plugin message translation.',
-        );
-      } else if ('text' in block.message && Array.isArray(block.message.text)) {
-        // array of text
-        strings = strings.concat(block.message.text);
-      } else if (
-        'text' in block.message &&
-        typeof block.message.text === 'string'
-      ) {
-        // text
-        strings.push(block.message.text);
-      }
-      if (
-        'quickReplies' in block.message &&
-        Array.isArray(block.message.quickReplies) &&
-        block.message.quickReplies.length > 0
-      ) {
-        // Quick replies
-        strings = strings.concat(
-          block.message.quickReplies.map((qr) => qr.title),
-        );
-      } else if (
-        'buttons' in block.message &&
-        Array.isArray(block.message.buttons) &&
-        block.message.buttons.length > 0
-      ) {
-        // Buttons
-        strings = strings.concat(block.message.buttons.map((btn) => btn.title));
-      }
-    }
-    // Add fallback messages
-    if (
-      block.options &&
-      'fallback' in block.options &&
-      block.options.fallback &&
-      'message' in block.options.fallback &&
-      Array.isArray(block.options.fallback.message)
-    ) {
-      strings = strings.concat(block.options.fallback.message);
+  private collectStrings(node: unknown, keyPath: string[] = []): string[] {
+    if (node == null) {
+      return [];
     }
 
-    return strings;
+    if (typeof node === 'string') {
+      const trimmed = node.trim();
+
+      return trimmed ? [trimmed] : [];
+    }
+
+    if (Array.isArray(node)) {
+      return node.flatMap((value) => this.collectStrings(value, keyPath));
+    }
+
+    if (typeof node === 'object') {
+      return Object.entries(node as Record<string, unknown>).flatMap(
+        ([key, value]) => {
+          return this.shouldSkipKey(key)
+            ? []
+            : this.collectStrings(value, keyPath.concat(key));
+        },
+      );
+    }
+
+    return [];
   }
 
   /**
-   * Return any available string inside a block (message, button titles, fallback messages, ...)
+   * Return any available string inside workflow definitions (task inputs,
+   * descriptions, etc.).
    *
    * @returns A promise of all strings available in a array
    */
-  async getAllBlockStrings(): Promise<string[]> {
-    const blocks = await this.blockService.find({});
-    if (blocks.length === 0) {
-      return [];
-    }
+  async getAllWorkflowStrings(): Promise<string[]> {
+    const workflows = await this.workflowService.find({});
     const allStrings: string[] = [];
-    for (const block of blocks) {
-      const strings = await this.getBlockStrings(block);
-      allStrings.push(...strings);
+
+    for (const workflow of workflows) {
+      if (workflow.description) {
+        allStrings.push(workflow.description);
+      }
+
+      if (!workflow.definition) {
+        continue;
+      }
+
+      try {
+        allStrings.push(...this.collectStrings(workflow.definition));
+      } catch (err) {
+        this.logger.warn(
+          `Unable to collect strings from workflow ${workflow.id}`,
+          err,
+        );
+      }
     }
 
     return allStrings;
@@ -147,5 +134,14 @@ export class TranslationService extends BaseOrmService<
   @OnEvent('hook:translation:*')
   handleTranslationsUpdate() {
     this.resetI18nTranslations();
+  }
+
+  /**
+   * Skip structural keys when extracting strings from workflow definitions.
+   */
+  private shouldSkipKey(key: string): boolean {
+    const lowered = key.toLowerCase();
+
+    return ['action', 'do', 'next', 'id', 'name', 'version'].includes(lowered);
   }
 }

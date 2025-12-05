@@ -7,17 +7,16 @@
 import { NotFoundException } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
-import { BlockRepository } from '@/chat/repositories/block.repository';
-import { ConversationRepository } from '@/chat/repositories/conversation.repository';
-import { BlockService } from '@/chat/services/block.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installTranslationFixturesTypeOrm,
   translationFixtures,
 } from '@/utils/test/fixtures/translation';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
+import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
@@ -36,25 +35,13 @@ describe('TranslationController', () => {
       controllers: [TranslationController],
       providers: [
         {
-          provide: BlockService,
+          provide: WorkflowService,
           useValue: {
             find: jest.fn().mockResolvedValue([]),
-          },
-        },
-        {
-          provide: BlockRepository,
-          useValue: {
-            find: jest.fn(),
-            findAll: jest.fn(),
-          },
-        },
-        {
-          provide: ConversationRepository,
-          useValue: {
-            find: jest.fn(),
-          },
+          } as Partial<WorkflowService>,
         },
         I18nServiceProvider,
+        SettingServiceProvider,
       ],
       typeorm: [
         {

@@ -201,7 +201,7 @@ export class AttachmentController extends BaseOrmController<
 
   /**
    * Deletion of attachments is disallowed to prevent database inconsistencies.
-   * Attachments may be referenced by blocks, messages, or content elements,
+   * Attachments may be referenced by actions, messages, or content elements,
    * and deleting them directly could lead to orphaned references or broken UI.
    *
    * @param id - The ID of the attachment (not used since deletion is not allowed).

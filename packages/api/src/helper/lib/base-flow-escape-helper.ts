@@ -5,7 +5,6 @@
  */
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { BlockStub } from '@/chat/dto/block.dto';
 
 import { FlowEscape, HelperName, HelperType } from '../types';
 
@@ -21,22 +20,22 @@ export default abstract class BaseFlowEscapeHelper<
   }
 
   /**
-   * Checks if the helper can handle the flow escape for the given block message.
+   * Checks if the helper can handle the flow escape for the given action payload.
    *
-   * @param _blockMessage - The block message to check.
-   * @returns - Whether the helper can handle the flow escape for the given block message.
+   * @param action - The action payload to check.
+   * @returns - Whether the helper can handle the flow escape for the given payload.
    */
-  abstract canHandleFlowEscape<T extends BlockStub>(block: T): boolean;
+  abstract canHandleFlowEscape<T>(action: T): boolean;
 
   /**
    * Adjudicates the flow escape event.
    *
    * @param _event - The event wrapper containing the event data.
-   * @param _block - The block associated with the event.
+   * @param action - The action associated with the event.
    * @returns - A promise that resolves to a FlowEscape.AdjudicationResult.
    */
-  abstract adjudicate<T extends BlockStub>(
+  abstract adjudicate<T>(
     event: EventWrapper<any, any>,
-    block: T,
+    action: T,
   ): Promise<FlowEscape.AdjudicationResult>;
 }

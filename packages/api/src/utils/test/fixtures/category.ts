@@ -40,9 +40,7 @@ export const categoryFixtures = getFixturesWithDefaultValues<
 });
 
 const findCategories = async (dataSource: DataSource) =>
-  await dataSource
-    .getRepository(CategoryOrmEntity)
-    .find({ relations: ['blocks'] });
+  await dataSource.getRepository(CategoryOrmEntity).find();
 
 export const installCategoryFixturesTypeOrm = async (
   dataSource: DataSource,

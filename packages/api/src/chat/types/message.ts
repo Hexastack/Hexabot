@@ -8,10 +8,10 @@ import { z } from 'zod';
 
 import { Message } from '../dto/message.dto';
 
-import { attachmentPayloadSchema, FileType } from './attachment';
+import { attachmentPayloadSchema } from './attachment';
 import { buttonSchema, PayloadType } from './button';
 import { contentOptionsSchema } from './options';
-import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
+import { stdQuickReplySchema } from './quick-reply';
 
 /**
  * StdEventType enum is declared, and currently not used
@@ -134,17 +134,6 @@ export const stdOutgoingSystemMessageSchema = z.object({
 export type StdOutgoingSystemMessage = z.infer<
   typeof stdOutgoingSystemMessageSchema
 >;
-
-export const blockMessageSchema = z.union([
-  z.array(z.string()),
-  stdOutgoingTextMessageSchema,
-  stdOutgoingQuickRepliesMessageSchema,
-  stdOutgoingButtonsMessageSchema,
-  stdOutgoingListMessageSchema,
-  stdOutgoingAttachmentMessageSchema,
-]);
-
-export type BlockMessage = z.infer<typeof blockMessageSchema>;
 
 export const StdOutgoingMessageSchema = z.union([
   stdOutgoingTextMessageSchema,
@@ -298,67 +287,3 @@ export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
 export const validMessageTextSchema = z.object({
   text: z.string(),
 });
-
-export const textSchema = z.array(z.string().max(1000));
-
-const quickReplySchema = z
-  .object({
-    content_type: z.nativeEnum(QuickReplyType),
-    title: z.string().max(20).optional(),
-    payload: z.string().max(1000).optional(),
-  })
-  .superRefine((data, ctx) => {
-    // When content_type is 'text', title and payload are required.
-    if (data.content_type === QuickReplyType.text) {
-      if (data.title == null) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Title is required when content_type is 'text'",
-          path: ['title'],
-        });
-      }
-      if (data.payload == null) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Payload is required when content_type is 'text'",
-          path: ['payload'],
-        });
-      }
-    }
-  });
-// textBlockMessageSchema in case of Text Block
-const textBlockMessageSchema = z.string().max(1000);
-const buttonMessageSchema = z.object({
-  text: z.string(),
-  buttons: z.array(buttonSchema).max(3),
-});
-// quickReplyMessageSchema in case of QuickReply Block
-const quickReplyMessageSchema = z.object({
-  text: z.string(),
-  quickReplies: z.array(quickReplySchema).max(11).optional(),
-});
-// listBlockMessageSchema in case of List Block
-const listBlockMessageSchema = z.object({
-  elements: z.boolean(),
-});
-// attachmentBlockMessageSchema in case of Attachment Block
-const attachmentBlockMessageSchema = z.object({
-  text: z.string().max(1000).optional(),
-  attachment: z.object({
-    type: z.nativeEnum(FileType),
-    payload: z.union([
-      z.object({ url: z.string().url() }),
-      z.object({ id: z.string().nullable() }),
-    ]),
-  }),
-});
-
-// BlockMessage Schema
-export const blockMessageObjectSchema = z.union([
-  textSchema,
-  textBlockMessageSchema,
-  buttonMessageSchema,
-  quickReplyMessageSchema,
-  listBlockMessageSchema,
-  attachmentBlockMessageSchema,
-]);

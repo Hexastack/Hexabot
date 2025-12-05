@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -20,8 +20,6 @@ import {
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
-
-import { Block } from './block.dto';
 
 @Exclude()
 export class CategoryStub extends BaseStub {
@@ -39,17 +37,10 @@ export class CategoryStub extends BaseStub {
 }
 
 @Exclude()
-export class Category extends CategoryStub {
-  @Exclude()
-  blocks?: never;
-}
+export class Category extends CategoryStub {}
 
 @Exclude()
-export class CategoryFull extends CategoryStub {
-  @Expose()
-  @Type(() => Block)
-  blocks?: Block[];
-}
+export class CategoryFull extends CategoryStub {}
 
 export class CategoryCreateDto {
   @ApiProperty({ description: 'Category label', type: String })

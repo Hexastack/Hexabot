@@ -120,21 +120,6 @@ describe('BotStatsService', () => {
       expect(result).toEqualPayload([botstatsFixtures[5]]);
     });
 
-    it('should return messages of type conversation', async () => {
-      jest.spyOn(botStatsRepository, 'findMessages');
-      const from = botstatsFixtures[0].day;
-      const to = new Date();
-      const result = await botStatsService.findMessages(from, to, [
-        BotStatsType.new_conversations,
-        BotStatsType.existing_conversations,
-      ]);
-      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(from, to, [
-        BotStatsType.new_conversations,
-        BotStatsType.existing_conversations,
-      ]);
-      expect(result).toEqualPayload([botstatsFixtures[3]]);
-    });
-
     it('should return messages of type audiance', async () => {
       jest.spyOn(botStatsRepository, 'findMessages');
       const from = botstatsFixtures[0].day;
@@ -149,27 +134,7 @@ describe('BotStatsService', () => {
         BotStatsType.returning_users,
         BotStatsType.retention,
       ]);
-      expect(result).toEqualPayload([botstatsFixtures[1]]);
-    });
-  });
-
-  describe('findPopularBlocks', () => {
-    it('should return popular blocks', async () => {
-      jest.spyOn(botStatsRepository, 'findPopularBlocks');
-      const from = botstatsFixtures[0].day;
-      const to = new Date();
-      const result = await botStatsService.findPopularBlocks(from, to);
-
-      expect(botStatsRepository.findPopularBlocks).toHaveBeenCalledWith(
-        from,
-        to,
-      );
-      expect(result).toEqual([
-        {
-          id: 'Global Fallback',
-          value: 68,
-        },
-      ]);
+      expect(result).toEqualPayload(botstatsFixtures.slice(1, 4));
     });
   });
 
