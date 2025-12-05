@@ -16,8 +16,14 @@ import {
 } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils';
+
+export enum EUserProfileType {
+  SubscriberOrmEntity = 'SubscriberOrmEntity',
+  UserOrmEntity = 'UserOrmEntity',
+}
 
 @Entity({ name: 'users' })
 @TableInheritance({
@@ -52,4 +58,7 @@ export class UserProfileOrmEntity extends BaseOrmEntity {
   @OneToMany(() => AttachmentOrmEntity, (attachment) => attachment.createdBy)
   @AsRelation({ allowArray: true })
   createdAttachments?: AttachmentOrmEntity[];
+
+  @EnumColumn({ enum: EUserProfileType })
+  type: EUserProfileType;
 }

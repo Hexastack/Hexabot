@@ -8,7 +8,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository, UpdateEvent } from 'typeorm';
 
-import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+import { EUserProfileType } from '@/user/entities/user-profile.entity';
+import {
+  BaseOrmRepository,
+  FindAllOptions,
+} from '@/utils/generics/base-orm.repository';
 import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
@@ -250,5 +254,23 @@ export class SubscriberRepository extends BaseOrmRepository<
     }
 
     return refreshed;
+  }
+
+  async findAll(
+    options?: FindAllOptions<SubscriberOrmEntity>,
+  ): Promise<Subscriber[]> {
+    return await super.find({
+      where: { type: EUserProfileType.SubscriberOrmEntity },
+      ...options,
+    });
+  }
+
+  async findAndPopulate(
+    options?: FindManyOptions<SubscriberOrmEntity>,
+  ): Promise<SubscriberFull[]> {
+    return await super.findAndPopulate({
+      where: { type: EUserProfileType.SubscriberOrmEntity },
+      ...options,
+    });
   }
 }

@@ -11,7 +11,6 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
-import { getSessionStore } from '@/utils/constants/session-store';
 import {
   SocketGet,
   SocketPost,
@@ -158,47 +157,27 @@ export class ChannelService {
     }
 
     if (!req.session.web?.profile?.id) {
-      // Create test subscriber for the current user
-      const testSubscriber = await this.subscriberService.findOneOrCreate(
+      const profile = await this.subscriberService.updateOne(
+        req.session.passport.user.id,
         {
-          where: { foreign_id: req.session.passport.user.id },
-        },
-        {
-          foreign_id: req.session.passport.user.id,
-          first_name: req.session.passport.user.first_name || 'Anonymous',
-          last_name: req.session.passport.user.last_name || 'Anonymous',
-          locale: null,
-          gender: null,
-          country: null,
-          labels: [],
-          assignedTo: null,
-          assignedAt: null,
-          lastvisit: new Date(),
-          retainedFrom: new Date(),
-          timezone: 0,
-          avatar: null,
+          context: { vars: {} },
           channel: {
             name: CONSOLE_CHANNEL_NAME,
             data: { isSocket: true },
           },
-          context: { vars: {} },
+          lastvisit: new Date(),
+          retainedFrom: new Date(),
+          foreign_id: req.session.passport.user.id,
         },
       );
 
       // Update session (end user is both a user + subscriber)
       req.session.web = {
-        profile: testSubscriber,
+        profile,
         isSocket: true,
         messageQueue: [],
         polling: false,
       };
-
-      // @TODO: temporary fix until it's fixed properly: https://github.com/Hexastack/Hexabot/issues/578
-      getSessionStore().set(req.session.id, req.session, (err) => {
-        if (err) {
-          this.logger.warn('Unable to store WS Console session', err);
-        }
-      });
     }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);

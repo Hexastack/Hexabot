@@ -16,23 +16,23 @@ import {
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { getDefaultConversationContext } from '../constants/conversation';
 import { Context } from '../types/context';
 
 import { BlockOrmEntity } from './block.entity';
-import { SubscriberOrmEntity } from './subscriber.entity';
 
 @Entity({ name: 'conversations' })
 export class ConversationOrmEntity extends BaseOrmEntity {
-  @ManyToOne(() => SubscriberOrmEntity, {
+  @ManyToOne(() => UserOrmEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'sender_id' })
   @AsRelation()
-  sender!: SubscriberOrmEntity;
+  sender!: UserOrmEntity;
 
   @RelationId((conversation: ConversationOrmEntity) => conversation.sender)
   private readonly senderId!: string;
