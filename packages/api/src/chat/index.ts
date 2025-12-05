@@ -88,8 +88,6 @@ export * from './seeds/context-var.seed';
 
 export * from './services/block.service';
 
-export * from './services/bot.service';
-
 export * from './services/category.service';
 
 export * from './services/chat.service';
