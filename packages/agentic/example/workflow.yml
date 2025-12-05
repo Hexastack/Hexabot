@@ -1,0 +1,394 @@
+### Example DSL: AI/automation workflow (annotated)
+### This single file is reference documentation for the YAML language used to orchestrate multi-step agents.
+### Convention: strings beginning with "=" are JSONata expressions with scope {context, memory, input, output, result}; all other strings are treated as literals.
+---
+# Root workflow metadata keeps runs self-describing and versioned.
+workflow:
+  name: "research_and_reply"
+  version: "1.1.0"
+  description: >
+    End-to-end assistant that classifies a user request, collects signals, performs a human-in-the-loop
+    clarification (pausing the run until the user replies), branches by intent/priority, and delivers an email.
+
+# Declares external inputs the caller must provide when starting a run.
+inputs:
+  schema:
+    query:
+      type: string
+      description: "Natural language request or question from the user."
+    user_email:
+      type: string
+      description: "Where to send the response."
+    priority:
+      type: string
+      enum: ["low", "normal", "high"]
+      description: "Used for routing/escalation decisions."
+    attachments:
+      type: array
+      items:
+        type: string
+      description: "Optional file ids that the user attached with the request."
+
+# Context is provided by the runtime (read-only) and accessed with $context.* inside tasks.
+context:
+  user_id: "=$context.user_id"            # e.g., authenticated account id
+  account_tier: "=$context.account_tier"  # e.g., free/pro/enterprise for policy decisions
+  locale: "=$context.locale"              # e.g., en-US, influences prompts
+  timezone: "=$context.timezone"          # useful for time-sensitive operations
+  channel: "=$context.channel"            # e.g., web, email, slack; used when messaging the user
+
+# Long-term memory slots that the runtime can hydrate before execution begins.
+memory:
+  thread_id: "=$memory.thread_id"           # thread/conversation id for continuity
+  full_transcript: "=$memory.full_transcript"
+  last_summary: "=$memory.last_summary"
+  support_playbook: "=$memory.support_playbook"
+  product_brief: "=$memory.product_brief"
+
+# Global defaults inherited by every task (overridable per task).
+defaults:
+  settings:
+    timeout_ms: 10000
+    retries:
+      max_attempts: 2
+      backoff_ms: 400
+      max_delay_ms: 10000
+      jitter: 0
+      multiplier: 1.5
+    audit: true                        # example flag an engine could log for compliance
+    guardrails:
+      mode: standard                    # e.g., optional safety setting the engine could enforce
+
+# Task catalog: each task has a unique name, description, action, inputs, outputs, settings.
+tasks:
+  understand_request:
+    description: "LLM categorizes the incoming query, extracts a short summary, and lists missing must-have fields."
+    action: call_llm
+    inputs:
+      system_prompt: |
+        You are an intent classifier and requirement extractor.
+        Return JSON with keys: intent, confidence, summary, missing_fields (array), needs_human (boolean).
+        Allowed intents: support, sales, research.
+      user_query: "=$input.query"
+      attachments: "=$input.attachments"
+      last_summary: "=$memory.last_summary"
+      user_tier: "=$context.account_tier"
+    outputs:
+      intent: "=$result.intent"
+      confidence: "=$result.confidence"
+      summary: "=$result.summary"
+      missing_fields: "=$result.missing_fields"  # e.g., ["error logs", "sku"]
+      needs_human: "=$result.needs_human"
+    settings:
+      model: gpt-4o
+      temperature: 0.2
+      timeout_ms: 6000
+      retries:
+        max_attempts: 1
+        backoff_ms: 400
+        max_delay_ms: 3000
+        jitter: 0.05
+        multiplier: 1.2
+
+  fetch_user_profile:
+    description: "Look up CRM profile and recent cases for the authenticated user."
+    action: get_user_profile
+    inputs:
+      user_id: "=$context.user_id"
+      include_history: true
+    outputs:
+      profile: "=$result.profile"
+      recent_cases: "=$result.recent_cases"
+
+  # Three distinct actions will run in parallel; their outputs will later be merged.
+  search_recent_news:
+    description: "Web search for fresh information about the user's company or topic."
+    action: search_web
+    inputs:
+      query: "='updates for ' & $output.fetch_user_profile.profile.company"
+      limit: 3
+    outputs:
+      links: "=$result.links"
+      snippets: "=$result.snippets"
+    settings:
+      timeout_ms: 7000
+
+  retrieve_memory_thread:
+    description: "Recall summarized prior conversation for continuity."
+    action: query_memory
+    inputs:
+      thread_id: "=$memory.thread_id"     # read thread id from long-term memory
+      user_id: "=$context.user_id"
+    outputs:
+      thread_summary: "=$result.summary"
+    settings:
+      timeout_ms: 3000
+
+  fetch_calendar_events:
+    description: "Pull the user's upcoming meetings for scheduling-aware replies."
+    action: get_calendar_events
+    inputs:
+      user_email: "=$input.user_email"
+      range: "next 7 days"
+    outputs:
+      events: "=$result.events"
+    settings:
+      timeout_ms: 5000
+
+  # Human-in-the-loop primitive: ask the user a clarifying question and pause the run until they respond.
+  ask_for_missing_detail:
+    description: >
+      Send a clarifying question to the end user when the request lacks required fields.
+      The engine MUST pause the workflow here and resume once a reply is received or a timeout occurs.
+    action: await_user_input                # generic action name that does not imply a specific channel
+    inputs:
+      prompt: |                           # question shown to the user in the same channel that triggered the run
+        = 'To help with your ' & $output.understand_request.intent & ' request, please provide: ' &
+          $join($output.understand_request.missing_fields, ', ')
+      allow_attachments: true
+    outputs:
+      user_reply: "=$result.text"          # freeform user response
+      user_files: "=$result.attachments"   # any files the user added when replying
+    settings:
+      await_user: true                     # signals the runtime to checkpoint and wait
+      timeout_ms: 86400000                 # 24h; engines may choose a default if omitted
+
+  synthesize_research:
+    description: "LLM that combines all signals (including any user clarification) into a concise brief."
+    action: call_llm
+    inputs:
+      intent: "=$output.understand_request.intent"
+      profile: "=$output.fetch_user_profile.profile"
+      news_snippets: "=$output.search_recent_news.snippets"  # from a parallel task
+      memory_summary: "=$output.retrieve_memory_thread.thread_summary"
+      meetings: "=$output.fetch_calendar_events.events"
+      user_clarification: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : ''"
+      attachments: "=$exists($output.ask_for_missing_detail.user_files) ? $output.ask_for_missing_detail.user_files : $input.attachments"
+    outputs:
+      synthesized: "=$result.synthesis"
+      open_questions: "=$result.questions"
+    settings:
+      model: gpt-4o
+      temperature: 0.35
+
+  route_by_intent:
+    description: "Decide which downstream path to take using a branching table."
+    action: decision_router
+    inputs:
+      intent: "=$output.understand_request.intent"
+      priority: "=$input.priority"
+      confidence: "=$output.understand_request.confidence"
+      needs_human: "=$output.understand_request.needs_human"
+    outputs:
+      route: "=$result.route"            # e.g., draft_support_reply | craft_sales_pitch | escalate_to_human | send_generic_summary
+      rationale: "=$result.explanation"
+    settings:
+      # Multi-branch logic evaluated top-to-bottom; first match wins.
+      branches:
+        - when: "=$output.understand_request.needs_human = true"
+          next: escalate_to_human
+        - when: "=$output.understand_request.intent = 'support' and $output.understand_request.confidence > 0.6"
+          next: draft_support_reply
+        - when: "=$output.understand_request.intent = 'sales'"
+          next: craft_sales_pitch
+        - when: "=$input.priority = 'high'"  # demonstrates condition using workflow input
+          next: escalate_to_human
+      default_next: send_generic_summary
+
+  draft_support_reply:
+    description: "Generate troubleshooting steps tailored to the user."
+    action: call_llm
+    inputs:
+      profile: "=$output.fetch_user_profile.profile"
+      question: "=$input.query"
+      clarification: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : ''"
+      troubleshooting_guide: "=$memory.support_playbook"
+      signals: "=$output.synthesize_research.synthesized"
+    outputs:
+      reply_markdown: "=$result.message"
+      suggested_faq_links: "=$result.links"
+    settings:
+      model: gpt-4o-mini
+      temperature: 0.3
+
+  craft_sales_pitch:
+    description: "Write a sales email using retrieved company insights."
+    action: call_llm
+    inputs:
+      product_brief: "=$memory.product_brief"
+      company_news: "=$output.search_recent_news.snippets"
+      meetings: "=$output.fetch_calendar_events.events"
+      persona: "=$output.fetch_user_profile.profile.persona"
+      query: "=$input.query"
+    outputs:
+      pitch_email: "=$result.email"
+      call_to_action: "=$result.cta"
+    settings:
+      model: gpt-4o
+      temperature: 0.55
+
+  escalate_to_human:
+    description: "Open or update a human-agent ticket with full context."
+    action: create_ticket
+    inputs:
+      user_id: "=$context.user_id"
+      transcript: "=$memory.full_transcript"
+      summary: "=$output.synthesize_research.synthesized"
+      clarification: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : ''"
+    outputs:
+      ticket_id: "=$result.ticket_id"
+      status: "=$result.status"
+
+  send_generic_summary:
+    description: "Fallback response when no specialized branch applies."
+    action: call_llm
+    inputs:
+      summary: "=$output.synthesize_research.synthesized"
+      intent: "=$output.understand_request.intent"
+      question: "=$input.query"
+    outputs:
+      message: "=$result.message"
+    settings:
+      model: gpt-4o-mini
+
+  send_email_response:
+    description: "Deliver the chosen response via email."
+    action: send_email
+    inputs:
+      to: "=$input.user_email"
+      subject: "='Response for ' & $output.understand_request.intent & ' request'"
+      body: >
+        = (
+          $route := $output.route_by_intent.route;
+          $route = 'draft_support_reply' ? $output.draft_support_reply.reply_markdown :
+          $route = 'craft_sales_pitch' ? $output.craft_sales_pitch.pitch_email :
+          $route = 'escalate_to_human' ? ('Ticket created: ' & $output.escalate_to_human.ticket_id) :
+          $output.send_generic_summary.message
+        )
+      # The JSONata expression above chooses the body from prior outputs without separate templating.
+    outputs:
+      delivery_status: "=$result.status"
+    settings:
+      track_opens: true
+
+  # Loop-specific tasks used by the for-each demo in the flow below.
+  draft_stakeholder_update:
+    description: "LLM crafts a short FYI note for each stakeholder iterated in the loop."
+    action: call_llm
+    inputs:
+      stakeholder: "=$iteration.item"                # $iteration.* is provided inside loop bodies
+      intent: "=$output.understand_request.intent"
+      research_brief: "=$output.synthesize_research.synthesized"
+      question: "=$input.query"
+    outputs:
+      short_note: "=$result.message"
+    settings:
+      model: gpt-4o-mini
+      temperature: 0.35
+
+  send_stakeholder_update:
+    description: "Deliver FYI notes to stakeholders and capture acknowledgement."
+    action: send_email
+    inputs:
+      to: "=$iteration.item.email"
+      subject: "='FYI: ' & $iteration.item.name & ' about ' & $output.understand_request.intent"
+      body: "=$output.draft_stakeholder_update.short_note"
+    outputs:
+      delivery_status: "=$result.status"
+      acknowledged: "=$result.acknowledged"         # e.g., bounce handler or reply classifier
+
+# Flow defines execution order, mixing sequential chains, parallel blocks, conditionals, waits, and loops.
+flow:
+  - do: understand_request     # Step 1: always start by understanding the request ($input.query).
+
+  # Step 2: If required context is missing, ask the user and pause until they answer.
+  - conditional:
+      description: "Human-in-the-loop gate: pause the run until user replies with missing details."
+      when:
+        - condition: "=$count($output.understand_request.missing_fields) > 0"
+          steps:
+            - do: ask_for_missing_detail  # settings.await_user=true causes a checkpoint + wait-for-reply resume
+        - else:
+          steps: []                       # nothing to do when request is already complete
+
+  - do: fetch_user_profile      # Step 3: enrich with CRM data before branching.
+
+  # Step 4: run three independent enrichment tasks concurrently.
+  - parallel:
+      strategy: wait_all        # wait_all ensures downstream steps see every output
+      steps:
+        - do: search_recent_news
+        - do: retrieve_memory_thread
+        - do: fetch_calendar_events
+
+  - do: synthesize_research     # Step 5: summarize signals (including any user clarification).
+  - do: route_by_intent         # Step 6: produce a route key used by the conditional below.
+
+  # Step 7: conditional routing with a nested condition.
+  - conditional:
+      description: "Branch based on router output; demonstrates multi-branch + nested logic."
+      when:
+        - condition: "=$output.route_by_intent.route = 'draft_support_reply'"
+          steps:
+            - do: draft_support_reply
+            # Nested conditional: if the request is high priority, escalate after drafting.
+            - conditional:
+                when:
+                  - condition: "=$input.priority = 'high'"
+                    steps:
+                      - do: escalate_to_human
+        - condition: "=$output.route_by_intent.route = 'craft_sales_pitch'"
+          steps:
+            - do: craft_sales_pitch
+        - condition: "=$output.route_by_intent.route = 'escalate_to_human'"
+          steps:
+            - do: escalate_to_human
+        - else:
+          steps:
+            - do: send_generic_summary
+
+  # Step 8: loop example showcasing for-each fan-out with an accumulator and early exit.
+  - loop:
+      name: notify_stakeholders                      # Optional: name surfaces $output.notify_stakeholders.*
+      description: "Fan out FYI updates to profile stakeholders until one acknowledges."
+      for_each:
+        item: stakeholder
+        in: "=$output.fetch_user_profile.profile.stakeholders" # expects [{name, email, role}]
+      max_concurrency: 2                            # throttle deliveries to avoid rate limits
+      until: "=$output.send_stakeholder_update.acknowledged = true" # break once any ack arrives
+      accumulate:
+        as: notifications                           # accumulator is visible as $accumulator.notifications
+        initial: []                                 # seed value for the accumulator
+        merge: >                                    # JSONata to append per-iteration output
+          = $append(
+              $accumulator.notifications,
+              [{'email': $iteration.item.email,
+                'status': $output.send_stakeholder_update.delivery_status,
+                'ack': $output.send_stakeholder_update.acknowledged}]
+            )
+      steps:
+        - do: draft_stakeholder_update              # has access to $iteration.item and $iteration.index
+        - do: send_stakeholder_update               # delivers the note and sets acknowledged flag
+      # Accumulated data is accessible as $output.notify_stakeholders.notifications downstream.
+
+  - do: send_email_response   # Step 9: final action uses outputs of whichever branch ran.
+
+# Final workflow outputs expose the important artifacts to callers.
+outputs:
+  delivered: "=$output.send_email_response.delivery_status"
+  intent: "=$output.understand_request.intent"
+  missing_fields_resolved: "=$count($output.understand_request.missing_fields) = 0"
+  user_reply: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : null"
+  research_brief: "=$output.synthesize_research.synthesized"
+  ticket: "=$output.escalate_to_human.ticket_id" # may be null if no escalation occurred
+  stakeholder_notifications: "=$output.notify_stakeholders.notifications"
+
+# Notes:
+# - Expressions: strings starting with "=" are JSONata with scope {context, memory, input, output, result};
+#   other strings are treated as literals.
+# - Accessors recap: $context.* (runtime info), $memory.* (long-term state),
+#   $input.* (original workflow inputs), $output.* (data produced by prior tasks), $iteration.* (loop locals).
+# - Human-in-the-loop: tasks can declare settings.await_user=true to checkpoint execution, send a message,
+#   and resume when the user replies. Engines may optionally support on_timeout/fallback hooks, not shown here.
+# - Error handling & retries: globally configured in defaults, overridable per task (see above).
+# - Control flow: sequential steps (do), conditionals (conditional), fan-out (parallel, loop), and waits (await_user via task settings).
