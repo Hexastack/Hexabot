@@ -18,14 +18,14 @@ import {
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
+import {
+  UserProfileCreateDto,
+  UserProfileStub,
+} from '@/user/dto/user-profile.dto';
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 import { SubscriberContext } from '../types/subscriberContext';
@@ -33,21 +33,9 @@ import { SubscriberContext } from '../types/subscriberContext';
 import { Label } from './label.dto';
 
 @Exclude()
-export class SubscriberStub extends BaseStub {
-  @Expose()
-  firstName!: string;
-
-  @Expose()
-  lastName!: string;
-
+export class SubscriberStub extends UserProfileStub {
   @Expose()
   locale: string | null;
-
-  @Expose()
-  timezone: number = 0;
-
-  @Expose()
-  language: string | null;
 
   @Expose()
   gender: string | null;
@@ -101,17 +89,7 @@ export class SubscriberFull extends SubscriberStub {
   avatar: Attachment | null;
 }
 
-export class SubscriberCreateDto {
-  @ApiProperty({ description: 'Subscriber first name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  firstName: string;
-
-  @ApiProperty({ description: 'Subscriber last name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  lastName: string;
-
+export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
   @IsString()

@@ -40,8 +40,8 @@ export enum FileType {
 
 export interface ISubscriber {
   id: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   locale: string;
   gender: string;
   assignedAt?: Date | null;
@@ -51,7 +51,7 @@ export interface ISubscriber {
   timezone?: number;
   language: string;
   country?: string;
-  foreign_id: string;
+  foreignId: string;
 }
 
 export enum ButtonType {
