@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { StepInfo } from '@hexabot-ai/agentic';
 import type { HttpException } from '@nestjs/common';
 import type { OnEventType } from '@nestjs/event-emitter';
 import type { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
@@ -25,21 +26,16 @@ import type {
 } from '@/analytics/entities/bot-stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import type EventWrapper from '@/channel/lib/EventWrapper';
-import type { BlockFull } from '@/chat/dto/block.dto';
-import type { Conversation } from '@/chat/dto/conversation.dto';
 import type { Message, MessageCreateDto } from '@/chat/dto/message.dto';
 import type {
   Subscriber,
   SubscriberUpdateDto,
 } from '@/chat/dto/subscriber.dto';
-import type { BlockOrmEntity } from '@/chat/entities/block.entity';
 import type { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
-import type { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
 import type { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import type { LabelOrmEntity } from '@/chat/entities/label.entity';
 import type { MessageOrmEntity } from '@/chat/entities/message.entity';
 import type { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import type { Context } from '@/chat/types/context';
 import type { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import type { ContentOrmEntity } from '@/cms/entities/content.entity';
 import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
@@ -60,6 +56,8 @@ import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { THydratedDocument } from '@/utils/types/filter.types';
+import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
+import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 type AnyEventWrapper = EventWrapper<any, any>;
 
@@ -130,11 +128,9 @@ declare module '@nestjs/event-emitter' {
 
   interface OrmEntityRegistry {
     attachment: AttachmentOrmEntity;
-    block: BlockOrmEntity;
     botStats: BotStatsOrmEntity;
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
-    conversation: ConversationOrmEntity;
     contextVar: ContextVarOrmEntity;
     dummy: DummyOrmEntity;
     invitation: InvitationOrmEntity;
@@ -155,6 +151,8 @@ declare module '@nestjs/event-emitter' {
     subscriber: SubscriberOrmEntity;
     translation: TranslationOrmEntity;
     user: UserOrmEntity;
+    workflow: WorkflowOrmEntity;
+    workflowRun: WorkflowRunOrmEntity;
   }
 
   type IHookEntities = keyof OrmEntityRegistry & string;
@@ -200,13 +198,6 @@ declare module '@nestjs/event-emitter' {
   >;
 
   interface CustomEventMap {
-    'hook:analytics:block': [BlockFull, AnyEventWrapper, Context | undefined];
-    'hook:analytics:fallback-local': [
-      BlockFull,
-      AnyEventWrapper,
-      Context | undefined,
-    ];
-    'hook:analytics:fallback-global': [AnyEventWrapper];
     'hook:analytics:passation': [Subscriber, boolean];
     'hook:chatbot:echo': [AnyEventWrapper];
     'hook:chatbot:delivery': [AnyEventWrapper];
@@ -214,8 +205,6 @@ declare module '@nestjs/event-emitter' {
     'hook:chatbot:read': [AnyEventWrapper];
     'hook:chatbot:received': [AnyEventWrapper];
     'hook:chatbot:sent': [MessageCreateDto, AnyEventWrapper?];
-    'hook:conversation:close': [string];
-    'hook:conversation:end': [Conversation];
     'hook:message:preCreate': [THydratedDocument<Message>];
     'hook:stats:entry': [BotStatsType, string, Subscriber?];
     'hook:subscriber:assign': [SubscriberUpdateDto, Subscriber];
@@ -223,6 +212,21 @@ declare module '@nestjs/event-emitter' {
     'hook:user:logout': [ExpressSession];
     'hook:websocket:connection': [Socket];
     'hook:websocket:error': [Socket, Error | HttpException];
+    'hook:workflow:start': [{ runId?: string }];
+    'hook:workflow:finish': [
+      { runId?: string; output: Record<string, unknown> },
+    ];
+    'hook:workflow:failure': [{ runId?: string; error: unknown }];
+    'hook:workflow:suspended': [
+      { runId?: string; step: StepInfo; reason?: string; data?: unknown },
+    ];
+    'hook:step:start': [{ runId?: string; step: StepInfo }];
+    'hook:step:success': [{ runId?: string; step: StepInfo }];
+    'hook:step:error': [{ runId?: string; step: StepInfo; error: unknown }];
+    'hook:step:suspended': [
+      { runId?: string; step: StepInfo; reason?: string; data?: unknown },
+    ];
+    'hook:step:skipped': [{ runId?: string; step: StepInfo; reason?: string }];
   }
 
   interface IBaseHookEventMap

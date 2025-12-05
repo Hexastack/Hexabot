@@ -19,8 +19,8 @@ export function getDefaultWorkflowContext(): Context {
     payload: null,
     nlp: null,
     user: {
-      first_name: '',
-      last_name: '',
+      firstName: '',
+      lastName: '',
     } as Subscriber,
     user_location: {
       lat: 0.0,
