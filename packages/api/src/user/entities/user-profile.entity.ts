@@ -29,14 +29,14 @@ export enum EUserProfileType {
 @TableInheritance({
   column: { type: 'varchar', name: 'type' },
 })
-@Index(['first_name'])
-@Index(['last_name'])
+@Index(['firstName'])
+@Index(['lastName'])
 export class UserProfileOrmEntity extends BaseOrmEntity {
-  @Column({ name: 'first_name' })
-  first_name: string;
+  @Column()
+  firstName: string;
 
-  @Column({ name: 'last_name' })
-  last_name: string;
+  @Column()
+  lastName: string;
 
   @ManyToOne(() => AttachmentOrmEntity, {
     nullable: true,

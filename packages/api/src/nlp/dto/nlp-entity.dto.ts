@@ -32,7 +32,7 @@ import { NlpValue } from './nlp-value.dto';
 export class NlpEntityStub extends BaseStub {
   @Expose()
   @Transform(({ value, obj }) => {
-    const resolved = value ?? obj?.foreign_id ?? null;
+    const resolved = value ?? obj?.foreignId ?? null;
 
     return resolved === null ? undefined : resolved;
   })

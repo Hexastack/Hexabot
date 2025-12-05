@@ -123,8 +123,8 @@ export default abstract class BaseWebChannelHandler<
 
       let messages: Web.Message[] | undefined;
 
-      if (profile?.foreign_id) {
-        await client.join(profile.foreign_id);
+      if (profile?.foreignId) {
+        await client.join(profile.foreignId);
         const messagesHistory =
           await this.messageService.findHistoryUntilDate(profile);
         messages = await this.formatMessages(
@@ -496,9 +496,9 @@ export default abstract class BaseWebChannelHandler<
     }
 
     const newProfile: SubscriberCreateDto = {
-      foreign_id: this.generateId(),
-      first_name: data.first_name ? data.first_name.toString() : 'Anon.',
-      last_name: data.last_name ? data.last_name.toString() : 'Web User',
+      foreignId: this.generateId(),
+      firstName: data.first_name ? data.first_name.toString() : 'Anon.',
+      lastName: data.last_name ? data.last_name.toString() : 'Web User',
       assignedTo: null,
       assignedAt: null,
       lastvisit: new Date(),
@@ -612,7 +612,7 @@ export default abstract class BaseWebChannelHandler<
       // Join socket room when using websocket
       if (this.isSocketRequest(req)) {
         try {
-          await req.socket.join(profile.foreign_id);
+          await req.socket.join(profile.foreignId);
         } catch (err) {
           this.logger.error('Unable to subscribe via websocket', err);
         }
@@ -854,7 +854,7 @@ export default abstract class BaseWebChannelHandler<
           // Generate unique ID and handle message
           event._adapter.raw.mid = this.generateId();
           // Force author id from session
-          event._adapter.raw.author = profile.foreign_id;
+          event._adapter.raw.author = profile.foreignId;
         }
       }
 

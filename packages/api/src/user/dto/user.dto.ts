@@ -42,10 +42,10 @@ export class UserStub extends BaseStub {
   username!: string;
 
   @Expose()
-  first_name!: string;
+  firstName!: string;
 
   @Expose()
-  last_name!: string;
+  lastName!: string;
 
   @Expose()
   email!: string;
@@ -101,12 +101,12 @@ export class UserCreateDto {
   @ApiProperty({ description: 'User first name', type: String })
   @IsNotEmpty()
   @IsString()
-  first_name: string;
+  firstName: string;
 
   @ApiProperty({ description: 'User last name', type: String })
   @IsNotEmpty()
   @IsString()
-  last_name: string;
+  lastName: string;
 
   @ApiProperty({ description: 'User email', type: String })
   @IsNotEmpty()

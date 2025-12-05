@@ -35,10 +35,10 @@ import { Label } from './label.dto';
 @Exclude()
 export class SubscriberStub extends BaseStub {
   @Expose()
-  first_name!: string;
+  firstName!: string;
 
   @Expose()
-  last_name!: string;
+  lastName!: string;
 
   @Expose()
   locale: string | null;
@@ -56,7 +56,7 @@ export class SubscriberStub extends BaseStub {
   country: string | null;
 
   @Expose()
-  foreign_id: string;
+  foreignId: string;
 
   @Expose()
   assignedAt: Date | null;
@@ -105,12 +105,12 @@ export class SubscriberCreateDto {
   @ApiProperty({ description: 'Subscriber first name', type: String })
   @IsNotEmpty()
   @IsString()
-  first_name: string;
+  firstName: string;
 
   @ApiProperty({ description: 'Subscriber last name', type: String })
   @IsNotEmpty()
   @IsString()
-  last_name: string;
+  lastName: string;
 
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
@@ -140,7 +140,7 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreign_id: string;
+  foreignId: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsArray()

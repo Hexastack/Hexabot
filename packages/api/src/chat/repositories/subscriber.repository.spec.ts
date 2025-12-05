@@ -89,9 +89,9 @@ describe('SubscriberRepository (TypeORM)', () => {
     overrides: Partial<SubscriberOrmEntity> = {},
   ): Promise<SubscriberOrmEntity> => {
     const subscriber = repository.create({
-      first_name: `Test-${randomUUID().slice(0, 8)}`,
-      last_name: 'User',
-      foreign_id: `foreign-${randomUUID()}`,
+      firstName: `Test-${randomUUID().slice(0, 8)}`,
+      lastName: 'User',
+      foreignId: `foreign-${randomUUID()}`,
       locale: 'en_EN',
       language: 'en',
       country: 'FR',
@@ -141,21 +141,21 @@ describe('SubscriberRepository (TypeORM)', () => {
   describe('findOneByForeignId', () => {
     it('returns the most recent subscriber matching a foreign id', async () => {
       const fixture = subscriberFixtures.find(
-        ({ foreign_id }) => foreign_id === 'foreign-id-web-1',
+        ({ foreignId }) => foreignId === 'foreign-id-web-1',
       );
-      if (!fixture?.foreign_id) {
+      if (!fixture?.foreignId) {
         throw new Error('Expected fixture "foreign-id-web-1" to exist');
       }
 
       const subscriber = await subscriberRepository.findOneByForeignId(
-        fixture.foreign_id,
+        fixture.foreignId,
       );
 
       expect(subscriber).not.toBeNull();
       expect(subscriber).toMatchObject({
-        foreign_id: fixture.foreign_id,
-        first_name: fixture.first_name,
-        last_name: fixture.last_name,
+        foreignId: fixture.foreignId,
+        firstName: fixture.firstName,
+        lastName: fixture.lastName,
         language: fixture.language,
       });
       expect(subscriber!.labels).toHaveLength(existingLabels.length);
@@ -173,20 +173,20 @@ describe('SubscriberRepository (TypeORM)', () => {
   describe('findOneByForeignIdAndPopulate', () => {
     it('returns a populated subscriber matching the foreign id', async () => {
       const fixture = subscriberFixtures.find(
-        ({ foreign_id }) => foreign_id === 'foreign-id-web-2',
+        ({ foreignId }) => foreignId === 'foreign-id-web-2',
       );
-      if (!fixture?.foreign_id) {
+      if (!fixture?.foreignId) {
         throw new Error('Expected fixture "foreign-id-web-2" to exist');
       }
 
       const subscriber =
         await subscriberRepository.findOneByForeignIdAndPopulate(
-          fixture.foreign_id,
+          fixture.foreignId,
         );
 
       expect(subscriber).not.toBeNull();
-      expect(subscriber!.foreign_id).toBe(fixture.foreign_id);
-      expect(subscriber!.first_name).toBe(fixture.first_name);
+      expect(subscriber!.foreignId).toBe(fixture.foreignId);
+      expect(subscriber!.firstName).toBe(fixture.firstName);
       expect(subscriber!.labels.map((label) => label.id).sort()).toEqual(
         existingLabels.map((label) => label.id).sort(),
       );
@@ -201,7 +201,7 @@ describe('SubscriberRepository (TypeORM)', () => {
         timezone: 2,
       });
       const updated = await subscriberRepository.updateOneByForeignIdQuery(
-        entity.foreign_id ?? '',
+        entity.foreignId ?? '',
         { timezone: 9 },
       );
 
@@ -220,12 +220,12 @@ describe('SubscriberRepository (TypeORM)', () => {
       const entity = await createPersistedSubscriber();
       const assignedUser = existingUsers[0];
       const unassigned = await subscriberRepository.handBackByForeignIdQuery(
-        entity.foreign_id ?? '',
+        entity.foreignId ?? '',
       );
       expect(unassigned.assignedTo).toBeNull();
 
       const reassigned = await subscriberRepository.handOverByForeignIdQuery(
-        entity.foreign_id ?? '',
+        entity.foreignId ?? '',
         assignedUser.id,
       );
 

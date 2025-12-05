@@ -181,8 +181,8 @@ describe('UserController (TypeORM)', () => {
       jest.spyOn(userService, 'create');
       const userDto: UserCreateDto = {
         username: 'testUser',
-        first_name: 'testUser',
-        last_name: 'testUser',
+        firstName: 'testUser',
+        lastName: 'testUser',
         email: 'test@test.test',
         password: 'test',
         roles: [role!.id],
@@ -193,15 +193,15 @@ describe('UserController (TypeORM)', () => {
       expect(result).toMatchObject({
         email: userDto.email,
         username: userDto.username,
-        first_name: userDto.first_name,
-        last_name: userDto.last_name,
+        firstName: userDto.firstName,
+        lastName: userDto.lastName,
       });
     });
   });
 
   describe('updateOne', () => {
     const updateDto: UserEditProfileDto = {
-      first_name: 'updated firstName',
+      firstName: 'updated firstName',
     };
     it('should return updated user', async () => {
       jest.spyOn(userService, 'updateOne');
@@ -213,7 +213,7 @@ describe('UserController (TypeORM)', () => {
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toMatchObject({
         id: user!.id,
-        first_name: updateDto.first_name,
+        firstName: updateDto.firstName,
       });
     });
   });

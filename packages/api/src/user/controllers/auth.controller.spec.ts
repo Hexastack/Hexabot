@@ -71,8 +71,8 @@ describe('AuthController (TypeORM)', () => {
       email: 'test@testing.com',
       password: getRandom().toString(),
       username: 'test',
-      first_name: 'test',
-      last_name: 'test',
+      firstName: 'test',
+      lastName: 'test',
       roles: [role.id],
       avatar: null,
     };

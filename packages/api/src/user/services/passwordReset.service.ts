@@ -67,7 +67,7 @@ export class PasswordResetService {
           appName: config.parameters.appName,
           appUrl: config.uiBaseUrl,
           token: jwt,
-          first_name: user.first_name,
+          first_Name: user.firstName,
           t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
         },
         subject: this.i18n.t('password_reset_subject'),

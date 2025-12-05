@@ -73,12 +73,11 @@ describe('SubscriberController (TypeORM)', () => {
     populatedSubscribers =
       await subscriberService.findAndPopulate(defaultOrder);
 
-    const targetFirstName = subscriberFixtures[0]?.first_name ?? null;
+    const targetFirstName = subscriberFixtures[0]?.firstName ?? null;
 
     referencePlain =
-      plainSubscribers.find(
-        (subscriber) => subscriber.first_name === targetFirstName,
-      ) ?? plainSubscribers[0];
+      plainSubscribers.find(({ firstName }) => firstName === targetFirstName) ??
+      plainSubscribers[0];
 
     referencePopulated =
       populatedSubscribers.find(

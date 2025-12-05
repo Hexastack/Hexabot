@@ -102,7 +102,7 @@ export class SubscriberRepository extends BaseOrmRepository<
     id: string,
   ): FindManyOptions<SubscriberOrmEntity> {
     return {
-      where: { foreign_id: id },
+      where: { foreignId: id },
       order: { lastvisit: 'DESC' },
       take: 1,
     };
@@ -150,7 +150,7 @@ export class SubscriberRepository extends BaseOrmRepository<
   ): Promise<Subscriber> {
     return await this.updateOne(
       {
-        where: { foreign_id: id },
+        where: { foreignId: id },
       },
       updates,
     );
@@ -167,7 +167,7 @@ export class SubscriberRepository extends BaseOrmRepository<
     return await this.updateOne(
       {
         where: {
-          foreign_id: foreignId,
+          foreignId,
         },
       },
       {
@@ -191,7 +191,7 @@ export class SubscriberRepository extends BaseOrmRepository<
     return await this.updateOne(
       {
         where: {
-          foreign_id: foreignId,
+          foreignId,
         },
       },
       {

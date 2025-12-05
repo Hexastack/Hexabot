@@ -30,8 +30,8 @@ export const generateAvatarSvg = async (svg: string) => {
 };
 
 export const generateInitialsAvatar = async (name: {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
 }) => {
   const svg = generateUIAvatarSvg({
     text: getInitials(name),
@@ -47,19 +47,17 @@ export const getBotAvatar = async (color: string) => {
   return await generateAvatarSvg(svg);
 };
 
-const getInitials = (name: { first_name: string; last_name: string }) => {
-  if (isEmpty(name.first_name)) {
-    const string = name.first_name.trim().slice(0, 2);
+const getInitials = (name: { firstName: string; lastName: string }) => {
+  if (isEmpty(name.firstName)) {
+    const string = name.firstName.trim().slice(0, 2);
 
     return string.toUpperCase();
   }
-  if (isEmpty(name.last_name)) {
-    const string = name.last_name.trim().slice(0, 2);
+  if (isEmpty(name.lastName)) {
+    const string = name.lastName.trim().slice(0, 2);
 
     return string.toUpperCase();
   }
 
-  return `${name.first_name.trim()[0]}${
-    name.last_name.trim()[0]
-  }`.toUpperCase();
+  return `${name.firstName.trim()[0]}${name.lastName.trim()[0]}`.toUpperCase();
 };

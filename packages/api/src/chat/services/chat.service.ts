@@ -214,7 +214,7 @@ export class ChatService {
     if (foreignId) {
       try {
         const recipient = await this.subscriberService.findOne({
-          where: { foreign_id: foreignId },
+          where: { foreignId },
         });
 
         if (!recipient) {
@@ -251,7 +251,7 @@ export class ChatService {
 
     try {
       let subscriber = await this.subscriberService.findOne({
-        where: { foreign_id: foreignId },
+        where: { foreignId },
       });
 
       if (!subscriber) {

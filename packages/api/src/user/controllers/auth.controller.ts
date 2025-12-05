@@ -142,7 +142,7 @@ export class LocalAuthController extends BaseAuthController {
 
       await this.validateAccountService.sendConfirmationEmail({
         email: userCreateDto.email,
-        first_name: userCreateDto.first_name,
+        firstName: userCreateDto.firstName,
       });
 
       await this.invitationService.deleteOne({
