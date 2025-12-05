@@ -14,27 +14,22 @@ import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserModule } from '@/user/user.module';
 import { WorkflowModule } from '@/workflow/workflow.module';
 
-import { CategoryController } from './controllers/category.controller';
 import { ContextVarController } from './controllers/context-var.controller';
 import { LabelGroupController } from './controllers/label-group.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
-import { CategoryOrmEntity } from './entities/category.entity';
 import { ContextVarOrmEntity } from './entities/context-var.entity';
 import { LabelGroupOrmEntity } from './entities/label-group.entity';
 import { LabelOrmEntity } from './entities/label.entity';
 import { MessageOrmEntity } from './entities/message.entity';
 import { SubscriberOrmEntity } from './entities/subscriber.entity';
-import { CategoryRepository } from './repositories/category.repository';
 import { ContextVarRepository } from './repositories/context-var.repository';
 import { LabelGroupRepository } from './repositories/label-group.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
-import { CategorySeeder } from './seeds/category.seed';
 import { ContextVarSeeder } from './seeds/context-var.seed';
-import { CategoryService } from './services/category.service';
 import { ChatService } from './services/chat.service';
 import { ContextVarService } from './services/context-var.service';
 import { LabelGroupService } from './services/label-group.service';
@@ -46,7 +41,6 @@ import { SubscriberService } from './services/subscriber.service';
   imports: [
     TypeOrmModule.forFeature([
       UserProfileOrmEntity,
-      CategoryOrmEntity,
       ContextVarOrmEntity,
       LabelOrmEntity,
       LabelGroupOrmEntity,
@@ -60,7 +54,6 @@ import { SubscriberService } from './services/subscriber.service';
     WorkflowModule,
   ],
   controllers: [
-    CategoryController,
     ContextVarController,
     LabelController,
     LabelGroupController,
@@ -68,19 +61,16 @@ import { SubscriberService } from './services/subscriber.service';
     SubscriberController,
   ],
   providers: [
-    CategoryRepository,
     ContextVarRepository,
     LabelRepository,
     LabelGroupRepository,
     MessageRepository,
     SubscriberRepository,
-    CategoryService,
     ContextVarService,
     LabelService,
     LabelGroupService,
     MessageService,
     SubscriberService,
-    CategorySeeder,
     ContextVarSeeder,
     ChatService,
   ],

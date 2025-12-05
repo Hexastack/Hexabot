@@ -63,11 +63,6 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'Category',
-    identity: 'category',
-    attributes: {},
-  },
-  {
     name: 'Label',
     identity: 'label',
     attributes: {},
