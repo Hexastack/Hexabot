@@ -40,7 +40,6 @@ import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
-import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
@@ -90,7 +89,6 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   ChannelModule,
   ActionsModule,
   WorkflowModule,
-  PluginsModule,
   HelperModule,
   LoggerModule,
   WebsocketModule,

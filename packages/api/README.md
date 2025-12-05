@@ -1,6 +1,6 @@
 # Hexabot API
 
-[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and plugin integrations.
+[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and action-driven extensions.
 
 ## Key Features
 
@@ -21,9 +21,9 @@ The API is divided into several key modules, each responsible for specific funct
 - **Chat:** The core module for handling incoming channel requests and managing the chat flow as defined by the visual editor in the UI.
 - **Knowledge Base:** Content management module for defining content types, managing content, and configuring menus for chatbot interactions.
 - **NLU:** Manages NLU (Natural Language Understanding) entities such as intents, languages, and values used to detect and process user inputs intelligently.
-- **Plugins:** Manages extensions and plugins that integrate additional features and functionalities into the chatbot.
+- **Actions:** Manages reusable actions that integrate additional features and drive agentic workflows.
 - **User:** Manages user authentication, roles, and permissions, ensuring secure access to different parts of the system.
-- **Extensions:** A container for all types of extensions (channels, plugins, helpers) that can be added to expand the chatbot's functionality.
+- **Extensions:** A container for all types of extensions (channels, actions, helpers) that can be added to expand the chatbot's functionality.
 - **Settings:** A module for management all types of settings that can be adjusted to customize the chatbot.
 
 ### Utility Modules

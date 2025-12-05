@@ -6,10 +6,6 @@
 
 import { BlockOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { BasePlugin } from '@/plugins/base-plugin.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingType } from '@/setting/types';
 import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -21,7 +17,6 @@ import { TranslationService } from '../services/translation.service';
 describe('TranslationService', () => {
   let service: TranslationService;
   let i18nService: I18nService<unknown>;
-  let pluginService: PluginService;
 
   beforeEach(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -39,12 +34,6 @@ describe('TranslationService', () => {
                 lang: 'en',
               },
             ]),
-          },
-        },
-        {
-          provide: PluginService,
-          useValue: {
-            getPlugin: jest.fn(),
           },
         },
         {
@@ -66,11 +55,7 @@ describe('TranslationService', () => {
         SettingServiceProvider,
       ],
     });
-    [service, i18nService, pluginService] = await getMocks([
-      TranslationService,
-      I18nService,
-      PluginService,
-    ]);
+    [service, i18nService] = await getMocks([TranslationService, I18nService]);
   });
 
   it('should call refreshDynamicTranslations with translations from findAll', async () => {
@@ -88,93 +73,6 @@ describe('TranslationService', () => {
   it('should return an array of strings from all blocks', async () => {
     const strings = await service.getAllBlockStrings();
     expect(strings).toEqual(['Test message', 'Fallback message']);
-  });
-
-  it('should return plugin-related strings from block message with translatable args', async () => {
-    const block: Block = {
-      name: 'Ollama Plugin',
-      patterns: [],
-      outcomes: [],
-      assign_labels: [],
-      trigger_channels: [],
-      trigger_labels: [],
-      nextBlocks: [],
-      category: '51b4f7d2-ff67-433d-9c02-1f2345678901',
-      starts_conversation: false,
-      builtin: false,
-      capture_vars: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      id: '51b4f7d2-ff67-433d-9c02-1f2345678902',
-      position: { x: 702, y: 321.8333282470703 },
-      message: {
-        plugin: 'ollama-plugin',
-        args: {
-          model: 'String 1',
-          context: ['String 2', 'String 3'],
-        },
-      },
-      options: {},
-      attachedBlock: null,
-    };
-
-    class MockPlugin extends BasePlugin {
-      template: PluginBlockTemplate = { name: 'Ollama Plugin' };
-
-      name: `${string}-plugin`;
-
-      type: any;
-
-      private settings: {
-        label: string;
-        group: string;
-        type: SettingType;
-        value: any;
-        translatable: boolean;
-      }[];
-
-      constructor() {
-        super('ollama-plugin', pluginService);
-        this.name = 'ollama-plugin';
-        this.type = 'block';
-        this.settings = [
-          {
-            label: 'model',
-            group: 'default',
-            type: SettingType.text,
-            value: 'llama3.2',
-            translatable: false,
-          },
-          {
-            label: 'context',
-            group: 'default',
-            type: SettingType.multiple_text,
-            value: ['Answer the user QUESTION using the DOCUMENTS text above.'],
-            translatable: true,
-          },
-        ];
-      }
-
-      // Implementing the 'getPath' method (with a mock return value)
-      getPath() {
-        // Return a mock path
-        return '/mock/path';
-      }
-
-      async getDefaultSettings() {
-        return this.settings;
-      }
-    }
-
-    // Create an instance of the mock plugin
-    const mockedPlugin = new MockPlugin();
-
-    jest
-      .spyOn(pluginService, 'getPlugin')
-      .mockImplementation(() => mockedPlugin);
-
-    const result = await service.getBlockStrings(block);
-    expect(result).toEqual(['String 2', 'String 3']);
   });
 
   it('should return the settings translation strings', async () => {

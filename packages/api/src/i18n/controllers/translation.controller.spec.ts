@@ -10,7 +10,6 @@ import { FindManyOptions } from 'typeorm';
 import { BlockRepository } from '@/chat/repositories/block.repository';
 import { ConversationRepository } from '@/chat/repositories/conversation.repository';
 import { BlockService } from '@/chat/services/block.service';
-import { PluginService } from '@/plugins/plugins.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installTranslationFixturesTypeOrm,
@@ -53,12 +52,6 @@ describe('TranslationController', () => {
           provide: ConversationRepository,
           useValue: {
             find: jest.fn(),
-          },
-        },
-        {
-          provide: PluginService,
-          useValue: {
-            getPlugin: jest.fn(),
           },
         },
         I18nServiceProvider,
