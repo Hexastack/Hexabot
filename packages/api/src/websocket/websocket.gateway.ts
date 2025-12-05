@@ -110,7 +110,7 @@ export class WebsocketGateway
     content: any,
     excludedRooms: string[] = [],
   ) {
-    this.io.to(subscriber.foreign_id).except(excludedRooms).emit(type, content);
+    this.io.to(subscriber.foreignId).except(excludedRooms).emit(type, content);
   }
 
   async createAndStoreSession(client: Socket): Promise<void> {

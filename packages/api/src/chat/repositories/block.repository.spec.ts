@@ -149,13 +149,13 @@ describe('BlockRepository (TypeORM)', () => {
   const createSubscriber = async (): Promise<SubscriberOrmEntity> => {
     const subscriber = await subscriberRepository.save(
       subscriberRepository.create({
-        first_name: 'Test',
-        last_name: 'User',
+        firstName: 'Test',
+        lastName: 'User',
         locale: null,
         timezone: 0,
         gender: null,
         country: null,
-        foreign_id: randomUUID(),
+        foreignId: randomUUID(),
         labels: [],
         channel: { name: 'test-channel' },
         context: { vars: {} },

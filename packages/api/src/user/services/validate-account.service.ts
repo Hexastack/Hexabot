@@ -71,9 +71,7 @@ export class ValidateAccountService {
    *
    * @param dto - An object containing the user's email and first name.
    */
-  async sendConfirmationEmail(
-    dto: Pick<UserCreateDto, 'email' | 'first_name'>,
-  ) {
+  async sendConfirmationEmail(dto: Pick<UserCreateDto, 'email' | 'firstName'>) {
     const confirmationToken = await this.sign({ email: dto.email });
 
     try {
@@ -85,7 +83,7 @@ export class ValidateAccountService {
           appName: config.parameters.appName,
           appUrl: config.uiBaseUrl,
           token: confirmationToken,
-          first_name: dto.first_name,
+          first_Name: dto.firstName,
           t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
         },
         subject: this.i18n.t('account_confirmation_subject'),

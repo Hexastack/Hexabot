@@ -23,8 +23,8 @@ export class AuthSerializer extends PassportSerializer {
   ) {
     done(null, {
       id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      first_name: user.firstName,
+      last_name: user.lastName,
     });
   }
 

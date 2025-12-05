@@ -18,14 +18,14 @@ import {
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
+import {
+  UserProfileCreateDto,
+  UserProfileStub,
+} from '@/user/dto/user-profile.dto';
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 import { SubscriberContext } from '../types/subscriberContext';
@@ -33,21 +33,9 @@ import { SubscriberContext } from '../types/subscriberContext';
 import { Label } from './label.dto';
 
 @Exclude()
-export class SubscriberStub extends BaseStub {
-  @Expose()
-  first_name!: string;
-
-  @Expose()
-  last_name!: string;
-
+export class SubscriberStub extends UserProfileStub {
   @Expose()
   locale: string | null;
-
-  @Expose()
-  timezone: number = 0;
-
-  @Expose()
-  language: string | null;
 
   @Expose()
   gender: string | null;
@@ -56,7 +44,7 @@ export class SubscriberStub extends BaseStub {
   country: string | null;
 
   @Expose()
-  foreign_id: string;
+  foreignId: string;
 
   @Expose()
   assignedAt: Date | null;
@@ -101,17 +89,7 @@ export class SubscriberFull extends SubscriberStub {
   avatar: Attachment | null;
 }
 
-export class SubscriberCreateDto {
-  @ApiProperty({ description: 'Subscriber first name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  first_name: string;
-
-  @ApiProperty({ description: 'Subscriber last name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  last_name: string;
-
+export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
   @IsString()
@@ -140,7 +118,7 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreign_id: string;
+  foreignId: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsArray()

@@ -10,8 +10,8 @@ export const userModels = (roles: string[]): UserCreateDto[] => {
   return [
     {
       username: 'admin',
-      first_name: 'admin',
-      last_name: 'admin',
+      firstName: 'admin',
+      lastName: 'admin',
       email: 'admin@admin.admin',
       password: 'adminadmin',
       roles,

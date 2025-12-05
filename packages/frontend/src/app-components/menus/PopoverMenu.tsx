@@ -67,7 +67,7 @@ type TPopoverMenuItem = { text: string; href: string };
 type TPopoverMenuLogoutItem = { text: string; onClick: () => void };
 
 export type PopoverMenuProps = {
-  user?: Pick<IUser, "email" | "first_name" | "last_name">;
+  user?: Pick<IUser, "email" | "firstName" | "lastName">;
   links?: TPopoverMenuItem[];
   logout?: TPopoverMenuLogoutItem;
   handleClose?: () => void;
@@ -114,9 +114,9 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
         }}
       >
         <StyledStack spacing={0.5}>
-          {user?.first_name && user?.last_name ? (
+          {user?.firstName && user?.lastName ? (
             <StyledSubtitleTypography>
-              {user.first_name} {user.last_name}
+              {user.firstName} {user.lastName}
             </StyledSubtitleTypography>
           ) : null}
           {user?.email ? (

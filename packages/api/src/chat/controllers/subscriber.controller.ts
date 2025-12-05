@@ -61,8 +61,8 @@ export class SubscriberController extends BaseOrmController<
       new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
         // TODO : Check if the field email should be added to Subscriber schema
         allowedFields: [
-          'first_name',
-          'last_name',
+          'firstName',
+          'lastName',
           'assignedTo.id',
           'channel.name',
           // TODO : type need to be enhanced to include 'labels'
@@ -91,8 +91,8 @@ export class SubscriberController extends BaseOrmController<
     @Query(
       new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
         allowedFields: [
-          'first_name',
-          'last_name',
+          'firstName',
+          'lastName',
           'assignedTo.id',
           'channel.name',
         ],

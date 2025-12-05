@@ -135,8 +135,8 @@ export class ConversationService extends BaseOrmService<
     // Store user infos
     if (profile) {
       convo.context.user.id = profile.id;
-      convo.context.user.first_name = profile.first_name || '';
-      convo.context.user.last_name = profile.last_name || '';
+      convo.context.user.firstName = profile.firstName || '';
+      convo.context.user.lastName = profile.lastName || '';
       if (profile.language) {
         convo.context.user.language = profile.language;
       }

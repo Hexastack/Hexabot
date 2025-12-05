@@ -19,8 +19,8 @@ import { installRoleFixturesTypeOrm, roleFixtureIds } from './role';
 export const users: UserCreateDto[] = [
   {
     username: 'admin',
-    first_name: 'admin',
-    last_name: 'admin',
+    firstName: 'admin',
+    lastName: 'admin',
     email: 'admin@admin.admin',
     password: 'adminadmin',
     roles: [roleFixtureIds.admin, roleFixtureIds.manager],
@@ -31,7 +31,7 @@ export const users: UserCreateDto[] = [
 export const userDefaultValues: TFixturesDefaultValues<User> = {
   state: true,
   language: 'en',
-  timezone: 'Europe/Berlin',
+  timezone: 1,
   sendEmail: false,
   resetCount: 0,
 };

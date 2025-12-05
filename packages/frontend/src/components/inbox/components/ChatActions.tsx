@@ -55,13 +55,13 @@ export const ChatActions = () => {
                   <Grid>
                     <Avatar
                       size="sm"
-                      name={user.first_name}
+                      name={user.firstName}
                       src={getAvatarSrc(apiUrl, EntityType.USER, user.id)}
                     />
                   </Grid>
                   <Grid>
                     <Typography sx={{ textTransform: "capitalize" }}>
-                      {user.first_name} {user.last_name}
+                      {user.firstName} {user.lastName}
                     </Typography>
                   </Grid>
                 </Grid>

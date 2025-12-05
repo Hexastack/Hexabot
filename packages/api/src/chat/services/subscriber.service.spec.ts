@@ -132,7 +132,7 @@ describe('SubscriberService (TypeORM)', () => {
   describe('findOneAndPopulate', () => {
     it('should find one subscriber and populate related data', async () => {
       const subscriber = await subscriberRepository.findOne({
-        where: { first_name: 'Jhon' },
+        where: { firstName: 'Jhon' },
       });
       expect(subscriber).not.toBeNull();
 
@@ -201,7 +201,7 @@ describe('SubscriberService (TypeORM)', () => {
   describe('findOneByForeignId', () => {
     it('should find one subscriber by foreign id', async () => {
       const subscriber = await subscriberRepository.findOne({
-        where: { foreign_id: 'foreign-id-dimelo' },
+        where: { foreignId: 'foreign-id-dimelo' },
       });
       expect(subscriber).not.toBeNull();
 
@@ -220,7 +220,7 @@ describe('SubscriberService (TypeORM)', () => {
   describe('storeAvatar', () => {
     it('should persist the avatar and patch the subscriber', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
@@ -275,7 +275,7 @@ describe('SubscriberService (TypeORM)', () => {
 
     it('should propagate an error from AttachmentService and leave the subscriber unchanged', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-1' },
+        where: { foreignId: 'foreign-id-web-1' },
       }))!;
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-jpg'),
@@ -299,7 +299,7 @@ describe('SubscriberService (TypeORM)', () => {
 
     it('should generate the filename with the proper extension', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-2' },
+        where: { foreignId: 'foreign-id-web-2' },
       }))!;
       const avatarPayload: AttachmentFile = {
         file: Buffer.from('fake-png'),
@@ -339,7 +339,7 @@ describe('SubscriberService (TypeORM)', () => {
   describe('assignLabels', () => {
     it('should merge and deduplicate labels', async () => {
       const profile = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const newLabels = (
         await labelRepository.createMany([
@@ -376,7 +376,7 @@ describe('SubscriberService (TypeORM)', () => {
         },
       ]);
       const baseSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-1' },
+        where: { foreignId: 'foreign-id-web-1' },
       }))!;
       const alteredSubscriber = await subscriberService.assignLabels(
         baseSubscriber,
@@ -399,7 +399,7 @@ describe('SubscriberService (TypeORM)', () => {
 
     it('should propagate errors from assignLabels', async () => {
       const base = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-2' },
+        where: { foreignId: 'foreign-id-web-2' },
       }))!;
       const failure = new Error('Any error');
       const targetLabel = base.labels[0];
@@ -416,7 +416,7 @@ describe('SubscriberService (TypeORM)', () => {
   describe('handOver', () => {
     it('should set assignedTo when provided without labels', async () => {
       const profile = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-1' },
+        where: { foreignId: 'foreign-id-web-1' },
       }))!;
       const assignee = (await userRepository.findOne({
         where: { username: 'admin' },

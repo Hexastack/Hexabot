@@ -44,7 +44,7 @@ export class SubscriberOrmEntity extends UserProfileOrmEntity {
   country: string | null;
 
   @Column({ type: 'varchar', length: 64 })
-  foreign_id: string;
+  foreignId: string;
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.users, {
     cascade: false,

@@ -26,26 +26,17 @@ import {
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 
 import { UserProvider } from '../types/user-provider.type';
 
 import { Role } from './role.dto';
+import { UserProfileCreateDto, UserProfileStub } from './user-profile.dto';
 
 @Exclude()
-export class UserStub extends BaseStub {
+export class UserStub extends UserProfileStub {
   @Expose()
   username!: string;
-
-  @Expose()
-  first_name!: string;
-
-  @Expose()
-  last_name!: string;
 
   @Expose()
   email!: string;
@@ -55,12 +46,6 @@ export class UserStub extends BaseStub {
 
   @Expose()
   state!: boolean;
-
-  @Expose()
-  language!: string;
-
-  @Expose()
-  timezone!: string;
 
   @Expose()
   resetCount!: number;
@@ -92,21 +77,11 @@ export class UserFull extends UserStub {
   avatar: Attachment | null;
 }
 
-export class UserCreateDto {
+export class UserCreateDto extends UserProfileCreateDto {
   @ApiProperty({ description: 'User username', type: String })
   @IsNotEmpty()
   @IsString()
   username: string;
-
-  @ApiProperty({ description: 'User first name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  first_name: string;
-
-  @ApiProperty({ description: 'User last name', type: String })
-  @IsNotEmpty()
-  @IsString()
-  last_name: string;
 
   @ApiProperty({ description: 'User email', type: String })
   @IsNotEmpty()

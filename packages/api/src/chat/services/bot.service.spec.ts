@@ -140,7 +140,7 @@ describe('BotService', () => {
         where: { name: 'hasNextBlocks' },
       });
       const webSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-1' },
+        where: { foreignId: 'foreign-id-web-1' },
       }))!;
 
       event.setSender(webSubscriber);
@@ -161,8 +161,8 @@ describe('BotService', () => {
               next: [],
               context: {
                 user: {
-                  first_name: webSubscriber.first_name,
-                  last_name: webSubscriber.last_name,
+                  firstName: webSubscriber.firstName,
+                  lastName: webSubscriber.lastName,
                   language: 'en',
                   id: webSubscriber.id,
                 },
@@ -212,7 +212,7 @@ describe('BotService', () => {
         mockWebChannelData,
       );
       const webSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-2' },
+        where: { foreignId: 'foreign-id-web-2' },
       }))!;
       event.setSender(webSubscriber);
       const captured = await botService.processConversationMessage(event);
@@ -234,7 +234,7 @@ describe('BotService', () => {
         mockWebChannelData,
       );
       const webSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-web-1' },
+        where: { foreignId: 'foreign-id-web-1' },
       }))!;
       event.setSender(webSubscriber);
 

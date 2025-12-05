@@ -15,8 +15,8 @@ export function getDefaultConversationContext(): Context {
     payload: null,
     nlp: null,
     user: {
-      first_name: '',
-      last_name: '',
+      firstName: '',
+      lastName: '',
       // @TODO: Typing is not correct
     } as Subscriber,
     user_location: {

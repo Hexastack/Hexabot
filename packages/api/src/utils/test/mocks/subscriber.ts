@@ -10,9 +10,9 @@ import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { modelInstance } from './misc';
 
 export const subscriberInstance: Subscriber = {
-  foreign_id: 'foreign-id-for-jhon-doe',
-  first_name: 'John',
-  last_name: 'Doe',
+  foreignId: 'foreign-id-for-jhon-doe',
+  firstName: 'John',
+  lastName: 'Doe',
   language: 'fr',
   locale: 'fr_FR',
   gender: 'male',

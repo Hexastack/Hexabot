@@ -52,7 +52,7 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
             content_type: QuickReplyType.text,
             text: qr.title,
             payload: qr.payload,
-          } as ISuggestion),
+          }) as ISuggestion,
       )
     : [];
 export const preprocessMessages = (
@@ -63,7 +63,7 @@ export const preprocessMessages = (
   const quickReplies = getQuickReplies(messages[messages.length - 1]);
   const arrangedMessages = messages.map((message) => {
     const direction =
-      message.author === profile?.foreign_id || message.author === profile?.id
+      message.author === profile?.foreignId || message.author === profile?.id
         ? Direction.sent
         : Direction.received;
 
@@ -78,9 +78,9 @@ export const preprocessMessages = (
     ? [
         participants[0],
         {
-          id: profile.foreign_id,
-          foreign_id: profile.foreign_id,
-          name: `${profile.first_name} ${profile.last_name}`,
+          id: profile.foreignId,
+          foreign_id: profile.foreignId,
+          name: `${profile.firstName} ${profile.lastName}`,
         },
       ]
     : [participants[0]];

@@ -37,8 +37,8 @@ import { PasswordInput } from "../inputs/PasswordInput";
 
 const DEFAULT_VALUES: IRegisterAttributes = {
   email: "",
-  first_name: "",
-  last_name: "",
+  firstName: "",
+  lastName: "",
   password: "",
   username: "",
   roles: [],
@@ -153,28 +153,26 @@ export const Register = () => {
             <ContentItem>
               <Input
                 label={t("placeholder.first_name")}
-                error={!!errors.first_name}
+                error={!!errors.firstName}
                 required
                 autoFocus
-                {...register("first_name", validationRules.first_name)}
+                {...register("firstName", validationRules.first_name)}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
-                helperText={
-                  errors.first_name ? errors.first_name.message : null
-                }
+                helperText={errors.firstName ? errors.firstName.message : null}
               />
             </ContentItem>
             <ContentItem>
               <Input
                 label={t("placeholder.last_name")}
-                error={!!errors.last_name}
+                error={!!errors.lastName}
                 required
-                {...register("last_name", validationRules.last_name)}
+                {...register("lastName", validationRules.last_name)}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
-                helperText={errors.last_name ? errors.last_name.message : null}
+                helperText={errors.lastName ? errors.lastName.message : null}
               />
             </ContentItem>
             <ContentItem>

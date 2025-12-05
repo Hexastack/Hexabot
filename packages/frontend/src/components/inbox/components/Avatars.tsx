@@ -41,7 +41,7 @@ export const Avatars: FC<TAvatarGroupProps> = ({ subscriber }) => {
     >
       <StyledAvatar
         src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
-        title={`${subscriber.first_name} ${subscriber.last_name}`}
+        title={`${subscriber.firstName} ${subscriber.lastName}`}
         className="firstAvatar"
       />
       {subscriber.assignedTo ? (

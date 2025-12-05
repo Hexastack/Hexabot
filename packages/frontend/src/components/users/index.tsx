@@ -88,7 +88,7 @@ export const Users = () => {
       headerName: t("label.name"),
       sortable: false,
       disableColumnMenu: true,
-      valueGetter: (_params, val) => `${val.first_name} ${val.last_name}`,
+      valueGetter: (_params, val) => `${val.firstName} ${val.lastName}`,
       headerAlign: "left",
       renderHeader,
     },
@@ -190,7 +190,7 @@ export const Users = () => {
       columns={columns}
       headerIcon={faUsers}
       searchParams={{
-        $or: ["first_name", "last_name", "email"],
+        $or: ["firstName", "lastName", "email"],
         syncUrl: true,
       }}
       headerI18nTitle="title.users"

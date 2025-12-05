@@ -167,7 +167,7 @@ export class ChannelService {
           },
           lastvisit: new Date(),
           retainedFrom: new Date(),
-          foreign_id: req.session.passport.user.id,
+          foreignId: req.session.passport.user.id,
         },
       );
 

@@ -202,7 +202,7 @@ export class ReadOnlyUserController extends BaseOrmController<
     populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<UserOrmEntity>({
-        allowedFields: ['first_name', 'last_name'],
+        allowedFields: ['firstName', 'lastName'],
       }),
     )
     options?: FindManyOptions<UserOrmEntity>,
@@ -223,7 +223,7 @@ export class ReadOnlyUserController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<UserOrmEntity>({
-        allowedFields: ['first_name', 'last_name'],
+        allowedFields: ['firstName', 'lastName'],
       }),
     )
     options?: FindManyOptions<UserOrmEntity>,

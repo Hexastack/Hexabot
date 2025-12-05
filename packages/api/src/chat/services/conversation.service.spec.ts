@@ -69,7 +69,7 @@ describe('ConversationService (TypeORM)', () => {
   describe('ConversationService.storeContextData', () => {
     it('should enrich the conversation context and persist conversation + subscriber (permanent)', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
@@ -92,8 +92,8 @@ describe('ConversationService (TypeORM)', () => {
         }),
         getSender: jest.fn().mockReturnValue({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
           context: {
             vars: {
@@ -116,14 +116,14 @@ describe('ConversationService (TypeORM)', () => {
       expect(result.context.user).toEqual(
         expect.objectContaining({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
         }),
       );
 
       const updatedSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
 
       expect(updatedSubscriber.context.vars?.phone).toBe(mockPhone);
@@ -133,7 +133,7 @@ describe('ConversationService (TypeORM)', () => {
 
     it('should capture an NLP entity value into context vars (non-permanent)', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
@@ -163,8 +163,8 @@ describe('ConversationService (TypeORM)', () => {
         }),
         getSender: jest.fn().mockReturnValue({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
           context: {
             vars: {
@@ -183,14 +183,14 @@ describe('ConversationService (TypeORM)', () => {
 
       expect(result.context.vars.country).toBe('US');
       const updatedSubscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       expect(updatedSubscriber.context.vars?.country).toBe(undefined);
     });
 
     it('should capture user coordinates when message type is "location"', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
@@ -212,8 +212,8 @@ describe('ConversationService (TypeORM)', () => {
         }),
         getSender: jest.fn().mockReturnValue({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
           context: {
             vars: {
@@ -237,7 +237,7 @@ describe('ConversationService (TypeORM)', () => {
 
     it('should increment skip when VIEW_MORE payload is received for list/carousel blocks', async () => {
       const subscriber = (await subscriberService.findOne({
-        where: { foreign_id: 'foreign-id-messenger' },
+        where: { foreignId: 'foreign-id-messenger' },
       }))!;
       const conversation = (await conversationService.findOne({
         where: { sender: { id: subscriber.id } },
@@ -265,8 +265,8 @@ describe('ConversationService (TypeORM)', () => {
         }),
         getSender: jest.fn().mockReturnValue({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
           context: {
             vars: {
@@ -297,8 +297,8 @@ describe('ConversationService (TypeORM)', () => {
         }),
         getSender: jest.fn().mockReturnValue({
           id: subscriber.id,
-          first_name: subscriber.first_name,
-          last_name: subscriber.last_name,
+          firstName: subscriber.firstName,
+          lastName: subscriber.lastName,
           language: subscriber.language,
           context: {
             vars: {

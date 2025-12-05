@@ -76,7 +76,7 @@ describe('ValidateAccountService (TypeORM)', () => {
       const signSpy = jest.spyOn(validateAccountService, 'sign');
       const promise = validateAccountService.sendConfirmationEmail({
         email: adminUser.email,
-        first_name: adminUser.first_name,
+        firstName: adminUser.firstName,
       });
       await expect(promise).resolves.toBeUndefined();
 

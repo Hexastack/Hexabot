@@ -159,7 +159,7 @@ export class MessageController extends BaseOrmController<
       channelData.name,
     );
     const event = new GenericEventWrapper(channelHandler, {
-      senderId: subscriber.foreign_id,
+      senderId: subscriber.foreignId,
       messageId: messageDto.inReplyTo,
     });
 

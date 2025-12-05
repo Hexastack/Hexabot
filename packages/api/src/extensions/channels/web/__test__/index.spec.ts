@@ -230,11 +230,11 @@ describe('WebChannelHandler', () => {
         },
       },
       country: '',
-      first_name: req.query.first_name,
-      foreign_id: generatedId,
+      firstName: req.query.first_name,
+      foreignId: generatedId,
       gender: 'male',
       labels: [],
-      last_name: req.query.last_name,
+      lastName: req.query.last_name,
       locale: '',
       timezone: 0,
     };
@@ -305,7 +305,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(req.socket, 'join')
       .mockImplementation((foreignId: string) => {
-        expect(foreignId).toBe(subscriber.foreign_id);
+        expect(foreignId).toBe(subscriber.foreignId);
         joinedSocket = true;
       });
     await handler['subscribe'](req, res);
