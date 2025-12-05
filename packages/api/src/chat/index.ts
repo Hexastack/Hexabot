@@ -6,8 +6,6 @@
 
 export * from './chat.module';
 
-export * from './controllers/category.controller';
-
 export * from './controllers/context-var.controller';
 
 export * from './controllers/label-group.controller';
@@ -18,8 +16,6 @@ export * from './controllers/message.controller';
 
 export * from './controllers/subscriber.controller';
 
-export * from './dto/category.dto';
-
 export * from './dto/context-var.dto';
 
 export * from './dto/label-group.dto';
@@ -29,8 +25,6 @@ export * from './dto/label.dto';
 export * from './dto/message.dto';
 
 export * from './dto/subscriber.dto';
-
-export * from './entities/category.entity';
 
 export * from './entities/context-var.entity';
 
@@ -48,8 +42,6 @@ export * from './helpers/envelope-builder';
 
 export * from './helpers/envelope-factory';
 
-export * from './repositories/category.repository';
-
 export * from './repositories/context-var.repository';
 
 export * from './repositories/label-group.repository';
@@ -60,15 +52,9 @@ export * from './repositories/message.repository';
 
 export * from './repositories/subscriber.repository';
 
-export * from './seeds/category.seed-model';
-
-export * from './seeds/category.seed';
-
 export * from './seeds/context-var.seed-model';
 
 export * from './seeds/context-var.seed';
-
-export * from './services/category.service';
 
 export * from './services/chat.service';
 

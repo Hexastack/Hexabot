@@ -16,7 +16,6 @@ export type TModel =
   | 'user'
   | 'role'
   | 'permission'
-  | 'category'
   | 'label'
   | 'labelgroup'
   | 'contextvar'

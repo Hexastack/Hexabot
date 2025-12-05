@@ -33,7 +33,6 @@ import type {
   SubscriberUpdateDto,
 } from '@/chat/dto/subscriber.dto';
 import type { BlockOrmEntity } from '@/chat/entities/block.entity';
-import type { CategoryOrmEntity } from '@/chat/entities/category.entity';
 import type { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
 import type { ConversationOrmEntity } from '@/chat/entities/conversation.entity';
 import type { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
@@ -133,7 +132,6 @@ declare module '@nestjs/event-emitter' {
     attachment: AttachmentOrmEntity;
     block: BlockOrmEntity;
     botStats: BotStatsOrmEntity;
-    category: CategoryOrmEntity;
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
     conversation: ConversationOrmEntity;
