@@ -51,8 +51,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     setValue,
   } = useForm<IProfileAttributes>({
     defaultValues: {
-      first_name: user.first_name,
-      last_name: user.last_name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       language: user.language,
     },
@@ -122,20 +122,18 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <Input
                 label={t("label.user_first_name")}
-                {...register("first_name", validationRules.first_name)}
+                {...register("firstName", validationRules.first_name)}
                 autoFocus
-                error={!!errors.first_name}
-                helperText={
-                  errors.first_name ? errors.first_name.message : null
-                }
+                error={!!errors.firstName}
+                helperText={errors.firstName ? errors.firstName.message : null}
               />
             </ContentItem>
             <ContentItem>
               <Input
                 label={t("label.last_name")}
-                {...register("last_name", validationRules.last_name)}
-                error={!!errors.last_name}
-                helperText={errors.last_name ? errors.last_name.message : null}
+                {...register("lastName", validationRules.last_name)}
+                error={!!errors.lastName}
+                helperText={errors.lastName ? errors.lastName.message : null}
               />
             </ContentItem>
             <ContentItem>

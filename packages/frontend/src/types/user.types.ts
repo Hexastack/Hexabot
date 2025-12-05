@@ -11,8 +11,8 @@ import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IRole } from "./role.types";
 
 export interface IUserAttributes {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   language: string;
   password?: string;

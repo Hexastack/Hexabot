@@ -66,7 +66,7 @@ export const Subscribers = () => {
     },
     {
       flex: 1,
-      field: "first_name",
+      field: "firstName",
       headerName: t("label.first_name"),
       disableColumnMenu: true,
       renderHeader,
@@ -74,7 +74,7 @@ export const Subscribers = () => {
     },
     {
       flex: 1,
-      field: "last_name",
+      field: "lastName",
       headerName: t("label.last_name"),
       disableColumnMenu: true,
       renderHeader,
@@ -158,7 +158,7 @@ export const Subscribers = () => {
       headerIcon={AccountCircleIcon}
       searchParams={{
         $eq: labelFilter ? [{ labels: [{ id: labelFilter }] }] : [],
-        $or: ["first_name", "last_name"],
+        $or: ["firstName", "lastName"],
         syncUrl: true,
       }}
       headerI18nTitle="title.subscribers"

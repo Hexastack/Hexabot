@@ -68,7 +68,7 @@ export function Chat() {
     <ChatContainer>
       <ConversationHeader>
         <Avatar
-          name={subscriber?.first_name}
+          name={subscriber?.firstName}
           src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
         />
         <ConversationHeader.Content>
@@ -112,7 +112,7 @@ export function Chat() {
                     ? [
                         <Avatar
                           key={message.id}
-                          title={`${subscriber.first_name} ${subscriber.last_name}`}
+                          title={`${subscriber.firstName} ${subscriber.lastName}`}
                           src={getAvatarSrc(
                             apiUrl,
                             message.sender
