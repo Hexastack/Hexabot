@@ -15,6 +15,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -22,12 +23,11 @@ import { UserProvider } from '../types/user-provider.type';
 import { hash } from '../utilities/bcryptjs';
 
 import { RoleOrmEntity } from './role.entity';
-import { UserProfileOrmEntity } from './user-profile.entity';
 
 @ChildEntity()
 @Index(['username'], { unique: true })
 @Index(['email'], { unique: true })
-export class UserOrmEntity extends UserProfileOrmEntity {
+export class UserOrmEntity extends SubscriberOrmEntity {
   @Column()
   username!: string;
 

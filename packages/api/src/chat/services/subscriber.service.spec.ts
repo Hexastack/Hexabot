@@ -184,7 +184,8 @@ describe('SubscriberService (TypeORM)', () => {
         labels: sortLabelsByName(
           labels.filter((label) => subscriber.labels.includes(label.id)),
         ),
-        assignedTo: users.find(({ id }) => subscriber.assignedTo === id),
+        assignedTo:
+          users.find(({ id }) => subscriber.assignedTo === id) || null,
       }));
       const normalizedResult = result.map((item) => ({
         ...item,

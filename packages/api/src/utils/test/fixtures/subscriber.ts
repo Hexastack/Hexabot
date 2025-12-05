@@ -9,6 +9,7 @@ import { DataSource } from 'typeorm';
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { EUserProfileType } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -127,7 +128,11 @@ export const installSubscriberFixturesTypeOrm = async (
     installLabelFixturesTypeOrm(dataSource),
   ]);
 
-  if (await subscriberRepository.count()) {
+  if (
+    await subscriberRepository.count({
+      where: { type: EUserProfileType.SubscriberOrmEntity },
+    })
+  ) {
     return {
       labels: await findLabelRelations(dataSource),
       subscribers: await findSubscriberRelations(dataSource),

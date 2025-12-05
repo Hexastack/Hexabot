@@ -93,4 +93,10 @@ export class SubscriberOrmEntity extends UserProfileOrmEntity {
 
   @JsonColumn({ default: JSON.stringify({ vars: {} }) })
   context: SubscriberContext;
+
+  ensureProvider(): void {}
+
+  ensurePassword(): void {}
+
+  hashSensitiveFields(): void {}
 }

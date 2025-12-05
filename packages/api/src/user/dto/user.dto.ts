@@ -24,6 +24,7 @@ import {
 } from 'class-validator';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -147,7 +148,7 @@ export class UserUpdateDto extends PartialType(UserCreateDto) {
   @ApiPropertyOptional({ description: 'User timezone', type: String })
   @IsOptional()
   @IsString()
-  timezone?: string;
+  timezone?: number;
 
   @ApiPropertyOptional({
     description: 'Send automated emails to the user',
@@ -225,5 +226,5 @@ export type UserTransformerDto = DtoTransformerConfig<{
 
 export type UserDtoConfig = DtoActionConfig<{
   create: UserCreateDto;
-  update: UserUpdateDto;
+  update: UserUpdateDto | Partial<SubscriberCreateDto>;
 }>;
