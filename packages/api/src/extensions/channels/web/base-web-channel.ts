@@ -50,7 +50,7 @@ import {
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
 } from '@/chat/types/message';
-import { BlockOptions } from '@/chat/types/options';
+import { ActionOptions } from '@/chat/types/options';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
@@ -960,7 +960,7 @@ export default abstract class BaseWebChannelHandler<
    */
   _textFormat(
     message: StdOutgoingTextMessage,
-    _options?: BlockOptions,
+    _options?: ActionOptions,
   ): Web.OutgoingMessageBase {
     return {
       type: Web.OutgoingMessageType.text,
@@ -978,7 +978,7 @@ export default abstract class BaseWebChannelHandler<
    */
   _quickRepliesFormat(
     message: StdOutgoingQuickRepliesMessage,
-    _options?: BlockOptions,
+    _options?: ActionOptions,
   ): Web.OutgoingMessageBase {
     return {
       type: Web.OutgoingMessageType.quick_replies,
@@ -999,7 +999,7 @@ export default abstract class BaseWebChannelHandler<
    */
   _buttonsFormat(
     message: StdOutgoingButtonsMessage,
-    _options?: BlockOptions,
+    _options?: ActionOptions,
   ): Web.OutgoingMessageBase {
     return {
       type: Web.OutgoingMessageType.buttons,
@@ -1020,7 +1020,7 @@ export default abstract class BaseWebChannelHandler<
    */
   async _attachmentFormat(
     message: StdOutgoingAttachmentMessage,
-    _options?: BlockOptions,
+    _options?: ActionOptions,
   ): Promise<Web.OutgoingMessageBase> {
     const payload: Web.OutgoingMessageBase = {
       type: Web.OutgoingMessageType.file,
@@ -1052,7 +1052,7 @@ export default abstract class BaseWebChannelHandler<
    */
   async _formatElements(
     data: ContentElement[],
-    options: BlockOptions,
+    options: ActionOptions,
   ): Promise<Web.MessageElement[]> {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
@@ -1136,7 +1136,7 @@ export default abstract class BaseWebChannelHandler<
    */
   async _listFormat(
     message: StdOutgoingListMessage,
-    options: BlockOptions,
+    options: ActionOptions,
   ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     const pagination = message.pagination;
@@ -1188,7 +1188,7 @@ export default abstract class BaseWebChannelHandler<
    */
   async _carouselFormat(
     message: StdOutgoingListMessage,
-    options: BlockOptions,
+    options: ActionOptions,
   ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     // Items count min check
@@ -1214,13 +1214,13 @@ export default abstract class BaseWebChannelHandler<
    * Creates an widget compliant data structure for any message envelope
    *
    * @param envelope - The message standard envelope
-   * @param options - The block options related to the message
+   * @param options - The action options related to the message
    *
    * @returns A template filled with its payload
    */
   async _formatMessage(
     envelope: StdOutgoingEnvelope,
-    options: BlockOptions,
+    options: ActionOptions,
   ): Promise<Web.OutgoingMessageBase> {
     switch (envelope.format) {
       case OutgoingMessageFormat.attachment:
@@ -1276,7 +1276,7 @@ export default abstract class BaseWebChannelHandler<
   async sendMessage(
     event: WebEventWrapper<N>,
     envelope: StdOutgoingEnvelope,
-    options: BlockOptions,
+    options: ActionOptions,
     _context?: any,
   ): Promise<{ mid: string }> {
     const messageBase: Web.OutgoingMessageBase = await this._formatMessage(

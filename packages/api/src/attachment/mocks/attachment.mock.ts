@@ -21,7 +21,7 @@ const baseAttachment = {
   size: 343370,
   location:
     '/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
-  resourceRef: AttachmentResourceRef.BlockAttachment,
+  resourceRef: AttachmentResourceRef.MessageAttachment,
   access: AttachmentAccess.Public,
   createdBy: '1',
   createdByRef: AttachmentCreatedByRef.User,

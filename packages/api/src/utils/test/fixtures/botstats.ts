@@ -27,14 +27,14 @@ export const botstatsFixtures: BotStatsCreateDto[] = [
   },
   {
     day: new Date('2023-11-03T22:00:00.000Z'),
-    type: BotStatsType.popular,
-    name: 'Global Fallback',
+    type: BotStatsType.returning_users,
+    name: 'Returning users',
     value: 34,
   },
   {
     day: new Date('2023-11-04T23:00:00.000Z'),
-    type: BotStatsType.new_conversations,
-    name: 'New conversations',
+    type: BotStatsType.retention,
+    name: 'Retentioned users',
     value: 492,
   },
   {
@@ -51,9 +51,9 @@ export const botstatsFixtures: BotStatsCreateDto[] = [
   },
   {
     day: new Date('2023-11-03T23:00:00.000Z'),
-    type: BotStatsType.popular,
-    name: 'Global Fallback',
-    value: 34,
+    type: BotStatsType.echo,
+    name: 'Echo',
+    value: 12,
   },
 ];
 

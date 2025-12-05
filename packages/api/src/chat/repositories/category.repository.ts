@@ -28,7 +28,7 @@ export class CategoryRepository extends BaseOrmRepository<
     @InjectRepository(CategoryOrmEntity)
     repository: Repository<CategoryOrmEntity>,
   ) {
-    super(repository, ['blocks'], {
+    super(repository, [], {
       PlainCls: Category,
       FullCls: CategoryFull,
     });

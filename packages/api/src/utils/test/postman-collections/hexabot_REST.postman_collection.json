@@ -42,19 +42,6 @@
           "response": []
         },
         {
-          "name": "conversation",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{BASE_URL}}/botstats/conversation",
-              "host": ["{{BASE_URL}}"],
-              "path": ["botstats", "conversation"]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "audience",
           "request": {
             "method": "GET",
@@ -248,112 +235,6 @@
                   "raw": "{{BASE_URL}}/category/{{CATEGORY_VALID_ID}}",
                   "host": ["{{BASE_URL}}"],
                   "path": ["category", "{{CATEGORY_VALID_ID}}"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "block (5)",
-          "item": [
-            {
-              "name": "CREATE",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": ["pm.setDynamicId();"],
-                    "type": "text/javascript"
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"name\": \"textMessage\",\n    \"patterns\": [\n        \"Hi\"\n    ],\n    \"trigger_channels\": [],\n    \"message\": [\n        \"Hi back !\"\n    ],\n    \"category\": \"{{CATEGORY_VALID_ID}}\",\n    \"position\": {\n      \"x\": 0,\n      \"y\": 0\n    }\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{BASE_URL}}/block",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["block"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "LIST",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": ["pm.setDynamicId();"],
-                    "type": "text/javascript"
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{BASE_URL}}/block",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["block"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "findOneById",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{BASE_URL}}/block/{{BLOCK_VALID_ID}}",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["block", "{{BLOCK_VALID_ID}}"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "UPDATE",
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"label\": \"label3\",\n    \"builtin\": false\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{BASE_URL}}/block/{{BLOCK_VALID_ID}}",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["block", "{{BLOCK_VALID_ID}}"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "deleteById",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{BASE_URL}}/block/{{BLOCK_VALID_ID}}",
-                  "host": ["{{BASE_URL}}"],
-                  "path": ["block", "{{BLOCK_VALID_ID}}"]
                 }
               },
               "response": []

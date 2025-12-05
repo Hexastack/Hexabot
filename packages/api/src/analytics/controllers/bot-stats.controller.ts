@@ -72,28 +72,7 @@ export class BotStatsController extends BaseOrmController<
   }
 
   /**
-   * Retrieves conversation message stats within a specified time range
-   *
-   * @param dto - Parameters for filtering data (Start & End dates, Type).
-   * @returns A promise that resolves to an array of data formatted for the line chart.
-   */
-  @Get('conversation')
-  async conversation(
-    @Query()
-    dto: BotStatsFindDto,
-  ): Promise<ToLinesType[]> {
-    const { from = aMonthAgo(), to = new Date() } = dto;
-    const types: BotStatsType[] = [
-      BotStatsType.new_conversations,
-      BotStatsType.existing_conversations,
-    ];
-    const result = await this.botStatsService.findMessages(from, to, types);
-
-    return BotStatsOrmEntity.toLines(result, types);
-  }
-
-  /**
-   * Retrieves audience message stats within a specified time range.
+   * Retrieves audience stats within a specified time range.
    *
    * @param dto - Parameters for filtering messages (Start & End dates).
    * @returns A promise that resolves to an array of data formatted for the line chart.
@@ -112,22 +91,5 @@ export class BotStatsController extends BaseOrmController<
     const result = await this.botStatsService.findMessages(from, to, types);
 
     return BotStatsOrmEntity.toLines(result, types);
-  }
-
-  /**
-   * Retrieves popular blocks stats within a specified time range.
-   *
-   * @param dto - Parameters for filtering messages (Start & End dates).
-   * @returns A promise that resolves to an array of data formatted for the bar chart.
-   */
-  @Get('popularBlocks')
-  async popularBlocks(
-    @Query()
-    dto: BotStatsFindDto,
-  ): Promise<{ id: string; name: string; value: number }[]> {
-    const { from = aMonthAgo(), to = new Date() } = dto;
-    const results = await this.botStatsService.findPopularBlocks(from, to);
-
-    return BotStatsOrmEntity.toBars(results);
   }
 }

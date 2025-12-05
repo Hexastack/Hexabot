@@ -112,7 +112,7 @@ describe('AttachmentRepository (TypeORM)', () => {
         type: 'image/png',
         size: 1234,
         location: `${suffix}.png`,
-        resourceRef: AttachmentResourceRef.BlockAttachment,
+        resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Public,
         createdByRef: AttachmentCreatedByRef.User,
         createdBy: CREATOR_UUID,

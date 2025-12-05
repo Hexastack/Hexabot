@@ -51,10 +51,6 @@ export class AttachmentGuard implements CanActivate {
         ['attachment', Action.READ],
       ],
       [AttachmentResourceRef.UserAvatar]: [['user', Action.READ]],
-      [AttachmentResourceRef.BlockAttachment]: [
-        ['block', Action.READ],
-        ['attachment', Action.READ],
-      ],
       [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.READ],
         ['attachment', Action.READ],
@@ -73,10 +69,6 @@ export class AttachmentGuard implements CanActivate {
       ],
       [AttachmentResourceRef.UserAvatar]: [
         // Not authorized, done via /user/:id/edit endpoint
-      ],
-      [AttachmentResourceRef.BlockAttachment]: [
-        ['block', Action.UPDATE],
-        ['attachment', Action.CREATE],
       ],
       [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.UPDATE],
@@ -100,10 +92,6 @@ export class AttachmentGuard implements CanActivate {
       [AttachmentResourceRef.UserAvatar]: [
         // Not authorized
       ],
-      [AttachmentResourceRef.BlockAttachment]: [
-        ['block', Action.UPDATE],
-        ['attachment', Action.DELETE],
-      ],
       [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.UPDATE],
         ['attachment', Action.DELETE],
@@ -112,14 +100,14 @@ export class AttachmentGuard implements CanActivate {
         // Not authorized, done programmatically by the channel
       ],
       [AttachmentResourceRef.MessageAttachment]: [
-        // Not authorized
+        ['message', Action.UPDATE],
+        ['attachment', Action.DELETE],
       ],
     },
     // Update attachments is not possible
     [Action.UPDATE]: {
       [AttachmentResourceRef.SettingAttachment]: [],
       [AttachmentResourceRef.UserAvatar]: [],
-      [AttachmentResourceRef.BlockAttachment]: [],
       [AttachmentResourceRef.ContentAttachment]: [],
       [AttachmentResourceRef.SubscriberAvatar]: [],
       [AttachmentResourceRef.MessageAttachment]: [],

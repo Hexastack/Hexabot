@@ -40,7 +40,7 @@ export default [
   {
     group: WEB_CHANNEL_NAMESPACE,
     label: 'greeting_message',
-    value: 'Welcome! Ready to start a conversation with our chatbot?',
+    value: 'Welcome! Ready to start chatting with our chatbot?',
     type: SettingType.textarea,
     translatable: true,
   },

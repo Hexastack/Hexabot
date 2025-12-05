@@ -7,7 +7,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
-import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
 import { FieldType } from '@/setting/types';
 import {
@@ -27,20 +26,12 @@ describe('ContentTypeController (TypeORM)', () => {
   let service: ContentTypeService;
   let logger: LoggerService;
   const createdIds = new Set<string>();
-  const blockServiceMock = {
-    findOne: jest.fn().mockResolvedValue(null),
-  };
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [ContentTypeController],
-      providers: [
-        {
-          provide: BlockService,
-          useFactory: () => blockServiceMock,
-        },
-      ],
+      providers: [],
       typeorm: {
         fixtures: installContentTypeFixturesTypeOrm,
       },

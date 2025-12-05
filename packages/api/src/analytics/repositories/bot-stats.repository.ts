@@ -62,35 +62,4 @@ export class BotStatsRepository extends BaseOrmRepository<
       },
     });
   }
-
-  /**
-   * Retrieves the aggregated sum of values for popular blocks within a specified time range.
-   *
-   * @param from Start date for the time range
-   * @param to End date for the time range
-   * @param limit Optional maximum number of results to return (defaults to 5)
-   * @returns A promise that resolves to an array of objects containing the block ID and the aggregated value
-   */
-  async findPopularBlocks(
-    from: Date,
-    to: Date,
-    limit: number = 5,
-  ): Promise<{ id: string; value: number }[]> {
-    if (from > to) {
-      return [];
-    }
-
-    const results = await this.repository
-      .createQueryBuilder('stats')
-      .select('stats.name', 'id')
-      .addSelect('SUM(stats.value)', 'value')
-      .where('stats.type = :type', { type: BotStatsType.popular })
-      .andWhere('stats.day BETWEEN :from AND :to', { from, to })
-      .groupBy('stats.name')
-      .orderBy('value', 'DESC')
-      .limit(limit)
-      .getRawMany<{ id: string; value: number }>();
-
-    return results;
-  }
 }
