@@ -28,7 +28,7 @@ export async function executeLoop(
 ): Promise<Suspension | void> {
   const scope = {
     input: state.input,
-    context: env.context,
+    context: env.context.state,
     memory: state.memory,
     output: state.output,
     iteration: state.iteration,
@@ -181,7 +181,7 @@ function buildScope(
 ): LoopScope {
   return {
     input: state.input,
-    context: env.context,
+    context: env.context.state,
     memory: state.memory,
     output: state.output,
     iteration,

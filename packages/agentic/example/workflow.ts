@@ -11,20 +11,19 @@ async function main() {
   const yamlSource = fs.readFileSync(workflowPath, 'utf8');
   const workflow = Workflow.fromYaml(yamlSource, exampleActions);
 
+  const emitter = new WorkflowEventEmitter();
+
   const context = new ExampleContext({
     user_id: 'user-123',
     account_tier: 'pro',
     locale: 'en-US',
     timezone: 'America/Los_Angeles',
     channel: 'email',
-  });
-
-  const emitter = new WorkflowEventEmitter();
-  emitter.on('step:start', ({ step }) => context.log(`step:start:${step.name}`));
-  emitter.on('step:success', ({ step }) => context.log(`step:success:${step.name}`));
-  emitter.on('workflow:finish', ({ output }) => context.log('workflow:finish', output));
-
-  const runner = await workflow.buildAsyncRunner({ eventEmitter: emitter });
+  }, emitter);
+  emitter.on('hook:step:start', ({ step }) => context.log(`hook:step:start:${step.name}`));
+  emitter.on('hook:step:success', ({ step }) => context.log(`hook:step:success:${step.name}`));
+  emitter.on('hook:workflow:finish', ({ output }) => context.log('hook:workflow:finish', output));
+  const runner = await workflow.buildAsyncRunner();
 
   const inputData = {
     query: 'We are seeing API errors after deploying billing changes.',

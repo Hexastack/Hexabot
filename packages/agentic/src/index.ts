@@ -36,7 +36,12 @@ export {
   type WorkflowRunOptions,
   type WorkflowStartResult,
 } from './workflow';
-export type { StepInfo, StepType, WorkflowEventMap } from './workflow-event-emitter';
+export type {
+  StepInfo,
+  StepType,
+  WorkflowEventEmitterLike,
+  WorkflowEventMap,
+} from './workflow-event-emitter';
 
 export type {
   BaseStep as CompiledBaseStep,

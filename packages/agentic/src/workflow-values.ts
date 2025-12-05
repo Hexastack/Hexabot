@@ -22,7 +22,8 @@ export const compileValue = (value: unknown): CompiledValue => {
 
 /**
  * Evaluate a compiled value against the current workflow scope.
- * Expressions are executed via JSONata with the scope exposed as variables.
+ * Expressions are executed via JSONata with the scope exposed as variables; `context`
+ * represents the workflow context state, not the context instance itself.
  */
 export const evaluateValue = async (compiled: CompiledValue, scope: EvaluationScope): Promise<unknown> => {
   if (compiled.kind === 'literal') {

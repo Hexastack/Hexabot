@@ -15,11 +15,7 @@ import {
   rebuildSuspension,
   type SuspensionRebuilderDeps,
 } from './suspension-rebuilder';
-import type {
-  StepInfo,
-  WorkflowEventEmitter,
-  WorkflowEventMap,
-} from './workflow-event-emitter';
+import type { StepInfo, WorkflowEventMap } from './workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
@@ -42,8 +38,6 @@ import { evaluateMapping } from './workflow-values';
 export class WorkflowRunner {
   // Compiled workflow definition driving this runner.
   private readonly compiled: CompiledWorkflow;
-  // Optional event emitter used to surface lifecycle notifications.
-  private readonly eventEmitter?: WorkflowEventEmitter;
   // External run identifier propagated through events for correlation.
   private readonly runId?: string;
 
@@ -68,11 +62,10 @@ export class WorkflowRunner {
    * Create a new runner for a compiled workflow definition.
    *
    * @param compiled The compiled workflow to execute.
-   * @param options Optional runner configuration such as event emitter and run id.
+   * @param options Optional runner configuration such as run id.
    */
   constructor(compiled: CompiledWorkflow, options?: WorkflowRunOptions) {
     this.compiled = compiled;
-    this.eventEmitter = options?.eventEmitter;
     this.runId = options?.runId;
   }
 
@@ -139,7 +132,7 @@ export class WorkflowRunner {
     this.runtimeControl = new RunnerRuntimeControl(this);
     this.context.attachWorkflowRuntime(this.runtimeControl);
 
-    this.emit('workflow:start', { runId: this.runId });
+    this.emit('hook:workflow:start', { runId: this.runId });
 
     const state = this.state;
     if (!state) {
@@ -189,7 +182,7 @@ export class WorkflowRunner {
       if (suspension) {
         this.suspension = suspension;
         this.status = 'suspended';
-        this.emit('workflow:suspended', {
+        this.emit('hook:workflow:suspended', {
           runId: this.runId,
           step: suspension.step,
           reason: suspension.reason,
@@ -209,7 +202,7 @@ export class WorkflowRunner {
       this.status = 'finished';
       this.suspension = undefined;
       this.currentStep = undefined;
-      this.emit('workflow:finish', { runId: this.runId, output });
+      this.emit('hook:workflow:finish', { runId: this.runId, output });
       if (!this.context) {
         throw new Error('Workflow context is not attached.');
       }
@@ -219,7 +212,7 @@ export class WorkflowRunner {
     } catch (error) {
       this.status = 'failed';
       this.currentStep = undefined;
-      this.emit('workflow:failure', { runId: this.runId, error });
+      this.emit('hook:workflow:failure', { runId: this.runId, error });
       this.context?.attachWorkflowRuntime(undefined);
 
       return { status: 'failed', error, snapshot: this.getSnapshot() };
@@ -240,13 +233,11 @@ export class WorkflowRunner {
       context: BaseWorkflowContext;
       snapshot: WorkflowSnapshot;
       suspension?: { stepId: string; reason?: string | null; data?: unknown };
-      eventEmitter?: WorkflowEventEmitter;
       runId?: string;
       lastResumeData?: unknown;
     },
   ): Promise<WorkflowRunner> {
     const runner = new WorkflowRunner(compiled, {
-      eventEmitter: options.eventEmitter,
       runId: options.runId,
     });
 
@@ -299,7 +290,7 @@ export class WorkflowRunner {
     event: K,
     payload: WorkflowEventMap[K],
   ) {
-    this.eventEmitter?.emitEvent(event, payload);
+    this.context?.eventEmitter?.emit(event, payload);
   }
 
   /**
@@ -316,7 +307,7 @@ export class WorkflowRunner {
 
     return evaluateMapping(this.compiled.outputMapping, {
       input: this.state.input,
-      context: this.context,
+      context: this.context.state,
       memory: this.state.memory,
       output: this.state.output,
     });
@@ -488,7 +479,7 @@ export class WorkflowRunner {
     // Map task outputs through expressions; fall back to raw result when no mapping is provided.
     const scope: EvaluationScope = {
       input: state.input,
-      context: env.context,
+      context: env.context.state,
       memory: state.memory,
       output: state.output,
       iteration: state.iteration,

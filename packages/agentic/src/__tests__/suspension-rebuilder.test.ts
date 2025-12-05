@@ -202,7 +202,7 @@ describe('rebuildSuspension', () => {
       expect.objectContaining({ id: '0:first_task[3]' }),
       'completed',
     );
-    expect(deps.emit).toHaveBeenCalledWith('step:success', {
+    expect(deps.emit).toHaveBeenCalledWith('hook:step:success', {
       runId: 'run-123',
       step: expect.objectContaining({ id: '0:first_task[3]' }),
     });

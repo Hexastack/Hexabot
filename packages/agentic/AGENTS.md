@@ -29,7 +29,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Runner: `WorkflowRunner.start` executes the compiled flow; `resume` continues after a suspension. `Workflow.run` is a convenience that throws `WorkflowSuspendedError` on suspension.
 - Step ids: generated from the flow path (e.g., `0.branch.1:conditional`); loop iterations append `[i.j]` suffixes.
 - Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|skipped`).
-- Events: `WorkflowEventEmitter` emits `workflow:start|finish|failure|suspended` and `step:start|success|error|suspended|skipped`.
+- Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
 - Evaluation order: task inputs are evaluated before marking a step as running; outputs are mapped via `evaluateMapping` (falls back to raw result when no outputs map is provided). Final workflow outputs are evaluated only after the flow completes.
 - Parallel semantics: executed sequentially for determinism; `wait_any` short-circuits after the first completed child, `wait_all` waits for all.
 - Loop semantics: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator; `until` is checked after each iteration; accumulated values are exposed under `$output.<loop_name>.<accumulator_alias>` when `name` is set.

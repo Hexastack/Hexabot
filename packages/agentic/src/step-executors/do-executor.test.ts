@@ -93,8 +93,8 @@ describe('executeDoStep', () => {
     expect(env.markSnapshot).toHaveBeenNthCalledWith(1, stepInfo, 'running');
     expect(env.markSnapshot).toHaveBeenNthCalledWith(2, stepInfo, 'completed');
     expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, { result: 'ok' });
-    expect(env.emit).toHaveBeenCalledWith('step:start', { runId: 'run-123', step: stepInfo });
-    expect(env.emit).toHaveBeenCalledWith('step:success', { runId: 'run-123', step: stepInfo });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:start', { runId: 'run-123', step: stepInfo });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:success', { runId: 'run-123', step: stepInfo });
     expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);
   });
 
@@ -131,7 +131,7 @@ describe('executeDoStep', () => {
       }),
     );
     expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'suspended', 'awaiting_user');
-    expect(env.emit).toHaveBeenCalledWith('step:suspended', {
+    expect(env.emit).toHaveBeenCalledWith('hook:step:suspended', {
       runId: 'run-123',
       step: stepInfo,
       reason: 'awaiting_user',
@@ -148,7 +148,7 @@ describe('executeDoStep', () => {
       reply: 'Sure',
     });
     expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'completed');
-    expect(env.emit).toHaveBeenCalledWith('step:success', { runId: 'run-123', step: stepInfo });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:success', { runId: 'run-123', step: stepInfo });
   });
 
   it('marks failure and rethrows errors from the task', async () => {
@@ -159,7 +159,7 @@ describe('executeDoStep', () => {
 
     await expect(executeDoStep(env, step, state, [])).rejects.toThrow('boom');
     expect(env.markSnapshot).toHaveBeenCalledWith(step.stepInfo, 'failed', 'boom');
-    expect(env.emit).toHaveBeenCalledWith('step:error', {
+    expect(env.emit).toHaveBeenCalledWith('hook:step:error', {
       runId: 'run-123',
       step: step.stepInfo,
       error: expect.any(Error),

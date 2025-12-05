@@ -1,4 +1,4 @@
-import { BaseWorkflowContext } from '../src';
+import { BaseWorkflowContext, type WorkflowEventEmitterLike } from '../src';
 
 export type ExampleContextState = {
   user_id: string;
@@ -8,20 +8,9 @@ export type ExampleContextState = {
   channel: string;
 };
 
-export class ExampleContext extends BaseWorkflowContext {
-  user_id: string;
-  account_tier: string;
-  locale: string;
-  timezone: string;
-  channel: string;
-
-  constructor(state: ExampleContextState) {
-    super(state);
-    this.user_id = state.user_id;
-    this.account_tier = state.account_tier;
-    this.locale = state.locale;
-    this.timezone = state.timezone;
-    this.channel = state.channel;
+export class ExampleContext extends BaseWorkflowContext<ExampleContextState> {
+  constructor(state: ExampleContextState, eventEmitter?: WorkflowEventEmitterLike) {
+    super(state, eventEmitter);
   }
 
   log(message: string, payload?: unknown): void {

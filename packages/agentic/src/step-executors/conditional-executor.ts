@@ -25,7 +25,7 @@ export async function executeConditional(
     const branch = step.branches[index];
     const scope = {
       input: state.input,
-      context: env.context,
+      context: env.context.state,
       memory: state.memory,
       output: state.output,
       iteration: state.iteration,

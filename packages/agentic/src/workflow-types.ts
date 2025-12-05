@@ -4,7 +4,7 @@ import type { ZodTypeAny } from 'zod';
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import type { Settings, TaskDefinition, WorkflowDefinition } from './dsl.types';
-import type { StepInfo, WorkflowEventEmitter } from './workflow-event-emitter';
+import type { StepInfo } from './workflow-event-emitter';
 
 /** Value representation used by the runtime after compilation. */
 export type CompiledValue =
@@ -83,7 +83,7 @@ export type LoopStep = BaseStep & {
 /** Scope passed to value evaluators, reflecting the live runtime state. */
 export type EvaluationScope = {
   input: Record<string, unknown>;
-  context: BaseWorkflowContext;
+  context: Record<string, unknown>;
   memory: Record<string, unknown>;
   output: Record<string, unknown>;
   iteration?: { item: unknown; index: number };
@@ -144,7 +144,6 @@ export type ResumeResult =
 /** Options that influence how the workflow runner behaves. */
 export type WorkflowRunOptions = {
   memory?: Record<string, unknown>;
-  eventEmitter?: WorkflowEventEmitter;
   runId?: string;
 };
 

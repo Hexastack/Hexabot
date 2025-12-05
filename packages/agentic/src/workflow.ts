@@ -8,7 +8,6 @@ import {
 } from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
 import { compileWorkflow } from './workflow-compiler';
-import { WorkflowEventEmitter } from './workflow-event-emitter';
 import { WorkflowRunner } from './workflow-runner';
 import type {
   CompiledWorkflow,
@@ -22,7 +21,7 @@ export { WorkflowRunner } from './workflow-runner';
 export type {
   WorkflowResumeResult,
   WorkflowRunOptions,
-  WorkflowStartResult
+  WorkflowStartResult,
 } from './workflow-types';
 
 /**
@@ -124,7 +123,6 @@ export class Workflow {
     context: BaseWorkflowContext;
     snapshot: WorkflowSnapshot;
     suspension?: { stepId: string; reason?: string | null; data?: unknown };
-    eventEmitter?: WorkflowEventEmitter;
     runId?: string;
     lastResumeData?: unknown;
   }): Promise<WorkflowRunner> {

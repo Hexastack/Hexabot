@@ -7,7 +7,7 @@ Typed runtime and YAML DSL for orchestrating multi-step AI/automation workflows.
 - Type-safe actions built with `defineAction`, Zod-validated IO, and merged settings (timeouts, retries, guardrails) inherited from workflow defaults.
 - Resumable execution via `WorkflowRunner` and `context.workflow.suspend`, plus snapshots for persistence and replay.
 - Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and `loop` with accumulators and early-exit conditions.
-- Event emitter hooks for observability (`workflow:start|finish|failure|suspended`, `step:start|success|error|suspended|skipped`).
+- Event emitter hooks for observability (`hook:workflow:start|finish|failure|suspended`, `hook:step:start|success|error|suspended|skipped`).
 
 ## Installation
 
@@ -31,7 +31,7 @@ A workflow is a single YAML (or object) that declares metadata, inputs, tasks, c
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
-Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, memory, output, iteration, accumulator, result }` as scope.
+Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, memory, output, iteration, accumulator, result }` as scope; `$context` resolves to your workflow context state.
 
 ## Defining actions
 
@@ -41,7 +41,7 @@ Actions wrap your IO or model calls. `defineAction` enforces schemas and merges 
 import { defineAction, Settings, BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
-class AppContext extends BaseWorkflowContext {
+class AppContext extends BaseWorkflowContext<{ user_id: string }> {
   log(message: string, payload?: unknown) {
     console.log(message, payload);
   }
@@ -70,17 +70,18 @@ import fs from 'node:fs';
 const yamlSource = fs.readFileSync('workflow.yml', 'utf8');
 const actions = { call_api }; // keys are task.action names
 
-class AppContext extends BaseWorkflowContext {}
+class AppContext extends BaseWorkflowContext<{ user_id: string }> {}
 
 const workflow = Workflow.fromYaml(yamlSource, actions);
 
 const emitter = new WorkflowEventEmitter();
-emitter.on('step:start', ({ step }) => console.log('start', step.id));
+emitter.on('hook:step:start', ({ step }) => console.log('start', step.id));
 
-const runner = await workflow.buildAsyncRunner({ eventEmitter: emitter });
+const runner = await workflow.buildAsyncRunner();
+const context = new AppContext({ user_id: 'user-1' }, emitter);
 const startResult = await runner.start({
   inputData: { id: '123' },
-  context: new AppContext({ user_id: 'user-1' }),
+  context,
   memory: { thread_id: 'thread-1' },
 });
 
@@ -94,6 +95,7 @@ if (startResult.status === 'finished') {
 ```
 
 You can also skip YAML and use `Workflow.fromDefinition` with a typed object that matches `WorkflowDefinition`.
+Attach an event emitter to your workflow context (via the constructor or by setting `context.eventEmitter`); it accepts any object with `emit` and `on` methods. `WorkflowEventEmitter` is a small helper built on Node's `EventEmitter` with typed payloads (`WorkflowEventEmitterLike` describes the shape).
 
 ### Minimal YAML example
 
@@ -139,10 +141,10 @@ export const await_user = defineAction<unknown, { reply?: string }, AppContext, 
 
 ## Events and observability
 
-`WorkflowEventEmitter` mirrors lifecycle hooks:
+`WorkflowRunner` can publish lifecycle hooks to any emitter-like object with `emit`/`on` (`WorkflowEventEmitterLike`); `WorkflowEventEmitter` is the built-in helper and mirrors these events:
 
-- `workflow:start | finish | failure | suspended`
-- `step:start | success | error | suspended | skipped`
+- `hook:workflow:start | finish | failure | suspended`
+- `hook:step:start | success | error | suspended | skipped`
 
 Attach listeners to stream logs, emit metrics, or capture snapshots for debugging.
 

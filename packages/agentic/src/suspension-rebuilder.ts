@@ -184,7 +184,7 @@ export function buildSuspensionForPath(
 
         await deps.captureTaskOutput(task, state, resumeData);
         deps.markSnapshot(stepInfo, 'completed');
-        deps.emit('step:success', { runId: deps.runId, step: stepInfo });
+        deps.emit('hook:step:success', { runId: deps.runId, step: stepInfo });
         return deps.executeFlow(steps, state, pathPrefix, current + 1);
       },
     };
@@ -320,7 +320,7 @@ export function buildSuspensionForPath(
 
         const scope: EvaluationScope = {
           input: iterationState.input,
-          context: env.context as BaseWorkflowContext,
+          context: env.context.state,
           memory: iterationState.memory,
           output: iterationState.output,
           iteration:

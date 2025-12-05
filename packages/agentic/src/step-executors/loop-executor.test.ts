@@ -151,7 +151,7 @@ describe('loop helpers', () => {
 
     const scope = {
       input: {},
-      context: new TestContext(),
+      context: new TestContext().state,
       memory: {},
       output: {},
       iteration: { item: 1, index: 0 },

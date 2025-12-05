@@ -32,7 +32,7 @@ export async function executeDoStep(
   const stepInfo = env.buildInstanceStepInfo(step, state.iterationStack);
   const scope: EvaluationScope = {
     input: state.input,
-    context: env.context,
+    context: env.context.state,
     memory: state.memory,
     output: state.output,
     iteration: state.iteration,
@@ -42,18 +42,18 @@ export async function executeDoStep(
   const inputs = await evaluateMapping(task.inputs, scope);
   env.setCurrentStep(stepInfo);
   env.markSnapshot(stepInfo, 'running');
-  env.emit('step:start', { runId: env.runId, step: stepInfo });
+  env.emit('hook:step:start', { runId: env.runId, step: stepInfo });
 
   try {
     const result = await task.action.run(inputs, env.context, task.settings);
     await env.captureTaskOutput(task, state, result);
     env.markSnapshot(stepInfo, 'completed');
-    env.emit('step:success', { runId: env.runId, step: stepInfo });
+    env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
     return undefined;
   } catch (error) {
     if (error instanceof WorkflowSuspendedError) {
       env.markSnapshot(stepInfo, 'suspended', error.reason);
-      env.emit('step:suspended', {
+      env.emit('hook:step:suspended', {
         runId: env.runId,
         step: stepInfo,
         reason: error.reason,
@@ -67,7 +67,7 @@ export async function executeDoStep(
         continue: async (resumeData: unknown) => {
           await env.captureTaskOutput(task, state, resumeData);
           env.markSnapshot(stepInfo, 'completed');
-          env.emit('step:success', { runId: env.runId, step: stepInfo });
+          env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
           return undefined;
         },
       };
@@ -78,7 +78,7 @@ export async function executeDoStep(
       'failed',
       error instanceof Error ? error.message : String(error),
     );
-    env.emit('step:error', { runId: env.runId, step: stepInfo, error });
+    env.emit('hook:step:error', { runId: env.runId, step: stepInfo, error });
     throw error;
   } finally {
     env.setCurrentStep(undefined);

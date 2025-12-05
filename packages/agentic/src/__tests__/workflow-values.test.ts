@@ -21,7 +21,7 @@ describe('workflow values', () => {
 
     const result = await evaluateValue(compiled, {
       input: { amount: 10 },
-      context: new TestContext(),
+      context: new TestContext().state,
       memory: { offset: 5 },
       output: {},
       iteration: { item: 'item', index: 2 },
@@ -41,7 +41,7 @@ describe('workflow values', () => {
 
     const values = await evaluateMapping(mapping, {
       input: {},
-      context: new TestContext(),
+      context: new TestContext().state,
       memory: {},
       output: {},
       result: { value: 42 },
@@ -57,7 +57,7 @@ describe('workflow values', () => {
     await expect(
       evaluateMapping(undefined, {
         input: {},
-        context: new TestContext(),
+        context: new TestContext().state,
         memory: {},
         output: {},
       }),
