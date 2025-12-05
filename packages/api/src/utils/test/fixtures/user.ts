@@ -31,7 +31,7 @@ export const users: UserCreateDto[] = [
 export const userDefaultValues: TFixturesDefaultValues<User> = {
   state: true,
   language: 'en',
-  timezone: 'Europe/Berlin',
+  timezone: 1,
   sendEmail: false,
   resetCount: 0,
 };
