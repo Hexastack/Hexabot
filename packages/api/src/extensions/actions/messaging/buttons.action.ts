@@ -11,8 +11,9 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { buttonSchema } from '@/chat/types/button';
 import { stdIncomingMessageSchema } from '@/chat/types/message';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import { MessageAction, MessageActionContext } from './message-action.base';
+import { MessageAction } from './message-action.base';
 
 const buttonsInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
@@ -40,7 +41,7 @@ export class SendButtonsAction extends MessageAction<ButtonsInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<ButtonsInput, MessageActionContext>) {
+  }: ActionExecutionArgs<ButtonsInput, WorkflowContext>) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildButtonsEnvelope(
       input.text,

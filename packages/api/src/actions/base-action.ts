@@ -16,10 +16,10 @@ import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 import { ActionService } from './actions.service';
 import { ActionName } from './types';
-import { WorkflowContext } from './workflow-context';
 
 @Injectable()
 export abstract class BaseAction<
