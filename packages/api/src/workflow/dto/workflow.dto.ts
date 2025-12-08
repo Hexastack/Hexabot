@@ -7,7 +7,7 @@
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsString, IsObject } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 import {
   BaseStub,
@@ -28,9 +28,6 @@ export class WorkflowStub extends BaseStub {
 
   @Expose()
   definition!: WorkflowDefinition;
-
-  @Expose()
-  source?: string | null;
 }
 
 @Exclude()
@@ -59,14 +56,6 @@ export class WorkflowCreateDto {
   @IsNotEmpty()
   @IsObject()
   definition!: WorkflowDefinition;
-
-  @ApiPropertyOptional({
-    description: 'Workflow source (YAML or JSON string)',
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  source?: string;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{

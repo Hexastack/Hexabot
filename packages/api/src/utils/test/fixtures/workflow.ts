@@ -60,7 +60,6 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     version: messagingWorkflowDefinition.workflow.version,
     description: messagingWorkflowDefinition.workflow.description ?? undefined,
     definition: messagingWorkflowDefinition,
-    source: JSON.stringify(messagingWorkflowDefinition, null, 2),
   },
 ];
 

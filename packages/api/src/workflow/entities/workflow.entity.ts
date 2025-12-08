@@ -28,8 +28,4 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   /** Structured workflow definition consumed by the agent runtime. */
   @JsonColumn()
   definition!: WorkflowDefinition;
-
-  /** Raw source content (YAML/JSON) used to generate the workflow. */
-  @Column({ type: 'text', nullable: true })
-  source?: string | null;
 }

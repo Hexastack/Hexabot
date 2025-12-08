@@ -69,7 +69,6 @@ export class WorkflowService extends BaseOrmService<
         version: defaultWorkflowDefinition.workflow.version,
         description: defaultWorkflowDefinition.workflow.description,
         definition: defaultWorkflowDefinition,
-        source: JSON.stringify(defaultWorkflowDefinition, null, 2),
       });
     } catch (err) {
       this.logger.error('Unable to ensure default workflow exists', err);
