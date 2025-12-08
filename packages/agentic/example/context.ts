@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { BaseWorkflowContext, type WorkflowEventEmitterLike } from '../src';
 
 export type ExampleContextState = {
@@ -9,7 +15,10 @@ export type ExampleContextState = {
 };
 
 export class ExampleContext extends BaseWorkflowContext<ExampleContextState> {
-  constructor(state: ExampleContextState, eventEmitter?: WorkflowEventEmitterLike) {
+  constructor(
+    state: ExampleContextState,
+    eventEmitter?: WorkflowEventEmitterLike,
+  ) {
     super(state, eventEmitter);
   }
 

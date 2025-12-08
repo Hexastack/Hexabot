@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type { ActionSnapshot, BaseWorkflowContext } from './context';
 import {
   executeLoop as runLoopExecutor,
@@ -21,7 +27,10 @@ export type SuspensionRebuilderDeps = {
   context?: BaseWorkflowContext;
   runId?: string;
   createExecutorEnv: () => StepExecutorEnv;
-  buildInstanceStepInfo: (step: CompiledStep, iterationStack: number[]) => StepInfo;
+  buildInstanceStepInfo: (
+    step: CompiledStep,
+    iterationStack: number[],
+  ) => StepInfo;
   captureTaskOutput: (
     task: CompiledTask,
     state: ExecutionState,
@@ -68,6 +77,7 @@ export function parseSuspendedStepId(stepId: string): {
       ? []
       : pathPart.split('.').map((token) => {
           const numeric = Number.parseInt(token, 10);
+
           return Number.isNaN(numeric) ? token : numeric;
         });
 
@@ -107,7 +117,7 @@ export function rebuildSuspension(
   const executionState: ExecutionState = {
     ...state,
     iterationStack:
-      iterationStack.length > 0 ? iterationStack : state.iterationStack ?? [],
+      iterationStack.length > 0 ? iterationStack : (state.iterationStack ?? []),
   };
   const suspension = buildSuspensionForPath(
     deps,
@@ -174,6 +184,7 @@ export function buildSuspensionForPath(
     }
 
     const stepInfo = deps.buildInstanceStepInfo(step, state.iterationStack);
+
     return {
       step: stepInfo,
       continue: async (resumeData: unknown) => {
@@ -185,6 +196,7 @@ export function buildSuspensionForPath(
         await deps.captureTaskOutput(task, state, resumeData);
         deps.markSnapshot(stepInfo, 'completed');
         deps.emit('hook:step:success', { runId: deps.runId, step: stepInfo });
+
         return deps.executeFlow(steps, state, pathPrefix, current + 1);
       },
     };
@@ -224,7 +236,13 @@ export function buildSuspensionForPath(
           return undefined;
         }
 
-        return runParallelExecutor(env, step, state, currentPath, childIndex + 1);
+        return runParallelExecutor(
+          env,
+          step,
+          state,
+          currentPath,
+          childIndex + 1,
+        );
       },
     };
   }
@@ -283,7 +301,10 @@ export function buildSuspensionForPath(
       return null;
     }
 
-    const ancestorIterationStack = targetIterationStack.slice(0, iterationDepth);
+    const ancestorIterationStack = targetIterationStack.slice(
+      0,
+      iterationDepth,
+    );
     const iterationState: ExecutionState = {
       ...state,
       iterationStack: targetIterationStack,
@@ -294,7 +315,6 @@ export function buildSuspensionForPath(
           index: iterationIndex,
         } satisfies ExecutionState['iteration']),
     };
-
     const childSuspension = buildSuspensionForPath(
       deps,
       step.steps,
@@ -308,7 +328,8 @@ export function buildSuspensionForPath(
       return null;
     }
 
-    const accumulator = iterationState.accumulator ?? state.accumulator ?? undefined;
+    const accumulator =
+      iterationState.accumulator ?? state.accumulator ?? undefined;
 
     return {
       ...childSuspension,
@@ -323,15 +344,17 @@ export function buildSuspensionForPath(
           context: env.context.state,
           memory: iterationState.memory,
           output: iterationState.output,
-          iteration:
-            iterationState.iteration ?? {
-              item: undefined,
-              index: iterationIndex,
-            },
+          iteration: iterationState.iteration ?? {
+            item: undefined,
+            index: iterationIndex,
+          },
           accumulator,
         };
-
-        const updatedAccumulator = await updateAccumulator(step, scope, accumulator);
+        const updatedAccumulator = await updateAccumulator(
+          step,
+          scope,
+          accumulator,
+        );
         const shouldStop = await shouldStopLoop(step, scope);
 
         state.output = iterationState.output;
@@ -357,7 +380,13 @@ export function buildSuspensionForPath(
           output: state.output,
         };
 
-        return runLoopExecutor(env, step, baseState, currentPath, iterationIndex + 1);
+        return runLoopExecutor(
+          env,
+          step,
+          baseState,
+          currentPath,
+          iterationIndex + 1,
+        );
       },
     };
   }

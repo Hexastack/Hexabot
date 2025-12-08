@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -8,12 +14,10 @@ const inputSchema = z.object({
   prompt: z.string(),
   allow_attachments: z.boolean().optional(),
 });
-
 const outputSchema = z.object({
   text: z.string().optional(),
   attachments: z.array(z.string()).optional(),
 });
-
 const settingsSchema = SettingsSchema;
 
 type AwaitUserInput = z.infer<typeof inputSchema>;
@@ -33,6 +37,7 @@ export const awaitUserInput = defineAction<
   settingSchema: settingsSchema,
   execute: async ({ input, context }) => {
     context.log('Would ask user to reply', { prompt: input.prompt });
+
     return {
       text: 'Sample user reply for the demo run.',
       attachments: input.allow_attachments ? ['file-attachment-id'] : [],

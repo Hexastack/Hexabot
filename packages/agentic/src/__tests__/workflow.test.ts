@@ -1,18 +1,22 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
-import { EventEmitter } from 'events';
 import { defineAction } from '../action/action';
 import { BaseWorkflowContext } from '../context';
 import { Settings, WorkflowDefinition } from '../dsl.types';
 import { Workflow, WorkflowEventEmitter } from '../workflow';
-import type { WorkflowEventEmitterLike } from '../workflow-event-emitter';
+import { EventEmitterLike } from '../workflow-event-emitter';
 
 class TestContext extends BaseWorkflowContext {
-  constructor(
-    initial?: Record<string, unknown>,
-    emitter?: WorkflowEventEmitterLike<EventEmitter>,
-  ) {
-    super(initial, emitter);
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
+  constructor() {
+    super({});
   }
 }
 
@@ -37,7 +41,6 @@ describe('Workflow execution', () => {
         settings,
       }),
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'greeting_flow', version: '1.0.0' },
       defaults: {
@@ -90,7 +93,6 @@ describe('Workflow execution', () => {
         },
       },
     };
-
     const workflow = Workflow.fromDefinition(definition, {
       greet_action: greetAction,
     });
@@ -117,10 +119,10 @@ describe('Workflow execution', () => {
           reason: 'waiting_for_user',
           data: { channel: 'email' },
         });
+
         return { reply: 'never' };
       },
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'suspension_flow', version: '1.0.0' },
       tasks: {
@@ -133,12 +135,10 @@ describe('Workflow execution', () => {
       flow: [{ do: 'ask_user' }],
       outputs: { reply: '=$output.ask_user.reply' },
     };
-
     const workflow = Workflow.fromDefinition(definition, {
       await_reply: suspendingAction,
     });
     const runner = await workflow.buildAsyncRunner();
-
     const startResult = await runner.start({
       inputData: {},
       context: new TestContext(),
@@ -173,7 +173,6 @@ describe('Workflow execution', () => {
       outputSchema: z.object({ doubled: z.number() }),
       execute: async ({ input }) => ({ doubled: input.value * 2 }),
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'events_flow', version: '1.0.0' },
       tasks: {
@@ -191,7 +190,6 @@ describe('Workflow execution', () => {
         },
       },
     };
-
     const events: string[] = [];
     const emitter = new WorkflowEventEmitter();
     emitter.on('hook:workflow:start', () => events.push('hook:workflow:start'));
@@ -209,7 +207,8 @@ describe('Workflow execution', () => {
       double_value: noopAction,
     });
     const runner = await workflow.buildAsyncRunner();
-    const context = new TestContext(undefined, emitter);
+    const context = new TestContext();
+    context.eventEmitter = emitter;
     const outcome = await runner.start({ inputData: { value: 5 }, context });
 
     expect(outcome.status).toBe('finished');
@@ -241,7 +240,6 @@ describe('Workflow execution', () => {
         },
       },
     );
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'failure_flow', version: '1.0.0' },
       tasks: {
@@ -254,7 +252,6 @@ describe('Workflow execution', () => {
       flow: [{ do: 'failing_task' }],
       outputs: { result: '=$output.failing_task.result' },
     };
-
     const workflow = Workflow.fromDefinition(definition, {
       failing_action: failingAction,
     });
@@ -283,10 +280,10 @@ describe('Workflow execution', () => {
           reason: 'need_input',
           data: { prompt: 'ok?' },
         });
+
         return { reply: 'never' };
       },
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'suspend_flow', version: '1.0.0' },
       tasks: {
@@ -299,7 +296,6 @@ describe('Workflow execution', () => {
       flow: [{ do: 'pause_step' }],
       outputs: { reply: '=$output.pause_step.reply' },
     };
-
     const workflow = Workflow.fromDefinition(definition, {
       suspending_action: suspendingAction,
     });

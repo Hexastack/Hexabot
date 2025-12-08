@@ -1,15 +1,22 @@
-import { z } from 'zod';
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
 
 import { EventEmitter } from 'events';
+
+import { z } from 'zod';
+
 import { defineAction } from '../action/action';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
-import type {
-  WorkflowEventEmitterLike,
-  WorkflowEventMap,
+import {
+  WorkflowEventEmitter,
+  type WorkflowEventEmitterLike,
+  type WorkflowEventMap,
 } from '../workflow-event-emitter';
-import { WorkflowEventEmitter } from '../workflow-event-emitter';
 import { WorkflowRunner } from '../workflow-runner';
 import type { ExecutionState } from '../workflow-types';
 
@@ -25,6 +32,7 @@ class MemoryEmitter implements WorkflowEventEmitterLike<{}> {
     payload: WorkflowEventMap[K],
   ) {
     this.listeners[event]?.forEach((listener) => listener(payload));
+
     return true;
   }
 
@@ -36,6 +44,7 @@ class MemoryEmitter implements WorkflowEventEmitterLike<{}> {
       this.listeners[event] = [];
     }
     this.listeners[event]?.push(listener);
+
     return this;
   }
 }
@@ -44,8 +53,11 @@ class TestMemoryContext extends BaseWorkflowContext<
   Record<string, unknown>,
   MemoryEmitter
 > {
-  constructor(initial?: Record<string, unknown>, emitter?: MemoryEmitter) {
-    super(initial, emitter);
+  public eventEmitter: WorkflowEventEmitterLike<MemoryEmitter> =
+    new MemoryEmitter();
+
+  constructor(initial: Record<string, unknown>) {
+    super(initial);
   }
 }
 
@@ -53,11 +65,11 @@ class TestContext extends BaseWorkflowContext<
   Record<string, unknown>,
   WorkflowEventEmitter
 > {
-  constructor(
-    initial?: Record<string, unknown>,
-    emitter?: WorkflowEventEmitter,
-  ) {
-    super(initial, emitter);
+  public eventEmitter: WorkflowEventEmitterLike<WorkflowEventEmitter> =
+    new WorkflowEventEmitter();
+
+  constructor(initial: Record<string, unknown>) {
+    super(initial);
   }
 }
 
@@ -75,7 +87,6 @@ describe('WorkflowRunner', () => {
     const echoExecute = jest.fn(async ({ input }) => ({
       message: String(input.message),
     }));
-
     const firstAction = defineAction<
       unknown,
       { value: string },
@@ -109,7 +120,6 @@ describe('WorkflowRunner', () => {
       outputSchema: z.object({ message: z.string() }),
       execute: echoExecute,
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'control_flow', version: '1.0.0' },
       defaults: { settings: { timeout_ms: 0, retries: baseRetries } },
@@ -177,7 +187,6 @@ describe('WorkflowRunner', () => {
         },
       },
     };
-
     const emitter = new WorkflowEventEmitter();
     const eventLog: string[] = [];
     emitter.on('hook:step:start', ({ step }) =>
@@ -192,9 +201,8 @@ describe('WorkflowRunner', () => {
       second_action: secondAction,
       echo_action: echoAction,
     });
-
     const runner = new WorkflowRunner(compiled, { runId: 'run-1' });
-    const context = new TestContext(undefined, emitter);
+    const context = new TestContext({});
     const result = await runner.start({
       inputData: { items: [10, 20] },
       context,
@@ -233,10 +241,10 @@ describe('WorkflowRunner', () => {
           reason: 'awaiting_user',
           data: { channel: 'sms' },
         });
+
         return { reply: 'ignored' };
       },
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'suspension_flow', version: '1.0.0' },
       tasks: {
@@ -249,13 +257,11 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'wait_step' }],
       outputs: { reply: '=$output.wait_step.reply' },
     };
-
     const compiled = compileWorkflow(definition, {
       suspend_action: suspendAction,
     });
     const runner = new WorkflowRunner(compiled, { runId: 'run-2' });
-    const context = new TestContext();
-
+    const context = new TestContext({});
     const startResult = await runner.start({ inputData: {}, context });
     expect(startResult.status).toBe('suspended');
     if (startResult.status === 'suspended') {
@@ -288,7 +294,6 @@ describe('WorkflowRunner', () => {
       outputSchema: z.object({ ok: z.boolean() }),
       execute: async () => ({ ok: true }),
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'custom_emitter', version: '1.0.0' },
       tasks: {
@@ -297,7 +302,6 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'ping_step' }],
       outputs: { ok: '=$output.ping_step.ok' },
     };
-
     const compiled = compileWorkflow(definition, { ping_action: pingAction });
     const emitter = new MemoryEmitter();
     const events: Array<{
@@ -319,7 +323,8 @@ describe('WorkflowRunner', () => {
     );
 
     const runner = new WorkflowRunner(compiled, { runId: 'custom-run' });
-    const context = new TestMemoryContext(undefined, emitter);
+    const context = new TestMemoryContext({});
+    context.eventEmitter = emitter;
     const result = await runner.start({ inputData: {}, context });
 
     expect(result.status).toBe('finished');
@@ -360,10 +365,10 @@ describe('WorkflowRunner', () => {
           step: { id: 'manual', name: 'emit_action', type: 'task' },
           reason: input.note,
         });
+
         return { note: input.note };
       },
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'context_emitter', version: '1.0.0' },
       tasks: {
@@ -381,12 +386,13 @@ describe('WorkflowRunner', () => {
         },
       },
     };
-
     const compiled = compileWorkflow(definition, { emit_action: emitAction });
     const runner = new WorkflowRunner(compiled, { runId: 'ctx-run' });
+    const context = new TestContext({});
+    context.eventEmitter = emitter;
     const result = await runner.start({
       inputData: { note: 'custom-event' },
-      context: new TestContext(undefined, emitter),
+      context,
     });
 
     expect(result.status).toBe('finished');
@@ -407,7 +413,6 @@ describe('WorkflowRunner', () => {
         },
       },
     );
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'failure_flow', version: '1.0.0' },
       tasks: {
@@ -420,15 +425,13 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'fail_step' }],
       outputs: { value: '=$output.fail_step.value' },
     };
-
     const compiled = compileWorkflow(definition, {
       failing_action: failingAction,
     });
     const runner = new WorkflowRunner(compiled);
-
     const result = await runner.start({
       inputData: {},
-      context: new TestContext(),
+      context: new TestContext({}),
     });
     expect(result.status).toBe('failed');
     if (result.status === 'failed') {
@@ -455,10 +458,10 @@ describe('WorkflowRunner', () => {
       outputSchema: z.object({ reply: z.string() }),
       execute: async ({ context }) => {
         await context.workflow.suspend({ reason: 'need_reply' });
+
         return { reply: 'ignored' };
       },
     });
-
     const followExecute = jest.fn(async ({ input }) => ({
       formatted: input.message.toUpperCase(),
     }));
@@ -473,7 +476,6 @@ describe('WorkflowRunner', () => {
       outputSchema: z.object({ formatted: z.string() }),
       execute: followExecute,
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'resume_flow', version: '1.0.0' },
       tasks: {
@@ -494,7 +496,6 @@ describe('WorkflowRunner', () => {
         formatted: '=$output.follow_step.formatted',
       },
     };
-
     const compiled = compileWorkflow(definition, {
       resume_suspend_action: suspendAction,
       follow_action: followAction,
@@ -502,7 +503,7 @@ describe('WorkflowRunner', () => {
     const runner = new WorkflowRunner(compiled);
     const startResult = await runner.start({
       inputData: {},
-      context: new TestContext(),
+      context: new TestContext({}),
     });
 
     expect(startResult.status).toBe('suspended');
@@ -542,7 +543,6 @@ describe('WorkflowRunner', () => {
       outputSchema: z.string(),
       execute: async ({ input }) => `echo:${input.value}`,
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'raw_output', version: '1.0.0' },
       tasks: {
@@ -551,12 +551,11 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'raw_step' }],
       outputs: { final: '=$output.raw_step' },
     };
-
     const compiled = compileWorkflow(definition, { raw_action: rawAction });
     const runner = new WorkflowRunner(compiled);
     const result = await runner.start({
       inputData: {},
-      context: new TestContext(),
+      context: new TestContext({}),
     });
 
     expect(result.status).toBe('finished');
@@ -583,7 +582,6 @@ describe('WorkflowRunner', () => {
       outputSchema: z.object({ ok: z.boolean() }),
       execute: async () => ({ ok: true }),
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'unrebuildable', version: '1.0.0' },
       tasks: {
@@ -592,7 +590,6 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'only_step' }],
       outputs: { ok: '=$output.only_step.ok' },
     };
-
     const compiled = compileWorkflow(definition, { noop_action: noopAction });
     const persistedState: ExecutionState = {
       input: {},
@@ -604,7 +601,7 @@ describe('WorkflowRunner', () => {
     await expect(
       WorkflowRunner.fromPersistedState(compiled, {
         state: persistedState,
-        context: new TestContext(),
+        context: new TestContext({}),
         snapshot: { status: 'suspended', actions: {} },
         suspension: { stepId: 'unknown.step', reason: null, data: undefined },
       }),
@@ -626,10 +623,10 @@ describe('WorkflowRunner', () => {
           reason: 'awaiting_reply',
           data: { prompt: input.prompt },
         });
+
         return { reply: 'ignored' };
       },
     });
-
     const definition: WorkflowDefinition = {
       workflow: { name: 'suspended_loop', version: '1.0.0' },
       tasks: {
@@ -655,13 +652,11 @@ describe('WorkflowRunner', () => {
         },
       },
     };
-
     const compiled = compileWorkflow(definition, {
       loop_suspend_action: suspendAction,
     });
     const runner = new WorkflowRunner(compiled);
-    const context = new TestContext();
-
+    const context = new TestContext({});
     const startResult = await runner.start({
       inputData: { items: ['first'] },
       context,
@@ -683,10 +678,9 @@ describe('WorkflowRunner', () => {
       accumulator: runtimeState.accumulator,
       iterationStack: [],
     };
-
     const rebuilt = await WorkflowRunner.fromPersistedState(compiled, {
       state: persistedState,
-      context: new TestContext(),
+      context: new TestContext({}),
       snapshot: startResult.snapshot,
       suspension: {
         stepId: startResult.step.id,
@@ -694,7 +688,6 @@ describe('WorkflowRunner', () => {
         data: startResult.data,
       },
     });
-
     const resumeResult = await rebuilt.resume({
       resumeData: { reply: 'Pong' },
     });

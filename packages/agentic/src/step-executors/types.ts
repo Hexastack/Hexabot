@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type { ActionSnapshot, BaseWorkflowContext } from '../context';
 import type { StepInfo, WorkflowEventMap } from '../workflow-event-emitter';
 import type {
@@ -12,7 +18,10 @@ export type StepExecutorEnv = {
   compiled: CompiledWorkflow;
   context: BaseWorkflowContext;
   runId?: string;
-  buildInstanceStepInfo: (step: CompiledStep, iterationStack: number[]) => StepInfo;
+  buildInstanceStepInfo: (
+    step: CompiledStep,
+    iterationStack: number[],
+  ) => StepInfo;
   markSnapshot: (
     step: StepInfo,
     status: ActionSnapshot['status'],

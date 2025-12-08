@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type {
   ActionSnapshot,
   ActionStatus,
@@ -38,23 +44,31 @@ import { evaluateMapping } from './workflow-values';
 export class WorkflowRunner {
   // Compiled workflow definition driving this runner.
   private readonly compiled: CompiledWorkflow;
+
   // External run identifier propagated through events for correlation.
   private readonly runId?: string;
 
   // Current lifecycle status of the workflow execution.
   private status: WorkflowRunStatus = 'idle';
+
   // Snapshots of action execution keyed by step id for inspection/resume.
   private snapshots: Record<string, ActionSnapshot> = {};
+
   // Suspension state when execution is paused awaiting external input.
   private suspension?: Suspension;
+
   // Control surface exposed to actions to suspend/resume the workflow.
   private runtimeControl?: RunnerRuntimeControl;
+
   // Step currently being executed, used in event payloads and errors.
   private currentStep?: StepInfo;
+
   // Last payload provided to resume; exposed to actions via the context.
   private lastResumeData?: unknown;
+
   // Mutable execution state including input, memory, and outputs.
   private state?: ExecutionState;
+
   // Workflow context shared with actions for IO and side-effects.
   private context?: BaseWorkflowContext;
 
@@ -326,6 +340,7 @@ export class WorkflowRunner {
   ): StepInfo {
     const suffix =
       iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : '';
+
     return { ...step.stepInfo, id: `${step.stepInfo.id}${suffix}` };
   }
 
@@ -428,6 +443,7 @@ export class WorkflowRunner {
             if (next) {
               return next;
             }
+
             return this.executeFlow(steps, state, path, index + 1);
           },
         };
@@ -486,7 +502,6 @@ export class WorkflowRunner {
       accumulator: state.accumulator,
       result,
     };
-
     const mapped = await evaluateMapping(task.outputs, scope);
     state.output[task.name] = Object.keys(mapped).length > 0 ? mapped : result;
   }

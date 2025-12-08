@@ -1,10 +1,17 @@
-import { evaluateValue } from '../workflow-values';
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type {
   EvaluationScope,
   ExecutionState,
   LoopStep,
   Suspension,
 } from '../workflow-types';
+import { evaluateValue } from '../workflow-values';
+
 import type { StepExecutorEnv } from './types';
 
 type LoopScope = EvaluationScope;
@@ -34,7 +41,6 @@ export async function executeLoop(
     iteration: state.iteration,
     accumulator: state.accumulator,
   };
-
   const items = await evaluateValue(step.forEach.in, scope);
   const iterable = Array.isArray(items) ? items : [];
   let accumulator = step.accumulate?.initial ?? state.accumulator;
@@ -47,7 +53,6 @@ export async function executeLoop(
       accumulator,
       iterationStack: [...state.iterationStack, index],
     };
-
     const suspension = await env.executeFlow(step.steps, iterationState, [
       ...path,
       index,
@@ -76,6 +81,7 @@ export async function executeLoop(
             if (step.accumulate && step.name) {
               state.output[step.name] = { [step.accumulate.as]: accumulator };
             }
+
             return undefined;
           }
 
@@ -161,6 +167,7 @@ export async function shouldStopLoop(
   }
 
   const result = await evaluateValue(step.until, scope);
+
   return Boolean(result);
 }
 

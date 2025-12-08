@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -9,12 +15,10 @@ const stakeholderSchema = z.object({
   email: z.string(),
   role: z.string(),
 });
-
 const inputSchema = z.object({
   user_id: z.string(),
   include_history: z.boolean().optional(),
 });
-
 const outputSchema = z.object({
   profile: z.object({
     id: z.string(),
@@ -25,7 +29,6 @@ const outputSchema = z.object({
   }),
   recent_cases: z.array(z.object({ id: z.string(), subject: z.string() })),
 });
-
 const settingsSchema = SettingsSchema;
 
 type GetUserProfileInput = z.infer<typeof inputSchema>;
@@ -39,7 +42,8 @@ export const getUserProfile = defineAction<
   GetUserProfileSettings
 >({
   name: 'get_user_profile',
-  description: 'Returns a mocked CRM profile with a couple of stakeholders and prior cases.',
+  description:
+    'Returns a mocked CRM profile with a couple of stakeholders and prior cases.',
   inputSchema,
   outputSchema,
   settingSchema: settingsSchema,
@@ -54,7 +58,6 @@ export const getUserProfile = defineAction<
         { name: 'Cal CTO', email: 'cal.cto@example.com', role: 'technology' },
       ],
     };
-
     const recent_cases = input.include_history
       ? [
           { id: 'case-100', subject: 'Renewal follow-up' },
@@ -63,6 +66,7 @@ export const getUserProfile = defineAction<
       : [];
 
     context.log('Fetched profile', { user_id: input.user_id });
+
     return { profile, recent_cases };
   },
 });

@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
@@ -16,8 +22,11 @@ import type {
 } from './workflow-types';
 
 export { compileWorkflow } from './workflow-compiler';
+
 export { WorkflowEventEmitter } from './workflow-event-emitter';
+
 export { WorkflowRunner } from './workflow-runner';
+
 export type {
   WorkflowResumeResult,
   WorkflowRunOptions,
@@ -48,6 +57,7 @@ export class Workflow {
   ): Workflow {
     const parsed = WorkflowDefinitionSchema.parse(definition);
     const compiled = compileWorkflow(parsed, actions);
+
     return new Workflow(compiled);
   }
 
@@ -70,6 +80,7 @@ export class Workflow {
     }
 
     const compiled = compileWorkflow(validation.data, actions);
+
     return new Workflow(compiled);
   }
 

@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -10,12 +16,10 @@ const inputSchema = z.object({
   body: z.unknown(),
   track_opens: z.boolean().optional(),
 });
-
 const outputSchema = z.object({
   status: z.string(),
   acknowledged: z.boolean().optional(),
 });
-
 const settingsSchema = SettingsSchema;
 
 type SendEmailInput = z.infer<typeof inputSchema>;
@@ -29,15 +33,18 @@ export const sendEmail = defineAction<
   SendEmailSettings
 >({
   name: 'send_email',
-  description: 'Pretends to send an email and optionally marks acknowledgement.',
+  description:
+    'Pretends to send an email and optionally marks acknowledgement.',
   inputSchema,
   outputSchema,
   settingSchema: settingsSchema,
   execute: async ({ input, context }) => {
     const acknowledged =
-      input.subject.toLowerCase().includes('fyi') && input.to.toLowerCase().includes('ops');
+      input.subject.toLowerCase().includes('fyi') &&
+      input.to.toLowerCase().includes('ops');
 
     context.log('Sent email', { to: input.to, subject: input.subject });
+
     return { status: 'sent', acknowledged };
   },
 });

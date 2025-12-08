@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -8,11 +14,9 @@ const inputSchema = z.object({
   thread_id: z.string().optional(),
   user_id: z.string().optional(),
 });
-
 const outputSchema = z.object({
   summary: z.string(),
 });
-
 const settingsSchema = SettingsSchema;
 
 type QueryMemoryInput = z.infer<typeof inputSchema>;
@@ -31,7 +35,11 @@ export const queryMemory = defineAction<
   outputSchema,
   settingSchema: settingsSchema,
   execute: async ({ input, context }) => {
-    context.log('Fetching memory thread', { thread_id: input.thread_id, user_id: input.user_id });
+    context.log('Fetching memory thread', {
+      thread_id: input.thread_id,
+      user_id: input.user_id,
+    });
+
     return { summary: 'Previous discussion summarized for quick recall.' };
   },
 });

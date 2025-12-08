@@ -1,9 +1,16 @@
-import { evaluateValue } from '../workflow-values';
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type {
   ConditionalStep,
   ExecutionState,
   Suspension,
 } from '../workflow-types';
+import { evaluateValue } from '../workflow-values';
+
 import type { StepExecutorEnv } from './types';
 
 /**
@@ -31,7 +38,6 @@ export async function executeConditional(
       iteration: state.iteration,
       accumulator: state.accumulator,
     };
-
     const conditionResult =
       branch.condition !== undefined
         ? await evaluateValue(branch.condition, scope)
@@ -52,6 +58,7 @@ export async function executeConditional(
             if (next) {
               return next;
             }
+
             return undefined;
           },
         };

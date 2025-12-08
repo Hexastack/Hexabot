@@ -1,5 +1,10 @@
-import type { Action } from '../../src';
-import type { Settings } from '../../src';
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import type { Action, Settings } from '../../src';
 import type { ExampleContext } from '../context';
 
 import { awaitUserInput } from './await-user-input';

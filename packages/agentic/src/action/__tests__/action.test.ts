@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { BaseWorkflowContext } from '../../context';
@@ -6,6 +12,7 @@ import {
   DEFAULT_TIMEOUT_MS,
   SettingsSchema,
 } from '../../dsl.types';
+import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import {
   InferActionContext,
@@ -25,15 +32,12 @@ const expectType = <T extends true>(): void => {
   void (0 as unknown as T);
 };
 
-class DoubleContext extends BaseWorkflowContext {
-  constructor(public factor: number) {
-    super();
-  }
+class DoubleContext extends BaseWorkflowContext<{ factor: number }> {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
 }
 
 const InputSchema = z.object({ value: z.number() });
 const OutputSchema = z.object({ result: z.number() });
-
 
 class DoubleAction extends AbstractAction<
   z.infer<typeof InputSchema>,
@@ -41,11 +45,14 @@ class DoubleAction extends AbstractAction<
   DoubleContext
 > {
   constructor() {
-    const metadata: ActionMetadata<z.infer<typeof InputSchema>, z.infer<typeof OutputSchema>> = {
+    const metadata: ActionMetadata<
+      z.infer<typeof InputSchema>,
+      z.infer<typeof OutputSchema>
+    > = {
       name: 'double_step',
       description: 'Doubles the incoming value by a context-defined factor.',
       inputSchema: InputSchema,
-      outputSchema: OutputSchema
+      outputSchema: OutputSchema,
     };
 
     super(metadata);
@@ -53,10 +60,12 @@ class DoubleAction extends AbstractAction<
 
   async execute({
     input,
-    context
-  }: ActionExecutionArgs<z.infer<typeof InputSchema>, DoubleContext>): Promise<z.infer<typeof OutputSchema>> {
+    context,
+  }: ActionExecutionArgs<z.infer<typeof InputSchema>, DoubleContext>): Promise<
+    z.infer<typeof OutputSchema>
+  > {
     return {
-      result: input.value * context.factor * 2
+      result: input.value * context.state.factor * 2,
     };
   }
 }
@@ -96,8 +105,9 @@ class ConfigurableDoubleAction extends AbstractAction<
     DoubleContext,
     z.infer<typeof DoubleSettingsSchema>
   >): Promise<z.infer<typeof OutputSchema>> {
-    const base = input.value * context.factor * 2;
+    const base = input.value * context.state.factor * 2;
     const multiplier = settings?.multiplier ?? 1;
+
     return {
       result: base * multiplier,
     };
@@ -144,8 +154,7 @@ describe('workflow step primitives', () => {
 
   it('parses input and output while executing run()', async () => {
     const step = new DoubleAction();
-    const context = new DoubleContext(3);
-
+    const context = new DoubleContext({ factor: 3 });
     const output = await step.run({ value: 2 }, context, {});
 
     expect(output).toEqual({ result: 12 });
@@ -153,7 +162,7 @@ describe('workflow step primitives', () => {
 
   it('parses settings using the configured schema before execution', async () => {
     const step = new ConfigurableDoubleAction();
-    const context = new DoubleContext(3);
+    const context = new DoubleContext({ factor: 3 });
 
     await expect(
       step.run({ value: 2 }, context, { multiplier: 2 }),
@@ -191,8 +200,7 @@ describe('workflow step primitives', () => {
     jest.useFakeTimers();
     try {
       const step = new FlakyDoubleAction();
-
-      const context = new DoubleContext(2);
+      const context = new DoubleContext({ factor: 2 });
       const runPromise = step.run({ value: 1 }, context, {});
 
       // First attempt happens immediately and fails

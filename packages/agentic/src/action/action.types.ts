@@ -1,4 +1,11 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { ZodType, ZodTypeDef } from 'zod';
+
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
 import { WorkflowSuspendedError } from '../runtime-error';

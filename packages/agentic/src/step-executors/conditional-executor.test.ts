@@ -1,17 +1,26 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { BaseWorkflowContext } from '../context';
+import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ConditionalStep,
   ExecutionState,
   Suspension,
 } from '../workflow-types';
-import type { StepInfo } from '../workflow-event-emitter';
+
 import { executeConditional } from './conditional-executor';
 import type { StepExecutorEnv } from './types';
 
 class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
   constructor() {
-    super();
+    super({});
   }
 }
 
@@ -21,14 +30,12 @@ const createState = (): ExecutionState => ({
   output: {},
   iterationStack: [],
 });
-
 const createDoStep = (id: string): CompiledStep => ({
   id,
   kind: 'do',
   taskName: `task_${id}`,
   stepInfo: { id, name: id, type: 'task' },
 });
-
 const createEnv = (): StepExecutorEnv => {
   const compiled = {
     definition: {} as any,
@@ -61,9 +68,21 @@ describe('executeConditional', () => {
       kind: 'conditional',
       stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
       branches: [
-        { id: 'branch-0', condition: { kind: 'literal', value: false }, steps: [createDoStep('a')] },
-        { id: 'branch-1', condition: { kind: 'literal', value: true }, steps: [createDoStep('b')] },
-        { id: 'branch-2', condition: { kind: 'literal', value: true }, steps: [createDoStep('c')] },
+        {
+          id: 'branch-0',
+          condition: { kind: 'literal', value: false },
+          steps: [createDoStep('a')],
+        },
+        {
+          id: 'branch-1',
+          condition: { kind: 'literal', value: true },
+          steps: [createDoStep('b')],
+        },
+        {
+          id: 'branch-2',
+          condition: { kind: 'literal', value: true },
+          steps: [createDoStep('c')],
+        },
       ],
     };
     env.executeFlow = jest.fn().mockResolvedValue(undefined);
@@ -72,7 +91,11 @@ describe('executeConditional', () => {
 
     expect(result).toBeUndefined();
     expect(env.executeFlow).toHaveBeenCalledTimes(1);
-    expect(env.executeFlow).toHaveBeenCalledWith(step.branches[1].steps, state, [0, 'branch', 1]);
+    expect(env.executeFlow).toHaveBeenCalledWith(
+      step.branches[1].steps,
+      state,
+      [0, 'branch', 1],
+    );
   });
 
   it('wraps and resumes from a suspended branch', async () => {
@@ -91,9 +114,10 @@ describe('executeConditional', () => {
       stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
       branches: [{ id: 'branch-0', steps: [createDoStep('a')] }],
     };
-
     const suspension = await executeConditional(env, step, state, []);
-    expect(suspension).toEqual(expect.objectContaining({ step: innerSuspension.step, reason: 'pause' }));
+    expect(suspension).toEqual(
+      expect.objectContaining({ step: innerSuspension.step, reason: 'pause' }),
+    );
     expect(env.executeFlow).toHaveBeenCalledTimes(1);
 
     await suspension?.continue('resume-data');
@@ -120,7 +144,6 @@ describe('executeConditional', () => {
       stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
       branches: [{ id: 'branch-0', steps: [createDoStep('a')] }],
     };
-
     const suspension = await executeConditional(env, step, state, []);
     const result = await suspension?.continue('resume-data');
 
@@ -137,11 +160,18 @@ describe('executeConditional', () => {
       kind: 'conditional',
       stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
       branches: [
-        { id: 'branch-0', condition: { kind: 'literal', value: false }, steps: [createDoStep('a')] },
-        { id: 'branch-1', condition: { kind: 'literal', value: false }, steps: [createDoStep('b')] },
+        {
+          id: 'branch-0',
+          condition: { kind: 'literal', value: false },
+          steps: [createDoStep('a')],
+        },
+        {
+          id: 'branch-1',
+          condition: { kind: 'literal', value: false },
+          steps: [createDoStep('b')],
+        },
       ],
     };
-
     const result = await executeConditional(env, step, state, []);
 
     expect(result).toBeUndefined();

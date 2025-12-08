@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import jsonata from 'jsonata';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
@@ -9,7 +15,8 @@ export const ExpressionStringSchema = z
     try {
       jsonata(value.slice(1));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown JSONata parse error';
+      const message =
+        error instanceof Error ? error.message : 'Unknown JSONata parse error';
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: `Invalid JSONata expression: ${message}`,
@@ -27,6 +34,7 @@ export type JsonValue =
 
 // Per-action timeout in milliseconds; 0 disables the timeout wrapper.
 export const DEFAULT_TIMEOUT_MS = 0;
+
 // Retry defaults: 3 attempts with exponential backoff starting at 25ms, capped at 10s, no jitter.
 export const DEFAULT_RETRY_SETTINGS = {
   max_attempts: 3,
@@ -122,7 +130,6 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
       }
     }),
 );
-
 // Retry policy: exponential backoff per attempt, capped by max_delay_ms, with optional jitter multiplier.
 const RetriesSchema = z
   .object({
@@ -141,14 +148,8 @@ const RetriesSchema = z
       .int()
       .min(0)
       .default(DEFAULT_RETRY_SETTINGS.max_delay_ms),
-    jitter: z
-      .number()
-      .min(0)
-      .default(DEFAULT_RETRY_SETTINGS.jitter),
-    multiplier: z
-      .number()
-      .min(1)
-      .default(DEFAULT_RETRY_SETTINGS.multiplier),
+    jitter: z.number().min(0).default(DEFAULT_RETRY_SETTINGS.jitter),
+    multiplier: z.number().min(1).default(DEFAULT_RETRY_SETTINGS.multiplier),
   })
   .strict();
 
@@ -181,7 +182,6 @@ const ConditionalWhenSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
     })
     .strict(),
 );
-
 const ConditionalElseSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
   z
     .object({
@@ -190,14 +190,17 @@ const ConditionalElseSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
     })
     .strict(),
 );
-
-const ConditionalSchema: z.ZodType<{ description?: string; when: ConditionalBranch[] }> = z
+const ConditionalSchema: z.ZodType<{
+  description?: string;
+  when: ConditionalBranch[];
+}> = z
   .object({
     description: z.string().optional(),
-    when: z.array(z.union([ConditionalWhenSchema, ConditionalElseSchema])).min(1),
+    when: z
+      .array(z.union([ConditionalWhenSchema, ConditionalElseSchema]))
+      .min(1),
   })
   .strict();
-
 const ParallelSchema: z.ZodType<ParallelBlock> = z
   .object({
     description: z.string().optional(),
@@ -205,7 +208,6 @@ const ParallelSchema: z.ZodType<ParallelBlock> = z
     steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
   })
   .strict();
-
 const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
   z
     .object({
@@ -270,7 +272,6 @@ const InputsSchema = z
     schema: z.record(InputFieldSchema).optional(),
   })
   .strict();
-
 const DefaultsSchema = z
   .object({
     settings: SettingsSchema.optional(),
@@ -284,16 +285,14 @@ export const WorkflowDefinitionSchema = z
     context: z.record(JsonValueSchema).optional(),
     memory: z.record(JsonValueSchema).optional(),
     defaults: DefaultsSchema.optional(),
-    tasks: z
-      .record(TaskDefinitionSchema)
-      .superRefine((value, ctx) => {
-        if (Object.keys(value).length === 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'At least one task must be declared',
-          });
-        }
-      }),
+    tasks: z.record(TaskDefinitionSchema).superRefine((value, ctx) => {
+      if (Object.keys(value).length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one task must be declared',
+        });
+      }
+    }),
     flow: z.array(FlowStepSchema).min(1, 'Flow must contain at least one step'),
     outputs: z
       .record(ExpressionStringSchema)
@@ -304,8 +303,11 @@ export const WorkflowDefinitionSchema = z
   .strict();
 
 export type Settings = z.infer<typeof SettingsSchema>;
+
 export type TaskDefinition = z.infer<typeof TaskDefinitionSchema>;
+
 export type WorkflowMetadata = z.infer<typeof WorkflowMetadataSchema>;
+
 export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;
 
 export type WorkflowValidationResult =
@@ -344,22 +346,29 @@ const collectTaskReferences = (steps: FlowStep[]): string[] => {
 
   return refs;
 };
-
 const formatZodErrors = (issues: z.ZodIssue[]): string[] =>
   issues.map((issue) => {
     const path = issue.path.join('.') || '<root>';
+
     return `${path}: ${issue.message}`;
   });
 
-export function validateWorkflow(input: string | unknown): WorkflowValidationResult {
+export function validateWorkflow(
+  input: string | unknown,
+): WorkflowValidationResult {
   let candidate: unknown = input;
 
   if (typeof input === 'string') {
     try {
       candidate = parseYaml(input);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown YAML parse error';
-      return { success: false, errors: ['Unable to parse workflow YAML', message] };
+      const message =
+        error instanceof Error ? error.message : 'Unknown YAML parse error';
+
+      return {
+        success: false,
+        errors: ['Unable to parse workflow YAML', message],
+      };
     }
   }
 
@@ -377,7 +386,9 @@ export function validateWorkflow(input: string | unknown): WorkflowValidationRes
   if (missingTasks.length > 0) {
     return {
       success: false,
-      errors: [`Unknown task(s) referenced in flow: ${missingTasks.join(', ')}`],
+      errors: [
+        `Unknown task(s) referenced in flow: ${missingTasks.join(', ')}`,
+      ],
     };
   }
 

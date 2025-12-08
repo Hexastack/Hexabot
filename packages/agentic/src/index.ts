@@ -1,6 +1,15 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 export { AbstractAction } from './action/abstract-action';
+
 export { defineAction } from './action/action';
+
 export type { DefineActionParams } from './action/action';
+
 export type {
   Action,
   ActionExecutionArgs,
@@ -25,6 +34,7 @@ export {
 } from './context';
 
 export * from './dsl.types';
+
 export { WorkflowSuspendedError } from './runtime-error';
 
 export {
@@ -36,6 +46,7 @@ export {
   type WorkflowRunOptions,
   type WorkflowStartResult,
 } from './workflow';
+
 export type {
   StepInfo,
   StepType,
@@ -72,11 +83,13 @@ export {
 } from './workflow-values';
 
 export { createDeferred } from './utils/deferred';
+
 export type { Deferred } from './utils/deferred';
+
 export {
   assertSnakeCaseName,
   isSnakeCaseName,
   toSnakeCase,
 } from './utils/naming';
-export { sleep, withTimeout } from './utils/timeout';
 
+export { sleep, withTimeout } from './utils/timeout';

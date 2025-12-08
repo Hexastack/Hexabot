@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 /**
  * Resolves after the specified duration; useful for retry delays.
  *
@@ -15,7 +21,10 @@ export const sleep = (durationMs: number): Promise<void> =>
  * @returns The result of the original promise when it resolves in time.
  * @throws Error when the timeout is exceeded.
  */
-export async function withTimeout<T>(promise: Promise<T>, timeoutMs?: number): Promise<T> {
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs?: number,
+): Promise<T> {
   if (!timeoutMs) {
     return promise;
   }
@@ -33,7 +42,7 @@ export async function withTimeout<T>(promise: Promise<T>, timeoutMs?: number): P
       (error) => {
         clearTimeout(timer);
         reject(error);
-      }
+      },
     );
   });
 }
