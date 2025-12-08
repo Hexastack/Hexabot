@@ -8,8 +8,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "src",
     "types": ["jest", "node"],
     "outDir": "dist"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/__tests__/**"]
 }

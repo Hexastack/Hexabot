@@ -1,7 +1,14 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { BaseWorkflowContext } from '../../context';
 import { Settings } from '../../dsl.types';
+import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import { ActionExecutionArgs, ActionMetadata } from '../action.types';
 
@@ -12,8 +19,10 @@ type Input = z.infer<typeof InputSchema>;
 type Output = z.infer<typeof OutputSchema>;
 
 class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
   constructor() {
-    super();
+    super({});
   }
 }
 
@@ -51,9 +60,9 @@ describe('AbstractAction timing and retries', () => {
     const action = new HarnessedAction(async () => {
       attempts += 1;
       await new Promise((resolve) => setTimeout(resolve, 100));
+
       return { result: 1 };
     });
-
     const settings: Partial<Settings> = {
       timeout_ms: 50,
       retries: {
@@ -64,9 +73,9 @@ describe('AbstractAction timing and retries', () => {
         multiplier: 1,
       },
     };
-
     const runPromise = action.run({ value: 1 }, new TestContext(), settings);
-    const runExpectation = expect(runPromise).rejects.toThrow(/timeout of 50ms/);
+    const runExpectation =
+      expect(runPromise).rejects.toThrow(/timeout of 50ms/);
     await jest.advanceTimersByTimeAsync(60);
 
     await runExpectation;
@@ -88,21 +97,16 @@ describe('AbstractAction timing and retries', () => {
 
       return { result: attempts };
     });
-
-    const runPromise = action.run(
-      { value: 1 },
-      new TestContext(),
-      {
-        timeout_ms: 0,
-        retries: {
-          max_attempts: 3,
-          backoff_ms: 10,
-          max_delay_ms: 15,
-          jitter: 0,
-          multiplier: 2,
-        },
+    const runPromise = action.run({ value: 1 }, new TestContext(), {
+      timeout_ms: 0,
+      retries: {
+        max_attempts: 3,
+        backoff_ms: 10,
+        max_delay_ms: 15,
+        jitter: 0,
+        multiplier: 2,
       },
-    );
+    });
 
     await Promise.resolve();
     expect(attempts).toBe(1);
@@ -129,7 +133,6 @@ describe('AbstractAction timing and retries', () => {
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(1);
     let attempts = 0;
     const attemptTimestamps: number[] = [];
-
     const action = new HarnessedAction(async () => {
       attempts += 1;
       attemptTimestamps.push(Date.now());
@@ -140,21 +143,16 @@ describe('AbstractAction timing and retries', () => {
 
       return { result: attempts };
     });
-
-    const runPromise = action.run(
-      { value: 1 },
-      new TestContext(),
-      {
-        timeout_ms: 0,
-        retries: {
-          max_attempts: 2,
-          backoff_ms: 100,
-          max_delay_ms: 0,
-          jitter: 0.5,
-          multiplier: 1,
-        },
+    const runPromise = action.run({ value: 1 }, new TestContext(), {
+      timeout_ms: 0,
+      retries: {
+        max_attempts: 2,
+        backoff_ms: 100,
+        max_delay_ms: 0,
+        jitter: 0.5,
+        multiplier: 1,
       },
-    );
+    });
 
     await Promise.resolve();
     expect(attempts).toBe(1);

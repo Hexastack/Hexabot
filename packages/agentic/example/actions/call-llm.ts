@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -5,7 +11,6 @@ import { SettingsSchema } from '../../src/dsl.types';
 import type { ExampleContext } from '../context';
 
 const inputSchema = z.record(z.any());
-
 const outputSchema = z
   .object({
     intent: z.string().optional(),
@@ -21,7 +26,6 @@ const outputSchema = z
     cta: z.string().optional(),
   })
   .passthrough();
-
 const settingsSchema = SettingsSchema;
 
 type CallLlmInput = z.infer<typeof inputSchema>;
@@ -32,12 +36,19 @@ const asString = (value: unknown, fallback: string): string => {
   if (typeof value === 'string' && value.trim().length > 0) {
     return value;
   }
+
   return fallback;
 };
 
-export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext, CallLlmSettings>({
+export const callLlm = defineAction<
+  CallLlmInput,
+  CallLlmOutput,
+  ExampleContext,
+  CallLlmSettings
+>({
   name: 'call_llm',
-  description: 'Mock LLM that returns deterministic data for the example workflow.',
+  description:
+    'Mock LLM that returns deterministic data for the example workflow.',
   inputSchema,
   outputSchema,
   settingSchema: settingsSchema,
@@ -45,11 +56,14 @@ export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext,
     if ('system_prompt' in input) {
       const query = asString(input.user_query, 'customer request');
       const normalized = query.toLowerCase();
-      const intent = normalized.includes('buy') || normalized.includes('price')
-        ? 'sales'
-        : normalized.includes('support') || normalized.includes('bug') || normalized.includes('error')
-          ? 'support'
-          : 'research';
+      const intent =
+        normalized.includes('buy') || normalized.includes('price')
+          ? 'sales'
+          : normalized.includes('support') ||
+              normalized.includes('bug') ||
+              normalized.includes('error')
+            ? 'support'
+            : 'research';
 
       return {
         intent,
@@ -60,7 +74,11 @@ export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext,
       };
     }
 
-    if ('news_snippets' in input || 'memory_summary' in input || 'meetings' in input) {
+    if (
+      'news_snippets' in input ||
+      'memory_summary' in input ||
+      'meetings' in input
+    ) {
       const intent = asString(input.intent, 'request');
       const profile = (input.profile as { company?: string }) ?? {};
       const company = asString(profile.company, 'the customer');
@@ -73,6 +91,7 @@ export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext,
 
     if ('troubleshooting_guide' in input) {
       const question = asString(input.question, 'your issue');
+
       return {
         message: `Here is a support reply for ${question}.\n\n- Step 1: Restart.\n- Step 2: Apply guide specifics.`,
         links: ['https://example.com/faq/diagnostics'],
@@ -80,8 +99,13 @@ export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext,
     }
 
     if ('product_brief' in input) {
-      const companyNews = Array.isArray(input.company_news) ? input.company_news : [];
-      const lead = companyNews.length > 0 ? companyNews[0] : 'We have great news to share.';
+      const companyNews = Array.isArray(input.company_news)
+        ? input.company_news
+        : [];
+      const lead =
+        companyNews.length > 0
+          ? companyNews[0]
+          : 'We have great news to share.';
 
       return {
         email: `Thanks for your interest. ${lead}`,
@@ -93,10 +117,17 @@ export const callLlm = defineAction<CallLlmInput, CallLlmOutput, ExampleContext,
       const stakeholder = input.stakeholder as { name?: string };
       const question = asString(input.question, 'the request');
       const name = asString(stakeholder?.name, 'Stakeholder');
-      return { message: `${name}, quick update about ${question}. Research brief attached.` };
+
+      return {
+        message: `${name}, quick update about ${question}. Research brief attached.`,
+      };
     }
 
-    const summary = asString(input.summary, 'Here is a concise summary of your request.');
+    const summary = asString(
+      input.summary,
+      'Here is a concise summary of your request.',
+    );
+
     return { message: summary };
   },
 });

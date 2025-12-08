@@ -1,17 +1,26 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { BaseWorkflowContext } from '../context';
+import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ExecutionState,
   ParallelStep,
   Suspension,
 } from '../workflow-types';
-import type { StepInfo } from '../workflow-event-emitter';
+
 import { executeParallel } from './parallel-executor';
 import type { StepExecutorEnv } from './types';
 
 class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
   constructor() {
-    super();
+    super({});
   }
 }
 
@@ -21,14 +30,12 @@ const createState = (): ExecutionState => ({
   output: {},
   iterationStack: [],
 });
-
 const createChild = (id: string): CompiledStep => ({
   id,
   kind: 'do',
   taskName: `task_${id}`,
   stepInfo: { id, name: id, type: 'task' },
 });
-
 const createEnv = (): StepExecutorEnv => {
   const compiled = {
     definition: {} as any,
@@ -69,8 +76,18 @@ describe('executeParallel', () => {
 
     expect(result).toBeUndefined();
     expect(env.executeStep).toHaveBeenCalledTimes(2);
-    expect(env.executeStep).toHaveBeenNthCalledWith(1, step.steps[0], state, [0, 0]);
-    expect(env.executeStep).toHaveBeenNthCalledWith(2, step.steps[1], state, [0, 1]);
+    expect(env.executeStep).toHaveBeenNthCalledWith(
+      1,
+      step.steps[0],
+      state,
+      [0, 0],
+    );
+    expect(env.executeStep).toHaveBeenNthCalledWith(
+      2,
+      step.steps[1],
+      state,
+      [0, 1],
+    );
   });
 
   it('short-circuits on first completion when using wait_any', async () => {
@@ -112,7 +129,9 @@ describe('executeParallel', () => {
       .mockResolvedValueOnce(undefined);
 
     const suspension = await executeParallel(env, step, state, []);
-    expect(suspension).toEqual(expect.objectContaining({ step: innerSuspension.step }));
+    expect(suspension).toEqual(
+      expect.objectContaining({ step: innerSuspension.step }),
+    );
 
     const result = await suspension?.continue('resume-data');
     expect(result).toBeUndefined();

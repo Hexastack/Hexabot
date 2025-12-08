@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import { defineAction } from '../../src';
@@ -8,7 +14,6 @@ const inputSchema = z.object({
   user_email: z.string(),
   range: z.string().optional(),
 });
-
 const outputSchema = z.object({
   events: z.array(
     z.object({
@@ -17,7 +22,6 @@ const outputSchema = z.object({
     }),
   ),
 });
-
 const settingsSchema = SettingsSchema;
 
 type GetCalendarEventsInput = z.infer<typeof inputSchema>;
@@ -36,7 +40,11 @@ export const getCalendarEvents = defineAction<
   outputSchema,
   settingSchema: settingsSchema,
   execute: async ({ input, context }) => {
-    context.log('Pulling calendar events', { user_email: input.user_email, range: input.range });
+    context.log('Pulling calendar events', {
+      user_email: input.user_email,
+      range: input.range,
+    });
+
     return {
       events: [
         { title: 'Product sync', when: 'Tomorrow 10:00' },

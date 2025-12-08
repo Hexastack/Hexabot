@@ -6,6 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "dev": "pnpm run build:watch",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "lint": "eslint \"src/**/*.ts\" \"example/**/*.ts\" \"jest.config.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"example/**/*.ts\" \"jest.config.ts\" --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "jest --config jest.config.ts"
   },
@@ -20,10 +24,23 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "@types/jest": "^30.0.0",
+    "@types/node": "^22.7.4",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.32.0",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.6.2",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.5",
     "typescript": "^5.6.2"
+  },
+  "lint-staged": {
+    "*.{ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
   "engines": {
     "node": ">=20.18.1"

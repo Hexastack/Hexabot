@@ -1,19 +1,28 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
 import { WorkflowSuspendedError } from '../runtime-error';
+import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
 import type {
   CompiledTask,
   CompiledWorkflow,
   DoStep,
   ExecutionState,
 } from '../workflow-types';
-import type { StepInfo } from '../workflow-event-emitter';
+
 import { executeDoStep } from './do-executor';
 import type { StepExecutorEnv } from './types';
 
 class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
   constructor() {
-    super();
+    super({});
   }
 }
 
@@ -23,8 +32,9 @@ const createState = (): ExecutionState => ({
   output: {},
   iterationStack: [],
 });
-
-const createAction = (impl: jest.Mock): Action<unknown, unknown, BaseWorkflowContext, any> =>
+const createAction = (
+  impl: jest.Mock,
+): Action<unknown, unknown, BaseWorkflowContext, any> =>
   ({
     name: 'mock_action',
     description: 'runs a task',
@@ -36,7 +46,6 @@ const createAction = (impl: jest.Mock): Action<unknown, unknown, BaseWorkflowCon
     parseSettings: jest.fn(),
     run: impl,
   }) as Action<unknown, unknown, BaseWorkflowContext, any>;
-
 const createTask = (runImpl: jest.Mock): CompiledTask => ({
   name: 'test_task',
   definition: {} as any,
@@ -46,7 +55,6 @@ const createTask = (runImpl: jest.Mock): CompiledTask => ({
   outputs: {},
   settings: {} as any,
 });
-
 const createCompiled = (task: CompiledTask): CompiledWorkflow =>
   ({
     definition: {} as any,
@@ -55,8 +63,10 @@ const createCompiled = (task: CompiledTask): CompiledWorkflow =>
     outputMapping: {},
     inputParser: { parse: (value: unknown) => value } as any,
   }) as CompiledWorkflow;
-
-const createEnv = (compiled: CompiledWorkflow, stepInfo: StepInfo): StepExecutorEnv => ({
+const createEnv = (
+  compiled: CompiledWorkflow,
+  stepInfo: StepInfo,
+): StepExecutorEnv => ({
   compiled,
   context: new TestContext(),
   runId: 'run-123',
@@ -68,7 +78,6 @@ const createEnv = (compiled: CompiledWorkflow, stepInfo: StepInfo): StepExecutor
   executeFlow: jest.fn(),
   executeStep: jest.fn(),
 });
-
 const step: DoStep = {
   id: '0:test_task',
   kind: 'do',
@@ -80,21 +89,39 @@ describe('executeDoStep', () => {
   it('runs the task, records snapshots, and emits success events', async () => {
     const task = createTask(jest.fn().mockResolvedValue({ result: 'ok' }));
     const compiled = createCompiled(task);
-    const stepInfo: StepInfo = { id: '0:test_task', name: 'test_task', type: 'task' };
+    const stepInfo: StepInfo = {
+      id: '0:test_task',
+      name: 'test_task',
+      type: 'task',
+    };
     const env = createEnv(compiled, stepInfo);
     const state = createState();
-
     const result = await executeDoStep(env, step, state, []);
 
     expect(result).toBeUndefined();
-    expect(env.buildInstanceStepInfo).toHaveBeenCalledWith(step, state.iterationStack);
-    expect(task.action.run).toHaveBeenCalledWith({ payload: 123 }, env.context, task.settings);
+    expect(env.buildInstanceStepInfo).toHaveBeenCalledWith(
+      step,
+      state.iterationStack,
+    );
+    expect(task.action.run).toHaveBeenCalledWith(
+      { payload: 123 },
+      env.context,
+      task.settings,
+    );
     expect(env.setCurrentStep).toHaveBeenNthCalledWith(1, stepInfo);
     expect(env.markSnapshot).toHaveBeenNthCalledWith(1, stepInfo, 'running');
     expect(env.markSnapshot).toHaveBeenNthCalledWith(2, stepInfo, 'completed');
-    expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, { result: 'ok' });
-    expect(env.emit).toHaveBeenCalledWith('hook:step:start', { runId: 'run-123', step: stepInfo });
-    expect(env.emit).toHaveBeenCalledWith('hook:step:success', { runId: 'run-123', step: stepInfo });
+    expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, {
+      result: 'ok',
+    });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:start', {
+      runId: 'run-123',
+      step: stepInfo,
+    });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
+      runId: 'run-123',
+      step: stepInfo,
+    });
     expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);
   });
 
@@ -117,10 +144,13 @@ describe('executeDoStep', () => {
     });
     const task = createTask(jest.fn().mockRejectedValue(suspensionError));
     const compiled = createCompiled(task);
-    const stepInfo: StepInfo = { id: '0:test_task', name: 'test_task', type: 'task' };
+    const stepInfo: StepInfo = {
+      id: '0:test_task',
+      name: 'test_task',
+      type: 'task',
+    };
     const env = createEnv(compiled, stepInfo);
     const state = createState();
-
     const suspension = await executeDoStep(env, step, state, []);
 
     expect(suspension).toEqual(
@@ -130,7 +160,11 @@ describe('executeDoStep', () => {
         data: { channel: 'sms' },
       }),
     );
-    expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'suspended', 'awaiting_user');
+    expect(env.markSnapshot).toHaveBeenCalledWith(
+      stepInfo,
+      'suspended',
+      'awaiting_user',
+    );
     expect(env.emit).toHaveBeenCalledWith('hook:step:suspended', {
       runId: 'run-123',
       step: stepInfo,
@@ -148,7 +182,10 @@ describe('executeDoStep', () => {
       reply: 'Sure',
     });
     expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'completed');
-    expect(env.emit).toHaveBeenCalledWith('hook:step:success', { runId: 'run-123', step: stepInfo });
+    expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
+      runId: 'run-123',
+      step: stepInfo,
+    });
   });
 
   it('marks failure and rethrows errors from the task', async () => {
@@ -158,7 +195,11 @@ describe('executeDoStep', () => {
     const state = createState();
 
     await expect(executeDoStep(env, step, state, [])).rejects.toThrow('boom');
-    expect(env.markSnapshot).toHaveBeenCalledWith(step.stepInfo, 'failed', 'boom');
+    expect(env.markSnapshot).toHaveBeenCalledWith(
+      step.stepInfo,
+      'failed',
+      'boom',
+    );
     expect(env.emit).toHaveBeenCalledWith('hook:step:error', {
       runId: 'run-123',
       step: step.stepInfo,

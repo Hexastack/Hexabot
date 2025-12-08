@@ -1,11 +1,20 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
+import { EventEmitterLike } from '../workflow-event-emitter';
 
-class TestContext extends BaseWorkflowContext {}
+class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+}
 
 const baseRetries = {
   max_attempts: 3,
@@ -14,7 +23,6 @@ const baseRetries = {
   jitter: 0,
   multiplier: 2,
 };
-
 const createAction = (
   overrides: Partial<
     Action<unknown, unknown, BaseWorkflowContext, Settings>
@@ -29,7 +37,6 @@ const createAction = (
         parsed: true,
       }) as unknown as Settings & { parsed: boolean },
   ) as Action<unknown, unknown, BaseWorkflowContext, Settings>['parseSettings'];
-
   const action: Action<unknown, unknown, BaseWorkflowContext, Settings> = {
     name: 'worker_action',
     description: 'test',
@@ -52,7 +59,13 @@ describe('compileWorkflow', () => {
     const { action, parseSettings } = createAction();
     const definition: WorkflowDefinition = {
       workflow: { name: 'test_flow', version: '1.0.0' },
-      defaults: { settings: { timeout_ms: 25, retries: baseRetries, guardrails: { mode: 'default' } } },
+      defaults: {
+        settings: {
+          timeout_ms: 25,
+          retries: baseRetries,
+          guardrails: { mode: 'default' },
+        },
+      },
       tasks: {
         worker_task: {
           action: 'worker_action',
@@ -63,7 +76,13 @@ describe('compileWorkflow', () => {
             timeout_ms: 50,
             audit: true,
             guardrails: { mode: 'strict' },
-            retries: { max_attempts: 1, backoff_ms: 10, max_delay_ms: 100, jitter: 0, multiplier: 2 },
+            retries: {
+              max_attempts: 1,
+              backoff_ms: 10,
+              max_delay_ms: 100,
+              jitter: 0,
+              multiplier: 2,
+            },
           },
         },
       },
@@ -73,8 +92,21 @@ describe('compileWorkflow', () => {
           conditional: {
             description: 'check',
             when: [
-              { condition: '=$output.worker_task.echoed', steps: [{ do: 'worker_task' }] },
-              { else: true, steps: [{ parallel: { steps: [{ do: 'worker_task' }], strategy: 'wait_any' } }] },
+              {
+                condition: '=$output.worker_task.echoed',
+                steps: [{ do: 'worker_task' }],
+              },
+              {
+                else: true,
+                steps: [
+                  {
+                    parallel: {
+                      steps: [{ do: 'worker_task' }],
+                      strategy: 'wait_any',
+                    },
+                  },
+                ],
+              },
             ],
           },
         },
@@ -97,7 +129,6 @@ describe('compileWorkflow', () => {
         },
       },
     };
-
     const compiled = compileWorkflow(definition, { worker_action: action });
 
     expect(parseSettings).toHaveBeenCalledWith({
@@ -106,7 +137,10 @@ describe('compileWorkflow', () => {
       guardrails: { mode: 'strict' },
       audit: true,
     });
-    expect(compiled.tasks.worker_task.settings).toMatchObject({ parsed: true, audit: true });
+    expect(compiled.tasks.worker_task.settings).toMatchObject({
+      parsed: true,
+      audit: true,
+    });
 
     expect(compiled.flow[0]).toMatchObject({
       kind: 'do',
@@ -117,21 +151,38 @@ describe('compileWorkflow', () => {
     const conditional = compiled.flow[1];
     if (conditional.kind === 'conditional') {
       expect(conditional.branches).toHaveLength(2);
-      expect(conditional.branches[0].condition).toMatchObject({ kind: 'expression', source: '=$output.worker_task.echoed' });
+      expect(conditional.branches[0].condition).toMatchObject({
+        kind: 'expression',
+        source: '=$output.worker_task.echoed',
+      });
     } else {
       throw new Error('Expected conditional branch');
     }
 
     const loop = compiled.flow[2];
     if (loop.kind === 'loop') {
-      expect(loop.forEach.in).toMatchObject({ kind: 'expression', source: '=$input.items' });
-      expect(loop.accumulate?.merge).toMatchObject({ kind: 'expression', source: '=$accumulator + 1' });
+      expect(loop.forEach.in).toMatchObject({
+        kind: 'expression',
+        source: '=$input.items',
+      });
+      expect(loop.accumulate?.merge).toMatchObject({
+        kind: 'expression',
+        source: '=$accumulator + 1',
+      });
     } else {
       throw new Error('Expected loop step');
     }
 
-    expect(compiled.inputParser.parse({ source: 'value', items: ['a'] })).toEqual({ source: 'value', items: ['a'] });
-    expect(() => compiled.inputParser.parse({ source: 'value', items: ['a'], extra: true })).toThrow();
+    expect(
+      compiled.inputParser.parse({ source: 'value', items: ['a'] }),
+    ).toEqual({ source: 'value', items: ['a'] });
+    expect(() =>
+      compiled.inputParser.parse({
+        source: 'value',
+        items: ['a'],
+        extra: true,
+      }),
+    ).toThrow();
   });
 
   it('throws when an action implementation is missing', () => {
@@ -148,8 +199,11 @@ describe('compileWorkflow', () => {
       outputs: { out: '=$output.missing.value' },
     };
 
-    expect(() => compileWorkflow(definition, {} as Record<string, Action<unknown, unknown, TestContext, Settings>>)).toThrow(
-      /No action implementations provided/,
-    );
+    expect(() =>
+      compileWorkflow(
+        definition,
+        {} as Record<string, Action<unknown, unknown, TestContext, Settings>>,
+      ),
+    ).toThrow(/No action implementations provided/);
   });
 });

@@ -1,11 +1,19 @@
-import { SuspensionOptions } from "./context";
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { SuspensionOptions } from './context';
 
 /**
  * Error thrown to signal that a workflow suspended at a specific step.
  */
 export class WorkflowSuspendedError extends Error {
   public readonly stepId: string;
+
   public readonly reason?: string;
+
   public readonly data?: unknown;
 
   /**
@@ -15,7 +23,9 @@ export class WorkflowSuspendedError extends Error {
    * @param options - Optional reason and data sent back to the caller.
    */
   constructor(stepId: string, options?: SuspensionOptions) {
-    super(`Workflow suspended at step ${stepId}${options?.reason ? `: ${options.reason}` : ''}`);
+    super(
+      `Workflow suspended at step ${stepId}${options?.reason ? `: ${options.reason}` : ''}`,
+    );
     this.stepId = stepId;
     this.reason = options?.reason;
     this.data = options?.data;

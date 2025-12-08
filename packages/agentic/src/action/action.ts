@@ -1,7 +1,15 @@
-import z, { ZodType, ZodTypeDef } from "zod";
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import z, { ZodType, ZodTypeDef } from 'zod';
+
 import { BaseWorkflowContext } from '../context';
-import { Settings } from "../dsl.types";
-import { AbstractAction } from "./abstract-action";
+import { Settings } from '../dsl.types';
+
+import { AbstractAction } from './abstract-action';
 
 export interface ActionMetadata<I, O, S = undefined> {
   name: string;

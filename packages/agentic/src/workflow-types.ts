@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type { Expression } from 'jsonata';
 import type { ZodTypeAny } from 'zod';
 
@@ -148,6 +154,7 @@ export type WorkflowRunOptions = {
 };
 
 export type WorkflowStartResult = StartResult;
+
 export type WorkflowResumeResult = ResumeResult;
 
 /** Arguments required to start a run. */

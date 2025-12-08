@@ -1,7 +1,17 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import jsonata from 'jsonata';
 
 import type { Settings } from './dsl.types';
-import type { CompiledMapping, CompiledValue, EvaluationScope } from './workflow-types';
+import type {
+  CompiledMapping,
+  CompiledValue,
+  EvaluationScope,
+} from './workflow-types';
 
 /** Basic object guard that rejects arrays and null. */
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
@@ -14,6 +24,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 export const compileValue = (value: unknown): CompiledValue => {
   if (typeof value === 'string' && value.startsWith('=')) {
     const expression = jsonata(value.slice(1));
+
     return { kind: 'expression', source: value, expression };
   }
 
@@ -25,7 +36,10 @@ export const compileValue = (value: unknown): CompiledValue => {
  * Expressions are executed via JSONata with the scope exposed as variables; `context`
  * represents the workflow context state, not the context instance itself.
  */
-export const evaluateValue = async (compiled: CompiledValue, scope: EvaluationScope): Promise<unknown> => {
+export const evaluateValue = async (
+  compiled: CompiledValue,
+  scope: EvaluationScope,
+): Promise<unknown> => {
   if (compiled.kind === 'literal') {
     return compiled.value;
   }
@@ -69,7 +83,10 @@ export const evaluateMapping = async (
  * Deep-merge workflow settings, preferring non-undefined overrides.
  * Nested objects are merged recursively to preserve defaults.
  */
-export const mergeSettings = (base?: Partial<Settings>, override?: Partial<Settings>): Partial<Settings> => {
+export const mergeSettings = (
+  base?: Partial<Settings>,
+  override?: Partial<Settings>,
+): Partial<Settings> => {
   const merged: Record<string, unknown> = { ...(base ?? {}) };
 
   if (!override) {
@@ -80,7 +97,10 @@ export const mergeSettings = (base?: Partial<Settings>, override?: Partial<Setti
     const previous = merged[key];
 
     if (isPlainObject(previous) && isPlainObject(value)) {
-      merged[key] = mergeSettings(previous as Partial<Settings>, value as Partial<Settings>);
+      merged[key] = mergeSettings(
+        previous as Partial<Settings>,
+        value as Partial<Settings>,
+      );
     } else if (value !== undefined) {
       merged[key] = value;
     }

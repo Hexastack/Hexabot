@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { WorkflowSuspendedError } from '../runtime-error';
 import type {
   DoStep,
@@ -6,6 +12,7 @@ import type {
   Suspension,
 } from '../workflow-types';
 import { evaluateMapping } from '../workflow-values';
+
 import type { StepExecutorEnv } from './types';
 
 /**
@@ -38,7 +45,6 @@ export async function executeDoStep(
     iteration: state.iteration,
     accumulator: state.accumulator,
   };
-
   const inputs = await evaluateMapping(task.inputs, scope);
   env.setCurrentStep(stepInfo);
   env.markSnapshot(stepInfo, 'running');
@@ -49,6 +55,7 @@ export async function executeDoStep(
     await env.captureTaskOutput(task, state, result);
     env.markSnapshot(stepInfo, 'completed');
     env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
+
     return undefined;
   } catch (error) {
     if (error instanceof WorkflowSuspendedError) {
@@ -68,6 +75,7 @@ export async function executeDoStep(
           await env.captureTaskOutput(task, state, resumeData);
           env.markSnapshot(stepInfo, 'completed');
           env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
+
           return undefined;
         },
       };

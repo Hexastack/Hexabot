@@ -1,3 +1,9 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import type {
   EventEmitterLike,
   WorkflowEventEmitterLike,
@@ -77,8 +83,10 @@ export abstract class BaseWorkflowContext<
   E = EventEmitterLike,
 > {
   public state: S;
+
   private _workflowControl?: WorkflowRuntimeControl;
-  private _eventEmitter?: WorkflowEventEmitterLike<E>;
+
+  public abstract eventEmitter: WorkflowEventEmitterLike<E>;
 
   /**
    * Sets up the context and copies any initial state onto the instance.
@@ -86,12 +94,8 @@ export abstract class BaseWorkflowContext<
    * @param initialState - Optional properties to assign to the context instance.
    * @param eventEmitter - Optional workflow event emitter to expose to actions.
    */
-  constructor(initialState?: S, eventEmitter?: WorkflowEventEmitterLike<E>) {
+  constructor(initialState: S) {
     this.state = (initialState ?? {}) as S;
-
-    if (eventEmitter) {
-      this._eventEmitter = eventEmitter;
-    }
   }
 
   /**
@@ -109,21 +113,6 @@ export abstract class BaseWorkflowContext<
   }
 
   /**
-   * Provides access to the workflow event emitter for the current execution.
-   * Returns undefined when no emitter was configured.
-   */
-  get eventEmitter() {
-    return this._eventEmitter;
-  }
-
-  /**
-   * Overrides the workflow event emitter exposed to actions.
-   */
-  set eventEmitter(emitter: WorkflowEventEmitterLike<E> | undefined) {
-    this._eventEmitter = emitter;
-  }
-
-  /**
    * Attaches or detaches the runtime control object.
    *
    * @param control - Runtime control instance or `undefined` to detach.
@@ -131,15 +120,5 @@ export abstract class BaseWorkflowContext<
    */
   attachWorkflowRuntime(control: WorkflowRuntimeControl | undefined): void {
     this._workflowControl = control;
-  }
-
-  /**
-   * Attaches or detaches the workflow event emitter.
-   *
-   * @param emitter - Event emitter instance or `undefined` to detach.
-   * @returns Nothing; the method mutates internal state.
-   */
-  attachEventEmitter(emitter: WorkflowEventEmitterLike<E> | undefined): void {
-    this._eventEmitter = emitter;
   }
 }

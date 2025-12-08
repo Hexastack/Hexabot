@@ -1,9 +1,17 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { ZodType, ZodTypeDef } from 'zod';
+
 import { BaseWorkflowContext } from '../context';
 import { Settings, SettingsSchema } from '../dsl.types';
 import { WorkflowSuspendedError } from '../runtime-error';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
+
 import { ActionExecutionArgs } from './action';
 import { Action, ActionMetadata } from './action.types';
 
@@ -18,9 +26,13 @@ export abstract class AbstractAction<
 > implements Action<I, O, C, S>
 {
   public readonly name: string;
+
   public readonly description: string;
+
   public readonly inputSchema: ZodType<I, ZodTypeDef, unknown>;
+
   public readonly outputSchema: ZodType<O, ZodTypeDef, unknown>;
+
   public readonly settingSchema: ZodType<S, ZodTypeDef, unknown>;
 
   /**
@@ -70,6 +82,7 @@ export abstract class AbstractAction<
    */
   parseSettings(payload: unknown): S {
     const settings = this.settingSchema.parse(payload ?? {});
+
     return (settings ?? {}) as S;
   }
 
@@ -78,7 +91,6 @@ export abstract class AbstractAction<
     const parsedSettings = this.parseSettings(settings);
     const timeoutMs = parsedSettings.timeout_ms;
     const retrySettings = parsedSettings.retries;
-
     const maxAttempts = retrySettings.max_attempts;
 
     let attempt = 0;
@@ -93,6 +105,7 @@ export abstract class AbstractAction<
           this.execute({ input, context, settings: parsedSettings }),
           timeoutMs,
         );
+
         return this.parseOutput(result);
       } catch (error) {
         if (error instanceof WorkflowSuspendedError) {

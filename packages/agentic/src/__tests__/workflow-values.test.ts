@@ -1,5 +1,12 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { BaseWorkflowContext } from '../context';
 import type { Settings } from '../dsl.types';
+import { EventEmitterLike } from '../workflow-event-emitter';
 import {
   compileValue,
   evaluateMapping,
@@ -8,8 +15,10 @@ import {
 } from '../workflow-values';
 
 class TestContext extends BaseWorkflowContext {
-  constructor(initial?: Record<string, unknown>) {
-    super(initial);
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
+  constructor() {
+    super({});
   }
 }
 
@@ -18,7 +27,6 @@ describe('workflow values', () => {
     const compiled = compileValue(
       '=$input.amount + $memory.offset + $iteration.index + $accumulator',
     );
-
     const result = await evaluateValue(compiled, {
       input: { amount: 10 },
       context: new TestContext().state,
@@ -38,7 +46,6 @@ describe('workflow values', () => {
       literal,
       expression: compileValue('=$result.value'),
     };
-
     const values = await evaluateMapping(mapping, {
       input: {},
       context: new TestContext().state,

@@ -1,12 +1,19 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { BaseWorkflowContext } from '../context';
-import { compileValue } from '../workflow-values';
+import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ExecutionState,
   LoopStep,
   Suspension,
 } from '../workflow-types';
-import type { StepInfo } from '../workflow-event-emitter';
+import { compileValue } from '../workflow-values';
+
 import {
   executeLoop,
   shouldStopLoop,
@@ -15,8 +22,10 @@ import {
 import type { StepExecutorEnv } from './types';
 
 class TestContext extends BaseWorkflowContext {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
   constructor() {
-    super();
+    super({});
   }
 }
 
@@ -26,7 +35,6 @@ const createState = (): ExecutionState => ({
   output: {},
   iterationStack: [],
 });
-
 const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
   const compiled = {
     definition: {} as any,
@@ -49,7 +57,6 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     executeStep: jest.fn(),
   };
 };
-
 const createDoStep = (id: string): CompiledStep => ({
   id,
   kind: 'do',
@@ -60,11 +67,17 @@ const createDoStep = (id: string): CompiledStep => ({
 describe('executeLoop', () => {
   it('iterates items, accumulates values, and stops when the until condition is met', async () => {
     const flowCalls: Array<{ index: number; item: unknown }> = [];
-    const executeFlow = jest.fn(async (_steps: CompiledStep[], iterationState: ExecutionState) => {
-      flowCalls.push(iterationState.iteration as { index: number; item: unknown });
-      iterationState.output[`item_${iterationState.iteration?.index}`] = iterationState.iteration?.item;
-      return undefined;
-    });
+    const executeFlow = jest.fn(
+      async (_steps: CompiledStep[], iterationState: ExecutionState) => {
+        flowCalls.push(
+          iterationState.iteration as { index: number; item: unknown },
+        );
+        iterationState.output[`item_${iterationState.iteration?.index}`] =
+          iterationState.iteration?.item;
+
+        return undefined;
+      },
+    );
     const env = createEnv(executeFlow);
     const state = createState();
     const step: LoopStep = {
@@ -81,7 +94,6 @@ describe('executeLoop', () => {
       },
       steps: [createDoStep('child')],
     };
-
     const result = await executeLoop(env, step, state, []);
 
     expect(result).toBeUndefined();
@@ -103,10 +115,14 @@ describe('executeLoop', () => {
     const executeFlow = jest
       .fn()
       .mockResolvedValueOnce(innerSuspension)
-      .mockImplementationOnce(async (_steps: CompiledStep[], iterationState: ExecutionState) => {
-        iterationState.output[`item_${iterationState.iteration?.index}`] = iterationState.iteration?.item;
-        return undefined;
-      });
+      .mockImplementationOnce(
+        async (_steps: CompiledStep[], iterationState: ExecutionState) => {
+          iterationState.output[`item_${iterationState.iteration?.index}`] =
+            iterationState.iteration?.item;
+
+          return undefined;
+        },
+      );
     const env = createEnv(executeFlow);
     const state = createState();
     const step: LoopStep = {
@@ -123,17 +139,28 @@ describe('executeLoop', () => {
       },
       steps: [createDoStep('child')],
     };
-
     const suspension = await executeLoop(env, step, state, []);
-    expect(suspension).toEqual(expect.objectContaining({ step: innerSuspension.step }));
+    expect(suspension).toEqual(
+      expect.objectContaining({ step: innerSuspension.step }),
+    );
 
     const result = await suspension?.continue({ resumed: true });
 
     expect(result).toBeUndefined();
     expect(innerSuspension.continue).toHaveBeenCalledWith({ resumed: true });
     expect(executeFlow).toHaveBeenCalledTimes(2);
-    expect(executeFlow).toHaveBeenNthCalledWith(1, step.steps, expect.any(Object), [0]);
-    expect(executeFlow).toHaveBeenNthCalledWith(2, step.steps, expect.any(Object), [1]);
+    expect(executeFlow).toHaveBeenNthCalledWith(
+      1,
+      step.steps,
+      expect.any(Object),
+      [0],
+    );
+    expect(executeFlow).toHaveBeenNthCalledWith(
+      2,
+      step.steps,
+      expect.any(Object),
+      [1],
+    );
     expect(state.output.collector).toEqual({ sum: 2 });
     expect(state.accumulator).toBeUndefined();
   });
@@ -148,7 +175,6 @@ describe('loop helpers', () => {
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },
       steps: [],
     };
-
     const scope = {
       input: {},
       context: new TestContext().state,

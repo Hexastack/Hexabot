@@ -1,5 +1,10 @@
-import type { ZodTypeAny } from 'zod';
-import { z } from 'zod';
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { z, type ZodTypeAny } from 'zod';
 
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext } from './context';
@@ -25,9 +30,9 @@ import { compileValue, mergeSettings } from './workflow-values';
 /** Build a stable identifier for a step using its path and label. */
 const buildStepId = (path: Array<number | string>, label: string): string => {
   const pathPart = path.length > 0 ? path.join('.') : 'root';
+
   return `${pathPart}:${label}`;
 };
-
 /** Convert workflow input field metadata to a zod schema. */
 const inputFieldToZod = (field: InputField): ZodTypeAny => {
   let schema: ZodTypeAny;
@@ -73,7 +78,6 @@ const inputFieldToZod = (field: InputField): ZodTypeAny => {
 
   return schema;
 };
-
 /** Assemble a parser for the workflow top-level input payload. */
 const buildInputParser = (schema?: Record<string, InputField>): ZodTypeAny => {
   if (!schema || Object.keys(schema).length === 0) {
@@ -88,7 +92,6 @@ const buildInputParser = (schema?: Record<string, InputField>): ZodTypeAny => {
 
   return z.object(shape).strict().partial();
 };
-
 /** Compile a raw mapping object into expression-aware value mappings. */
 const compileMapping = (
   values?: Record<string, unknown>,
@@ -101,7 +104,6 @@ const compileMapping = (
     Object.entries(values).map(([key, value]) => [key, compileValue(value)]),
   );
 };
-
 /** Ensure every task references a provided action implementation. */
 const assertActionsBound = (
   tasks: Record<string, TaskDefinition>,
@@ -123,7 +125,6 @@ const assertActionsBound = (
     );
   }
 };
-
 /** Parse settings, compile inputs/outputs, and bind actions for each task. */
 const compileTasks = (
   definition: WorkflowDefinition,
@@ -157,7 +158,6 @@ const compileTasks = (
 
   return compiled;
 };
-
 /** Recursively compile flow steps into executable nodes with generated ids. */
 const compileFlowSteps = (
   steps: FlowStep[],

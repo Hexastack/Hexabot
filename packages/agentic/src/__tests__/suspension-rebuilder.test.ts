@@ -1,10 +1,18 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
 import { z } from 'zod';
 
 import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
-import type { Settings, TaskDefinition, WorkflowDefinition } from '../dsl.types';
-import { parseSuspendedStepId, rebuildSuspension } from '../suspension-rebuilder';
-import type { SuspensionRebuilderDeps } from '../suspension-rebuilder';
+import type {
+  Settings,
+  TaskDefinition,
+  WorkflowDefinition,
+} from '../dsl.types';
 import {
   executeLoop as runLoopExecutor,
   shouldStopLoop,
@@ -12,6 +20,12 @@ import {
 } from '../step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from '../step-executors/parallel-executor';
 import type { StepExecutorEnv } from '../step-executors/types';
+import {
+  parseSuspendedStepId,
+  rebuildSuspension,
+  type SuspensionRebuilderDeps,
+} from '../suspension-rebuilder';
+import { EventEmitterLike } from '../workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
@@ -31,7 +45,9 @@ jest.mock('../step-executors/parallel-executor', () => ({
   executeParallel: jest.fn(),
 }));
 
-const mockedRunLoopExecutor = runLoopExecutor as jest.MockedFunction<typeof runLoopExecutor>;
+const mockedRunLoopExecutor = runLoopExecutor as jest.MockedFunction<
+  typeof runLoopExecutor
+>;
 const mockedUpdateAccumulator = updateAccumulator as jest.MockedFunction<
   typeof updateAccumulator
 >;
@@ -43,7 +59,9 @@ const mockedRunParallelExecutor = runParallelExecutor as jest.MockedFunction<
 >;
 
 class TestContext extends BaseWorkflowContext {
-  constructor(initial?: Record<string, unknown>) {
+  public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
+
+  constructor(initial: Record<string, unknown>) {
     super(initial);
   }
 }
@@ -59,14 +77,12 @@ const dummyAction: Action<unknown, unknown, BaseWorkflowContext, Settings> = {
   parseSettings: (value) => value as Settings,
   run: jest.fn(),
 };
-
 const buildStepInfo = (step: CompiledStep, iterationStack: number[]) => ({
   ...step.stepInfo,
   id: `${step.stepInfo.id}${
     iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : ''
   }`,
 });
-
 const createCompiledWorkflow = (
   flow: CompiledStep[],
   tasks: Record<string, CompiledTask>,
@@ -78,22 +94,23 @@ const createCompiledWorkflow = (
     outputMapping: {},
     inputParser: { parse: (value: unknown) => value },
   }) as CompiledWorkflow;
-
 const createDeps = (
   compiled: CompiledWorkflow,
   overrides?: Partial<SuspensionRebuilderDeps>,
 ): SuspensionRebuilderDeps => {
-  const context = overrides?.context ?? new TestContext();
+  const context = overrides?.context ?? new TestContext({});
   const captureTaskOutput =
     overrides?.captureTaskOutput ?? jest.fn().mockResolvedValue(undefined);
   const markSnapshot =
-    overrides?.markSnapshot ?? (jest.fn() as SuspensionRebuilderDeps['markSnapshot']);
+    overrides?.markSnapshot ??
+    (jest.fn() as SuspensionRebuilderDeps['markSnapshot']);
   const emit =
     overrides?.emit ?? (jest.fn() as SuspensionRebuilderDeps['emit']);
   const executeFlow =
     overrides?.executeFlow ??
-    (jest.fn().mockResolvedValue(undefined) as SuspensionRebuilderDeps['executeFlow']);
-
+    (jest
+      .fn()
+      .mockResolvedValue(undefined) as SuspensionRebuilderDeps['executeFlow']);
   const deps: SuspensionRebuilderDeps = {
     compiled,
     context,
@@ -104,7 +121,7 @@ const createDeps = (
         () =>
           ({
             context,
-          } as unknown as StepExecutorEnv),
+          }) as unknown as StepExecutorEnv,
       ),
     buildInstanceStepInfo: overrides?.buildInstanceStepInfo ?? buildStepInfo,
     captureTaskOutput,
@@ -115,7 +132,6 @@ const createDeps = (
 
   return deps;
 };
-
 const createTask = (name: string): CompiledTask =>
   ({
     name,
@@ -151,7 +167,6 @@ describe('rebuildSuspension', () => {
   it('returns null when no state is available', () => {
     const compiled = createCompiledWorkflow([], {});
     const deps = createDeps(compiled);
-
     const suspension = rebuildSuspension(deps, {
       state: undefined,
       stepId: '0:task',
@@ -171,14 +186,12 @@ describe('rebuildSuspension', () => {
     const compiled = createCompiledWorkflow([doStep], {
       first_task: task,
     });
-
     const state: ExecutionState = {
       input: {},
       memory: {},
       output: {},
       iterationStack: [3],
     };
-
     const deps = createDeps(compiled);
     const suspension = rebuildSuspension(deps, {
       state,
@@ -193,11 +206,9 @@ describe('rebuildSuspension', () => {
 
     await suspension?.continue({ reply: 'ok' });
 
-    expect(deps.captureTaskOutput).toHaveBeenCalledWith(
-      task,
-      state,
-      { reply: 'ok' },
-    );
+    expect(deps.captureTaskOutput).toHaveBeenCalledWith(task, state, {
+      reply: 'ok',
+    });
     expect(deps.markSnapshot).toHaveBeenCalledWith(
       expect.objectContaining({ id: '0:first_task[3]' }),
       'completed',
@@ -206,12 +217,7 @@ describe('rebuildSuspension', () => {
       runId: 'run-123',
       step: expect.objectContaining({ id: '0:first_task[3]' }),
     });
-    expect(deps.executeFlow).toHaveBeenCalledWith(
-      compiled.flow,
-      state,
-      [],
-      1,
-    );
+    expect(deps.executeFlow).toHaveBeenCalledWith(compiled.flow, state, [], 1);
   });
 
   it('rebuilds a parallel suspension and continues remaining siblings when needed', async () => {
@@ -256,15 +262,15 @@ describe('rebuildSuspension', () => {
       stepId: '0.parallel.1:child_b',
     });
 
-    mockedRunParallelExecutor.mockResolvedValue('next-suspension' as unknown as void);
+    mockedRunParallelExecutor.mockResolvedValue(
+      'next-suspension' as unknown as void,
+    );
 
     const result = await suspension?.continue({ payload: true });
 
-    expect(deps.captureTaskOutput).toHaveBeenCalledWith(
-      secondTask,
-      state,
-      { payload: true },
-    );
+    expect(deps.captureTaskOutput).toHaveBeenCalledWith(secondTask, state, {
+      payload: true,
+    });
     expect(mockedRunParallelExecutor).toHaveBeenCalledWith(
       expect.anything(),
       parallelStep,
@@ -294,9 +300,15 @@ describe('rebuildSuspension', () => {
       name: 'collector',
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },
       steps: [childDo],
-      accumulate: { as: 'sum', initial: 0, merge: { kind: 'literal', value: 0 } },
+      accumulate: {
+        as: 'sum',
+        initial: 0,
+        merge: { kind: 'literal', value: 0 },
+      },
     };
-    const compiled = createCompiledWorkflow([loopStep], { loop_task: loopTask });
+    const compiled = createCompiledWorkflow([loopStep], {
+      loop_task: loopTask,
+    });
     const state: ExecutionState = {
       input: {},
       memory: {},
@@ -312,13 +324,14 @@ describe('rebuildSuspension', () => {
 
     mockedUpdateAccumulator.mockResolvedValue(5);
     mockedShouldStopLoop.mockResolvedValue(false);
-    mockedRunLoopExecutor.mockResolvedValue('loop-continued' as unknown as void);
+    mockedRunLoopExecutor.mockResolvedValue(
+      'loop-continued' as unknown as void,
+    );
 
     const suspension = rebuildSuspension(deps, {
       state,
       stepId: '0.collector.0:loop_task[1]',
     });
-
     const result = await suspension?.continue({ resumed: true });
 
     expect(deps.captureTaskOutput).toHaveBeenCalledWith(
@@ -335,7 +348,9 @@ describe('rebuildSuspension', () => {
       2,
     );
     expect(mockedShouldStopLoop).toHaveBeenCalled();
-    expect((state.output as { collector: { sum: number } }).collector.sum).toBe(5);
+    expect((state.output as { collector: { sum: number } }).collector.sum).toBe(
+      5,
+    );
     expect(mockedRunLoopExecutor).toHaveBeenCalledWith(
       expect.anything(),
       loopStep,
