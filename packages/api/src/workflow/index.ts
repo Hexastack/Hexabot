@@ -6,6 +6,8 @@
 
 export * from './workflow.module';
 
+export * from './controllers/workflow.controller';
+
 export * from './dto/workflow.dto';
 
 export * from './dto/workflow-run.dto';

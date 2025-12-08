@@ -7,6 +7,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
@@ -20,6 +21,7 @@ import { WorkflowService } from './services/workflow.service';
   imports: [
     TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
   ],
+  controllers: [WorkflowController],
   providers: [
     WorkflowRepository,
     WorkflowRunRepository,

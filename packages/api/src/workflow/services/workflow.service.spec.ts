@@ -70,7 +70,6 @@ describe('WorkflowService (TypeORM)', () => {
       version: definition.workflow.version,
       description: definition.workflow.description,
       definition,
-      source: 'source: test',
     });
   });
 
@@ -95,7 +94,6 @@ describe('WorkflowService (TypeORM)', () => {
       name: workflow.name,
       version: workflow.version,
       description: workflow.description,
-      source: 'source: test',
       definition: workflow.definition,
     });
   });

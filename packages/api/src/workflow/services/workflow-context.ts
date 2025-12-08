@@ -24,13 +24,16 @@ export class WorkflowContext extends BaseWorkflowContext<
   event?: EventWrapper<any, any>;
 
   @Inject(I18nService)
-  readonly i18n: I18nService;
+  private readonly i18n: I18nService;
 
   @Inject(SettingService)
-  readonly settings: SettingService;
+  private readonly settings: SettingService;
 
   @Inject(LoggerService)
-  readonly logger: LoggerService;
+  private readonly logger: LoggerService;
+
+  @Inject(EventEmitter2)
+  readonly eventEmitter: EventEmitter2;
 
   get services() {
     return {

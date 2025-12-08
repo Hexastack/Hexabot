@@ -122,7 +122,7 @@ describe('AgenticService', () => {
     actionService = {
       getAll: jest.fn(() => mockActions),
     } as unknown as jest.Mocked<ActionService>;
-    workflowContext = new WorkflowContext() as jest.Mocked<WorkflowContext>;
+    workflowContext = new WorkflowContext({}) as jest.Mocked<WorkflowContext>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),

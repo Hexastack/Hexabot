@@ -7,12 +7,19 @@
 import { aMonthAgo } from './a-month-ago';
 
 describe('aMonthAgo', () => {
-  it('should test the date from one month ago', () => {
-    const now = new Date();
+  const now = new Date('2025-12-08T08:49:00.841Z');
+
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(now);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('returns the date from one month ago', () => {
     const result = aMonthAgo();
 
-    expect(new Date(result.getTime())).toStrictEqual(
-      new Date(now.setMonth(now.getMonth() - 1)),
-    );
+    expect(result).toStrictEqual(new Date('2025-11-08T08:49:00.841Z'));
   });
 });
