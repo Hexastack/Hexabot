@@ -26,8 +26,7 @@ import { CONTENT_POPULATE, ContentPopulate } from '../types/content';
 export class ContentService extends BaseOrmService<
   ContentOrmEntity,
   ContentTransformerDto,
-  ContentDtoConfig,
-  ContentRepository
+  ContentDtoConfig
 > {
   private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
 

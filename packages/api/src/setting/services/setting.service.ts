@@ -33,8 +33,7 @@ import { TextSetting } from '../types';
 export class SettingService extends BaseOrmService<
   SettingOrmEntity,
   SettingTransformerDto,
-  SettingDtoConfig,
-  SettingRepository
+  SettingDtoConfig
 > {
   constructor(
     repository: SettingRepository,

@@ -34,8 +34,7 @@ const DEFAULT_FIELDS: NonNullable<ContentTypeOrmEntity['fields']> = [
 export class ContentTypeService extends BaseOrmService<
   ContentTypeOrmEntity,
   ContentTypeTransformerDto,
-  ContentTypeDtoConfig,
-  ContentTypeRepository
+  ContentTypeDtoConfig
 > {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
