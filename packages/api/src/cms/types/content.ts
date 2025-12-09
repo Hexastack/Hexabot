@@ -7,10 +7,6 @@
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentOrmEntity } from '../entities/content.entity';
 
-export type ContentPopulate = 'entity';
-
 export type ContentEntityWithType = Omit<ContentOrmEntity, 'entity'> & {
   entity: ContentTypeOrmEntity | null;
 };
-
-export const CONTENT_POPULATE: ContentPopulate[] = ['entity'];

@@ -20,7 +20,6 @@ import {
 import { ContentType } from '../dto/contentType.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
-import { CONTENT_POPULATE, ContentPopulate } from '../types/content';
 
 @Injectable()
 export class ContentService extends BaseOrmService<
@@ -29,8 +28,6 @@ export class ContentService extends BaseOrmService<
   ContentDtoConfig,
   ContentRepository
 > {
-  private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
-
   constructor(readonly repository: ContentRepository) {
     super(repository);
   }
