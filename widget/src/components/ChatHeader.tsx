@@ -35,6 +35,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
       ) : (
         <a
           {...(poweredBy && {
+            rel: "noopener noreferrer",
             href: "https://hexabot.ai",
             title: "Powered By Hexabot.ai",
             target: "_blank",
