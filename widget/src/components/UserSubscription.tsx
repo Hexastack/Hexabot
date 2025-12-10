@@ -71,10 +71,31 @@ const UserSubscription: React.FC = () => {
 
   useEffect(() => {
     if (!submitted.current && !profile && firstName && lastName) {
-      subscribeAndProcess(firstName, lastName);
-      submitted.current = true;
+      try {
+        subscribeAndProcess(firstName, lastName);
+        submitted.current = true;
+      } catch (error) {
+        if (
+          error instanceof SocketIoClientError &&
+          socketErrorHandlers?.[error.statusCode]
+        ) {
+          socketErrorHandlers[error.statusCode](error);
+        } else {
+          setConnectionState(ConnectionState.error);
+          // eslint-disable-next-line no-console
+          console.error("Unable to subscribe user", error);
+        }
+      }
     }
-  }, [firstName, isOpen, lastName, profile, subscribeAndProcess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    firstName,
+    lastName,
+    isOpen,
+    profile,
+    setConnectionState,
+    subscribeAndProcess,
+  ]);
 
   return (
     <div className="user-subscription-wrapper">
