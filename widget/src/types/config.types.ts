@@ -11,4 +11,5 @@ export type Config = {
   channel: string;
   language: string;
   maxUploadSize: number;
+  poweredBy: boolean;
 };

@@ -7,12 +7,16 @@
   position: relative;
   box-sizing: border-box;
   display: flex;
+  a {
+    display: flex;
+    text-decoration: none;
+  }
 }
 
 .sc-header--img {
   border-radius: 50%;
   align-self: center;
-  padding: 10px;
+  padding: 8px;
   max-width: 32px;
   max-height: 32px;
   box-sizing: content-box;
@@ -23,6 +27,8 @@
   flex: 1;
   user-select: none;
   font-size: 1.25rem;
+  margin-left: 8px;
+  font-weight: 400;
 }
 
 .sc-header--title.enabled {

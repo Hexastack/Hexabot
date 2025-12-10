@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,6 +9,7 @@
 import { FC, PropsWithChildren } from "react";
 
 import { useColors } from "../providers/ColorProvider";
+import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useWidget } from "../providers/WidgetProvider";
 
@@ -22,6 +23,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
   const settings = useSettings();
   const { colors } = useColors();
   const widget = useWidget();
+  const { poweredBy } = useConfig();
 
   return (
     <div
@@ -31,17 +33,23 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
       {children ? (
         children
       ) : (
-        <>
-          <a
-            href="https://hexabot.ai"
-            target="_blank"
-            title="Powered By Hexabot.ai"
-            className="sc-header--img"
-          >
+        <a
+          {...(poweredBy && {
+            href: "https://hexabot.ai",
+            title: "Powered By Hexabot.ai",
+            target: "_blank",
+          })}
+        >
+          <div className="sc-header--img">
             <OpenIcon width={32} height={32} />
-          </a>
-          <div className="sc-header--title">{settings.title}</div>
-        </>
+          </div>
+          <h2
+            className="sc-header--title"
+            style={{ color: colors.header.text }}
+          >
+            {settings.title}
+          </h2>
+        </a>
       )}
       <div
         className="sc-header--close-button"
