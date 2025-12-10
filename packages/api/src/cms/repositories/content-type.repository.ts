@@ -6,7 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntitySubscriberInterface, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
@@ -19,14 +19,11 @@ import {
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 
 @Injectable()
-export class ContentTypeRepository
-  extends BaseOrmRepository<
-    ContentTypeOrmEntity,
-    ContentTypeTransformerDto,
-    ContentTypeDtoConfig
-  >
-  implements EntitySubscriberInterface<ContentTypeOrmEntity>
-{
+export class ContentTypeRepository extends BaseOrmRepository<
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig
+> {
   constructor(
     @InjectRepository(ContentTypeOrmEntity)
     repository: Repository<ContentTypeOrmEntity>,
