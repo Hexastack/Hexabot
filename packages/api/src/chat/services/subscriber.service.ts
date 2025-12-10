@@ -46,8 +46,7 @@ import { LabelService } from './label.service';
 export class SubscriberService extends BaseOrmService<
   SubscriberOrmEntity,
   SubscriberTransformerDto,
-  SubscriberDtoConfig,
-  SubscriberRepository
+  SubscriberDtoConfig
 > {
   constructor(
     readonly repository: SubscriberRepository,

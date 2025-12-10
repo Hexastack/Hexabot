@@ -25,8 +25,7 @@ import { ContentRepository } from '../repositories/content.repository';
 export class ContentService extends BaseOrmService<
   ContentOrmEntity,
   ContentTransformerDto,
-  ContentDtoConfig,
-  ContentRepository
+  ContentDtoConfig
 > {
   constructor(readonly repository: ContentRepository) {
     super(repository);

@@ -30,8 +30,7 @@ import { SubscriberService } from './subscriber.service';
 export class ConversationService extends BaseOrmService<
   ConversationOrmEntity,
   ConversationTransformerDto,
-  ConversationDtoConfig,
-  ConversationRepository
+  ConversationDtoConfig
 > {
   constructor(
     readonly repository: ConversationRepository,

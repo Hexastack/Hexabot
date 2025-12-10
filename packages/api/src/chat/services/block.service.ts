@@ -51,8 +51,7 @@ import { SubscriberContext } from '../types/subscriberContext';
 export class BlockService extends BaseOrmService<
   BlockOrmEntity,
   BlockTransformerDto,
-  BlockDtoConfig,
-  BlockRepository
+  BlockDtoConfig
 > {
   constructor(
     readonly repository: BlockRepository,
