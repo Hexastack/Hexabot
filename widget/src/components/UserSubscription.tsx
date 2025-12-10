@@ -6,18 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { preprocessMessages, useChat } from "../providers/ChatProvider";
+import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
+import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
+import { useWidget } from "../providers/WidgetProvider";
 import { ConnectionState } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
+  const submitted = useRef(false);
+  const { firstName, lastName } = useConfig();
   const { t } = useTranslation();
   const { socketErrorHandlers } = useSocket();
   const { colors } = useColors();
@@ -29,39 +33,17 @@ const UserSubscription: React.FC = () => {
     setConnectionState,
     participants,
     setParticipants,
-    setSuggestions,
-    subscribe,
-    sendGetStarted,
+    subscribeAndProcess,
+    profile,
   } = useChat();
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
+  const { isOpen } = useWidget();
+  const [formFirstName, setFormFirstName] = useState<string>("");
+  const [formLastName, setFormLastName] = useState<string>("");
   const handleSubmit = useCallback(
-    async ({
-      event,
-      first_name = "",
-      last_name = "",
-    }: {
-      event?: React.FormEvent<HTMLFormElement>;
-      first_name?: string;
-      last_name?: string;
-    }) => {
+    async (event?: React.FormEvent<HTMLFormElement>) => {
       event?.preventDefault();
       try {
-        setConnectionState(ConnectionState.tryingToConnect);
-        const { messages, profile } = await subscribe(
-          first_name || firstName,
-          last_name || lastName,
-        );
-        const { quickReplies, arrangedMessages, participantsList } =
-          preprocessMessages(messages, participants, profile);
-
-        setSuggestions(quickReplies);
-        setMessages(arrangedMessages);
-        setParticipants(participantsList);
-        if (messages.length === 0) {
-          await sendGetStarted(profile.foreign_id);
-        }
-        setConnectionState(ConnectionState.connected);
+        await subscribeAndProcess(formFirstName, formLastName);
       } catch (error) {
         if (
           error instanceof SocketIoClientError &&
@@ -77,8 +59,8 @@ const UserSubscription: React.FC = () => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      firstName,
-      lastName,
+      formFirstName,
+      formLastName,
       participants,
       setConnectionState,
       setMessages,
@@ -87,12 +69,16 @@ const UserSubscription: React.FC = () => {
     ],
   );
 
+  useEffect(() => {
+    if (!submitted.current && !profile && firstName && lastName) {
+      subscribeAndProcess(firstName, lastName);
+      submitted.current = true;
+    }
+  }, [firstName, isOpen, lastName, profile, subscribeAndProcess]);
+
   return (
     <div className="user-subscription-wrapper">
-      <form
-        className="user-subscription"
-        onSubmit={(event) => handleSubmit({ event })}
-      >
+      <form className="user-subscription" onSubmit={handleSubmit}>
         <div className="user-subscription-title">
           {settings.greetingMessage}
         </div>
@@ -100,16 +86,16 @@ const UserSubscription: React.FC = () => {
           <input
             disabled={connectionState === ConnectionState.tryingToConnect}
             className="user-subscription-form-input"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={formFirstName}
+            onChange={(e) => setFormFirstName(e.target.value)}
             placeholder={t("user_subscription.first_name")}
             required
           />
           <input
             disabled={connectionState === ConnectionState.tryingToConnect}
             className="user-subscription-form-input"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={formLastName}
+            onChange={(e) => setFormLastName(e.target.value)}
             placeholder={t("user_subscription.last_name")}
             required
           />

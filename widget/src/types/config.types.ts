@@ -12,4 +12,6 @@ export type Config = {
   language: string;
   maxUploadSize: number;
   poweredBy: boolean;
+  firstName?: string;
+  lastName?: string;
 };
