@@ -210,6 +210,10 @@ interface ChatContextType {
     first_name?: string,
     last_name?: string,
   ) => Promise<SubscribeResponse>;
+  subscribeAndProcess: (
+    first_name?: string,
+    last_name?: string,
+  ) => Promise<void>;
   sendGetStarted: (foreign_id: string) => Promise<void>;
 }
 
@@ -251,9 +255,8 @@ const defaultCtx: ChatContextType = {
   subscribe: async () => {
     return new Promise(() => {});
   },
-  sendGetStarted: async () => {
-    return new Promise(() => {});
-  },
+  sendGetStarted: async () => {},
+  subscribeAndProcess: async () => {},
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -425,6 +428,23 @@ const ChatProvider: React.FC<{
 
     return body;
   };
+  const subscribeAndProcess = async (
+    first_name: string = "",
+    last_name: string = "",
+  ) => {
+    setConnectionState(ConnectionState.tryingToConnect);
+    const { messages, profile } = await subscribe(first_name, last_name);
+    const { quickReplies, arrangedMessages, participantsList } =
+      preprocessMessages(messages, participants, profile);
+
+    setSuggestions(quickReplies);
+    setMessages(arrangedMessages);
+    setParticipants(participantsList);
+    if (messages.length === 0) {
+      await sendGetStarted(profile.foreign_id);
+    }
+    setConnectionState(ConnectionState.connected);
+  };
   const sendGetStarted = async (foreign_id: string) => {
     await handleSend({
       data: {
@@ -558,6 +578,7 @@ const ChatProvider: React.FC<{
     handleSubscription,
     profile,
     subscribe,
+    subscribeAndProcess,
     sendGetStarted,
   };
 
