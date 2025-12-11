@@ -336,8 +336,14 @@ export class ChatService {
         );
         if (spokenLanguage && spokenLanguage.value in languages) {
           const profile = event.getSender();
-          profile.language = spokenLanguage.value;
-          event.setSender(profile);
+
+          if (profile.language !== spokenLanguage.value) {
+            await this.subscriberService.updateOne(profile.id, {
+              language: spokenLanguage.value,
+            });
+            profile.language = spokenLanguage.value;
+            event.setSender(profile);
+          }
         }
       }
 
