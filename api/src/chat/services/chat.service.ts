@@ -338,11 +338,14 @@ export class ChatService {
           const profile = event.getSender();
 
           if (profile.language !== spokenLanguage.value) {
-            await this.subscriberService.updateOne(profile.id, {
-              language: spokenLanguage.value,
-            });
+            const subscriber = await this.subscriberService.updateOne(
+              profile.id,
+              {
+                language: spokenLanguage.value,
+              },
+            );
             profile.language = spokenLanguage.value;
-            event.setSender(profile);
+            event.setSender(subscriber);
           }
         }
       }
