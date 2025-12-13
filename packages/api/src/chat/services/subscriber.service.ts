@@ -292,14 +292,14 @@ export class SubscriberService extends BaseOrmService<
         current = await this.handOver(current, assignTo);
       }
 
-      this.logger.debug('Block updates have been applied!', {
+      this.logger.debug('Subscriber updates have been applied!', {
         labels,
         assignTo,
       });
 
       return current;
     } catch (err) {
-      this.logger.error('Unable to perform block updates!', err);
+      this.logger.error('Unable to perform subscriber updates!', err);
       throw err;
     }
   }

@@ -54,8 +54,8 @@ export class NlpEntityService extends BaseOrmService<
   /**
    * Updates the `weight` field of a specific NLP entity by its ID.
    *
-   * This method is part of the NLP-based blocks prioritization strategy.
-   * The weight influences the scoring of blocks when multiple blocks match a user's input.
+   * This method is part of the NLP-based action prioritization strategy.
+   * The weight influences the scoring of actions when multiple candidates match a user's input.
    * @param id - The unique identifier of the entity to update.
    * @param updatedWeight - The new weight to assign. Must be a positive number.
    * @throws Error if the weight is not a positive number.

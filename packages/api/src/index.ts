@@ -20,6 +20,8 @@ export * from './seeder';
 export * from './swagger';
 
 // Domain modules
+export * from './actions';
+
 export * from './analytics';
 
 export * from './attachment';
@@ -50,13 +52,13 @@ export * from './migration';
 
 export * from './nlp';
 
-export * from './plugins';
-
 export * from './setting';
 
 export * from './user';
 
 export * from './websocket';
+
+export * from './workflow';
 
 export * from './utils';
 

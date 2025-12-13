@@ -9,7 +9,6 @@ import { randomUUID } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
-import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,
@@ -31,20 +30,12 @@ describe('ContentController (TypeORM)', () => {
   let contentTypeService: ContentTypeService;
   let logger: LoggerService;
   const createdContentIds = new Set<string>();
-  const blockServiceMock = {
-    findOne: jest.fn().mockResolvedValue(null),
-  };
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [ContentController],
-      providers: [
-        {
-          provide: BlockService,
-          useFactory: () => blockServiceMock,
-        },
-      ],
+      providers: [],
       typeorm: [
         {
           fixtures: [

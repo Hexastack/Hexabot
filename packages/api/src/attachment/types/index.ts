@@ -23,7 +23,6 @@ export enum AttachmentResourceRef {
   SettingAttachment = 'Setting', // Attachments related to app settings, restricted to users with specific permissions.
   UserAvatar = 'User', // Avatar files for users, only the current user can upload, accessible to those with appropriate permissions.
   SubscriberAvatar = 'Subscriber', // Avatar files for subscribers, uploaded programmatically, accessible to authorized users.
-  BlockAttachment = 'Block', // Files sent by the bot, public or private based on the channel and user authentication.
   ContentAttachment = 'Content', // Files in the knowledge base, usually public but could vary based on specific needs.
   MessageAttachment = 'Message', // Files sent or received via messages, uploaded programmatically, accessible to users with inbox permissions.;
 }

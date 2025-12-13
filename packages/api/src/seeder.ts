@@ -6,8 +6,6 @@
 
 import { INestApplicationContext } from '@nestjs/common';
 
-import { CategorySeeder } from './chat/seeds/category.seed';
-import { categoryModels } from './chat/seeds/category.seed-model';
 import { ContextVarSeeder } from './chat/seeds/context-var.seed';
 import { contextVarModels } from './chat/seeds/context-var.seed-model';
 import { LanguageSeeder } from './i18n/seeds/language.seed';
@@ -37,7 +35,6 @@ import { userModels } from './user/seeds/user.seed-model';
 export async function seedDatabase(app: INestApplicationContext) {
   const logger = await app.resolve(LoggerService);
   const modelSeeder = app.get(ModelSeeder);
-  const categorySeeder = app.get(CategorySeeder);
   const contextVarSeeder = app.get(ContextVarSeeder);
   const roleSeeder = app.get(RoleSeeder);
   const settingSeeder = app.get(SettingSeeder);
@@ -114,14 +111,6 @@ export async function seedDatabase(app: INestApplicationContext) {
     await metadataSeeder.seed(DEFAULT_METADATA);
   } catch (e) {
     logger.error('Unable to seed the database with settings and metadata!');
-    throw e;
-  }
-
-  // Seed categories
-  try {
-    await categorySeeder.seed(categoryModels);
-  } catch (e) {
-    logger.error('Unable to seed the database with categories!');
     throw e;
   }
 

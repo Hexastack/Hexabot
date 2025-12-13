@@ -6,9 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
-import { ForbiddenException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DataSource } from 'typeorm';
 
 import { FieldType } from '@/setting/types';
 import { closeTypeOrmConnections } from '@/utils/test/test';
@@ -21,7 +19,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: ContentTypeRepository;
   let contentRepository: ContentRepository;
-  let dataSource: DataSource;
 
   const buildRequiredFields = () => [
     {
@@ -46,15 +43,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
       ContentTypeRepository,
       ContentRepository,
     ]);
-    dataSource = module.get(DataSource);
-    await dataSource.query(`
-      CREATE TABLE IF NOT EXISTS blocks (
-        id varchar PRIMARY KEY,
-        name varchar NOT NULL,
-        options text NOT NULL,
-        message text NOT NULL
-      )
-    `);
   });
 
   afterAll(async () => {
@@ -62,65 +50,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
       await module.close();
     }
     await closeTypeOrmConnections();
-  });
-
-  describe('preDelete block association guard', () => {
-    it('rejects deletion when a block is associated to the content type', async () => {
-      const created = await repository.create({
-        name: `type-${randomUUID()}`,
-        fields: buildRequiredFields(),
-      });
-      const blockId = `block-${randomUUID()}`;
-      const blockName = `block-name-${randomUUID()}`;
-      const options = {
-        content: {
-          display: 'list',
-          fields: {
-            title: 'Title',
-            subtitle: null,
-            image_url: null,
-          },
-          buttons: [],
-          limit: 5,
-          entity: created.id,
-        },
-      };
-      await dataSource.query(
-        `INSERT INTO blocks (id, name, options, message) VALUES (?, ?, ?, ?)`,
-        [
-          blockId,
-          blockName,
-          JSON.stringify(options),
-          JSON.stringify(['Hello']),
-        ],
-      );
-
-      const escapeLikePattern = (value: string) =>
-        value.replace(/[%_]/g, '\\$&');
-      const pattern = `%"content":%"entity":"${escapeLikePattern(
-        created.id,
-      )}"%`;
-      const match = await dataSource
-        .createQueryBuilder()
-        .select('1')
-        .from('blocks', 'block')
-        .where('block.options LIKE :pattern', { pattern })
-        .limit(1)
-        .getRawOne();
-      expect(match).toBeDefined();
-
-      await expect(repository.deleteOne(created.id)).rejects.toThrow(
-        ForbiddenException,
-      );
-
-      const contentType = await repository.findOne({
-        where: { id: created.id },
-      });
-      expect(contentType).not.toBeNull();
-
-      await dataSource.query(`DELETE FROM blocks WHERE id = ?`, [blockId]);
-      await repository.deleteOne(created.id);
-    });
   });
 
   describe('deleteOne cascade', () => {

@@ -11,19 +11,14 @@ import { In, InsertEvent, UpdateEvent } from 'typeorm';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
-import { HelperService } from '@/helper/helper.service';
-import { HelperType } from '@/helper/types';
-import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
+import { AgenticService } from '@/workflow/services/agentic.service';
 
-import { Conversation } from '../dto/conversation.dto';
 import { MessageCreateDto } from '../dto/message.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { OutgoingMessage } from '../types/message';
 
-import { BotService } from './bot.service';
-import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 
@@ -32,44 +27,11 @@ export class ChatService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly logger: LoggerService,
-    private readonly conversationService: ConversationService,
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
-    private readonly botService: BotService,
+    private readonly agenticService: AgenticService,
     private readonly websocketGateway: WebsocketGateway,
-    private readonly helperService: HelperService,
-    private readonly languageService: LanguageService,
   ) {}
-
-  /**
-   * Ends a given conversation (sets active to false)
-   *
-   * @param convo - The conversation to end
-   */
-  @OnEvent('hook:conversation:end')
-  async handleEndConversation(convo: Conversation) {
-    try {
-      await this.conversationService.end(convo);
-      this.logger.debug('Conversation has ended successfully.', convo.id);
-    } catch (err) {
-      this.logger.error('Unable to end conversation !', convo.id, err);
-    }
-  }
-
-  /**
-   * Ends a given conversation (sets active to false)
-   *
-   * @param convoId - The conversation ID
-   */
-  @OnEvent('hook:conversation:close')
-  async handleCloseConversation(convoId: string) {
-    try {
-      await this.conversationService.deleteOne(convoId);
-      this.logger.debug('Conversation is closed successfully.', convoId);
-    } catch (err) {
-      this.logger.error('Unable to close conversation.', err);
-    }
-  }
 
   /**
    * Finds or creates a message and broadcast it to the websocket "Message" room
@@ -296,54 +258,18 @@ export class ChatService {
         await event.preprocess();
       }
 
-      await this.enrichEventWithNLU(event);
-
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);
 
       if (subscriber?.assignedTo) {
-        this.logger.debug('Conversation taken over', subscriber.assignedTo);
+        this.logger.debug('Chat taken over', subscriber.assignedTo);
 
         return;
       }
 
-      this.botService.handleMessageEvent(event);
+      await this.agenticService.handleMessageEvent(event);
     } catch (err) {
       this.logger.error('Error handling new message', err);
-    }
-  }
-
-  /**
-   * Enriches an incoming event by performing NLP inference and updating the sender's language profile if detected.
-   *
-   * @param event - The incoming event object containing user input and metadata.
-   * @returns Resolves when preprocessing is complete. Any errors are logged without throwing.
-   */
-  async enrichEventWithNLU(event: EventWrapper<any, any>) {
-    if (!event.getText() || event.getNLP()) {
-      return;
-    }
-
-    try {
-      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
-      const nlp = await helper.predict(event.getText(), true);
-
-      // Check & catch user language through NLP
-      if (nlp) {
-        const languages = await this.languageService.getLanguages();
-        const spokenLanguage = nlp.entities.find(
-          (e) => e.entity === 'language',
-        );
-        if (spokenLanguage && spokenLanguage.value in languages) {
-          const profile = event.getSender();
-          profile.language = spokenLanguage.value;
-          event.setSender(profile);
-        }
-      }
-
-      event.setNLP(nlp);
-    } catch (err) {
-      this.logger.error('Unable to perform NLP parse', err);
     }
   }
 

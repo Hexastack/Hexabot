@@ -16,7 +16,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { CleanupService } from './cleanup.service';
-import { TNamespace } from './types';
 
 const channelServiceMock = {
   getAll: jest.fn().mockReturnValue([]),
@@ -98,7 +97,9 @@ describe('CleanupService', () => {
       const filteredSettings = initialSettings.filter(
         ({ group }) =>
           !/_(channel|helper)$/.test(group) !==
-          registeredNamespaces.includes(group as TNamespace),
+          registeredNamespaces.includes(
+            group as `${string}_channel` | `${string}_helper`,
+          ),
       );
 
       expect(sortSettings(cleanSettings)).toEqualPayload(

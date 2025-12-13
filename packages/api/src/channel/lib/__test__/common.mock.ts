@@ -94,7 +94,7 @@ const attachment: AttachmentOrmEntity = Object.assign(
         id: 'any-channel-attachment-id',
       },
     },
-    resourceRef: AttachmentResourceRef.BlockAttachment,
+    resourceRef: AttachmentResourceRef.MessageAttachment,
     access: AttachmentAccess.Public,
     createdByRef: AttachmentCreatedByRef.User,
     createdBy: null,

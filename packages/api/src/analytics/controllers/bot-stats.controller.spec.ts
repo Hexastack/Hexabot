@@ -132,33 +132,6 @@ describe('BotStatsController', () => {
     });
   });
 
-  describe('conversation', () => {
-    it('should return conversation messages', async () => {
-      const result = await botStatsController.conversation({
-        from: new Date('2023-11-04T23:00:00.000Z'),
-        to: new Date('2023-11-06T23:00:00.000Z'),
-      });
-
-      expect(result).toEqualPayload([
-        {
-          id: 1,
-          name: BotStatsType.new_conversations,
-          values: [
-            {
-              ...botstatsFixtures[3],
-              date: botstatsFixtures[3].day,
-            },
-          ],
-        },
-        {
-          id: 2,
-          name: BotStatsType.existing_conversations,
-          values: [],
-        },
-      ]);
-    });
-  });
-
   describe('audiance', () => {
     it('should return audiance messages', async () => {
       const result = await botStatsController.audiance({
@@ -180,29 +153,22 @@ describe('BotStatsController', () => {
         {
           id: 2,
           name: BotStatsType.returning_users,
-          values: [],
+          values: [
+            {
+              ...botstatsFixtures[2],
+              date: botstatsFixtures[2].day,
+            },
+          ],
         },
         {
           id: 3,
           name: BotStatsType.retention,
-          values: [],
-        },
-      ]);
-    });
-  });
-
-  describe('popularBlocks', () => {
-    it('should return popular blocks', async () => {
-      const result = await botStatsController.popularBlocks({
-        from: new Date('2023-11-01T23:00:00.000Z'),
-        to: new Date('2023-11-08T23:00:00.000Z'),
-      });
-
-      expect(result).toEqual([
-        {
-          name: 'Global Fallback',
-          id: 'Global Fallback',
-          value: 68,
+          values: [
+            {
+              ...botstatsFixtures[3],
+              date: botstatsFixtures[3].day,
+            },
+          ],
         },
       ]);
     });

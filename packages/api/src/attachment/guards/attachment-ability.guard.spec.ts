@@ -34,7 +34,6 @@ describe('AttachmentGuard', () => {
 
   const modelIdByIdentity: Partial<Record<TModel, string>> = {
     attachment: 'attachment-model-id',
-    block: 'block-model-id',
     content: 'content-model-id',
     message: 'message-model-id',
     setting: 'setting-model-id',
@@ -179,7 +178,7 @@ describe('AttachmentGuard', () => {
         .spyOn(permissionService, 'findOne')
         .mockResolvedValue({} as Permission);
       const mockExecutionContext = buildContext({
-        query: { resourceRef: AttachmentResourceRef.BlockAttachment },
+        query: { resourceRef: AttachmentResourceRef.MessageAttachment },
         method: 'POST',
         user: mockUser,
       });
@@ -188,7 +187,7 @@ describe('AttachmentGuard', () => {
 
       expect(modelFindOne).toHaveBeenCalledTimes(2);
       expect(modelFindOne).toHaveBeenNthCalledWith(1, {
-        where: { identity: 'block' },
+        where: { identity: 'message' },
       });
       expect(modelFindOne).toHaveBeenNthCalledWith(2, {
         where: { identity: 'attachment' },
@@ -201,8 +200,8 @@ describe('AttachmentGuard', () => {
       expect(permissionWhereCalls).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            model: { id: modelIdByIdentity.block },
-            action: Action.UPDATE,
+            model: { id: modelIdByIdentity.message },
+            action: Action.CREATE,
           }),
           expect.objectContaining({
             model: { id: modelIdByIdentity.attachment },
@@ -255,7 +254,7 @@ describe('AttachmentGuard', () => {
 
       expect(modelFindOne).toHaveBeenCalledTimes(2);
       expect(modelFindOne).toHaveBeenNthCalledWith(1, {
-        where: { identity: 'block' },
+        where: { identity: 'message' },
       });
       expect(modelFindOne).toHaveBeenNthCalledWith(2, {
         where: { identity: 'attachment' },
@@ -268,7 +267,7 @@ describe('AttachmentGuard', () => {
       expect(permissionWhereCalls).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            model: { id: modelIdByIdentity.block },
+            model: { id: modelIdByIdentity.message },
             action: Action.UPDATE,
           }),
           expect.objectContaining({

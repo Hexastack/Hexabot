@@ -5,13 +5,10 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Block, BlockFull } from '../dto/block.dto';
 import {
-  ContextVar,
   ContextVarDtoConfig,
   ContextVarTransformerDto,
 } from '../dto/context-var.dto';
@@ -26,32 +23,5 @@ export class ContextVarService extends BaseOrmService<
 > {
   constructor(readonly repository: ContextVarRepository) {
     super(repository);
-  }
-
-  /**
-   * Retrieves a mapping of context variable names to their corresponding `ContextVar` objects for a given block.
-   *
-   * @param {Block | BlockFull} block - The block containing the capture variables to retrieve context variables for.
-   * @returns {Promise<Record<string, ContextVar>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects.
-   */
-  async getContextVarsByBlock(
-    block: Block | BlockFull,
-  ): Promise<Record<string, ContextVar>> {
-    const captureVarNames =
-      block.capture_vars?.map(({ context_var }) => context_var) ?? [];
-
-    if (!captureVarNames.length) {
-      return {};
-    }
-
-    const vars = await this.find({
-      where: { name: In(captureVarNames) },
-    });
-
-    return vars.reduce<Record<string, ContextVar>>((acc, cv) => {
-      acc[cv.name] = cv;
-
-      return acc;
-    }, {});
   }
 }
