@@ -12,7 +12,11 @@ import { ActionService } from '@/actions/actions.service';
 import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import { MessageAction } from './message-action.base';
+import {
+  MessageAction,
+  MessageActionSettings,
+  messageActionSettingsSchema,
+} from './message-action.base';
 
 const textMessageInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
@@ -20,9 +24,15 @@ const textMessageInputSchema = z.object({
 });
 
 type TextMessageInput = z.infer<typeof textMessageInputSchema>;
+type TextMessageSettings = MessageActionSettings;
+
+const textMessageSettingsSchema = messageActionSettingsSchema;
 
 @Injectable()
-export class SendTextMessageAction extends MessageAction<TextMessageInput> {
+export class SendTextMessageAction extends MessageAction<
+  TextMessageInput,
+  TextMessageSettings
+> {
   constructor(actionService: ActionService) {
     super(
       {
@@ -31,6 +41,7 @@ export class SendTextMessageAction extends MessageAction<TextMessageInput> {
           'Sends a text message to the subscriber and waits for the reply.',
         inputSchema: textMessageInputSchema,
         outputSchema: stdIncomingMessageSchema,
+        settingsSchema: textMessageSettingsSchema,
       },
       actionService,
     );
@@ -39,16 +50,17 @@ export class SendTextMessageAction extends MessageAction<TextMessageInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<TextMessageInput, WorkflowContext>) {
+    settings,
+  }: ActionExecutionArgs<
+    TextMessageInput,
+    WorkflowContext,
+    TextMessageSettings
+  >) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildTextEnvelope(input.text);
+    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(
-      context,
-      prepared,
-      envelope,
-      input.options,
-    );
+    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
   }
 }
 

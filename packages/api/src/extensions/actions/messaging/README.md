@@ -5,3 +5,6 @@ Available actions:
 - `send_quick_replies` — sends text with quick replies and waits for the chosen reply.
 - `send_buttons` — sends text with buttons and waits for the follow-up message.
 - `send_attachment` — sends an attachment (with optional quick replies) and waits for the reply.
+
+Common settings:
+- `typing` (boolean | number) — optionally emit a typing indicator before sending the message. Provide a number to override the auto-calculated duration.

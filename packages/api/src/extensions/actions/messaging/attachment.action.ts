@@ -14,7 +14,11 @@ import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import { MessageAction } from '../messaging/message-action.base';
+import {
+  MessageAction,
+  MessageActionSettings,
+  messageActionSettingsSchema,
+} from '../messaging/message-action.base';
 
 const attachmentInputSchema = z.object({
   attachment: attachmentPayloadSchema,
@@ -23,9 +27,15 @@ const attachmentInputSchema = z.object({
 });
 
 type AttachmentInput = z.infer<typeof attachmentInputSchema>;
+type AttachmentSettings = MessageActionSettings;
+
+const attachmentSettingsSchema = messageActionSettingsSchema;
 
 @Injectable()
-export class SendAttachmentAction extends MessageAction<AttachmentInput> {
+export class SendAttachmentAction extends MessageAction<
+  AttachmentInput,
+  AttachmentSettings
+> {
   constructor(actionService: ActionService) {
     super(
       {
@@ -34,6 +44,7 @@ export class SendAttachmentAction extends MessageAction<AttachmentInput> {
           'Sends an attachment message to the subscriber and waits for the reply.',
         inputSchema: attachmentInputSchema,
         outputSchema: stdIncomingMessageSchema,
+        settingsSchema: attachmentSettingsSchema,
       },
       actionService,
     );
@@ -42,19 +53,20 @@ export class SendAttachmentAction extends MessageAction<AttachmentInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<AttachmentInput, WorkflowContext>) {
+    settings,
+  }: ActionExecutionArgs<
+    AttachmentInput,
+    WorkflowContext,
+    AttachmentSettings
+  >) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildAttachmentEnvelope(
       input.attachment,
       input.quick_replies ?? [],
     );
+    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(
-      context,
-      prepared,
-      envelope,
-      input.options,
-    );
+    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
   }
 }
 

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionMetadata } from '@hexabot-ai/agentic';
+import { ActionMetadata, SettingsSchema } from '@hexabot-ai/agentic';
+import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
@@ -30,13 +31,18 @@ interface PreparedMessageContext {
   chatContext: Context;
 }
 
-export abstract class MessageAction<I> extends BaseAction<
+export const messageActionSettingsSchema = SettingsSchema.extend({
+  typing: z.union([z.boolean(), z.number().int().nonnegative()]).optional(),
+});
+
+export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
+
+export abstract class MessageAction<
   I,
-  MessageActionOutput,
-  WorkflowContext
-> {
+  S extends MessageActionSettings = MessageActionSettings,
+> extends BaseAction<I, MessageActionOutput, WorkflowContext, S> {
   protected constructor(
-    metadata: ActionMetadata<I, MessageActionOutput>,
+    metadata: ActionMetadata<I, MessageActionOutput, S>,
     actionService: ActionService,
   ) {
     super(metadata, actionService);
@@ -110,16 +116,17 @@ export abstract class MessageAction<I> extends BaseAction<
     workflowContext: WorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
-    options?: any,
+    options?: Record<string, any>,
   ): Promise<MessageActionOutput> {
     const { event, recipient, chatContext } = prepared;
     const eventEmitter = workflowContext.eventEmitter!;
     const { logger } = workflowContext.services;
+    const sendOptions = options ?? {};
 
     logger.debug('Sending action message ... ', event.getSenderForeignId());
     const response = await event
       .getHandler()
-      .sendMessage(event, envelope, options, chatContext);
+      .sendMessage(event, envelope, sendOptions, chatContext);
 
     eventEmitter.emit('hook:stats:entry', BotStatsType.outgoing, 'Outgoing');
     eventEmitter.emit(
@@ -166,5 +173,20 @@ export abstract class MessageAction<I> extends BaseAction<
       envelope,
       options,
     );
+  }
+
+  protected resolveMessageOptions(
+    inputOptions: Record<string, any> | undefined,
+    settings: S,
+  ): Record<string, any> | undefined {
+    const options = { ...(inputOptions ?? {}) };
+    const hasInputTyping = inputOptions && 'typing' in inputOptions;
+    const typing = hasInputTyping ? inputOptions?.typing : settings.typing;
+
+    if (hasInputTyping || settings.typing !== undefined) {
+      options.typing = typing;
+    }
+
+    return Object.keys(options).length ? options : undefined;
   }
 }

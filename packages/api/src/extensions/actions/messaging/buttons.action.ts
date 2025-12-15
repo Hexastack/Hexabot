@@ -13,7 +13,11 @@ import { buttonSchema } from '@/chat/types/button';
 import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-import { MessageAction } from './message-action.base';
+import {
+  MessageAction,
+  MessageActionSettings,
+  messageActionSettingsSchema,
+} from './message-action.base';
 
 const buttonsInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
@@ -22,9 +26,15 @@ const buttonsInputSchema = z.object({
 });
 
 type ButtonsInput = z.infer<typeof buttonsInputSchema>;
+type ButtonsSettings = MessageActionSettings;
+
+const buttonsSettingsSchema = messageActionSettingsSchema;
 
 @Injectable()
-export class SendButtonsAction extends MessageAction<ButtonsInput> {
+export class SendButtonsAction extends MessageAction<
+  ButtonsInput,
+  ButtonsSettings
+> {
   constructor(actionService: ActionService) {
     super(
       {
@@ -33,6 +43,7 @@ export class SendButtonsAction extends MessageAction<ButtonsInput> {
           'Sends a text message with buttons to the subscriber and waits for the reply.',
         inputSchema: buttonsInputSchema,
         outputSchema: stdIncomingMessageSchema,
+        settingsSchema: buttonsSettingsSchema,
       },
       actionService,
     );
@@ -41,19 +52,16 @@ export class SendButtonsAction extends MessageAction<ButtonsInput> {
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<ButtonsInput, WorkflowContext>) {
+    settings,
+  }: ActionExecutionArgs<ButtonsInput, WorkflowContext, ButtonsSettings>) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildButtonsEnvelope(
       input.text,
       input.buttons,
     );
+    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(
-      context,
-      prepared,
-      envelope,
-      input.options,
-    );
+    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
   }
 }
 
