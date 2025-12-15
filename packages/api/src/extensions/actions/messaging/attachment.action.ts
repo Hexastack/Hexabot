@@ -23,7 +23,6 @@ import {
 const attachmentInputSchema = z.object({
   attachment: attachmentPayloadSchema,
   quick_replies: z.array(stdQuickReplySchema).optional(),
-  options: z.record(z.any()).optional(),
 });
 
 type AttachmentInput = z.infer<typeof attachmentInputSchema>;
@@ -70,7 +69,6 @@ export class SendAttachmentAction extends MessageAction<
       prepared,
       envelope,
       settings,
-      input.options,
     );
   }
 }

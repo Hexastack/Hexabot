@@ -22,7 +22,6 @@ import {
 const buttonsInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
   buttons: z.array(buttonSchema).min(1, 'Provide at least one button'),
-  options: z.record(z.any()).optional(),
 });
 
 type ButtonsInput = z.infer<typeof buttonsInputSchema>;
@@ -65,7 +64,6 @@ export class SendButtonsAction extends MessageAction<
       prepared,
       envelope,
       settings,
-      input.options,
     );
   }
 }

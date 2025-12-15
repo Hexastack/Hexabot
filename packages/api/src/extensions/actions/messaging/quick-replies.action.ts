@@ -24,7 +24,6 @@ const quickRepliesInputSchema = z.object({
   quick_replies: z
     .array(stdQuickReplySchema)
     .min(1, 'Provide at least one quick reply'),
-  options: z.record(z.any()).optional(),
 });
 
 type QuickRepliesInput = z.infer<typeof quickRepliesInputSchema>;
@@ -71,7 +70,6 @@ export class SendQuickRepliesAction extends MessageAction<
       prepared,
       envelope,
       settings,
-      input.options,
     );
   }
 }

@@ -118,12 +118,11 @@ export abstract class MessageAction<
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
-    inputOptions?: Record<string, any>,
   ): Promise<MessageActionOutput> {
     const { event, recipient, chatContext } = prepared;
     const eventEmitter = workflowContext.eventEmitter!;
     const { logger } = workflowContext.services;
-    const options = this.resolveMessageOptions(inputOptions, settings);
+    const options = this.resolveMessageOptions(settings);
     const sendOptions = options ?? {};
 
     logger.debug('Sending action message ... ', event.getSenderForeignId());
@@ -171,7 +170,6 @@ export abstract class MessageAction<
     workflowContext: WorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
-    inputOptions?: any,
   ): Promise<MessageActionOutput> {
     const prepared = await this.prepare(workflowContext);
 
@@ -180,7 +178,6 @@ export abstract class MessageAction<
       prepared,
       envelope,
       settings,
-      inputOptions,
     );
   }
 
@@ -189,17 +186,12 @@ export abstract class MessageAction<
   }
 
   protected resolveMessageOptions(
-    inputOptions: Record<string, any> | undefined,
     settings: S,
   ): Record<string, any> | undefined {
-    const options = { ...(inputOptions ?? {}) };
-    const hasInputTyping = inputOptions && 'typing' in inputOptions;
-    const typing = hasInputTyping ? inputOptions?.typing : settings.typing;
-
-    if (hasInputTyping || settings.typing !== undefined) {
-      options.typing = typing;
+    if (settings.typing === undefined) {
+      return undefined;
     }
 
-    return Object.keys(options).length ? options : undefined;
+    return { typing: settings.typing };
   }
 }

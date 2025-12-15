@@ -20,7 +20,6 @@ import {
 
 const textMessageInputSchema = z.object({
   text: z.union([z.string(), z.array(z.string())]),
-  options: z.record(z.any()).optional(),
 });
 
 type TextMessageInput = z.infer<typeof textMessageInputSchema>;
@@ -64,7 +63,6 @@ export class SendTextMessageAction extends MessageAction<
       prepared,
       envelope,
       settings,
-      input.options,
     );
   }
 }
