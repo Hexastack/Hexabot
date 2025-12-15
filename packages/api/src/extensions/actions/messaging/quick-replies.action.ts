@@ -42,7 +42,7 @@ export class SendQuickRepliesAction extends MessageAction<
       {
         name: 'send_quick_replies',
         description:
-          'Sends a text message with quick replies to the subscriber and waits for the reply.',
+          'Sends a text message with quick replies to the subscriber and optionally waits for the reply.',
         inputSchema: quickRepliesInputSchema,
         outputSchema: stdIncomingMessageSchema,
         settingsSchema: quickRepliesSettingsSchema,
@@ -65,9 +65,14 @@ export class SendQuickRepliesAction extends MessageAction<
       input.text,
       input.quick_replies,
     );
-    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
+    return this.sendPreparedAndHandleReply(
+      context,
+      prepared,
+      envelope,
+      settings,
+      input.options,
+    );
   }
 }
 

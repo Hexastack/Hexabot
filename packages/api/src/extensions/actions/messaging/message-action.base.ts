@@ -33,6 +33,7 @@ interface PreparedMessageContext {
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
   typing: z.union([z.boolean(), z.number().int().nonnegative()]).optional(),
+  await_reply: z.boolean().default(true),
 });
 
 export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
@@ -112,15 +113,17 @@ export abstract class MessageAction<
     };
   }
 
-  protected async sendPreparedAndSuspend(
+  protected async sendPreparedAndHandleReply(
     workflowContext: WorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
-    options?: Record<string, any>,
+    settings: S,
+    inputOptions?: Record<string, any>,
   ): Promise<MessageActionOutput> {
     const { event, recipient, chatContext } = prepared;
     const eventEmitter = workflowContext.eventEmitter!;
     const { logger } = workflowContext.services;
+    const options = this.resolveMessageOptions(inputOptions, settings);
     const sendOptions = options ?? {};
 
     logger.debug('Sending action message ... ', event.getSenderForeignId());
@@ -146,6 +149,10 @@ export abstract class MessageAction<
     };
     await eventEmitter.emitAsync('hook:chatbot:sent', sentMessage, event);
 
+    if (!this.shouldAwaitReply(settings)) {
+      return event.getMessage();
+    }
+
     return workflowContext.workflow.suspend<MessageActionOutput>({
       reason: 'awaiting_user_response',
       data: {
@@ -163,16 +170,22 @@ export abstract class MessageAction<
   protected async sendAndSuspend(
     workflowContext: WorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
-    options?: any,
+    settings: S,
+    inputOptions?: any,
   ): Promise<MessageActionOutput> {
     const prepared = await this.prepare(workflowContext);
 
-    return this.sendPreparedAndSuspend(
+    return this.sendPreparedAndHandleReply(
       workflowContext,
       prepared,
       envelope,
-      options,
+      settings,
+      inputOptions,
     );
+  }
+
+  private shouldAwaitReply(settings: S) {
+    return settings.await_reply ?? true;
   }
 
   protected resolveMessageOptions(

@@ -38,7 +38,7 @@ export class SendTextMessageAction extends MessageAction<
       {
         name: 'send_text_message',
         description:
-          'Sends a text message to the subscriber and waits for the reply.',
+          'Sends a text message to the subscriber and optionally waits for the reply.',
         inputSchema: textMessageInputSchema,
         outputSchema: stdIncomingMessageSchema,
         settingsSchema: textMessageSettingsSchema,
@@ -58,9 +58,14 @@ export class SendTextMessageAction extends MessageAction<
   >) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildTextEnvelope(input.text);
-    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
+    return this.sendPreparedAndHandleReply(
+      context,
+      prepared,
+      envelope,
+      settings,
+      input.options,
+    );
   }
 }
 

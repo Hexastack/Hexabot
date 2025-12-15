@@ -41,7 +41,7 @@ export class SendAttachmentAction extends MessageAction<
       {
         name: 'send_attachment',
         description:
-          'Sends an attachment message to the subscriber and waits for the reply.',
+          'Sends an attachment message to the subscriber and optionally waits for the reply.',
         inputSchema: attachmentInputSchema,
         outputSchema: stdIncomingMessageSchema,
         settingsSchema: attachmentSettingsSchema,
@@ -64,9 +64,14 @@ export class SendAttachmentAction extends MessageAction<
       input.attachment,
       input.quick_replies ?? [],
     );
-    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
+    return this.sendPreparedAndHandleReply(
+      context,
+      prepared,
+      envelope,
+      settings,
+      input.options,
+    );
   }
 }
 

@@ -40,7 +40,7 @@ export class SendButtonsAction extends MessageAction<
       {
         name: 'send_buttons',
         description:
-          'Sends a text message with buttons to the subscriber and waits for the reply.',
+          'Sends a text message with buttons to the subscriber and optionally waits for the reply.',
         inputSchema: buttonsInputSchema,
         outputSchema: stdIncomingMessageSchema,
         settingsSchema: buttonsSettingsSchema,
@@ -59,9 +59,14 @@ export class SendButtonsAction extends MessageAction<
       input.text,
       input.buttons,
     );
-    const options = this.resolveMessageOptions(input.options, settings);
 
-    return this.sendPreparedAndSuspend(context, prepared, envelope, options);
+    return this.sendPreparedAndHandleReply(
+      context,
+      prepared,
+      envelope,
+      settings,
+      input.options,
+    );
   }
 }
 
