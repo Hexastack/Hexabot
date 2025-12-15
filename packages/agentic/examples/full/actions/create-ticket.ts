@@ -6,8 +6,8 @@
 
 import { z } from 'zod';
 
-import { defineAction } from '../../src';
-import { SettingsSchema } from '../../src/dsl.types';
+import { defineAction } from '../../../src';
+import { SettingsSchema } from '../../../src/dsl.types';
 import type { ExampleContext } from '../context';
 
 const inputSchema = z.object({

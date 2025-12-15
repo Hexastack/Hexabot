@@ -7,7 +7,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Product overview: `packages/agentic/README.md`.
 - DSL reference: `packages/agentic/DSL.md` (annotated YAML language guide).
 - Runtime source: `packages/agentic/src/*`.
-- Example workflow + actions: `packages/agentic/example/workflow.yml|ts` and `packages/agentic/example/actions/*`.
+- Example workflow + actions: `packages/agentic/examples/full/workflow.yml|ts` and `packages/agentic/examples/full/actions/*`.
 - Tests: `packages/agentic/src/__tests__` (Jest).
 
 ## Tooling and commands
@@ -15,7 +15,8 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Build: `pnpm --filter @hexabot-ai/agentic build`
 - Type-check: `pnpm --filter @hexabot-ai/agentic typecheck`
 - Tests: `pnpm --filter @hexabot-ai/agentic test`
-- Run the sample workflow: `pnpm dlx ts-node packages/agentic/example/workflow.ts`
+- Run the full sample workflow: `pnpm dlx ts-node packages/agentic/examples/full/workflow.ts`
+- Run the suspend/resume quickstart: `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`
 
 ## DSL essentials (YAML or JS object)
 - Workflow parts: `workflow` metadata, optional `inputs.schema`, `context`, `memory`, `defaults.settings`, `tasks`, `flow`, `outputs`.
@@ -54,6 +55,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - For new actions in the example, update `packages/agentic/example/actions/*` and `example/workflow.yml` so the runnable demo continues to work.
 - Prefer small, well-named helper functions; keep the public surface re-exported via `packages/agentic/src/index.ts`.
 
-## Quick reference: example
-- Annotated YAML DSL: `packages/agentic/example/workflow.yml` shows a realistic flow with human-in-the-loop pauses, branching, and a loop accumulator.
-- Runnable script: `packages/agentic/example/workflow.ts` builds a workflow from YAML, registers actions, attaches an event emitter, and demonstrates `WorkflowRunner.start`.
+## Quick reference: examples
+- Annotated YAML DSL: `packages/agentic/examples/full/workflow.yml` shows a realistic flow with human-in-the-loop pauses, branching, and a loop accumulator.
+- Runnable script: `packages/agentic/examples/full/workflow.ts` builds a workflow from YAML, registers actions, attaches an event emitter, and demonstrates `WorkflowRunner.start`.
+- Suspend/resume minimal demo: `packages/agentic/examples/suspend-resume/workflow.yml|ts` shows pausing a run until `resume` is called with a reply payload.

@@ -176,7 +176,7 @@ export class WorkflowRunner {
     this.status = 'running';
     this.lastResumeData = args.resumeData;
 
-    const suspension = this.suspension;
+    const suspension: Suspension = this.suspension;
 
     return this.runExecution(() => suspension.continue(args.resumeData));
   }

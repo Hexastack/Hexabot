@@ -11,7 +11,14 @@ import { parse as parseYaml } from 'yaml';
 
 import { validateWorkflow } from '../dsl.types';
 
-const fixturePath = path.join(__dirname, '..', '..', 'example', 'workflow.yml');
+const fixturePath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'examples',
+  'full',
+  'workflow.yml',
+);
 const fixtureYaml = fs.readFileSync(fixturePath, 'utf8');
 
 describe('validateWorkflow', () => {

@@ -3,6 +3,6 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "example/**/*.ts", "jest.config.ts"],
+  "include": ["src/**/*.ts", "examples/**/*.ts", "jest.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

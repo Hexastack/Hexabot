@@ -150,9 +150,9 @@ Attach listeners to stream logs, emit metrics, or capture snapshots for debuggin
 
 ## Examples and scripts
 
-- Full annotated DSL and runnable example: `packages/agentic/example/DSL.md`, `example/workflow.yml`, `example/workflow.ts`.
-- Mock action implementations: `packages/agentic/example/actions/*`.
-- Run the demo: `pnpm dlx ts-node packages/agentic/example/workflow.ts`.
+- Full DSL walkthrough and runnable demo: `packages/agentic/DSL.md`, `packages/agentic/examples/full/workflow.yml`, `packages/agentic/examples/full/workflow.ts`, with mock actions in `packages/agentic/examples/full/actions/*`.
+- Suspend/resume quickstart: `packages/agentic/examples/suspend-resume/workflow.yml` and `packages/agentic/examples/suspend-resume/workflow.ts` show pausing a run and resuming with reply data.
+- Run the demos with ts-node: `pnpm dlx ts-node packages/agentic/examples/full/workflow.ts` or `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`.
 
 ## Development
 

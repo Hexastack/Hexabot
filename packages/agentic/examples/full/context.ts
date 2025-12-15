@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseWorkflowContext, type WorkflowEventEmitterLike } from '../src';
+import {
+  BaseWorkflowContext,
+  WorkflowEventEmitter,
+  type WorkflowEventEmitterLike,
+} from '../../src';
 
 export type ExampleContextState = {
   user_id: string;
@@ -15,11 +19,14 @@ export type ExampleContextState = {
 };
 
 export class ExampleContext extends BaseWorkflowContext<ExampleContextState> {
+  public eventEmitter: WorkflowEventEmitterLike<WorkflowEventEmitter>;
+
   constructor(
     state: ExampleContextState,
-    eventEmitter?: WorkflowEventEmitterLike,
+    eventEmitter: WorkflowEventEmitterLike<WorkflowEventEmitter> = new WorkflowEventEmitter(),
   ) {
-    super(state, eventEmitter);
+    super(state);
+    this.eventEmitter = eventEmitter;
   }
 
   log(message: string, payload?: unknown): void {
