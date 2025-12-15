@@ -4,8 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { CmsModule } from '@/cms/cms.module';
 
 import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
@@ -20,6 +22,7 @@ import { WorkflowService } from './services/workflow.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
+    forwardRef(() => CmsModule),
   ],
   controllers: [WorkflowController],
   providers: [

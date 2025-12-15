@@ -10,6 +10,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { Context } from '@/chat/types/context';
+import { ContentTypeService } from '@/cms/services/content-type.service';
+import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -32,6 +34,12 @@ export class WorkflowContext extends BaseWorkflowContext<
   @Inject(LoggerService)
   private readonly logger: LoggerService;
 
+  @Inject(ContentService)
+  private readonly content: ContentService;
+
+  @Inject(ContentTypeService)
+  private readonly contentType: ContentTypeService;
+
   @Inject(EventEmitter2)
   readonly eventEmitter: EventEmitter2;
 
@@ -40,6 +48,8 @@ export class WorkflowContext extends BaseWorkflowContext<
       i18n: this.i18n,
       settings: this.settings,
       logger: this.logger,
+      content: this.content,
+      contentType: this.contentType,
     };
   }
 

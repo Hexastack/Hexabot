@@ -33,3 +33,5 @@ export * from './actions/messaging/quick-replies.action';
 export * from './actions/messaging/buttons.action';
 
 export * from './actions/messaging/attachment.action';
+
+export * from './actions/messaging/list.action';
