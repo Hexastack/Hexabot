@@ -14,7 +14,7 @@
   "[properties]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "eslint.workingDirectories": ["./api", "./frontend"],
+  "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
