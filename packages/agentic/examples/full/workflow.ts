@@ -7,7 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Workflow, WorkflowEventEmitter } from '../src';
+import { Workflow, WorkflowEventEmitter } from '../../src';
 
 import { exampleActions } from './actions';
 import { ExampleContext } from './context';
@@ -71,5 +71,5 @@ async function main() {
   console.error('Workflow failed:', result.error);
 }
 
-// pnpm dlx ts-node packages/agentic/example/workflow.ts
+// pnpm dlx ts-node packages/agentic/examples/full/workflow.ts
 void main();

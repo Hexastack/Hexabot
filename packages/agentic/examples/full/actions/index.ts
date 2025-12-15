@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Action, Settings } from '../../src';
+import type { Action, Settings } from '../../../src';
 import type { ExampleContext } from '../context';
 
 import { awaitUserInput } from './await-user-input';

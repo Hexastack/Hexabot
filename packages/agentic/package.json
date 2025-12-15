@@ -15,7 +15,7 @@
   },
   "files": [
     "dist",
-    "example",
+    "examples",
     "src"
   ],
   "dependencies": {
