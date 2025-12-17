@@ -9,12 +9,12 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 import {
   MessageAction,
   MessageActionSettings,
+  messageActionOutputSchema,
   messageActionSettingsSchema,
 } from './message-action.base';
 
@@ -39,7 +39,7 @@ export class SendTextMessageAction extends MessageAction<
         description:
           'Sends a text message to the subscriber and optionally waits for the reply.',
         inputSchema: textMessageInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: messageActionOutputSchema,
         settingsSchema: textMessageSettingsSchema,
       },
       actionService,
@@ -58,12 +58,7 @@ export class SendTextMessageAction extends MessageAction<
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildTextEnvelope(input.text);
 
-    return this.sendPreparedAndHandleReply(
-      context,
-      prepared,
-      envelope,
-      settings,
-    );
+    return this.sendPreparedMessage(context, prepared, envelope, settings);
   }
 }
 

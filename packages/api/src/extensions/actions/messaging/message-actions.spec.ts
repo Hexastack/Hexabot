@@ -189,17 +189,14 @@ describe('MessageAction base', () => {
     expect(handler.getName).toHaveBeenCalled();
   });
 
-  it('sends the message, emits stats, and suspends when awaiting a reply', async () => {
+  it('sends the message, emits stats, and returns sent metadata', async () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.text,
       message: { text: 'hi' },
     };
-    const suspended = { status: 'suspended' };
-    workflow.suspend.mockResolvedValue(suspended);
-
-    const result = await (action as any).sendPreparedAndHandleReply(
+    const result = await (action as any).sendPreparedMessage(
       context,
       prepared,
       envelope,
@@ -238,37 +235,30 @@ describe('MessageAction base', () => {
       },
       prepared.event,
     );
-    expect(workflow.suspend).toHaveBeenCalledWith({
-      reason: 'awaiting_user_response',
-      data: {
-        action: action.getName(),
+    expect(result).toEqual({
+      sent: {
+        mid: 'server-mid',
         channel: 'web',
-        recipient: recipient.id,
-        workflowRunId: 'run-123',
-        messageId: 'server-mid',
         format: OutgoingMessageFormat.text,
         envelope: envelope.message,
       },
     });
-    expect(result).toBe(suspended);
   });
 
-  it('returns immediately when not awaiting a reply', async () => {
+  it('returns sent metadata when no mid is provided by handler', async () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.quickReplies,
       message: { text: 'question', quickReplies: [] },
     };
-    const incoming = { text: 'latest-incoming' };
-    (event.getMessage as jest.Mock).mockReturnValue(incoming);
     handler.sendMessage.mockResolvedValueOnce({});
 
-    const result = await (action as any).sendPreparedAndHandleReply(
+    const result = await (action as any).sendPreparedMessage(
       context,
       prepared,
       envelope,
-      { await_reply: false } as MessageActionSettings,
+      {} as MessageActionSettings,
     );
 
     expect(handler.sendMessage).toHaveBeenCalledWith(
@@ -277,12 +267,17 @@ describe('MessageAction base', () => {
       {},
       prepared.chatContext,
     );
-    expect(workflow.suspend).not.toHaveBeenCalled();
-    expect(event.getMessage).toHaveBeenCalled();
-    expect(result).toBe(incoming);
+    expect(result).toEqual({
+      sent: {
+        mid: undefined,
+        channel: 'web',
+        format: OutgoingMessageFormat.quickReplies,
+        envelope: envelope.message,
+      },
+    });
   });
 
-  it('delegates send flow through sendAndSuspend', async () => {
+  it('delegates send flow through prepareAndSendMessage', async () => {
     const context = buildWorkflowContext();
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.text,
@@ -290,19 +285,24 @@ describe('MessageAction base', () => {
     };
     const prepared = await (action as any).prepare(context);
     const sendSpy = jest
-      .spyOn(action as any, 'sendPreparedAndHandleReply')
+      .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('sent');
     const prepareSpy = jest
       .spyOn(action as any, 'prepare')
       .mockResolvedValue(prepared);
-    const result = await (action as any).sendAndSuspend(context, envelope, {
-      await_reply: true,
-    } as MessageActionSettings);
+    const result = await (action as any).prepareAndSendMessage(
+      context,
+      envelope,
+      {} as MessageActionSettings,
+    );
 
     expect(prepareSpy).toHaveBeenCalledWith(context);
-    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {
-      await_reply: true,
-    });
+    expect(sendSpy).toHaveBeenCalledWith(
+      context,
+      prepared,
+      envelope,
+      {} as MessageActionSettings,
+    );
     expect(result).toBe('sent');
   });
 

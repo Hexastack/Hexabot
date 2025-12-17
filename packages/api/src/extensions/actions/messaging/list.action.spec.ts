@@ -74,12 +74,11 @@ describe('SendListAction', () => {
       .spyOn(action as any, 'prepare')
       .mockResolvedValue(prepared);
     const sendSpy = jest
-      .spyOn(action as any, 'sendPreparedAndHandleReply')
+      .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('sent');
     contentService.getContent.mockResolvedValue(contentResult);
 
     const settings = {
-      await_reply: true,
       content: { ...baseContentOptions, entity: 'ct-id' },
     } as MessageActionSettings & { content: ContentOptions };
     const input = { skip: 1, query: { status: true } };
@@ -106,7 +105,7 @@ describe('SendListAction', () => {
       action.execute({
         input: { skip: 0 } as any,
         context,
-        settings: { await_reply: true } as MessageActionSettings,
+        settings: {} as MessageActionSettings,
       } as any),
     ).rejects.toThrow('Content settings are required to send a list');
   });
@@ -122,7 +121,6 @@ describe('SendListAction', () => {
         input: { skip: 0 } as any,
         context,
         settings: {
-          await_reply: true,
           content: { ...baseContentOptions, entity: 'missing' },
         } as any,
       }),

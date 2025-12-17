@@ -17,12 +17,48 @@ import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import { Context } from '@/chat/types/context';
 import {
   StdIncomingMessage,
+  stdIncomingMessageSchema,
+  StdOutgoingMessage,
   StdOutgoingMessageEnvelope,
+  StdOutgoingMessageSchema,
 } from '@/chat/types/message';
 import { getDefaultWorkflowContext } from '@/workflow/defaults/context';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
-export type MessageActionOutput = StdIncomingMessage;
+const sentFormats = [
+  'text',
+  'quickReplies',
+  'buttons',
+  'list',
+  'carousel',
+  'attachment',
+] as const;
+
+export const sentMessageSchema = z.object({
+  mid: z.string().optional(),
+  channel: z.string(),
+  format: z.enum(sentFormats),
+  envelope: StdOutgoingMessageSchema,
+});
+
+type SentMessageFormat = (typeof sentFormats)[number];
+
+export type SentMessageInfo = {
+  mid?: string;
+  channel: string;
+  format: SentMessageFormat;
+  envelope: StdOutgoingMessage;
+};
+
+export type MessageActionOutput = {
+  sent: SentMessageInfo;
+  reply?: StdIncomingMessage;
+};
+
+export const messageActionOutputSchema = z.object({
+  sent: sentMessageSchema,
+  reply: stdIncomingMessageSchema.optional(),
+});
 
 interface PreparedMessageContext {
   event: EventWrapper<any, any>;
@@ -33,7 +69,6 @@ interface PreparedMessageContext {
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
   typing: z.union([z.boolean(), z.number().int().nonnegative()]).optional(),
-  await_reply: z.boolean().default(true),
 });
 
 export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
@@ -113,7 +148,7 @@ export abstract class MessageAction<
     };
   }
 
-  protected async sendPreparedAndHandleReply(
+  protected async sendPreparedMessage(
     workflowContext: WorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
@@ -137,9 +172,15 @@ export abstract class MessageAction<
       'All Messages',
     );
 
-    const mid = response && 'mid' in response ? response.mid : '';
-    const sentMessage: MessageCreateDto = {
+    const mid = response && 'mid' in response ? response.mid : undefined;
+    const sent: SentMessageInfo = {
       mid,
+      channel: event.getHandler().getName(),
+      format: envelope.format,
+      envelope: envelope.message,
+    };
+    const sentMessage: MessageCreateDto = {
+      mid: mid ?? '',
       message: envelope.message,
       recipient: recipient.id,
       handover: false,
@@ -148,41 +189,22 @@ export abstract class MessageAction<
     };
     await eventEmitter.emitAsync('hook:chatbot:sent', sentMessage, event);
 
-    if (!this.shouldAwaitReply(settings)) {
-      return event.getMessage();
-    }
-
-    return workflowContext.workflow.suspend<MessageActionOutput>({
-      reason: 'awaiting_user_response',
-      data: {
-        action: this.getName(),
-        channel: event.getHandler().getName(),
-        recipient: recipient.id,
-        workflowRunId: workflowContext.workflowRunId,
-        messageId: mid || undefined,
-        format: envelope.format,
-        envelope: envelope.message,
-      },
-    });
+    return { sent };
   }
 
-  protected async sendAndSuspend(
+  protected async prepareAndSendMessage(
     workflowContext: WorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
   ): Promise<MessageActionOutput> {
     const prepared = await this.prepare(workflowContext);
 
-    return this.sendPreparedAndHandleReply(
+    return this.sendPreparedMessage(
       workflowContext,
       prepared,
       envelope,
       settings,
     );
-  }
-
-  private shouldAwaitReply(settings: S) {
-    return settings.await_reply ?? true;
   }
 
   protected resolveMessageOptions(

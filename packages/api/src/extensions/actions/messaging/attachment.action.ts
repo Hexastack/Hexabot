@@ -10,13 +10,13 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { attachmentPayloadSchema } from '@/chat/types/attachment';
-import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 import {
   MessageAction,
   MessageActionSettings,
+  messageActionOutputSchema,
   messageActionSettingsSchema,
 } from '../messaging/message-action.base';
 
@@ -42,7 +42,7 @@ export class SendAttachmentAction extends MessageAction<
         description:
           'Sends an attachment message to the subscriber and optionally waits for the reply.',
         inputSchema: attachmentInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: messageActionOutputSchema,
         settingsSchema: attachmentSettingsSchema,
       },
       actionService,
@@ -64,12 +64,7 @@ export class SendAttachmentAction extends MessageAction<
       input.quick_replies ?? [],
     );
 
-    return this.sendPreparedAndHandleReply(
-      context,
-      prepared,
-      envelope,
-      settings,
-    );
+    return this.sendPreparedMessage(context, prepared, envelope, settings);
   }
 }
 

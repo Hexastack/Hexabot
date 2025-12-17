@@ -9,13 +9,13 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 import {
   MessageAction,
   MessageActionSettings,
+  messageActionOutputSchema,
   messageActionSettingsSchema,
 } from './message-action.base';
 
@@ -43,7 +43,7 @@ export class SendQuickRepliesAction extends MessageAction<
         description:
           'Sends a text message with quick replies to the subscriber and optionally waits for the reply.',
         inputSchema: quickRepliesInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: messageActionOutputSchema,
         settingsSchema: quickRepliesSettingsSchema,
       },
       actionService,
@@ -65,12 +65,7 @@ export class SendQuickRepliesAction extends MessageAction<
       input.quick_replies,
     );
 
-    return this.sendPreparedAndHandleReply(
-      context,
-      prepared,
-      envelope,
-      settings,
-    );
+    return this.sendPreparedMessage(context, prepared, envelope, settings);
   }
 }
 

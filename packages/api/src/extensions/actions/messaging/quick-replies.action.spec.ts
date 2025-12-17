@@ -44,7 +44,7 @@ describe('SendQuickRepliesAction', () => {
       .spyOn(action as any, 'prepare')
       .mockResolvedValue(prepared);
     const sendSpy = jest
-      .spyOn(action as any, 'sendPreparedAndHandleReply')
+      .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('result');
     const input = {
       text: 'Pick one',
@@ -55,16 +55,14 @@ describe('SendQuickRepliesAction', () => {
     const result = await action.execute({
       input,
       context,
-      settings: { await_reply: true } as MessageActionSettings,
+      settings: {} as MessageActionSettings,
     });
 
     expect(prepareSpy).toHaveBeenCalledWith(context);
     expect(
       prepared.envelopeFactory.buildQuickRepliesEnvelope,
     ).toHaveBeenCalledWith(input.text, input.quick_replies);
-    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {
-      await_reply: true,
-    });
+    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {});
     expect(result).toBe('result');
   });
 });

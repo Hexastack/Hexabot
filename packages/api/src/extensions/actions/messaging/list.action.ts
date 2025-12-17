@@ -9,10 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import {
-  OutgoingMessageFormat,
-  stdIncomingMessageSchema,
-} from '@/chat/types/message';
+import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions, contentOptionsSchema } from '@/chat/types/options';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
@@ -20,6 +17,7 @@ import { WorkflowContext } from '@/workflow/services/workflow-context';
 import {
   MessageAction,
   MessageActionSettings,
+  messageActionOutputSchema,
   messageActionSettingsSchema,
 } from './message-action.base';
 
@@ -49,7 +47,7 @@ export class SendListAction extends MessageAction<
         description:
           'Fetches CMS content and sends it as a list or carousel, optionally waiting for the reply.',
         inputSchema: listActionInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: messageActionOutputSchema,
         settingsSchema: listActionSettingsSchema,
       },
       actionService,
@@ -119,12 +117,7 @@ export class SendListAction extends MessageAction<
       pagination,
     );
 
-    return this.sendPreparedAndHandleReply(
-      context,
-      prepared,
-      envelope,
-      settings,
-    );
+    return this.sendPreparedMessage(context, prepared, envelope, settings);
   }
 }
 

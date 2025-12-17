@@ -44,7 +44,7 @@ describe('SendButtonsAction', () => {
       .spyOn(action as any, 'prepare')
       .mockResolvedValue(prepared);
     const sendSpy = jest
-      .spyOn(action as any, 'sendPreparedAndHandleReply')
+      .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('result');
     const input: Parameters<SendButtonsAction['execute']>[0]['input'] = {
       text: 'Choose',
@@ -60,7 +60,7 @@ describe('SendButtonsAction', () => {
     const result = await action.execute({
       input,
       context,
-      settings: { await_reply: true } as MessageActionSettings,
+      settings: {} as MessageActionSettings,
     });
 
     expect(prepareSpy).toHaveBeenCalledWith(context);
@@ -68,9 +68,7 @@ describe('SendButtonsAction', () => {
       input.text,
       input.buttons,
     );
-    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {
-      await_reply: true,
-    });
+    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {});
     expect(result).toBe('result');
   });
 });

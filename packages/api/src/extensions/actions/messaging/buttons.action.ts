@@ -10,12 +10,12 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { buttonSchema } from '@/chat/types/button';
-import { stdIncomingMessageSchema } from '@/chat/types/message';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 import {
   MessageAction,
   MessageActionSettings,
+  messageActionOutputSchema,
   messageActionSettingsSchema,
 } from './message-action.base';
 
@@ -41,7 +41,7 @@ export class SendButtonsAction extends MessageAction<
         description:
           'Sends a text message with buttons to the subscriber and optionally waits for the reply.',
         inputSchema: buttonsInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: messageActionOutputSchema,
         settingsSchema: buttonsSettingsSchema,
       },
       actionService,
@@ -59,12 +59,7 @@ export class SendButtonsAction extends MessageAction<
       input.buttons,
     );
 
-    return this.sendPreparedAndHandleReply(
-      context,
-      prepared,
-      envelope,
-      settings,
-    );
+    return this.sendPreparedMessage(context, prepared, envelope, settings);
   }
 }
 

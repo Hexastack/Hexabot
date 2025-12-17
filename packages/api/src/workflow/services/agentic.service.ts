@@ -7,7 +7,6 @@
 import {
   Workflow as AgentWorkflow,
   ExecutionState,
-  WorkflowDefinition,
   WorkflowRunner,
 } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
@@ -39,7 +38,7 @@ export class AgenticService {
    * Process an incoming channel event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleMessageEvent(event: EventWrapper<any, any>) {
+  async handleMessageEvent(event: EventWrapper<any, any>): Promise<void> {
     const subscriber = event.getSender();
     if (!subscriber) {
       this.logger.warn(
@@ -84,18 +83,18 @@ export class AgenticService {
   /**
    * Shared runner lifecycle for starting or resuming a workflow.
    */
-  private async runWorkflow(options: RunWorkflowOptions) {
+  private async runWorkflow(options: RunWorkflowOptions): Promise<void> {
     const { event } = options;
     const run =
       options.mode === 'start'
         ? await this.createRun(options.workflow, options.subscriber, event)
         : options.run;
-    const workflowInstance = this.buildWorkflow(run.workflow.definition);
+    const workflowInstance = AgentWorkflow.fromDefinition(
+      run.workflow.definition,
+      this.buildActionsRegistry(),
+    );
     const context = this.workflowContext.buildFromRun(run, event);
-    const contextState =
-      context && Object.keys(context.state ?? {}).length > 0
-        ? context.state
-        : null;
+    const contextState = this.getContextState(context);
     const strategy = await this.createRunStrategy(
       options.mode,
       run,
@@ -127,6 +126,9 @@ export class AgenticService {
     );
   }
 
+  /**
+   * Build the execution strategy for starting a new workflow or resuming an existing one.
+   */
   private async createRunStrategy(
     mode: RunWorkflowOptions['mode'],
     run: WorkflowRunFull,
@@ -155,8 +157,10 @@ export class AgenticService {
       };
     }
 
+    const latestInput = this.buildInput(event);
+    const resumeData = this.buildResumeData(event);
     const runner = await workflowInstance.buildRunnerFromState({
-      state: this.buildExecutionState(run),
+      state: this.buildExecutionState(run, latestInput),
       context,
       snapshot: run.snapshot ?? { status: run.status, actions: {} },
       suspension: run.suspendedStep
@@ -167,9 +171,8 @@ export class AgenticService {
           }
         : undefined,
       runId: run.id,
-      lastResumeData: run.lastResumeData,
+      lastResumeData: resumeData,
     });
-    const resumeData = this.buildResumeData(event);
 
     return {
       runner,
@@ -217,14 +220,11 @@ export class AgenticService {
     result: WorkflowResult,
     resumeData?: unknown,
     runtimeContext?: WorkflowContext,
-  ) {
+  ): Promise<void> {
+    const contextState = this.getContextState(runtimeContext);
     const state = this.getRunnerState(runner);
     const metadata = this.buildMetadata(state, run.metadata);
     const output = this.pickOutput(result, state, run.output);
-    const context =
-      runtimeContext && Object.keys(runtimeContext.state ?? {}).length > 0
-        ? runtimeContext.state
-        : null;
 
     switch (result.status) {
       case 'suspended':
@@ -234,7 +234,7 @@ export class AgenticService {
           data: result.data,
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
-          context,
+          context: contextState,
           lastResumeData: resumeData,
         });
         break;
@@ -242,7 +242,7 @@ export class AgenticService {
         await this.workflowRunService.markFinished(run.id, {
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
-          context,
+          context: contextState,
           output: result.output ?? output,
         });
         break;
@@ -251,7 +251,7 @@ export class AgenticService {
         await this.workflowRunService.markFailed(run.id, {
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
-          context,
+          context: contextState,
           error: this.stringifyError(result.error),
         });
         break;
@@ -262,26 +262,24 @@ export class AgenticService {
       output,
       memory: state?.memory ?? run.memory ?? null,
       metadata,
-      context,
+      context: contextState,
     });
-  }
-
-  /**
-   * Prepare a workflow instance from its definition and registered actions.
-   */
-  private buildWorkflow(definition: WorkflowDefinition) {
-    return AgentWorkflow.fromDefinition(
-      definition,
-      this.buildActionsRegistry(),
-    );
   }
 
   /**
    * Build the ExecutionState used to rebuild a runner.
    */
-  private buildExecutionState(run: WorkflowRunFull): ExecutionState {
+  private buildExecutionState(
+    run: WorkflowRunFull,
+    latestInput?: Record<string, unknown>,
+  ): ExecutionState {
+    const baseInput = run.input ?? {};
+    const mergedInput =
+      latestInput && Object.keys(latestInput).length > 0
+        ? { ...baseInput, ...latestInput }
+        : baseInput;
     const state: ExecutionState = {
-      input: run.input ?? {},
+      input: mergedInput,
       memory: run.memory ?? {},
       output: run.output ?? {},
       iterationStack: [],
@@ -303,7 +301,7 @@ export class AgenticService {
   /**
    * Build the workflow input payload from the incoming event.
    */
-  private buildInput(event: EventWrapper<any, any>) {
+  private buildInput(event: EventWrapper<any, any>): Record<string, unknown> {
     const input: Record<string, unknown> = {
       channel: event.getChannelData(),
       message_type: event.getMessageType(),
@@ -324,19 +322,29 @@ export class AgenticService {
   /**
    * Extract the resume payload expected by messaging actions.
    */
-  private buildResumeData(event: EventWrapper<any, any>) {
-    return this.safeInvoke(() => event.getMessage());
+  private buildResumeData(
+    event: EventWrapper<any, any>,
+  ): Record<string, unknown> | undefined {
+    const message = this.safeInvoke(() => event.getMessage());
+
+    return message === undefined ? undefined : { message };
   }
 
   /**
    * Build a mapping of registered actions keyed by their names.
    */
-  private buildActionsRegistry() {
+  private buildActionsRegistry(): Record<
+    string,
+    ReturnType<ActionService['getAll']>[number]
+  > {
     return Object.fromEntries(
       this.actionService.getAll().map((action) => [action.getName(), action]),
     );
   }
 
+  /**
+   * Safely invoke a function and swallow any errors, returning undefined on failure.
+   */
   private safeInvoke<T>(fn: () => T): T | undefined {
     try {
       const value = fn();
@@ -347,10 +355,29 @@ export class AgenticService {
     }
   }
 
+  /**
+   * Retrieve the internal runner state from the workflow runner instance.
+   */
   private getRunnerState(runner: WorkflowRunner): ExecutionState | undefined {
     return (runner as any).state as ExecutionState | undefined;
   }
 
+  /**
+   * Extract a context snapshot suitable for persistence.
+   */
+  private getContextState(
+    context?: WorkflowContext,
+  ): Record<string, unknown> | null {
+    if (!context?.state || Object.keys(context.state).length === 0) {
+      return null;
+    }
+
+    return { ...context.state };
+  }
+
+  /**
+   * Build the metadata payload for persisting workflow run state.
+   */
   private buildMetadata(
     state: ExecutionState | undefined,
     existing?: Record<string, unknown> | null,
@@ -367,6 +394,9 @@ export class AgenticService {
     return Object.keys(next).length > 0 ? next : null;
   }
 
+  /**
+   * Decide which output payload to persist based on result and runner state.
+   */
   private pickOutput(
     result: WorkflowResult,
     state: ExecutionState | undefined,
@@ -383,12 +413,15 @@ export class AgenticService {
     return fallback ?? null;
   }
 
+  /**
+   * Persist a failing workflow run when runner execution throws.
+   */
   private async markRunFailed(
     run: WorkflowRunFull,
     runner: WorkflowRunner,
     contextState: Record<string, unknown> | null,
     error: unknown,
-  ) {
+  ): Promise<void> {
     const state = this.getRunnerState(runner);
     const metadata = this.buildMetadata(state, run.metadata);
 
@@ -408,7 +441,10 @@ export class AgenticService {
     });
   }
 
-  private stringifyError(error: unknown) {
+  /**
+   * Convert an unknown error into a readable string.
+   */
+  private stringifyError(error: unknown): string {
     if (error instanceof Error) {
       return error.message;
     }

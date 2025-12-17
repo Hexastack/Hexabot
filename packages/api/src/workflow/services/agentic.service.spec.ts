@@ -172,6 +172,17 @@ describe('AgenticService', () => {
     const subscriber = { id: 'subscriber-1' } as Subscriber;
     const resumeMessage = { text: 'Resume message' };
     const event = buildEvent(subscriber, { message: resumeMessage });
+    const mergedInput = {
+      foo: 'bar',
+      channel: { name: 'web' },
+      message_type: 'text',
+      event_type: 'message',
+      sender: subscriber,
+      payload: { payload: 'foo' },
+      message: resumeMessage,
+      text: resumeMessage.text,
+      mid: 'mid-123',
+    };
     const workflow: Workflow = {
       id: 'workflow-1',
       name: messagingWorkflowDefinition.workflow.name,
@@ -207,7 +218,7 @@ describe('AgenticService', () => {
       updatedAt: new Date(),
     } as WorkflowRunFull;
     const runnerState = {
-      input: { fromState: true },
+      input: mergedInput,
       output: { collected: true },
       memory: { resumed: true },
       iteration: 3,
@@ -256,7 +267,7 @@ describe('AgenticService', () => {
 
     expect(workflowInstance.buildRunnerFromState).toHaveBeenCalledWith({
       state: {
-        input: run.input,
+        input: mergedInput,
         memory: run.memory,
         output: run.output,
         iterationStack: ['initial'],
@@ -271,15 +282,17 @@ describe('AgenticService', () => {
         data: run.suspensionData,
       },
       runId: run.id,
-      lastResumeData: run.lastResumeData,
+      lastResumeData: { message: resumeMessage },
     });
     expect(workflowRunService.markRunning).toHaveBeenCalledWith(run.id, {
-      lastResumeData: resumeMessage,
+      lastResumeData: { message: resumeMessage },
       snapshot: run.snapshot,
       memory: run.memory,
       context: expectedContext,
     });
-    expect(runner.resume).toHaveBeenCalledWith({ resumeData: resumeMessage });
+    expect(runner.resume).toHaveBeenCalledWith({
+      resumeData: { message: resumeMessage },
+    });
     expect(workflowRunService.markSuspended).toHaveBeenCalledWith(run.id, {
       stepId: 'prompt_next_step',
       reason: 'awaiting_user',
@@ -287,7 +300,7 @@ describe('AgenticService', () => {
       snapshot: { status: 'suspended', actions: {} },
       memory: runnerState.memory,
       context: expectedContext,
-      lastResumeData: resumeMessage,
+      lastResumeData: { message: resumeMessage },
     });
     expect(workflowRunService.updateOne).toHaveBeenCalledWith(run.id, {
       input: runnerState.input,
@@ -460,5 +473,222 @@ describe('AgenticService', () => {
     );
     expect(workflowService.pickWorkflow).toHaveBeenCalled();
     expect(workflowRunService.create).not.toHaveBeenCalled();
+  });
+
+  it('persists failure results and metadata when runner reports failure', async () => {
+    const subscriber = { id: 'subscriber-4' } as Subscriber;
+    const event = buildEvent(subscriber, { id: 'evt-2' });
+    const expectedInput = {
+      channel: { name: 'web' },
+      message_type: 'text',
+      event_type: 'message',
+      sender: subscriber,
+      payload: { payload: 'foo' },
+      message: { text: 'Hello from user' },
+      text: 'Hello from user',
+      mid: 'evt-2',
+    };
+    const workflow: Workflow = {
+      id: 'workflow-4',
+      name: messagingWorkflowDefinition.workflow.name,
+      version: messagingWorkflowDefinition.workflow.version,
+      definition: { ...messagingWorkflowDefinition, memory: { fresh: true } },
+      description: messagingWorkflowDefinition.workflow.description,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Workflow;
+    const createdRun = { id: 'run-4' } as any;
+    const populatedRun: WorkflowRunFull = {
+      id: createdRun.id,
+      status: 'idle',
+      workflow,
+      subscriber,
+      input: expectedInput,
+      output: { previous: true },
+      memory: workflow.definition.memory,
+      context: null,
+      metadata: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as WorkflowRunFull;
+    const runnerState = {
+      input: { hydrated: true },
+      output: { fallback: true },
+      memory: { started: true },
+      iterationStack: ['step'],
+      iteration: 2,
+      accumulator: { runs: 1 },
+    };
+    const runner = {
+      start: jest.fn().mockResolvedValue({
+        status: 'failed',
+        snapshot: { status: 'failed', actions: {} },
+        error: 'runner failure',
+      }),
+      getSnapshot: jest.fn(),
+      state: runnerState,
+    };
+    const workflowInstance = {
+      buildRunnerFromState: jest.fn(),
+      buildAsyncRunner: jest.fn().mockResolvedValue(runner),
+    };
+    (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
+    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(null);
+    workflowService.pickWorkflow.mockResolvedValue(workflow);
+    workflowRunService.create.mockResolvedValue(createdRun);
+    workflowRunService.findOneAndPopulate.mockResolvedValue(populatedRun);
+    workflowRunService.markRunning.mockResolvedValue({
+      ...populatedRun,
+      status: 'running',
+    } as any);
+    workflowRunService.markFailed.mockResolvedValue({
+      ...populatedRun,
+      status: 'failed',
+    } as any);
+    workflowRunService.updateOne.mockResolvedValue({
+      ...populatedRun,
+      status: 'failed',
+    } as any);
+    workflowContext.state = { failure: 'context' };
+
+    await service.handleMessageEvent(event);
+
+    const expectedContext = {
+      failure: 'context',
+      subscriberId: subscriber.id,
+      workflowId: workflow.id,
+      runId: populatedRun.id,
+    };
+
+    expect(workflowInstance.buildAsyncRunner).toHaveBeenCalledWith({
+      runId: populatedRun.id,
+    });
+    expect(runner.start).toHaveBeenCalledWith({
+      inputData: expectedInput,
+      context: workflowContext,
+      memory: workflow.definition.memory,
+    });
+    expect(workflowRunService.markFailed).toHaveBeenCalledWith(
+      populatedRun.id,
+      {
+        snapshot: { status: 'failed', actions: {} },
+        memory: runnerState.memory,
+        context: expectedContext,
+        error: 'runner failure',
+      },
+    );
+    expect(workflowRunService.updateOne).toHaveBeenCalledWith(populatedRun.id, {
+      input: runnerState.input,
+      output: runnerState.output,
+      memory: runnerState.memory,
+      metadata: {
+        state: {
+          iteration: runnerState.iteration,
+          accumulator: runnerState.accumulator,
+          iterationStack: runnerState.iterationStack,
+        },
+      },
+      context: expectedContext,
+    });
+  });
+
+  it('marks run as failed when runner execution throws', async () => {
+    const subscriber = { id: 'subscriber-5' } as Subscriber;
+    const event = buildEvent(subscriber, { id: 'evt-3' });
+    const workflow: Workflow = {
+      id: 'workflow-5',
+      name: messagingWorkflowDefinition.workflow.name,
+      version: messagingWorkflowDefinition.workflow.version,
+      definition: messagingWorkflowDefinition,
+      description: messagingWorkflowDefinition.workflow.description,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Workflow;
+    const createdRun = { id: 'run-5' } as any;
+    const populatedRun: WorkflowRunFull = {
+      id: createdRun.id,
+      status: 'idle',
+      workflow,
+      subscriber,
+      input: {},
+      output: null,
+      memory: null,
+      context: null,
+      metadata: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as WorkflowRunFull;
+    const runnerState = {
+      input: { merged: true },
+      output: { failed: true },
+      memory: { temp: true },
+      iterationStack: [],
+      iteration: 0,
+      accumulator: { attempts: 1 },
+    };
+    const error = new Error('runner crashed');
+    const runner = {
+      start: jest.fn().mockRejectedValue(error),
+      getSnapshot: jest.fn().mockReturnValue({ status: 'failed', actions: {} }),
+      state: runnerState,
+    };
+    const workflowInstance = {
+      buildRunnerFromState: jest.fn(),
+      buildAsyncRunner: jest.fn().mockResolvedValue(runner),
+    };
+    (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
+    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(null);
+    workflowService.pickWorkflow.mockResolvedValue(workflow);
+    workflowRunService.create.mockResolvedValue(createdRun);
+    workflowRunService.findOneAndPopulate.mockResolvedValue(populatedRun);
+    workflowRunService.markRunning.mockResolvedValue({
+      ...populatedRun,
+      status: 'running',
+    } as any);
+    workflowRunService.markFailed.mockResolvedValue({
+      ...populatedRun,
+      status: 'failed',
+    } as any);
+    workflowRunService.updateOne.mockResolvedValue({
+      ...populatedRun,
+      status: 'failed',
+    } as any);
+    workflowContext.state = { crash: 'context' };
+
+    await service.handleMessageEvent(event);
+
+    const expectedContext = {
+      crash: 'context',
+      subscriberId: subscriber.id,
+      workflowId: workflow.id,
+      runId: populatedRun.id,
+    };
+
+    expect(workflowRunService.markFailed).toHaveBeenCalledWith(
+      populatedRun.id,
+      {
+        snapshot: { status: 'failed', actions: {} },
+        memory: runnerState.memory,
+        context: expectedContext,
+        error: 'runner crashed',
+      },
+    );
+    expect(workflowRunService.updateOne).toHaveBeenCalledWith(populatedRun.id, {
+      input: runnerState.input,
+      output: runnerState.output,
+      memory: runnerState.memory,
+      metadata: {
+        state: {
+          iteration: runnerState.iteration,
+          accumulator: runnerState.accumulator,
+          iterationStack: runnerState.iterationStack,
+        },
+      },
+      context: expectedContext,
+    });
+    expect(logger.error).toHaveBeenCalledWith(
+      'Unable to process incoming event through agentic workflow',
+      error,
+    );
   });
 });

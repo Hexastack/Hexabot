@@ -47,7 +47,7 @@ describe('SendAttachmentAction', () => {
       .spyOn(action as any, 'prepare')
       .mockResolvedValue(prepared);
     const sendSpy = jest
-      .spyOn(action as any, 'sendPreparedAndHandleReply')
+      .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('result');
     const input: Parameters<SendAttachmentAction['execute']>[0]['input'] = {
       attachment: { type: FileType.image, payload: { id: '123' } },
@@ -55,16 +55,14 @@ describe('SendAttachmentAction', () => {
     const result = await action.execute({
       input,
       context,
-      settings: { await_reply: true } as MessageActionSettings,
+      settings: {} as MessageActionSettings,
     });
 
     expect(prepareSpy).toHaveBeenCalledWith(context);
     expect(
       prepared.envelopeFactory.buildAttachmentEnvelope,
     ).toHaveBeenCalledWith(input.attachment, []);
-    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {
-      await_reply: true,
-    });
+    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {});
     expect(result).toBe('result');
   });
 });
