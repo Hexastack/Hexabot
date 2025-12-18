@@ -5,10 +5,11 @@
  */
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { MessageService } from '@/chat';
 import { Context } from '@/chat/types/context';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
@@ -43,6 +44,9 @@ export class WorkflowContext extends BaseWorkflowContext<
   @Inject(EventEmitter2)
   readonly eventEmitter: EventEmitter2;
 
+  @Inject(forwardRef(() => MessageService))
+  readonly message: MessageService;
+
   get services() {
     return {
       i18n: this.i18n,
@@ -50,6 +54,7 @@ export class WorkflowContext extends BaseWorkflowContext<
       logger: this.logger,
       content: this.content,
       contentType: this.contentType,
+      message: this.message,
     };
   }
 

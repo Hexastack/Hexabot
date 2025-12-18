@@ -40,6 +40,13 @@ export class AgenticService {
    */
   async handleMessageEvent(event: EventWrapper<any, any>): Promise<void> {
     const subscriber = event.getSender();
+    const eventContext = {
+      subscriberId: subscriber?.id,
+      messageId: this.safeInvoke(() => event.getId()),
+      eventType: this.safeInvoke(() => event.getEventType()),
+      messageType: this.safeInvoke(() => event.getMessageType()),
+    };
+    this.logger.debug('Handling incoming workflow event', eventContext);
     if (!subscriber) {
       this.logger.warn(
         'Skipping workflow execution due to missing subscriber on event',
@@ -54,6 +61,13 @@ export class AgenticService {
           subscriber.id,
         );
       if (suspendedRun) {
+        this.logger.log('Resuming suspended workflow run', {
+          ...eventContext,
+          runId: suspendedRun.id,
+          workflowId: suspendedRun.workflow?.id,
+          suspendedStep: suspendedRun.suspendedStep,
+          suspensionReason: suspendedRun.suspensionReason,
+        });
         await this.runWorkflow({ mode: 'resume', run: suspendedRun, event });
 
         return;
@@ -66,6 +80,10 @@ export class AgenticService {
         return;
       }
 
+      this.logger.log('Starting workflow run from latest definition', {
+        ...eventContext,
+        workflowId: workflow.id,
+      });
       await this.runWorkflow({
         mode: 'start',
         workflow,
@@ -89,12 +107,17 @@ export class AgenticService {
       options.mode === 'start'
         ? await this.createRun(options.workflow, options.subscriber, event)
         : options.run;
+    const logContext = this.buildRunLogContext(run, options.mode, event);
     const workflowInstance = AgentWorkflow.fromDefinition(
       run.workflow.definition,
       this.buildActionsRegistry(),
     );
     const context = this.workflowContext.buildFromRun(run, event);
     const contextState = this.getContextState(context);
+    this.logger.debug('Preparing workflow runner', {
+      ...logContext,
+      hasContextState: Boolean(contextState),
+    });
     const strategy = await this.createRunStrategy(
       options.mode,
       run,
@@ -103,6 +126,14 @@ export class AgenticService {
       event,
     );
 
+    this.logger.debug('Marking workflow run as running', {
+      ...logContext,
+      hasSnapshot: Boolean(strategy.markRunningInput.snapshot ?? run.snapshot),
+      hasMemory: Boolean(strategy.markRunningInput.memory ?? run.memory),
+      hasResumeData: Boolean(
+        strategy.markRunningInput.lastResumeData ?? strategy.resumeData,
+      ),
+    });
     await this.workflowRunService.markRunning(run.id, {
       ...strategy.markRunningInput,
       context: contextState,
@@ -110,19 +141,30 @@ export class AgenticService {
 
     let result: WorkflowResult;
     try {
+      this.logger.debug('Executing workflow runner', logContext);
       result = await strategy.execute();
     } catch (err) {
+      this.logger.error(
+        'Workflow runner threw during execution',
+        err,
+        logContext,
+      );
       await this.markRunFailed(run, strategy.runner, contextState, err);
 
       throw err;
     }
 
+    this.logger.debug('Workflow runner completed', {
+      ...logContext,
+      status: result.status,
+    });
     await this.persistResult(
       run,
       strategy.runner,
       result,
       strategy.resumeData,
       context,
+      logContext,
     );
   }
 
@@ -220,14 +262,24 @@ export class AgenticService {
     result: WorkflowResult,
     resumeData?: unknown,
     runtimeContext?: WorkflowContext,
+    logContext?: Record<string, unknown>,
   ): Promise<void> {
     const contextState = this.getContextState(runtimeContext);
     const state = this.getRunnerState(runner);
     const metadata = this.buildMetadata(state, run.metadata);
     const output = this.pickOutput(result, state, run.output);
+    this.logger.debug('Persisting workflow result', {
+      ...(logContext ?? {}),
+      status: result.status,
+    });
 
     switch (result.status) {
       case 'suspended':
+        this.logger.log('Workflow run suspended', {
+          ...(logContext ?? {}),
+          stepId: result.step.id,
+          reason: result.reason,
+        });
         await this.workflowRunService.markSuspended(run.id, {
           stepId: result.step.id,
           reason: result.reason,
@@ -239,6 +291,7 @@ export class AgenticService {
         });
         break;
       case 'finished':
+        this.logger.log('Workflow run finished', logContext);
         await this.workflowRunService.markFinished(run.id, {
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
@@ -248,6 +301,10 @@ export class AgenticService {
         break;
       case 'failed':
       default:
+        this.logger.error('Workflow runner reported failure status', {
+          ...(logContext ?? {}),
+          error: this.stringifyError(result.error),
+        });
         await this.workflowRunService.markFailed(run.id, {
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
@@ -356,6 +413,25 @@ export class AgenticService {
   }
 
   /**
+   * Build a consistent logging context for a workflow run.
+   */
+  private buildRunLogContext(
+    run: WorkflowRunFull,
+    mode: RunWorkflowOptions['mode'],
+    event: EventWrapper<any, any>,
+  ): Record<string, unknown> {
+    return {
+      mode,
+      runId: run.id,
+      workflowId: run.workflow?.id,
+      subscriberId: run.subscriber?.id ?? null,
+      messageId: this.safeInvoke(() => event.getId()),
+      eventType: this.safeInvoke(() => event.getEventType()),
+      messageType: this.safeInvoke(() => event.getMessageType()),
+    };
+  }
+
+  /**
    * Retrieve the internal runner state from the workflow runner instance.
    */
   private getRunnerState(runner: WorkflowRunner): ExecutionState | undefined {
@@ -425,6 +501,15 @@ export class AgenticService {
     const state = this.getRunnerState(runner);
     const metadata = this.buildMetadata(state, run.metadata);
 
+    this.logger.error(
+      'Persisting failed workflow run after runner crash',
+      error,
+      {
+        runId: run.id,
+        workflowId: run.workflow?.id,
+        subscriberId: run.subscriber?.id ?? null,
+      },
+    );
     await this.workflowRunService.markFailed(run.id, {
       snapshot: runner.getSnapshot(),
       memory: state?.memory ?? null,

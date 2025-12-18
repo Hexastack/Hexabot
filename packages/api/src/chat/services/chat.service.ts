@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { In, InsertEvent, UpdateEvent } from 'typeorm';
 
@@ -29,6 +29,7 @@ export class ChatService {
     private readonly logger: LoggerService,
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
+    @Inject(forwardRef(() => AgenticService))
     private readonly agenticService: AgenticService,
     private readonly websocketGateway: WebsocketGateway,
   ) {}

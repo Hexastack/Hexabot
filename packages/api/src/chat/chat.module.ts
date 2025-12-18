@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
@@ -51,7 +51,7 @@ import { SubscriberService } from './services/subscriber.service';
     AttachmentModule,
     UserModule,
     NlpModule,
-    WorkflowModule,
+    forwardRef(() => WorkflowModule),
   ],
   controllers: [
     ContextVarController,

@@ -7,7 +7,8 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CmsModule } from '@/cms/cms.module';
+import { ChatModule } from '@/chat/chat.module';
+import { CmsModule } from '@/cms';
 
 import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
@@ -23,6 +24,7 @@ import { WorkflowService } from './services/workflow.service';
   imports: [
     TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
     forwardRef(() => CmsModule),
+    forwardRef(() => ChatModule),
   ],
   controllers: [WorkflowController],
   providers: [
