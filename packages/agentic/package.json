@@ -2,12 +2,23 @@
   "name": "@hexabot-ai/agentic",
   "version": "3.0.0-alpha.3",
   "description": "Schemas and utilities for the Hexabot agentic workflow DSL.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "pnpm run build:cjs && pnpm run build:esm",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "dev": "pnpm run build:watch",
-    "build:watch": "tsc -p tsconfig.json --watch",
+    "build:watch": "tsc -p tsconfig.build.cjs.json --watch",
     "lint": "eslint \"src/**/*.ts\" \"example/**/*.ts\" \"jest.config.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"example/**/*.ts\" \"jest.config.ts\" --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",

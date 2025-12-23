@@ -19,6 +19,8 @@ npm install @hexabot-ai/agentic
 
 Requires Node.js >= 20.18.1.
 
+The package ships both ESM (`import`) and CommonJS (`require`) entrypoints plus browser-safe internals, so you can run workflows in Node.js or bundle them for the client.
+
 ## DSL essentials
 
 A workflow is a single YAML (or object) that declares metadata, inputs, tasks, control-flow, and outputs. The full annotated reference lives in `./DSL.md` and `example/workflow.yml`. The important pieces:
@@ -95,7 +97,7 @@ if (startResult.status === 'finished') {
 ```
 
 You can also skip YAML and use `Workflow.fromDefinition` with a typed object that matches `WorkflowDefinition`.
-Attach an event emitter to your workflow context (via the constructor or by setting `context.eventEmitter`); it accepts any object with `emit` and `on` methods. `WorkflowEventEmitter` is a small helper built on Node's `EventEmitter` with typed payloads (`WorkflowEventEmitterLike` describes the shape).
+Attach an event emitter to your workflow context (via the constructor or by setting `context.eventEmitter`); it accepts any object with `emit` and `on` methods. `WorkflowEventEmitter` is a small, dependency-free helper with typed payloads (`WorkflowEventEmitterLike` describes the shape).
 
 ### Minimal YAML example
 
