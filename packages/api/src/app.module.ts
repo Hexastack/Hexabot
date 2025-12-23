@@ -22,6 +22,7 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 
+import { ActionsModule } from './actions/actions.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -39,11 +40,11 @@ import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
-import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { WorkflowModule } from './workflow/workflow.module';
 
 // Production "monolith" mode
 const compiledFrontendPath = join(__dirname, 'static');
@@ -86,7 +87,8 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   AnalyticsModule,
   ChatModule,
   ChannelModule,
-  PluginsModule,
+  ActionsModule,
+  WorkflowModule,
   HelperModule,
   LoggerModule,
   WebsocketModule,

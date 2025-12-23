@@ -21,7 +21,7 @@ export const fileTypeSchema = z.nativeEnum(FileType);
  * 1. By `id`: This is used when the attachment is uploaded and stored in the Hexabot system.
  * The `id` field represents the unique identifier of the uploaded attachment in the system.
  * 2. By `url`: This is used when the attachment is externally hosted, especially when
- * the content is generated or retrieved by a plugin that consumes a third-party API.
+ * the content is generated or retrieved by an action that consumes a third-party API.
  * In this case, the `url` field contains the direct link to the external resource.
  */
 

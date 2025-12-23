@@ -35,7 +35,7 @@ export class I18nService<
 
     lang = this.resolveLanguage(lang!);
 
-    // Translate block message, button text, ...
+    // Translate action message, button text, ...
     if (lang in this.dynamicTranslations) {
       if (key in this.dynamicTranslations[lang]) {
         if (this.dynamicTranslations[lang][key]) {

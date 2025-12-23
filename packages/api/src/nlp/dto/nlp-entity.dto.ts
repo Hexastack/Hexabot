@@ -115,7 +115,7 @@ export class NlpEntityCreateDto {
 
   @ApiPropertyOptional({
     description:
-      'Weight used to determine the next block to trigger in the flow',
+      'Weight used to determine the next action to trigger in the flow',
     type: Number,
     minimum: 1,
   })

@@ -60,7 +60,7 @@ export class EnvelopeFactory {
    * `You phone number is 6354-543-534`
    *
    * @param text - Text message
-   * @param context - Object holding context variables relative to the conversation (temporary)
+   * @param context - Object holding context variables relative to the chat interaction (temporary)
    * @param subscriberContext - Object holding context values relative to the subscriber (permanent)
    * @param settings - Settings Object
    *

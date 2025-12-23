@@ -22,7 +22,8 @@
     "esModuleInterop": true,
     "paths": {
       "@/*": ["src/*", "src/.hexabot/*", "src/extra/*"],
-      "hexabot/src/*": ["src/*", "src/.hexabot/*"]
+      "hexabot/src/*": ["src/*", "src/.hexabot/*"],
+      "@hexabot-ai/agentic": ["../agentic/src"]
     }
   },
   "include": [

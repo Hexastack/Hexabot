@@ -17,7 +17,6 @@ import {
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { SubscriberContext } from '../types/subscriberContext';
@@ -68,13 +67,13 @@ export class SubscriberOrmEntity extends UserProfileOrmEntity {
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.labels)
   private readonly labelIds!: string[];
 
-  @ManyToOne(() => UserOrmEntity, {
+  @ManyToOne(() => UserProfileOrmEntity, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'assigned_to_id' })
   @AsRelation()
-  assignedTo: UserOrmEntity | null;
+  assignedTo: UserProfileOrmEntity | null;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.assignedTo)
   private readonly assignedToId: string | null;

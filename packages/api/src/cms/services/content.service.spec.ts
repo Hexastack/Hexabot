@@ -6,7 +6,6 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { BlockService } from '@/chat/services/block.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
 import { LoggerService } from '@/logger/logger.service';
@@ -31,16 +30,7 @@ describe('ContentService (TypeORM)', () => {
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        ContentService,
-        ContentTypeService,
-        {
-          provide: BlockService,
-          useValue: {
-            findOne: jest.fn(() => null),
-          },
-        },
-      ],
+      providers: [ContentService, ContentTypeService],
       typeorm: [
         {
           fixtures: [

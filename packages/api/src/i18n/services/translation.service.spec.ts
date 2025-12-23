@@ -4,26 +4,69 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BlockOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { BasePlugin } from '@/plugins/base-plugin.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { PluginBlockTemplate } from '@/plugins/types';
-import { SettingType } from '@/setting/types';
 import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { Workflow } from '@/workflow/dto/workflow.dto';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { Block } from '../../chat/dto/block.dto';
-import { BlockService } from '../../chat/services/block.service';
 import { TranslationRepository } from '../repositories/translation.repository';
 import { TranslationService } from '../services/translation.service';
 
 describe('TranslationService', () => {
   let service: TranslationService;
   let i18nService: I18nService<unknown>;
-  let pluginService: PluginService;
+  let workflowService: jest.Mocked<WorkflowService>;
+
+  const workflowFixtures: Workflow[] = [
+    {
+      id: 'workflow-1',
+      name: 'demo',
+      version: '1.0.0',
+      description: 'Workflow description',
+      definition: {
+        workflow: { description: 'Internal workflow description' },
+        tasks: {
+          send_text: {
+            action: 'send_text_message',
+            description: 'Send greeting',
+            inputs: {
+              text: 'Hello user',
+              nested: { caption: 'Nested caption' },
+            },
+          },
+        },
+        flow: [{ do: 'send_text' }],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as unknown as Workflow,
+    {
+      id: 'workflow-2',
+      name: 'secondary',
+      version: '0.1.0',
+      definition: {
+        tasks: {
+          ask_choice: {
+            action: 'send_quick_replies',
+            inputs: {
+              title: 'Pick one',
+              items: ['One', 'Two'],
+            },
+          },
+        },
+        flow: [{ do: 'ask_choice' }],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as unknown as Workflow,
+  ];
 
   beforeEach(async () => {
+    workflowService = {
+      find: jest.fn().mockResolvedValue(workflowFixtures),
+    } as unknown as jest.Mocked<WorkflowService>;
+
     const { getMocks } = await buildTestingMocks({
       providers: [
         TranslationService,
@@ -41,36 +84,11 @@ describe('TranslationService', () => {
             ]),
           },
         },
-        {
-          provide: PluginService,
-          useValue: {
-            getPlugin: jest.fn(),
-          },
-        },
-        {
-          provide: BlockService,
-          useValue: {
-            find: jest.fn().mockResolvedValue([
-              {
-                id: 'blockId',
-                message: ['Test message'],
-                options: {
-                  fallback: {
-                    message: ['Fallback message'],
-                  },
-                },
-              } as Block,
-            ]),
-          },
-        },
+        { provide: WorkflowService, useValue: workflowService },
         SettingServiceProvider,
       ],
     });
-    [service, i18nService, pluginService] = await getMocks([
-      TranslationService,
-      I18nService,
-      PluginService,
-    ]);
+    [service, i18nService] = await getMocks([TranslationService, I18nService]);
   });
 
   it('should call refreshDynamicTranslations with translations from findAll', async () => {
@@ -85,247 +103,26 @@ describe('TranslationService', () => {
     ]);
   });
 
-  it('should return an array of strings from all blocks', async () => {
-    const strings = await service.getAllBlockStrings();
-    expect(strings).toEqual(['Test message', 'Fallback message']);
-  });
+  it('should return an array of strings from all workflows', async () => {
+    const strings = await service.getAllWorkflowStrings();
 
-  it('should return plugin-related strings from block message with translatable args', async () => {
-    const block: Block = {
-      name: 'Ollama Plugin',
-      patterns: [],
-      outcomes: [],
-      assign_labels: [],
-      trigger_channels: [],
-      trigger_labels: [],
-      nextBlocks: [],
-      category: '51b4f7d2-ff67-433d-9c02-1f2345678901',
-      starts_conversation: false,
-      builtin: false,
-      capture_vars: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      id: '51b4f7d2-ff67-433d-9c02-1f2345678902',
-      position: { x: 702, y: 321.8333282470703 },
-      message: {
-        plugin: 'ollama-plugin',
-        args: {
-          model: 'String 1',
-          context: ['String 2', 'String 3'],
-        },
-      },
-      options: {},
-      attachedBlock: null,
-    };
-
-    class MockPlugin extends BasePlugin {
-      template: PluginBlockTemplate = { name: 'Ollama Plugin' };
-
-      name: `${string}-plugin`;
-
-      type: any;
-
-      private settings: {
-        label: string;
-        group: string;
-        type: SettingType;
-        value: any;
-        translatable: boolean;
-      }[];
-
-      constructor() {
-        super('ollama-plugin', pluginService);
-        this.name = 'ollama-plugin';
-        this.type = 'block';
-        this.settings = [
-          {
-            label: 'model',
-            group: 'default',
-            type: SettingType.text,
-            value: 'llama3.2',
-            translatable: false,
-          },
-          {
-            label: 'context',
-            group: 'default',
-            type: SettingType.multiple_text,
-            value: ['Answer the user QUESTION using the DOCUMENTS text above.'],
-            translatable: true,
-          },
-        ];
-      }
-
-      // Implementing the 'getPath' method (with a mock return value)
-      getPath() {
-        // Return a mock path
-        return '/mock/path';
-      }
-
-      async getDefaultSettings() {
-        return this.settings;
-      }
-    }
-
-    // Create an instance of the mock plugin
-    const mockedPlugin = new MockPlugin();
-
-    jest
-      .spyOn(pluginService, 'getPlugin')
-      .mockImplementation(() => mockedPlugin);
-
-    const result = await service.getBlockStrings(block);
-    expect(result).toEqual(['String 2', 'String 3']);
+    expect(strings).toEqual(
+      expect.arrayContaining([
+        'Workflow description',
+        'Internal workflow description',
+        'Send greeting',
+        'Hello user',
+        'Nested caption',
+        'Pick one',
+        'One',
+        'Two',
+      ]),
+    );
+    expect(strings).not.toContain('send_text_message');
   });
 
   it('should return the settings translation strings', async () => {
     const strings = await service.getSettingStrings();
     expect(strings).toEqual(['Global fallback message']);
-  });
-
-  it('should return an array of strings from a block with a quick reply message', async () => {
-    const block = {
-      id: 'blockId',
-      name: 'Test Block',
-      category: 'Test Category',
-      position: { x: 0, y: 0 },
-      message: {
-        text: 'Test message',
-        quickReplies: [
-          {
-            title: 'Quick reply 1',
-          },
-          {
-            title: 'Quick reply 2',
-          },
-        ],
-      },
-      options: {
-        fallback: {
-          active: true,
-          message: ['Fallback message'],
-          max_attempts: 3,
-        } as BlockOptions,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Block;
-    const strings = await service.getBlockStrings(block);
-    expect(strings).toEqual([
-      'Test message',
-      'Quick reply 1',
-      'Quick reply 2',
-      'Fallback message',
-    ]);
-  });
-
-  it('should return an array of strings from a block with a button message', async () => {
-    const block = {
-      id: 'blockId',
-      name: 'Test Block',
-      category: 'Test Category',
-      position: { x: 0, y: 0 },
-      message: {
-        text: 'Test message',
-        buttons: [
-          {
-            title: 'Button 1',
-          },
-          {
-            title: 'Button 2',
-          },
-        ],
-      },
-      options: {
-        fallback: {
-          active: true,
-          message: ['Fallback message'],
-          max_attempts: 3,
-        } as BlockOptions,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Block;
-    const strings = await service.getBlockStrings(block);
-    expect(strings).toEqual([
-      'Test message',
-      'Button 1',
-      'Button 2',
-      'Fallback message',
-    ]);
-  });
-
-  it('should return an array of strings from a block with a text message', async () => {
-    const block = {
-      id: 'blockId',
-      name: 'Test Block',
-      category: 'Test Category',
-      position: { x: 0, y: 0 },
-      message: ['Test message'], // Text message as an array
-      options: {
-        fallback: {
-          active: true,
-          message: ['Fallback message'],
-          max_attempts: 3,
-        } as BlockOptions,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Block;
-    const strings = await service.getBlockStrings(block);
-    expect(strings).toEqual(['Test message', 'Fallback message']);
-  });
-
-  it('should return an array of strings from a block with a nested message object', async () => {
-    const block = {
-      id: 'blockId',
-      name: 'Test Block',
-      category: 'Test Category',
-      position: { x: 0, y: 0 },
-      message: {
-        text: 'Test message', // Nested text message
-      },
-      options: {
-        fallback: {
-          active: true,
-          message: ['Fallback message'],
-          max_attempts: 3,
-        } as BlockOptions,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Block;
-    const strings = await service.getBlockStrings(block);
-    expect(strings).toEqual(['Test message', 'Fallback message']);
-  });
-
-  it('should handle different message formats in getBlockStrings', async () => {
-    // Covers lines 54-60, 65
-
-    // Test with an array message (line 54-57)
-    const block1 = {
-      id: 'blockId1',
-      message: ['This is a text message'],
-      options: { fallback: { message: ['Fallback message'] } },
-    } as Block;
-    const strings1 = await service.getBlockStrings(block1);
-    expect(strings1).toEqual(['This is a text message', 'Fallback message']);
-
-    // Test with an object message (line 58-60)
-    const block2 = {
-      id: 'blockId2',
-      message: { text: 'Another text message' },
-      options: { fallback: { message: ['Fallback message'] } },
-    } as Block;
-    const strings2 = await service.getBlockStrings(block2);
-    expect(strings2).toEqual(['Another text message', 'Fallback message']);
-
-    // Test a block without a fallback (line 65)
-    const block3 = {
-      id: 'blockId3',
-      message: { text: 'Another test message' },
-      options: {},
-    } as Block;
-    const strings3 = await service.getBlockStrings(block3);
-    expect(strings3).toEqual(['Another test message']);
   });
 });

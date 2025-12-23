@@ -1,0 +1,59 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { ActionService } from '@/actions/actions.service';
+import {
+  OutgoingMessageFormat,
+  StdOutgoingMessageEnvelope,
+} from '@/chat/types/message';
+import { WorkflowContext } from '@/workflow/services/workflow-context';
+
+import { MessageActionSettings } from './message-action.base';
+import { SendTextMessageAction } from './text-message.action';
+
+describe('SendTextMessageAction', () => {
+  let actionService: ActionService;
+  let context: WorkflowContext;
+
+  beforeEach(() => {
+    actionService = { register: jest.fn() } as unknown as ActionService;
+    context = {} as WorkflowContext;
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
+
+  it('builds a text envelope and delegates sending', async () => {
+    const action = new SendTextMessageAction(actionService);
+    const envelope: StdOutgoingMessageEnvelope = {
+      format: OutgoingMessageFormat.text,
+      message: { text: 'processed' },
+    };
+    const prepared = {
+      envelopeFactory: { buildTextEnvelope: jest.fn(() => envelope) },
+    } as any;
+    const prepareSpy = jest
+      .spyOn(action as any, 'prepare')
+      .mockResolvedValue(prepared);
+    const sendSpy = jest
+      .spyOn(action as any, 'sendPreparedMessage')
+      .mockResolvedValue('result');
+    const result = await action.execute({
+      input: { text: 'Hello' },
+      context,
+      settings: {} as MessageActionSettings,
+    });
+
+    expect(prepareSpy).toHaveBeenCalledWith(context);
+    expect(prepared.envelopeFactory.buildTextEnvelope).toHaveBeenCalledWith(
+      'Hello',
+    );
+    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, {});
+    expect(result).toBe('result');
+  });
+});

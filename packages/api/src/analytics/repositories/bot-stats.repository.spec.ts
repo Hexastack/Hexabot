@@ -73,17 +73,6 @@ describe('BotStatsRepository (TypeORM)', () => {
       expect(result).toEqualPayload([botstatsFixtures[0]]);
     });
 
-    it('should return conversation statistics', async () => {
-      const from = new Date('2023-11-01T23:00:00.000Z');
-      const to = new Date('2023-11-07T23:00:00.000Z');
-      const result = await botStatsRepository.findMessages(from, to, [
-        BotStatsType.new_conversations,
-        BotStatsType.existing_conversations,
-      ]);
-
-      expect(result).toEqualPayload([botstatsFixtures[3]]);
-    });
-
     it('should return audiance statistics', async () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-07T23:00:00.000Z');
@@ -93,7 +82,7 @@ describe('BotStatsRepository (TypeORM)', () => {
         BotStatsType.retention,
       ]);
 
-      expect(result).toEqualPayload([botstatsFixtures[1]]);
+      expect(result).toEqualPayload(botstatsFixtures.slice(1, 4));
     });
 
     it('should return statistics of a given type', async () => {
@@ -104,21 +93,6 @@ describe('BotStatsRepository (TypeORM)', () => {
       ]);
 
       expect(result).toEqualPayload([botstatsFixtures[4]]);
-    });
-  });
-
-  describe('findPopularBlocks', () => {
-    it('should return popular blocks', async () => {
-      const from = new Date('2023-11-01T22:00:00.000Z');
-      const to = new Date('2023-11-07T23:00:00.000Z');
-      const result = await botStatsRepository.findPopularBlocks(from, to);
-
-      expect(result).toEqual([
-        {
-          id: 'Global Fallback',
-          value: 68,
-        },
-      ]);
     });
   });
 });

@@ -85,28 +85,13 @@ export const DEFAULT_SETTINGS = [
   },
   {
     group: 'chatbot_settings',
-    label: 'fallback_block',
-    value: '',
-    options: [],
-    type: SettingType.select,
-    config: {
-      multiple: false,
-      allowCreate: false,
-      entity: 'Block',
-      idKey: 'id',
-      labelKey: 'name',
-    },
-    weight: 6,
-  },
-  {
-    group: 'chatbot_settings',
     label: 'fallback_message',
     value: [
       "Sorry but i didn't understand your request. Maybe you can check the menu",
       "I'm really sorry but i don't quite understand what you are saying :(",
     ] as string[],
     type: SettingType.multiple_text,
-    weight: 7,
+    weight: 6,
     translatable: true,
   },
   {

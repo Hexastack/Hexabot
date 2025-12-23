@@ -54,8 +54,8 @@ export abstract class BaseLlmHelper<
   ): Promise<T>;
 
   /**
-   * Send a chat completion request with the conversation history.
-   * You can use this same approach to start the conversation
+   * Send a chat completion request with the running dialogue history.
+   * You can use this same approach to start the exchange
    * using multi-shot or chain-of-thought prompting.
    *
    * @param prompt - The input text from the user

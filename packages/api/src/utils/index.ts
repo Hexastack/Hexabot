@@ -38,6 +38,8 @@ export * from './helpers/URL';
 
 export * from './helpers/avatar';
 
+export * from './helpers/clone';
+
 export * from './helpers/flatten';
 
 export * from './helpers/fs';
