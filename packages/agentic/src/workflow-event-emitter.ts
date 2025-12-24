@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EventEmitter } from 'events';
-
 export type StepType = 'task' | 'parallel' | 'conditional' | 'loop';
 
 export type StepInfo = {
@@ -43,21 +41,41 @@ export type EventEmitterLike = {
 
 export type WorkflowEventEmitterLike<E = unknown> = E & EventEmitterLike;
 
+type EventKey = keyof WorkflowEventMap;
+type AnyListener = (payload: WorkflowEventMap[EventKey]) => void;
+
+/**
+ * Minimal, browser-friendly event emitter that preserves the typed payloads
+ * exposed by {@link WorkflowEventMap}. It supports the subset of the Node.js
+ * EventEmitter API that the runtime relies on (`emit` and `on`).
+ */
 export class WorkflowEventEmitter
-  extends EventEmitter
-  implements WorkflowEventEmitterLike<EventEmitter>
+  implements WorkflowEventEmitterLike<WorkflowEventEmitter>
 {
+  private listeners = new Map<EventKey, Set<AnyListener>>();
+
   emit<K extends keyof WorkflowEventMap>(
     event: K,
     payload: WorkflowEventMap[K],
   ): boolean {
-    return super.emit(event, payload);
+    const eventListeners = this.listeners.get(event);
+    if (!eventListeners || eventListeners.size === 0) {
+      return false;
+    }
+
+    eventListeners.forEach((listener) => listener(payload));
+
+    return true;
   }
 
   on<K extends keyof WorkflowEventMap>(
     event: K,
     listener: (payload: WorkflowEventMap[K]) => void,
   ): this {
-    return super.on(event, listener);
+    const listeners = this.listeners.get(event) ?? new Set<AnyListener>();
+    listeners.add(listener as AnyListener);
+    this.listeners.set(event, listeners);
+
+    return this;
   }
 }

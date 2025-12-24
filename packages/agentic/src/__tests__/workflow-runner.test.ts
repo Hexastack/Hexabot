@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EventEmitter } from 'events';
-
 import { z } from 'zod';
 
 import { defineAction } from '../action/action';
@@ -341,7 +339,9 @@ describe('WorkflowRunner', () => {
   });
 
   it('exposes the configured event emitter on the context for actions', async () => {
-    let observedEmitter: WorkflowEventEmitterLike<EventEmitter> | undefined;
+    let observedEmitter:
+      | WorkflowEventEmitterLike<WorkflowEventEmitter>
+      | undefined;
     const emitter = new WorkflowEventEmitter();
     const skippedEvents: Array<{ stepId: string; reason?: string }> = [];
 

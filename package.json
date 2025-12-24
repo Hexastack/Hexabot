@@ -28,6 +28,12 @@
     "rimraf": "^6.0.1",
     "turbo": "^2.2.3"
   },
+  "pnpm": {
+    "overrides": {
+      "cross-spawn": "7.0.6",
+      "cross-spawn>path-key": "3.1.1"
+    }
+  },
   "engines": {
     "node": "^20.18.1"
   }
