@@ -14,7 +14,7 @@ import { BaseAction } from '@/actions/base-action';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
 
@@ -35,7 +35,7 @@ export type LanguageModelProvider =
 export abstract class LlmBaseAction<
   I,
   O,
-  C extends WorkflowContext = WorkflowContext,
+  C extends ConversationalWorkflowContext = ConversationalWorkflowContext,
   S extends LlmCommonSettings = LlmCommonSettings,
 > extends BaseAction<I, O, C, S> {
   protected constructor(

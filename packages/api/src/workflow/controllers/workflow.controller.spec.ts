@@ -20,7 +20,9 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
+import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 
 import { WorkflowController } from './workflow.controller';
@@ -29,6 +31,7 @@ describe('WorkflowController (TypeORM)', () => {
   let module: TestingModule;
   let workflowController: WorkflowController;
   let workflowService: WorkflowService;
+  let agenticService: AgenticService;
   let logger: LoggerService;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
@@ -51,6 +54,8 @@ describe('WorkflowController (TypeORM)', () => {
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
+      type: 'conversational',
+      schedule: null,
       definition,
     };
   };
@@ -65,9 +70,10 @@ describe('WorkflowController (TypeORM)', () => {
     });
 
     module = testingModule;
-    [workflowController, workflowService] = await getMocks([
+    [workflowController, workflowService, agenticService] = await getMocks([
       WorkflowController,
       WorkflowService,
+      AgenticService,
     ]);
     logger = workflowController.logger;
   });
@@ -102,6 +108,29 @@ describe('WorkflowController (TypeORM)', () => {
         [messagingWorkflowFixtures[0]],
         [...IGNORED_TEST_FIELDS],
       );
+    });
+  });
+
+  describe('runManually', () => {
+    it('starts a workflow using the agentic service', async () => {
+      const [workflow] = await workflowService.find({ take: 1 });
+      const run = {
+        id: 'run-manual-1',
+        workflow,
+      } as unknown as WorkflowRunFull;
+      const startSpy = jest
+        .spyOn(agenticService, 'startWorkflow')
+        .mockResolvedValue(run);
+      const result = await workflowController.runManually(workflow.id, {
+        input: { foo: 'bar' },
+      });
+
+      expect(startSpy).toHaveBeenCalledWith(workflow, {
+        trigger: 'manual',
+        input: { foo: 'bar' },
+        subscriber: null,
+      });
+      expect(result).toEqualPayload(run, [...IGNORED_TEST_FIELDS]);
     });
   });
 

@@ -6,7 +6,7 @@
 
 import { ActionService } from '@/actions/actions.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import { AwaitReplyAction } from './await-reply.action';
 
@@ -14,7 +14,7 @@ describe('AwaitReplyAction', () => {
   let actionService: ActionService;
   let action: AwaitReplyAction;
   let workflow: { suspend: jest.Mock };
-  let context: WorkflowContext;
+  let context: ConversationalWorkflowContext;
   let event: {
     getHandler: jest.Mock;
     getSender: jest.Mock;
@@ -33,7 +33,7 @@ describe('AwaitReplyAction', () => {
       event,
       subscriberId: 'sub-ctx',
       workflowRunId: 'run-ctx',
-    } as unknown as WorkflowContext;
+    } as unknown as ConversationalWorkflowContext;
   });
 
   afterEach(() => {

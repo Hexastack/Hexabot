@@ -6,11 +6,16 @@
 
 import { Action, BaseWorkflowContext, Settings } from '@hexabot-ai/agentic';
 
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 export type ActionName = `${string}_${string}`;
 
-export type AnyAction = Action<unknown, unknown, WorkflowContext, Settings>;
+export type AnyAction = Action<
+  unknown,
+  unknown,
+  ConversationalWorkflowContext,
+  Settings
+>;
 
 export type ActionRegistry<
   A extends Action<unknown, unknown, BaseWorkflowContext, Settings> = AnyAction,

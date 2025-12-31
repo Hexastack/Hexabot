@@ -8,6 +8,7 @@ import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
 import { QuickReplyType } from '@/chat/types/quick-reply';
+import { WorkflowType } from '@/workflow';
 import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
@@ -59,6 +60,8 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     name: messagingWorkflowDefinition.workflow.name,
     version: messagingWorkflowDefinition.workflow.version,
     description: messagingWorkflowDefinition.workflow.description ?? undefined,
+    type: WorkflowType.conversational,
+    schedule: null,
     definition: messagingWorkflowDefinition,
   },
 ];

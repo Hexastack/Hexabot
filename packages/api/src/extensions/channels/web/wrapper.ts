@@ -6,7 +6,7 @@
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { ChannelName } from '@/channel/types';
 import { PayloadType } from '@/chat/types/button';
 import {
@@ -72,9 +72,11 @@ type WebEventAdapter =
       attachment: Attachment | null;
     };
 
-export default class WebEventWrapper<
-  N extends ChannelName,
-> extends EventWrapper<WebEventAdapter, Web.Event, N> {
+export default class WebEventWrapper<N extends ChannelName> extends ConversationalEventWrapper<
+  WebEventAdapter,
+  Web.Event,
+  N
+> {
   /**
    * Constructor : channel's event wrapper
    *

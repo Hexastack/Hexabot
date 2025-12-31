@@ -7,6 +7,7 @@
 import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WorkflowType } from '@/workflow';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -24,6 +25,8 @@ describe('TranslationService', () => {
       name: 'demo',
       version: '1.0.0',
       description: 'Workflow description',
+      type: WorkflowType.conversational,
+      schedule: null,
       definition: {
         workflow: { description: 'Internal workflow description' },
         tasks: {
@@ -45,6 +48,8 @@ describe('TranslationService', () => {
       id: 'workflow-2',
       name: 'secondary',
       version: '0.1.0',
+      type: 'conversational',
+      schedule: null,
       definition: {
         tasks: {
           ask_choice: {

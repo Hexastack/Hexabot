@@ -84,9 +84,9 @@ export class WorkflowRun extends WorkflowRunStub {
   @Expose({ name: 'workflowId' })
   workflow!: string;
 
-  @Expose({ name: 'subscriberId' })
+  @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
-  subscriber?: string | null;
+  triggeredBy?: string | null;
 }
 
 @Exclude()
@@ -97,7 +97,7 @@ export class WorkflowRunFull extends WorkflowRunStub {
 
   @Expose()
   @Type(() => Subscriber)
-  subscriber?: Subscriber | null;
+  triggeredBy?: Subscriber | null;
 }
 
 export class WorkflowRunCreateDto {
@@ -109,14 +109,14 @@ export class WorkflowRunCreateDto {
   workflow!: string;
 
   @ApiPropertyOptional({
-    description: 'Subscriber linked to the run',
+    description: 'Subscriber/Subscriber linked to the run',
     type: String,
   })
   @IsOptional()
   @IsUUIDv4({
-    message: 'Subscriber must be a valid UUID',
+    message: 'triggeredBy must be a valid UUID',
   })
-  subscriber?: string | null;
+  triggeredBy?: string | null;
 
   @ApiPropertyOptional({
     description: 'Lifecycle status of the run',

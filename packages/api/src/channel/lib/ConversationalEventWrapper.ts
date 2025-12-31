@@ -13,7 +13,8 @@ import {
   StdIncomingMessage,
 } from '@/chat/types/message';
 import { Payload } from '@/chat/types/quick-reply';
-import { NLU } from '@/helper/types';
+import { TriggerEventWrapper } from '@/workflow/lib/trigger-event-wrapper';
+import { WorkflowType } from '@/workflow/types';
 
 import { ChannelName } from '../types';
 
@@ -21,7 +22,7 @@ import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
 
-export default abstract class EventWrapper<
+export default abstract class ConversationalEventWrapper<
   A extends {
     eventType: StdEventType;
     messageType?: IncomingMessageType;
@@ -32,7 +33,9 @@ export default abstract class EventWrapper<
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
-> {
+> extends TriggerEventWrapper {
+  readonly triggerType = WorkflowType.conversational;
+
   _adapter: A = {
     raw: {},
     eventType: StdEventType.unknown,
@@ -45,8 +48,6 @@ export default abstract class EventWrapper<
 
   subscriber!: Subscriber;
 
-  _nlp!: NLU.ParseEntities;
-
   /**
    * Constructor : Class used to wrap any channel's event in order
    * to provide a unified interface for accessing data by the chatbot.
@@ -58,6 +59,7 @@ export default abstract class EventWrapper<
    * @param channelAttrs - Channel's specific data
    */
   constructor(handler: C, event: A['raw'], channelAttrs: S = {} as S) {
+    super();
     this._handler = handler;
     this._init(event);
     this.channelAttrs = channelAttrs;
@@ -148,24 +150,6 @@ export default abstract class EventWrapper<
   }
 
   /**
-   * Returns attached NLP parse results
-   *
-   * @returns The parsed NLP entities, or null if not available.
-   */
-  getNLP(): NLU.ParseEntities | null {
-    return this._nlp;
-  }
-
-  /**
-   * Attaches the NLP object to the event
-   *
-   * @param nlp - NLP parse results
-   */
-  setNLP(nlp: NLU.ParseEntities) {
-    this._nlp = nlp;
-  }
-
-  /**
    * Returns event sender/profile id (channel's id)
    *
    * @returns sender/profile id
@@ -201,7 +185,7 @@ export default abstract class EventWrapper<
       this._adapter.messageType === IncomingMessageType.attachments
     ) {
       await this._handler.persistMessageAttachments(
-        this as EventWrapper<
+        this as ConversationalEventWrapper<
           any,
           any,
           ChannelName,
@@ -280,6 +264,46 @@ export default abstract class EventWrapper<
    * @returns The message's watermark
    */
   abstract getWatermark(): number;
+
+  toWorkflowInput(): Record<string, unknown> {
+    const input: Record<string, unknown> = {
+      channel: this.getChannelData(),
+      message_type: this.safeInvoke(() => this.getMessageType()),
+      event_type: this.safeInvoke(() => this.getEventType()),
+      sender: this.getSender(),
+      payload: this.safeInvoke(() => this.getPayload()),
+      message: this.safeInvoke(() => this.getMessage()),
+      text: this.getText(),
+    };
+    const id = this.safeInvoke(() => this.getId());
+    if (id) {
+      input.mid = id;
+    }
+
+    return input;
+  }
+
+  getResumeData(): Record<string, unknown> | undefined {
+    const message = this.safeInvoke(() => this.getMessage());
+
+    return message === undefined ? undefined : { message };
+  }
+
+  getMetadata(): Record<string, unknown> {
+    return {
+      channel: this.getChannelData(),
+    } as Record<string, unknown>;
+  }
+
+  private safeInvoke<T>(fn: () => T): T | undefined {
+    try {
+      const value = fn();
+
+      return value === undefined ? undefined : value;
+    } catch {
+      return undefined;
+    }
+  }
 }
 
 type GenericEvent = { senderId: string; messageId: string };
@@ -289,7 +313,7 @@ type GenericEventAdapter = {
   raw: GenericEvent;
 };
 
-export class GenericEventWrapper extends EventWrapper<
+export class GenericEventWrapper extends ConversationalEventWrapper<
   GenericEventAdapter,
   GenericEvent,
   ChannelName

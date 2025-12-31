@@ -11,26 +11,38 @@ import {
   WorkflowStartResult,
 } from '@hexabot-ai/agentic';
 
-import EventWrapper from '@/channel/lib/EventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { Context } from '@/chat/types/context';
 
 import { WorkflowRunFull } from './dto/workflow-run.dto';
 import { Workflow } from './dto/workflow.dto';
+import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
+
+export enum WorkflowType {
+  conversational = 'conversational',
+  manual = 'manual',
+  scheduled = 'scheduled',
+}
 
 export type WorkflowResult = WorkflowStartResult | WorkflowResumeResult;
 
-export type RunWorkflowOptions =
+export type StartWorkflowOptions = {
+  trigger: WorkflowType;
+  input?: Record<string, unknown>;
+  subscriber?: Subscriber | null;
+  triggeredAt?: Date | string;
+};
+
+export type RunWorkflowOptions<E extends TriggerEventWrapper> =
   | {
       mode: 'start';
       workflow: Workflow;
-      subscriber: Subscriber;
-      event: EventWrapper<any, any>;
+      event: E;
     }
   | {
       mode: 'resume';
       run: WorkflowRunFull;
-      event: EventWrapper<any, any>;
+      event: E;
     };
 
 export type MarkRunningInput = {

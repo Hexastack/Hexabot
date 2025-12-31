@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
@@ -23,7 +23,7 @@ import {
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
 import { getDefaultWorkflowContext } from '@/workflow/defaults/context';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 const sentFormats = [
   'text',
@@ -61,7 +61,7 @@ export const messageActionOutputSchema = z.object({
 });
 
 interface PreparedMessageContext {
-  event: EventWrapper<any, any>;
+  event: ConversationalEventWrapper<any, any>;
   recipient: Subscriber;
   envelopeFactory: EnvelopeFactory;
   chatContext: Context;
@@ -76,7 +76,7 @@ export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
 export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
-> extends BaseAction<I, MessageActionOutput, WorkflowContext, S> {
+> extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
   protected constructor(
     metadata: ActionMetadata<I, MessageActionOutput, S>,
     actionService: ActionService,
@@ -84,7 +84,7 @@ export abstract class MessageAction<
     super(metadata, actionService);
   }
 
-  private ensureEvent(context: WorkflowContext) {
+  private ensureEvent(context: ConversationalWorkflowContext) {
     if (!context.event) {
       throw new Error('Missing event on workflow context');
     }
@@ -93,7 +93,7 @@ export abstract class MessageAction<
   }
 
   private buildChatContext(
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
     chatContext?: Context,
   ) {
     const defaults = getDefaultWorkflowContext();
@@ -126,7 +126,7 @@ export abstract class MessageAction<
   }
 
   protected async prepare(
-    context: WorkflowContext,
+    context: ConversationalWorkflowContext,
   ): Promise<PreparedMessageContext> {
     const event = this.ensureEvent(context);
     const recipient = event.getSender();
@@ -149,7 +149,7 @@ export abstract class MessageAction<
   }
 
   protected async sendPreparedMessage(
-    workflowContext: WorkflowContext,
+    workflowContext: ConversationalWorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
@@ -193,7 +193,7 @@ export abstract class MessageAction<
   }
 
   protected async prepareAndSendMessage(
-    workflowContext: WorkflowContext,
+    workflowContext: ConversationalWorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
   ): Promise<MessageActionOutput> {

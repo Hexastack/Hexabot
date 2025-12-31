@@ -16,6 +16,7 @@ import {
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
 @Injectable()
 export class WorkflowService extends BaseOrmService<
@@ -36,12 +37,19 @@ export class WorkflowService extends BaseOrmService<
   /**
    * Pick the most recently created workflow or fall back to the built-in default.
    */
-  async pickWorkflow(): Promise<WorkflowDto | null> {
+  async pickWorkflow(
+    type: WorkflowType = WorkflowType.conversational,
+  ): Promise<WorkflowDto | null> {
     const [latest] = await this.find({
+      where: { type },
       order: { createdAt: 'DESC' },
       take: 1,
     });
-    const workflow = latest ?? (await this.ensureDefaultWorkflow());
+    const workflow =
+      latest ??
+      (type === WorkflowType.conversational
+        ? await this.ensureDefaultWorkflow()
+        : null);
 
     return workflow;
   }
@@ -68,6 +76,8 @@ export class WorkflowService extends BaseOrmService<
         name: defaultWorkflowDefinition.workflow.name,
         version: defaultWorkflowDefinition.workflow.version,
         description: defaultWorkflowDefinition.workflow.description,
+        type: WorkflowType.conversational,
+        schedule: null,
         definition: defaultWorkflowDefinition,
       });
     } catch (err) {

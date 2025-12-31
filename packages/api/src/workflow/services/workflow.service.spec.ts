@@ -16,6 +16,7 @@ import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
@@ -69,6 +70,8 @@ describe('WorkflowService (TypeORM)', () => {
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
+      type: WorkflowType.conversational,
+      schedule: null,
       definition,
     });
   });
@@ -103,6 +106,8 @@ describe('WorkflowService (TypeORM)', () => {
       name: workflow.name,
       version: workflow.version,
       description: workflow.description ?? undefined,
+      type: workflow.type,
+      schedule: workflow.schedule ?? null,
       definition: workflow.definition,
     };
 

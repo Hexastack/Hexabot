@@ -8,14 +8,14 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import { Context } from '@/chat/types/context';
 import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import {
   MessageAction,
@@ -42,7 +42,7 @@ class TestMessageAction extends MessageAction<any> {
   }
 }
 
-type MockEvent = jest.Mocked<EventWrapper<any, any>>;
+type MockEvent = jest.Mocked<ConversationalEventWrapper<any, any>>;
 
 describe('MessageAction base', () => {
   let actionService: ActionService;
@@ -63,8 +63,8 @@ describe('MessageAction base', () => {
   let baseContext: Context;
 
   const buildWorkflowContext = (
-    overrides: Partial<WorkflowContext> = {},
-  ): WorkflowContext =>
+    overrides: Partial<ConversationalWorkflowContext> = {},
+  ): ConversationalWorkflowContext =>
     ({
       event,
       chatContext: baseContext,
@@ -77,7 +77,7 @@ describe('MessageAction base', () => {
       workflow,
       workflowRunId: 'run-123',
       ...overrides,
-    }) as unknown as WorkflowContext;
+    }) as unknown as ConversationalWorkflowContext;
 
   beforeEach(() => {
     actionService = { register: jest.fn() } as unknown as ActionService;

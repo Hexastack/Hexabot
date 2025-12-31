@@ -25,7 +25,7 @@ import type {
   BotStatsType,
 } from '@/analytics/entities/bot-stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import type EventWrapper from '@/channel/lib/EventWrapper';
+import type ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import type { Message, MessageCreateDto } from '@/chat/dto/message.dto';
 import type {
   Subscriber,
@@ -59,7 +59,7 @@ import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
-type AnyEventWrapper = EventWrapper<any, any>;
+type AnyEventWrapper = ConversationalEventWrapper<any, any>;
 
 type DefaultSettingSeed = (typeof DEFAULT_SETTINGS)[number];
 

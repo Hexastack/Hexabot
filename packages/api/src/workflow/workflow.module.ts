@@ -5,6 +5,7 @@
  */
 
 import { forwardRef, Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
@@ -16,8 +17,11 @@ import { WorkflowOrmEntity } from './entities/workflow.entity';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { AgenticService } from './services/agentic.service';
-import { WorkflowContext } from './services/workflow-context';
+import { ConversationalWorkflowContext } from './services/conversational-workflow-context';
+import { ManualWorkflowContext } from './services/manual-workflow-context';
+import { ScheduledWorkflowContext } from './services/scheduled-workflow-context';
 import { WorkflowRunService } from './services/workflow-run.service';
+import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowService } from './services/workflow.service';
 
 @Module({
@@ -25,6 +29,7 @@ import { WorkflowService } from './services/workflow.service';
     TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
     forwardRef(() => CmsModule),
     forwardRef(() => ChatModule),
+    ScheduleModule.forRoot(),
   ],
   controllers: [WorkflowController],
   providers: [
@@ -32,16 +37,22 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
-    WorkflowContext,
+    ConversationalWorkflowContext,
+    ManualWorkflowContext,
+    ScheduledWorkflowContext,
     AgenticService,
+    WorkflowSchedulerService,
   ],
   exports: [
     WorkflowRepository,
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
-    WorkflowContext,
+    ConversationalWorkflowContext,
+    ManualWorkflowContext,
+    ScheduledWorkflowContext,
     AgenticService,
+    WorkflowSchedulerService,
   ],
 })
 export class WorkflowModule {}

@@ -10,18 +10,18 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import { SendAttachmentAction } from './attachment.action';
 import { MessageActionSettings } from './message-action.base';
 
 describe('SendAttachmentAction', () => {
   let actionService: ActionService;
-  let context: WorkflowContext;
+  let context: ConversationalWorkflowContext;
 
   beforeEach(() => {
     actionService = { register: jest.fn() } as unknown as ActionService;
-    context = {} as WorkflowContext;
+    context = {} as ConversationalWorkflowContext;
   });
 
   afterEach(() => {

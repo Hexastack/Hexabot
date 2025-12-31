@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { buttonSchema } from '@/chat/types/button';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import {
   MessageAction,
@@ -52,7 +52,11 @@ export class SendButtonsAction extends MessageAction<
     input,
     context,
     settings,
-  }: ActionExecutionArgs<ButtonsInput, WorkflowContext, ButtonsSettings>) {
+  }: ActionExecutionArgs<
+    ButtonsInput,
+    ConversationalWorkflowContext,
+    ButtonsSettings
+  >) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildButtonsEnvelope(
       input.text,

@@ -8,7 +8,7 @@ import { Workflow as AgentWorkflow } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
 import { messagingWorkflowDefinition } from '@/utils/test/fixtures/workflow';
@@ -17,9 +17,12 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
+import { WorkflowType } from '../types';
 
 import { AgenticService } from './agentic.service';
-import { WorkflowContext } from './workflow-context';
+import { ConversationalWorkflowContext } from './conversational-workflow-context';
+import { ManualWorkflowContext } from './manual-workflow-context';
+import { ScheduledWorkflowContext } from './scheduled-workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
@@ -71,7 +74,7 @@ type EventOverrides = Partial<{
 const buildEvent = (
   subscriber?: Subscriber,
   overrides: EventOverrides = {},
-): EventWrapper<any, any> => {
+): ConversationalEventWrapper<any, any> => {
   const message = overrides.message ?? { text: 'Hello from user' };
   const handler = {
     getName: jest.fn(() => 'web'),
@@ -88,7 +91,7 @@ const buildEvent = (
     getText: jest.fn(() => overrides.text ?? (message as any).text ?? ''),
     getId: jest.fn(() => overrides.id ?? 'mid-123'),
     getHandler: jest.fn(() => handler),
-  } as unknown as EventWrapper<any, any>;
+  } as unknown as ConversationalEventWrapper<any, any>;
 };
 
 describe('AgenticService', () => {
@@ -97,7 +100,9 @@ describe('AgenticService', () => {
   let workflowService: jest.Mocked<WorkflowService>;
   let workflowRunService: jest.Mocked<WorkflowRunService>;
   let actionService: jest.Mocked<ActionService>;
-  let workflowContext: jest.Mocked<WorkflowContext>;
+  let workflowContext: jest.Mocked<ConversationalWorkflowContext>;
+  let manualWorkflowContext: jest.Mocked<ManualWorkflowContext>;
+  let scheduledWorkflowContext: jest.Mocked<ScheduledWorkflowContext>;
   let logger: jest.Mocked<LoggerService>;
 
   const mockActions = [
@@ -122,7 +127,13 @@ describe('AgenticService', () => {
     actionService = {
       getAll: jest.fn(() => mockActions),
     } as unknown as jest.Mocked<ActionService>;
-    workflowContext = new WorkflowContext({}) as jest.Mocked<WorkflowContext>;
+    workflowContext = new ConversationalWorkflowContext(
+      {},
+    ) as jest.Mocked<ConversationalWorkflowContext>;
+    manualWorkflowContext =
+      new ManualWorkflowContext() as jest.Mocked<ManualWorkflowContext>;
+    scheduledWorkflowContext =
+      new ScheduledWorkflowContext() as jest.Mocked<ScheduledWorkflowContext>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),
@@ -136,7 +147,12 @@ describe('AgenticService', () => {
         { provide: WorkflowService, useValue: workflowService },
         { provide: WorkflowRunService, useValue: workflowRunService },
         { provide: ActionService, useValue: actionService },
-        { provide: WorkflowContext, useValue: workflowContext },
+        { provide: ConversationalWorkflowContext, useValue: workflowContext },
+        { provide: ManualWorkflowContext, useValue: manualWorkflowContext },
+        {
+          provide: ScheduledWorkflowContext,
+          useValue: scheduledWorkflowContext,
+        },
         { provide: LoggerService, useValue: logger },
       ],
     });
@@ -148,6 +164,8 @@ describe('AgenticService', () => {
   afterEach(() => {
     jest.clearAllMocks();
     workflowContext.state = {};
+    manualWorkflowContext.state = {};
+    scheduledWorkflowContext.state = {};
   });
 
   afterAll(async () => {
@@ -196,7 +214,7 @@ describe('AgenticService', () => {
       id: 'run-1',
       status: 'suspended',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: { foo: 'bar' },
       output: { prev: true },
       memory: { cache: true },
@@ -337,6 +355,7 @@ describe('AgenticService', () => {
     };
     const workflow: Workflow = {
       id: 'workflow-2',
+      type: WorkflowType.conversational,
       name: messagingWorkflowDefinition.workflow.name,
       version: messagingWorkflowDefinition.workflow.version,
       definition: {
@@ -353,7 +372,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: expectedInput,
       output: null,
       memory: null,
@@ -490,6 +509,7 @@ describe('AgenticService', () => {
     };
     const workflow: Workflow = {
       id: 'workflow-4',
+      type: WorkflowType.conversational,
       name: messagingWorkflowDefinition.workflow.name,
       version: messagingWorkflowDefinition.workflow.version,
       definition: { ...messagingWorkflowDefinition, memory: { fresh: true } },
@@ -502,7 +522,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: expectedInput,
       output: { previous: true },
       memory: workflow.definition.memory,
@@ -609,7 +629,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: {},
       output: null,
       memory: null,

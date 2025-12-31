@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 
 import { FlowEscape, HelperName, HelperType } from '../types';
 
@@ -35,7 +35,7 @@ export default abstract class BaseFlowEscapeHelper<
    * @returns - A promise that resolves to a FlowEscape.AdjudicationResult.
    */
   abstract adjudicate<T>(
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
     action: T,
   ): Promise<FlowEscape.AdjudicationResult>;
 }

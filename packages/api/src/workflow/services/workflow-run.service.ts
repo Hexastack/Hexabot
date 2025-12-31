@@ -132,7 +132,7 @@ export class WorkflowRunService extends BaseOrmService<
     subscriberId: string,
   ): Promise<WorkflowRunFull | null> {
     return await this.findOneAndPopulate({
-      where: { subscriber: { id: subscriberId }, status: 'suspended' },
+      where: { triggeredBy: { id: subscriberId }, status: 'suspended' },
       order: { suspendedAt: 'DESC', createdAt: 'DESC' },
     });
   }

@@ -7,13 +7,22 @@
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
+import { IsUUIDv4 } from '@/utils';
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
+
+import { WorkflowType } from '../types';
 
 @Exclude()
 export class WorkflowStub extends BaseStub {
@@ -25,6 +34,12 @@ export class WorkflowStub extends BaseStub {
 
   @Expose()
   description?: string | null;
+
+  @Expose()
+  type!: WorkflowType;
+
+  @Expose()
+  schedule?: string | null;
 
   @Expose()
   definition!: WorkflowDefinition;
@@ -52,10 +67,36 @@ export class WorkflowCreateDto {
   @IsString()
   description?: string;
 
+  @ApiProperty({
+    description: 'Workflow trigger type',
+    enum: Object.values(WorkflowType),
+    default: WorkflowType.conversational,
+  })
+  @IsOptional()
+  @IsIn(Object.values(WorkflowType))
+  type: WorkflowType = WorkflowType.conversational;
+
+  @ApiPropertyOptional({
+    description: 'Cron expression when workflow is scheduled',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  schedule?: string | null;
+
   @ApiProperty({ description: 'Workflow definition', type: Object })
   @IsNotEmpty()
   @IsObject()
   definition!: WorkflowDefinition;
+
+  @ApiProperty({
+    description: 'Owner : User ID',
+    type: String,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsUUIDv4({ message: 'CreatedBy must be a valid UUID' })
+  createdBy: string;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{
