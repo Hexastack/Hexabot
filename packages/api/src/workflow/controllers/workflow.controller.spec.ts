@@ -12,6 +12,7 @@ import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { userFixtureIds } from '@/utils/test/fixtures/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
@@ -109,11 +110,19 @@ describe('WorkflowController (TypeORM)', () => {
     it('creates a workflow definition', async () => {
       const payload = buildWorkflowPayload();
       const createSpy = jest.spyOn(workflowService, 'create');
-      const created = await workflowController.create(payload);
+      const userId = userFixtureIds.admin;
+      const created = await workflowController.create(payload, {
+        session: { passport: { user: { id: userId } } },
+      } as any);
       createdWorkflowIds.add(created.id);
 
-      expect(createSpy).toHaveBeenCalledWith(payload);
-      expect(created).toEqualPayload(payload, [...IGNORED_TEST_FIELDS]);
+      expect(createSpy).toHaveBeenCalledWith({
+        ...payload,
+        createdBy: userId,
+      });
+      expect(created).toEqualPayload({ ...payload, createdBy: userId }, [
+        ...IGNORED_TEST_FIELDS,
+      ]);
     });
   });
 
@@ -123,7 +132,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(existing).toBeDefined();
 
       const findSpy = jest.spyOn(workflowService, 'findOne');
-      const result = await workflowController.findOne(existing.id);
+      const result = await workflowController.findOne(existing.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(existing.id);
       expect(result).toEqualPayload(existing);
@@ -133,7 +142,7 @@ describe('WorkflowController (TypeORM)', () => {
       const id = randomUUID();
       const warnSpy = jest.spyOn(logger, 'warn');
 
-      await expect(workflowController.findOne(id)).rejects.toThrow(
+      await expect(workflowController.findOne(id, [])).rejects.toThrow(
         new NotFoundException(`Workflow with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
@@ -144,7 +153,10 @@ describe('WorkflowController (TypeORM)', () => {
 
   describe('updateOne', () => {
     it('updates an existing workflow', async () => {
-      const created = await workflowService.create(buildWorkflowPayload());
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
       createdWorkflowIds.add(created.id);
       const updates: WorkflowUpdateDto = { description: 'Updated workflow' };
       const findOneSpy = jest.spyOn(workflowService, 'findOne');
@@ -153,9 +165,10 @@ describe('WorkflowController (TypeORM)', () => {
 
       expect(findOneSpy).toHaveBeenCalledWith(created.id);
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
-      expect(result).toEqualPayload({ ...created, ...updates }, [
-        ...IGNORED_TEST_FIELDS,
-      ]);
+      expect(result).toEqualPayload(
+        { ...created, ...updates, createdBy: userFixtureIds.admin },
+        [...IGNORED_TEST_FIELDS],
+      );
     });
 
     it('throws NotFoundException when attempting to update a missing workflow', async () => {

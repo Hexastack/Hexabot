@@ -8,6 +8,10 @@ import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
 import { QuickReplyType } from '@/chat/types/quick-reply';
+import {
+  installUserFixturesTypeOrm,
+  userFixtureIds,
+} from '@/utils/test/fixtures/user';
 import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
@@ -60,19 +64,26 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     version: messagingWorkflowDefinition.workflow.version,
     description: messagingWorkflowDefinition.workflow.description ?? undefined,
     definition: messagingWorkflowDefinition,
+    createdBy: userFixtureIds.admin,
   },
 ];
 
 export const installMessagingWorkflowFixturesTypeOrm = async (
   dataSource: DataSource,
 ): Promise<WorkflowOrmEntity[]> => {
+  await installUserFixturesTypeOrm(dataSource);
   const repository = dataSource.getRepository(WorkflowOrmEntity);
 
   if (await repository.count()) {
     return await repository.find();
   }
 
-  const entities = repository.create(messagingWorkflowFixtures);
+  const entities = repository.create(
+    messagingWorkflowFixtures.map((fixture) => ({
+      ...fixture,
+      createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
+    })),
+  );
 
   return await repository.save(entities);
 };
