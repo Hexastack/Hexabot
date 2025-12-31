@@ -12,7 +12,7 @@ import {
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
@@ -38,7 +38,9 @@ export class AgenticService {
    * Process an incoming channel event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleMessageEvent(event: EventWrapper<any, any>): Promise<void> {
+  async handleMessageEvent(
+    event: ConversationalEventWrapper<any, any>,
+  ): Promise<void> {
     const subscriber = event.getSender();
     const eventContext = {
       subscriberId: subscriber?.id,
@@ -176,7 +178,7 @@ export class AgenticService {
     run: WorkflowRunFull,
     context: WorkflowContext,
     workflowInstance: AgentWorkflow,
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
   ): Promise<RunStrategy> {
     if (mode === 'start') {
       const runner = await workflowInstance.buildAsyncRunner({
@@ -234,7 +236,7 @@ export class AgenticService {
   private async createRun(
     workflow: WorkflowDto,
     subscriber: Subscriber,
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
   ): Promise<WorkflowRunFull> {
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
@@ -358,7 +360,9 @@ export class AgenticService {
   /**
    * Build the workflow input payload from the incoming event.
    */
-  private buildInput(event: EventWrapper<any, any>): Record<string, unknown> {
+  private buildInput(
+    event: ConversationalEventWrapper<any, any>,
+  ): Record<string, unknown> {
     const input: Record<string, unknown> = {
       channel: event.getChannelData(),
       message_type: event.getMessageType(),
@@ -380,7 +384,7 @@ export class AgenticService {
    * Extract the resume payload expected by messaging actions.
    */
   private buildResumeData(
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
   ): Record<string, unknown> | undefined {
     const message = this.safeInvoke(() => event.getMessage());
 
@@ -418,7 +422,7 @@ export class AgenticService {
   private buildRunLogContext(
     run: WorkflowRunFull,
     mode: RunWorkflowOptions['mode'],
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
   ): Record<string, unknown> {
     return {
       mode,

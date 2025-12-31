@@ -8,7 +8,7 @@ import { Workflow as AgentWorkflow } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
 import { messagingWorkflowDefinition } from '@/utils/test/fixtures/workflow';
@@ -71,7 +71,7 @@ type EventOverrides = Partial<{
 const buildEvent = (
   subscriber?: Subscriber,
   overrides: EventOverrides = {},
-): EventWrapper<any, any> => {
+): ConversationalEventWrapper<any, any> => {
   const message = overrides.message ?? { text: 'Hello from user' };
   const handler = {
     getName: jest.fn(() => 'web'),
@@ -88,7 +88,7 @@ const buildEvent = (
     getText: jest.fn(() => overrides.text ?? (message as any).text ?? ''),
     getId: jest.fn(() => overrides.id ?? 'mid-123'),
     getHandler: jest.fn(() => handler),
-  } as unknown as EventWrapper<any, any>;
+  } as unknown as ConversationalEventWrapper<any, any>;
 };
 
 describe('AgenticService', () => {

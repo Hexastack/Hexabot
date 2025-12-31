@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
@@ -61,7 +61,7 @@ export const messageActionOutputSchema = z.object({
 });
 
 interface PreparedMessageContext {
-  event: EventWrapper<any, any>;
+  event: ConversationalEventWrapper<any, any>;
   recipient: Subscriber;
   envelopeFactory: EnvelopeFactory;
   chatContext: Context;
@@ -93,7 +93,7 @@ export abstract class MessageAction<
   }
 
   private buildChatContext(
-    event: EventWrapper<any, any>,
+    event: ConversationalEventWrapper<any, any>,
     chatContext?: Context,
   ) {
     const defaults = getDefaultWorkflowContext();

@@ -8,7 +8,7 @@ import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageService } from '@/chat';
 import { Context } from '@/chat/types/context';
 import { ContentTypeService } from '@/cms/services/content-type.service';
@@ -24,7 +24,7 @@ export class WorkflowContext extends BaseWorkflowContext<
   WorkflowContextState,
   EventEmitter2
 > {
-  event?: EventWrapper<any, any>;
+  event?: ConversationalEventWrapper<any, any>;
 
   @Inject(I18nService)
   private readonly i18n: I18nService;
@@ -98,7 +98,10 @@ export class WorkflowContext extends BaseWorkflowContext<
     this.state.runId = value;
   }
 
-  buildFromRun(run: WorkflowRunFull, event: EventWrapper<any, any>): this {
+  buildFromRun(
+    run: WorkflowRunFull,
+    event: ConversationalEventWrapper<any, any>,
+  ): this {
     this.hydrate(run.context);
     const legacyContext = (this.state as any).conversationContext as
       | Context
