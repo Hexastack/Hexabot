@@ -12,7 +12,6 @@ import {
 } from '@hexabot-ai/agentic';
 
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { Context } from '@/chat/types/context';
 
 import { WorkflowRunFull } from './dto/workflow-run.dto';
@@ -30,7 +29,6 @@ export type RunWorkflowOptions =
   | {
       mode: 'start';
       workflow: Workflow;
-      subscriber: Subscriber;
       event: ConversationalEventWrapper<any, any>;
     }
   | {
