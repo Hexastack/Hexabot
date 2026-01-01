@@ -10,7 +10,7 @@ The envelope helpers introduce two key components to streamline outgoing message
   A Proxy-based builder utility that provides chainable setter methods to dynamically create envelope objects. It validates the final envelope using Zod schemas and supports dynamic array handling through methods like `appendToQuickReplies`.
 
 - **Envelope Factory:**  
-  A higher-level abstraction that builds on the Envelope Builder. It integrates localization and templating using Handlebars and provides convenience methods for constructing different types of envelopes (text, quick replies, buttons, attachments, lists/carousels, and system messages).
+  A higher-level abstraction that builds on the Envelope Builder. It localizes messages and provides convenience methods for constructing different types of envelopes (text, quick replies, buttons, attachments, lists/carousels, and system messages).
 
 ---
 
@@ -31,10 +31,6 @@ The envelope helpers introduce two key components to streamline outgoing message
   Pre-configured through `getEnvelopeBuilder` to support various message formats (text, quick replies, buttons, attachment, carousel, list, and system).
 
 ### Envelope Factory
-
-- **Template Conversion & Compilation:**  
-  - **toHandlebars:** Converts legacy single-curly brace templates (e.g., `{context.user.name}`) into Handlebars-style (`{{context.user.name}}`).  
-  - **compileHandlebarsTemplate:** Compiles and processes these templates by injecting contextual data, allowing dynamic content generation.
 
 - **Localization:**  
   Processes input text for localization using an integrated i18n service, ensuring that messages are tailored to the user's language settings.
@@ -85,7 +81,7 @@ const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
 const envelopeFactory = new EnvelopeFactory(context, settings, i18nService);
 
 // Build a localized text envelope:
-const textEnvelope = envelopeFactory.buildTextEnvelope('Hello, {context.user.name}!');
+const textEnvelope = envelopeFactory.buildTextEnvelope('Hello there!');
 
 // Build a quick replies envelope with processed quick replies:
 const quickRepliesEnvelope = envelopeFactory.buildQuickRepliesEnvelope(
@@ -107,9 +103,8 @@ const quickRepliesEnvelope = envelopeFactory.buildQuickRepliesEnvelope(
 - **Type Safety with Generics:**  
   Both components use TypeScript generics and strict typing to ensure that each envelope adheres to its specific format, reducing runtime errors and enforcing schema compliance.
 
-- **Localization & Templating:**  
-  The Envelope Factory integrates with an i18n service and uses Handlebars to convert and compile message templates, ensuring that all messages are correctly localized and dynamically composed with context-specific data.
+- **Localization:**  
+  The Envelope Factory integrates with an i18n service, ensuring that all messages are correctly localized to the user's language settings.
 
 - **Schema Mapping:**  
   A mapping between message formats and their corresponding Zod schemas guarantees that envelopes are built and validated against the correct structure.
-

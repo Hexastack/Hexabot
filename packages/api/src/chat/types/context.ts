@@ -26,8 +26,3 @@ export interface Context {
   skip: Record<string, number>;
   attempt: number;
 }
-
-export interface TemplateContext {
-  context: Context;
-  contact: Settings['contact'];
-}

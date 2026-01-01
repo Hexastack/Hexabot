@@ -4,14 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import Handlebars from 'handlebars';
-
 import { I18nService } from '@/i18n/services/i18n.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import { AttachmentPayload } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { Context, TemplateContext } from '../types/context';
+import { Context } from '../types/context';
 import {
   ContentElement,
   ContentPagination,
@@ -36,57 +34,8 @@ export class EnvelopeFactory {
   ) {}
 
   /**
-   * Converts an old text template with single-curly placeholders, e.g. `{context.user.name}`,
-   * into a Handlebars-style template, e.g. `{{context.user.name}}`.
-   *
-   * @param str - The template string you want to convert.
-   * @returns The converted template string with Handlebars-style placeholders.
-   */
-  static toHandlebars(str: string) {
-    // If the string already contains {{ }}, assume it's already a handlebars template.
-    if (/\{\{.*\}\}/.test(str)) {
-      return str;
-    }
-
-    // Otherwise, replace single curly braces { } with double curly braces {{ }}.
-    return str.replaceAll(/{([^}]+)}/g, '{{$1}}');
-  }
-
-  /**
-   * Compiles a handlebars template to replace tokens with their associated values in the provided text message
-   *
-   * `You phone number is {{context.vars.phone}}`
-   * Becomes
-   * `You phone number is 6354-543-534`
-   *
-   * @param text - Text message
-   * @param context - Object holding context variables relative to the chat interaction (temporary)
-   * @param subscriberContext - Object holding context values relative to the subscriber (permanent)
-   * @param settings - Settings Object
-   *
-   * @returns Text message with the tokens being replaced
-   */
-  static compileHandlebarsTemplate(
-    text: string,
-    context: Context,
-    settings: Settings,
-  ): string {
-    // Build the template context for Handlebars to match our token paths
-    const templateContext: TemplateContext = {
-      context: { ...context },
-      contact: { ...settings.contact },
-    };
-    // Compile and run the Handlebars template
-    const compileTemplate = Handlebars.compile(
-      EnvelopeFactory.toHandlebars(text),
-    );
-
-    return compileTemplate(templateContext);
-  }
-
-  /**
    * Processes the provided text or array of texts, localizes it based on the user's language settings,
-   * and then compiles it with the current context and settings using Handlebars templates.
+   * and returns the localized string.
    *
    * @param text - The text or an array of text strings to be processed.
    * @returns - The processed and localized text.
@@ -97,11 +46,6 @@ export class EnvelopeFactory {
       lang: this.context.user.language || undefined,
       defaultValue: result,
     });
-    result = EnvelopeFactory.compileHandlebarsTemplate(
-      result,
-      this.context,
-      this.settings,
-    );
 
     return result;
   }
@@ -120,8 +64,8 @@ export class EnvelopeFactory {
   /**
    * Builds a text envelope by processing the provided text.
    *
-   * This method processes the input text for localization and template compilation,
-   * then builds a text envelope using the envelope builder.
+   * This method processes the input text for localization, then builds a text envelope
+   * using the envelope builder.
    *
    * @param text - The text content or an array of text variants.
    * @returns A finalized text envelope object.
@@ -136,8 +80,8 @@ export class EnvelopeFactory {
   /**
    * Builds a quick replies envelope by processing the text and quick reply items.
    *
-   * Processes the input text for localization and template compilation, then appends each
-   * processed quick reply (with localized title and payload) to the envelope before finalizing it.
+   * Processes the input text for localization, then appends each processed quick reply
+   * (with localized title and payload) to the envelope before finalizing it.
    *
    * @param text - The text content or an array of text variants.
    * @param quickReplies - An array of quick reply objects.
@@ -203,7 +147,7 @@ export class EnvelopeFactory {
    * Builds an attachment envelope with the provided attachment payload.
    *
    * Sets the attachment on the envelope and appends any quick replies after processing
-   * them for localization and template compilation.
+   * them for localization.
    *
    * @param attachment - The attachment payload object.
    * @param quickReplies - Optional array of quick reply objects.
