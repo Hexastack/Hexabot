@@ -10,7 +10,7 @@ import { ActionService } from '@/actions/actions.service';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import { Context } from '@/chat/types/context';
+import { ChatContext } from '@/chat/types/chat-context';
 import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
@@ -60,7 +60,7 @@ describe('MessageAction base', () => {
   let recipient: any;
   let event: MockEvent;
   let workflow: { suspend: jest.Mock };
-  let baseContext: Context;
+  let baseContext: ChatContext;
 
   const buildWorkflowContext = (
     overrides: Partial<WorkflowContext> = {},

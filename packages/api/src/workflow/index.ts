@@ -30,4 +30,4 @@ export * from './services/agentic.service';
 
 export * from './defaults/default-workflow';
 
-export * from './defaults/context';
+export * from './defaults/default-chat-context';
