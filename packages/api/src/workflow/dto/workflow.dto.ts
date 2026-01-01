@@ -6,9 +6,11 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
+import { User } from '@/user/dto/user.dto';
+import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
   DtoActionConfig,
@@ -31,12 +33,19 @@ export class WorkflowStub extends BaseStub {
 }
 
 @Exclude()
-export class Workflow extends WorkflowStub {}
+export class Workflow extends WorkflowStub {
+  @Expose({ name: 'createdById' })
+  createdBy?: string | null;
+}
 
 @Exclude()
-export class WorkflowFull extends WorkflowStub {}
+export class WorkflowFull extends WorkflowStub {
+  @Expose()
+  @Type(() => User)
+  createdBy?: User | null;
+}
 
-export class WorkflowCreateDto {
+export class WorkflowNewDto {
   @ApiProperty({ description: 'Workflow name', type: String })
   @IsNotEmpty()
   @IsString()
@@ -56,6 +65,15 @@ export class WorkflowCreateDto {
   @IsNotEmpty()
   @IsObject()
   definition!: WorkflowDefinition;
+}
+
+export class WorkflowCreateDto extends WorkflowNewDto {
+  @ApiPropertyOptional({ description: 'Workflow creator', type: String })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'createdBy must be a valid UUID',
+  })
+  createdBy?: string | null;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{

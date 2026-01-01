@@ -33,6 +33,9 @@ export class WorkflowRepository extends BaseOrmRepository<
     @InjectRepository(WorkflowOrmEntity)
     repository: Repository<WorkflowOrmEntity>,
   ) {
-    super(repository, [], { PlainCls: Workflow, FullCls: WorkflowFull });
+    super(repository, ['createdBy'], {
+      PlainCls: Workflow,
+      FullCls: WorkflowFull,
+    });
   }
 }

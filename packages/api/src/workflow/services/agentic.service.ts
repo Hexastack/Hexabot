@@ -13,7 +13,6 @@ import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
@@ -43,7 +42,7 @@ export class AgenticService {
   ): Promise<void> {
     const subscriber = event.getSender();
     const eventContext = {
-      subscriberId: subscriber?.id,
+      triggeredById: subscriber?.id,
       messageId: this.safeInvoke(() => event.getId()),
       eventType: this.safeInvoke(() => event.getEventType()),
       messageType: this.safeInvoke(() => event.getMessageType()),
@@ -59,7 +58,7 @@ export class AgenticService {
 
     try {
       const suspendedRun =
-        await this.workflowRunService.findSuspendedRunBySubscriber(
+        await this.workflowRunService.findSuspendedRunByInitiator(
           subscriber.id,
         );
       if (suspendedRun) {
@@ -89,7 +88,6 @@ export class AgenticService {
       await this.runWorkflow({
         mode: 'start',
         workflow,
-        subscriber,
         event,
       });
     } catch (err) {
@@ -107,7 +105,7 @@ export class AgenticService {
     const { event } = options;
     const run =
       options.mode === 'start'
-        ? await this.createRun(options.workflow, options.subscriber, event)
+        ? await this.createRun(options.workflow, event)
         : options.run;
     const logContext = this.buildRunLogContext(run, options.mode, event);
     const workflowInstance = AgentWorkflow.fromDefinition(
@@ -235,12 +233,12 @@ export class AgenticService {
    */
   private async createRun(
     workflow: WorkflowDto,
-    subscriber: Subscriber,
     event: ConversationalEventWrapper<any, any>,
   ): Promise<WorkflowRunFull> {
+    const subscriber = event.getSender();
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
-      subscriber: subscriber.id,
+      triggeredBy: subscriber.id,
       input: this.buildInput(event),
       memory: workflow.definition.memory ?? null,
       context: workflow.definition.context ?? null,
@@ -428,7 +426,7 @@ export class AgenticService {
       mode,
       runId: run.id,
       workflowId: run.workflow?.id,
-      subscriberId: run.subscriber?.id ?? null,
+      triggeredById: run.triggeredBy?.id ?? null,
       messageId: this.safeInvoke(() => event.getId()),
       eventType: this.safeInvoke(() => event.getEventType()),
       messageType: this.safeInvoke(() => event.getMessageType()),
@@ -511,7 +509,7 @@ export class AgenticService {
       {
         runId: run.id,
         workflowId: run.workflow?.id,
-        subscriberId: run.subscriber?.id ?? null,
+        triggeredById: run.triggeredBy?.id ?? null,
       },
     );
     await this.workflowRunService.markFailed(run.id, {

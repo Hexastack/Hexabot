@@ -33,7 +33,7 @@ export class WorkflowRunRepository extends BaseOrmRepository<
     @InjectRepository(WorkflowRunOrmEntity)
     repository: Repository<WorkflowRunOrmEntity>,
   ) {
-    super(repository, ['workflow', 'subscriber'], {
+    super(repository, ['workflow', 'triggeredBy'], {
       PlainCls: WorkflowRun,
       FullCls: WorkflowRunFull,
     });
