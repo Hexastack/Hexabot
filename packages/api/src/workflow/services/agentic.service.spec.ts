@@ -8,7 +8,7 @@ import { Workflow as AgentWorkflow } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { LoggerService } from '@/logger/logger.service';
 import { messagingWorkflowDefinition } from '@/utils/test/fixtures/workflow';
@@ -71,7 +71,7 @@ type EventOverrides = Partial<{
 const buildEvent = (
   subscriber?: Subscriber,
   overrides: EventOverrides = {},
-): EventWrapper<any, any> => {
+): ConversationalEventWrapper<any, any> => {
   const message = overrides.message ?? { text: 'Hello from user' };
   const handler = {
     getName: jest.fn(() => 'web'),
@@ -88,7 +88,7 @@ const buildEvent = (
     getText: jest.fn(() => overrides.text ?? (message as any).text ?? ''),
     getId: jest.fn(() => overrides.id ?? 'mid-123'),
     getHandler: jest.fn(() => handler),
-  } as unknown as EventWrapper<any, any>;
+  } as unknown as ConversationalEventWrapper<any, any>;
 };
 
 describe('AgenticService', () => {
@@ -111,7 +111,7 @@ describe('AgenticService', () => {
     } as unknown as jest.Mocked<WorkflowService>;
     workflowRunService = {
       findOneAndPopulate: jest.fn(),
-      findSuspendedRunBySubscriber: jest.fn(),
+      findSuspendedRunByInitiator: jest.fn(),
       create: jest.fn(),
       markRunning: jest.fn(),
       markSuspended: jest.fn(),
@@ -164,7 +164,7 @@ describe('AgenticService', () => {
       'Skipping workflow execution due to missing subscriber on event',
     );
     expect(
-      workflowRunService.findSuspendedRunBySubscriber,
+      workflowRunService.findSuspendedRunByInitiator,
     ).not.toHaveBeenCalled();
   });
 
@@ -196,7 +196,7 @@ describe('AgenticService', () => {
       id: 'run-1',
       status: 'suspended',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: { foo: 'bar' },
       output: { prev: true },
       memory: { cache: true },
@@ -243,7 +243,7 @@ describe('AgenticService', () => {
       buildAsyncRunner: jest.fn(),
     };
     (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
-    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(run);
+    workflowRunService.findSuspendedRunByInitiator.mockResolvedValue(run);
     workflowRunService.markRunning.mockResolvedValue(run as any);
     workflowRunService.markSuspended.mockResolvedValue({
       ...run,
@@ -353,7 +353,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: expectedInput,
       output: null,
       memory: null,
@@ -386,7 +386,7 @@ describe('AgenticService', () => {
       buildAsyncRunner: jest.fn().mockResolvedValue(runner),
     };
     (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
-    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(null);
+    workflowRunService.findSuspendedRunByInitiator.mockResolvedValue(null);
     workflowService.pickWorkflow.mockResolvedValue(workflow);
     workflowRunService.findOneAndPopulate.mockResolvedValue(populatedRun);
     workflowRunService.create.mockResolvedValue(createdRun);
@@ -414,7 +414,7 @@ describe('AgenticService', () => {
     };
     expect(workflowRunService.create).toHaveBeenCalledWith({
       workflow: workflow.id,
-      subscriber: subscriber.id,
+      triggeredBy: subscriber.id,
       input: expectedInput,
       memory: workflow.definition.memory,
       context: workflow.definition.context,
@@ -463,7 +463,7 @@ describe('AgenticService', () => {
   it('warns when no workflow is available', async () => {
     const subscriber = { id: 'subscriber-3' } as Subscriber;
     const event = buildEvent(subscriber);
-    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValueOnce(null);
+    workflowRunService.findSuspendedRunByInitiator.mockResolvedValueOnce(null);
     workflowService.pickWorkflow.mockResolvedValueOnce(null);
 
     await service.handleMessageEvent(event);
@@ -502,7 +502,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: expectedInput,
       output: { previous: true },
       memory: workflow.definition.memory,
@@ -533,7 +533,7 @@ describe('AgenticService', () => {
       buildAsyncRunner: jest.fn().mockResolvedValue(runner),
     };
     (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
-    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(null);
+    workflowRunService.findSuspendedRunByInitiator.mockResolvedValue(null);
     workflowService.pickWorkflow.mockResolvedValue(workflow);
     workflowRunService.create.mockResolvedValue(createdRun);
     workflowRunService.findOneAndPopulate.mockResolvedValue(populatedRun);
@@ -609,7 +609,7 @@ describe('AgenticService', () => {
       id: createdRun.id,
       status: 'idle',
       workflow,
-      subscriber,
+      triggeredBy: subscriber,
       input: {},
       output: null,
       memory: null,
@@ -637,7 +637,7 @@ describe('AgenticService', () => {
       buildAsyncRunner: jest.fn().mockResolvedValue(runner),
     };
     (AgentWorkflow as any).fromDefinition.mockReturnValue(workflowInstance);
-    workflowRunService.findSuspendedRunBySubscriber.mockResolvedValue(null);
+    workflowRunService.findSuspendedRunByInitiator.mockResolvedValue(null);
     workflowService.pickWorkflow.mockResolvedValue(workflow);
     workflowRunService.create.mockResolvedValue(createdRun);
     workflowRunService.findOneAndPopulate.mockResolvedValue(populatedRun);

@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
-import EventWrapper from '@/channel/lib/EventWrapper';
+import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import { Context } from '@/chat/types/context';
 import {
@@ -42,7 +42,7 @@ class TestMessageAction extends MessageAction<any> {
   }
 }
 
-type MockEvent = jest.Mocked<EventWrapper<any, any>>;
+type MockEvent = jest.Mocked<ConversationalEventWrapper<any, any>>;
 
 describe('MessageAction base', () => {
   let actionService: ActionService;

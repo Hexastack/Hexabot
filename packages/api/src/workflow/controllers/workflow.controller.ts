@@ -15,17 +15,21 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
+import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
   Workflow,
-  WorkflowCreateDto,
   WorkflowDtoConfig,
+  WorkflowFull,
+  WorkflowNewDto,
   WorkflowTransformerDto,
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
@@ -51,9 +55,13 @@ export class WorkflowController extends BaseOrmController<
    */
   @Post()
   async create(
-    @Body() workflowCreateDto: WorkflowCreateDto,
+    @Body() workflowCreateDto: WorkflowNewDto,
+    @Req() req: Request,
   ): Promise<Workflow> {
-    return await this.workflowService.create(workflowCreateDto);
+    return await this.workflowService.create({
+      ...workflowCreateDto,
+      createdBy: req.session?.passport?.user?.id,
+    });
   }
 
   /**
@@ -67,13 +75,17 @@ export class WorkflowController extends BaseOrmController<
   async findMany(
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
-        allowedFields: ['name', 'version', 'description'],
+        allowedFields: ['name', 'version', 'description', 'createdBy.id'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
     options: FindManyOptions<WorkflowOrmEntity> = {},
-  ): Promise<Workflow[]> {
-    return await this.workflowService.find(options ?? {});
+    @Query(PopulatePipe)
+    populate: string[] = [],
+  ) {
+    return this.canPopulate(populate)
+      ? await this.workflowService.findAndPopulate(options ?? {})
+      : await this.workflowService.find(options ?? {});
   }
 
   /**
@@ -84,8 +96,14 @@ export class WorkflowController extends BaseOrmController<
    * @returns The workflow matching the provided ID.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Workflow> {
-    const workflow = await this.workflowService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Query(PopulatePipe)
+    populate: string[] = [],
+  ): Promise<Workflow | WorkflowFull> {
+    const workflow = this.canPopulate(populate)
+      ? await this.workflowService.findOneAndPopulate(id)
+      : await this.workflowService.findOne(id);
     if (!workflow) {
       this.logger.warn(`Unable to find Workflow by id ${id}`);
       throw new NotFoundException(`Workflow with ID ${id} not found`);

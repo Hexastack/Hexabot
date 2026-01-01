@@ -14,14 +14,14 @@ import {
 } from '@/chat/types/message';
 import { Payload } from '@/chat/types/quick-reply';
 import { NLU } from '@/helper/types';
+import { TriggerEventWrapper } from '@/workflow/lib/trigger-event-wrapper';
+import { WorkflowType } from '@/workflow/types';
 
 import { ChannelName } from '../types';
 
 import ChannelHandler from './Handler';
 
-export interface ChannelEvent {}
-
-export default abstract class EventWrapper<
+export default abstract class ConversationalEventWrapper<
   A extends {
     eventType: StdEventType;
     messageType?: IncomingMessageType;
@@ -32,7 +32,9 @@ export default abstract class EventWrapper<
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
-> {
+> extends TriggerEventWrapper {
+  readonly triggerType = WorkflowType.conversational;
+
   _adapter: A = {
     raw: {},
     eventType: StdEventType.unknown,
@@ -58,6 +60,7 @@ export default abstract class EventWrapper<
    * @param channelAttrs - Channel's specific data
    */
   constructor(handler: C, event: A['raw'], channelAttrs: S = {} as S) {
+    super();
     this._handler = handler;
     this._init(event);
     this.channelAttrs = channelAttrs;
@@ -201,7 +204,7 @@ export default abstract class EventWrapper<
       this._adapter.messageType === IncomingMessageType.attachments
     ) {
       await this._handler.persistMessageAttachments(
-        this as EventWrapper<
+        this as ConversationalEventWrapper<
           any,
           any,
           ChannelName,
@@ -289,7 +292,7 @@ type GenericEventAdapter = {
   raw: GenericEvent;
 };
 
-export class GenericEventWrapper extends EventWrapper<
+export class GenericEventWrapper extends ConversationalEventWrapper<
   GenericEventAdapter,
   GenericEvent,
   ChannelName

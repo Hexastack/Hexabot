@@ -19,7 +19,7 @@ import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
-import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
+import { GenericEventWrapper } from '@/channel/lib/ConversationalEventWrapper';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';

@@ -48,7 +48,7 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 import { ChannelService } from '../channel.service';
 import { ChannelName, ChannelSetting } from '../types';
 
-import EventWrapper from './EventWrapper';
+import ConversationalEventWrapper from './ConversationalEventWrapper';
 
 @Injectable()
 export default abstract class ChannelHandler<
@@ -211,7 +211,7 @@ export default abstract class ChannelHandler<
    
    */
   abstract sendMessage(
-    event: EventWrapper<any, any, N>,
+    event: ConversationalEventWrapper<any, any, N>,
     envelope: StdOutgoingEnvelope,
     options: any,
     context: any,
@@ -224,7 +224,7 @@ export default abstract class ChannelHandler<
    * @returns An attachment array
    */
   getMessageAttachments?(
-    event: EventWrapper<any, any, N>,
+    event: ConversationalEventWrapper<any, any, N>,
   ): Promise<AttachmentFile[]>;
 
   /**
@@ -233,7 +233,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   getSubscriberAvatar?(
-    event: EventWrapper<any, any, N>,
+    event: ConversationalEventWrapper<any, any, N>,
   ): Promise<AttachmentFile | undefined>;
 
   /**
@@ -244,7 +244,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   async getUserData(
-    event: EventWrapper<any, any, N>,
+    event: ConversationalEventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto> {
     return await this.getSubscriberData(event);
   }
@@ -256,7 +256,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   abstract getSubscriberData(
-    event: EventWrapper<any, any, N>,
+    event: ConversationalEventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto>;
 
   /**
@@ -264,7 +264,9 @@ export default abstract class ChannelHandler<
    *
    * @returns Resolves the promise once attachments are fetched and stored
    */
-  async persistMessageAttachments(event: EventWrapper<any, any, N>) {
+  async persistMessageAttachments(
+    event: ConversationalEventWrapper<any, any, N>,
+  ) {
     if (
       event._adapter.eventType === StdEventType.message &&
       event._adapter.messageType === IncomingMessageType.attachments &&
