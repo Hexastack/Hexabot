@@ -42,7 +42,7 @@ export class AgenticService {
   ): Promise<void> {
     const subscriber = event.getSender();
     const eventContext = {
-      subscriberId: subscriber?.id,
+      triggeredById: subscriber?.id,
       messageId: this.safeInvoke(() => event.getId()),
       eventType: this.safeInvoke(() => event.getEventType()),
       messageType: this.safeInvoke(() => event.getMessageType()),
@@ -58,7 +58,7 @@ export class AgenticService {
 
     try {
       const suspendedRun =
-        await this.workflowRunService.findSuspendedRunBySubscriber(
+        await this.workflowRunService.findSuspendedRunByInitiator(
           subscriber.id,
         );
       if (suspendedRun) {
@@ -238,7 +238,7 @@ export class AgenticService {
     const subscriber = event.getSender();
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
-      subscriber: subscriber.id,
+      triggeredBy: subscriber.id,
       input: this.buildInput(event),
       memory: workflow.definition.memory ?? null,
       context: workflow.definition.context ?? null,
@@ -426,7 +426,7 @@ export class AgenticService {
       mode,
       runId: run.id,
       workflowId: run.workflow?.id,
-      subscriberId: run.subscriber?.id ?? null,
+      triggeredById: run.triggeredBy?.id ?? null,
       messageId: this.safeInvoke(() => event.getId()),
       eventType: this.safeInvoke(() => event.getEventType()),
       messageType: this.safeInvoke(() => event.getMessageType()),
@@ -509,7 +509,7 @@ export class AgenticService {
       {
         runId: run.id,
         workflowId: run.workflow?.id,
-        subscriberId: run.subscriber?.id ?? null,
+        triggeredById: run.triggeredBy?.id ?? null,
       },
     );
     await this.workflowRunService.markFailed(run.id, {

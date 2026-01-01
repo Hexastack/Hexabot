@@ -118,7 +118,7 @@ export class WorkflowContext extends BaseWorkflowContext<
     delete (this.state as any).conversationContext;
     delete (this.state as any).conversationId;
     this.event = event;
-    this.subscriberId = run.subscriber?.id;
+    this.subscriberId = run.triggeredBy?.id;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
 
