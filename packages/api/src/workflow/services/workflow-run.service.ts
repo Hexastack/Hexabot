@@ -123,16 +123,16 @@ export class WorkflowRunService extends BaseOrmService<
   }
 
   /**
-   * Find the latest suspended run for a subscriber.
+   * Find the latest suspended run for a triggering subscriber.
    *
-   * @param subscriberId - Identifier of the subscriber whose suspended run should be fetched.
+   * @param triggeredById - Identifier of the subscriber whose suspended run should be fetched.
    * @returns The most recently suspended run populated with relations, or `null` when none exists.
    */
-  async findSuspendedRunBySubscriber(
-    subscriberId: string,
+  async findSuspendedRunByInitiator(
+    triggeredById: string,
   ): Promise<WorkflowRunFull | null> {
     return await this.findOneAndPopulate({
-      where: { subscriber: { id: subscriberId }, status: 'suspended' },
+      where: { triggeredBy: { id: triggeredById }, status: 'suspended' },
       order: { suspendedAt: 'DESC', createdAt: 'DESC' },
     });
   }
