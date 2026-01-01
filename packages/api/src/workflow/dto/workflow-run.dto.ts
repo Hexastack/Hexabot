@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -84,9 +85,9 @@ export class WorkflowRun extends WorkflowRunStub {
   @Expose({ name: 'workflowId' })
   workflow!: string;
 
-  @Expose({ name: 'subscriberId' })
+  @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
-  subscriber?: string | null;
+  triggeredBy?: string | null;
 }
 
 @Exclude()
@@ -96,8 +97,10 @@ export class WorkflowRunFull extends WorkflowRunStub {
   workflow!: Workflow;
 
   @Expose()
-  @Type(() => Subscriber)
-  subscriber?: Subscriber | null;
+  @Type((options) =>
+    options?.object.triggeredBy instanceof UserOrmEntity ? User : Subscriber,
+  )
+  triggeredBy?: Subscriber | User;
 }
 
 export class WorkflowRunCreateDto {
@@ -109,14 +112,14 @@ export class WorkflowRunCreateDto {
   workflow!: string;
 
   @ApiPropertyOptional({
-    description: 'Subscriber linked to the run',
+    description: 'User who triggered the run',
     type: String,
   })
   @IsOptional()
   @IsUUIDv4({
-    message: 'Subscriber must be a valid UUID',
+    message: 'Triggering user must be a valid UUID',
   })
-  subscriber?: string | null;
+  triggeredBy?: string | null;
 
   @ApiPropertyOptional({
     description: 'Lifecycle status of the run',
