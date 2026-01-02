@@ -101,7 +101,7 @@ export class AgenticService {
     const workflowInstance = AgentWorkflow.fromDefinition(
       run.workflow.definition,
       {
-        actions: this.buildActionsRegistry(),
+        actions: this.actionService.getRegistry(),
       },
     );
     const context = await this.workflowContextFactory.create(run, event);
@@ -354,18 +354,6 @@ export class AgenticService {
     }
 
     return state;
-  }
-
-  /**
-   * Build a mapping of registered actions keyed by their names.
-   */
-  private buildActionsRegistry(): Record<
-    string,
-    ReturnType<ActionService['getAll']>[number]
-  > {
-    return Object.fromEntries(
-      this.actionService.getAll().map((action) => [action.getName(), action]),
-    );
   }
 
   /**

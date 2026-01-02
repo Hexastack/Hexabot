@@ -153,6 +153,11 @@ describe('AgenticService', () => {
     } as unknown as jest.Mocked<WorkflowRunService>;
     actionService = {
       getAll: jest.fn(() => mockActions),
+      getRegistry: jest.fn(() =>
+        Object.fromEntries(
+          mockActions.map((action) => [action.getName(), action]),
+        ),
+      ),
     } as unknown as jest.Mocked<ActionService>;
     workflowContext =
       new ConversationalWorkflowContext() as jest.Mocked<ConversationalWorkflowContext>;
