@@ -4,13 +4,34 @@
  * Full terms: see LICENSE.md.
  */
 
+import { User } from '@/user';
+import { UserProfileStub } from '@/user/dto/user-profile.dto';
+
 import { WorkflowType } from '../types';
 
-export abstract class TriggerEventWrapper {
+export abstract class TriggerEventWrapper<
+  U extends UserProfileStub = UserProfileStub,
+> {
   abstract readonly triggerType: WorkflowType;
+
+  protected initiator: U;
+
+  /**
+   * Returns the user/profile that initiated this event (subscriber or admin).
+   */
+  getInitiator(): U {
+    return this.initiator;
+  }
+
+  /**
+   * Sets the user/profile that initiated this event (subscriber or admin).
+   */
+  setInitiator(profile: U) {
+    this.initiator = profile;
+  }
 }
 
-export class ScheduledEventWrapper extends TriggerEventWrapper {
+export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
   readonly triggerType = WorkflowType.scheduled;
 
   constructor(
@@ -57,7 +78,7 @@ export class ScheduledEventWrapper extends TriggerEventWrapper {
   }
 }
 
-export class ManualEventWrapper extends TriggerEventWrapper {
+export class ManualEventWrapper extends TriggerEventWrapper<User> {
   readonly triggerType = WorkflowType.manual;
 
   constructor(

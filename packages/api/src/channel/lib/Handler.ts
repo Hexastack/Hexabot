@@ -273,7 +273,7 @@ export default abstract class ChannelHandler<
       this.getMessageAttachments
     ) {
       const metadatas = await this.getMessageAttachments(event);
-      const subscriber = event.getSender();
+      const subscriber = event.getInitiator();
       event._adapter.attachments = await Promise.all(
         metadatas.map(({ file, name, type, size }) => {
           return this.attachmentService.store(file, {

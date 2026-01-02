@@ -5,7 +5,7 @@
  */
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Subscriber } from '@/chat';
 import { SubscriberChannelData } from '@/chat/types/channel';
 import {
   IncomingMessageType,
@@ -32,7 +32,7 @@ export default abstract class ConversationalEventWrapper<
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
-> extends TriggerEventWrapper {
+> extends TriggerEventWrapper<Subscriber> {
   readonly triggerType = WorkflowType.conversational;
 
   _adapter: A = {
@@ -44,8 +44,6 @@ export default abstract class ConversationalEventWrapper<
   _handler: C;
 
   channelAttrs: S;
-
-  subscriber!: Subscriber;
 
   _nlp!: NLU.ParseEntities;
 
@@ -71,7 +69,7 @@ export default abstract class ConversationalEventWrapper<
       {
         handler: this._handler.getName(),
         channelData: this.getChannelData(),
-        sender: this.getSender(),
+        sender: this.getInitiator(),
         // recipient: this.getRecipientForeignId(),
         eventType: this.getEventType(),
         messageType: this.getMessageType(),
@@ -174,24 +172,6 @@ export default abstract class ConversationalEventWrapper<
    * @returns sender/profile id
    */
   abstract getSenderForeignId(): string;
-
-  /**
-   * Returns event sender data
-   *
-   * @returns event sender data
-   */
-  getSender(): Subscriber {
-    return this.subscriber;
-  }
-
-  /**
-   * Sets event sender data
-   *
-   * @param profile - Sender data
-   */
-  setSender(profile: Subscriber) {
-    this.subscriber = profile;
-  }
 
   /**
    * Pre-Process the message event

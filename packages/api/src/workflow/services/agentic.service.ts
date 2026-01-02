@@ -40,7 +40,7 @@ export class AgenticService {
   async handleMessageEvent(
     event: ConversationalEventWrapper<any, any>,
   ): Promise<void> {
-    const subscriber = event.getSender();
+    const subscriber = event.getInitiator();
     const eventContext = {
       triggeredById: subscriber?.id,
       messageId: this.safeInvoke(() => event.getId()),
@@ -237,7 +237,7 @@ export class AgenticService {
     workflow: WorkflowDto,
     event: ConversationalEventWrapper<any, any>,
   ): Promise<WorkflowRunFull> {
-    const subscriber = event.getSender();
+    const subscriber = event.getInitiator();
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
       triggeredBy: subscriber.id,
@@ -367,7 +367,7 @@ export class AgenticService {
       channel: event.getChannelData(),
       message_type: event.getMessageType(),
       event_type: event.getEventType(),
-      sender: event.getSender(),
+      sender: event.getInitiator(),
       payload: this.safeInvoke(() => event.getPayload()),
       message: this.safeInvoke(() => event.getMessage()),
       text: event.getText(),

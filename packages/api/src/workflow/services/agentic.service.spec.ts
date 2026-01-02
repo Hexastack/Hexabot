@@ -79,7 +79,7 @@ const buildEvent = (
   };
 
   return {
-    getSender: jest.fn(() => subscriber),
+    getInitiator: jest.fn(() => subscriber),
     getChannelData: jest.fn(() => overrides.channelData ?? { name: 'web' }),
     getMessageType: jest.fn(() => overrides.messageType ?? 'text'),
     getEventType: jest.fn(() => overrides.eventType ?? 'message'),

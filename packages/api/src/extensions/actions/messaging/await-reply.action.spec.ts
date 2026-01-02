@@ -17,7 +17,7 @@ describe('AwaitReplyAction', () => {
   let context: WorkflowContext;
   let event: {
     getHandler: jest.Mock;
-    getSender: jest.Mock;
+    getInitiator: jest.Mock;
   };
 
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('AwaitReplyAction', () => {
     workflow = { suspend: jest.fn() };
     event = {
       getHandler: jest.fn(() => ({ getName: () => 'web' })),
-      getSender: jest.fn(() => ({ id: 'sub-event' })),
+      getInitiator: jest.fn(() => ({ id: 'sub-event' })),
     };
     context = {
       workflow,

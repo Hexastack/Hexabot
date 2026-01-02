@@ -98,7 +98,7 @@ export abstract class MessageAction<
   ) {
     const defaults = getDefaultChatContext();
     const base = chatContext ?? defaults;
-    const sender = event.getSender();
+    const sender = event.getInitiator();
     const mergedUser = {
       ...defaults.user,
       ...(base.user ?? {}),
@@ -129,7 +129,7 @@ export abstract class MessageAction<
     context: WorkflowContext,
   ): Promise<PreparedMessageContext> {
     const event = this.ensureEvent(context);
-    const recipient = event.getSender();
+    const recipient = event.getInitiator();
 
     if (!recipient) {
       throw new Error('Missing recipient on event');

@@ -111,7 +111,7 @@ describe('MessageAction base', () => {
       context: { vars: { sender: 'value' } },
     };
     event = {
-      getSender: jest.fn(() => recipient),
+      getInitiator: jest.fn(() => recipient),
       getSenderForeignId: jest.fn(() => 'foreign-123'),
       getHandler: jest.fn(() => handler as any),
       getMessage: jest.fn(() => ({ text: 'incoming-message' })),
@@ -156,7 +156,7 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext({
       event: {
         ...event,
-        getSender: jest.fn(() => undefined),
+        getInitiator: jest.fn(() => undefined),
       } as unknown as MockEvent,
     });
 

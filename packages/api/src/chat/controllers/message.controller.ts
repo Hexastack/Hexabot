@@ -163,7 +163,7 @@ export class MessageController extends BaseOrmController<
       messageId: messageDto.inReplyTo,
     });
 
-    event.setSender(subscriber);
+    event.setInitiator(subscriber);
     try {
       const { mid } = await channelHandler.sendMessage(event, envelope, {}, {});
       // Trigger sent message event

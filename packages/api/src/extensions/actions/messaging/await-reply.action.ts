@@ -70,7 +70,7 @@ export class AwaitReplyAction extends BaseAction<
       recipient:
         input.recipient ??
         context.subscriberId ??
-        event?.getSender()?.id ??
+        event?.getInitiator()?.id ??
         undefined,
       workflowRunId: input.workflowRunId ?? context.workflowRunId,
       messageId: input.messageId,
