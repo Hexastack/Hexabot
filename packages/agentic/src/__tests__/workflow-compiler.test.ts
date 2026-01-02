@@ -129,7 +129,9 @@ describe('compileWorkflow', () => {
         },
       },
     };
-    const compiled = compileWorkflow(definition, { worker_action: action });
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+    });
 
     expect(parseSettings).toHaveBeenCalledWith({
       timeout_ms: 50,
@@ -200,10 +202,12 @@ describe('compileWorkflow', () => {
     };
 
     expect(() =>
-      compileWorkflow(
-        definition,
-        {} as Record<string, Action<unknown, unknown, TestContext, Settings>>,
-      ),
+      compileWorkflow(definition, {
+        actions: {} as Record<
+          string,
+          Action<unknown, unknown, TestContext, Settings>
+        >,
+      }),
     ).toThrow(/No action implementations provided/);
   });
 });

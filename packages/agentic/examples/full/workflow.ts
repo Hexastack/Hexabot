@@ -16,7 +16,9 @@ const workflowPath = path.join(__dirname, 'workflow.yml');
 
 async function main() {
   const yamlSource = fs.readFileSync(workflowPath, 'utf8');
-  const workflow = Workflow.fromYaml(yamlSource, exampleActions);
+  const workflow = Workflow.fromYaml(yamlSource, {
+    actions: exampleActions,
+  });
   const emitter = new WorkflowEventEmitter();
   const context = new ExampleContext(
     {

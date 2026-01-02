@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Expression, Focus } from 'jsonata';
+// eslint-disable-next-line no-duplicate-imports
 import jsonata from 'jsonata';
 
 import type { Settings } from './dsl.types';
@@ -13,17 +15,65 @@ import type {
   EvaluationScope,
 } from './workflow-types';
 
+export type JsonataFunctionImplementation = (
+  this: Focus,
+  ...args: any[]
+) => unknown;
+
+export type JsonataFunctionConfig =
+  | JsonataFunctionImplementation
+  | {
+      implementation: JsonataFunctionImplementation;
+      signature?: string;
+    };
+
+export type JsonataFunctionRegistry = Record<string, JsonataFunctionConfig>;
+
+export type CompileValueOptions = {
+  jsonataFunctions?: JsonataFunctionRegistry;
+};
+
 /** Basic object guard that rejects arrays and null. */
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+const registerJsonataFunctions = (
+  expression: Expression,
+  registry?: JsonataFunctionRegistry,
+) => {
+  if (!registry) {
+    return;
+  }
+
+  for (const [name, config] of Object.entries(registry)) {
+    if (typeof config === 'function') {
+      expression.registerFunction(name, config);
+      continue;
+    }
+
+    if (config && typeof config.implementation === 'function') {
+      expression.registerFunction(
+        name,
+        config.implementation,
+        config.signature,
+      );
+      continue;
+    }
+
+    throw new Error(`Invalid JSONata function config for "${name}"`);
+  }
+};
 
 /**
  * Prepares a workflow value for evaluation.
  * Strings prefixed with `=` are treated as JSONata expressions; everything else is a literal.
  */
-export const compileValue = (value: unknown): CompiledValue => {
+export const compileValue = (
+  value: unknown,
+  options?: CompileValueOptions,
+): CompiledValue => {
   if (typeof value === 'string' && value.startsWith('=')) {
     const expression = jsonata(value.slice(1));
+    registerJsonataFunctions(expression, options?.jsonataFunctions);
 
     return { kind: 'expression', source: value, expression };
   }

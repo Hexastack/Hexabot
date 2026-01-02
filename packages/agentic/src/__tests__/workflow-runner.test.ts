@@ -195,9 +195,11 @@ describe('WorkflowRunner', () => {
     );
 
     const compiled = compileWorkflow(definition, {
-      first_action: firstAction,
-      second_action: secondAction,
-      echo_action: echoAction,
+      actions: {
+        first_action: firstAction,
+        second_action: secondAction,
+        echo_action: echoAction,
+      },
     });
     const runner = new WorkflowRunner(compiled, { runId: 'run-1' });
     const context = new TestContext({});
@@ -256,7 +258,9 @@ describe('WorkflowRunner', () => {
       outputs: { reply: '=$output.wait_step.reply' },
     };
     const compiled = compileWorkflow(definition, {
-      suspend_action: suspendAction,
+      actions: {
+        suspend_action: suspendAction,
+      },
     });
     const runner = new WorkflowRunner(compiled, { runId: 'run-2' });
     const context = new TestContext({});
@@ -300,7 +304,9 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'ping_step' }],
       outputs: { ok: '=$output.ping_step.ok' },
     };
-    const compiled = compileWorkflow(definition, { ping_action: pingAction });
+    const compiled = compileWorkflow(definition, {
+      actions: { ping_action: pingAction },
+    });
     const emitter = new MemoryEmitter();
     const events: Array<{
       event: keyof WorkflowEventMap;
@@ -386,7 +392,9 @@ describe('WorkflowRunner', () => {
         },
       },
     };
-    const compiled = compileWorkflow(definition, { emit_action: emitAction });
+    const compiled = compileWorkflow(definition, {
+      actions: { emit_action: emitAction },
+    });
     const runner = new WorkflowRunner(compiled, { runId: 'ctx-run' });
     const context = new TestContext({});
     context.eventEmitter = emitter;
@@ -426,7 +434,9 @@ describe('WorkflowRunner', () => {
       outputs: { value: '=$output.fail_step.value' },
     };
     const compiled = compileWorkflow(definition, {
-      failing_action: failingAction,
+      actions: {
+        failing_action: failingAction,
+      },
     });
     const runner = new WorkflowRunner(compiled);
     const result = await runner.start({
@@ -497,8 +507,10 @@ describe('WorkflowRunner', () => {
       },
     };
     const compiled = compileWorkflow(definition, {
-      resume_suspend_action: suspendAction,
-      follow_action: followAction,
+      actions: {
+        resume_suspend_action: suspendAction,
+        follow_action: followAction,
+      },
     });
     const runner = new WorkflowRunner(compiled);
     const startResult = await runner.start({
@@ -551,7 +563,9 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'raw_step' }],
       outputs: { final: '=$output.raw_step' },
     };
-    const compiled = compileWorkflow(definition, { raw_action: rawAction });
+    const compiled = compileWorkflow(definition, {
+      actions: { raw_action: rawAction },
+    });
     const runner = new WorkflowRunner(compiled);
     const result = await runner.start({
       inputData: {},
@@ -590,7 +604,9 @@ describe('WorkflowRunner', () => {
       flow: [{ do: 'only_step' }],
       outputs: { ok: '=$output.only_step.ok' },
     };
-    const compiled = compileWorkflow(definition, { noop_action: noopAction });
+    const compiled = compileWorkflow(definition, {
+      actions: { noop_action: noopAction },
+    });
     const persistedState: ExecutionState = {
       input: {},
       memory: {},
@@ -653,7 +669,9 @@ describe('WorkflowRunner', () => {
       },
     };
     const compiled = compileWorkflow(definition, {
-      loop_suspend_action: suspendAction,
+      actions: {
+        loop_suspend_action: suspendAction,
+      },
     });
     const runner = new WorkflowRunner(compiled);
     const context = new TestContext({});
@@ -695,5 +713,45 @@ describe('WorkflowRunner', () => {
     if (resumeResult.status === 'finished') {
       expect(resumeResult.output.reply).toBe('Pong');
     }
+  });
+
+  it('registers custom JSONata functions during compilation', async () => {
+    const translate = jest.fn((text: string) => `i18n:${text}`);
+    const sendAction = defineAction<
+      { text: string },
+      { delivered: string },
+      TestContext,
+      Settings
+    >({
+      name: 'send_action',
+      inputSchema: z.object({ text: z.string() }),
+      outputSchema: z.object({ delivered: z.string() }),
+      execute: async ({ input }) => ({ delivered: input.text }),
+    });
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'i18n_flow', version: '1.0.0' },
+      tasks: {
+        send_goodbye: {
+          action: 'send_action',
+          inputs: { text: "=$i18n('Bye bye')" },
+          outputs: { delivered: '=$result.delivered' },
+        },
+      },
+      flow: [{ do: 'send_goodbye' }],
+      outputs: { message: '=$output.send_goodbye.delivered' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { send_action: sendAction },
+      jsonataFunctions: { i18n: translate },
+    });
+    const runner = new WorkflowRunner(compiled);
+    const context = new TestContext({});
+    const result = await runner.start({ inputData: {}, context });
+
+    expect(result.status).toBe('finished');
+    if (result.status === 'finished') {
+      expect(result.output.message).toBe('i18n:Bye bye');
+    }
+    expect(translate).toHaveBeenCalledWith('Bye bye');
   });
 });

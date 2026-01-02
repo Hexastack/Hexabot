@@ -94,7 +94,7 @@ describe('Workflow execution', () => {
       },
     };
     const workflow = Workflow.fromDefinition(definition, {
-      greet_action: greetAction,
+      actions: { greet_action: greetAction },
     });
     const result = await workflow.run({ name: '  Ada  ' }, new TestContext());
 
@@ -136,7 +136,7 @@ describe('Workflow execution', () => {
       outputs: { reply: '=$output.ask_user.reply' },
     };
     const workflow = Workflow.fromDefinition(definition, {
-      await_reply: suspendingAction,
+      actions: { await_reply: suspendingAction },
     });
     const runner = await workflow.buildAsyncRunner();
     const startResult = await runner.start({
@@ -204,7 +204,7 @@ describe('Workflow execution', () => {
     );
 
     const workflow = Workflow.fromDefinition(definition, {
-      double_value: noopAction,
+      actions: { double_value: noopAction },
     });
     const runner = await workflow.buildAsyncRunner();
     const context = new TestContext();
@@ -225,7 +225,9 @@ describe('Workflow execution', () => {
 
   it('throws on invalid YAML input', () => {
     expect(() =>
-      Workflow.fromYaml('workflow: {}', {} as Record<string, never>),
+      Workflow.fromYaml('workflow: {}', {
+        actions: {} as Record<string, never>,
+      }),
     ).toThrow(/Workflow validation failed/);
   });
 
@@ -253,7 +255,7 @@ describe('Workflow execution', () => {
       outputs: { result: '=$output.failing_task.result' },
     };
     const workflow = Workflow.fromDefinition(definition, {
-      failing_action: failingAction,
+      actions: { failing_action: failingAction },
     });
     const context = new TestContext();
 
@@ -297,7 +299,7 @@ describe('Workflow execution', () => {
       outputs: { reply: '=$output.pause_step.reply' },
     };
     const workflow = Workflow.fromDefinition(definition, {
-      suspending_action: suspendingAction,
+      actions: { suspending_action: suspendingAction },
     });
     const context = new TestContext();
 

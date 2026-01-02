@@ -110,7 +110,9 @@ export class AgenticService {
     const logContext = this.buildRunLogContext(run, options.mode, event);
     const workflowInstance = AgentWorkflow.fromDefinition(
       run.workflow.definition,
-      this.buildActionsRegistry(),
+      {
+        actions: this.buildActionsRegistry(),
+      },
     );
     const context = this.workflowContext.buildFromRun(run, event);
     const contextState = this.getContextState(context);

@@ -25,6 +25,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
   - `$iteration`: loop locals (`item`, `index`) available inside `loop.steps`.
   - `$accumulator`: loop accumulator state when `accumulate` is used.
 - Expressions can declare locals (e.g., `=$route := ...; ...`) and use JSONata helpers like `$exists`, `$size`, `$join`, and `$append`.
+- Additional JSONata helpers can be registered at compile time via `Workflow.fromYaml/fromDefinition` using the `jsonataFunctions` option; they are available to every expression (e.g., `text: "=$i18n('Bye bye')"`).
 
 ## Task definitions
 
