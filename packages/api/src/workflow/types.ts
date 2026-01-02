@@ -12,7 +12,7 @@ import {
 } from '@hexabot-ai/agentic';
 
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
-import { Context } from '@/chat/types/context';
+import { ChatContext } from '@/chat/types/chat-context';
 
 import { WorkflowRunFull } from './dto/workflow-run.dto';
 import { Workflow } from './dto/workflow.dto';
@@ -53,6 +53,6 @@ export type RunStrategy = {
 export type WorkflowContextState = Record<string, unknown> & {
   subscriberId?: string;
   workflowId?: string;
-  chatContext?: Context;
+  chatContext?: ChatContext;
   runId?: string;
 };

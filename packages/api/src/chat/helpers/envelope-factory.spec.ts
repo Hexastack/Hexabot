@@ -6,7 +6,7 @@
 
 import { AttachmentPayload, FileType } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { Context } from '../types/context';
+import { ChatContext } from '../types/chat-context';
 import {
   ContentElement,
   ContentPagination,
@@ -22,24 +22,9 @@ jest.mock('@/utils/helpers/safeRandom', () => ({
   getRandomElement: (array) => (Array.isArray(array) ? array[0] : array),
 }));
 
-// Set up a dummy global Handlebars so that our template compilation works.
-// This simple implementation replaces tokens of the form {{a.b.c}} by looking up the path.
-(global as any).Handlebars = {
-  compile: (template: string) => (context: any) =>
-    template.replace(/\{\{([^}]+)\}\}/g, (_, token: string) => {
-      const parts = token.trim().split('.');
-      let value = context;
-      for (const part of parts) {
-        value = value[part];
-      }
-
-      return value;
-    }),
-};
-
 describe('EnvelopeFactory', () => {
   let factory: EnvelopeFactory;
-  let context: Context;
+  let context: ChatContext;
   let settings: Settings;
   let i18n: { t: jest.Mock };
 
@@ -47,7 +32,7 @@ describe('EnvelopeFactory', () => {
     context = {
       user: { language: 'en', first_name: 'John', last_name: 'Doe', id: '123' },
       vars: { phone: '123-456-7890' },
-    } as unknown as Context;
+    } as unknown as ChatContext;
     settings = {
       contact: {
         company_name: 'John Inc.',
@@ -59,101 +44,11 @@ describe('EnvelopeFactory', () => {
     factory = new EnvelopeFactory(context, settings, i18n as any);
   });
 
-  describe('toHandlebars (static)', () => {
-    it('should convert single curly braces to double curly braces when no existing {{ }} are present', () => {
-      const input =
-        'Hello {context.user.name}, your phone is {context.vars.phone}';
-      // Access the private method using bracket notation
-      const result = EnvelopeFactory.toHandlebars(input);
-      expect(result).toBe(
-        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}',
-      );
-    });
-
-    it('should leave strings that already contain double curly braces unchanged', () => {
-      const input =
-        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}';
-      const result = EnvelopeFactory.toHandlebars(input);
-      expect(result).toBe(input);
-    });
-
-    it('should handle strings with no braces at all', () => {
-      const input = 'Hello world, no braces here';
-      const result = EnvelopeFactory.toHandlebars(input);
-      // Should be unchanged since there are no placeholders
-      expect(result).toBe(input);
-    });
-
-    it('should handle multiple single placeholders correctly', () => {
-      const input = '{one} {two} {three}';
-      const result = EnvelopeFactory.toHandlebars(input);
-      expect(result).toBe('{{one}} {{two}} {{three}}');
-    });
-  });
-
-  describe('compileHandlebarsTemplate', () => {
-    it('should replace tokens with context variables correctly', () => {
-      const text =
-        'Hello {{context.user.first_name}} {{context.user.last_name}}, your phone is {{context.vars.phone}}';
-      const result = EnvelopeFactory.compileHandlebarsTemplate(
-        text,
-        context,
-        settings,
-      );
-      // Expect that single curly braces got turned into Handlebars placeholders
-      // and then replaced with actual values from the merged context
-      expect(result).toBe('Hello John Doe, your phone is 123-456-7890');
-    });
-
-    it('should merge subscriberContext.vars and context.vars correctly', () => {
-      const text =
-        'Subscriber var: {context.vars.subscriberVar}, Context var: {context.vars.contextVar}';
-      const context = {
-        user: {},
-        vars: {
-          contextVar: 'ContextValue',
-          subscriberVar: 'SubscriberValue',
-        },
-      } as unknown as Context;
-      const settings = {
-        contact: {},
-      } as unknown as Settings;
-      const result = EnvelopeFactory.compileHandlebarsTemplate(
-        text,
-        context,
-        settings,
-      );
-      expect(result).toBe(
-        'Subscriber var: SubscriberValue, Context var: ContextValue',
-      );
-    });
-
-    it('should use contact from settings if provided', () => {
-      const text = 'You can reach us at {{contact.company_email}}';
-      const result = EnvelopeFactory.compileHandlebarsTemplate(
-        text,
-        context,
-        settings,
-      );
-      expect(result).toBe('You can reach us at contact@john-inc.com');
-    });
-
-    it('should handle no placeholders gracefully', () => {
-      const text = 'No placeholders here.';
-      const result = EnvelopeFactory.compileHandlebarsTemplate(
-        text,
-        context,
-        settings,
-      );
-      expect(result).toBe('No placeholders here.');
-    });
-  });
-
   describe('processText', () => {
-    it('should process text when a string is provided', () => {
+    it('should localize text when a string is provided without compiling templates', () => {
       const input = 'Hello {{context.user.first_name}}';
       const result = factory.processText(input);
-      expect(result).toBe('Hello John');
+      expect(result).toBe('Hello {{context.user.first_name}}');
       expect(i18n.t).toHaveBeenCalledWith(input, {
         lang: context.user.language,
         defaultValue: input,
@@ -161,43 +56,43 @@ describe('EnvelopeFactory', () => {
     });
 
     it('should process text when an array is provided (using the first element)', () => {
-      const texts = ['Option1 {{context.user.first_name}}', 'Option2'];
+      const texts = ['First option', 'Second option'];
       const result = factory.processText(texts);
-      expect(result).toBe('Option1 John');
+      expect(result).toBe('First option');
     });
   });
 
   describe('buildTextEnvelope', () => {
     it('should build a text envelope with processed text', () => {
-      const input = 'Hello {{context.user.first_name}}';
+      const input = 'Hello there';
       const envelope = factory.buildTextEnvelope(input);
       expect(envelope.format).toBe(OutgoingMessageFormat.text);
-      expect(envelope.message.text).toBe('Hello John');
+      expect(envelope.message.text).toBe('Hello there');
     });
   });
 
   describe('buildQuickRepliesEnvelope', () => {
     it('should build a quick replies envelope with processed text and quick replies', () => {
-      const input = "Choose {{context.user.first_name}}'s option";
+      const input = 'Choose an option';
       const quickReplies = [
         {
           content_type: QuickReplyType.text,
-          title: 'Yes {{contact.company_name}}',
-          payload: 'do_{{context.user.id}}',
+          title: 'Yes',
+          payload: 'do_123',
         },
         {
           content_type: QuickReplyType.text,
-          title: 'No {{contact.company_name}}',
-          payload: 'dont_{{context.user.id}}',
+          title: 'No',
+          payload: 'dont_123',
         },
       ] as StdQuickReply[];
       const envelope = factory.buildQuickRepliesEnvelope(input, quickReplies);
       expect(envelope.format).toBe(OutgoingMessageFormat.quickReplies);
-      expect(envelope.message.text).toBe("Choose John's option");
+      expect(envelope.message.text).toBe('Choose an option');
       expect(envelope.message.quickReplies).toHaveLength(2);
-      expect(envelope.message.quickReplies[0].title).toBe('Yes John Inc.');
+      expect(envelope.message.quickReplies[0].title).toBe('Yes');
       expect(envelope.message.quickReplies[0].payload).toBe('do_123');
-      expect(envelope.message.quickReplies[1].title).toBe('No John Inc.');
+      expect(envelope.message.quickReplies[1].title).toBe('No');
       expect(envelope.message.quickReplies[1].payload).toBe('dont_123');
     });
   });
@@ -208,12 +103,12 @@ describe('EnvelopeFactory', () => {
       const buttons: Button[] = [
         {
           type: ButtonType.postback,
-          title: 'Click {{contact.company_name}}',
-          payload: 'btn_{context.user.id}',
+          title: 'Click company',
+          payload: 'btn_123',
         },
         {
           type: ButtonType.web_url,
-          title: 'Visit {{contact.company_name}}',
+          title: 'Visit company',
           url: 'https://example.com',
         },
       ];
@@ -222,11 +117,11 @@ describe('EnvelopeFactory', () => {
       expect(envelope.message.text).toBe('Press a button');
       expect(envelope.message.buttons).toHaveLength(2);
       // For a postback button, both title and payload are processed.
-      expect(envelope.message.buttons[0].title).toBe('Click John Inc.');
+      expect(envelope.message.buttons[0].title).toBe('Click company');
       // @ts-expect-error part of the test
       expect(envelope.message.buttons[0].payload).toBe('btn_123');
       // For a non-postback button, only the title is processed.
-      expect(envelope.message.buttons[1].title).toBe('Visit John Inc.');
+      expect(envelope.message.buttons[1].title).toBe('Visit company');
       // @ts-expect-error part of the test
       expect(envelope.message.buttons[1].url).toBe('https://example.com');
     });
@@ -243,8 +138,8 @@ describe('EnvelopeFactory', () => {
       const quickReplies = [
         {
           content_type: QuickReplyType.text,
-          title: 'Yes {contact.company_name}',
-          payload: 'do_{context.user.id}',
+          title: 'Yes company',
+          payload: 'do_123',
         },
       ] as StdQuickReply[];
       const envelope = factory.buildAttachmentEnvelope(
@@ -254,7 +149,7 @@ describe('EnvelopeFactory', () => {
       expect(envelope.format).toBe(OutgoingMessageFormat.attachment);
       expect(envelope.message.attachment).toEqual(attachment);
       expect(envelope.message.quickReplies).toHaveLength(1);
-      expect(envelope.message.quickReplies?.[0].title).toBe('Yes John Inc.');
+      expect(envelope.message.quickReplies?.[0].title).toBe('Yes company');
       expect(envelope.message.quickReplies?.[0].payload).toBe('do_123');
     });
   });

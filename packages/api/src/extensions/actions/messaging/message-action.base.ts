@@ -14,7 +14,7 @@ import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import { Context } from '@/chat/types/context';
+import { ChatContext } from '@/chat/types/chat-context';
 import {
   StdIncomingMessage,
   stdIncomingMessageSchema,
@@ -22,7 +22,7 @@ import {
   StdOutgoingMessageEnvelope,
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
-import { getDefaultWorkflowContext } from '@/workflow/defaults/context';
+import { getDefaultChatContext } from '@/workflow/defaults/default-chat-context';
 import { WorkflowContext } from '@/workflow/services/workflow-context';
 
 const sentFormats = [
@@ -64,7 +64,7 @@ interface PreparedMessageContext {
   event: ConversationalEventWrapper<any, any>;
   recipient: Subscriber;
   envelopeFactory: EnvelopeFactory;
-  chatContext: Context;
+  chatContext: ChatContext;
 }
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
@@ -94,9 +94,9 @@ export abstract class MessageAction<
 
   private buildChatContext(
     event: ConversationalEventWrapper<any, any>,
-    chatContext?: Context,
+    chatContext?: ChatContext,
   ) {
-    const defaults = getDefaultWorkflowContext();
+    const defaults = getDefaultChatContext();
     const base = chatContext ?? defaults;
     const sender = event.getSender();
     const mergedUser = {
@@ -122,7 +122,7 @@ export abstract class MessageAction<
       attempt: base.attempt ?? defaults.attempt,
       user: mergedUser,
       channel: base.channel ?? event.getHandler().getName(),
-    } satisfies Context;
+    } satisfies ChatContext;
   }
 
   protected async prepare(

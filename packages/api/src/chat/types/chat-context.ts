@@ -11,10 +11,11 @@ import { Subscriber } from '../dto/subscriber.dto';
 
 import { Payload } from './quick-reply';
 
-export interface Context {
+export interface ChatContext {
   channel?: ChannelName | null;
   text?: string | null;
   payload?: Payload | string | null;
+  /** @deprecated */
   nlp?: NLU.ParseEntities | null;
   vars: { [key: string]: any };
   user_location: {
@@ -25,9 +26,4 @@ export interface Context {
   user: Subscriber;
   skip: Record<string, number>;
   attempt: number;
-}
-
-export interface TemplateContext {
-  context: Context;
-  contact: Settings['contact'];
 }
