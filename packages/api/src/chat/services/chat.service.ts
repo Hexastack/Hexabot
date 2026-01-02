@@ -268,7 +268,7 @@ export class ChatService {
         return;
       }
 
-      await this.agenticService.handleMessageEvent(event);
+      await this.agenticService.handleEvent(event);
     } catch (err) {
       this.logger.error('Error handling new message', err);
     }

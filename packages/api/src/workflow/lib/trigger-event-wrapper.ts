@@ -29,6 +29,12 @@ export abstract class TriggerEventWrapper<
   setInitiator(profile: U) {
     this.initiator = profile;
   }
+
+  abstract getMetadata(): Record<string, unknown>;
+
+  abstract getContextData(): Record<string, unknown>;
+
+  abstract buildInput(): Record<string, unknown>;
 }
 
 export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
@@ -44,26 +50,7 @@ export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
     super();
   }
 
-  getId(): string | undefined {
-    const { triggeredAt } = this.payload;
-    if (!triggeredAt) {
-      return undefined;
-    }
-
-    return typeof triggeredAt === 'string'
-      ? triggeredAt
-      : triggeredAt.toISOString();
-  }
-
-  getEventType(): WorkflowType {
-    return this.triggerType;
-  }
-
-  getPayload(): Record<string, unknown> | undefined {
-    return this.payload.input;
-  }
-
-  toWorkflowInput(): Record<string, unknown> {
+  buildInput(): Record<string, unknown> {
     return { ...(this.payload.input ?? {}) };
   }
 
@@ -71,9 +58,14 @@ export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
     return {
       trigger: this.triggerType,
       schedule: this.payload.schedule ?? null,
-      triggered_at: this.payload.triggeredAt
-        ? this.getId()
-        : new Date().toISOString(),
+      triggered_at: this.payload.triggeredAt ?? null,
+    };
+  }
+
+  getContextData(): Record<string, unknown> {
+    return {
+      schedule: this.payload.schedule ?? null,
+      triggered_at: this.payload.triggeredAt ?? null,
     };
   }
 }
@@ -88,21 +80,19 @@ export class ManualEventWrapper extends TriggerEventWrapper<User> {
     super();
   }
 
-  getEventType(): WorkflowType {
-    return this.triggerType;
-  }
-
-  getPayload(): Record<string, unknown> {
-    return this.input;
-  }
-
-  toWorkflowInput(): Record<string, unknown> {
+  buildInput(): Record<string, unknown> {
     return { ...this.input };
   }
 
   getMetadata(): Record<string, unknown> {
     return {
       trigger: this.triggerType,
+      initiated_by: this.initiatedBy ?? null,
+    };
+  }
+
+  getContextData(): Record<string, unknown> {
+    return {
       initiated_by: this.initiatedBy ?? null,
     };
   }

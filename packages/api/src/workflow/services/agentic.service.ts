@@ -12,12 +12,13 @@ import {
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
 
-import { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
+import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
+import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
+import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { RunStrategy, RunWorkflowOptions, WorkflowResult } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
@@ -30,27 +31,19 @@ export class AgenticService {
     private readonly workflowRunService: WorkflowRunService,
     private readonly actionService: ActionService,
     private readonly logger: LoggerService,
-    private readonly workflowContext: ConversationalWorkflowContext,
+    private readonly workflowContextFactory: WorkflowContextFactory,
   ) {}
 
   /**
-   * Process an incoming channel event by resuming a suspended workflow run if it exists,
+   * Process an event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleMessageEvent(
-    event: ConversationalEventWrapper<any, any>,
-  ): Promise<void> {
-    const subscriber = event.getInitiator();
-    const eventContext = {
-      triggeredById: subscriber?.id,
-      messageId: this.safeInvoke(() => event.getId()),
-      eventType: this.safeInvoke(() => event.getEventType()),
-      messageType: this.safeInvoke(() => event.getMessageType()),
-    };
-    this.logger.debug('Handling incoming workflow event', eventContext);
-    if (!subscriber) {
+  async handleEvent(event: TriggerEventWrapper): Promise<void> {
+    const intiator = event.getInitiator();
+    this.logger.debug('Handling incoming workflow event', event);
+    if (!intiator) {
       this.logger.warn(
-        'Skipping workflow execution due to missing subscriber on event',
+        'Skipping workflow execution due to missing event initiator',
       );
 
       return;
@@ -58,12 +51,10 @@ export class AgenticService {
 
     try {
       const suspendedRun =
-        await this.workflowRunService.findSuspendedRunByInitiator(
-          subscriber.id,
-        );
+        await this.workflowRunService.findSuspendedRunByInitiator(intiator.id);
       if (suspendedRun) {
         this.logger.log('Resuming suspended workflow run', {
-          ...eventContext,
+          triggeredById: intiator.id,
           runId: suspendedRun.id,
           workflowId: suspendedRun.workflow?.id,
           suspendedStep: suspendedRun.suspendedStep,
@@ -82,9 +73,9 @@ export class AgenticService {
       }
 
       this.logger.log('Starting workflow run from latest definition', {
-        ...eventContext,
         workflowId: workflow.id,
       });
+
       await this.runWorkflow({
         mode: 'start',
         workflow,
@@ -107,19 +98,21 @@ export class AgenticService {
       options.mode === 'start'
         ? await this.createRun(options.workflow, event)
         : options.run;
-    const logContext = this.buildRunLogContext(run, options.mode, event);
     const workflowInstance = AgentWorkflow.fromDefinition(
       run.workflow.definition,
       {
         actions: this.buildActionsRegistry(),
       },
     );
-    const context = this.workflowContext.buildFromRun(run, event);
-    const contextState = this.getContextState(context);
+    const context = await this.workflowContextFactory.create(run, event);
+
     this.logger.debug('Preparing workflow runner', {
-      ...logContext,
-      hasContextState: Boolean(contextState),
+      mode: options.mode,
+      runId: run.id,
+      workflowId: run.workflow?.id,
+      triggeredById: run.triggeredBy?.id,
     });
+
     const strategy = await this.createRunStrategy(
       options.mode,
       run,
@@ -129,7 +122,10 @@ export class AgenticService {
     );
 
     this.logger.debug('Marking workflow run as running', {
-      ...logContext,
+      mode: options.mode,
+      runId: run.id,
+      workflowId: run.workflow?.id,
+      triggeredById: run.triggeredBy?.id,
       hasSnapshot: Boolean(strategy.markRunningInput.snapshot ?? run.snapshot),
       hasMemory: Boolean(strategy.markRunningInput.memory ?? run.memory),
       hasResumeData: Boolean(
@@ -138,26 +134,30 @@ export class AgenticService {
     });
     await this.workflowRunService.markRunning(run.id, {
       ...strategy.markRunningInput,
-      context: contextState,
+      context: context.state,
     });
 
     let result: WorkflowResult;
     try {
-      this.logger.debug('Executing workflow runner', logContext);
+      this.logger.debug('Executing workflow runner', {
+        mode: options.mode,
+        runId: run.id,
+        workflowId: run.workflow?.id,
+        triggeredById: run.triggeredBy?.id,
+      });
       result = await strategy.execute();
     } catch (err) {
-      this.logger.error(
-        'Workflow runner threw during execution',
-        err,
-        logContext,
-      );
-      await this.markRunFailed(run, strategy.runner, contextState, err);
+      this.logger.error('Workflow runner threw during execution', err);
+      await this.markRunFailed(run, strategy.runner, context.state, err);
 
       throw err;
     }
 
     this.logger.debug('Workflow runner completed', {
-      ...logContext,
+      mode: options.mode,
+      runId: run.id,
+      workflowId: run.workflow?.id,
+      triggeredById: run.triggeredBy?.id,
       status: result.status,
     });
     await this.persistResult(
@@ -166,7 +166,6 @@ export class AgenticService {
       result,
       strategy.resumeData,
       context,
-      logContext,
     );
   }
 
@@ -176,9 +175,9 @@ export class AgenticService {
   private async createRunStrategy(
     mode: RunWorkflowOptions['mode'],
     run: WorkflowRunFull,
-    context: ConversationalWorkflowContext,
+    context: WorkflowRuntimeContext,
     workflowInstance: AgentWorkflow,
-    event: ConversationalEventWrapper<any, any>,
+    event: TriggerEventWrapper,
   ): Promise<RunStrategy> {
     if (mode === 'start') {
       const runner = await workflowInstance.buildAsyncRunner({
@@ -201,8 +200,7 @@ export class AgenticService {
       };
     }
 
-    const latestInput = this.buildInput(event);
-    const resumeData = this.buildResumeData(event);
+    const latestInput = event.buildInput();
     const runner = await workflowInstance.buildRunnerFromState({
       state: this.buildExecutionState(run, latestInput),
       context,
@@ -215,18 +213,18 @@ export class AgenticService {
           }
         : undefined,
       runId: run.id,
-      lastResumeData: resumeData,
+      lastResumeData: latestInput,
     });
 
     return {
       runner,
-      resumeData,
+      resumeData: latestInput,
       markRunningInput: {
-        lastResumeData: resumeData,
+        lastResumeData: latestInput,
         snapshot: run.snapshot ?? null,
         memory: run.memory ?? null,
       },
-      execute: () => runner.resume({ resumeData }),
+      execute: () => runner.resume({ resumeData: latestInput }),
     };
   }
 
@@ -235,16 +233,16 @@ export class AgenticService {
    */
   private async createRun(
     workflow: WorkflowDto,
-    event: ConversationalEventWrapper<any, any>,
+    event: TriggerEventWrapper,
   ): Promise<WorkflowRunFull> {
-    const subscriber = event.getInitiator();
+    const initiator = event.getInitiator();
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
-      triggeredBy: subscriber.id,
-      input: this.buildInput(event),
+      triggeredBy: initiator.id,
+      input: event.buildInput(),
       memory: workflow.definition.memory ?? null,
       context: workflow.definition.context ?? null,
-      metadata: { channel: event.getChannelData() },
+      metadata: event.getMetadata(),
     });
     const populated = await this.workflowRunService.findOneAndPopulate(run.id);
 
@@ -263,22 +261,21 @@ export class AgenticService {
     runner: WorkflowRunner,
     result: WorkflowResult,
     resumeData?: unknown,
-    runtimeContext?: ConversationalWorkflowContext,
-    logContext?: Record<string, unknown>,
+    runtimeContext?: WorkflowRuntimeContext,
   ): Promise<void> {
-    const contextState = this.getContextState(runtimeContext);
-    const state = this.getRunnerState(runner);
+    const contextState = runtimeContext?.state;
+    const state = runner.getState();
     const metadata = this.buildMetadata(state, run.metadata);
     const output = this.pickOutput(result, state, run.output);
     this.logger.debug('Persisting workflow result', {
-      ...(logContext ?? {}),
+      runId: run.id,
       status: result.status,
     });
 
     switch (result.status) {
       case 'suspended':
         this.logger.log('Workflow run suspended', {
-          ...(logContext ?? {}),
+          runId: run.id,
           stepId: result.step.id,
           reason: result.reason,
         });
@@ -293,7 +290,9 @@ export class AgenticService {
         });
         break;
       case 'finished':
-        this.logger.log('Workflow run finished', logContext);
+        this.logger.log('Workflow run finished', {
+          runId: run.id,
+        });
         await this.workflowRunService.markFinished(run.id, {
           snapshot: result.snapshot,
           memory: state?.memory ?? null,
@@ -304,7 +303,7 @@ export class AgenticService {
       case 'failed':
       default:
         this.logger.error('Workflow runner reported failure status', {
-          ...(logContext ?? {}),
+          runId: run.id,
           error: this.stringifyError(result.error),
         });
         await this.workflowRunService.markFailed(run.id, {
@@ -358,40 +357,6 @@ export class AgenticService {
   }
 
   /**
-   * Build the workflow input payload from the incoming event.
-   */
-  private buildInput(
-    event: ConversationalEventWrapper<any, any>,
-  ): Record<string, unknown> {
-    const input: Record<string, unknown> = {
-      channel: event.getChannelData(),
-      message_type: event.getMessageType(),
-      event_type: event.getEventType(),
-      sender: event.getInitiator(),
-      payload: this.safeInvoke(() => event.getPayload()),
-      message: this.safeInvoke(() => event.getMessage()),
-      text: event.getText(),
-    };
-    const id = this.safeInvoke(() => event.getId());
-    if (id) {
-      input.mid = id;
-    }
-
-    return input;
-  }
-
-  /**
-   * Extract the resume payload expected by messaging actions.
-   */
-  private buildResumeData(
-    event: ConversationalEventWrapper<any, any>,
-  ): Record<string, unknown> | undefined {
-    const message = this.safeInvoke(() => event.getMessage());
-
-    return message === undefined ? undefined : { message };
-  }
-
-  /**
    * Build a mapping of registered actions keyed by their names.
    */
   private buildActionsRegistry(): Record<
@@ -401,58 +366,6 @@ export class AgenticService {
     return Object.fromEntries(
       this.actionService.getAll().map((action) => [action.getName(), action]),
     );
-  }
-
-  /**
-   * Safely invoke a function and swallow any errors, returning undefined on failure.
-   */
-  private safeInvoke<T>(fn: () => T): T | undefined {
-    try {
-      const value = fn();
-
-      return value === undefined ? undefined : value;
-    } catch {
-      return undefined;
-    }
-  }
-
-  /**
-   * Build a consistent logging context for a workflow run.
-   */
-  private buildRunLogContext(
-    run: WorkflowRunFull,
-    mode: RunWorkflowOptions['mode'],
-    event: ConversationalEventWrapper<any, any>,
-  ): Record<string, unknown> {
-    return {
-      mode,
-      runId: run.id,
-      workflowId: run.workflow?.id,
-      triggeredById: run.triggeredBy?.id ?? null,
-      messageId: this.safeInvoke(() => event.getId()),
-      eventType: this.safeInvoke(() => event.getEventType()),
-      messageType: this.safeInvoke(() => event.getMessageType()),
-    };
-  }
-
-  /**
-   * Retrieve the internal runner state from the workflow runner instance.
-   */
-  private getRunnerState(runner: WorkflowRunner): ExecutionState | undefined {
-    return (runner as any).state as ExecutionState | undefined;
-  }
-
-  /**
-   * Extract a context snapshot suitable for persistence.
-   */
-  private getContextState(
-    context?: ConversationalWorkflowContext,
-  ): Record<string, unknown> | null {
-    if (!context?.state || Object.keys(context.state).length === 0) {
-      return null;
-    }
-
-    return { ...context.state };
   }
 
   /**
@@ -502,7 +415,7 @@ export class AgenticService {
     contextState: Record<string, unknown> | null,
     error: unknown,
   ): Promise<void> {
-    const state = this.getRunnerState(runner);
+    const state = runner.getState();
     const metadata = this.buildMetadata(state, run.metadata);
 
     this.logger.error(

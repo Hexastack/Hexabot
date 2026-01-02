@@ -11,11 +11,11 @@ import {
   WorkflowStartResult,
 } from '@hexabot-ai/agentic';
 
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { ChatContext } from '@/chat/types/chat-context';
 
 import { WorkflowRunFull } from './dto/workflow-run.dto';
 import { Workflow } from './dto/workflow.dto';
+import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
 
 export enum WorkflowType {
   conversational = 'conversational',
@@ -29,12 +29,12 @@ export type RunWorkflowOptions =
   | {
       mode: 'start';
       workflow: Workflow;
-      event: ConversationalEventWrapper<any, any>;
+      event: TriggerEventWrapper;
     }
   | {
       mode: 'resume';
       run: WorkflowRunFull;
-      event: ConversationalEventWrapper<any, any>;
+      event: TriggerEventWrapper;
     };
 
 export type MarkRunningInput = {

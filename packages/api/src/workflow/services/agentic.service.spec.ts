@@ -16,8 +16,10 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
+import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
 import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
+import { WorkflowType } from '../types';
 
 import { AgenticService } from './agentic.service';
 import { WorkflowRunService } from './workflow-run.service';
@@ -73,21 +75,50 @@ const buildEvent = (
   overrides: EventOverrides = {},
 ): ConversationalEventWrapper<any, any> => {
   const message = overrides.message ?? { text: 'Hello from user' };
+  const channelData = overrides.channelData ?? { name: 'web' };
+  const messageType = overrides.messageType ?? 'text';
+  const eventType = overrides.eventType ?? 'message';
+  const payload = overrides.payload ?? { payload: 'foo' };
+  const id = overrides.id ?? 'mid-123';
   const handler = {
-    getName: jest.fn(() => 'web'),
+    getName: jest.fn(() => channelData.name ?? 'web'),
     sendMessage: jest.fn().mockResolvedValue({ mid: 'outgoing-mid' }),
   };
 
   return {
+    triggerType: WorkflowType.conversational,
     getInitiator: jest.fn(() => subscriber),
-    getChannelData: jest.fn(() => overrides.channelData ?? { name: 'web' }),
-    getMessageType: jest.fn(() => overrides.messageType ?? 'text'),
-    getEventType: jest.fn(() => overrides.eventType ?? 'message'),
-    getPayload: jest.fn(() => overrides.payload ?? { payload: 'foo' }),
+    getChannelData: jest.fn(() => channelData),
+    getMessageType: jest.fn(() => messageType),
+    getEventType: jest.fn(() => eventType),
+    getPayload: jest.fn(() => payload),
     getMessage: jest.fn(() => message),
     getText: jest.fn(() => overrides.text ?? (message as any).text ?? ''),
-    getId: jest.fn(() => overrides.id ?? 'mid-123'),
+    getId: jest.fn(() => id),
     getHandler: jest.fn(() => handler),
+    getMetadata: jest.fn(() => ({ channel: channelData })),
+    getContextData: jest.fn(() => ({
+      messageId: id,
+      eventType,
+      messageType,
+    })),
+    buildInput: jest.fn(() => {
+      const input: Record<string, unknown> = {
+        channel: channelData,
+        message_type: messageType,
+        event_type: eventType,
+        sender: subscriber,
+        payload,
+        message,
+        text: overrides.text ?? (message as any).text ?? '',
+      };
+
+      if (id) {
+        input.mid = id;
+      }
+
+      return input;
+    }),
   } as unknown as ConversationalEventWrapper<any, any>;
 };
 
@@ -97,6 +128,7 @@ describe('AgenticService', () => {
   let workflowService: jest.Mocked<WorkflowService>;
   let workflowRunService: jest.Mocked<WorkflowRunService>;
   let actionService: jest.Mocked<ActionService>;
+  let workflowContextFactory: jest.Mocked<WorkflowContextFactory>;
   let workflowContext: jest.Mocked<ConversationalWorkflowContext>;
   let logger: jest.Mocked<LoggerService>;
 
@@ -124,6 +156,18 @@ describe('AgenticService', () => {
     } as unknown as jest.Mocked<ActionService>;
     workflowContext =
       new ConversationalWorkflowContext() as jest.Mocked<ConversationalWorkflowContext>;
+    workflowContextFactory = {
+      create: jest.fn(async (run, event) => {
+        if (run) {
+          return workflowContext.buildFromRun(run, event);
+        }
+
+        workflowContext.state = {};
+        (workflowContext as any).event = event;
+
+        return workflowContext;
+      }),
+    } as unknown as jest.Mocked<WorkflowContextFactory>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),
@@ -137,7 +181,7 @@ describe('AgenticService', () => {
         { provide: WorkflowService, useValue: workflowService },
         { provide: WorkflowRunService, useValue: workflowRunService },
         { provide: ActionService, useValue: actionService },
-        { provide: ConversationalWorkflowContext, useValue: workflowContext },
+        { provide: WorkflowContextFactory, useValue: workflowContextFactory },
         { provide: LoggerService, useValue: logger },
       ],
     });
@@ -159,10 +203,10 @@ describe('AgenticService', () => {
   it('logs a warning and skips when no subscriber is present', async () => {
     const event = buildEvent(undefined);
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     expect(logger.warn).toHaveBeenCalledWith(
-      'Skipping workflow execution due to missing subscriber on event',
+      'Skipping workflow execution due to missing event initiator',
     );
     expect(
       workflowRunService.findSuspendedRunByInitiator,
@@ -173,6 +217,16 @@ describe('AgenticService', () => {
     const subscriber = { id: 'subscriber-1' } as Subscriber;
     const resumeMessage = { text: 'Resume message' };
     const event = buildEvent(subscriber, { message: resumeMessage });
+    const latestInput = {
+      channel: { name: 'web' },
+      message_type: 'text',
+      event_type: 'message',
+      sender: subscriber,
+      payload: { payload: 'foo' },
+      message: resumeMessage,
+      text: resumeMessage.text,
+      mid: 'mid-123',
+    };
     const mergedInput = {
       foo: 'bar',
       channel: { name: 'web' },
@@ -237,7 +291,7 @@ describe('AgenticService', () => {
       getSnapshot: jest
         .fn()
         .mockReturnValue({ status: 'snapshot', actions: {} }),
-      state: runnerState,
+      getState: jest.fn(() => runnerState),
     };
     const workflowInstance = {
       buildRunnerFromState: jest.fn().mockResolvedValue(runner),
@@ -256,7 +310,7 @@ describe('AgenticService', () => {
     } as any);
     workflowContext.state = { persisted: 'context' };
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     const expectedContext = {
       stored: true,
@@ -282,16 +336,16 @@ describe('AgenticService', () => {
         data: run.suspensionData,
       },
       runId: run.id,
-      lastResumeData: { message: resumeMessage },
+      lastResumeData: latestInput,
     });
     expect(workflowRunService.markRunning).toHaveBeenCalledWith(run.id, {
-      lastResumeData: { message: resumeMessage },
+      lastResumeData: latestInput,
       snapshot: run.snapshot,
       memory: run.memory,
       context: expectedContext,
     });
     expect(runner.resume).toHaveBeenCalledWith({
-      resumeData: { message: resumeMessage },
+      resumeData: latestInput,
     });
     expect(workflowRunService.markSuspended).toHaveBeenCalledWith(run.id, {
       stepId: 'prompt_next_step',
@@ -300,7 +354,7 @@ describe('AgenticService', () => {
       snapshot: { status: 'suspended', actions: {} },
       memory: runnerState.memory,
       context: expectedContext,
-      lastResumeData: { message: resumeMessage },
+      lastResumeData: latestInput,
     });
     expect(workflowRunService.updateOne).toHaveBeenCalledWith(run.id, {
       input: runnerState.input,
@@ -356,9 +410,9 @@ describe('AgenticService', () => {
       triggeredBy: subscriber,
       input: expectedInput,
       output: null,
-      memory: null,
-      context: null,
-      metadata: null,
+      memory: workflow.definition.memory,
+      context: workflow.definition.context,
+      metadata: { channel: { name: 'web', channel: 'test' } },
       createdAt: new Date(),
       updatedAt: new Date(),
     } as WorkflowRunFull;
@@ -379,7 +433,7 @@ describe('AgenticService', () => {
       getSnapshot: jest
         .fn()
         .mockReturnValue({ status: 'finished', actions: {} }),
-      state: runnerState,
+      getState: jest.fn(() => runnerState),
     };
     const workflowInstance = {
       buildRunnerFromState: jest.fn(),
@@ -404,9 +458,10 @@ describe('AgenticService', () => {
     } as any);
     workflowContext.state = { existing: 'context' };
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     const expectedContext = {
+      greeting: true,
       initiatorId: subscriber.id,
       workflowId: workflow.id,
       runId: populatedRun.id,
@@ -449,6 +504,7 @@ describe('AgenticService', () => {
       output: { result: 'done' },
       memory: runnerState.memory,
       metadata: {
+        channel: { name: 'web', channel: 'test' },
         state: {
           iteration: runnerState.iteration,
           accumulator: runnerState.accumulator,
@@ -465,7 +521,7 @@ describe('AgenticService', () => {
     workflowRunService.findSuspendedRunByInitiator.mockResolvedValueOnce(null);
     workflowService.pickWorkflow.mockResolvedValueOnce(null);
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     expect(logger.warn).toHaveBeenCalledWith(
       'No workflow available to handle incoming event',
@@ -506,7 +562,7 @@ describe('AgenticService', () => {
       output: { previous: true },
       memory: workflow.definition.memory,
       context: null,
-      metadata: null,
+      metadata: { channel: { name: 'web' } },
       createdAt: new Date(),
       updatedAt: new Date(),
     } as WorkflowRunFull;
@@ -525,7 +581,7 @@ describe('AgenticService', () => {
         error: 'runner failure',
       }),
       getSnapshot: jest.fn(),
-      state: runnerState,
+      getState: jest.fn(() => runnerState),
     };
     const workflowInstance = {
       buildRunnerFromState: jest.fn(),
@@ -550,7 +606,7 @@ describe('AgenticService', () => {
     } as any);
     workflowContext.state = { failure: 'context' };
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     const expectedContext = {
       initiatorId: subscriber.id,
@@ -580,6 +636,7 @@ describe('AgenticService', () => {
       output: runnerState.output,
       memory: runnerState.memory,
       metadata: {
+        channel: { name: 'web' },
         state: {
           iteration: runnerState.iteration,
           accumulator: runnerState.accumulator,
@@ -612,7 +669,7 @@ describe('AgenticService', () => {
       output: null,
       memory: null,
       context: null,
-      metadata: null,
+      metadata: { channel: { name: 'web' } },
       createdAt: new Date(),
       updatedAt: new Date(),
     } as WorkflowRunFull;
@@ -628,7 +685,7 @@ describe('AgenticService', () => {
     const runner = {
       start: jest.fn().mockRejectedValue(error),
       getSnapshot: jest.fn().mockReturnValue({ status: 'failed', actions: {} }),
-      state: runnerState,
+      getState: jest.fn(() => runnerState),
     };
     const workflowInstance = {
       buildRunnerFromState: jest.fn(),
@@ -653,7 +710,7 @@ describe('AgenticService', () => {
     } as any);
     workflowContext.state = { crash: 'context' };
 
-    await service.handleMessageEvent(event);
+    await service.handleEvent(event);
 
     const expectedContext = {
       initiatorId: subscriber.id,
@@ -675,6 +732,7 @@ describe('AgenticService', () => {
       output: runnerState.output,
       memory: runnerState.memory,
       metadata: {
+        channel: { name: 'web' },
         state: {
           iteration: runnerState.iteration,
           accumulator: runnerState.accumulator,

@@ -11,6 +11,9 @@ import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms';
 
 import { ConversationalWorkflowContext } from './contexts/conversational-workflow.context';
+import { ManualWorkflowContext } from './contexts/manual-workflow.context';
+import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context';
+import { WorkflowContextFactory } from './contexts/workflow-context-factory';
 import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
@@ -33,6 +36,9 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowService,
     WorkflowRunService,
     ConversationalWorkflowContext,
+    ManualWorkflowContext,
+    ScheduledWorkflowContext,
+    WorkflowContextFactory,
     AgenticService,
   ],
   exports: [

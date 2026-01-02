@@ -263,6 +263,40 @@ export default abstract class ConversationalEventWrapper<
    * @returns The message's watermark
    */
   abstract getWatermark(): number;
+
+  /**
+   * Returns the channel event metadata
+   * @returns The event metadata
+   */
+  getMetadata() {
+    return { channel: this.getChannelData() };
+  }
+
+  getContextData() {
+    return {
+      messageId: this.getId(),
+      eventType: this.getEventType(),
+      messageType: this.getMessageType(),
+    };
+  }
+
+  buildInput(): Record<string, unknown> {
+    const input: Record<string, unknown> = {
+      channel: this.getChannelData(),
+      message_type: this.getMessageType(),
+      event_type: this.getEventType(),
+      sender: this.getInitiator(),
+      payload: this.getPayload(),
+      message: this.getMessage(),
+      text: this.getText(),
+    };
+    const id = this.getId();
+    if (id) {
+      input.mid = id;
+    }
+
+    return input;
+  }
 }
 
 type GenericEvent = { senderId: string; messageId: string };
