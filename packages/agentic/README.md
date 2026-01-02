@@ -74,7 +74,7 @@ const actions = { call_api }; // keys are task.action names
 
 class AppContext extends BaseWorkflowContext<{ user_id: string }> {}
 
-const workflow = Workflow.fromYaml(yamlSource, actions);
+const workflow = Workflow.fromYaml(yamlSource, { actions });
 
 const emitter = new WorkflowEventEmitter();
 emitter.on('hook:step:start', ({ step }) => console.log('start', step.id));
@@ -121,6 +121,22 @@ inputs:
     user_id:
       type: string
 ```
+
+## Custom JSONata functions
+
+You can inject additional JSONata functions when compiling a workflow:
+
+```ts
+const workflow = Workflow.fromYaml(yamlSource, {
+  actions,
+  jsonataFunctions: {
+    i18n: (text: string) => translate(text, 'fr'),
+    slugify: { implementation: (value: string) => value.toLowerCase(), signature: 's' },
+  },
+});
+```
+
+These helpers are registered on every expression and can be referenced from YAML, e.g. `text: "=$i18n('Bye bye')"` inside a task input.
 
 ## Suspension and human-in-the-loop
 

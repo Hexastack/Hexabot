@@ -25,7 +25,18 @@ import type {
   LoopStep,
   ParallelStep,
 } from './workflow-types';
-import { compileValue, mergeSettings } from './workflow-values';
+import {
+  compileValue,
+  mergeSettings,
+  type CompileValueOptions,
+} from './workflow-values';
+
+export type WorkflowCompileOptions = CompileValueOptions & {
+  actions: Record<
+    string,
+    Action<unknown, unknown, BaseWorkflowContext, Settings>
+  >;
+};
 
 /** Build a stable identifier for a step using its path and label. */
 const buildStepId = (path: Array<number | string>, label: string): string => {
@@ -95,13 +106,17 @@ const buildInputParser = (schema?: Record<string, InputField>): ZodTypeAny => {
 /** Compile a raw mapping object into expression-aware value mappings. */
 const compileMapping = (
   values?: Record<string, unknown>,
+  options?: WorkflowCompileOptions,
 ): CompiledMapping | undefined => {
   if (!values) {
     return undefined;
   }
 
   return Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, compileValue(value)]),
+    Object.entries(values).map(([key, value]) => [
+      key,
+      compileValue(value, options),
+    ]),
   );
 };
 /** Ensure every task references a provided action implementation. */
@@ -128,20 +143,17 @@ const assertActionsBound = (
 /** Parse settings, compile inputs/outputs, and bind actions for each task. */
 const compileTasks = (
   definition: WorkflowDefinition,
-  actions: Record<
-    string,
-    Action<unknown, unknown, BaseWorkflowContext, Settings>
-  >,
+  options: WorkflowCompileOptions,
 ): Record<string, CompiledTask> => {
   const compiled: Record<string, CompiledTask> = {};
   const defaultSettings = definition.defaults?.settings;
 
-  assertActionsBound(definition.tasks, actions);
+  assertActionsBound(definition.tasks, options.actions);
 
   for (const [taskName, task] of Object.entries(definition.tasks)) {
     assertSnakeCaseName(taskName, 'action');
 
-    const action = actions[task.action];
+    const action = options.actions[task.action];
     const settingsPayload = mergeSettings(defaultSettings, task.settings);
     const parsedSettings = action.parseSettings(settingsPayload);
 
@@ -150,8 +162,8 @@ const compileTasks = (
       actionName: task.action,
       definition: task,
       action,
-      inputs: compileMapping(task.inputs) ?? {},
-      outputs: compileMapping(task.outputs) ?? {},
+      inputs: compileMapping(task.inputs, options) ?? {},
+      outputs: compileMapping(task.outputs, options) ?? {},
       settings: parsedSettings,
     };
   }
@@ -162,6 +174,7 @@ const compileTasks = (
 const compileFlowSteps = (
   steps: FlowStep[],
   path: Array<number | string> = [],
+  options?: WorkflowCompileOptions,
 ): CompiledStep[] =>
   steps.map<CompiledStep>((step, index) => {
     const stepPath = [...path, index];
@@ -190,7 +203,11 @@ const compileFlowSteps = (
         },
         description: step.parallel.description,
         strategy: step.parallel.strategy ?? 'wait_all',
-        steps: compileFlowSteps(step.parallel.steps, [...stepPath, 'parallel']),
+        steps: compileFlowSteps(
+          step.parallel.steps,
+          [...stepPath, 'parallel'],
+          options,
+        ),
       } as ParallelStep;
     }
 
@@ -199,12 +216,14 @@ const compileFlowSteps = (
         (branch, branchIdx) => ({
           id: buildStepId([...stepPath, 'branch', branchIdx], 'conditional'),
           condition:
-            'condition' in branch ? compileValue(branch.condition) : undefined,
-          steps: compileFlowSteps(branch.steps, [
-            ...stepPath,
-            'branch',
-            branchIdx,
-          ]),
+            'condition' in branch
+              ? compileValue(branch.condition, options)
+              : undefined,
+          steps: compileFlowSteps(
+            branch.steps,
+            [...stepPath, 'branch', branchIdx],
+            options,
+          ),
         }),
       );
 
@@ -233,32 +252,36 @@ const compileFlowSteps = (
       },
       name: loop.name,
       description: loop.description,
-      forEach: { item: loop.for_each.item, in: compileValue(loop.for_each.in) },
+      forEach: {
+        item: loop.for_each.item,
+        in: compileValue(loop.for_each.in, options),
+      },
       maxConcurrency: loop.max_concurrency,
-      until: loop.until ? compileValue(loop.until) : undefined,
+      until: loop.until ? compileValue(loop.until, options) : undefined,
       accumulate: loop.accumulate
         ? {
             as: loop.accumulate.as,
             initial: loop.accumulate.initial,
-            merge: compileValue(loop.accumulate.merge),
+            merge: compileValue(loop.accumulate.merge, options),
           }
         : undefined,
-      steps: compileFlowSteps(loop.steps, [...stepPath, loop.name ?? 'loop']),
+      steps: compileFlowSteps(
+        loop.steps,
+        [...stepPath, loop.name ?? 'loop'],
+        options,
+      ),
     } as LoopStep;
   });
 
 /** Compile a workflow definition into structures consumable by the runtime. */
 export const compileWorkflow = (
   definition: WorkflowDefinition,
-  actions: Record<
-    string,
-    Action<unknown, unknown, BaseWorkflowContext, Settings>
-  >,
+  options: WorkflowCompileOptions,
 ): CompiledWorkflow => {
   const inputParser = buildInputParser(definition.inputs?.schema);
-  const tasks = compileTasks(definition, actions);
-  const flow = compileFlowSteps(definition.flow);
-  const outputMapping = compileMapping(definition.outputs) ?? {};
+  const tasks = compileTasks(definition, options);
+  const flow = compileFlowSteps(definition.flow, [], options);
+  const outputMapping = compileMapping(definition.outputs, options) ?? {};
 
   return {
     definition,

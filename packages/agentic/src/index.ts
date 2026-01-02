@@ -42,6 +42,7 @@ export {
   Workflow,
   WorkflowEventEmitter,
   WorkflowRunner,
+  type WorkflowCompileOptions,
   type WorkflowResumeResult,
   type WorkflowRunOptions,
   type WorkflowStartResult,
@@ -80,6 +81,10 @@ export {
   evaluateMapping,
   evaluateValue,
   mergeSettings,
+  type CompileValueOptions,
+  type JsonataFunctionConfig,
+  type JsonataFunctionImplementation,
+  type JsonataFunctionRegistry,
 } from './workflow-values';
 
 export { createDeferred } from './utils/deferred';

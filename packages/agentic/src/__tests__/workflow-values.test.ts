@@ -23,6 +23,22 @@ class TestContext extends BaseWorkflowContext {
 }
 
 describe('workflow values', () => {
+  it('registers custom JSONata functions on expressions', async () => {
+    const translate = jest.fn((text: string) => `translated:${text}`);
+    const compiled = compileValue("=$i18n('Bye bye')", {
+      jsonataFunctions: { i18n: translate },
+    });
+    const result = await evaluateValue(compiled, {
+      input: {},
+      context: new TestContext().state,
+      memory: {},
+      output: {},
+    });
+
+    expect(result).toBe('translated:Bye bye');
+    expect(translate).toHaveBeenCalledWith('Bye bye');
+  });
+
   it('compiles expressions and evaluates against the runtime scope', async () => {
     const compiled = compileValue(
       '=$input.amount + $memory.offset + $iteration.index + $accumulator',

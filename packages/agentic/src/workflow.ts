@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Action } from './action/action.types';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
-  Settings,
   WorkflowDefinition,
   WorkflowDefinitionSchema,
   validateWorkflow,
 } from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
-import { compileWorkflow } from './workflow-compiler';
+import {
+  compileWorkflow,
+  type WorkflowCompileOptions,
+} from './workflow-compiler';
 import { WorkflowRunner } from './workflow-runner';
 import type {
   CompiledWorkflow,
@@ -33,6 +34,8 @@ export type {
   WorkflowStartResult,
 } from './workflow-types';
 
+export type { WorkflowCompileOptions } from './workflow-compiler';
+
 /**
  * Entry point for preparing and executing workflows from YAML or object definitions.
  * Instances are thin wrappers around a compiled workflow graph.
@@ -50,13 +53,10 @@ export class Workflow {
    */
   static fromDefinition(
     definition: WorkflowDefinition,
-    actions: Record<
-      string,
-      Action<unknown, unknown, BaseWorkflowContext, Settings>
-    >,
+    options: WorkflowCompileOptions,
   ): Workflow {
     const parsed = WorkflowDefinitionSchema.parse(definition);
-    const compiled = compileWorkflow(parsed, actions);
+    const compiled = compileWorkflow(parsed, options);
 
     return new Workflow(compiled);
   }
@@ -65,13 +65,7 @@ export class Workflow {
    * Create a workflow from YAML source.
    * YAML is validated and compiled before being wrapped in a {@link Workflow} instance.
    */
-  static fromYaml(
-    yaml: string,
-    actions: Record<
-      string,
-      Action<unknown, unknown, BaseWorkflowContext, Settings>
-    >,
-  ): Workflow {
+  static fromYaml(yaml: string, options: WorkflowCompileOptions): Workflow {
     const validation = validateWorkflow(yaml);
     if (!validation.success) {
       throw new Error(
@@ -79,7 +73,7 @@ export class Workflow {
       );
     }
 
-    const compiled = compileWorkflow(validation.data, actions);
+    const compiled = compileWorkflow(validation.data, options);
 
     return new Workflow(compiled);
   }
