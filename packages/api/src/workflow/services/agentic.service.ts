@@ -5,7 +5,7 @@
  */
 
 import {
-  Workflow as AgentWorkflow,
+  Workflow as AgenticWorkflow,
   ExecutionState,
   WorkflowRunner,
 } from '@hexabot-ai/agentic';
@@ -98,7 +98,7 @@ export class AgenticService {
       options.mode === 'start'
         ? await this.createRun(options.workflow, event)
         : options.run;
-    const workflowInstance = AgentWorkflow.fromDefinition(
+    const workflowInstance = AgenticWorkflow.fromDefinition(
       run.workflow.definition,
       {
         actions: this.actionService.getRegistry(),
@@ -118,7 +118,6 @@ export class AgenticService {
       run,
       context,
       workflowInstance,
-      event,
     );
 
     this.logger.debug('Marking workflow run as running', {
@@ -173,11 +172,10 @@ export class AgenticService {
    * Build the execution strategy for starting a new workflow or resuming an existing one.
    */
   private async createRunStrategy(
-    mode: RunWorkflowOptions['mode'],
+    mode: 'start' | 'resume',
     run: WorkflowRunFull,
     context: WorkflowRuntimeContext,
-    workflowInstance: AgentWorkflow,
-    event: TriggerEventWrapper,
+    workflowInstance: AgenticWorkflow,
   ): Promise<RunStrategy> {
     if (mode === 'start') {
       const runner = await workflowInstance.buildAsyncRunner({
@@ -200,7 +198,7 @@ export class AgenticService {
       };
     }
 
-    const latestInput = event.buildInput();
+    const latestInput = context.event.buildInput();
     const runner = await workflowInstance.buildRunnerFromState({
       state: this.buildExecutionState(run, latestInput),
       context,

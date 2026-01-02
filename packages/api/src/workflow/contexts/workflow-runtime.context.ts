@@ -23,7 +23,7 @@ import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 export abstract class WorkflowRuntimeContext<
   E extends TriggerEventWrapper = TriggerEventWrapper,
 > extends BaseWorkflowContext<WorkflowContextState, EventEmitter2> {
-  abstract event?: E;
+  abstract event: E;
 
   @Inject(I18nService)
   protected readonly i18n: I18nService;

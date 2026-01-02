@@ -68,7 +68,7 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   @JsonColumn({ nullable: true })
   memory?: Record<string, unknown> | null;
 
-  /** Context object shared across workflow steps. */
+  /** Context state object shared across workflow steps. */
   @JsonColumn({ nullable: true })
   context?: Record<string, unknown> | null;
 
@@ -117,15 +117,6 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   /** Timestamp when the run failed irrecoverably. */
   @DatetimeColumn({ name: 'failed_at', nullable: true })
   failedAt?: Date | null;
-
-  /** External correlation identifier used to link events. */
-  @Column({
-    name: 'correlation_id',
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  correlationId?: string | null;
 
   /** Additional opaque metadata associated with the run. */
   @JsonColumn({ nullable: true })
