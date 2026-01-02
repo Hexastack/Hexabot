@@ -6,7 +6,7 @@
 
 import { AttachmentPayload, FileType } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { Context } from '../types/context';
+import { ChatContext } from '../types/chat-context';
 import {
   ContentElement,
   ContentPagination,
@@ -24,7 +24,7 @@ jest.mock('@/utils/helpers/safeRandom', () => ({
 
 describe('EnvelopeFactory', () => {
   let factory: EnvelopeFactory;
-  let context: Context;
+  let context: ChatContext;
   let settings: Settings;
   let i18n: { t: jest.Mock };
 
@@ -32,7 +32,7 @@ describe('EnvelopeFactory', () => {
     context = {
       user: { language: 'en', first_name: 'John', last_name: 'Doe', id: '123' },
       vars: { phone: '123-456-7890' },
-    } as unknown as Context;
+    } as unknown as ChatContext;
     settings = {
       contact: {
         company_name: 'John Inc.',

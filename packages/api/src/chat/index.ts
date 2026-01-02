@@ -76,7 +76,7 @@ export * from './types/capture-var';
 
 export * from './types/channel';
 
-export * from './types/context';
+export * from './types/chat-context';
 
 export * from './types/message';
 

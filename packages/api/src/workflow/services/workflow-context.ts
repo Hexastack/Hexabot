@@ -10,7 +10,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageService } from '@/chat';
-import { Context } from '@/chat/types/context';
+import { ChatContext } from '@/chat/types/chat-context';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -74,11 +74,11 @@ export class WorkflowContext extends BaseWorkflowContext<
     this.state.workflowId = value;
   }
 
-  get chatContext(): Context | undefined {
-    return this.state.chatContext as Context | undefined;
+  get chatContext(): ChatContext | undefined {
+    return this.state.chatContext as ChatContext | undefined;
   }
 
-  set chatContext(value: Context | undefined) {
+  set chatContext(value: ChatContext | undefined) {
     this.state.chatContext = value;
   }
 
@@ -104,7 +104,7 @@ export class WorkflowContext extends BaseWorkflowContext<
   ): this {
     this.hydrate(run.context);
     const legacyContext = (this.state as any).conversationContext as
-      | Context
+      | ChatContext
       | undefined;
     if (legacyContext && !this.chatContext) {
       this.chatContext = legacyContext;

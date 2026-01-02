@@ -9,7 +9,7 @@ import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import { AttachmentPayload } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { Context } from '../types/context';
+import { ChatContext } from '../types/chat-context';
 import {
   ContentElement,
   ContentPagination,
@@ -28,7 +28,7 @@ import { getEnvelopeBuilder } from './envelope-builder';
 
 export class EnvelopeFactory {
   constructor(
-    protected readonly context: Context,
+    protected readonly context: ChatContext,
     protected readonly settings: Settings,
     protected readonly i18n: I18nService,
   ) {}

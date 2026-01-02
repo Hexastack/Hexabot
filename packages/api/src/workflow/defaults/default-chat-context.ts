@@ -5,13 +5,13 @@
  */
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { Context } from '@/chat/types/context';
+import { ChatContext } from '@/chat/types/chat-context';
 
 /**
  * Default chat context used to bootstrap a workflow run before any
  * user-provided data is captured.
  */
-export function getDefaultWorkflowContext(): Context {
+export function getDefaultChatContext(): ChatContext {
   return {
     vars: {},
     channel: null,
@@ -31,4 +31,4 @@ export function getDefaultWorkflowContext(): Context {
   };
 }
 
-export default getDefaultWorkflowContext;
+export default getDefaultChatContext;
