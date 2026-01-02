@@ -23,7 +23,7 @@ import {
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
 import { getDefaultChatContext } from '@/workflow/defaults/default-chat-context';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 const sentFormats = [
   'text',
@@ -76,7 +76,7 @@ export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
 export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
-> extends BaseAction<I, MessageActionOutput, WorkflowContext, S> {
+> extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
   protected constructor(
     metadata: ActionMetadata<I, MessageActionOutput, S>,
     actionService: ActionService,
@@ -84,7 +84,7 @@ export abstract class MessageAction<
     super(metadata, actionService);
   }
 
-  private ensureEvent(context: WorkflowContext) {
+  private ensureEvent(context: ConversationalWorkflowContext) {
     if (!context.event) {
       throw new Error('Missing event on workflow context');
     }
@@ -126,7 +126,7 @@ export abstract class MessageAction<
   }
 
   protected async prepare(
-    context: WorkflowContext,
+    context: ConversationalWorkflowContext,
   ): Promise<PreparedMessageContext> {
     const event = this.ensureEvent(context);
     const recipient = event.getInitiator();
@@ -149,7 +149,7 @@ export abstract class MessageAction<
   }
 
   protected async sendPreparedMessage(
-    workflowContext: WorkflowContext,
+    workflowContext: ConversationalWorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
@@ -193,7 +193,7 @@ export abstract class MessageAction<
   }
 
   protected async prepareAndSendMessage(
-    workflowContext: WorkflowContext,
+    workflowContext: ConversationalWorkflowContext,
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
   ): Promise<MessageActionOutput> {

@@ -20,7 +20,7 @@ import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState } from '@/workflow/types';
 
 @Injectable({ scope: Scope.TRANSIENT })
-export class WorkflowContext extends BaseWorkflowContext<
+export class ConversationalWorkflowContext extends BaseWorkflowContext<
   WorkflowContextState,
   EventEmitter2
 > {

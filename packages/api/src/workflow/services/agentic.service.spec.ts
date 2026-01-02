@@ -19,7 +19,7 @@ import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
 
 import { AgenticService } from './agentic.service';
-import { WorkflowContext } from './workflow-context';
+import { ConversationalWorkflowContext } from './conversational-workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
@@ -97,7 +97,7 @@ describe('AgenticService', () => {
   let workflowService: jest.Mocked<WorkflowService>;
   let workflowRunService: jest.Mocked<WorkflowRunService>;
   let actionService: jest.Mocked<ActionService>;
-  let workflowContext: jest.Mocked<WorkflowContext>;
+  let workflowContext: jest.Mocked<ConversationalWorkflowContext>;
   let logger: jest.Mocked<LoggerService>;
 
   const mockActions = [
@@ -122,7 +122,9 @@ describe('AgenticService', () => {
     actionService = {
       getAll: jest.fn(() => mockActions),
     } as unknown as jest.Mocked<ActionService>;
-    workflowContext = new WorkflowContext({}) as jest.Mocked<WorkflowContext>;
+    workflowContext = new ConversationalWorkflowContext(
+      {},
+    ) as jest.Mocked<ConversationalWorkflowContext>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),
@@ -136,7 +138,7 @@ describe('AgenticService', () => {
         { provide: WorkflowService, useValue: workflowService },
         { provide: WorkflowRunService, useValue: workflowRunService },
         { provide: ActionService, useValue: actionService },
-        { provide: WorkflowContext, useValue: workflowContext },
+        { provide: ConversationalWorkflowContext, useValue: workflowContext },
         { provide: LoggerService, useValue: logger },
       ],
     });

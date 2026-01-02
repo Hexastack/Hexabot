@@ -15,7 +15,7 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import {
   MessageAction,
@@ -63,8 +63,8 @@ describe('MessageAction base', () => {
   let baseContext: ChatContext;
 
   const buildWorkflowContext = (
-    overrides: Partial<WorkflowContext> = {},
-  ): WorkflowContext =>
+    overrides: Partial<ConversationalWorkflowContext> = {},
+  ): ConversationalWorkflowContext =>
     ({
       event,
       chatContext: baseContext,
@@ -77,7 +77,7 @@ describe('MessageAction base', () => {
       workflow,
       workflowRunId: 'run-123',
       ...overrides,
-    }) as unknown as WorkflowContext;
+    }) as unknown as ConversationalWorkflowContext;
 
   beforeEach(() => {
     actionService = { register: jest.fn() } as unknown as ActionService;

@@ -19,7 +19,7 @@ import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
 
 import { RunStrategy, RunWorkflowOptions, WorkflowResult } from '../types';
 
-import { WorkflowContext } from './workflow-context';
+import { ConversationalWorkflowContext } from './conversational-workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
@@ -30,7 +30,7 @@ export class AgenticService {
     private readonly workflowRunService: WorkflowRunService,
     private readonly actionService: ActionService,
     private readonly logger: LoggerService,
-    private readonly workflowContext: WorkflowContext,
+    private readonly workflowContext: ConversationalWorkflowContext,
   ) {}
 
   /**
@@ -176,7 +176,7 @@ export class AgenticService {
   private async createRunStrategy(
     mode: RunWorkflowOptions['mode'],
     run: WorkflowRunFull,
-    context: WorkflowContext,
+    context: ConversationalWorkflowContext,
     workflowInstance: AgentWorkflow,
     event: ConversationalEventWrapper<any, any>,
   ): Promise<RunStrategy> {
@@ -263,7 +263,7 @@ export class AgenticService {
     runner: WorkflowRunner,
     result: WorkflowResult,
     resumeData?: unknown,
-    runtimeContext?: WorkflowContext,
+    runtimeContext?: ConversationalWorkflowContext,
     logContext?: Record<string, unknown>,
   ): Promise<void> {
     const contextState = this.getContextState(runtimeContext);
@@ -446,7 +446,7 @@ export class AgenticService {
    * Extract a context snapshot suitable for persistence.
    */
   private getContextState(
-    context?: WorkflowContext,
+    context?: ConversationalWorkflowContext,
   ): Record<string, unknown> | null {
     if (!context?.state || Object.keys(context.state).length === 0) {
       return null;

@@ -7,7 +7,7 @@
 import { generateText } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 import { LlmGenerateTextAction } from './generate-text.action';
 
@@ -30,7 +30,7 @@ describe('LlmGenerateTextAction', () => {
     multiplier: 1,
   };
   const createContext = () =>
-    ({ services: { logger } }) as unknown as WorkflowContext;
+    ({ services: { logger } }) as unknown as ConversationalWorkflowContext;
 
   beforeEach(() => {
     jest.clearAllMocks();
