@@ -15,11 +15,11 @@ import { messagingWorkflowDefinition } from '@/utils/test/fixtures/workflow';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
 import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
 
 import { AgenticService } from './agentic.service';
-import { ConversationalWorkflowContext } from './conversational-workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
@@ -122,9 +122,8 @@ describe('AgenticService', () => {
     actionService = {
       getAll: jest.fn(() => mockActions),
     } as unknown as jest.Mocked<ActionService>;
-    workflowContext = new ConversationalWorkflowContext(
-      {},
-    ) as jest.Mocked<ConversationalWorkflowContext>;
+    workflowContext =
+      new ConversationalWorkflowContext() as jest.Mocked<ConversationalWorkflowContext>;
     logger = {
       warn: jest.fn(),
       error: jest.fn(),
@@ -261,8 +260,7 @@ describe('AgenticService', () => {
 
     const expectedContext = {
       stored: true,
-      persisted: 'context',
-      subscriberId: subscriber.id,
+      initiatorId: subscriber.id,
       workflowId: workflow.id,
       runId: run.id,
     };
@@ -409,8 +407,7 @@ describe('AgenticService', () => {
     await service.handleMessageEvent(event);
 
     const expectedContext = {
-      existing: 'context',
-      subscriberId: subscriber.id,
+      initiatorId: subscriber.id,
       workflowId: workflow.id,
       runId: populatedRun.id,
     };
@@ -556,8 +553,7 @@ describe('AgenticService', () => {
     await service.handleMessageEvent(event);
 
     const expectedContext = {
-      failure: 'context',
-      subscriberId: subscriber.id,
+      initiatorId: subscriber.id,
       workflowId: workflow.id,
       runId: populatedRun.id,
     };
@@ -660,8 +656,7 @@ describe('AgenticService', () => {
     await service.handleMessageEvent(event);
 
     const expectedContext = {
-      crash: 'context',
-      subscriberId: subscriber.id,
+      initiatorId: subscriber.id,
       workflowId: workflow.id,
       runId: populatedRun.id,
     };

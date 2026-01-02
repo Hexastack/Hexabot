@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { Message } from '@/chat/dto/message.dto';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   LanguageModelProvider,
@@ -412,19 +412,19 @@ describe('LlmBaseAction', () => {
       }) as Message;
 
     it('builds prompt payload from the latest messages using the provided limit', async () => {
-      const subscriberId = 'subscriber-123';
+      const initiatorId = 'subscriber-123';
       const history = [
         createMessage({
           id: 'message-1',
           createdAt: new Date('2024-01-01T09:00:00Z'),
-          sender: subscriberId,
+          sender: initiatorId,
           message: { text: 'Hi' },
         }),
         createMessage({
           id: 'message-2',
           createdAt: new Date('2024-01-01T10:00:00Z'),
           sender: 'bot',
-          recipient: subscriberId,
+          recipient: initiatorId,
           message: { text: 'Hello there' },
         }),
       ];
@@ -432,7 +432,7 @@ describe('LlmBaseAction', () => {
         findLastMessages: jest.fn().mockResolvedValue(history),
       };
       const context = {
-        subscriberId,
+        initiatorId,
         services: { message: messageService },
       } as unknown as ConversationalWorkflowContext;
       const result = await action.buildPromptPublic(
@@ -444,7 +444,7 @@ describe('LlmBaseAction', () => {
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
-        { id: subscriberId },
+        { id: initiatorId },
         2,
       );
       expect(result).toEqual({

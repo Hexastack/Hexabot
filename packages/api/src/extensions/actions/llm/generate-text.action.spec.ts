@@ -7,7 +7,7 @@
 import { generateText } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { LlmGenerateTextAction } from './generate-text.action';
 

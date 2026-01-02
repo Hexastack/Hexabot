@@ -51,7 +51,7 @@ export type RunStrategy = {
 };
 
 export type WorkflowContextState = Record<string, unknown> & {
-  subscriberId?: string;
+  initiatorId?: string;
   workflowId?: string;
   chatContext?: ChatContext;
   runId?: string;

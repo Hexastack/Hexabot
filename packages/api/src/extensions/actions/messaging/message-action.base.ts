@@ -22,8 +22,8 @@ import {
   StdOutgoingMessageEnvelope,
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { getDefaultChatContext } from '@/workflow/defaults/default-chat-context';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
 
 const sentFormats = [
   'text',

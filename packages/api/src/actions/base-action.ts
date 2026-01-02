@@ -16,7 +16,7 @@ import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { ActionService } from './actions.service';
 import { ActionName } from './types';

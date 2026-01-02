@@ -9,7 +9,7 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
 import { SendTextMessageAction } from './text-message.action';

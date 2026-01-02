@@ -12,7 +12,7 @@ import {
 } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';

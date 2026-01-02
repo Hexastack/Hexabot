@@ -20,7 +20,7 @@ export * from './repositories/workflow.repository';
 
 export * from './repositories/workflow-run.repository';
 
-export * from './services/conversational-workflow-context';
+export * from './contexts/conversational-workflow.context';
 
 export * from './services/workflow.service';
 

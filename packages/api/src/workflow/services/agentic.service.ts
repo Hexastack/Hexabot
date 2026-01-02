@@ -17,9 +17,9 @@ import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
 
+import { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
 import { RunStrategy, RunWorkflowOptions, WorkflowResult } from '../types';
 
-import { ConversationalWorkflowContext } from './conversational-workflow-context';
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 

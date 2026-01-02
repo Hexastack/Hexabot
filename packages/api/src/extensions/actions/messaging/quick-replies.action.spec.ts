@@ -10,7 +10,7 @@ import {
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
 import { QuickReplyType } from '@/chat/types/quick-reply';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
 import { SendQuickRepliesAction } from './quick-replies.action';

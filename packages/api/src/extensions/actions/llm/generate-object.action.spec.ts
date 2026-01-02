@@ -8,7 +8,7 @@ import { generateObject, jsonSchema } from 'ai';
 import { JSONSchema7 } from 'json-schema';
 
 import { ActionService } from '@/actions/actions.service';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { LlmGenerateObjectAction } from './generate-object.action';
 

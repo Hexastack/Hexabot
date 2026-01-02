@@ -6,7 +6,7 @@
 
 import { ActionService } from '@/actions/actions.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { AwaitReplyAction } from './await-reply.action';
 
@@ -31,7 +31,7 @@ describe('AwaitReplyAction', () => {
     context = {
       workflow,
       event,
-      subscriberId: 'sub-ctx',
+      initiatorId: 'sub-ctx',
       workflowRunId: 'run-ctx',
     } as unknown as ConversationalWorkflowContext;
   });

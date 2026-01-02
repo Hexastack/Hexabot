@@ -15,7 +15,7 @@ import {
   stdIncomingMessageSchema,
   stdOutgoingMessageEnvelopeSchema,
 } from '@/chat/types/message';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 export const awaitReplyInputSchema = z.object({
   action: z.string().optional(),
@@ -69,7 +69,7 @@ export class AwaitReplyAction extends BaseAction<
       channel: input.channel ?? event?.getHandler().getName(),
       recipient:
         input.recipient ??
-        context.subscriberId ??
+        context.initiatorId ??
         event?.getInitiator()?.id ??
         undefined,
       workflowRunId: input.workflowRunId ?? context.workflowRunId,

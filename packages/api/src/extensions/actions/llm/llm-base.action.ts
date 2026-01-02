@@ -14,7 +14,7 @@ import { BaseAction } from '@/actions/base-action';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
-import { ConversationalWorkflowContext } from '@/workflow/services/conversational-workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
 
@@ -332,7 +332,7 @@ export abstract class LlmBaseAction<
     }
 
     if (input.messages_limit !== undefined) {
-      const subscriberId = context.subscriberId;
+      const subscriberId = context.initiatorId;
       if (!subscriberId) {
         throw new Error(
           'A subscriber id is required to load previous messages for this action.',

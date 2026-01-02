@@ -8,9 +8,7 @@ import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageService } from '@/chat';
-import { ChatContext } from '@/chat/types/chat-context';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -19,33 +17,38 @@ import { SettingService } from '@/setting/services/setting.service';
 import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState } from '@/workflow/types';
 
+import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
+
 @Injectable({ scope: Scope.TRANSIENT })
-export class ConversationalWorkflowContext extends BaseWorkflowContext<
-  WorkflowContextState,
-  EventEmitter2
-> {
-  event?: ConversationalEventWrapper<any, any>;
+export abstract class WorkflowRuntimeContext<
+  E extends TriggerEventWrapper = TriggerEventWrapper,
+> extends BaseWorkflowContext<WorkflowContextState, EventEmitter2> {
+  abstract event?: E;
 
   @Inject(I18nService)
-  private readonly i18n: I18nService;
+  protected readonly i18n: I18nService;
 
   @Inject(SettingService)
-  private readonly settings: SettingService;
+  protected readonly settings: SettingService;
 
   @Inject(LoggerService)
-  private readonly logger: LoggerService;
+  protected readonly logger: LoggerService;
 
   @Inject(ContentService)
-  private readonly content: ContentService;
+  protected readonly content: ContentService;
 
   @Inject(ContentTypeService)
-  private readonly contentType: ContentTypeService;
+  protected readonly contentType: ContentTypeService;
 
   @Inject(EventEmitter2)
   readonly eventEmitter: EventEmitter2;
 
   @Inject(forwardRef(() => MessageService))
-  readonly message: MessageService;
+  protected readonly message: MessageService;
+
+  constructor() {
+    super({} as WorkflowContextState);
+  }
 
   get services() {
     return {
@@ -58,28 +61,12 @@ export class ConversationalWorkflowContext extends BaseWorkflowContext<
     };
   }
 
-  get subscriberId(): string | undefined {
-    return this.state.subscriberId as string | undefined;
-  }
-
-  set subscriberId(value: string | undefined) {
-    this.state.subscriberId = value;
-  }
-
   get workflowId(): string | undefined {
     return this.state.workflowId as string | undefined;
   }
 
   set workflowId(value: string | undefined) {
     this.state.workflowId = value;
-  }
-
-  get chatContext(): ChatContext | undefined {
-    return this.state.chatContext as ChatContext | undefined;
-  }
-
-  set chatContext(value: ChatContext | undefined) {
-    this.state.chatContext = value;
   }
 
   get workflowRunId(): string | undefined {
@@ -98,27 +85,19 @@ export class ConversationalWorkflowContext extends BaseWorkflowContext<
     this.state.runId = value;
   }
 
-  buildFromRun(
-    run: WorkflowRunFull,
-    event: ConversationalEventWrapper<any, any>,
-  ): this {
+  get initiatorId(): string | undefined {
+    return this.state.initiatorId as string | undefined;
+  }
+
+  set initiatorId(value: string | undefined) {
+    this.state.initiatorId = value;
+  }
+
+  buildFromRun(run: WorkflowRunFull, event: E): this {
+    this.resetState();
     this.hydrate(run.context);
-    const legacyContext = (this.state as any).conversationContext as
-      | ChatContext
-      | undefined;
-    if (legacyContext && !this.chatContext) {
-      this.chatContext = legacyContext;
-    }
-    const legacyConversationId = (this.state as any).conversationId as
-      | string
-      | undefined;
-    if (legacyConversationId && !this.runId) {
-      this.runId = legacyConversationId;
-    }
-    delete (this.state as any).conversationContext;
-    delete (this.state as any).conversationId;
     this.event = event;
-    this.subscriberId = run.triggeredBy?.id;
+    this.initiatorId = run.triggeredBy?.id;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
 
@@ -133,5 +112,9 @@ export class ConversationalWorkflowContext extends BaseWorkflowContext<
     this.state = { ...this.state, ...stored };
 
     return this;
+  }
+
+  protected resetState() {
+    this.state = {} as WorkflowContextState;
   }
 }
