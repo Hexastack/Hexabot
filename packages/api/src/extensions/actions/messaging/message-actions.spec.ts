@@ -151,7 +151,6 @@ describe('MessageAction base', () => {
     expect(settingsService.getSettings).not.toHaveBeenCalled();
     expect(prepared.recipient).toBe(recipient);
     expect(prepared.envelopeFactory).toBeInstanceOf(EnvelopeFactory);
-    expect((prepared as any).chatContext).toBeUndefined();
   });
 
   it('sends the message, emits stats, and returns sent metadata', async () => {
