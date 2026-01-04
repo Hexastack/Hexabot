@@ -12,7 +12,7 @@ import {
 } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
@@ -20,7 +20,7 @@ import { BaseAction } from './base-action';
 type CreateActionParams<
   I,
   O,
-  C extends BaseWorkflowContext = WorkflowContext,
+  C extends BaseWorkflowContext = ConversationalWorkflowContext,
   S extends Settings = Settings,
 > = ActionMetadata<I, O, S> & {
   /**
@@ -34,7 +34,7 @@ type CreateActionParams<
 export function createAction<
   I,
   O,
-  C extends BaseWorkflowContext = WorkflowContext,
+  C extends BaseWorkflowContext = ConversationalWorkflowContext,
   S extends Settings = Settings,
 >(params: CreateActionParams<I, O, C, S>): Type<BaseAction<I, O, C, S>> {
   @Injectable()

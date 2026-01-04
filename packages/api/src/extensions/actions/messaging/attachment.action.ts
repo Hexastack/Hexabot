@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { attachmentPayloadSchema } from '@/chat/types/attachment';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
@@ -55,7 +55,7 @@ export class SendAttachmentAction extends MessageAction<
     settings,
   }: ActionExecutionArgs<
     AttachmentInput,
-    WorkflowContext,
+    ConversationalWorkflowContext,
     AttachmentSettings
   >) {
     const prepared = await this.prepare(context);

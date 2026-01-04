@@ -71,7 +71,7 @@ export class ChatService {
     } catch (err) {
       this.logger.warn('Failed to get the event id', messageId, err);
     }
-    const subscriber = event.getSender();
+    const subscriber = event.getInitiator();
     const received: MessageCreateDto = {
       mid: messageId,
       sender: subscriber.id,
@@ -113,7 +113,7 @@ export class ChatService {
   @OnEvent('hook:chatbot:delivery')
   async handleMessageDelivery(event: ConversationalEventWrapper<any, any>) {
     if (config.chatbot.messages.track_delivery) {
-      const subscriber = event.getSender();
+      const subscriber = event.getInitiator();
       const deliveredMessages = event.getDeliveredMessages();
       try {
         await this.messageService.updateMany(
@@ -138,7 +138,7 @@ export class ChatService {
   @OnEvent('hook:chatbot:read')
   async handleMessageRead(event: ConversationalEventWrapper<any, any>) {
     if (config.chatbot.messages.track_read) {
-      const subscriber = event.getSender();
+      const subscriber = event.getInitiator();
       const watermark = new Date(event.getWatermark());
       const start = new Date(watermark.getTime() - 24 * 3600 * 1000);
 
@@ -245,14 +245,14 @@ export class ChatService {
           }
         }
       }
-      event.setSender(subscriber);
+      event.setInitiator(subscriber);
       // Exec lastvisit hook
       this.eventEmitter.emit('hook:user:lastvisit', subscriber);
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
       // Set the subscriber object
-      event.setSender(subscriber!);
+      event.setInitiator(subscriber!);
 
       // Preprocess the event (persist attachments, ...)
       if (event.preprocess) {
@@ -268,7 +268,7 @@ export class ChatService {
         return;
       }
 
-      await this.agenticService.handleMessageEvent(event);
+      await this.agenticService.handleEvent(event);
     } catch (err) {
       this.logger.error('Error handling new message', err);
     }

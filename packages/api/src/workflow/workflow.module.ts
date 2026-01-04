@@ -10,13 +10,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms';
 
+import { ConversationalWorkflowContext } from './contexts/conversational-workflow.context';
+import { ManualWorkflowContext } from './contexts/manual-workflow.context';
+import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context';
+import { WorkflowContextFactory } from './contexts/workflow-context-factory';
 import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { AgenticService } from './services/agentic.service';
-import { WorkflowContext } from './services/workflow-context';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowService } from './services/workflow.service';
 
@@ -32,7 +35,10 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
-    WorkflowContext,
+    ConversationalWorkflowContext,
+    ManualWorkflowContext,
+    ScheduledWorkflowContext,
+    WorkflowContextFactory,
     AgenticService,
   ],
   exports: [
@@ -40,7 +46,7 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
-    WorkflowContext,
+    ConversationalWorkflowContext,
     AgenticService,
   ],
 })

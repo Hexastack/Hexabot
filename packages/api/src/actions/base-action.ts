@@ -16,7 +16,7 @@ import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { ActionService } from './actions.service';
 import { ActionName } from './types';
@@ -25,7 +25,7 @@ import { ActionName } from './types';
 export abstract class BaseAction<
     I = unknown,
     O = unknown,
-    C extends BaseWorkflowContext = WorkflowContext,
+    C extends BaseWorkflowContext = ConversationalWorkflowContext,
     S extends Settings = Settings,
   >
   extends AbstractAction<I, O, C, S>

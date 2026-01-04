@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { stdQuickReplySchema } from '@/chat/types/quick-reply';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
@@ -56,7 +56,7 @@ export class SendQuickRepliesAction extends MessageAction<
     settings,
   }: ActionExecutionArgs<
     QuickRepliesInput,
-    WorkflowContext,
+    ConversationalWorkflowContext,
     QuickRepliesSettings
   >) {
     const prepared = await this.prepare(context);

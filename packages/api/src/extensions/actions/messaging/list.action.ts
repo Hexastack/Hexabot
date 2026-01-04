@@ -12,7 +12,7 @@ import { ActionService } from '@/actions/actions.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions, contentOptionsSchema } from '@/chat/types/options';
 import { ContentTypeService } from '@/cms/services/content-type.service';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
@@ -81,7 +81,7 @@ export class SendListAction extends MessageAction<
     settings,
   }: ActionExecutionArgs<
     ListActionInput,
-    WorkflowContext,
+    ConversationalWorkflowContext,
     ListActionSettings
   >) {
     const contentOptions = settings.content;

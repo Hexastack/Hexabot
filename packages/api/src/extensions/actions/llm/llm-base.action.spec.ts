@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { Message } from '@/chat/dto/message.dto';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   LanguageModelProvider,
@@ -48,7 +48,7 @@ jest.mock(
 class TestLlmBaseAction extends LlmBaseAction<
   Record<string, unknown>,
   unknown,
-  WorkflowContext
+  ConversationalWorkflowContext
 > {
   constructor(actionService: ActionService) {
     super(
@@ -121,7 +121,10 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.resolveModelId(settings);
   }
 
-  public buildPromptPublic(input: unknown, context: WorkflowContext) {
+  public buildPromptPublic(
+    input: unknown,
+    context: ConversationalWorkflowContext,
+  ) {
     return this.buildPrompt(input as any, context);
   }
 
@@ -409,19 +412,19 @@ describe('LlmBaseAction', () => {
       }) as Message;
 
     it('builds prompt payload from the latest messages using the provided limit', async () => {
-      const subscriberId = 'subscriber-123';
+      const initiatorId = 'subscriber-123';
       const history = [
         createMessage({
           id: 'message-1',
           createdAt: new Date('2024-01-01T09:00:00Z'),
-          sender: subscriberId,
+          sender: initiatorId,
           message: { text: 'Hi' },
         }),
         createMessage({
           id: 'message-2',
           createdAt: new Date('2024-01-01T10:00:00Z'),
           sender: 'bot',
-          recipient: subscriberId,
+          recipient: initiatorId,
           message: { text: 'Hello there' },
         }),
       ];
@@ -429,9 +432,9 @@ describe('LlmBaseAction', () => {
         findLastMessages: jest.fn().mockResolvedValue(history),
       };
       const context = {
-        subscriberId,
+        initiatorId,
         services: { message: messageService },
-      } as unknown as WorkflowContext;
+      } as unknown as ConversationalWorkflowContext;
       const result = await action.buildPromptPublic(
         {
           messages_limit: 2,
@@ -441,7 +444,7 @@ describe('LlmBaseAction', () => {
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
-        { id: subscriberId },
+        { id: initiatorId },
         2,
       );
       expect(result).toEqual({
@@ -459,7 +462,7 @@ describe('LlmBaseAction', () => {
           prompt: 'Tell me a joke',
           system: 'system prompt',
         },
-        {} as WorkflowContext,
+        {} as ConversationalWorkflowContext,
       );
 
       expect(result).toEqual({
@@ -472,7 +475,7 @@ describe('LlmBaseAction', () => {
       await expect(
         action.buildPromptPublic({ messages_limit: 1 }, {
           services: { message: { findLastMessages: jest.fn() } },
-        } as unknown as WorkflowContext),
+        } as unknown as ConversationalWorkflowContext),
       ).rejects.toThrow(
         'A subscriber id is required to load previous messages for this action.',
       );
@@ -482,7 +485,7 @@ describe('LlmBaseAction', () => {
       await expect(
         action.buildPromptPublic(
           {} as unknown as Record<string, unknown>,
-          {} as WorkflowContext,
+          {} as ConversationalWorkflowContext,
         ),
       ).rejects.toThrow(
         'Provide either "prompt" or "messages_limit" to build the model request.',

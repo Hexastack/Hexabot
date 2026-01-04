@@ -858,7 +858,7 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile);
+      event.setInitiator(profile);
 
       const type = event.getEventType();
       if (type) {
@@ -1283,7 +1283,7 @@ export default abstract class BaseWebChannelHandler<
       envelope,
       options,
     );
-    const subscriber = event.getSender();
+    const subscriber = event.getInitiator();
     const message: Web.OutgoingMessage = {
       ...messageBase,
       mid: this.generateId(),
@@ -1350,7 +1350,7 @@ export default abstract class BaseWebChannelHandler<
   async getSubscriberData(
     event: WebEventWrapper<N>,
   ): Promise<SubscriberCreateDto> {
-    const sender = event.getSender();
+    const sender = event.getInitiator();
     const {
       id: _id,
       createdAt: _createdAt,

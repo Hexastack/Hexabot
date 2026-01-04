@@ -7,7 +7,7 @@
 import { ActionService } from '@/actions/actions.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendListAction } from './list.action';
 import { MessageActionSettings } from './message-action.base';
@@ -17,7 +17,7 @@ describe('SendListAction', () => {
   let action: SendListAction;
   let contentService: { getContent: jest.Mock };
   let contentTypeService: { findOne: jest.Mock };
-  let context: WorkflowContext;
+  let context: ConversationalWorkflowContext;
 
   const baseContentOptions: ContentOptions = {
     display: 'list',
@@ -43,7 +43,7 @@ describe('SendListAction', () => {
         content: contentService,
         contentType: contentTypeService,
       },
-    } as unknown as WorkflowContext;
+    } as unknown as ConversationalWorkflowContext;
     action = new SendListAction(actionService);
   });
 

@@ -31,6 +31,11 @@ describe('ActionService', () => {
     expect(actions.every((action) => action instanceof BaseAction)).toBe(true);
   });
 
+  it('should expose a registry keyed by action name', () => {
+    const registry = actionService.getRegistry();
+    expect(registry[dummyAction.getName()]).toBe(dummyAction);
+  });
+
   it('should fetch an action by name', () => {
     const action = actionService.get('dummy_action');
     expect(action).toBeInstanceOf(DummyAction);

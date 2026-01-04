@@ -5,7 +5,7 @@
  */
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Subscriber } from '@/chat';
 import { SubscriberChannelData } from '@/chat/types/channel';
 import {
   IncomingMessageType,
@@ -32,7 +32,7 @@ export default abstract class ConversationalEventWrapper<
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
-> extends TriggerEventWrapper {
+> extends TriggerEventWrapper<Subscriber> {
   readonly triggerType = WorkflowType.conversational;
 
   _adapter: A = {
@@ -44,8 +44,6 @@ export default abstract class ConversationalEventWrapper<
   _handler: C;
 
   channelAttrs: S;
-
-  subscriber!: Subscriber;
 
   _nlp!: NLU.ParseEntities;
 
@@ -71,7 +69,7 @@ export default abstract class ConversationalEventWrapper<
       {
         handler: this._handler.getName(),
         channelData: this.getChannelData(),
-        sender: this.getSender(),
+        sender: this.getInitiator(),
         // recipient: this.getRecipientForeignId(),
         eventType: this.getEventType(),
         messageType: this.getMessageType(),
@@ -176,24 +174,6 @@ export default abstract class ConversationalEventWrapper<
   abstract getSenderForeignId(): string;
 
   /**
-   * Returns event sender data
-   *
-   * @returns event sender data
-   */
-  getSender(): Subscriber {
-    return this.subscriber;
-  }
-
-  /**
-   * Sets event sender data
-   *
-   * @param profile - Sender data
-   */
-  setSender(profile: Subscriber) {
-    this.subscriber = profile;
-  }
-
-  /**
    * Pre-Process the message event
    *
    * Child class can perform operations such as storing files as attachments.
@@ -283,6 +263,40 @@ export default abstract class ConversationalEventWrapper<
    * @returns The message's watermark
    */
   abstract getWatermark(): number;
+
+  /**
+   * Returns the channel event metadata
+   * @returns The event metadata
+   */
+  getMetadata() {
+    return { channel: this.getChannelData() };
+  }
+
+  getContextData() {
+    return {
+      messageId: this.getId(),
+      eventType: this.getEventType(),
+      messageType: this.getMessageType(),
+    };
+  }
+
+  buildInput(): Record<string, unknown> {
+    const input: Record<string, unknown> = {
+      channel: this.getChannelData(),
+      message_type: this.getMessageType(),
+      event_type: this.getEventType(),
+      sender: this.getInitiator(),
+      payload: this.getPayload(),
+      message: this.getMessage(),
+      text: this.getText(),
+    };
+    const id = this.getId();
+    if (id) {
+      input.mid = id;
+    }
+
+    return input;
+  }
 }
 
 type GenericEvent = { senderId: string; messageId: string };

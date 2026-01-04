@@ -4,13 +4,40 @@
  * Full terms: see LICENSE.md.
  */
 
+import { User } from '@/user';
+import { UserProfileStub } from '@/user/dto/user-profile.dto';
+
 import { WorkflowType } from '../types';
 
-export abstract class TriggerEventWrapper {
+export abstract class TriggerEventWrapper<
+  U extends UserProfileStub = UserProfileStub,
+> {
   abstract readonly triggerType: WorkflowType;
+
+  protected initiator: U;
+
+  /**
+   * Returns the user/profile that initiated this event (subscriber or admin).
+   */
+  getInitiator(): U {
+    return this.initiator;
+  }
+
+  /**
+   * Sets the user/profile that initiated this event (subscriber or admin).
+   */
+  setInitiator(profile: U) {
+    this.initiator = profile;
+  }
+
+  abstract getMetadata(): Record<string, unknown>;
+
+  abstract getContextData(): Record<string, unknown>;
+
+  abstract buildInput(): Record<string, unknown>;
 }
 
-export class ScheduledEventWrapper extends TriggerEventWrapper {
+export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
   readonly triggerType = WorkflowType.scheduled;
 
   constructor(
@@ -23,26 +50,7 @@ export class ScheduledEventWrapper extends TriggerEventWrapper {
     super();
   }
 
-  getId(): string | undefined {
-    const { triggeredAt } = this.payload;
-    if (!triggeredAt) {
-      return undefined;
-    }
-
-    return typeof triggeredAt === 'string'
-      ? triggeredAt
-      : triggeredAt.toISOString();
-  }
-
-  getEventType(): WorkflowType {
-    return this.triggerType;
-  }
-
-  getPayload(): Record<string, unknown> | undefined {
-    return this.payload.input;
-  }
-
-  toWorkflowInput(): Record<string, unknown> {
+  buildInput(): Record<string, unknown> {
     return { ...(this.payload.input ?? {}) };
   }
 
@@ -50,14 +58,19 @@ export class ScheduledEventWrapper extends TriggerEventWrapper {
     return {
       trigger: this.triggerType,
       schedule: this.payload.schedule ?? null,
-      triggered_at: this.payload.triggeredAt
-        ? this.getId()
-        : new Date().toISOString(),
+      triggered_at: this.payload.triggeredAt ?? null,
+    };
+  }
+
+  getContextData(): Record<string, unknown> {
+    return {
+      schedule: this.payload.schedule ?? null,
+      triggered_at: this.payload.triggeredAt ?? null,
     };
   }
 }
 
-export class ManualEventWrapper extends TriggerEventWrapper {
+export class ManualEventWrapper extends TriggerEventWrapper<User> {
   readonly triggerType = WorkflowType.manual;
 
   constructor(
@@ -67,21 +80,19 @@ export class ManualEventWrapper extends TriggerEventWrapper {
     super();
   }
 
-  getEventType(): WorkflowType {
-    return this.triggerType;
-  }
-
-  getPayload(): Record<string, unknown> {
-    return this.input;
-  }
-
-  toWorkflowInput(): Record<string, unknown> {
+  buildInput(): Record<string, unknown> {
     return { ...this.input };
   }
 
   getMetadata(): Record<string, unknown> {
     return {
       trigger: this.triggerType,
+      initiated_by: this.initiatedBy ?? null,
+    };
+  }
+
+  getContextData(): Record<string, unknown> {
+    return {
       initiated_by: this.initiatedBy ?? null,
     };
   }

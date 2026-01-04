@@ -84,6 +84,15 @@ export class WorkflowRunner {
   }
 
   /**
+   * Get the current state of the workflow run.
+   *
+   * @returns The state of the workflow execution.
+   */
+  getState(): ExecutionState | undefined {
+    return this.state;
+  }
+
+  /**
    * Get the current lifecycle status of the workflow run.
    *
    * @returns The status of the workflow execution.

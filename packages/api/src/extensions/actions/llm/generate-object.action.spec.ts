@@ -8,7 +8,7 @@ import { generateObject, jsonSchema } from 'ai';
 import { JSONSchema7 } from 'json-schema';
 
 import { ActionService } from '@/actions/actions.service';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { LlmGenerateObjectAction } from './generate-object.action';
 
@@ -33,7 +33,7 @@ describe('LlmGenerateObjectAction', () => {
     multiplier: 1,
   };
   const createContext = () =>
-    ({ services: { logger } }) as unknown as WorkflowContext;
+    ({ services: { logger } }) as unknown as ConversationalWorkflowContext;
 
   beforeEach(() => {
     jest.clearAllMocks();

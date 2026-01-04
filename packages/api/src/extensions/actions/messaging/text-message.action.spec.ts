@@ -9,18 +9,18 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
 import { SendTextMessageAction } from './text-message.action';
 
 describe('SendTextMessageAction', () => {
   let actionService: ActionService;
-  let context: WorkflowContext;
+  let context: ConversationalWorkflowContext;
 
   beforeEach(() => {
     actionService = { register: jest.fn() } as unknown as ActionService;
-    context = {} as WorkflowContext;
+    context = {} as ConversationalWorkflowContext;
   });
 
   afterEach(() => {

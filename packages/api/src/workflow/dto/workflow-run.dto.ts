@@ -74,9 +74,6 @@ export class WorkflowRunStub extends BaseStub {
   failedAt?: Date | null;
 
   @Expose()
-  correlationId?: string | null;
-
-  @Expose()
   metadata?: Record<string, unknown> | null;
 }
 
@@ -197,14 +194,6 @@ export class WorkflowRunCreateDto {
   @IsDate()
   @Type(() => Date)
   failedAt?: Date | null;
-
-  @ApiPropertyOptional({
-    description: 'External identifier used to correlate events',
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  correlationId?: string | null;
 
   @ApiPropertyOptional({ description: 'Opaque metadata', type: Object })
   @IsOptional()

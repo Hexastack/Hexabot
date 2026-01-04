@@ -46,4 +46,13 @@ export class ActionService {
   getAll() {
     return Array.from(this.registry.values());
   }
+
+  getRegistry(): Record<
+    ActionName,
+    BaseAction<any, any, BaseWorkflowContext, any>
+  > {
+    return Object.fromEntries(
+      this.getAll().map((action) => [action.getName(), action]),
+    );
+  }
 }

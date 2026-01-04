@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { WorkflowContext } from '@/workflow/services/workflow-context';
+import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
@@ -52,7 +52,7 @@ export class SendTextMessageAction extends MessageAction<
     settings,
   }: ActionExecutionArgs<
     TextMessageInput,
-    WorkflowContext,
+    ConversationalWorkflowContext,
     TextMessageSettings
   >) {
     const prepared = await this.prepare(context);
