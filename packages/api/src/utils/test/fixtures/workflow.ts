@@ -14,6 +14,7 @@ import {
 } from '@/utils/test/fixtures/user';
 import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
+import { WorkflowType } from '@/workflow/types';
 
 /**
  * Simple workflow definition that exercises the built-in messaging actions.
@@ -64,6 +65,8 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     version: messagingWorkflowDefinition.workflow.version,
     description: messagingWorkflowDefinition.workflow.description ?? undefined,
     definition: messagingWorkflowDefinition,
+    type: WorkflowType.conversational,
+    schedule: null,
     createdBy: userFixtureIds.admin,
   },
 ];

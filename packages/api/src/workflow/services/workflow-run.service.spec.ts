@@ -16,6 +16,7 @@ import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
@@ -90,6 +91,8 @@ describe('WorkflowRunService (TypeORM)', () => {
       version: definition.workflow.version,
       definition,
       description: 'Workflow for run tests',
+      type: WorkflowType.conversational,
+      schedule: null,
     });
 
     workflowRun = await workflowRunService.create({

@@ -16,6 +16,7 @@ import {
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
 @Injectable()
 export class WorkflowService extends BaseOrmService<
@@ -69,6 +70,8 @@ export class WorkflowService extends BaseOrmService<
         version: defaultWorkflowDefinition.workflow.version,
         description: defaultWorkflowDefinition.workflow.description,
         definition: defaultWorkflowDefinition,
+        type: WorkflowType.conversational,
+        schedule: null,
       });
     } catch (err) {
       this.logger.error('Unable to ensure default workflow exists', err);

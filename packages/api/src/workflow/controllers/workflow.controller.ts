@@ -75,7 +75,14 @@ export class WorkflowController extends BaseOrmController<
   async findMany(
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
-        allowedFields: ['name', 'version', 'description', 'createdBy.id'],
+        allowedFields: [
+          'name',
+          'version',
+          'description',
+          'type',
+          'schedule',
+          'createdBy.id',
+        ],
         defaultSort: ['createdAt', 'desc'],
       }),
     )

@@ -9,6 +9,7 @@ import { SettingServiceProvider } from '@/utils/test/providers/setting-service.p
 import { buildTestingMocks } from '@/utils/test/utils';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowService } from '@/workflow/services/workflow.service';
+import { WorkflowType } from '@/workflow/types';
 
 import { TranslationRepository } from '../repositories/translation.repository';
 import { TranslationService } from '../services/translation.service';
@@ -39,6 +40,8 @@ describe('TranslationService', () => {
         },
         flow: [{ do: 'send_text' }],
       },
+      type: WorkflowType.conversational,
+      schedule: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as unknown as Workflow,
@@ -67,6 +70,8 @@ describe('TranslationService', () => {
         },
         flow: [{ do: 'ask_choice' }],
       },
+      type: WorkflowType.conversational,
+      schedule: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as unknown as Workflow,

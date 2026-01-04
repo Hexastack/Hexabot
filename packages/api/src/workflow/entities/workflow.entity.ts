@@ -14,10 +14,13 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
+
+import { WorkflowType } from '../types';
 
 @Entity({ name: 'workflows' })
 @Index(['name', 'version'], { unique: true })
@@ -33,6 +36,17 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   /** Optional description to explain the workflow's purpose. */
   @Column({ type: 'text', nullable: true })
   description?: string | null;
+
+  /** Workflow trigger type (conversational, manual, scheduled). */
+  @EnumColumn({
+    enum: WorkflowType,
+    default: WorkflowType.conversational,
+  })
+  type!: WorkflowType;
+
+  /** Cron expression used when the workflow is scheduled. */
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  schedule?: string | null;
 
   /** User who created the workflow definition. */
   @ManyToOne(() => UserOrmEntity, {

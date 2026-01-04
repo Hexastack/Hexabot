@@ -23,6 +23,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowService } from '../services/workflow.service';
+import { WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
 
@@ -52,6 +53,8 @@ describe('WorkflowController (TypeORM)', () => {
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
+      type: WorkflowType.conversational,
+      schedule: null,
       definition,
     };
   };
