@@ -18,8 +18,7 @@
     "dist",
     "src",
     "types",
-    "!src/**/*.spec.ts",
-    "!src/.hexabot"
+    "!src/**/*.spec.ts"
   ],
   "scripts": {
     "dev": "pnpm run start:dev",

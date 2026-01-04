@@ -21,8 +21,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["src/*", "src/.hexabot/*", "src/extra/*"],
-      "hexabot/src/*": ["src/*", "src/.hexabot/*"]
+      "@/*": ["src/*", "src/extra/*"],
+      "hexabot/src/*": ["src/*"]
     }
   },
   "include": [
@@ -30,8 +30,6 @@
     "types/**/*.d.ts",
     "src/**/*.ts",
     "src/**/*.json",
-    "test/**/*.ts",
-    "src/.hexabot/**/*.ts",
-    "src/.hexabot/**/*.json"
+    "test/**/*.ts"
   ]
 }
