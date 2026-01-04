@@ -136,9 +136,7 @@ export abstract class MessageAction<
     }
 
     const chatContext = this.buildChatContext(event, context.chatContext);
-    const { settings: settingService, i18n } = context.services;
-    const settings = await settingService.getSettings();
-    const envelopeFactory = new EnvelopeFactory(chatContext, settings, i18n);
+    const envelopeFactory = new EnvelopeFactory();
 
     return {
       event,

@@ -1,6 +1,6 @@
 # Envelope Helpers : Envelope Builder & Envelope Factory
 
-The envelope helpers introduce two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing, localizing, and validating messages in various formats with minimal boilerplate.
+The envelope helpers introduce two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing and validating messages in various formats with minimal boilerplate.
 
 ---
 
@@ -10,7 +10,7 @@ The envelope helpers introduce two key components to streamline outgoing message
   A Proxy-based builder utility that provides chainable setter methods to dynamically create envelope objects. It validates the final envelope using Zod schemas and supports dynamic array handling through methods like `appendToQuickReplies`.
 
 - **Envelope Factory:**  
-  A higher-level abstraction that builds on the Envelope Builder. It localizes messages and provides convenience methods for constructing different types of envelopes (text, quick replies, buttons, attachments, lists/carousels, and system messages).
+  A higher-level abstraction that builds on the Envelope Builder. It provides convenience methods for constructing different types of envelopes (text, quick replies, buttons, attachments, lists/carousels, and system messages).
 
 ---
 
@@ -32,14 +32,11 @@ The envelope helpers introduce two key components to streamline outgoing message
 
 ### Envelope Factory
 
-- **Localization:**  
-  Processes input text for localization using an integrated i18n service, ensuring that messages are tailored to the user's language settings.
-
 - **Convenience Envelope Methods:**  
   Provides methods to build various envelope types:
   - **buildTextEnvelope:** Processes and builds text envelopes.
-  - **buildQuickRepliesEnvelope:** Constructs quick reply messages with localized titles and payloads.
-  - **buildButtonsEnvelope:** Handles both postback and non-postback buttons with proper text processing.
+  - **buildQuickRepliesEnvelope:** Constructs quick reply messages with processed titles and payloads.
+  - **buildButtonsEnvelope:** Handles both postback and non-postback buttons with normalized text.
   - **buildAttachmentEnvelope:** Creates attachment envelopes with optional quick replies.
   - **buildListEnvelope:** Builds list/carousel envelopes using provided content options, elements, and pagination.
   - **buildSystemEnvelope:** Assembles system envelopes with outcomes and optional data.
@@ -78,9 +75,9 @@ const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
 ### Using Envelope Factory
 
 ```typescript
-const envelopeFactory = new EnvelopeFactory(context, settings, i18nService);
+const envelopeFactory = new EnvelopeFactory();
 
-// Build a localized text envelope:
+// Build a text envelope:
 const textEnvelope = envelopeFactory.buildTextEnvelope('Hello there!');
 
 // Build a quick replies envelope with processed quick replies:
@@ -102,9 +99,6 @@ const quickRepliesEnvelope = envelopeFactory.buildQuickRepliesEnvelope(
 
 - **Type Safety with Generics:**  
   Both components use TypeScript generics and strict typing to ensure that each envelope adheres to its specific format, reducing runtime errors and enforcing schema compliance.
-
-- **Localization:**  
-  The Envelope Factory integrates with an i18n service, ensuring that all messages are correctly localized to the user's language settings.
 
 - **Schema Mapping:**  
   A mapping between message formats and their corresponding Zod schemas guarantees that envelopes are built and validated against the correct structure.

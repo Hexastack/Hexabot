@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { I18nService } from '@/i18n/services/i18n.service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import { AttachmentPayload } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { ChatContext } from '../types/chat-context';
 import {
   ContentElement,
   ContentPagination,
@@ -27,27 +25,14 @@ import { StdQuickReply } from '../types/quick-reply';
 import { getEnvelopeBuilder } from './envelope-builder';
 
 export class EnvelopeFactory {
-  constructor(
-    protected readonly context: ChatContext,
-    protected readonly settings: Settings,
-    protected readonly i18n: I18nService,
-  ) {}
-
   /**
-   * Processes the provided text or array of texts, localizes it based on the user's language settings,
-   * and returns the localized string.
+   * Processes the provided text or array of texts and returns a string.
    *
    * @param text - The text or an array of text strings to be processed.
-   * @returns - The processed and localized text.
+   * @returns - The processed text.
    */
   public processText(text: string | string[]): string {
-    let result = Array.isArray(text) ? getRandomElement(text) : text;
-    result = this.i18n.t(result, {
-      lang: this.context.user.language || undefined,
-      defaultValue: result,
-    });
-
-    return result;
+    return Array.isArray(text) ? getRandomElement(text) : text;
   }
 
   /**
@@ -64,7 +49,7 @@ export class EnvelopeFactory {
   /**
    * Builds a text envelope by processing the provided text.
    *
-   * This method processes the input text for localization, then builds a text envelope
+   * This method normalizes the input text (string or array) and builds a text envelope
    * using the envelope builder.
    *
    * @param text - The text content or an array of text variants.
@@ -80,8 +65,8 @@ export class EnvelopeFactory {
   /**
    * Builds a quick replies envelope by processing the text and quick reply items.
    *
-   * Processes the input text for localization, then appends each processed quick reply
-   * (with localized title and payload) to the envelope before finalizing it.
+   * Processes the input text, then appends each processed quick reply
+   * (with processed title and payload) to the envelope before finalizing it.
    *
    * @param text - The text content or an array of text variants.
    * @param quickReplies - An array of quick reply objects.
@@ -146,8 +131,7 @@ export class EnvelopeFactory {
   /**
    * Builds an attachment envelope with the provided attachment payload.
    *
-   * Sets the attachment on the envelope and appends any quick replies after processing
-   * them for localization.
+   * Sets the attachment on the envelope and appends any quick replies after processing them.
    *
    * @param attachment - The attachment payload object.
    * @param quickReplies - Optional array of quick reply objects.
