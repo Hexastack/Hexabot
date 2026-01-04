@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { Message } from '@/chat/dto/message.dto';
-import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {
   LanguageModelProvider,
@@ -48,7 +48,7 @@ jest.mock(
 class TestLlmBaseAction extends LlmBaseAction<
   Record<string, unknown>,
   unknown,
-  ConversationalWorkflowContext
+  WorkflowRuntimeContext
 > {
   constructor(actionService: ActionService) {
     super(
@@ -121,10 +121,7 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.resolveModelId(settings);
   }
 
-  public buildPromptPublic(
-    input: unknown,
-    context: ConversationalWorkflowContext,
-  ) {
+  public buildPromptPublic(input: unknown, context: WorkflowRuntimeContext) {
     return this.buildPrompt(input as any, context);
   }
 
@@ -434,7 +431,7 @@ describe('LlmBaseAction', () => {
       const context = {
         initiatorId,
         services: { message: messageService },
-      } as unknown as ConversationalWorkflowContext;
+      } as unknown as WorkflowRuntimeContext;
       const result = await action.buildPromptPublic(
         {
           messages_limit: 2,
@@ -462,7 +459,7 @@ describe('LlmBaseAction', () => {
           prompt: 'Tell me a joke',
           system: 'system prompt',
         },
-        {} as ConversationalWorkflowContext,
+        {} as WorkflowRuntimeContext,
       );
 
       expect(result).toEqual({
@@ -475,7 +472,7 @@ describe('LlmBaseAction', () => {
       await expect(
         action.buildPromptPublic({ messages_limit: 1 }, {
           services: { message: { findLastMessages: jest.fn() } },
-        } as unknown as ConversationalWorkflowContext),
+        } as unknown as WorkflowRuntimeContext),
       ).rejects.toThrow(
         'A subscriber id is required to load previous messages for this action.',
       );
@@ -485,7 +482,7 @@ describe('LlmBaseAction', () => {
       await expect(
         action.buildPromptPublic(
           {} as unknown as Record<string, unknown>,
-          {} as ConversationalWorkflowContext,
+          {} as WorkflowRuntimeContext,
         ),
       ).rejects.toThrow(
         'Provide either "prompt" or "messages_limit" to build the model request.',
