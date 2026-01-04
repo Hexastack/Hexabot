@@ -45,7 +45,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:clear": "jest --clearCache",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "reset": "pnpm install && pnpm run containers:restart",
     "reset:hard": "pnpm install --force && pnpm run containers:rebuild",
     "cli": "HEXABOT_CLI=1 ts-node --files --log-error --compiler-options '{\"diagnostics\": true}' src/cli.ts"

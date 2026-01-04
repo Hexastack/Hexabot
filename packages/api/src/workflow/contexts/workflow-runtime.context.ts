@@ -8,7 +8,7 @@ import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { MessageService } from '@/chat';
+import { MessageService } from '@/chat/services/message.service';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';

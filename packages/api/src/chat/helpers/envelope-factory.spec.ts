@@ -6,7 +6,6 @@
 
 import { AttachmentPayload, FileType } from '../types/attachment';
 import { Button, ButtonType } from '../types/button';
-import { ChatContext } from '../types/chat-context';
 import {
   ContentElement,
   ContentPagination,
@@ -24,38 +23,19 @@ jest.mock('@/utils/helpers/safeRandom', () => ({
 
 describe('EnvelopeFactory', () => {
   let factory: EnvelopeFactory;
-  let context: ChatContext;
-  let settings: Settings;
-  let i18n: { t: jest.Mock };
 
   beforeEach(async () => {
-    context = {
-      user: { language: 'en', first_name: 'John', last_name: 'Doe', id: '123' },
-      vars: { phone: '123-456-7890' },
-    } as unknown as ChatContext;
-    settings = {
-      contact: {
-        company_name: 'John Inc.',
-        company_email: 'contact@john-inc.com',
-      },
-    } as Settings;
-    // For testing, i18n.t simply returns the provided text unchanged.
-    i18n = { t: jest.fn((text: string) => text) };
-    factory = new EnvelopeFactory(context, settings, i18n as any);
+    factory = new EnvelopeFactory();
   });
 
   describe('processText', () => {
-    it('should localize text when a string is provided without compiling templates', () => {
-      const input = 'Hello {{context.user.first_name}}';
+    it('returns the provided text when a string is provided', () => {
+      const input = 'Hello there';
       const result = factory.processText(input);
-      expect(result).toBe('Hello {{context.user.first_name}}');
-      expect(i18n.t).toHaveBeenCalledWith(input, {
-        lang: context.user.language,
-        defaultValue: input,
-      });
+      expect(result).toBe('Hello there');
     });
 
-    it('should process text when an array is provided (using the first element)', () => {
+    it('returns a consistent element when an array is provided', () => {
       const texts = ['First option', 'Second option'];
       const result = factory.processText(texts);
       expect(result).toBe('First option');

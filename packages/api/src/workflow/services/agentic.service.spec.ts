@@ -5,18 +5,17 @@
  */
 
 import { Workflow as AgentWorkflow } from '@hexabot-ai/agentic';
-import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { I18nService } from '@/i18n';
 import { LoggerService } from '@/logger/logger.service';
 import { messagingWorkflowDefinition } from '@/utils/test/fixtures/workflow';
 import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
-import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
+import type { ConversationalWorkflowContext } from '../contexts/conversational-workflow.context';
+import type { WorkflowContextFactory } from '../contexts/workflow-context-factory';
 import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
 import { WorkflowType } from '../types';
@@ -123,7 +122,6 @@ const buildEvent = (
 };
 
 describe('AgenticService', () => {
-  let testingModule: TestingModule;
   let service: AgenticService;
   let workflowService: jest.Mocked<WorkflowService>;
   let workflowRunService: jest.Mocked<WorkflowRunService>;
@@ -131,6 +129,7 @@ describe('AgenticService', () => {
   let workflowContextFactory: jest.Mocked<WorkflowContextFactory>;
   let workflowContext: jest.Mocked<ConversationalWorkflowContext>;
   let logger: jest.Mocked<LoggerService>;
+  let i18n: I18nService<Record<string, unknown>>;
 
   const mockActions = [
     { getName: () => 'send_text_message' },
@@ -159,12 +158,28 @@ describe('AgenticService', () => {
         ),
       ),
     } as unknown as jest.Mocked<ActionService>;
-    workflowContext =
-      new ConversationalWorkflowContext() as jest.Mocked<ConversationalWorkflowContext>;
+    workflowContext = {
+      state: {},
+      buildFromRun: jest.fn(function (
+        this: any,
+        run: WorkflowRunFull,
+        event: any,
+      ) {
+        this.state = {
+          ...(run.context ?? {}),
+          initiatorId: run.triggeredBy?.id,
+          workflowId: run.workflow.id,
+          runId: run.id,
+        };
+        this.event = event;
+
+        return this;
+      }),
+    } as unknown as jest.Mocked<ConversationalWorkflowContext>;
     workflowContextFactory = {
       create: jest.fn(async (run, event) => {
         if (run) {
-          return workflowContext.buildFromRun(run, event);
+          return (workflowContext as any).buildFromRun(run, event);
         }
 
         workflowContext.state = {};
@@ -179,20 +194,20 @@ describe('AgenticService', () => {
       debug: jest.fn(),
       log: jest.fn(),
     } as unknown as jest.Mocked<LoggerService>;
+    const i18nProvider = {
+      t: jest.fn((value: string) => value),
+      refreshDynamicTranslations: jest.fn(),
+    } as unknown as I18nService<Record<string, unknown>>;
 
-    const testing = await buildTestingMocks({
-      providers: [
-        AgenticService,
-        { provide: WorkflowService, useValue: workflowService },
-        { provide: WorkflowRunService, useValue: workflowRunService },
-        { provide: ActionService, useValue: actionService },
-        { provide: WorkflowContextFactory, useValue: workflowContextFactory },
-        { provide: LoggerService, useValue: logger },
-      ],
-    });
-
-    testingModule = testing.module;
-    [service] = await testing.getMocks([AgenticService]);
+    service = new AgenticService(
+      workflowService as unknown as WorkflowService,
+      workflowRunService as unknown as WorkflowRunService,
+      actionService as unknown as ActionService,
+      logger as unknown as LoggerService,
+      workflowContextFactory as unknown as WorkflowContextFactory,
+      i18nProvider,
+    );
+    i18n = i18nProvider;
   });
 
   afterEach(() => {
@@ -201,7 +216,6 @@ describe('AgenticService', () => {
   });
 
   afterAll(async () => {
-    await testingModule?.close();
     await closeTypeOrmConnections();
   });
 
@@ -378,7 +392,7 @@ describe('AgenticService', () => {
   });
 
   it('starts a new run when no suspension exists', async () => {
-    const subscriber = { id: 'subscriber-2' } as Subscriber;
+    const subscriber = { id: 'subscriber-2', language: 'fr' } as Subscriber;
     const event = buildEvent(subscriber, {
       channelData: { name: 'web', channel: 'test' },
       message: { text: 'Hello there' },
@@ -464,6 +478,30 @@ describe('AgenticService', () => {
     workflowContext.state = { existing: 'context' };
 
     await service.handleEvent(event);
+
+    const [, compileOptions] = (AgentWorkflow as any).fromDefinition.mock
+      .calls[0];
+    expect(compileOptions).toEqual(
+      expect.objectContaining({
+        actions: expect.objectContaining({
+          send_text_message: mockActions[0],
+          send_quick_replies: mockActions[1],
+        }),
+        jsonataFunctions: expect.objectContaining({
+          t: expect.any(Function),
+        }),
+      }),
+    );
+    const translate = (compileOptions as any).jsonataFunctions.t as (
+      key: string,
+      args?: Record<string, unknown>,
+    ) => unknown;
+    translate('Bye bye', { name: 'Hexa' });
+    expect(i18n.t as jest.Mock).toHaveBeenCalledWith('Bye bye', {
+      lang: subscriber.language,
+      defaultValue: 'Bye bye',
+      args: { name: 'Hexa' },
+    });
 
     const expectedContext = {
       greeting: true,

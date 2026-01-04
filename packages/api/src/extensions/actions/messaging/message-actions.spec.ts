@@ -168,7 +168,7 @@ describe('MessageAction base', () => {
   it('builds chat context by merging defaults, provided context, and sender data', async () => {
     const prepared = await (action as any).prepare(buildWorkflowContext());
 
-    expect(settingsService.getSettings).toHaveBeenCalledTimes(1);
+    expect(settingsService.getSettings).not.toHaveBeenCalled();
     expect(prepared.recipient).toBe(recipient);
     expect(prepared.envelopeFactory).toBeInstanceOf(EnvelopeFactory);
     expect(prepared.chatContext.vars).toEqual({

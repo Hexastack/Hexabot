@@ -29,10 +29,11 @@ describe('TranslationService', () => {
         tasks: {
           send_text: {
             action: 'send_text_message',
-            description: 'Send greeting',
+            description: '=$t("Task description to ignore")',
             inputs: {
-              text: 'Hello user',
-              nested: { caption: 'Nested caption' },
+              text: "=$t('Hello user')",
+              nested: { caption: '="Some prefix " & $t("Nested caption")' },
+              plain: 'Just text',
             },
           },
         },
@@ -49,9 +50,18 @@ describe('TranslationService', () => {
         tasks: {
           ask_choice: {
             action: 'send_quick_replies',
+            settings: {
+              prompt: '=$t("Settings prompt")',
+              nested: { fallback: '=$t("Nested settings fallback")' },
+            },
             inputs: {
-              title: 'Pick one',
-              items: ['One', 'Two'],
+              title: "=$t('Pick one')",
+              subtitle:
+                '="Join " & $t(\'First option\') & " and " & $t("Second option")',
+              items: ['=$t("One")', 'Two'],
+            },
+            outputs: {
+              choice_label: '=$t("Choice label")',
             },
           },
         },
@@ -103,22 +113,27 @@ describe('TranslationService', () => {
     ]);
   });
 
-  it('should return an array of strings from all workflows', async () => {
+  it('should collect translation strings declared via $t in workflow tasks', async () => {
     const strings = await service.getAllWorkflowStrings();
 
     expect(strings).toEqual(
       expect.arrayContaining([
-        'Workflow description',
-        'Internal workflow description',
-        'Send greeting',
         'Hello user',
         'Nested caption',
         'Pick one',
+        'First option',
+        'Second option',
         'One',
-        'Two',
+        'Choice label',
+        'Settings prompt',
+        'Nested settings fallback',
       ]),
     );
-    expect(strings).not.toContain('send_text_message');
+    expect(strings).not.toContain('Two');
+    expect(strings).not.toContain('Send greeting');
+    expect(strings).not.toContain('Workflow description');
+    expect(strings).not.toContain('Internal workflow description');
+    expect(strings).not.toContain('Task description to ignore');
   });
 
   it('should return the settings translation strings', async () => {
