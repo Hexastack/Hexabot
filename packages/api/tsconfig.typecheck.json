@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["src/*", "src/.hexabot/*", "src/extra/*"],
+      "hexabot/src/*": ["src/*", "src/.hexabot/*"],
+      "@hexabot-ai/agentic": ["../agentic/src"],
+      "@hexabot-ai/agentic/*": ["../agentic/src/*"]
+    }
+  }
+}
