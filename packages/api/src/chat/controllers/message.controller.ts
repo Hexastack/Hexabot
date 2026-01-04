@@ -165,7 +165,7 @@ export class MessageController extends BaseOrmController<
 
     event.setInitiator(subscriber);
     try {
-      const { mid } = await channelHandler.sendMessage(event, envelope, {}, {});
+      const { mid } = await channelHandler.sendMessage(event, envelope, {});
       // Trigger sent message event
       const sentMessage: Omit<OutgoingMessage, keyof BaseOrmEntity> = {
         mid,

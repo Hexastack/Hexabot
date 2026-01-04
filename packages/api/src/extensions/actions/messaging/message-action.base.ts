@@ -14,7 +14,6 @@ import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import { ChatContext } from '@/chat/types/chat-context';
 import {
   StdIncomingMessage,
   stdIncomingMessageSchema,
@@ -23,7 +22,6 @@ import {
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
-import { getDefaultChatContext } from '@/workflow/defaults/default-chat-context';
 
 const sentFormats = [
   'text',
@@ -64,7 +62,6 @@ interface PreparedMessageContext {
   event: ConversationalEventWrapper<any, any>;
   recipient: Subscriber;
   envelopeFactory: EnvelopeFactory;
-  chatContext: ChatContext;
 }
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
@@ -92,39 +89,6 @@ export abstract class MessageAction<
     return context.event;
   }
 
-  private buildChatContext(
-    event: ConversationalEventWrapper<any, any>,
-    chatContext?: ChatContext,
-  ) {
-    const defaults = getDefaultChatContext();
-    const base = chatContext ?? defaults;
-    const sender = event.getInitiator();
-    const mergedUser = {
-      ...defaults.user,
-      ...(base.user ?? {}),
-      ...(sender ?? {}),
-    } as Subscriber;
-    const mergedVars = {
-      ...defaults.vars,
-      ...(base.vars ?? {}),
-      ...(sender?.context?.vars ?? {}),
-    };
-
-    return {
-      ...defaults,
-      ...base,
-      vars: mergedVars,
-      skip: { ...defaults.skip, ...(base.skip ?? {}) },
-      user_location: {
-        ...defaults.user_location,
-        ...(base.user_location ?? {}),
-      },
-      attempt: base.attempt ?? defaults.attempt,
-      user: mergedUser,
-      channel: base.channel ?? event.getHandler().getName(),
-    } satisfies ChatContext;
-  }
-
   protected async prepare(
     context: ConversationalWorkflowContext,
   ): Promise<PreparedMessageContext> {
@@ -135,14 +99,12 @@ export abstract class MessageAction<
       throw new Error('Missing recipient on event');
     }
 
-    const chatContext = this.buildChatContext(event, context.chatContext);
     const envelopeFactory = new EnvelopeFactory();
 
     return {
       event,
       recipient,
       envelopeFactory,
-      chatContext,
     };
   }
 
@@ -152,7 +114,7 @@ export abstract class MessageAction<
     envelope: StdOutgoingMessageEnvelope,
     settings: S,
   ): Promise<MessageActionOutput> {
-    const { event, recipient, chatContext } = prepared;
+    const { event, recipient } = prepared;
     const eventEmitter = workflowContext.eventEmitter!;
     const { logger } = workflowContext.services;
     const options = this.resolveMessageOptions(settings);
@@ -161,7 +123,7 @@ export abstract class MessageAction<
     logger.debug('Sending action message ... ', event.getSenderForeignId());
     const response = await event
       .getHandler()
-      .sendMessage(event, envelope, sendOptions, chatContext);
+      .sendMessage(event, envelope, sendOptions);
 
     eventEmitter.emit('hook:stats:entry', BotStatsType.outgoing, 'Outgoing');
     eventEmitter.emit(

@@ -10,7 +10,6 @@ import { ActionService } from '@/actions/actions.service';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import { ChatContext } from '@/chat/types/chat-context';
 import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
@@ -60,14 +59,12 @@ describe('MessageAction base', () => {
   let recipient: any;
   let event: MockEvent;
   let workflow: { suspend: jest.Mock };
-  let baseContext: ChatContext;
 
   const buildWorkflowContext = (
     overrides: Partial<ConversationalWorkflowContext> = {},
   ): ConversationalWorkflowContext =>
     ({
       event,
-      chatContext: baseContext,
       services: {
         settings: settingsService,
         i18n,
@@ -119,23 +116,6 @@ describe('MessageAction base', () => {
     workflow = {
       suspend: jest.fn(),
     };
-    baseContext = {
-      vars: { fromContext: 'contextVar' },
-      user_location: { lat: 12, lon: 42 },
-      user: {
-        id: 'base-user',
-        firstName: 'Base',
-        lastName: 'User',
-        language: 'en',
-        context: { vars: { baseUser: 'foo' } },
-      } as any,
-      skip: { baseSkip: 1 },
-      attempt: 3,
-      channel: null,
-      text: 'hello',
-      payload: null,
-      nlp: null,
-    };
   });
 
   afterEach(() => {
@@ -165,28 +145,13 @@ describe('MessageAction base', () => {
     );
   });
 
-  it('builds chat context by merging defaults, provided context, and sender data', async () => {
+  it('prepares the recipient and envelope factory', async () => {
     const prepared = await (action as any).prepare(buildWorkflowContext());
 
     expect(settingsService.getSettings).not.toHaveBeenCalled();
     expect(prepared.recipient).toBe(recipient);
     expect(prepared.envelopeFactory).toBeInstanceOf(EnvelopeFactory);
-    expect(prepared.chatContext.vars).toEqual({
-      fromContext: 'contextVar',
-      sender: 'value',
-    });
-    expect(prepared.chatContext.user).toEqual(
-      expect.objectContaining({
-        firstName: 'Recipient',
-        lastName: 'User',
-        language: 'fr',
-      }),
-    );
-    expect(prepared.chatContext.skip).toEqual({ baseSkip: 1 });
-    expect(prepared.chatContext.user_location).toEqual({ lat: 12, lon: 42 });
-    expect(prepared.chatContext.attempt).toBe(3);
-    expect(prepared.chatContext.channel).toBe('web');
-    expect(handler.getName).toHaveBeenCalled();
+    expect((prepared as any).chatContext).toBeUndefined();
   });
 
   it('sends the message, emits stats, and returns sent metadata', async () => {
@@ -207,12 +172,9 @@ describe('MessageAction base', () => {
       'Sending action message ... ',
       'foreign-123',
     );
-    expect(handler.sendMessage).toHaveBeenCalledWith(
-      prepared.event,
-      envelope,
-      { typing: 200 },
-      prepared.chatContext,
-    );
+    expect(handler.sendMessage).toHaveBeenCalledWith(prepared.event, envelope, {
+      typing: 200,
+    });
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       'hook:stats:entry',
       BotStatsType.outgoing,
@@ -265,7 +227,6 @@ describe('MessageAction base', () => {
       prepared.event,
       envelope,
       {},
-      prepared.chatContext,
     );
     expect(result).toEqual({
       sent: {

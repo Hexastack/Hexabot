@@ -1269,7 +1269,6 @@ export default abstract class BaseWebChannelHandler<
    * @param event - Incoming event/message being responded to
    * @param envelope - The message to be sent {format, message}
    * @param options - Might contain additional settings
-   * @param _context - Contextual data
    *
    * @returns The web's response, otherwise an error
    */
@@ -1277,7 +1276,6 @@ export default abstract class BaseWebChannelHandler<
     event: WebEventWrapper<N>,
     envelope: StdOutgoingEnvelope,
     options: ActionOptions,
-    _context?: any,
   ): Promise<{ mid: string }> {
     const messageBase: Web.OutgoingMessageBase = await this._formatMessage(
       envelope,
