@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { generateObject, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
-import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { LlmBaseAction } from './llm-base.action';
 import {
@@ -25,7 +25,7 @@ import {
 export class LlmGenerateObjectAction extends LlmBaseAction<
   LlmGenerateObjectInput,
   LlmGenerateObjectOutput,
-  ConversationalWorkflowContext,
+  WorkflowRuntimeContext,
   LlmGenerateObjectSettings
 > {
   constructor(actionService: ActionService) {
@@ -48,7 +48,7 @@ export class LlmGenerateObjectAction extends LlmBaseAction<
     context,
   }: ActionExecutionArgs<
     LlmGenerateObjectInput,
-    ConversationalWorkflowContext,
+    WorkflowRuntimeContext,
     LlmGenerateObjectSettings
   >) {
     const logger = context.services.logger;
