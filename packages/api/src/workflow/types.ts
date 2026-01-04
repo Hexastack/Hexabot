@@ -11,8 +11,6 @@ import {
   WorkflowStartResult,
 } from '@hexabot-ai/agentic';
 
-import { ChatContext } from '@/chat/types/chat-context';
-
 import { WorkflowRunFull } from './dto/workflow-run.dto';
 import { Workflow } from './dto/workflow.dto';
 import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
@@ -53,6 +51,5 @@ export type RunStrategy = {
 export type WorkflowContextState = Record<string, unknown> & {
   initiatorId?: string;
   workflowId?: string;
-  chatContext?: ChatContext;
   runId?: string;
 };

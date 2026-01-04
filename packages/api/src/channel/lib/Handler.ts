@@ -206,7 +206,6 @@ export default abstract class ChannelHandler<
    * @param event - Incoming event/message being responded to
    * @param envelope - The message to be sent {format, message}
    * @param options - Might contain additional settings
-   * @param context - Contextual data
    * @returns {Promise} - The channel's response, otherwise an error
    
    */
@@ -214,7 +213,6 @@ export default abstract class ChannelHandler<
     event: ConversationalEventWrapper<any, any, N>,
     envelope: StdOutgoingEnvelope,
     options: any,
-    context: any,
   ): Promise<{ mid: string }>;
 
   /**
