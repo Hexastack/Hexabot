@@ -7,11 +7,13 @@
 import {
   Workflow as AgenticWorkflow,
   ExecutionState,
+  JsonataFunctionRegistry,
   WorkflowRunner,
 } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
+import { I18nService } from '@/i18n';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
@@ -32,6 +34,7 @@ export class AgenticService {
     private readonly actionService: ActionService,
     private readonly logger: LoggerService,
     private readonly workflowContextFactory: WorkflowContextFactory,
+    private readonly i18n: I18nService,
   ) {}
 
   /**
@@ -40,7 +43,7 @@ export class AgenticService {
    */
   async handleEvent(event: TriggerEventWrapper): Promise<void> {
     const intiator = event.getInitiator();
-    this.logger.debug('Handling incoming workflow event', event);
+    this.logger.debug('Handling incoming workflow event');
     if (!intiator) {
       this.logger.warn(
         'Skipping workflow execution due to missing event initiator',
@@ -102,6 +105,7 @@ export class AgenticService {
       run.workflow.definition,
       {
         actions: this.actionService.getRegistry(),
+        jsonataFunctions: this.buildJsonataFunctions(event),
       },
     );
     const context = await this.workflowContextFactory.create(run, event);
@@ -166,6 +170,24 @@ export class AgenticService {
       strategy.resumeData,
       context,
     );
+  }
+
+  /**
+   * Build JSONata helpers scoped to the workflow initiator language.
+   */
+  private buildJsonataFunctions(
+    event: TriggerEventWrapper,
+  ): JsonataFunctionRegistry {
+    const initiatorLanguage = event.getInitiator()?.language || undefined;
+
+    return {
+      t: (key: string, args?: Record<string, unknown>) =>
+        this.i18n.t(key, {
+          lang: initiatorLanguage,
+          defaultValue: key,
+          args,
+        }),
+    };
   }
 
   /**

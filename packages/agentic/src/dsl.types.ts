@@ -306,6 +306,8 @@ export type Settings = z.infer<typeof SettingsSchema>;
 
 export type TaskDefinition = z.infer<typeof TaskDefinitionSchema>;
 
+export type TaskDefinitions = z.infer<typeof WorkflowDefinitionSchema>['tasks'];
+
 export type WorkflowMetadata = z.infer<typeof WorkflowMetadataSchema>;
 
 export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;

@@ -4,8 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import type {
+  JsonValue,
+  TaskDefinition,
+  TaskDefinitions,
+} from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import jsonata from 'jsonata';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -41,43 +47,8 @@ export class TranslationService extends BaseOrmService<
   }
 
   /**
-   * Collect user-facing strings declared inside a workflow definition by
-   * recursively traversing its content and extracting string leaves while
-   * skipping structural keys (action identifiers, ids, etc).
-   *
-   * @param node - Arbitrary JSON node inside the workflow definition.
-   */
-  private collectStrings(node: unknown, keyPath: string[] = []): string[] {
-    if (node == null) {
-      return [];
-    }
-
-    if (typeof node === 'string') {
-      const trimmed = node.trim();
-
-      return trimmed ? [trimmed] : [];
-    }
-
-    if (Array.isArray(node)) {
-      return node.flatMap((value) => this.collectStrings(value, keyPath));
-    }
-
-    if (typeof node === 'object') {
-      return Object.entries(node as Record<string, unknown>).flatMap(
-        ([key, value]) => {
-          return this.shouldSkipKey(key)
-            ? []
-            : this.collectStrings(value, keyPath.concat(key));
-        },
-      );
-    }
-
-    return [];
-  }
-
-  /**
-   * Return any available string inside workflow definitions (task inputs,
-   * descriptions, etc.).
+   * Return workflow strings marked for translation via $t() inside task
+   * JSONata expressions.
    *
    * @returns A promise of all strings available in a array
    */
@@ -86,19 +57,17 @@ export class TranslationService extends BaseOrmService<
     const allStrings: string[] = [];
 
     for (const workflow of workflows) {
-      if (workflow.description) {
-        allStrings.push(workflow.description);
-      }
-
-      if (!workflow.definition) {
+      if (!workflow.definition?.tasks) {
         continue;
       }
 
       try {
-        allStrings.push(...this.collectStrings(workflow.definition));
+        allStrings.push(
+          ...this.collectTaskTranslationStrings(workflow.definition.tasks),
+        );
       } catch (err) {
         this.logger.warn(
-          `Unable to collect strings from workflow ${workflow.id}`,
+          `Unable to collect workflow translations from ${workflow.id}`,
           err,
         );
       }
@@ -137,11 +106,151 @@ export class TranslationService extends BaseOrmService<
   }
 
   /**
-   * Skip structural keys when extracting strings from workflow definitions.
+   * Recursively traverse workflow tasks and collect strings passed to $t() in
+   * JSONata expressions.
    */
-  private shouldSkipKey(key: string): boolean {
-    const lowered = key.toLowerCase();
+  private collectTaskTranslationStrings(tasks: TaskDefinitions): string[] {
+    if (tasks == null || typeof tasks !== 'object') {
+      return [];
+    }
 
-    return ['action', 'do', 'next', 'id', 'name', 'version'].includes(lowered);
+    return Object.values(tasks).flatMap((task) =>
+      this.collectTaskDefinitionTranslations(task),
+    );
+  }
+
+  /**
+   * Collect translation strings only from the task sections that can hold
+   * user-facing expressions.
+   */
+  private collectTaskDefinitionTranslations(task: TaskDefinition): string[] {
+    const translatableSections: Array<JsonValue | undefined> = [
+      task.inputs as JsonValue | undefined,
+      task.outputs as JsonValue | undefined,
+      task.settings as JsonValue | undefined,
+    ];
+
+    return translatableSections.flatMap((section) =>
+      this.collectTranslationsFromValue(section),
+    );
+  }
+
+  private collectTranslationsFromValue(node: JsonValue | undefined): string[] {
+    if (node == null) {
+      return [];
+    }
+
+    if (typeof node === 'string') {
+      return this.extractTranslationsFromExpression(node);
+    }
+
+    if (Array.isArray(node)) {
+      return node.flatMap((value) => this.collectTranslationsFromValue(value));
+    }
+
+    if (typeof node === 'object') {
+      return Object.values(node as Record<string, JsonValue>).flatMap((value) =>
+        this.collectTranslationsFromValue(value),
+      );
+    }
+
+    return [];
+  }
+
+  /**
+   * Extract translation keys from a JSONata expression string.
+   */
+  private extractTranslationsFromExpression(expression: string): string[] {
+    const trimmed = expression.trim();
+
+    if (!trimmed.startsWith('=')) {
+      return [];
+    }
+
+    try {
+      const ast = jsonata(trimmed.slice(1)).ast();
+
+      return this.collectTranslationsFromAst(ast);
+    } catch (err) {
+      this.logger.warn('Unable to parse JSONata expression for translations', {
+        expression: trimmed,
+        error: err instanceof Error ? err.message : String(err),
+      });
+
+      return [];
+    }
+  }
+
+  /**
+   * Walk JSONata AST to collect translation keys.
+   */
+  private collectTranslationsFromAst(
+    node: unknown,
+    seen: Set<unknown> = new Set(),
+  ): string[] {
+    if (node == null || typeof node !== 'object') {
+      return [];
+    }
+
+    if (seen.has(node)) {
+      return [];
+    }
+    seen.add(node);
+
+    const current: string[] = [];
+    const typedNode = node as Record<string, unknown>;
+
+    if (this.isTranslateCall(typedNode)) {
+      const args = (typedNode.arguments as unknown[]) ?? [];
+      current.push(
+        ...args.flatMap((arg) => {
+          if (
+            arg &&
+            typeof arg === 'object' &&
+            (arg as any).type === 'string'
+          ) {
+            const value = (arg as any).value as string;
+            const cleaned = value?.trim();
+
+            return cleaned ? [cleaned] : [];
+          }
+
+          return [];
+        }),
+      );
+    }
+
+    Object.values(typedNode).forEach((value) => {
+      if (typeof value === 'object' && value !== null) {
+        current.push(...this.collectTranslationsFromAst(value, seen));
+      }
+    });
+
+    return current;
+  }
+
+  private isTranslateCall(node: Record<string, unknown>): boolean {
+    if (node.type !== 'function') {
+      return false;
+    }
+
+    const procedure = node.procedure as Record<string, unknown> | undefined;
+    if (!procedure) {
+      return false;
+    }
+
+    if (
+      procedure.type === 'path' &&
+      Array.isArray(procedure.steps) &&
+      (procedure.steps[0] as any)?.value === 't'
+    ) {
+      return true;
+    }
+
+    if (procedure.type === 'variable' && procedure.value === 't') {
+      return true;
+    }
+
+    return false;
   }
 }
