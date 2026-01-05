@@ -28,8 +28,7 @@ import { BotStatsRepository } from '../repositories/bot-stats.repository';
 export class BotStatsService extends BaseOrmService<
   BotStatsOrmEntity,
   BotStatsTransformerDto,
-  BotStatsActionDto,
-  BotStatsRepository
+  BotStatsActionDto
 > {
   constructor(readonly repository: BotStatsRepository) {
     super(repository);

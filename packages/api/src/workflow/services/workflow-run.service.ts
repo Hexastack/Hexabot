@@ -28,8 +28,7 @@ type StateUpdate = {
 export class WorkflowRunService extends BaseOrmService<
   WorkflowRunOrmEntity,
   WorkflowRunTransformerDto,
-  WorkflowRunDtoConfig,
-  WorkflowRunRepository
+  WorkflowRunDtoConfig
 > {
   /**
    * Creates the service with the underlying repository injected.
