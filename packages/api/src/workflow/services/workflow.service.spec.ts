@@ -16,13 +16,9 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import defaultWorkflowDefinition from '../defaults/default-workflow';
 import { Workflow } from '../dto/workflow.dto';
-import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
-import { WorkflowOrmEntity } from '../entities/workflow.entity';
-import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
 
-import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowService (TypeORM)', () => {
@@ -49,15 +45,9 @@ describe('WorkflowService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        WorkflowService,
-        WorkflowRepository,
-        WorkflowRunService,
-        WorkflowRunRepository,
-      ],
+      providers: [WorkflowService],
       typeorm: {
-        entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
-        fixtures: [installUserFixturesTypeOrm],
+        fixtures: installUserFixturesTypeOrm,
       },
     });
 

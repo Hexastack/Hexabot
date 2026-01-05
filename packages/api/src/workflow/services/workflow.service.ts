@@ -69,7 +69,7 @@ export class WorkflowService extends BaseOrmService<
       const creator = await this.getRepository()
         .getManager()
         .getRepository(UserOrmEntity)
-        .findOne({ select: ['id'], order: { createdAt: 'ASC' } });
+        .findOne({ select: ['id'], order: { createdAt: 'ASC' }, where: {} });
 
       if (!creator?.id) {
         this.logger.warn(
