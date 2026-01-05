@@ -13,7 +13,7 @@ import {
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
-import { I18nService } from '@/i18n';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
@@ -41,7 +41,10 @@ export class AgenticService {
    * Process an event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleEvent(event: TriggerEventWrapper): Promise<void> {
+  async handleEvent(
+    event: TriggerEventWrapper,
+    workflow?: WorkflowDto,
+  ): Promise<void> {
     const intiator = event.getInitiator();
     this.logger.debug('Handling incoming workflow event');
     if (!intiator) {
@@ -68,20 +71,21 @@ export class AgenticService {
         return;
       }
 
-      const workflow = await this.workflowService.pickWorkflow();
-      if (!workflow) {
+      const workflowToRun =
+        workflow ?? (await this.workflowService.pickWorkflow());
+      if (!workflowToRun) {
         this.logger.warn('No workflow available to handle incoming event');
 
         return;
       }
 
-      this.logger.log('Starting workflow run from latest definition', {
-        workflowId: workflow.id,
+      this.logger.log('Starting workflow run', {
+        workflowId: workflowToRun.id,
       });
 
       await this.runWorkflow({
         mode: 'start',
-        workflow,
+        workflow: workflowToRun,
         event,
       });
     } catch (err) {

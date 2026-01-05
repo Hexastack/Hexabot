@@ -7,6 +7,10 @@
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
+import {
+  installUserFixturesTypeOrm,
+  userFixtureIds,
+} from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -27,6 +31,7 @@ describe('WorkflowService (TypeORM)', () => {
   let workflowRepository: WorkflowRepository;
   let workflow: Workflow;
   let counter = 0;
+  let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
     workflow: {
@@ -52,6 +57,7 @@ describe('WorkflowService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
+        fixtures: [installUserFixturesTypeOrm],
       },
     });
 
@@ -64,6 +70,7 @@ describe('WorkflowService (TypeORM)', () => {
 
   beforeEach(async () => {
     await workflowRepository.deleteMany();
+    creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
@@ -73,6 +80,7 @@ describe('WorkflowService (TypeORM)', () => {
       definition,
       type: WorkflowType.conversational,
       schedule: null,
+      createdBy: creatorId,
     });
   });
 
@@ -111,6 +119,7 @@ describe('WorkflowService (TypeORM)', () => {
       definition: workflow.definition,
       type: WorkflowType.conversational,
       schedule: null,
+      createdBy: creatorId,
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();

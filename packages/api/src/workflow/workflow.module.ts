@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms';
+import { UserModule } from '@/user';
 
 import { ConversationalWorkflowContext } from './contexts/conversational-workflow.context';
 import { ManualWorkflowContext } from './contexts/manual-workflow.context';
@@ -28,6 +29,7 @@ import { WorkflowService } from './services/workflow.service';
     TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
     forwardRef(() => CmsModule),
     forwardRef(() => ChatModule),
+    UserModule,
   ],
   controllers: [WorkflowController],
   providers: [

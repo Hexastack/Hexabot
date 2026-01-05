@@ -7,6 +7,10 @@
 import { WorkflowDefinition, WorkflowSnapshot } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
+import {
+  installUserFixturesTypeOrm,
+  userFixtureIds,
+} from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -30,6 +34,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   let workflow: Workflow;
   let workflowRun: WorkflowRun;
   let counter = 0;
+  let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
     workflow: {
@@ -64,6 +69,7 @@ describe('WorkflowRunService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
+        fixtures: [installUserFixturesTypeOrm],
       },
     });
 
@@ -84,6 +90,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   beforeEach(async () => {
     await workflowRunRepository.deleteMany();
     await workflowRepository.deleteMany();
+    creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
@@ -93,6 +100,7 @@ describe('WorkflowRunService (TypeORM)', () => {
       description: 'Workflow for run tests',
       type: WorkflowType.conversational,
       schedule: null,
+      createdBy: creatorId,
     });
 
     workflowRun = await workflowRunService.create({

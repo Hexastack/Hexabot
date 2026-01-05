@@ -5,64 +5,83 @@
  */
 
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
-import { userFixtureIds } from '@/utils/test/fixtures/user';
-import {
-  installScheduledWorkflowFixturesTypeOrm,
-  scheduledWorkflowDefinition,
-} from '@/utils/test/fixtures/workflow';
+import { UserRepository } from '@/user/repositories/user.repository';
+import { UserService } from '@/user/services/user.service';
+import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import {
   closeTypeOrmConnections,
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 import { WorkflowRepository } from '@/workflow/repositories/workflow.repository';
 import { WorkflowType } from '@/workflow/types';
+
+import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 
 import { AgenticService } from './agentic.service';
 import { WorkflowSchedulerService } from './workflow-scheduler.service';
 import { WorkflowService } from './workflow.service';
 
-describe('WorkflowSchedulerService', () => {
-  let service: WorkflowSchedulerService;
+describe('WorkflowSchedulerService (TypeORM)', () => {
+  let module: TestingModule;
+  let schedulerService: WorkflowSchedulerService;
   let workflowService: WorkflowService;
-  let agenticService: jest.Mocked<AgenticService>;
-  let schedulerRegistry: jest.Mocked<SchedulerRegistry>;
-  let logger: jest.Mocked<LoggerService>;
-  let registeredJobs: { name: string; job: CronJob }[];
+  let schedulerRegistry: SchedulerRegistry;
+  let workflow: Workflow;
 
-  beforeEach(async () => {
-    registeredJobs = [];
-    agenticService = {
-      handleEvent: jest.fn(),
-    } as unknown as jest.Mocked<AgenticService>;
-    schedulerRegistry = {
-      getCronJob: jest.fn(() => {
-        throw new Error('not found');
-      }),
-      addCronJob: jest.fn((name, job) => {
-        registeredJobs.push({ name, job: job as CronJob });
-      }),
-      deleteCronJob: jest.fn(),
-    } as unknown as jest.Mocked<SchedulerRegistry>;
-    logger = {
-      debug: jest.fn(),
-      warn: jest.fn(),
-      log: jest.fn(),
-      error: jest.fn(),
-    } as unknown as jest.Mocked<LoggerService>;
+  const agenticServiceMock = {
+    handleEvent: jest.fn(),
+  };
+  const loggerMock = {
+    log: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    error: jest.fn(),
+  };
+  const flushCronCallbacks = async () =>
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  const clearCronJobs = () => {
+    if (!schedulerRegistry) {
+      return;
+    }
 
-    const { getMocks } = await buildTestingMocks({
+    schedulerRegistry.getCronJobs().forEach((job, name) => {
+      job.stop();
+      schedulerRegistry.deleteCronJob(name);
+    });
+  };
+  const reloadScheduledWorkflow = async () => {
+    await workflowService.getRepository().deleteMany();
+    await installScheduledWorkflowFixturesTypeOrm(getLastTypeOrmDataSource());
+    const [scheduled] = await workflowService.find({
+      where: { type: WorkflowType.scheduled },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!scheduled) {
+      throw new Error('Expected scheduled workflow fixtures');
+    }
+
+    workflow = scheduled as Workflow;
+  };
+  const getJobName = () => `workflow:${workflow.id}`;
+
+  beforeAll(async () => {
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
       providers: [
         WorkflowSchedulerService,
         WorkflowService,
         WorkflowRepository,
-        { provide: AgenticService, useValue: agenticService },
-        { provide: SchedulerRegistry, useValue: schedulerRegistry },
-        { provide: LoggerService, useValue: logger },
+        UserService,
+        UserRepository,
+        { provide: AgenticService, useValue: agenticServiceMock },
+        { provide: LoggerService, useValue: loggerMock },
       ],
       typeorm: {
         entities: [WorkflowOrmEntity],
@@ -70,113 +89,82 @@ describe('WorkflowSchedulerService', () => {
       },
     });
 
-    [service, workflowService] = await getMocks([
-      WorkflowSchedulerService,
-      WorkflowService,
-    ]);
+    module = testing.module;
+    [schedulerService, workflowService, schedulerRegistry] =
+      await testing.getMocks([
+        WorkflowSchedulerService,
+        WorkflowService,
+        SchedulerRegistry,
+      ]);
   });
 
-  afterEach(async () => {
-    registeredJobs.forEach(({ job }) => job.stop());
+  beforeEach(async () => {
     jest.clearAllMocks();
+    clearCronJobs();
+    agenticServiceMock.handleEvent.mockResolvedValue(undefined);
+    await reloadScheduledWorkflow();
+  });
+
+  afterAll(async () => {
+    clearCronJobs();
+    if (module) {
+      await module.close();
+    }
     await closeTypeOrmConnections();
   });
 
-  it('logs a debug message when no scheduled workflows exist', async () => {
-    const dataSource = getLastTypeOrmDataSource();
-    const repository = dataSource.getRepository(WorkflowOrmEntity);
-    await repository.clear();
+  it('registers cron jobs for scheduled workflows and triggers the agent handler', async () => {
+    await schedulerService.onModuleInit();
+    const job = schedulerRegistry.getCronJob(getJobName());
 
-    await service.onModuleInit();
-
-    expect(logger.debug).toHaveBeenCalledWith(
-      'No scheduled workflows to register',
-    );
-    expect(schedulerRegistry.addCronJob).not.toHaveBeenCalled();
-  });
-
-  it('skips workflows missing a schedule or initiator', async () => {
-    const dataSource = getLastTypeOrmDataSource();
-    const repository = dataSource.getRepository(WorkflowOrmEntity);
-    await repository.clear();
-    await repository.save([
-      repository.create({
-        name: 'missing-schedule',
-        version: '1.0.0',
-        type: WorkflowType.scheduled,
-        schedule: null,
-        createdBy: { id: userFixtureIds.admin },
-        definition: scheduledWorkflowDefinition,
-      }),
-      repository.create({
-        name: 'missing-initiator',
-        version: '1.0.0',
-        type: WorkflowType.scheduled,
-        schedule: '*/5 * * * * *',
-        createdBy: null,
-        definition: scheduledWorkflowDefinition,
-      }),
-    ]);
-
-    await service.onModuleInit();
-
-    const workflows = await workflowService.findAndPopulate({
-      where: { type: WorkflowType.scheduled },
-    });
-    expect(workflows).toHaveLength(2);
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Skipping scheduled workflow without a cron expression',
-      expect.any(String),
-    );
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Skipping scheduled workflow without an initiator',
-      expect.any(String),
-    );
-    expect(schedulerRegistry.addCronJob).not.toHaveBeenCalled();
-  });
-
-  it('registers cron jobs for scheduled workflows and forwards events to the agentic service', async () => {
-    const [workflow] = await workflowService.findAndPopulate({
-      where: { type: WorkflowType.scheduled },
-    });
-    expect(workflow).toBeDefined();
-    const jobName = `workflow:${workflow.id}`;
-    const existingJob = { stop: jest.fn() } as unknown as CronJob;
-    schedulerRegistry.getCronJob.mockReturnValueOnce(existingJob);
-
-    await service.onModuleInit();
-
-    expect(existingJob.stop).toHaveBeenCalled();
-    expect(schedulerRegistry.deleteCronJob).toHaveBeenCalledWith(jobName);
-    expect(schedulerRegistry.addCronJob).toHaveBeenCalledWith(
-      jobName,
-      expect.any(CronJob),
-    );
-
-    const [{ job }] = registeredJobs;
-    expect(job.running).toBe(true);
-
-    const eventHandled = new Promise<void>((resolve) => {
-      agenticService.handleEvent.mockImplementationOnce(async () => resolve());
-    });
     job.fireOnTick();
-    await eventHandled;
+    await flushCronCallbacks();
 
-    expect(agenticService.handleEvent).toHaveBeenCalledTimes(1);
-    const event = agenticService.handleEvent.mock.calls[0][0];
-    expect(event.getInitiator()?.id).toEqual(workflow.createdBy?.id);
-    expect(event.getContextData()).toEqual(
+    expect(agenticServiceMock.handleEvent).toHaveBeenCalledTimes(1);
+    const [eventArg, workflowArg] =
+      agenticServiceMock.handleEvent.mock.calls[0];
+    expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
+    expect(eventArg.getContextData()).toEqual(
       expect.objectContaining({
         schedule: workflow.schedule,
+        triggered_at: expect.any(Date),
       }),
     );
-    expect(event.getMetadata().triggered_at).toBeInstanceOf(Date);
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Registered scheduled workflow',
-      expect.objectContaining({
-        workflowId: workflow.id,
-        schedule: workflow.schedule,
-      }),
+    expect(eventArg.getInitiator()).toEqual(
+      expect.objectContaining({ id: workflow.createdBy }),
     );
+    expect(workflowArg.id).toBe(workflow.id);
+  });
+
+  it('replaces an existing cron job when re-registering workflows', async () => {
+    await schedulerService.onModuleInit();
+    const existingJob = schedulerRegistry.getCronJob(getJobName());
+    const stopSpy = jest.spyOn(existingJob, 'stop');
+
+    await schedulerService.onModuleInit();
+
+    const replacementJob = schedulerRegistry.getCronJob(getJobName());
+
+    expect(stopSpy).toHaveBeenCalledTimes(1);
+    expect(replacementJob).not.toBe(existingJob);
+  });
+
+  it('skips workflows that are missing a schedule', async () => {
+    await workflowService.updateOne(workflow.id, { schedule: null });
+
+    await schedulerService.onModuleInit();
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+    expect(agenticServiceMock.handleEvent).not.toHaveBeenCalled();
+  });
+
+  it('skips workflows that lack an initiator', async () => {
+    await workflowService.updateOne(workflow.id, {
+      createdBy: null as unknown as string,
+    });
+
+    await schedulerService.onModuleInit();
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
 });

@@ -7,7 +7,11 @@
 import { randomUUID } from 'crypto';
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
-import { NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -15,13 +19,17 @@ import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { userFixtureIds } from '@/utils/test/fixtures/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
+  installScheduledWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
   messagingWorkflowFixtures,
 } from '@/utils/test/fixtures/workflow';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WorkflowRepository } from '@/workflow/repositories/workflow.repository';
 
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
+import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 
@@ -31,10 +39,14 @@ describe('WorkflowController (TypeORM)', () => {
   let module: TestingModule;
   let workflowController: WorkflowController;
   let workflowService: WorkflowService;
+  let agenticService: jest.Mocked<AgenticService>;
   let logger: LoggerService;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
 
+  const agenticServiceMock: jest.Mocked<AgenticService> = {
+    handleEvent: jest.fn(),
+  } as unknown as jest.Mocked<AgenticService>;
   const buildWorkflowPayload = () => {
     const definition: WorkflowDefinition = {
       workflow: {
@@ -56,15 +68,23 @@ describe('WorkflowController (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       definition,
+      createdBy: userFixtureIds.admin,
     };
   };
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
       controllers: [WorkflowController],
+      providers: [
+        WorkflowService,
+        WorkflowRepository,
+        { provide: AgenticService, useValue: agenticServiceMock },
+      ],
       typeorm: {
-        fixtures: installMessagingWorkflowFixturesTypeOrm,
+        fixtures: [
+          installMessagingWorkflowFixturesTypeOrm,
+          installScheduledWorkflowFixturesTypeOrm,
+        ],
       },
     });
 
@@ -73,6 +93,7 @@ describe('WorkflowController (TypeORM)', () => {
       WorkflowController,
       WorkflowService,
     ]);
+    agenticService = agenticServiceMock;
     logger = workflowController.logger;
   });
 
@@ -216,6 +237,75 @@ describe('WorkflowController (TypeORM)', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         `Unable to delete Workflow by id ${id}`,
       );
+    });
+  });
+
+  describe('runManually', () => {
+    it('runs a scheduled workflow for an authenticated user', async () => {
+      const scheduled = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.scheduled,
+        schedule: '*/5 * * * * *',
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(scheduled.id);
+      const input = { run: true };
+      const userId = userFixtureIds.admin;
+      const result = await workflowController.runManually(scheduled.id, input, {
+        session: { passport: { user: { id: userId } } },
+      } as any);
+
+      expect(agenticService.handleEvent).toHaveBeenCalledTimes(1);
+      const [eventArg, workflowArg] = agenticService.handleEvent.mock.calls[0];
+      expect(workflowArg?.id).toEqual(scheduled.id);
+      expect(eventArg).toBeInstanceOf(ManualEventWrapper);
+      expect(eventArg.buildInput()).toEqual(input);
+      expect(eventArg.getInitiator()?.id).toEqual(userId);
+      expect(eventArg.getMetadata()).toEqual(
+        expect.objectContaining({
+          trigger: WorkflowType.manual,
+          initiated_by: userId,
+        }),
+      );
+      expect(result).toEqual({ accepted: true });
+    });
+
+    it('rejects manual execution for conversational workflows', async () => {
+      const [conversational] = await workflowService.find({
+        where: { type: WorkflowType.conversational },
+        take: 1,
+      });
+      expect(conversational).toBeDefined();
+
+      await expect(
+        workflowController.runManually(conversational.id, {}, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Workflow must be manual or scheduled to run manually',
+        ),
+      );
+      expect(agenticService.handleEvent).not.toHaveBeenCalled();
+    });
+
+    it('throws when user session is missing', async () => {
+      const scheduled = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.scheduled,
+        schedule: '*/5 * * * * *',
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(scheduled.id);
+
+      await expect(
+        workflowController.runManually(scheduled.id, {}, {} as any),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Only authenticated users can run workflows manually',
+        ),
+      );
+      expect(agenticService.handleEvent).not.toHaveBeenCalled();
     });
   });
 });

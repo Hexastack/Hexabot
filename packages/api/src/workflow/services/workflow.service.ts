@@ -6,6 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import defaultWorkflowDefinition from '../defaults/default-workflow';
@@ -65,6 +66,19 @@ export class WorkflowService extends BaseOrmService<
         return existing;
       }
 
+      const creator = await this.getRepository()
+        .getManager()
+        .getRepository(UserOrmEntity)
+        .findOne({ select: ['id'], order: { createdAt: 'ASC' } });
+
+      if (!creator?.id) {
+        this.logger.warn(
+          'Unable to ensure default workflow exists: missing creator',
+        );
+
+        return null;
+      }
+
       return await this.create({
         name: defaultWorkflowDefinition.workflow.name,
         version: defaultWorkflowDefinition.workflow.version,
@@ -72,6 +86,7 @@ export class WorkflowService extends BaseOrmService<
         definition: defaultWorkflowDefinition,
         type: WorkflowType.conversational,
         schedule: null,
+        createdBy: creator.id,
       });
     } catch (err) {
       this.logger.error('Unable to ensure default workflow exists', err);

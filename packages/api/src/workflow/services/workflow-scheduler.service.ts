@@ -9,6 +9,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 
 import { LoggerService } from '@/logger/logger.service';
+import { UserService } from '@/user';
 
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 import { WorkflowType } from '../types';
@@ -23,6 +24,7 @@ export class WorkflowSchedulerService implements OnModuleInit {
     private readonly agenticService: AgenticService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly logger: LoggerService,
+    private readonly userService: UserService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -30,7 +32,7 @@ export class WorkflowSchedulerService implements OnModuleInit {
   }
 
   private async registerScheduledWorkflows(): Promise<void> {
-    const workflows = await this.workflowService.findAndPopulate({
+    const workflows = await this.workflowService.find({
       where: { type: WorkflowType.scheduled },
     });
 
@@ -51,6 +53,17 @@ export class WorkflowSchedulerService implements OnModuleInit {
       }
 
       if (!workflow.createdBy) {
+        this.logger.warn(
+          'Skipping scheduled workflow without an initiator',
+          workflow.id,
+        );
+
+        continue;
+      }
+
+      const initiator = await this.userService.findOne(workflow.createdBy);
+
+      if (!initiator) {
         this.logger.warn(
           'Skipping scheduled workflow without an initiator',
           workflow.id,
@@ -81,8 +94,8 @@ export class WorkflowSchedulerService implements OnModuleInit {
             schedule: workflow.schedule,
             triggeredAt,
           });
-          event.setInitiator(workflow.createdBy!);
-          await this.agenticService.handleEvent(event);
+          event.setInitiator(initiator);
+          await this.agenticService.handleEvent(event, workflow);
         });
 
         this.schedulerRegistry.addCronJob(jobName, job);

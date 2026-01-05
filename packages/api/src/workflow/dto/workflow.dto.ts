@@ -50,14 +50,14 @@ export class WorkflowStub extends BaseStub {
 @Exclude()
 export class Workflow extends WorkflowStub {
   @Expose({ name: 'createdById' })
-  createdBy?: string | null;
+  createdBy!: string;
 }
 
 @Exclude()
 export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => User)
-  createdBy?: User | null;
+  createdBy!: User;
 }
 
 export class WorkflowNewDto {
@@ -102,12 +102,11 @@ export class WorkflowNewDto {
 }
 
 export class WorkflowCreateDto extends WorkflowNewDto {
-  @ApiPropertyOptional({ description: 'Workflow creator', type: String })
-  @IsOptional()
+  @ApiProperty({ description: 'Workflow creator', type: String })
   @IsUUIDv4({
     message: 'createdBy must be a valid UUID',
   })
-  createdBy?: string | null;
+  createdBy!: string;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{
