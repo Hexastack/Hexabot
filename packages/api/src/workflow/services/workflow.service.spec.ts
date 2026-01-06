@@ -6,6 +6,7 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
+import { stringify } from 'yaml';
 
 import {
   installUserFixturesTypeOrm,
@@ -63,11 +64,12 @@ describe('WorkflowService (TypeORM)', () => {
     creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
+    const definitionYaml = stringify(definition);
     workflow = await workflowService.create({
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
-      definition,
+      definitionYaml,
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
@@ -106,7 +108,7 @@ describe('WorkflowService (TypeORM)', () => {
       name: workflow.name,
       version: workflow.version,
       description: workflow.description ?? undefined,
-      definition: workflow.definition,
+      definitionYaml: stringify(workflow.definition),
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,

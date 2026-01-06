@@ -259,6 +259,9 @@ importers:
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
+      yaml:
+        specifier: ^2.5.0
+        version: 2.8.1
       zod:
         specifier: ^3.24.1
         version: 3.25.76

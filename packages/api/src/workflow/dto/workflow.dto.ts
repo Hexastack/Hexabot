@@ -6,11 +6,10 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
-  IsObject,
   IsOptional,
   IsString,
   ValidateIf,
@@ -24,6 +23,8 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
+import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
+import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { WorkflowType } from '../types';
 
 @Exclude()
@@ -44,6 +45,14 @@ export class WorkflowStub extends BaseStub {
   schedule?: string | null;
 
   @Expose()
+  definitionYaml!: string;
+
+  @Expose()
+  @Transform(({ obj }) =>
+    obj?.definition
+      ? obj.definition
+      : parseWorkflowDefinition(obj.definitionYaml),
+  )
   definition!: WorkflowDefinition;
 }
 
@@ -95,10 +104,11 @@ export class WorkflowNewDto {
   @IsString()
   schedule?: string | null;
 
-  @ApiProperty({ description: 'Workflow definition', type: Object })
+  @ApiProperty({ description: 'Workflow definition as YAML', type: String })
   @IsNotEmpty()
-  @IsObject()
-  definition!: WorkflowDefinition;
+  @IsString()
+  @IsWorkflowYaml()
+  definitionYaml!: string;
 }
 
 export class WorkflowCreateDto extends WorkflowNewDto {
