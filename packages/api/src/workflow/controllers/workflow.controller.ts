@@ -5,6 +5,7 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,10 +17,12 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
+import { UserService } from '@/user';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -34,7 +37,10 @@ import {
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
+import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
+import { WorkflowType } from '../types';
 
 @Controller('workflow')
 export class WorkflowController extends BaseOrmController<
@@ -42,7 +48,11 @@ export class WorkflowController extends BaseOrmController<
   WorkflowTransformerDto,
   WorkflowDtoConfig
 > {
-  constructor(private readonly workflowService: WorkflowService) {
+  constructor(
+    private readonly workflowService: WorkflowService,
+    private readonly agenticService: AgenticService,
+    private readonly userService: UserService,
+  ) {
     super(workflowService);
   }
 
@@ -58,9 +68,17 @@ export class WorkflowController extends BaseOrmController<
     @Body() workflowCreateDto: WorkflowNewDto,
     @Req() req: Request,
   ): Promise<Workflow> {
+    const userId = req.session?.passport?.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Only authenticated users can create workflows',
+      );
+    }
+
     return await this.workflowService.create({
       ...workflowCreateDto,
-      createdBy: req.session?.passport?.user?.id,
+      createdBy: userId,
     });
   }
 
@@ -75,7 +93,14 @@ export class WorkflowController extends BaseOrmController<
   async findMany(
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
-        allowedFields: ['name', 'version', 'description', 'createdBy.id'],
+        allowedFields: [
+          'name',
+          'version',
+          'description',
+          'type',
+          'schedule',
+          'createdBy.id',
+        ],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -151,5 +176,50 @@ export class WorkflowController extends BaseOrmController<
     }
 
     return result;
+  }
+
+  /**
+   * Manually triggers a workflow run for manual or scheduled workflows.
+   *
+   * @param id - The workflow ID to execute.
+   * @param input - Optional workflow input payload.
+   * @param req - Express request containing the authenticated session.
+   */
+  @Post(':id/run')
+  @HttpCode(202)
+  async runManually(
+    @Param('id') id: string,
+    @Body('input') input: Record<string, unknown> = {},
+    @Req() req: Request,
+  ): Promise<{ accepted: true }> {
+    const userId = req.session?.passport?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Only authenticated users can run workflows manually',
+      );
+    }
+
+    const workflow = await this.workflowService.findOne(id);
+    if (!workflow) {
+      this.logger.warn(`Unable to run Workflow by id ${id}`);
+      throw new NotFoundException(`Workflow with ID ${id} not found`);
+    }
+
+    if (
+      workflow.type !== WorkflowType.manual &&
+      workflow.type !== WorkflowType.scheduled
+    ) {
+      throw new BadRequestException(
+        'Workflow must be manual or scheduled to run manually',
+      );
+    }
+
+    const event = new ManualEventWrapper(input ?? {}, userId);
+    const initiator = await this.userService.findOne(userId);
+    event.setInitiator(initiator!);
+
+    await this.agenticService.handleEvent(event, workflow);
+
+    return { accepted: true };
   }
 }

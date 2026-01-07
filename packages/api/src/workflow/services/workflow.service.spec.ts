@@ -7,17 +7,18 @@
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
+import {
+  installUserFixturesTypeOrm,
+  userFixtureIds,
+} from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import defaultWorkflowDefinition from '../defaults/default-workflow';
 import { Workflow } from '../dto/workflow.dto';
-import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
-import { WorkflowOrmEntity } from '../entities/workflow.entity';
-import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
-import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowService (TypeORM)', () => {
@@ -26,6 +27,7 @@ describe('WorkflowService (TypeORM)', () => {
   let workflowRepository: WorkflowRepository;
   let workflow: Workflow;
   let counter = 0;
+  let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
     workflow: {
@@ -43,14 +45,9 @@ describe('WorkflowService (TypeORM)', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        WorkflowService,
-        WorkflowRepository,
-        WorkflowRunService,
-        WorkflowRunRepository,
-      ],
+      providers: [WorkflowService],
       typeorm: {
-        entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
+        fixtures: installUserFixturesTypeOrm,
       },
     });
 
@@ -63,6 +60,7 @@ describe('WorkflowService (TypeORM)', () => {
 
   beforeEach(async () => {
     await workflowRepository.deleteMany();
+    creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
@@ -70,6 +68,9 @@ describe('WorkflowService (TypeORM)', () => {
       version: definition.workflow.version,
       description: definition.workflow.description,
       definition,
+      type: WorkflowType.conversational,
+      schedule: null,
+      createdBy: creatorId,
     });
   });
 
@@ -95,6 +96,8 @@ describe('WorkflowService (TypeORM)', () => {
       version: workflow.version,
       description: workflow.description,
       definition: workflow.definition,
+      type: WorkflowType.conversational,
+      schedule: null,
     });
   });
 
@@ -104,6 +107,9 @@ describe('WorkflowService (TypeORM)', () => {
       version: workflow.version,
       description: workflow.description ?? undefined,
       definition: workflow.definition,
+      type: WorkflowType.conversational,
+      schedule: null,
+      createdBy: creatorId,
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();
@@ -126,6 +132,8 @@ describe('WorkflowService (TypeORM)', () => {
       name: defaultWorkflowDefinition.workflow.name,
       version: defaultWorkflowDefinition.workflow.version,
       description: defaultWorkflowDefinition.workflow.description,
+      type: WorkflowType.conversational,
+      schedule: null,
     });
   });
 });

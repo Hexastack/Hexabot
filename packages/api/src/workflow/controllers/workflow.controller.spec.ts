@@ -7,22 +7,35 @@
 import { randomUUID } from 'crypto';
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
-import { NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
+import { ActionService } from '@/actions/actions.service';
+import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { userFixtureIds } from '@/utils/test/fixtures/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
+  installScheduledWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
   messagingWorkflowFixtures,
 } from '@/utils/test/fixtures/workflow';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ManualWorkflowContext } from '../contexts/manual-workflow.context';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
+import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
+import { WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
 
@@ -30,7 +43,9 @@ describe('WorkflowController (TypeORM)', () => {
   let module: TestingModule;
   let workflowController: WorkflowController;
   let workflowService: WorkflowService;
+  let agenticService: AgenticService;
   let logger: LoggerService;
+  let actionService: ActionService;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
 
@@ -42,9 +57,12 @@ describe('WorkflowController (TypeORM)', () => {
         description: 'Workflow controller test definition',
       },
       tasks: {
-        greet: { action: 'send_text_message', inputs: { text: '="Hi"' } },
+        send_greeting: {
+          action: 'send_text_message',
+          inputs: { text: '="Hi"' },
+        },
       },
-      flow: [{ do: 'greet' }],
+      flow: [{ do: 'send_greeting' }],
       outputs: { result: '=1' },
     };
 
@@ -52,7 +70,10 @@ describe('WorkflowController (TypeORM)', () => {
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
+      type: WorkflowType.conversational,
+      schedule: null,
       definition,
+      createdBy: userFixtureIds.admin,
     };
   };
 
@@ -60,17 +81,32 @@ describe('WorkflowController (TypeORM)', () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [WorkflowController],
+      providers: [
+        {
+          provide: ModuleRef,
+          useValue: {
+            resolve: () => new ManualWorkflowContext(),
+          },
+        },
+        I18nServiceProvider,
+      ],
       typeorm: {
-        fixtures: installMessagingWorkflowFixturesTypeOrm,
+        fixtures: [
+          installMessagingWorkflowFixturesTypeOrm,
+          installScheduledWorkflowFixturesTypeOrm,
+        ],
       },
     });
-
     module = testingModule;
-    [workflowController, workflowService] = await getMocks([
-      WorkflowController,
-      WorkflowService,
-    ]);
+    [agenticService, workflowController, workflowService, actionService] =
+      await getMocks([
+        AgenticService,
+        WorkflowController,
+        WorkflowService,
+        ActionService,
+      ]);
     logger = workflowController.logger;
+    actionService.register(new SendTextMessageAction(actionService));
   });
 
   afterEach(async () => {
@@ -213,6 +249,77 @@ describe('WorkflowController (TypeORM)', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         `Unable to delete Workflow by id ${id}`,
       );
+    });
+  });
+
+  describe('runManually', () => {
+    it('runs a scheduled workflow for an authenticated user', async () => {
+      const scheduled = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.scheduled,
+        schedule: '*/5 * * * * *',
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(scheduled.id);
+      const input = { run: true };
+      const userId = userFixtureIds.admin;
+      const spyAgenticService = jest.spyOn(agenticService, 'handleEvent');
+      const result = await workflowController.runManually(scheduled.id, input, {
+        session: { passport: { user: { id: userId } } },
+      } as any);
+      expect(spyAgenticService).toHaveBeenCalledTimes(1);
+      spyAgenticService.mockImplementation(async (eventArg, workflowArg) => {
+        expect(workflowArg?.id).toEqual(scheduled.id);
+        expect(eventArg).toBeInstanceOf(ManualEventWrapper);
+        expect(eventArg.buildInput()).toEqual(input);
+        expect(eventArg.getInitiator()?.id).toEqual(userId);
+        expect(eventArg.getMetadata()).toEqual(
+          expect.objectContaining({
+            trigger: WorkflowType.manual,
+            initiated_by: userId,
+          }),
+        );
+      });
+
+      expect(result).toEqual({ accepted: true });
+    });
+
+    it('rejects manual execution for conversational workflows', async () => {
+      const [conversational] = await workflowService.find({
+        where: { type: WorkflowType.conversational },
+        take: 1,
+      });
+      expect(conversational).toBeDefined();
+
+      await expect(
+        workflowController.runManually(conversational.id, {}, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Workflow must be manual or scheduled to run manually',
+        ),
+      );
+      expect(agenticService.handleEvent).not.toHaveBeenCalled();
+    });
+
+    it('throws when user session is missing', async () => {
+      const scheduled = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.scheduled,
+        schedule: '*/5 * * * * *',
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(scheduled.id);
+
+      await expect(
+        workflowController.runManually(scheduled.id, {}, {} as any),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Only authenticated users can run workflows manually',
+        ),
+      );
+      expect(agenticService.handleEvent).not.toHaveBeenCalled();
     });
   });
 });

@@ -7,6 +7,10 @@
 import { WorkflowDefinition, WorkflowSnapshot } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
+import {
+  installUserFixturesTypeOrm,
+  userFixtureIds,
+} from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -16,6 +20,7 @@ import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
@@ -29,6 +34,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   let workflow: Workflow;
   let workflowRun: WorkflowRun;
   let counter = 0;
+  let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
     workflow: {
@@ -63,6 +69,7 @@ describe('WorkflowRunService (TypeORM)', () => {
       ],
       typeorm: {
         entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
+        fixtures: [installUserFixturesTypeOrm],
       },
     });
 
@@ -83,6 +90,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   beforeEach(async () => {
     await workflowRunRepository.deleteMany();
     await workflowRepository.deleteMany();
+    creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
@@ -90,6 +98,9 @@ describe('WorkflowRunService (TypeORM)', () => {
       version: definition.workflow.version,
       definition,
       description: 'Workflow for run tests',
+      type: WorkflowType.conversational,
+      schedule: null,
+      createdBy: creatorId,
     });
 
     workflowRun = await workflowRunService.create({

@@ -17,6 +17,7 @@ import {
   DataSource,
   DeepPartial,
   EntityMetadata,
+  EntityManager,
   EntitySubscriberInterface,
   FindManyOptions,
   FindOneOptions,
@@ -106,6 +107,10 @@ export abstract class BaseOrmRepository<
 
   getEventEmitter(): EventEmitter2 {
     return this.eventEmitter;
+  }
+
+  getManager(): EntityManager {
+    return this.repository.manager;
   }
 
   @Inject(EventEmitter2)

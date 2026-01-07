@@ -7,7 +7,14 @@
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
@@ -16,6 +23,8 @@ import {
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
+
+import { WorkflowType } from '../types';
 
 @Exclude()
 export class WorkflowStub extends BaseStub {
@@ -29,20 +38,26 @@ export class WorkflowStub extends BaseStub {
   description?: string | null;
 
   @Expose()
+  type!: WorkflowType;
+
+  @Expose()
+  schedule?: string | null;
+
+  @Expose()
   definition!: WorkflowDefinition;
 }
 
 @Exclude()
 export class Workflow extends WorkflowStub {
   @Expose({ name: 'createdById' })
-  createdBy?: string | null;
+  createdBy!: string;
 }
 
 @Exclude()
 export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => User)
-  createdBy?: User | null;
+  createdBy!: User;
 }
 
 export class WorkflowNewDto {
@@ -61,6 +76,25 @@ export class WorkflowNewDto {
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({
+    description: 'Workflow trigger type',
+    enumName: 'WorkflowType',
+    enum: WorkflowType,
+    default: WorkflowType.conversational,
+  })
+  @IsOptional()
+  @IsEnum(WorkflowType)
+  type: WorkflowType = WorkflowType.conversational;
+
+  @ApiPropertyOptional({
+    description: 'Cron expression used when the workflow is scheduled',
+    type: String,
+  })
+  @ValidateIf((payload) => payload.schedule !== undefined)
+  @IsOptional()
+  @IsString()
+  schedule?: string | null;
+
   @ApiProperty({ description: 'Workflow definition', type: Object })
   @IsNotEmpty()
   @IsObject()
@@ -68,12 +102,11 @@ export class WorkflowNewDto {
 }
 
 export class WorkflowCreateDto extends WorkflowNewDto {
-  @ApiPropertyOptional({ description: 'Workflow creator', type: String })
-  @IsOptional()
+  @ApiProperty({ description: 'Workflow creator', type: String })
   @IsUUIDv4({
     message: 'createdBy must be a valid UUID',
   })
-  createdBy?: string | null;
+  createdBy!: string;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{
