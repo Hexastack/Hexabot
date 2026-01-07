@@ -5,6 +5,7 @@
  */
 
 import { forwardRef, Module } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
@@ -22,6 +23,7 @@ import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { AgenticService } from './services/agentic.service';
 import { WorkflowRunService } from './services/workflow-run.service';
+import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowService } from './services/workflow.service';
 
 @Module({
@@ -37,6 +39,8 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     WorkflowService,
     WorkflowRunService,
+    SchedulerRegistry,
+    WorkflowSchedulerService,
     ConversationalWorkflowContext,
     ManualWorkflowContext,
     ScheduledWorkflowContext,
