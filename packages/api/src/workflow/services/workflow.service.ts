@@ -9,7 +9,9 @@ import { Injectable } from '@nestjs/common';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import defaultWorkflowDefinition from '../defaults/default-workflow';
+import defaultWorkflowDefinition, {
+  defaultWorkflowDefinitionYaml,
+} from '../defaults/default-workflow';
 import {
   Workflow as WorkflowDto,
   WorkflowDtoConfig,
@@ -83,7 +85,7 @@ export class WorkflowService extends BaseOrmService<
         name: defaultWorkflowDefinition.workflow.name,
         version: defaultWorkflowDefinition.workflow.version,
         description: defaultWorkflowDefinition.workflow.description,
-        definition: defaultWorkflowDefinition,
+        definitionYaml: defaultWorkflowDefinitionYaml,
         type: WorkflowType.conversational,
         schedule: null,
         createdBy: creator.id,

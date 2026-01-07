@@ -15,11 +15,11 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
+import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { WorkflowType } from '../types';
 
 @Entity({ name: 'workflows' })
@@ -61,7 +61,30 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @RelationId((workflow: WorkflowOrmEntity) => workflow.createdBy)
   private readonly createdById?: string | null;
 
+  /** Raw YAML workflow definition provided by the user. */
+  @Column({ name: 'definition_yaml', type: 'text' })
+  definitionYaml!: string;
+
   /** Structured workflow definition consumed by the agent runtime. */
-  @JsonColumn()
-  definition!: WorkflowDefinition;
+  get definition(): WorkflowDefinition {
+    if (
+      this.definitionCache?.yaml === this.definitionYaml &&
+      this.definitionCache.definition
+    ) {
+      return this.definitionCache.definition;
+    }
+
+    const parsed = parseWorkflowDefinition(this.definitionYaml);
+    this.definitionCache = {
+      yaml: this.definitionYaml,
+      definition: parsed,
+    };
+
+    return parsed;
+  }
+
+  private definitionCache?: {
+    yaml: string;
+    definition: WorkflowDefinition;
+  };
 }

@@ -5,6 +5,7 @@
  */
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { stringify } from 'yaml';
 
 /**
  * Minimal fallback workflow used when no custom workflows are configured.
@@ -33,5 +34,9 @@ export const defaultWorkflowDefinition: WorkflowDefinition = {
       '=$exists($output.send_default_reply.text) ? $output.send_default_reply.text : ""',
   },
 };
+
+export const defaultWorkflowDefinitionYaml = stringify(
+  defaultWorkflowDefinition,
+);
 
 export default defaultWorkflowDefinition;

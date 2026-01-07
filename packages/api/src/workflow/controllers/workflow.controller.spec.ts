@@ -6,7 +6,6 @@
 
 import { randomUUID } from 'crypto';
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import {
   BadRequestException,
   NotFoundException,
@@ -14,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
+import { stringify } from 'yaml';
 
 import { ActionService } from '@/actions/actions.service';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
@@ -24,6 +24,7 @@ import {
   installMessagingWorkflowFixturesTypeOrm,
   installScheduledWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
+  messagingWorkflowDefinitionYaml,
   messagingWorkflowFixtures,
 } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -33,6 +34,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { ManualWorkflowContext } from '../contexts/manual-workflow.context';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
@@ -50,7 +52,7 @@ describe('WorkflowController (TypeORM)', () => {
   let counter = 0;
 
   const buildWorkflowPayload = () => {
-    const definition: WorkflowDefinition = {
+    const definition = {
       workflow: {
         name: `workflow_${++counter}`,
         version: `1.0.${counter}`,
@@ -72,7 +74,7 @@ describe('WorkflowController (TypeORM)', () => {
       description: definition.workflow.description,
       type: WorkflowType.conversational,
       schedule: null,
-      definition,
+      definitionYaml: stringify(definition),
       createdBy: userFixtureIds.admin,
     };
   };
@@ -136,7 +138,13 @@ describe('WorkflowController (TypeORM)', () => {
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(
-        [messagingWorkflowFixtures[0]],
+        [
+          {
+            ...messagingWorkflowFixtures[0],
+            definition: messagingWorkflowDefinition,
+            definitionYaml: messagingWorkflowDefinitionYaml,
+          },
+        ],
         [...IGNORED_TEST_FIELDS],
       );
     });
@@ -156,9 +164,14 @@ describe('WorkflowController (TypeORM)', () => {
         ...payload,
         createdBy: userId,
       });
-      expect(created).toEqualPayload({ ...payload, createdBy: userId }, [
-        ...IGNORED_TEST_FIELDS,
-      ]);
+      expect(created).toEqualPayload(
+        {
+          ...payload,
+          definition: parseWorkflowDefinition(payload.definitionYaml),
+          createdBy: userId,
+        },
+        [...IGNORED_TEST_FIELDS],
+      );
     });
   });
 

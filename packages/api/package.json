@@ -110,6 +110,7 @@
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.27",
     "uuid": "^9.0.1",
+    "yaml": "^2.5.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
