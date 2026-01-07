@@ -6,7 +6,7 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { generateObject, jsonSchema } from 'ai';
+import { Output, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -65,6 +65,11 @@ export class LlmGenerateObjectAction extends LlmBaseAction<
     const { stopSequences: _stopSequences, ...callSettings } =
       this.buildCallSettings(settings);
     const structuredSchema = jsonSchema(input.schema);
+    const output = Output.object({
+      schema: structuredSchema,
+      name: input.schema_name,
+      description: input.schema_description,
+    });
 
     logger.debug(
       `Calling model "${modelId}" via llm_generate_object action using provider "${providerName}"`,
@@ -74,18 +79,20 @@ export class LlmGenerateObjectAction extends LlmBaseAction<
       },
     );
 
-    const result = await generateObject({
+    const result = await generateText({
       ...promptPayload,
       ...callSettings,
       model,
-      schema: structuredSchema,
-      schemaName: input.schema_name,
-      schemaDescription: input.schema_description,
+      output,
     });
 
     return {
-      object: result.object,
-      reasoning: result.reasoning,
+      object: result.output,
+      reasoning:
+        result.reasoningText ??
+        (result.reasoning?.length
+          ? result.reasoning.map((part) => part.text).join('\n')
+          : undefined),
       finish_reason: result.finishReason,
       model: modelId,
       usage: this.normalizeUsage(result.usage),

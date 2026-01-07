@@ -5,9 +5,15 @@
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
-import { LanguageModelV2, ProviderV2 } from '@ai-sdk/provider';
+import { ProviderV2, ProviderV3 } from '@ai-sdk/provider';
 import { ActionMetadata } from '@hexabot-ai/agentic';
-import { LanguageModelUsage, ModelMessage, hasToolCall, stepCountIs } from 'ai';
+import {
+  LanguageModel,
+  LanguageModelUsage,
+  ModelMessage,
+  hasToolCall,
+  stepCountIs,
+} from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
@@ -28,9 +34,13 @@ export type ProviderInitOptions = {
 };
 
 export type LanguageModelProvider =
-  | (ProviderV2 & {
-      (modelId: string): LanguageModelV2;
+  | (ProviderV3 & {
+      (modelId: string): LanguageModel;
     })
+  | (ProviderV2 & {
+      (modelId: string): LanguageModel;
+    })
+  | ProviderV3
   | ProviderV2;
 
 type ToolDefinition = {
@@ -447,12 +457,36 @@ export abstract class LlmBaseAction<
       return undefined;
     }
 
+    const hasInputDetails =
+      usage.inputTokenDetails?.noCacheTokens !== undefined ||
+      usage.inputTokenDetails?.cacheReadTokens !== undefined ||
+      usage.inputTokenDetails?.cacheWriteTokens !== undefined;
+    const hasOutputDetails =
+      usage.outputTokenDetails?.textTokens !== undefined ||
+      usage.outputTokenDetails?.reasoningTokens !== undefined;
+
     return {
       input_tokens: usage.inputTokens,
       output_tokens: usage.outputTokens,
       total_tokens: usage.totalTokens,
-      reasoning_tokens: usage.reasoningTokens,
-      cached_input_tokens: usage.cachedInputTokens,
+      reasoning_tokens:
+        usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens,
+      cached_input_tokens:
+        usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens,
+      input_token_details: hasInputDetails
+        ? {
+            no_cache_tokens: usage.inputTokenDetails?.noCacheTokens,
+            cache_read_tokens: usage.inputTokenDetails?.cacheReadTokens,
+            cache_write_tokens: usage.inputTokenDetails?.cacheWriteTokens,
+          }
+        : undefined,
+      output_token_details: hasOutputDetails
+        ? {
+            text_tokens: usage.outputTokenDetails?.textTokens,
+            reasoning_tokens: usage.outputTokenDetails?.reasoningTokens,
+          }
+        : undefined,
+      raw: usage.raw,
     };
   }
 

@@ -530,18 +530,36 @@ describe('LlmBaseAction', () => {
     it('normalizes usage fields to snake_case', () => {
       const normalized = action.normalizeUsagePublic({
         inputTokens: 10,
+        inputTokenDetails: {
+          noCacheTokens: 6,
+          cacheReadTokens: 3,
+          cacheWriteTokens: 1,
+        },
         outputTokens: 20,
+        outputTokenDetails: {
+          textTokens: 18,
+          reasoningTokens: 5,
+        },
         totalTokens: 30,
-        reasoningTokens: 5,
-        cachedInputTokens: 2,
-      } as LanguageModelUsage);
+        raw: { billable_units: 10 },
+      } as unknown as LanguageModelUsage);
 
       expect(normalized).toEqual({
         input_tokens: 10,
         output_tokens: 20,
         total_tokens: 30,
         reasoning_tokens: 5,
-        cached_input_tokens: 2,
+        cached_input_tokens: 3,
+        input_token_details: {
+          no_cache_tokens: 6,
+          cache_read_tokens: 3,
+          cache_write_tokens: 1,
+        },
+        output_token_details: {
+          text_tokens: 18,
+          reasoning_tokens: 5,
+        },
+        raw: { billable_units: 10 },
       });
     });
   });

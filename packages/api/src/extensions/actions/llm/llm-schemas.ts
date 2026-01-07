@@ -38,6 +38,20 @@ export const llmUsageSchema = z.object({
   total_tokens: z.number().int().nonnegative().optional(),
   reasoning_tokens: z.number().int().nonnegative().optional(),
   cached_input_tokens: z.number().int().nonnegative().optional(),
+  input_token_details: z
+    .object({
+      no_cache_tokens: z.number().int().nonnegative().optional(),
+      cache_read_tokens: z.number().int().nonnegative().optional(),
+      cache_write_tokens: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
+  output_token_details: z
+    .object({
+      text_tokens: z.number().int().nonnegative().optional(),
+      reasoning_tokens: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
+  raw: z.record(z.any()).optional(),
 });
 
 export const llmRawResponseSchema = z.object({
