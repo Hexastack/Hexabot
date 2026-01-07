@@ -8,6 +8,7 @@ import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { ActionService } from '@/actions';
 import { MessageService } from '@/chat/services/message.service';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
@@ -46,6 +47,9 @@ export abstract class WorkflowRuntimeContext<
   @Inject(forwardRef(() => MessageService))
   protected readonly message: MessageService;
 
+  @Inject(ActionService)
+  protected readonly actionService: ActionService;
+
   constructor() {
     super({} as WorkflowContextState);
   }
@@ -58,6 +62,7 @@ export abstract class WorkflowRuntimeContext<
       content: this.content,
       contentType: this.contentType,
       message: this.message,
+      actions: this.actionService,
     };
   }
 

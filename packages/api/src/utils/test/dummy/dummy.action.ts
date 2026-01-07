@@ -4,13 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  SettingsSchema as BaseSettingsSchema,
-  BaseWorkflowContext,
-} from '@hexabot-ai/agentic';
+import { SettingsSchema as BaseSettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { createAction } from '@/actions/create-action';
+import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 const InputSchema = z.object({
   message: z.string(),
@@ -30,7 +28,7 @@ type ActionSettings = z.infer<typeof ActionSettingsSchema>;
 export const DummyAction = createAction<
   Input,
   Output,
-  BaseWorkflowContext,
+  WorkflowRuntimeContext,
   ActionSettings
 >({
   name: 'dummy_action',

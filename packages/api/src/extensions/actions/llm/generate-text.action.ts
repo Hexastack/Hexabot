@@ -6,7 +6,7 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { generateText } from 'ai';
+import { ToolSet, generateText } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -62,12 +62,24 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     const model = this.createModel(provider, modelId);
     const promptPayload = await this.buildPrompt(input, context);
     const callSettings = this.buildCallSettings(settings);
+    const tools = this.buildTools(context, settings.tools) as
+      | ToolSet
+      | undefined;
+    const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
+      settings,
+      tools,
+    );
 
     logger.debug(
       `Calling model "${modelId}" via llm_generate_text action using provider "${providerName}"`,
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
+        tools: settings.tools,
+        stop_when: {
+          step_count: stepCount,
+          tool_call: toolCall,
+        },
       },
     );
 
@@ -75,6 +87,8 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       ...promptPayload,
       ...callSettings,
       model,
+      tools,
+      ...(stopWhen ? { stopWhen } : {}),
     });
 
     return {

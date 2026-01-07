@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { generateText } from 'ai';
+import { generateText, hasToolCall, stepCountIs } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -13,6 +13,17 @@ import { LlmGenerateTextAction } from './generate-text.action';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
+  stepCountIs: jest.fn((count: number) =>
+    jest.fn(({ steps }) => steps.length === count),
+  ),
+  hasToolCall: jest.fn((toolName: string) =>
+    jest.fn(
+      ({ steps }) =>
+        steps[steps.length - 1]?.toolCalls?.some(
+          (toolCall: any) => toolCall.toolName === toolName,
+        ) ?? false,
+    ),
+  ),
 }));
 
 describe('LlmGenerateTextAction', () => {
@@ -20,6 +31,12 @@ describe('LlmGenerateTextAction', () => {
   let actionService: ActionService;
   const generateTextMock = generateText as jest.MockedFunction<
     typeof generateText
+  >;
+  const stepCountIsMock = stepCountIs as jest.MockedFunction<
+    typeof stepCountIs
+  >;
+  const hasToolCallMock = hasToolCall as jest.MockedFunction<
+    typeof hasToolCall
   >;
   const logger = { debug: jest.fn() };
   const defaultRetries = {
@@ -29,8 +46,10 @@ describe('LlmGenerateTextAction', () => {
     jitter: 0,
     multiplier: 1,
   };
-  const createContext = () =>
-    ({ services: { logger } }) as unknown as WorkflowRuntimeContext;
+  const createContext = (services: Record<string, unknown> = {}) =>
+    ({
+      services: { logger, ...services },
+    }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -97,24 +116,31 @@ describe('LlmGenerateTextAction', () => {
     expect(buildPromptSpy).toHaveBeenCalledWith(input, context);
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
-    expect(generateTextMock).toHaveBeenCalledWith({
-      prompt: 'Hello there',
-      system: 'system prompt',
-      temperature: 0.7,
-      topP: 0.8,
-      topK: 5,
-      presencePenalty: 0.1,
-      frequencyPenalty: -0.2,
-      stopSequences: ['stop'],
-      maxOutputTokens: 50,
-      seed: 7,
-      model: 'model-instance',
-    });
+    expect(generateTextMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: 'Hello there',
+        system: 'system prompt',
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 5,
+        presencePenalty: 0.1,
+        frequencyPenalty: -0.2,
+        stopSequences: ['stop'],
+        maxOutputTokens: 50,
+        seed: 7,
+        model: 'model-instance',
+      }),
+    );
     expect(logger.debug).toHaveBeenCalledWith(
       'Calling model "gpt-4o-mini" via llm_generate_text action using provider "openai"',
       {
         provider: 'openai',
         base_url: 'https://api.openai.com',
+        tools: undefined,
+        stop_when: {
+          step_count: undefined,
+          tool_call: undefined,
+        },
       },
     );
     expect(result).toEqual({
@@ -135,6 +161,119 @@ describe('LlmGenerateTextAction', () => {
         warnings: ['warn'],
       },
     });
+  });
+
+  it('defaults stopWhen to the number of provided tools', async () => {
+    const provider = Object.assign(
+      jest.fn().mockReturnValue('model-instance'),
+      {
+        languageModel: jest.fn(),
+      },
+    );
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo',
+        inputSchema: {},
+        outputSchema: {},
+        run: jest.fn(),
+      }),
+    };
+    const context = createContext({ actions: actionsService });
+
+    jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
+    jest.spyOn(action as any, 'buildPrompt');
+    jest.spyOn(action as any, 'buildCallSettings');
+    jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
+    generateTextMock.mockResolvedValue({
+      text: 'Generated text',
+      finishReason: 'stop',
+      request: { foo: 'req' },
+      response: { status: 200 },
+      providerMetadata: {},
+      warnings: [],
+    } as any);
+
+    const settings = {
+      provider: 'openai',
+      timeout_ms: 0,
+      retries: defaultRetries,
+      model: 'gpt-4o-mini',
+      api_key: 'test-key',
+      tools: ['search', 'translate', 'search'],
+    };
+    const input = { prompt: 'Hello there' };
+
+    const result = await action.execute({ input, settings, context });
+    const stopWhen = (generateTextMock.mock.calls[0][0] as any).stopWhen;
+
+    expect(stepCountIsMock).toHaveBeenCalledWith(2);
+    expect(typeof stopWhen).toBe('function');
+    expect(stopWhen({ steps: [{}, {}] })).toBe(true);
+    expect(stopWhen({ steps: [{}] })).toBe(false);
+    expect(result.text).toBe('Generated text');
+  });
+
+  it('combines step count and tool call stop conditions from settings', async () => {
+    const provider = Object.assign(
+      jest.fn().mockReturnValue('model-instance'),
+      {
+        languageModel: jest.fn(),
+      },
+    );
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo',
+        inputSchema: {},
+        outputSchema: {},
+        run: jest.fn(),
+      }),
+    };
+    const context = createContext({ actions: actionsService });
+
+    jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
+    jest.spyOn(action as any, 'buildPrompt');
+    jest.spyOn(action as any, 'buildCallSettings');
+    jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
+    generateTextMock.mockResolvedValue({
+      text: 'Generated text',
+      finishReason: 'stop',
+      request: { foo: 'req' },
+      response: { status: 200 },
+      providerMetadata: {},
+      warnings: [],
+    } as any);
+
+    const settings = {
+      provider: 'openai',
+      timeout_ms: 0,
+      retries: defaultRetries,
+      model: 'gpt-4o-mini',
+      api_key: 'test-key',
+      tools: ['search'],
+      stop_step_count: 5,
+      stop_tool_call: 'finalize',
+    };
+    const input = { prompt: 'Hello there' };
+
+    await action.execute({ input, settings, context });
+    const stopWhen = (generateTextMock.mock.calls[0][0] as any)
+      .stopWhen as Array<(params: any) => boolean>;
+
+    expect(Array.isArray(stopWhen)).toBe(true);
+    expect(stepCountIsMock).toHaveBeenCalledWith(5);
+    expect(hasToolCallMock).toHaveBeenCalledWith('finalize');
+    expect(stopWhen[0]({ steps: new Array(5).fill({}) })).toBe(true);
+    expect(stopWhen[0]({ steps: new Array(4).fill({}) })).toBe(false);
+    expect(
+      stopWhen[1]({
+        steps: [{ toolCalls: [{ toolName: 'finalize' }] }],
+      }),
+    ).toBe(true);
+    expect(
+      stopWhen[1]({
+        steps: [{ toolCalls: [{ toolName: 'other' }] }],
+      }),
+    ).toBe(false);
   });
 
   it('throws when the model id is missing', async () => {
