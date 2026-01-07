@@ -7,12 +7,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { LanguageModelV2, ProviderV2 } from '@ai-sdk/provider';
 import { ActionMetadata } from '@hexabot-ai/agentic';
-import {
-  LanguageModelUsage,
-  ModelMessage,
-  hasToolCall,
-  stepCountIs,
-} from 'ai';
+import { LanguageModelUsage, ModelMessage, hasToolCall, stepCountIs } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
