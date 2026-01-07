@@ -7,10 +7,16 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { LanguageModelV2, ProviderV2 } from '@ai-sdk/provider';
 import { ActionMetadata } from '@hexabot-ai/agentic';
-import { LanguageModelUsage, ModelMessage } from 'ai';
+import {
+  LanguageModelUsage,
+  ModelMessage,
+  hasToolCall,
+  stepCountIs,
+} from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
+import { ActionName } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
@@ -31,6 +37,13 @@ export type LanguageModelProvider =
       (modelId: string): LanguageModelV2;
     })
   | ProviderV2;
+
+type ToolDefinition = {
+  description?: string;
+  inputSchema: unknown;
+  outputSchema?: unknown;
+  execute: (input: unknown) => Promise<unknown>;
+};
 
 export abstract class LlmBaseAction<
   I,
@@ -392,6 +405,48 @@ export abstract class LlmBaseAction<
     return resolved;
   }
 
+  protected buildTools(
+    context: C,
+    toolNames?: string[],
+  ): Record<string, ToolDefinition> | undefined {
+    if (!toolNames || toolNames.length === 0) {
+      return undefined;
+    }
+
+    const actionService = context.services.actions;
+    if (!actionService) {
+      throw new Error('Action service is unavailable in the workflow context.');
+    }
+
+    const uniqueNames = Array.from(
+      new Set(
+        toolNames.filter(
+          (name) => typeof name === 'string' && name.trim().length > 0,
+        ),
+      ),
+    );
+    if (uniqueNames.length === 0) {
+      return undefined;
+    }
+
+    return uniqueNames.reduce(
+      (tools, actionName) => {
+        const normalizedName = actionName.trim() as ActionName;
+        const action = actionService.get(normalizedName);
+
+        tools[normalizedName] = {
+          description: action.description,
+          inputSchema: action.inputSchema,
+          outputSchema: action.outputSchema,
+          execute: async (input) => action.run(input, context),
+        };
+
+        return tools;
+      },
+      {} as Record<string, ToolDefinition>,
+    );
+  }
+
   protected normalizeUsage(usage?: LanguageModelUsage) {
     if (!usage) {
       return undefined;
@@ -403,6 +458,51 @@ export abstract class LlmBaseAction<
       total_tokens: usage.totalTokens,
       reasoning_tokens: usage.reasoningTokens,
       cached_input_tokens: usage.cachedInputTokens,
+    };
+  }
+
+  protected buildStopWhen(
+    settings: Partial<{
+      stop_step_count: number;
+      stop_tool_call: string;
+    }>,
+    tools?: Record<string, unknown>,
+  ): {
+    stopWhen:
+      | ReturnType<typeof stepCountIs>
+      | ReturnType<typeof hasToolCall>
+      | Array<ReturnType<typeof stepCountIs> | ReturnType<typeof hasToolCall>>
+      | undefined;
+    stepCount?: number;
+    toolCall?: string;
+  } {
+    const stopConditions: Array<
+      ReturnType<typeof stepCountIs> | ReturnType<typeof hasToolCall>
+    > = [];
+    const defaultStepCount = tools ? Object.keys(tools).length : 0;
+    const resolvedStepCount = settings.stop_step_count ?? defaultStepCount;
+
+    if (resolvedStepCount > 0) {
+      stopConditions.push(stepCountIs(resolvedStepCount));
+    }
+
+    const stopToolCall = settings.stop_tool_call?.trim();
+
+    if (stopToolCall) {
+      stopConditions.push(hasToolCall(stopToolCall));
+    }
+
+    const stopWhen =
+      stopConditions.length === 0
+        ? undefined
+        : stopConditions.length === 1
+          ? stopConditions[0]
+          : stopConditions;
+
+    return {
+      stopWhen,
+      stepCount: resolvedStepCount > 0 ? resolvedStepCount : undefined,
+      toolCall: stopToolCall || undefined,
     };
   }
 }
