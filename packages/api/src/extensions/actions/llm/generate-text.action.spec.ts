@@ -202,7 +202,6 @@ describe('LlmGenerateTextAction', () => {
       tools: ['search', 'translate', 'search'],
     };
     const input = { prompt: 'Hello there' };
-
     const result = await action.execute({ input, settings, context });
     const stopWhen = (generateTextMock.mock.calls[0][0] as any).stopWhen;
 
