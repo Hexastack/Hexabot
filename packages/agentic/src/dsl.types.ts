@@ -56,6 +56,11 @@ export type ConditionalBranch =
   | { condition: string; steps: FlowStep[] }
   | { else?: unknown; steps: FlowStep[] };
 
+export type ConditionalBlock = {
+  description?: string;
+  when: ConditionalBranch[];
+};
+
 export type ParallelBlock = {
   description?: string;
   strategy?: 'wait_all' | 'wait_any';
@@ -75,7 +80,7 @@ export type LoopStep = {
 export type FlowStep =
   | { do: string }
   | { parallel: ParallelBlock }
-  | { conditional: { description?: string; when: ConditionalBranch[] } }
+  | { conditional: ConditionalBlock }
   | { loop: LoopStep };
 
 export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
@@ -303,6 +308,8 @@ export const WorkflowDefinitionSchema = z
   .strict();
 
 export type Settings = z.infer<typeof SettingsSchema>;
+
+export type Conditional = z.infer<typeof ConditionalSchema>;
 
 export type TaskDefinition = z.infer<typeof TaskDefinitionSchema>;
 
