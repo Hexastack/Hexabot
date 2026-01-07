@@ -21,7 +21,7 @@ export const useGet = <
   { entity, format }: THook<T>["params"],
   options?: Omit<
     UseQueryOptions<
-      unknown,
+      TBasic | undefined,
       Error,
       TBasic,
       [QueryType.item, EntityType, string]
@@ -40,7 +40,7 @@ export const useGet = <
       );
       const { entities, result } = normalizeAndCache(data);
 
-      return entities[entity]?.[result];
+      return entities[entity]?.[result] as TBasic;
     },
     queryKey: [QueryType.item, entity, id],
     enabled: options?.enabled && !!id,

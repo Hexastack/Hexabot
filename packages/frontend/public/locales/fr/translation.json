@@ -133,7 +133,12 @@
     "item_selected": "{{0}} élément sélectionné",
     "items_selected": "{{0}} éléments sélectionnés",
     "start": "Début",
-    "wait_message": "Veuillez patienter"
+    "end": "Fin",
+    "wait_message": "Veuillez patienter",
+    "conditional_operator": "Condition",
+    "parallel_indicator": "Parallèle",
+    "loop_indicator": "Boucle",
+    "conditional_indicator": "Conditionnel"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

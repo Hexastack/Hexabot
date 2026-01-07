@@ -40,6 +40,7 @@ export enum EntityType {
   LLM_HELPER = "LlmHelper",
   FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
+  WORKFLOW = "Workflow",
 }
 
 export type NormalizedEntities = Record<string, Record<string, any>>;
@@ -65,13 +66,17 @@ export enum RouterType {
   HOME = "/",
   LOGIN = "login",
   RESET = "reset",
+  //TODO need to be removed (v3)
   VISUAL_EDITOR = "visual-editor",
+  WORKFLOW_EDITOR = "workflow-editor",
   INBOX = "inbox",
   SETTINGS = "settings",
 }
 
 export const FULL_WIDTH_PATHNAMES: TRouterValues[] = [
+  //TODO need to be removed (v3)
   RouterType.VISUAL_EDITOR,
+  RouterType.WORKFLOW_EDITOR,
   RouterType.INBOX,
 ] as const;
 

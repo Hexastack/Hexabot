@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { useAppRouter } from "@/hooks/useAppRouter";
+import { QueryValue, useAppRouter } from "@/hooks/useAppRouter";
 
 type QueryParamSerializer<T> = {
   parse: (raw: string | string[] | undefined) => T;
@@ -95,7 +95,7 @@ export const useUrlQueryParam = <T>(
     (val: T) => {
       setValue(val);
       if (!router.isReady) return;
-      const newQuery = Object.fromEntries(
+      const newQuery: Record<string, QueryValue> = Object.fromEntries(
         Object.entries({ ...router.query }).filter(
           ([key]) => !Object.keys(router.params).includes(key),
         ),

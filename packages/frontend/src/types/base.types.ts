@@ -90,6 +90,12 @@ import {
 } from "./subscriber.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
 import { IUser, IUserAttributes, IUserFull } from "./user.types";
+import {
+  IWorkflow,
+  IWorkflowAttributes,
+  IWorkflowFilters,
+  IWorkflowFull,
+} from "./workfow.types";
 
 export interface IBaseSchema {
   id: string;
@@ -102,6 +108,7 @@ export interface IFormat<F = Format> {
 }
 
 export const POPULATE_BY_TYPE = {
+  [EntityType.WORKFLOW]: [],
   [EntityType.CATEGORY]: [],
   [EntityType.CONTEXT_VAR]: [],
   [EntityType.ROLE]: ["users", "permissions"],
@@ -168,6 +175,12 @@ interface IEntityTypes<
 }
 
 export interface IEntityMapTypes {
+  [EntityType.WORKFLOW]: IEntityTypes<
+    IWorkflow,
+    IWorkflowAttributes,
+    IWorkflowFilters,
+    IWorkflowFull
+  >;
   [EntityType.BLOCK]: IEntityTypes<
     IBlock,
     IBlockAttributes,
