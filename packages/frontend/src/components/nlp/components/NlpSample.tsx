@@ -47,11 +47,11 @@ import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { NlpPattern } from "@/types/block.types";
 import { ILanguage } from "@/types/language.types";
 import {
   INlpDatasetSample,
   INlpSample,
+  NlpPattern,
   NlpSampleType,
 } from "@/types/nlp-sample.types";
 import { INlpSampleEntity } from "@/types/nlp-sample_entity.types";

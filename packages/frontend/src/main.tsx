@@ -25,8 +25,6 @@ import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
 import "@/components/inbox/inbox.css";
-//TODO need to be removed (v3)
-import "@/components/visual-editor/v3/styles/index.css";
 import "@/components/visual-editor/v4/styles/index.css";
 import "@/components/visual-editor/v4/yamlEditor/styles/yaml-editor.css";
 import "@/i18n/config";

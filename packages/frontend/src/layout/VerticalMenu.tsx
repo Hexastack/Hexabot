@@ -22,7 +22,6 @@ import { Flag, Language } from "@mui/icons-material";
 import AppsIcon from "@mui/icons-material/Apps";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import FolderIcon from "@mui/icons-material/Folder";
 import HomeIcon from "@mui/icons-material/Home";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccessibilityRounded";
@@ -114,10 +113,10 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   },
   {
     text: "menu.visual_editor",
-    href: "/visual-editor",
+    href: "/workflow-editor",
     Icon: AppsIcon,
     requires: {
-      [EntityType.BLOCK]: [PermissionAction.READ],
+      [EntityType.WORKFLOW]: [PermissionAction.READ],
     },
   },
   {
@@ -134,14 +133,6 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     Icon: faComments,
     requires: {
       [EntityType.MESSAGE]: [PermissionAction.READ],
-    },
-  },
-  {
-    text: "menu.categories",
-    href: "/categories",
-    Icon: FolderIcon,
-    requires: {
-      [EntityType.CATEGORY]: [PermissionAction.READ],
     },
   },
   {

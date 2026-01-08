@@ -24,8 +24,8 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { NlpPattern } from "@/types/block.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
+import { NlpPattern } from "@/types/nlp-sample.types";
 import { INlpValue } from "@/types/nlp-value.types";
 
 interface NlpPatternSelectProps
@@ -79,7 +79,7 @@ const NlpPatternSelect = (
             entity: name,
             match: "entity",
             value: name,
-          } as NlpPattern),
+          }) as NlpPattern,
       ),
     ];
 

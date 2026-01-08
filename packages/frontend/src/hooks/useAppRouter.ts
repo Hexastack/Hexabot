@@ -93,10 +93,7 @@ const normalizeTo = (url: To | UrlObject): To => {
 };
 
 type TQuery = {
-  //v2 query types
   id?: string;
-  blockIds?: string;
-  //Common query types
   group?: string;
   token?: string[];
   redirect?: string;
