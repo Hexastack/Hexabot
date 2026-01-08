@@ -8,7 +8,6 @@ import { CssBaseline } from "@mui/material";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -26,7 +25,10 @@ import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
 import "@/components/inbox/inbox.css";
+//TODO need to be removed (v3)
 import "@/components/visual-editor/v3/styles/index.css";
+import "@/components/visual-editor/v4/styles/index.css";
+import "@/components/visual-editor/v4/yamlEditor/styles/yaml-editor.css";
 import "@/i18n/config";
 import "@/styles/globals.css";
 import "@fontsource/roboto/100.css";
@@ -36,7 +38,6 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@fontsource/roboto/900.css";
 import "eazychart-css";
-import ErrorBoundary from "./errors/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,46 +56,44 @@ if (!rootElement) {
 }
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <ConfigProvider>
-        <ThemeProvider theme={theme}>
-          <ToastProvider
-            maxSnack={3}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            action={(snackbarKey) => (
-              <SnackbarCloseButton snackbarKey={snackbarKey} />
-            )}
-          >
-            <StyledEngineProvider injectFirst>
-              <QueryClientProvider client={queryClient}>
-                <CssBaseline />
-                <ApiClientProvider>
-                  <BroadcastChannelProvider channelName="main-channel">
-                    <AuthProvider>
-                      <PermissionProvider>
-                        <SettingsProvider>
-                          <DialogsProvider>
-                            <SocketProvider>
-                              <ErrorBoundary>
-                                <App />
-                              </ErrorBoundary>
-                            </SocketProvider>
-                          </DialogsProvider>
-                        </SettingsProvider>
-                      </PermissionProvider>
-                    </AuthProvider>
-                  </BroadcastChannelProvider>
-                </ApiClientProvider>
-                <ReactQueryDevtools
-                  initialIsOpen={false}
-                  buttonPosition="bottom-left"
-                />
-              </QueryClientProvider>
-            </StyledEngineProvider>
-          </ToastProvider>
-        </ThemeProvider>
-      </ConfigProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter>
+    <ConfigProvider>
+      <ThemeProvider theme={theme}>
+        <ToastProvider
+          maxSnack={3}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          action={(snackbarKey) => (
+            <SnackbarCloseButton snackbarKey={snackbarKey} />
+          )}
+        >
+          <StyledEngineProvider injectFirst>
+            <QueryClientProvider client={queryClient}>
+              <CssBaseline />
+              <ApiClientProvider>
+                <BroadcastChannelProvider channelName="main-channel">
+                  <AuthProvider>
+                    <PermissionProvider>
+                      <SettingsProvider>
+                        <DialogsProvider>
+                          <SocketProvider>
+                            {/* <ErrorBoundary> */}
+                            <App />
+                            {/* </ErrorBoundary> */}
+                          </SocketProvider>
+                        </DialogsProvider>
+                      </SettingsProvider>
+                    </PermissionProvider>
+                  </AuthProvider>
+                </BroadcastChannelProvider>
+              </ApiClientProvider>
+              <ReactQueryDevtools
+                initialIsOpen={false}
+                buttonPosition="bottom-left"
+              />
+            </QueryClientProvider>
+          </StyledEngineProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ConfigProvider>
+  </BrowserRouter>,
 );

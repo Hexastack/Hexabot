@@ -24,7 +24,7 @@ export const ChatWidget = () => {
   const { pathname, reload } = useAppRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
-  const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
+  const isVisualEditor = pathname.startsWith(`/${RouterType.WORKFLOW_EDITOR}`);
   const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
   const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
   const key = useMemo(

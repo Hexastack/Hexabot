@@ -19,6 +19,15 @@ const processCommonStrategy = <T extends IBaseSchema>(entity: T) => ({
   ...(entity.updatedAt && { updatedAt: new Date(entity.updatedAt) }),
 });
 
+export const WorkflowEntity = new schema.Entity(
+  EntityType.WORKFLOW,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const RoleEntity = new schema.Entity(EntityType.ROLE, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -265,6 +274,7 @@ export const BlockEntity = new schema.Entity(
     processStrategy: <T extends IBlock>(entity: T) => ({
       ...processCommonStrategy(entity),
       type: getBlockType(entity.message),
+      attachedBlock: entity.attachedBlock || null,
     }),
   },
 );
@@ -333,6 +343,7 @@ export const StorageHelperEntity = new schema.Entity(
 );
 
 export const ENTITY_MAP = {
+  [EntityType.WORKFLOW]: WorkflowEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,
   [EntityType.LABEL_GROUP]: LabelGroupEntity,

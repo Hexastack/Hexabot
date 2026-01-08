@@ -32,8 +32,9 @@ import { Subscribers } from "@/components/subscribers";
 import { Translations } from "@/components/translations";
 import { Users } from "@/components/users";
 import { VisualEditor } from "@/components/visual-editor/v3";
+import { WorkflowEditor } from "@/components/visual-editor/v4";
 import { LayoutProps } from "@/layout";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
 export type RouteComponent = React.ComponentType & {
@@ -70,6 +71,11 @@ export const routes: RouteObjectItem[] = [
   {
     path: "/visual-editor/flows?/:id?/:blockIds?",
     Component: VisualEditor,
+    handle: { hasNoPadding: true },
+  },
+  {
+    path: `/${RouterType.WORKFLOW_EDITOR}/:flowId?/:nodeIds?`,
+    Component: WorkflowEditor,
     handle: { hasNoPadding: true },
   },
   {

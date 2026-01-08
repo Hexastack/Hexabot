@@ -27,10 +27,10 @@ export interface UrlObject {
   query?: Record<string, QueryValue>;
 }
 
-export interface AppRouter {
+export interface AppRouter<T extends TQuery = TQuery> {
   pathname: string;
   asPath: string;
-  query: Record<string, QueryValue>;
+  query: T;
   isReady: boolean;
   push: (
     url: To | UrlObject,
@@ -92,15 +92,29 @@ const normalizeTo = (url: To | UrlObject): To => {
   return resolveUrlObject(url);
 };
 
-export const useAppRouter = (): AppRouter => {
+type TQuery = {
+  //v2 query types
+  id?: string;
+  blockIds?: string;
+  //Common query types
+  group?: string;
+  token?: string[];
+  redirect?: string;
+  subscriber?: string;
+  //v3 query types
+  flowId?: string;
+  nodeIds?: string;
+};
+
+export const useAppRouter = <T extends TQuery>(): AppRouter<T> => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
   const element = useRoutes(routes);
   const { match } = element?.props;
   const [searchParams] = useSearchParams();
-  const query = useMemo<Record<string, QueryValue>>(() => {
-    const queryEntries: Record<string, QueryValue> = {};
+  const query = useMemo<T>(() => {
+    const queryEntries = {} as T;
 
     Object.entries(params).forEach(([key, value]) => {
       if (typeof value !== "undefined") {
