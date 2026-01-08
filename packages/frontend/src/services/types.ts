@@ -14,17 +14,12 @@ export enum EntityType {
   USER = "User",
   PERMISSION = "Permission",
   MODEL = "Model",
-  CATEGORY = "Category",
   CONTEXT_VAR = "ContextVar",
   MENUTREE = "Menu/tree",
   CONTENT = "Content",
   CONTENT_TYPE = "ContentType",
   SETTING = "Setting",
   BOTSTATS = "BotStats",
-  BLOCK = "Block",
-  BLOCK_SEARCH = "Block/Search",
-  CUSTOM_BLOCK = "CustomBlock",
-  CUSTOM_BLOCK_SETTINGS = "CustomBlockSetting",
   NLP_SAMPLE = "NlpSample",
   NLP_SAMPLE_ENTITY = "NlpSampleEntity",
   NLP_ENTITY = "NlpEntity",
@@ -66,16 +61,12 @@ export enum RouterType {
   HOME = "/",
   LOGIN = "login",
   RESET = "reset",
-  //TODO need to be removed (v3)
-  VISUAL_EDITOR = "visual-editor",
   WORKFLOW_EDITOR = "workflow-editor",
   INBOX = "inbox",
   SETTINGS = "settings",
 }
 
 export const FULL_WIDTH_PATHNAMES: TRouterValues[] = [
-  //TODO need to be removed (v3)
-  RouterType.VISUAL_EDITOR,
   RouterType.WORKFLOW_EDITOR,
   RouterType.INBOX,
 ] as const;

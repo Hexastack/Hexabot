@@ -17,10 +17,10 @@ export const useFocusNode = () => {
   const { query } = useAppRouter();
   const { nodeIds } = query;
   const { selectNodes, selectedNodeIds, setToFocusIds } = useWorkflow();
-  const animateFocus = async (blockIds: string[] = []) => {
-    selectNodes(blockIds);
-    if (blockIds.length === 1) {
-      const node = getNode(blockIds[0]);
+  const animateFocus = async (nodeIds: string[] = []) => {
+    selectNodes(nodeIds);
+    if (nodeIds.length === 1) {
+      const node = getNode(nodeIds[0]);
 
       if (node) {
         await fitView({
@@ -45,7 +45,7 @@ export const useFocusNode = () => {
       }
     }
   };
-  const blockIdsParams = useMemo(
+  const nodeIdsParams = useMemo(
     () =>
       !nodeIds?.length || !nodesInitialized || typeof nodeIds !== "string"
         ? []
@@ -54,8 +54,8 @@ export const useFocusNode = () => {
   );
 
   useEffect(() => {
-    selectNodes(blockIdsParams);
-  }, [blockIdsParams]);
+    selectNodes(nodeIdsParams);
+  }, [nodeIdsParams]);
 
   return {
     animateFocus,

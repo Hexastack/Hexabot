@@ -77,16 +77,16 @@ export const Menu = () => {
           const boxHeight = 56;
           const mousePositionInsideElement =
             e.clientY - ref.current?.getBoundingClientRect().top - padding;
-          const currentBlock = Math.floor(
+          const currentItem = Math.floor(
             mousePositionInsideElement / boxHeight,
           );
-          const maxBlock = Math.floor(
+          const maxItem = Math.floor(
             (ref.current.getBoundingClientRect().height - padding - 1) /
               boxHeight,
           );
-          const step = Math.max(0, Math.min(currentBlock, maxBlock - 1));
+          const step = Math.max(0, Math.min(currentItem, maxItem - 1));
 
-          if (maxBlock <= 0) {
+          if (maxItem <= 0) {
             setShadowVisible(false);
 
             return;

@@ -14,16 +14,6 @@ import {
   IAttachmentAttributes,
   IAttachmentFilters,
 } from "./attachment.types";
-import {
-  IBlock,
-  IBlockAttributes,
-  IBLockFilters,
-  IBlockFull,
-  IBlockSearchResult,
-  ICustomBlockSettingFilters,
-  ICustomBlockTemplate,
-} from "./block.types";
-import { ICategory, ICategoryAttributes } from "./category.types";
 import { IChannel, IChannelAttributes } from "./channel.types";
 import { IContentType, IContentTypeAttributes } from "./content-type.types";
 import {
@@ -109,7 +99,6 @@ export interface IFormat<F = Format> {
 
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: [],
-  [EntityType.CATEGORY]: [],
   [EntityType.CONTEXT_VAR]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
@@ -122,16 +111,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTENT]: ["entity"],
   [EntityType.SETTING]: [],
   [EntityType.BOTSTATS]: [],
-  [EntityType.BLOCK]: [
-    "nextBlocks",
-    "previousBlocks",
-    "attachedBlock",
-    "attachedToBlock",
-    "assign_labels",
-    "trigger_labels",
-    "category",
-  ],
-  [EntityType.BLOCK_SEARCH]: [],
   [EntityType.NLP_SAMPLE]: ["language", "entities"],
   [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
   [EntityType.NLP_ENTITY]: ["values"],
@@ -142,8 +121,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.LANGUAGE]: [],
   [EntityType.TRANSLATION]: [],
   [EntityType.ATTACHMENT]: ["createdBy"],
-  [EntityType.CUSTOM_BLOCK]: [],
-  [EntityType.CUSTOM_BLOCK_SETTINGS]: [],
   [EntityType.CHANNEL]: [],
   [EntityType.HELPER]: [],
   [EntityType.NLU_HELPER]: [],
@@ -181,19 +158,6 @@ export interface IEntityMapTypes {
     IWorkflowFilters,
     IWorkflowFull
   >;
-  [EntityType.BLOCK]: IEntityTypes<
-    IBlock,
-    IBlockAttributes,
-    IBLockFilters,
-    IBlockFull
-  >;
-  [EntityType.BLOCK_SEARCH]: IEntityTypes<
-    IBlockSearchResult,
-    never,
-    { limit: number; q: string; category?: string },
-    IBlockSearchResult
-  >;
-  [EntityType.CATEGORY]: IEntityTypes<ICategory, ICategoryAttributes>;
   [EntityType.CONTENT]: IEntityTypes<
     IContent,
     IContentAttributes,
@@ -202,15 +166,6 @@ export interface IEntityMapTypes {
   >;
   [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
   [EntityType.CONTEXT_VAR]: IEntityTypes<IContextVar, IContextVarAttributes>;
-  [EntityType.CUSTOM_BLOCK]: IEntityTypes<
-    ICustomBlockTemplate,
-    ICustomBlockTemplate
-  >;
-  [EntityType.CUSTOM_BLOCK_SETTINGS]: IEntityTypes<
-    ISetting,
-    never,
-    ICustomBlockSettingFilters
-  >;
   [EntityType.LABEL]: IEntityTypes<ILabel, ILabelAttributes, never, ILabelFull>;
   [EntityType.LABEL_GROUP]: IEntityTypes<ILabelGroup, ILabelGroupAttributes>;
   [EntityType.MENU]: IEntityTypes<

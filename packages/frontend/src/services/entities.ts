@@ -7,9 +7,7 @@
 import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
-import { IBlock } from "@/types/block.types";
 import { ISubscriberStub } from "@/types/subscriber.types";
-import { getBlockType } from "@/utils/block";
 
 import { EntityType } from "./types";
 
@@ -128,14 +126,6 @@ export const PermissionEntity = new schema.Entity(
 export const ModelEntity = new schema.Entity(
   EntityType.MODEL,
   { permissions: [PermissionEntity] },
-  {
-    idAttribute: ({ id }) => id,
-  },
-);
-
-export const CategoryEntity = new schema.Entity(
-  EntityType.CATEGORY,
-  undefined,
   {
     idAttribute: ({ id }) => id,
   },
@@ -261,47 +251,6 @@ export const NlpSampleEntity = new schema.Entity(
   },
 );
 
-//TODO need to be updated
-export const BlockEntity = new schema.Entity(
-  EntityType.BLOCK,
-  {
-    trigger_labels: [LabelEntity],
-    assign_labels: [LabelEntity],
-    category: CategoryEntity,
-  },
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: <T extends IBlock>(entity: T) => ({
-      ...processCommonStrategy(entity),
-      type: getBlockType(entity.message),
-      attachedBlock: entity.attachedBlock || null,
-    }),
-  },
-);
-
-BlockEntity.define({
-  nextBlocks: [BlockEntity],
-  previousBlocks: [BlockEntity],
-  attachedBlock: BlockEntity,
-  attachedToBlock: BlockEntity,
-});
-
-export const CustomBlockEntity = new schema.Entity(
-  EntityType.CUSTOM_BLOCK,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-  },
-);
-
-export const CustomBlockSettingEntity = new schema.Entity(
-  EntityType.CUSTOM_BLOCK_SETTINGS,
-  undefined,
-  {
-    idAttribute: ({ id, label }) => id || label,
-  },
-);
-
 export const ChannelEntity = new schema.Entity(EntityType.CHANNEL, undefined, {
   idAttribute: ({ name }) => name,
 });
@@ -351,7 +300,6 @@ export const ENTITY_MAP = {
   [EntityType.USER]: UserEntity,
   [EntityType.PERMISSION]: PermissionEntity,
   [EntityType.MODEL]: ModelEntity,
-  [EntityType.CATEGORY]: CategoryEntity,
   [EntityType.CONTEXT_VAR]: ContextVarsEntity,
   [EntityType.MENU]: MenuItemEntity,
   [EntityType.MESSAGE]: MessageEntity,
@@ -366,10 +314,6 @@ export const ENTITY_MAP = {
   [EntityType.LANGUAGE]: LanguageEntity,
   [EntityType.TRANSLATION]: TranslationEntity,
   [EntityType.ATTACHMENT]: AttachmentEntity,
-  [EntityType.BLOCK]: BlockEntity,
-  [EntityType.CUSTOM_BLOCK]: CustomBlockEntity,
-  [EntityType.BLOCK_SEARCH]: BlockEntity,
-  [EntityType.CUSTOM_BLOCK_SETTINGS]: CustomBlockSettingEntity,
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.HELPER]: HelperEntity,
   [EntityType.NLU_HELPER]: NluHelperEntity,

@@ -18,11 +18,7 @@ export enum BotStatsType {
   retention = "retention",
 }
 
-export type StatsType =
-  | "messages"
-  | "conversation"
-  | "audiance"
-  | "popularBlocks";
+export type StatsType = "messages" | "audiance";
 
 export interface IBotStatAttributes {
   type: BotStatsType;

@@ -4,31 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import Add from "@mui/icons-material/Add";
-import { Button, Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
+import { Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
 import { SyntheticEvent } from "react";
 
-import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
 import { useFind } from "@/hooks/crud/useFind";
-import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 
-const StyledButton = styled(Button)(() => ({
-  marginTop: "7px",
-  marginLeft: "5px",
-  marginRight: "5px",
-  borderRadius: "0",
-  minHeight: "30px",
-  border: "1px solid #DDDDDD",
-  backgroundColor: "#F8F8F8",
-  borderBottom: "none",
-  width: "42px",
-  minWidth: "42px",
-}));
 const StyledGrid = styled(Grid)(() => ({
   display: "flex",
   position: "relative",
@@ -74,10 +57,8 @@ const StyledTab = styled(Tab)(() => ({
 }));
 
 export const FlowsTabs = () => {
-  const hasPermission = useHasPermission();
   const { selectedFlowId, setSelectedFlowId, updateWorkflowURL } =
     useWorkflow();
-  const dialogs = useDialogs();
   const { data: workflows } = useFind(
     {
       entity: EntityType.WORKFLOW,
@@ -104,16 +85,6 @@ export const FlowsTabs = () => {
           <StyledTab key={id} label={<Grid>{name}</Grid>} value={id} />
         ))}
       </StyledTabs>
-      {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
-        <StyledButton
-          onClick={(e) => {
-            dialogs.open(CategoryFormDialog, { defaultValues: null });
-            e.preventDefault();
-          }}
-        >
-          <Add />
-        </StyledButton>
-      ) : null}
     </StyledGrid>
   );
 };

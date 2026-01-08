@@ -114,10 +114,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
         syncUrl: !onSelect, // Sync URL only in the media library page (not the modal)
         getFindParams: (searchPayload) => ({
           where: {
-            resourceRef: [
-              AttachmentResourceRef.BlockAttachment,
-              AttachmentResourceRef.ContentAttachment,
-            ],
+            resourceRef: [AttachmentResourceRef.ContentAttachment],
             ...searchPayload.where,
             or: [
               ...(searchPayload.where?.or || []),

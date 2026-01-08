@@ -69,7 +69,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       );
     }
   };
-  const removeBlockIdParam = async () => {
+  const removeWorkflowParams = async () => {
     if (selectedFlowId) {
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${selectedFlowId}`);
     }
@@ -99,7 +99,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         direction,
         setDirection,
         updateWorkflowURL,
-        removeBlockIdParam,
+        removeWorkflowParams,
         yaml,
         setYaml,
         actions,

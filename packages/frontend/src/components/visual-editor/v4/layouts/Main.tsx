@@ -22,7 +22,6 @@ import { useCallback, useEffect, useMemo } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGet } from "@/hooks/crud/useGet";
-import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { EntityType } from "@/services/types";
 
@@ -122,25 +121,16 @@ export const Main = () => {
     }
   }, [yaml]);
   const { mutate: createWorkflow } = useCreate(EntityType.WORKFLOW);
-  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
-    invalidate: false,
-  });
   const defaultViewport = useViewport();
   //TODO need to save viewport update (offset.x,offset.y,zoom)
-  const handleUpdateCategory: TCb<Viewport> = useCallback(
+  const handleViewportUpdate: TCb<Viewport> = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     debounce(({ zoom, x, y }) => {
       if (selectedFlowId) {
-        // updateCategory({
-        //   id: selectedFlowId,
-        //   params: {
-        //     zoom: zoom < 4 ? zoom * 100 : zoom,
-        //     offset: [x, y],
-        //   },
-        // });
+        //
       }
     }, 400),
-    [updateCategory, selectedFlowId],
+    [selectedFlowId],
   );
 
   useEffect(() => {
@@ -165,9 +155,9 @@ export const Main = () => {
 
   useEffect(() => {
     return () => {
-      handleUpdateCategory.clear();
+      handleViewportUpdate.clear();
     };
-  }, [handleUpdateCategory]);
+  }, [handleViewportUpdate]);
 
   const config = useMemo(
     () => getWorkflowDefaultConfig(direction),
@@ -206,7 +196,7 @@ export const Main = () => {
       <FlowsTabs />
       <StyledBox>
         <ReactFlowWrapper
-          onViewport={handleUpdateCategory}
+          onViewport={handleViewportUpdate}
           defaultEdges={graph.edges}
           defaultNodes={graph.nodes}
           defaultViewport={defaultViewport}

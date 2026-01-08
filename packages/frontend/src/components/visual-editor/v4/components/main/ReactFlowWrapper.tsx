@@ -35,7 +35,7 @@ export const ReactFlowWrapper = ({
   defaultEdges: EdgeLink[];
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
-  onNodeDoubleClick?: (selectedBlockId: string) => void;
+  onNodeDoubleClick?: (selectedNodeId: string) => void;
 }) => {
   useOnViewportChange({
     onEnd: onViewport,
