@@ -54,8 +54,6 @@ export * from './helpers/zod-validation';
 
 export * from './pipes/populate.pipe';
 
-export * from './pipes/sanitize-query.pipe';
-
 export * from './pipes/typeorm-search-filter.pipe';
 
 export * from './pipes/uuid.pipe';
