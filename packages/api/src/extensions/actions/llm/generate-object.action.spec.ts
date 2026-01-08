@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { generateObject, jsonSchema } from 'ai';
+import { Output, generateText, jsonSchema } from 'ai';
 import { JSONSchema7 } from 'json-schema';
 
 import { ActionService } from '@/actions/actions.service';
@@ -13,17 +13,28 @@ import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.con
 import { LlmGenerateObjectAction } from './generate-object.action';
 
 jest.mock('ai', () => ({
-  generateObject: jest.fn(),
+  generateText: jest.fn(),
   jsonSchema: jest.fn((schema) => ({ wrapped: schema })),
+  Output: {
+    object: jest.fn(({ schema, name, description }) => ({
+      schema,
+      name,
+      description,
+      type: 'object',
+    })),
+  },
 }));
 
 describe('LlmGenerateObjectAction', () => {
   let action: LlmGenerateObjectAction;
   let actionService: ActionService;
-  const generateObjectMock = generateObject as jest.MockedFunction<
-    typeof generateObject
+  const generateTextMock = generateText as jest.MockedFunction<
+    typeof generateText
   >;
   const jsonSchemaMock = jsonSchema as jest.MockedFunction<typeof jsonSchema>;
+  const outputObjectMock = Output.object as jest.MockedFunction<
+    typeof Output.object
+  >;
   const logger = { debug: jest.fn() };
   const defaultRetries = {
     max_attempts: 3,
@@ -41,7 +52,7 @@ describe('LlmGenerateObjectAction', () => {
     action = new LlmGenerateObjectAction(actionService);
   });
 
-  it('calls the provider and normalizes the generateObject response', async () => {
+  it('calls the provider and normalizes the structured generateText response', async () => {
     const provider = Object.assign(
       jest.fn().mockReturnValue('model-instance'),
       {
@@ -55,16 +66,24 @@ describe('LlmGenerateObjectAction', () => {
     const buildCallSettingsSpy = jest.spyOn(action as any, 'buildCallSettings');
     const createModelSpy = jest.spyOn(action as any, 'createModel');
 
-    generateObjectMock.mockResolvedValue({
-      object: { foo: 'bar' },
-      reasoning: 'step-by-step',
+    generateTextMock.mockResolvedValue({
+      output: { foo: 'bar' },
+      reasoningText: 'step-by-step',
       finishReason: 'stop',
       usage: {
         inputTokens: 10,
+        inputTokenDetails: {
+          noCacheTokens: 7,
+          cacheReadTokens: 3,
+          cacheWriteTokens: 1,
+        },
         outputTokens: 20,
         totalTokens: 30,
-        reasoningTokens: 2,
-        cachedInputTokens: 1,
+        outputTokenDetails: {
+          textTokens: 18,
+          reasoningTokens: 2,
+        },
+        raw: { billable_units: 99 },
       },
       request: { foo: 'req' },
       response: { status: 200 },
@@ -115,7 +134,12 @@ describe('LlmGenerateObjectAction', () => {
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
     expect(jsonSchemaMock).toHaveBeenCalledWith(schemaDefinition);
-    expect(generateObjectMock).toHaveBeenCalledWith({
+    expect(outputObjectMock).toHaveBeenCalledWith({
+      schema: { wrapped: schemaDefinition },
+      name: 'TestObject',
+      description: 'A simple test schema',
+    });
+    expect(generateTextMock).toHaveBeenCalledWith({
       prompt: 'Generate an object',
       system: 'system prompt',
       temperature: 0.7,
@@ -126,9 +150,12 @@ describe('LlmGenerateObjectAction', () => {
       maxOutputTokens: 50,
       seed: 7,
       model: 'model-instance',
-      schema: { wrapped: schemaDefinition },
-      schemaName: 'TestObject',
-      schemaDescription: 'A simple test schema',
+      output: {
+        schema: { wrapped: schemaDefinition },
+        name: 'TestObject',
+        description: 'A simple test schema',
+        type: 'object',
+      },
     });
     expect(logger.debug).toHaveBeenCalledWith(
       'Calling model "gpt-4o-mini" via llm_generate_object action using provider "openai"',
@@ -147,7 +174,17 @@ describe('LlmGenerateObjectAction', () => {
         output_tokens: 20,
         total_tokens: 30,
         reasoning_tokens: 2,
-        cached_input_tokens: 1,
+        cached_input_tokens: 3,
+        input_token_details: {
+          no_cache_tokens: 7,
+          cache_read_tokens: 3,
+          cache_write_tokens: 1,
+        },
+        output_token_details: {
+          text_tokens: 18,
+          reasoning_tokens: 2,
+        },
+        raw: { billable_units: 99 },
       },
       raw: {
         request: { foo: 'req' },

@@ -76,10 +76,18 @@ describe('LlmGenerateTextAction', () => {
       finishReason: 'stop',
       usage: {
         inputTokens: 10,
+        inputTokenDetails: {
+          noCacheTokens: 6,
+          cacheReadTokens: 4,
+          cacheWriteTokens: 1,
+        },
         outputTokens: 20,
+        outputTokenDetails: {
+          textTokens: 18,
+          reasoningTokens: 2,
+        },
         totalTokens: 30,
-        reasoningTokens: 2,
-        cachedInputTokens: 1,
+        raw: { billable_units: 42 },
       },
       request: { foo: 'req' },
       response: { status: 200 },
@@ -152,7 +160,17 @@ describe('LlmGenerateTextAction', () => {
         output_tokens: 20,
         total_tokens: 30,
         reasoning_tokens: 2,
-        cached_input_tokens: 1,
+        cached_input_tokens: 4,
+        input_token_details: {
+          no_cache_tokens: 6,
+          cache_read_tokens: 4,
+          cache_write_tokens: 1,
+        },
+        output_token_details: {
+          text_tokens: 18,
+          reasoning_tokens: 2,
+        },
+        raw: { billable_units: 42 },
       },
       raw: {
         request: { foo: 'req' },
