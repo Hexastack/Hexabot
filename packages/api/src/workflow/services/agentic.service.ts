@@ -45,9 +45,9 @@ export class AgenticService {
     event: TriggerEventWrapper,
     workflow?: WorkflowDto,
   ): Promise<void> {
-    const intiator = event.getInitiator();
+    const initiator = event.getInitiator();
     this.logger.debug('Handling incoming workflow event');
-    if (!intiator) {
+    if (!initiator) {
       this.logger.warn(
         'Skipping workflow execution due to missing event initiator',
       );
@@ -57,10 +57,10 @@ export class AgenticService {
 
     try {
       const suspendedRun =
-        await this.workflowRunService.findSuspendedRunByInitiator(intiator.id);
+        await this.workflowRunService.findSuspendedRunByInitiator(initiator.id);
       if (suspendedRun) {
         this.logger.log('Resuming suspended workflow run', {
-          triggeredById: intiator.id,
+          triggeredById: initiator.id,
           runId: suspendedRun.id,
           workflowId: suspendedRun.workflow?.id,
           suspendedStep: suspendedRun.suspendedStep,
