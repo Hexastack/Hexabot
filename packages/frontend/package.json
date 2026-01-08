@@ -15,7 +15,7 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "format": "pnpm run lint:fix",
     "clean": "rimraf dist",
-    "typecheck": "tsc --noEmit --downlevelIteration"
+    "typecheck": "tsc --noEmit --downlevelIteration -p tsconfig.typecheck.json"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix --config eslint.config-staged.cjs"
