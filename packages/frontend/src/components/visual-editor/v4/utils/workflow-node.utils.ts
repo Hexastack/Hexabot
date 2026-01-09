@@ -5,6 +5,11 @@
  */
 
 import dagre from "@dagrejs/dagre";
+import {
+  compileWorkflow,
+  validateWorkflow,
+  type WorkflowCompileOptions,
+} from "@hexabot-ai/agentic";
 import { Edge, getNodesBounds, Position } from "@xyflow/react";
 import type { FC } from "react";
 
@@ -224,4 +229,20 @@ export const buildNodesAndEdges = ({
     edges,
     nodes: [...nodes, ...groupNodes],
   };
+};
+
+export const getDefinition = (
+  yaml: string,
+  options: WorkflowCompileOptions,
+) => {
+  const validation = validateWorkflow(yaml);
+
+  if (!validation.success) {
+    throw new Error(
+      `Workflow validation failed: ${validation.errors.join("; ")}`,
+    );
+  }
+  const { definition } = compileWorkflow(validation.data, options);
+
+  return definition;
 };
