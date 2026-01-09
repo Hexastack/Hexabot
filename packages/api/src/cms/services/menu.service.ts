@@ -22,8 +22,7 @@ import { AnyMenu, MenuTree } from '../types/menu';
 export class MenuService extends BaseOrmService<
   MenuOrmEntity,
   MenuTransformerDto,
-  MenuDtoConfig,
-  MenuRepository
+  MenuDtoConfig
 > {
   private readonly RootSymbol: symbol = Symbol('RootMenu');
 

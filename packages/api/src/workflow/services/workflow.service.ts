@@ -25,8 +25,7 @@ import { WorkflowType } from '../types';
 export class WorkflowService extends BaseOrmService<
   WorkflowOrmEntity,
   WorkflowTransformerDto,
-  WorkflowDtoConfig,
-  WorkflowRepository
+  WorkflowDtoConfig
 > {
   /**
    * Creates the workflow service with the injected repository.

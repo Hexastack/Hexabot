@@ -32,8 +32,7 @@ import { MessageRepository } from '../repositories/message.repository';
 export class MessageService extends BaseOrmService<
   MessageOrmEntity,
   MessageTransformerDto,
-  MessageDtoConfig,
-  MessageRepository
+  MessageDtoConfig
 > {
   constructor(
     readonly repository: MessageRepository,

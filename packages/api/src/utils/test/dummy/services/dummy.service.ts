@@ -16,8 +16,7 @@ import { DummyRepository } from '../repositories/dummy.repository';
 export class DummyService extends BaseOrmService<
   DummyOrmEntity,
   DummyTransformerDto,
-  DummyDtoConfig,
-  DummyRepository
+  DummyDtoConfig
 > {
   constructor(readonly repository: DummyRepository) {
     super(repository);
