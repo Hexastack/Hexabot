@@ -4,6 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import type {
+  WorkflowCompileOptions,
+  WorkflowDefinition,
+} from "@hexabot-ai/agentic";
 import { Cancelable } from "@mui/utils/debounce";
 import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
@@ -30,8 +34,10 @@ export interface IWorkflowContext {
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
   yaml: string;
   setYaml: Dispatch<SetStateAction<string>>;
-  //TODO
-  actions: any;
+  getDefinition: (
+    yaml: string,
+    options: WorkflowCompileOptions,
+  ) => WorkflowDefinition;
 }
 
 export interface WorkflowContextProps {
