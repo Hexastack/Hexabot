@@ -25,7 +25,7 @@ export type CompiledTask = {
   name: string;
   definition: TaskDefinition;
   actionName: string;
-  action: Action<unknown, unknown, BaseWorkflowContext, Settings>;
+  action: Action;
   inputs: CompiledMapping;
   outputs: CompiledMapping;
   settings: Settings;

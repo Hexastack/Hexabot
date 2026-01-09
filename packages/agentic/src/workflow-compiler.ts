@@ -32,10 +32,7 @@ import {
 } from './workflow-values';
 
 export type WorkflowCompileOptions = CompileValueOptions & {
-  actions: Record<
-    string,
-    Action<unknown, unknown, BaseWorkflowContext, Settings>
-  >;
+  actions: Record<string, Action>;
 };
 
 /** Build a stable identifier for a step using its path and label. */

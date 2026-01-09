@@ -30,8 +30,8 @@ export interface ActionExecutionArgs<
 }
 
 export interface Action<
-  I,
-  O,
+  I = unknown,
+  O = unknown,
   C extends BaseWorkflowContext = BaseWorkflowContext,
   S extends Settings = Settings,
 > {
@@ -48,25 +48,21 @@ export interface Action<
   run(payload: unknown, context: C, settings?: Partial<S>): Promise<O>;
 }
 
-export type InferActionArgs<
-  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
-> = Parameters<A['execute']>[0];
+export type Actions = Record<string, Action>;
 
-export type InferActionInput<
-  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
-> = InferActionArgs<A>['input'];
+export type InferActionArgs<A extends Action> = Parameters<A['execute']>[0];
 
-export type InferActionContext<
-  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
-> = InferActionArgs<A>['context'];
+export type InferActionInput<A extends Action> = InferActionArgs<A>['input'];
 
-export type InferActionOutput<
-  A extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
-> = Awaited<ReturnType<A['execute']>>;
+export type InferActionContext<A extends Action> =
+  InferActionArgs<A>['context'];
 
-export type InferActionSettings<
-  S extends Action<unknown, unknown, BaseWorkflowContext, Settings>,
-> = InferActionArgs<S>['settings'];
+export type InferActionOutput<A extends Action> = Awaited<
+  ReturnType<A['execute']>
+>;
+
+export type InferActionSettings<S extends Action> =
+  InferActionArgs<S>['settings'];
 
 export interface SuspensionNotice {
   error: WorkflowSuspendedError;
