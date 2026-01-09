@@ -15,6 +15,7 @@ export type {
   ActionExecutionArgs,
   ActionExecutionOutcome,
   ActionMetadata,
+  Actions,
   InferActionArgs,
   InferActionContext,
   InferActionInput,
