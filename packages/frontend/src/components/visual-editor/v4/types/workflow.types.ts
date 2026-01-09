@@ -30,8 +30,6 @@ export interface IWorkflowContext {
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
   yaml: string;
   setYaml: Dispatch<SetStateAction<string>>;
-  //TODO
-  actions: any;
 }
 
 export interface WorkflowContextProps {

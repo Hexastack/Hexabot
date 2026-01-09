@@ -14,9 +14,7 @@ import {
 import type { ResizeControlDirection } from "@xyflow/system";
 import { useState } from "react";
 
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useTanstackQuery } from "@/hooks/crud/useTanstack";
-import { useApiClient } from "@/hooks/useApiClient";
+import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { EntityType, RouterType } from "@/services/types";
 
@@ -35,7 +33,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const [toFocusIds, setToFocusIds] = useState<string[]>([]);
   const [direction, setDirection] =
     useState<ResizeControlDirection>("horizontal");
-  const [yaml, setYaml] = useState<string>("");
   const getCentroid = (): XYPosition => {
     if (typeof window === "undefined") return { x: 0, y: 0 };
     const screenWidth = window.innerWidth;
@@ -74,12 +71,22 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${selectedFlowId}`);
     }
   };
-  const { apiClient } = useApiClient();
-  const { data: actions } = useTanstackQuery({
-    queryKey: ["workflow-actions"],
-    queryFn: apiClient.getWorkflowAction,
-    enabled: !!selectedFlowId,
-  });
+  const [yaml, setYaml] = useState<string>("");
+
+  useGet(
+    selectedFlowId,
+    {
+      entity: EntityType.WORKFLOW,
+    },
+    {
+      enabled: !!selectedFlowId,
+      onSuccess(data) {
+        if (data?.definitionYaml) {
+          setYaml(data.definitionYaml);
+        }
+      },
+    },
+  );
 
   return (
     <WorkflowContext.Provider
@@ -102,7 +109,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         removeWorkflowParams,
         yaml,
         setYaml,
-        actions,
       }}
     >
       {children}

@@ -92,13 +92,12 @@ const normalizeTo = (url: To | UrlObject): To => {
   return resolveUrlObject(url);
 };
 
-type TQuery = {
+export type TQuery = {
   id?: string;
   group?: string;
   token?: string[];
   redirect?: string;
   subscriber?: string;
-  //v3 query types
   flowId?: string;
   nodeIds?: string;
 };

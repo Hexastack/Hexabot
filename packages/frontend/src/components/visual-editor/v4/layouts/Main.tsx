@@ -4,38 +4,31 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Action,
-  BaseWorkflowContext,
-  compileWorkflow,
-  Settings,
-  validateWorkflow,
-} from "@hexabot-ai/agentic";
+import { Actions } from "@hexabot-ai/agentic";
 import { Box, debounce, IconButton, styled } from "@mui/material";
-import {
-  useNodesInitialized,
-  useReactFlow,
-  useViewport,
-  Viewport,
-} from "@xyflow/react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useReactFlow, useViewport } from "@xyflow/react";
+import { useEffect } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { useGet } from "@/hooks/crud/useGet";
-import { useAppRouter } from "@/hooks/useAppRouter";
+import { useQueryChange } from "@/hooks/useQueryChange";
+import { useSafeCallback } from "@/hooks/useSafeCallback";
+import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType } from "@/services/types";
 
 import { AnimatedIcon } from "../components/icons/AnimatedIcon";
 import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
+import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
-import { TCb } from "../types/workflow.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
-import { buildNodesAndEdges } from "../utils/workflow-node.utils";
+import {
+  buildNodesAndEdges,
+  getDefinition,
+} from "../utils/workflow-node.utils";
 
 //TODO: Mock data need to be removed
-const DEFAULT_ACTIONS: TActions = [
+const DEFAULT_ACTIONS: Actions = [
   "call_api",
   "call_llm",
   "send_email",
@@ -66,116 +59,70 @@ const DEFAULT_ACTIONS: TActions = [
 
   return acc;
 }, {});
-
-type TActions = Record<
-  string,
-  Action<unknown, unknown, BaseWorkflowContext, Settings>
->;
 const StyledBox = styled(Box)(() => ({
   position: "relative",
   height: "100%",
 }));
 
 export const Main = () => {
-  const nodesInitialized = useNodesInitialized();
-  const { query } = useAppRouter();
-  const { flowId } = query;
   const { setViewport, fitView } = useReactFlow();
   const {
     selectedFlowId,
-    setSelectedFlowId,
-    toFocusIds,
     direction,
     setDirection,
     yaml,
     setYaml,
+    setSelectedFlowId,
     updateWorkflowURL,
-    actions,
-    selectedNodeIds,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
-
-  useGet(
-    selectedFlowId,
-    {
-      entity: EntityType.WORKFLOW,
-    },
-    {
-      enabled: !!selectedFlowId,
-      onSuccess(data) {
-        if (data?.definitionYaml) {
-          setYaml(data.definitionYaml);
-        }
-      },
-    },
-  );
-  const definition = useMemo(() => {
-    const validation = validateWorkflow(yaml);
-
-    if (validation.success) {
-      const { definition } = compileWorkflow(validation.data, {
-        actions: DEFAULT_ACTIONS,
-      });
-
-      return definition;
-    }
-  }, [yaml]);
   const { mutate: createWorkflow } = useCreate(EntityType.WORKFLOW);
   const defaultViewport = useViewport();
-  //TODO need to save viewport update (offset.x,offset.y,zoom)
-  const handleViewportUpdate: TCb<Viewport> = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    debounce(({ zoom, x, y }) => {
-      if (selectedFlowId) {
-        //
-      }
-    }, 400),
-    [selectedFlowId],
-  );
 
-  useEffect(() => {
-    if (flowId) {
-      if (typeof flowId === "string") {
-        setSelectedFlowId(flowId);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowId]);
-
-  useEffect(() => {
+  useNodesMeasured((nodesToFocus, selectedNodes, nodesInitialized) => {
     setViewport(defaultViewport);
-
-    if (nodesInitialized && toFocusIds.length) {
-      animateFocus(toFocusIds);
-    } else if (!selectedNodeIds.length) {
+    if (nodesInitialized && nodesToFocus.length) {
+      animateFocus(nodesToFocus);
+    } else if (!selectedNodes.length) {
       fitView({ duration: 100, interpolate: "smooth" });
     }
-  }, [nodesInitialized]);
+  });
+
+  const handleViewportUpdate = useSafeCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    debounce(({ zoom, x, y }) => {}, 400),
+    [selectedFlowId],
+    (memoizedFn) => {
+      memoizedFn.clear();
+    },
+  );
+  const graph = useSafeMemo(
+    () => {
+      if (yaml) {
+        const definition = getDefinition(yaml, { actions: DEFAULT_ACTIONS });
+        const config = getWorkflowDefaultConfig(direction);
+
+        return (
+          buildNodesAndEdges({ config, definition }) ?? { nodes: [], edges: [] }
+        );
+      }
+    },
+    [yaml, direction],
+    { nodes: [], edges: [] },
+  );
+  const queryFlowId = useQueryChange("flowId", (value) => {
+    if (value) {
+      setSelectedFlowId(value);
+    } else {
+      setSelectedFlowId("");
+      setYaml("");
+    }
+  });
 
   useEffect(() => {
-    return () => {
-      handleViewportUpdate.clear();
-    };
-  }, [handleViewportUpdate]);
+    if (!queryFlowId && yaml) {
+      const definition = getDefinition(yaml, { actions: DEFAULT_ACTIONS });
 
-  const config = useMemo(
-    () => getWorkflowDefaultConfig(direction),
-    [getWorkflowDefaultConfig, direction],
-  );
-  const buildGraphProps = useMemo(
-    () => ({
-      config,
-      definition,
-    }),
-    [config, definition],
-  );
-  const graph = useMemo(() => {
-    return buildNodesAndEdges(buildGraphProps) || { nodes: [], edges: [] };
-  }, [buildGraphProps, yaml, actions?.length]);
-
-  useEffect(() => {
-    if (!selectedFlowId && definition) {
       createWorkflow(
         {
           definitionYaml: yaml,
@@ -189,7 +136,7 @@ export const Main = () => {
         },
       );
     }
-  }, [yaml, definition]);
+  }, [yaml]);
 
   return (
     <div className="visual-editor-v4">
@@ -197,8 +144,8 @@ export const Main = () => {
       <StyledBox>
         <ReactFlowWrapper
           onViewport={handleViewportUpdate}
-          defaultEdges={graph.edges}
-          defaultNodes={graph.nodes}
+          defaultEdges={graph?.edges || []}
+          defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
       </StyledBox>
