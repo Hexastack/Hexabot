@@ -22,6 +22,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
+import { ActionService } from '@/actions';
 import { UserService } from '@/user';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
@@ -52,6 +53,7 @@ export class WorkflowController extends BaseOrmController<
     private readonly workflowService: WorkflowService,
     private readonly agenticService: AgenticService,
     private readonly userService: UserService,
+    private readonly actionService: ActionService,
   ) {
     super(workflowService);
   }
@@ -111,6 +113,15 @@ export class WorkflowController extends BaseOrmController<
     return this.canPopulate(populate)
       ? await this.workflowService.findAndPopulate(options ?? {})
       : await this.workflowService.find(options ?? {});
+  }
+
+  /**
+   * Retrieves actions.
+   * @returns Actions.
+   */
+  @Get('actions')
+  find() {
+    return this.actionService.getAll();
   }
 
   /**
