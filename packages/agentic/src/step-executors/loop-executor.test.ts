@@ -31,7 +31,6 @@ class TestContext extends BaseWorkflowContext {
 
 const createState = (): ExecutionState => ({
   input: {},
-  memory: {},
   output: {},
   iterationStack: [],
 });
@@ -178,7 +177,6 @@ describe('loop helpers', () => {
     const scope = {
       input: {},
       context: new TestContext().state,
-      memory: {},
       output: {},
       iteration: { item: 1, index: 0 },
       accumulator: 5,

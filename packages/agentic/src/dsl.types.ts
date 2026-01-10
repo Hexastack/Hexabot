@@ -288,7 +288,6 @@ export const WorkflowDefinitionSchema = z
     workflow: WorkflowMetadataSchema,
     inputs: InputsSchema.optional(),
     context: z.record(JsonValueSchema).optional(),
-    memory: z.record(JsonValueSchema).optional(),
     defaults: DefaultsSchema.optional(),
     tasks: z.record(TaskDefinitionSchema).superRefine((value, ctx) => {
       if (Object.keys(value).length === 0) {

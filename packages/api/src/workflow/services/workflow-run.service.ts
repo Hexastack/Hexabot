@@ -20,7 +20,6 @@ import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 
 type StateUpdate = {
   snapshot?: WorkflowSnapshot | null;
-  memory?: Record<string, unknown> | null;
   context?: Record<string, unknown> | null;
 };
 
@@ -43,7 +42,7 @@ export class WorkflowRunService extends BaseOrmService<
    * Mark a run as running and persist optional execution state.
    *
    * @param runId - Identifier of the run to update.
-   * @param payload - State changes such as snapshot, memory, context, or resume data.
+   * @param payload - State changes such as snapshot, context, or resume data.
    * @returns Updated workflow run marked as `running`.
    */
   async markRunning(

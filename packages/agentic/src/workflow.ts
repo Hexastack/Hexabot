@@ -91,7 +91,6 @@ export class Workflow {
     const result = await runner.start({
       inputData,
       context,
-      memory: options?.memory,
     });
 
     if (result.status === 'finished') {

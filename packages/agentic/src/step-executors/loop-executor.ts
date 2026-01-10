@@ -36,7 +36,6 @@ export async function executeLoop(
   const scope = {
     input: state.input,
     context: env.context.state,
-    memory: state.memory,
     output: state.output,
     iteration: state.iteration,
     accumulator: state.accumulator,
@@ -189,7 +188,6 @@ function buildScope(
   return {
     input: state.input,
     context: env.context.state,
-    memory: state.memory,
     output: state.output,
     iteration,
     accumulator,

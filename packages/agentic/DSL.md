@@ -6,8 +6,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 
 - `workflow`: metadata for the run (`name`, `version`, `description`).
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
-- `context`: read-only values injected by the runtime (authenticated user, channel, locale, etc.).
-- `memory`: long-term or cross-run slots hydrated by the runtime (thread history, playbooks, briefs).
+- `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
 - `defaults`: settings inherited by every task unless overridden (timeouts, retries, guardrails, audit flags).
 - `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs/outputs mapping, and per-task settings.
 - `flow`: ordered execution plan composed of `do`, `parallel`, `conditional`, and `loop` blocks.
@@ -18,8 +17,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 - Any string starting with `=` is evaluated as a JSONata expression. All other strings are treated as literals (quoted or plain).
 - Available scopes inside expressions:
   - `$input`: validated caller inputs.
-  - `$context`: runtime-provided metadata.
-  - `$memory`: hydrated long-term state.
+  - `$context`: runtime-provided metadata (including any long-term state you injected).
   - `$output.<task>`: outputs produced by previously executed tasks.
   - `$result`: the raw return value of the action currently running (only valid inside `tasks.*.outputs`).
   - `$iteration`: loop locals (`item`, `index`) available inside `loop.steps`.
@@ -78,7 +76,7 @@ All branches and loop bodies can themselves contain nested `conditional` or `par
 The provided example is the authoritative reference of the DSL in action:
 
 1) Classify the incoming request (`understand_request`), optionally ask the user for missing fields (`ask_for_missing_detail`), and fetch CRM context.  
-2) Enrich in parallel with web search, memory recall, and calendar pulls.  
+2) Enrich in parallel with web search, recalled history, and calendar pulls.  
 3) Synthesize research, route by intent, and branch into support drafting, sales pitch, or human escalation. High-priority support requests are drafted and then escalated.  
 4) Fan out FYI emails to stakeholders via a `loop` with throttling, early exit on first acknowledgement, and an accumulator capturing delivery outcomes.  
 5) Send the final email response, selecting the body based on the chosen route.
@@ -93,6 +91,6 @@ Notable conventions enforced in the example:
 
 - Prefer descriptive task names; keep actions generic and reusable.
 - Minimize side effects inside JSONata; use expressions mainly for routing and lightweight data shaping.
-- Treat `context` and `memory` as read-only; write outputs through tasks designed for persistence if needed.
+- Treat `context` as read-only; write outputs through tasks designed for persistence if needed.
 - Keep parallel blocks small and bounded with `max_concurrency` when hitting external APIs or rate limits.
 - Surface only the essentials in top-level `outputs` so callers get a clean contract.

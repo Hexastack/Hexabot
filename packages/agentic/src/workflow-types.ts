@@ -90,7 +90,6 @@ export type LoopStep = BaseStep & {
 export type EvaluationScope = {
   input: Record<string, unknown>;
   context: Record<string, unknown>;
-  memory: Record<string, unknown>;
   output: Record<string, unknown>;
   iteration?: { item: unknown; index: number };
   accumulator?: unknown;
@@ -100,7 +99,6 @@ export type EvaluationScope = {
 /** Minimal mutable state for the executor. */
 export type ExecutionState = {
   input: Record<string, unknown>;
-  memory: Record<string, unknown>;
   output: Record<string, unknown>;
   iteration?: { item: unknown; index: number };
   accumulator?: unknown;
@@ -149,7 +147,6 @@ export type ResumeResult =
 
 /** Options that influence how the workflow runner behaves. */
 export type WorkflowRunOptions = {
-  memory?: Record<string, unknown>;
   runId?: string;
 };
 
@@ -161,7 +158,6 @@ export type WorkflowResumeResult = ResumeResult;
 export type RunnerStartArgs = {
   inputData: unknown;
   context: BaseWorkflowContext;
-  memory?: Record<string, unknown>;
 };
 
 /** Payload passed when resuming a suspended run. */

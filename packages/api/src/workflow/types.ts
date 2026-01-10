@@ -37,7 +37,6 @@ export type RunWorkflowOptions =
 
 export type MarkRunningInput = {
   snapshot?: WorkflowSnapshot | null;
-  memory?: Record<string, unknown> | null;
   lastResumeData?: unknown;
 };
 

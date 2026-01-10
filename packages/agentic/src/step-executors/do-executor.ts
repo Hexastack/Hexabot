@@ -40,7 +40,6 @@ export async function executeDoStep(
   const scope: EvaluationScope = {
     input: state.input,
     context: env.context.state,
-    memory: state.memory,
     output: state.output,
     iteration: state.iteration,
     accumulator: state.accumulator,

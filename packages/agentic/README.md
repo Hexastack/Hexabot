@@ -3,7 +3,7 @@
 Typed runtime and YAML DSL for orchestrating multi-step AI/automation workflows. The package combines JSONata-powered expressions, schema validation, and a resumable runner so you can wire LLMs, tools, and human-in-the-loop pauses with guardrails.
 
 ## Highlights
-- Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$memory`, `$output`, `$iteration`, `$accumulator`, `$result`).
+- Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$output`, `$iteration`, `$accumulator`, `$result`).
 - Type-safe actions built with `defineAction`, Zod-validated IO, and merged settings (timeouts, retries, guardrails) inherited from workflow defaults.
 - Resumable execution via `WorkflowRunner` and `context.workflow.suspend`, plus snapshots for persistence and replay.
 - Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and `loop` with accumulators and early-exit conditions.
@@ -27,13 +27,13 @@ A workflow is a single YAML (or object) that declares metadata, inputs, tasks, c
 
 - `workflow`: name/version/description.
 - `inputs.schema`: JSON-schema-like fields validated at runtime.
-- `context` and `memory`: read-only values injected by the host and exposed to expressions.
+- `context`: read-only values injected by the host (including any long-term state) and exposed to expressions.
 - `defaults.settings`: inherited by every task (timeouts, retries, guardrails, audit flags).
 - `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs`, `outputs`, `settings`.
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
-Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, memory, output, iteration, accumulator, result }` as scope; `$context` resolves to your workflow context state.
+Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator, result }` as scope; `$context` resolves to your workflow context state.
 
 ## Defining actions
 
@@ -72,7 +72,7 @@ import fs from 'node:fs';
 const yamlSource = fs.readFileSync('workflow.yml', 'utf8');
 const actions = { call_api }; // keys are task.action names
 
-class AppContext extends BaseWorkflowContext<{ user_id: string }> {}
+class AppContext extends BaseWorkflowContext<{ user_id: string; thread_id: string }> {}
 
 const workflow = Workflow.fromYaml(yamlSource, { actions });
 
@@ -80,11 +80,13 @@ const emitter = new WorkflowEventEmitter();
 emitter.on('hook:step:start', ({ step }) => console.log('start', step.id));
 
 const runner = await workflow.buildAsyncRunner();
-const context = new AppContext({ user_id: 'user-1' }, emitter);
+const context = new AppContext(
+  { user_id: 'user-1', thread_id: 'thread-1' },
+  emitter,
+);
 const startResult = await runner.start({
   inputData: { id: '123' },
   context,
-  memory: { thread_id: 'thread-1' },
 });
 
 if (startResult.status === 'finished') {

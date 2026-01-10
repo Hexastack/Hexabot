@@ -342,7 +342,6 @@ export function buildSuspensionForPath(
         const scope: EvaluationScope = {
           input: iterationState.input,
           context: env.context.state,
-          memory: iterationState.memory,
           output: iterationState.output,
           iteration: iterationState.iteration ?? {
             item: undefined,

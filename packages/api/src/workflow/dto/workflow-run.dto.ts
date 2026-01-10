@@ -41,9 +41,6 @@ export class WorkflowRunStub extends BaseStub {
   output?: Record<string, unknown> | null;
 
   @Expose()
-  memory?: Record<string, unknown> | null;
-
-  @Expose()
   context?: Record<string, unknown> | null;
 
   @Expose()
@@ -130,11 +127,6 @@ export class WorkflowRunCreateDto {
   @IsOptional()
   @IsObject()
   input?: Record<string, unknown> | null;
-
-  @ApiPropertyOptional({ description: 'Current memory state', type: Object })
-  @IsOptional()
-  @IsObject()
-  memory?: Record<string, unknown> | null;
 
   @ApiPropertyOptional({ description: 'Context snapshot', type: Object })
   @IsOptional()
