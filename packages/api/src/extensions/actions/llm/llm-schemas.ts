@@ -93,6 +93,35 @@ export const llmGenerateTextOutputSchema = z.object({
 
 export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema;
 
+export const llmAgentInputSchema = llmPromptBaseSchema
+  .extend({
+    instructions: z.string().min(1).optional(),
+  })
+  .superRefine(validatePromptSource);
+
+export const llmAgentOutputSchema = z.object({
+  text: z.string().optional(),
+  content: z.array(z.any()).optional(),
+  reasoning: z.string().optional(),
+  files: z.array(z.any()).optional(),
+  sources: z.array(z.any()).optional(),
+  tool_calls: z.array(z.any()).optional(),
+  tool_results: z.array(z.any()).optional(),
+  finish_reason: z.string().optional(),
+  raw_finish_reason: z.string().optional(),
+  model: z.string().optional(),
+  usage: llmUsageSchema.optional(),
+  total_usage: llmUsageSchema.optional(),
+  steps: z.array(z.any()).optional(),
+  raw: llmRawResponseSchema.optional(),
+});
+
+export const llmAgentSettingsSchema = llmCommonSettingsSchema.extend({
+  instructions: z.string().min(1).optional(),
+  stop_step_count: z.number().int().positive().optional(),
+  stop_tool_call: z.string().trim().min(1).optional(),
+});
+
 export const jsonSchemaInput = z.custom<JSONSchema7>(
   (value) =>
     value !== undefined &&
@@ -132,6 +161,12 @@ export type LlmGenerateTextOutput = z.infer<typeof llmGenerateTextOutputSchema>;
 export type LlmGenerateTextSettings = z.infer<
   typeof llmGenerateTextSettingsSchema
 >;
+
+export type LlmAgentInput = z.infer<typeof llmAgentInputSchema>;
+
+export type LlmAgentOutput = z.infer<typeof llmAgentOutputSchema>;
+
+export type LlmAgentSettings = z.infer<typeof llmAgentSettingsSchema>;
 
 export type LlmGenerateObjectInput = z.infer<
   typeof llmGenerateObjectInputSchema
