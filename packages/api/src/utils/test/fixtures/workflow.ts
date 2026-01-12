@@ -15,7 +15,7 @@ import {
 } from '@/utils/test/fixtures/user';
 import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
-import { WorkflowType } from '@/workflow/types';
+import { DirectionType, WorkflowType } from '@/workflow/types';
 
 /**
  * Simple workflow definition that exercises the built-in messaging actions.
@@ -101,6 +101,10 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     type: WorkflowType.conversational,
     schedule: null,
     createdBy: userFixtureIds.admin,
+    direction: DirectionType.HORIZONTAL,
+    x: 0,
+    y: 0,
+    zoom: 1,
   },
 ];
 

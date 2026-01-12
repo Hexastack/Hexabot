@@ -52,3 +52,8 @@ export type WorkflowContextState = Record<string, unknown> & {
   workflowId?: string;
   runId?: string;
 };
+
+export enum DirectionType {
+  HORIZONTAL = 'horizontal',
+  VERTICAL = 'vertical',
+}

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { debounce } from "@mui/material";
 import {
   type Node,
   type NodeChange,
@@ -11,12 +12,16 @@ import {
   applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
-import type { ResizeControlDirection } from "@xyflow/system";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
+import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useQueryChange } from "@/hooks/useQueryChange";
+import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, RouterType } from "@/services/types";
+import { IWorkflowAttributes } from "@/types/workfow.types";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import type { WorkflowContextProps } from "../types/workflow.types";
@@ -24,15 +29,37 @@ import type { WorkflowContextProps } from "../types/workflow.types";
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
 }) => {
+  const flowId = useQueryChange("flowId");
+  const { data: workflows } = useFind(
+    {
+      entity: EntityType.WORKFLOW,
+    },
+    {
+      hasCount: false,
+      initialSortState: [{ field: "createdAt", sort: "asc" }],
+    },
+  );
+  const { data: workflow } = useGet(
+    flowId || "",
+    {
+      entity: EntityType.WORKFLOW,
+    },
+    {
+      enabled: !!flowId,
+    },
+  );
   const router = useAppRouter();
+  const directionMemo = useMemo(() => {
+    return workflow?.direction;
+  }, [flowId, workflow?.direction]);
+  const yaml = useMemo(() => {
+    return workflow?.definitionYaml;
+  }, [workflow?.definitionYaml]);
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
-  const [selectedFlowId, setSelectedFlowId] = useState<string>("");
   const [toFocusIds, setToFocusIds] = useState<string[]>([]);
-  const [direction, setDirection] =
-    useState<ResizeControlDirection>("horizontal");
   const getCentroid = (): XYPosition => {
     if (typeof window === "undefined") return { x: 0, y: 0 };
     const screenWidth = window.innerWidth;
@@ -67,24 +94,26 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     }
   };
   const removeWorkflowParams = async () => {
-    if (selectedFlowId) {
-      await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${selectedFlowId}`);
+    if (flowId) {
+      await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${flowId}`);
     }
   };
-  const [yaml, setYaml] = useState<string>("");
-
-  useGet(
-    selectedFlowId,
-    {
-      entity: EntityType.WORKFLOW,
-    },
-    {
-      enabled: !!selectedFlowId,
-      onSuccess(data) {
-        if (data?.definitionYaml) {
-          setYaml(data.definitionYaml);
-        }
-      },
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const debouncedWorkflowUpdate = useSafeCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    debounce((props: Partial<IWorkflowAttributes>) => {
+      if (flowId) {
+        updateWorkflow({
+          id: flowId,
+          params: props,
+        });
+      }
+    }, 400),
+    [flowId],
+    (memoizedFn) => {
+      memoizedFn.clear();
     },
   );
 
@@ -101,14 +130,15 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         getWorkflowFromCache,
         setOpenSearchPanel,
         setSelectedNodeIds,
-        selectedFlowId,
-        setSelectedFlowId,
-        direction,
-        setDirection,
+        selectedFlowId: flowId,
+        direction: directionMemo,
         updateWorkflowURL,
         removeWorkflowParams,
         yaml,
-        setYaml,
+        workflow,
+        workflows,
+        updateWorkflow,
+        debouncedWorkflowUpdate,
       }}
     >
       {children}

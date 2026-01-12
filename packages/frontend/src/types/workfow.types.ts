@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { ResizeControlDirection } from "@xyflow/system";
 
 import { EntityType, Format } from "@/services/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
 export interface IWorkflowAttributes {
   name: string;
@@ -18,6 +19,11 @@ export interface IWorkflowAttributes {
   schedule?: string | null;
   type?: string;
   definitionYaml?: string;
+  zoom?: number;
+  // offset?: [number, number];
+  x?: number;
+  y?: number;
+  direction?: ResizeControlDirection;
 }
 
 export interface IWorkflowFilters {

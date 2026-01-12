@@ -7,7 +7,7 @@
 import { Grid, styled } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
 
-import { Main } from "./layouts/Main";
+import { Workflow } from "./layouts/Workflow";
 import { WorkflowProvider } from "./providers/WorkflowProvider";
 import { YamlEditor } from "./yamlEditor/YamlEditor";
 
@@ -23,19 +23,17 @@ const StyledGrid = styled(Grid)(() => ({
   flexDirection: "column",
 }));
 
-export const WorkflowEditor = () => {
-  return (
-    <ReactFlowProvider>
-      <WorkflowProvider>
-        <StyledContainerGrid container>
-          <Grid container height="100%" margin="auto">
-            <YamlEditor />
-            <StyledGrid item xs>
-              <Main />
-            </StyledGrid>
-          </Grid>
-        </StyledContainerGrid>
-      </WorkflowProvider>
-    </ReactFlowProvider>
-  );
-};
+export const WorkflowEditor = () => (
+  <ReactFlowProvider>
+    <WorkflowProvider>
+      <StyledContainerGrid container>
+        <Grid container height="100%" margin="auto">
+          <YamlEditor />
+          <StyledGrid item xs>
+            <Workflow />
+          </StyledGrid>
+        </Grid>
+      </StyledContainerGrid>
+    </WorkflowProvider>
+  </ReactFlowProvider>
+);
