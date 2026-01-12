@@ -6,6 +6,7 @@
 
 import { type IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ChevronRight } from "@mui/icons-material";
 import {
   Collapse,
   Divider,
@@ -30,7 +31,7 @@ import { TTranslationKeys } from "@/i18n/i18n.types";
 import { theme } from "@/layout/themes/theme";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
-import { AnimatedChevron } from "../icons/AnimatedChevron";
+import { AnimatedComponent } from "../AnimatedComponent";
 
 type TIcon = OverridableComponent<SvgIconTypeMap<{}, "svg">>;
 
@@ -209,7 +210,11 @@ const VerticalMenuItem = ({
           />
         ) : null}
         {isMenuItemHead && isToggled ? (
-          <AnimatedChevron htmlColor={color} canRotate={isSubmenuOpen} />
+          <AnimatedComponent
+            component={ChevronRight}
+            htmlColor={color}
+            canRotate={isSubmenuOpen}
+          />
         ) : null}
       </StyledListItemButton>
     </Tooltip>
