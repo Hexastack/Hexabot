@@ -10,13 +10,13 @@ import { type TQuery, useAppRouter } from "@/hooks/useAppRouter";
 
 export const useQueryChange = <K extends keyof TQuery>(
   key: K,
-  cb: (value?: TQuery[K]) => void,
+  cb?: (value?: TQuery[K]) => void,
 ): TQuery[K] => {
   const { query } = useAppRouter();
   const value = useMemo(() => query[key], [query, key, cb]);
 
   useEffect(() => {
-    cb(value);
+    cb?.(value);
   }, [value]);
 
   return query[key];

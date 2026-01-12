@@ -7,9 +7,6 @@
 import { Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
 import { SyntheticEvent } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
-import { EntityType } from "@/services/types";
-
 import { useWorkflow } from "../../hooks/useWorkflow";
 
 const StyledGrid = styled(Grid)(() => ({
@@ -57,19 +54,8 @@ const StyledTab = styled(Tab)(() => ({
 }));
 
 export const FlowsTabs = () => {
-  const { selectedFlowId, setSelectedFlowId, updateWorkflowURL } =
-    useWorkflow();
-  const { data: workflows } = useFind(
-    {
-      entity: EntityType.WORKFLOW,
-    },
-    {
-      hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-  );
+  const { workflows, selectedFlowId, updateWorkflowURL } = useWorkflow();
   const changeHandler = (_event: SyntheticEvent, workflowId: string) => {
-    setSelectedFlowId(workflowId);
     updateWorkflowURL(workflowId);
   };
 

@@ -154,7 +154,7 @@ export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
           height: groupBounds.height + padding,
           zIndex: -1,
           borderRadius: "13px",
-          backgroundColor: color ? `${color}33` : undefined,
+          backgroundColor: color ? `${color}99` : undefined,
           border: "1px solid #0004",
         },
       });
