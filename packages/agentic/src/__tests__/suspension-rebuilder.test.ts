@@ -188,7 +188,6 @@ describe('rebuildSuspension', () => {
     });
     const state: ExecutionState = {
       input: {},
-      memory: {},
       output: {},
       iterationStack: [3],
     };
@@ -248,7 +247,6 @@ describe('rebuildSuspension', () => {
     });
     const state: ExecutionState = {
       input: {},
-      memory: {},
       output: {},
       iterationStack: [],
     };
@@ -311,7 +309,6 @@ describe('rebuildSuspension', () => {
     });
     const state: ExecutionState = {
       input: {},
-      memory: {},
       output: {},
       iterationStack: [1],
       accumulator: 2,

@@ -134,7 +134,6 @@ export class AgenticService {
       workflowId: run.workflow?.id,
       triggeredById: run.triggeredBy?.id,
       hasSnapshot: Boolean(strategy.markRunningInput.snapshot ?? run.snapshot),
-      hasMemory: Boolean(strategy.markRunningInput.memory ?? run.memory),
       hasResumeData: Boolean(
         strategy.markRunningInput.lastResumeData ?? strategy.resumeData,
       ),
@@ -207,19 +206,16 @@ export class AgenticService {
       const runner = await workflowInstance.buildAsyncRunner({
         runId: run.id,
       });
-      const memory = run.memory ?? run.workflow.definition.memory ?? {};
 
       return {
         runner,
         markRunningInput: {
           snapshot: run.snapshot ?? null,
-          memory,
         },
         execute: () =>
           runner.start({
             inputData: run.input ?? {},
             context,
-            memory,
           }),
       };
     }
@@ -246,7 +242,6 @@ export class AgenticService {
       markRunningInput: {
         lastResumeData: latestInput,
         snapshot: run.snapshot ?? null,
-        memory: run.memory ?? null,
       },
       execute: () => runner.resume({ resumeData: latestInput }),
     };
@@ -264,7 +259,6 @@ export class AgenticService {
       workflow: workflow.id,
       triggeredBy: initiator.id,
       input: event.buildInput(),
-      memory: workflow.definition.memory ?? null,
       context: workflow.definition.context ?? null,
       metadata: event.getMetadata(),
     });
@@ -308,7 +302,6 @@ export class AgenticService {
           reason: result.reason,
           data: result.data,
           snapshot: result.snapshot,
-          memory: state?.memory ?? null,
           context: contextState,
           lastResumeData: resumeData,
         });
@@ -319,7 +312,6 @@ export class AgenticService {
         });
         await this.workflowRunService.markFinished(run.id, {
           snapshot: result.snapshot,
-          memory: state?.memory ?? null,
           context: contextState,
           output: result.output ?? output,
         });
@@ -332,7 +324,6 @@ export class AgenticService {
         });
         await this.workflowRunService.markFailed(run.id, {
           snapshot: result.snapshot,
-          memory: state?.memory ?? null,
           context: contextState,
           error: this.stringifyError(result.error),
         });
@@ -342,7 +333,6 @@ export class AgenticService {
     await this.workflowRunService.updateOne(run.id, {
       input: state?.input ?? run.input ?? {},
       output,
-      memory: state?.memory ?? run.memory ?? null,
       metadata,
       context: contextState,
     });
@@ -362,7 +352,6 @@ export class AgenticService {
         : baseInput;
     const state: ExecutionState = {
       input: mergedInput,
-      memory: run.memory ?? {},
       output: run.output ?? {},
       iterationStack: [],
     };
@@ -441,7 +430,6 @@ export class AgenticService {
     );
     await this.workflowRunService.markFailed(run.id, {
       snapshot: runner.getSnapshot(),
-      memory: state?.memory ?? null,
       context: contextState,
       error: this.stringifyError(error),
     });
@@ -449,7 +437,6 @@ export class AgenticService {
     await this.workflowRunService.updateOne(run.id, {
       input: state?.input ?? run.input ?? {},
       output: state?.output ?? run.output ?? null,
-      memory: state?.memory ?? run.memory ?? null,
       metadata,
       context: contextState,
     });

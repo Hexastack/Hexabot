@@ -28,7 +28,6 @@ class TestContext extends BaseWorkflowContext {
 
 const createState = (): ExecutionState => ({
   input: {},
-  memory: {},
   output: {},
   iterationStack: [],
 });

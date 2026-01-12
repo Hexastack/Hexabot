@@ -27,6 +27,11 @@ async function main() {
       locale: 'en-US',
       timezone: 'America/Los_Angeles',
       channel: 'email',
+      thread_id: 'thread-123',
+      full_transcript: 'Conversation so far with the user.',
+      last_summary: 'Previous summary of the issue.',
+      support_playbook: 'Support runbook v1.2',
+      product_brief: 'Launch messaging and positioning.',
     },
     emitter,
   );
@@ -46,14 +51,7 @@ async function main() {
     priority: 'normal',
     attachments: [],
   };
-  const memory = {
-    thread_id: 'thread-123',
-    full_transcript: 'Conversation so far with the user.',
-    last_summary: 'Previous summary of the issue.',
-    support_playbook: 'Support runbook v1.2',
-    product_brief: 'Launch messaging and positioning.',
-  };
-  const result = await runner.start({ inputData, context, memory });
+  const result = await runner.start({ inputData, context });
 
   if (result.status === 'finished') {
     console.log('Final workflow outputs:', result.output);

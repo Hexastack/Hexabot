@@ -177,14 +177,13 @@ describe('AgenticService (TypeORM)', () => {
     it('starts a new workflow run and persists a finished result', async () => {
       const event = createEvent({ text: 'hello' });
       const runtimeContext = {
-        state: { locale: initiator.language, channel: 'web' },
+        state: { locale: initiator.language, channel: 'web', session: 1 },
         event,
       } as any;
       workflowContextFactoryMock.create.mockResolvedValue(runtimeContext);
       const runnerState: ExecutionState = {
         input: { merged: true },
         output: { fromState: true },
-        memory: { count: 1 },
         iterationStack: [0],
         iteration: { item: 'root', index: 0 },
         accumulator: { total: 3 },
@@ -228,7 +227,6 @@ describe('AgenticService (TypeORM)', () => {
       expect(runner.start).toHaveBeenCalledWith({
         inputData: event.buildInput(),
         context: runtimeContext,
-        memory: {},
       });
       expect(workflowContextFactoryMock.create).toHaveBeenCalledWith(
         expect.objectContaining({ id: storedRun.id }),
@@ -236,7 +234,6 @@ describe('AgenticService (TypeORM)', () => {
       );
       expect(storedRun.status).toBe('finished');
       expect(storedRun.output).toEqual({ result: 'ok' });
-      expect(storedRun.memory).toEqual(runnerState.memory);
       expect(storedRun.input).toEqual(runnerState.input);
       expect(storedRun.context).toEqual(runtimeContext.state);
       expect(storedRun.metadata).toEqual(
@@ -259,7 +256,7 @@ describe('AgenticService (TypeORM)', () => {
         status: 'suspended',
         input: { original: true },
         output: { saved: true },
-        memory: { saved: true },
+        context: { saved: true },
         snapshot: { status: 'suspended', actions: {} },
         metadata: {
           state: {
@@ -273,12 +270,14 @@ describe('AgenticService (TypeORM)', () => {
         suspensionData: { previous: true },
       });
       const event = createEvent({ latest: 'payload' });
-      const runtimeContext = { state: { resumed: true }, event } as any;
+      const runtimeContext = {
+        state: { saved: true, resumed: true },
+        event,
+      } as any;
       workflowContextFactoryMock.create.mockResolvedValue(runtimeContext);
       const runnerState: ExecutionState = {
         input: { merged: true },
         output: { next: 'output' },
-        memory: { saved: true },
         iterationStack: [0],
         iteration: { item: 'loop', index: 0 },
         accumulator: { total: 2 },
@@ -315,7 +314,6 @@ describe('AgenticService (TypeORM)', () => {
       expect(workflowInstance.buildRunnerFromState).toHaveBeenCalledWith({
         state: {
           input: { original: true, latest: 'payload' },
-          memory: { saved: true },
           output: { saved: true },
           iterationStack: [0],
           iteration: { item: 'loop', index: 0 },
@@ -338,7 +336,6 @@ describe('AgenticService (TypeORM)', () => {
       expect(updatedRun.suspendedStep).toBe(resumeResult.step.id);
       expect(updatedRun.suspensionReason).toBe(resumeResult.reason);
       expect(updatedRun.lastResumeData).toEqual(event.buildInput());
-      expect(updatedRun.memory).toEqual(runnerState.memory);
       expect(updatedRun.output).toEqual(runnerState.output);
       expect(updatedRun.context).toEqual(runtimeContext.state);
       expect(updatedRun.metadata).toEqual({
@@ -357,7 +354,6 @@ describe('AgenticService (TypeORM)', () => {
       const runnerState: ExecutionState = {
         input: { failing: true },
         output: { partial: true },
-        memory: { failing: true },
         iterationStack: [],
       };
       const runnerSnapshot: WorkflowSnapshot = {
@@ -387,7 +383,6 @@ describe('AgenticService (TypeORM)', () => {
       expect(failedRun.status).toBe('failed');
       expect(failedRun.error).toBe(failure.message);
       expect(failedRun.snapshot).toEqual(runnerSnapshot);
-      expect(failedRun.memory).toEqual(runnerState.memory);
       expect(failedRun.output).toEqual(runnerState.output);
       expect(failedRun.context).toEqual(runtimeContext.state);
       expect(failedRun.metadata).toEqual(

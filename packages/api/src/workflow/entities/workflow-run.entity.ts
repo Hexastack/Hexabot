@@ -64,10 +64,6 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   @JsonColumn({ nullable: true })
   output?: Record<string, unknown> | null;
 
-  /** Working memory accumulated during execution. */
-  @JsonColumn({ nullable: true })
-  memory?: Record<string, unknown> | null;
-
   /** Context state object shared across workflow steps. */
   @JsonColumn({ nullable: true })
   context?: Record<string, unknown> | null;

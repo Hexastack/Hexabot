@@ -16,6 +16,11 @@ export type ExampleContextState = {
   locale: string;
   timezone: string;
   channel: string;
+  thread_id: string;
+  full_transcript: string;
+  last_summary: string;
+  support_playbook: string;
+  product_brief: string;
 };
 
 export class ExampleContext extends BaseWorkflowContext<ExampleContextState> {

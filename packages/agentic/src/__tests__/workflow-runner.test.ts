@@ -609,7 +609,6 @@ describe('WorkflowRunner', () => {
     });
     const persistedState: ExecutionState = {
       input: {},
-      memory: {},
       output: {},
       iterationStack: [],
     };
@@ -690,7 +689,6 @@ describe('WorkflowRunner', () => {
     const runtimeState = (runner as unknown as { state: ExecutionState }).state;
     const persistedState: ExecutionState = {
       input: { ...runtimeState.input },
-      memory: { ...runtimeState.memory },
       output: { ...runtimeState.output },
       iteration: runtimeState.iteration,
       accumulator: runtimeState.accumulator,

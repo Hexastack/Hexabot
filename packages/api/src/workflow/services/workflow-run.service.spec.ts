@@ -128,7 +128,6 @@ describe('WorkflowRunService (TypeORM)', () => {
     it('marks a run as running and forwards state', async () => {
       const payload = {
         snapshot,
-        memory: { count: 1 },
         context: { user: 'demo' },
         lastResumeData: { resumed: true },
       };
@@ -149,7 +148,6 @@ describe('WorkflowRunService (TypeORM)', () => {
       );
       expect(updated.status).toBe('running');
       expect(updated.snapshot).toEqual(payload.snapshot);
-      expect(updated.memory).toEqual(payload.memory);
       expect(updated.context).toEqual(payload.context);
       expect(updated.lastResumeData).toEqual(payload.lastResumeData);
       expect(stored?.status).toBe('running');
@@ -164,7 +162,6 @@ describe('WorkflowRunService (TypeORM)', () => {
         data: { question: 'name' },
         lastResumeData: { source: 'suspend' },
         snapshot,
-        memory: { step: 'greet' },
         context: { lang: 'en' },
       };
       const updateSpy = jest.spyOn(workflowRunRepository, 'updateOne');
@@ -183,7 +180,6 @@ describe('WorkflowRunService (TypeORM)', () => {
           lastResumeData: payload.lastResumeData,
           suspendedAt: now,
           snapshot,
-          memory: payload.memory,
           context: payload.context,
         },
         undefined,
@@ -201,7 +197,6 @@ describe('WorkflowRunService (TypeORM)', () => {
       jest.useFakeTimers().setSystemTime(now);
       const payload = {
         snapshot,
-        memory: { done: true },
         context: { total: 1 },
         output: { message: 'complete' },
       };
@@ -233,7 +228,6 @@ describe('WorkflowRunService (TypeORM)', () => {
       jest.useFakeTimers().setSystemTime(now);
       const payload = {
         snapshot,
-        memory: { stage: 'error' },
         context: { attempt: 1 },
         error: 'Unexpected failure',
       };

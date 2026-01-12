@@ -99,7 +99,6 @@ export const evaluateValue = async (
     {
       input: scope.input,
       context: scope.context,
-      memory: scope.memory,
       output: scope.output,
       iteration: scope.iteration,
       accumulator: scope.accumulator,

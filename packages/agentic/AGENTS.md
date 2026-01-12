@@ -19,8 +19,8 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Run the suspend/resume quickstart: `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`
 
 ## DSL essentials (YAML or JS object)
-- Workflow parts: `workflow` metadata, optional `inputs.schema`, `context`, `memory`, `defaults.settings`, `tasks`, `flow`, `outputs`.
-- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$memory`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `tasks.*.outputs`).
+- Workflow parts: `workflow` metadata, optional `inputs.schema`, `context`, `defaults.settings`, `tasks`, `flow`, `outputs`. Long-term state should be stored on the workflow context.
+- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `tasks.*.outputs`).
 - Flow primitives: `do` (single task), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` (`for_each`, optional `until`, `accumulate`, `max_concurrency` hint).
 - Tasks: names must be `snake_case`; each declares `action`, optional `inputs`/`outputs` maps, and `settings` that merge over `defaults.settings`.
 - Outputs: required map evaluated after the flow; values are expressions that usually reference `$output.<task>.*`.

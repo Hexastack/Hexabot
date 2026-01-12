@@ -37,3 +37,8 @@ jest.mock('@resvg/resvg-js', () => {
     })),
   };
 });
+
+jest.mock('nestjs-dynamic-providers', () => ({
+  InjectDynamicProviders: () => (target: unknown) => target,
+  resolveDynamicProviders: jest.fn(async () => undefined),
+}));

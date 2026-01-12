@@ -1,6 +1,6 @@
 ### Example DSL: AI/automation workflow (annotated)
 ### This single file is reference documentation for the YAML language used to orchestrate multi-step agents.
-### Convention: strings beginning with "=" are JSONata expressions with scope {context, memory, input, output, result}; all other strings are treated as literals.
+### Convention: strings beginning with "=" are JSONata expressions with scope {context, input, output, iteration, accumulator, result}; all other strings are treated as literals.
 ---
 # Root workflow metadata keeps runs self-describing and versioned.
 workflow:
@@ -30,20 +30,18 @@ inputs:
       description: "Optional file ids that the user attached with the request."
 
 # Context is provided by the runtime (read-only) and accessed with $context.* inside tasks.
+# Include any long-term state here (thread ids, transcripts, briefs) instead of a separate memory block.
 context:
   user_id: "=$context.user_id"            # e.g., authenticated account id
   account_tier: "=$context.account_tier"  # e.g., free/pro/enterprise for policy decisions
   locale: "=$context.locale"              # e.g., en-US, influences prompts
   timezone: "=$context.timezone"          # useful for time-sensitive operations
   channel: "=$context.channel"            # e.g., web, email, slack; used when messaging the user
-
-# Long-term memory slots that the runtime can hydrate before execution begins.
-memory:
-  thread_id: "=$memory.thread_id"           # thread/conversation id for continuity
-  full_transcript: "=$memory.full_transcript"
-  last_summary: "=$memory.last_summary"
-  support_playbook: "=$memory.support_playbook"
-  product_brief: "=$memory.product_brief"
+  thread_id: "=$context.thread_id"        # thread/conversation id for continuity
+  full_transcript: "=$context.full_transcript"
+  last_summary: "=$context.last_summary"
+  support_playbook: "=$context.support_playbook"
+  product_brief: "=$context.product_brief"
 
 # Global defaults inherited by every task (overridable per task).
 defaults:
@@ -71,7 +69,7 @@ tasks:
         Allowed intents: support, sales, research.
       user_query: "=$input.query"
       attachments: "=$input.attachments"
-      last_summary: "=$memory.last_summary"
+      last_summary: "=$context.last_summary"
       user_tier: "=$context.account_tier"
     outputs:
       intent: "=$result.intent"
@@ -117,7 +115,7 @@ tasks:
     description: "Recall summarized prior conversation for continuity."
     action: query_memory
     inputs:
-      thread_id: "=$memory.thread_id"     # read thread id from long-term memory
+      thread_id: "=$context.thread_id"     # read thread id from long-term context state
       user_id: "=$context.user_id"
     outputs:
       thread_summary: "=$result.summary"
@@ -202,7 +200,7 @@ tasks:
       profile: "=$output.fetch_user_profile.profile"
       question: "=$input.query"
       clarification: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : ''"
-      troubleshooting_guide: "=$memory.support_playbook"
+      troubleshooting_guide: "=$context.support_playbook"
       signals: "=$output.synthesize_research.synthesized"
     outputs:
       reply_markdown: "=$result.message"
@@ -215,7 +213,7 @@ tasks:
     description: "Write a sales email using retrieved company insights."
     action: call_llm
     inputs:
-      product_brief: "=$memory.product_brief"
+      product_brief: "=$context.product_brief"
       company_news: "=$output.search_recent_news.snippets"
       meetings: "=$output.fetch_calendar_events.events"
       persona: "=$output.fetch_user_profile.profile.persona"
@@ -232,7 +230,7 @@ tasks:
     action: create_ticket
     inputs:
       user_id: "=$context.user_id"
-      transcript: "=$memory.full_transcript"
+      transcript: "=$context.full_transcript"
       summary: "=$output.synthesize_research.synthesized"
       clarification: "=$exists($output.ask_for_missing_detail.user_reply) ? $output.ask_for_missing_detail.user_reply : ''"
     outputs:
@@ -384,9 +382,9 @@ outputs:
   stakeholder_notifications: "=$output.notify_stakeholders.notifications"
 
 # Notes:
-# - Expressions: strings starting with "=" are JSONata with scope {context, memory, input, output, result};
+# - Expressions: strings starting with "=" are JSONata with scope {context, input, output, result};
 #   other strings are treated as literals.
-# - Accessors recap: $context.* (runtime info), $memory.* (long-term state),
+# - Accessors recap: $context.* (runtime info and long-term state you injected),
 #   $input.* (original workflow inputs), $output.* (data produced by prior tasks), $iteration.* (loop locals).
 # - Human-in-the-loop: tasks can declare settings.await_user=true to checkpoint execution, send a message,
 #   and resume when the user replies. Engines may optionally support on_timeout/fallback hooks, not shown here.

@@ -31,7 +31,6 @@ describe('workflow values', () => {
     const result = await evaluateValue(compiled, {
       input: {},
       context: new TestContext().state,
-      memory: {},
       output: {},
     });
 
@@ -41,12 +40,11 @@ describe('workflow values', () => {
 
   it('compiles expressions and evaluates against the runtime scope', async () => {
     const compiled = compileValue(
-      '=$input.amount + $memory.offset + $iteration.index + $accumulator',
+      '=$input.amount + $context.offset + $iteration.index + $accumulator',
     );
     const result = await evaluateValue(compiled, {
       input: { amount: 10 },
-      context: new TestContext().state,
-      memory: { offset: 5 },
+      context: { offset: 5 },
       output: {},
       iteration: { item: 'item', index: 2 },
       accumulator: 3,
@@ -65,7 +63,6 @@ describe('workflow values', () => {
     const values = await evaluateMapping(mapping, {
       input: {},
       context: new TestContext().state,
-      memory: {},
       output: {},
       result: { value: 42 },
     });
@@ -81,7 +78,6 @@ describe('workflow values', () => {
       evaluateMapping(undefined, {
         input: {},
         context: new TestContext().state,
-        memory: {},
         output: {},
       }),
     ).resolves.toEqual({});

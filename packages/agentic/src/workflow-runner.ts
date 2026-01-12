@@ -66,7 +66,7 @@ export class WorkflowRunner {
   // Last payload provided to resume; exposed to actions via the context.
   private lastResumeData?: unknown;
 
-  // Mutable execution state including input, memory, and outputs.
+  // Mutable execution state including input and outputs.
   private state?: ExecutionState;
 
   // Workflow context shared with actions for IO and side-effects.
@@ -135,7 +135,7 @@ export class WorkflowRunner {
    * Begin executing the workflow from the first step.
    * Returns a status object describing whether execution finished, suspended, or failed.
    *
-   * @param args Input payload, context, and optional memory to seed execution.
+   * @param args Input payload and context to seed execution.
    * @returns Execution result including status and snapshot.
    */
   async start(args: RunnerStartArgs): Promise<StartResult> {
@@ -147,7 +147,6 @@ export class WorkflowRunner {
     this.context = args.context;
     this.state = {
       input: this.compiled.inputParser.parse(args.inputData ?? {}),
-      memory: args.memory ?? {},
       output: {},
       iterationStack: [],
     };
@@ -266,7 +265,6 @@ export class WorkflowRunner {
 
     runner.state = {
       input: options.state.input ?? {},
-      memory: options.state.memory ?? {},
       output: options.state.output ?? {},
       iteration: options.state.iteration,
       accumulator: options.state.accumulator,
@@ -331,7 +329,6 @@ export class WorkflowRunner {
     return evaluateMapping(this.compiled.outputMapping, {
       input: this.state.input,
       context: this.context.state,
-      memory: this.state.memory,
       output: this.state.output,
     });
   }
@@ -505,7 +502,6 @@ export class WorkflowRunner {
     const scope: EvaluationScope = {
       input: state.input,
       context: env.context.state,
-      memory: state.memory,
       output: state.output,
       iteration: state.iteration,
       accumulator: state.accumulator,
