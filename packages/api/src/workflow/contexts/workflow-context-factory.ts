@@ -37,6 +37,6 @@ export class WorkflowContextFactory {
 
     const ctx = await this.moduleRef.resolve<WorkflowRuntimeContext<E>>(Ctx);
 
-    return ctx.buildFromRun(run, event);
+    return await ctx.buildFromRun(run, event);
   }
 }

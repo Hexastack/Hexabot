@@ -19,6 +19,7 @@ import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
+import { MemoryService } from '../services/memory.service';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export abstract class WorkflowRuntimeContext<
@@ -50,6 +51,9 @@ export abstract class WorkflowRuntimeContext<
   @Inject(ActionService)
   protected readonly actionService: ActionService;
 
+  @Inject(MemoryService)
+  protected readonly memoryService: MemoryService;
+
   constructor() {
     super({} as WorkflowContextState);
   }
@@ -63,6 +67,7 @@ export abstract class WorkflowRuntimeContext<
       contentType: this.contentType,
       message: this.message,
       actions: this.actionService,
+      memory: this.memoryService,
     };
   }
 
@@ -70,7 +75,7 @@ export abstract class WorkflowRuntimeContext<
     return this.state.workflowId as string | undefined;
   }
 
-  set workflowId(value: string | undefined) {
+  set workflowId(value: string) {
     this.state.workflowId = value;
   }
 
@@ -78,7 +83,7 @@ export abstract class WorkflowRuntimeContext<
     return this.state.runId as string | undefined;
   }
 
-  set workflowRunId(value: string | undefined) {
+  set workflowRunId(value: string) {
     this.state.runId = value;
   }
 
@@ -86,7 +91,7 @@ export abstract class WorkflowRuntimeContext<
     return this.state.runId as string | undefined;
   }
 
-  set runId(value: string | undefined) {
+  set runId(value: string) {
     this.state.runId = value;
   }
 
@@ -94,13 +99,13 @@ export abstract class WorkflowRuntimeContext<
     return this.state.initiatorId as string | undefined;
   }
 
-  set initiatorId(value: string | undefined) {
+  set initiatorId(value: string) {
     this.state.initiatorId = value;
   }
 
-  buildFromRun(run: WorkflowRunFull, event: E): this {
+  async buildFromRun(run: WorkflowRunFull, event: E): Promise<this> {
     this.resetState();
-    this.hydrate(run.context);
+    await this.hydrate(run.context);
     this.event = event;
     this.initiatorId = run.triggeredBy?.id;
     this.workflowId = run.workflow.id;
@@ -109,12 +114,22 @@ export abstract class WorkflowRuntimeContext<
     return this;
   }
 
-  hydrate(stored?: WorkflowContextState | null): this {
+  async hydrate(stored?: WorkflowContextState | null): Promise<this> {
     if (!stored) {
       return this;
     }
 
-    this.state = { ...this.state, ...stored };
+    const memory = await this.memoryService.buildStore({
+      ownerId: stored.initiatorId,
+      workflowId: stored.workflowId,
+      runId: stored.runId,
+    });
+
+    this.state = {
+      ...this.state,
+      ...stored,
+      memory,
+    };
 
     return this;
   }

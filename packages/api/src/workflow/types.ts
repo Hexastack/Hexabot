@@ -21,6 +21,12 @@ export enum WorkflowType {
   scheduled = 'scheduled',
 }
 
+export enum MemoryScope {
+  global = 'global',
+  workflow = 'workflow',
+  run = 'run',
+}
+
 export type WorkflowResult = WorkflowStartResult | WorkflowResumeResult;
 
 export type RunWorkflowOptions =
@@ -48,7 +54,7 @@ export type RunStrategy = {
 };
 
 export type WorkflowContextState = Record<string, unknown> & {
-  initiatorId?: string;
-  workflowId?: string;
-  runId?: string;
+  initiatorId: string;
+  workflowId: string;
+  runId: string;
 };
