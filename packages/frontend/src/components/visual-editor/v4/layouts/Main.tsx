@@ -5,17 +5,18 @@
  */
 
 import { Actions } from "@hexabot-ai/agentic";
+import { ScreenRotation } from "@mui/icons-material";
 import { Box, debounce, IconButton, styled } from "@mui/material";
 import { useReactFlow, useViewport } from "@xyflow/react";
 import { useEffect } from "react";
 
+import { AnimatedComponent } from "@/app-components/AnimatedComponent";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType } from "@/services/types";
 
-import { AnimatedIcon } from "../components/icons/AnimatedIcon";
 import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -166,7 +167,8 @@ export const Main = () => {
           setDirection(direction === "horizontal" ? "vertical" : "horizontal");
         }}
       >
-        <AnimatedIcon
+        <AnimatedComponent
+          component={ScreenRotation}
           canRotate={direction === "vertical"}
           from="-45"
           to="45"

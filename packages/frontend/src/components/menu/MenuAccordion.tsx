@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ChevronRight } from "@mui/icons-material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DoNotDisturbAltRoundedIcon from "@mui/icons-material/DoNotDisturbAltRounded";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
@@ -15,16 +16,16 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  ButtonGroup,
   Button,
-  Link,
-  Typography,
+  ButtonGroup,
   Grid,
+  Link,
   styled,
+  Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
 
-import { AnimatedChevron } from "@/app-components/icons/AnimatedChevron";
+import { AnimatedComponent } from "@/app-components/AnimatedComponent";
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { TMenuItem } from "@/app-components/menus/Sidebar";
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -261,14 +262,16 @@ const MenuAccordion: React.FC<MenuAccordionProps> = ({
           <AccordionSummary
             expandIcon={
               menu.call_to_actions?.length ? (
-                <AnimatedChevron
+                <AnimatedComponent
+                  component={ChevronRight}
                   canRotate={isExpanded}
                   htmlColor="black"
                   from="0"
                   to="-90"
                 />
               ) : (
-                <AnimatedChevron
+                <AnimatedComponent
+                  component={ChevronRight}
                   canRotate={false}
                   htmlColor="black"
                   from="0"
