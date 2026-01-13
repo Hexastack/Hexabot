@@ -42,12 +42,12 @@ export class MemoryRecordOrmEntity extends BaseOrmEntity {
 
   /** Owner of the memory record; null for shared/global memories. */
   @ManyToOne(() => UserProfileOrmEntity, {
-    nullable: true,
-    onDelete: 'SET NULL',
+    nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'owner_id' })
   @AsRelation()
-  owner?: UserProfileOrmEntity | null;
+  owner: UserProfileOrmEntity;
 
   /** Identifier of the owner profile. */
   @RelationId((record: MemoryRecordOrmEntity) => record.owner)
@@ -81,7 +81,7 @@ export class MemoryRecordOrmEntity extends BaseOrmEntity {
 
   /** Stored JSON payload adhering to the associated memory schema. */
   @JsonColumn()
-  value!: unknown;
+  value!: Record<string, unknown>;
 
   /** TTL in seconds applied to this record; defaults to the definition's TTL. */
   @Column({ name: 'ttl_seconds', type: 'int', nullable: true })

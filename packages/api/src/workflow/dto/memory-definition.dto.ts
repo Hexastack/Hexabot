@@ -41,7 +41,7 @@ export class MemoryDefinitionStub extends BaseStub {
   scope!: MemoryScope;
 
   @Expose()
-  schema!: JSONSchema7 | boolean;
+  schema!: JSONSchema7;
 
   @Expose()
   ttlSeconds?: number | null;

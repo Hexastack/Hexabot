@@ -112,6 +112,10 @@ const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
     type: WorkflowType.conversational,
     schedule: null,
     createdBy: user ? { id: user.id } : undefined,
+    memoryDefinitions: [
+      { id: memoryDefinitionFixtureIds.workflow },
+      { id: memoryDefinitionFixtureIds.run },
+    ],
     definitionYaml: memoryWorkflowDefinitionYaml,
   });
 

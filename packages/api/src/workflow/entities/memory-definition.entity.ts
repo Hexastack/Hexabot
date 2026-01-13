@@ -31,7 +31,7 @@ export class MemoryDefinitionOrmEntity extends BaseOrmEntity {
 
   /** JSON Schema describing the expected structure of stored values. */
   @JsonColumn()
-  schema!: JSONSchema7 | boolean;
+  schema!: JSONSchema7;
 
   /** Optional TTL in seconds applied to records created from this definition. */
   @Column({ name: 'ttl_seconds', type: 'int', nullable: true })

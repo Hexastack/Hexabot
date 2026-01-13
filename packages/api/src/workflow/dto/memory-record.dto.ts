@@ -31,7 +31,7 @@ import { Workflow } from './workflow.dto';
 @Exclude()
 export class MemoryRecordStub extends BaseStub {
   @Expose()
-  value!: unknown;
+  value!: Record<string, unknown>;
 
   @Expose()
   ttlSeconds?: number | null;
@@ -46,8 +46,7 @@ export class MemoryRecord extends MemoryRecordStub {
   definition!: string;
 
   @Expose({ name: 'ownerId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  owner?: string | null;
+  owner!: string;
 
   @Expose({ name: 'workflowId' })
   @Transform(({ value }) => (value == null ? undefined : value))
@@ -68,7 +67,7 @@ export class MemoryRecordFull extends MemoryRecordStub {
   @Type((options) =>
     options?.object.owner instanceof UserOrmEntity ? User : Subscriber,
   )
-  owner?: Subscriber | User;
+  owner!: Subscriber | User;
 
   @Expose()
   @Type(() => Workflow)
@@ -120,7 +119,7 @@ export class MemoryRecordCreateDto {
     type: Object,
   })
   @IsDefined()
-  value!: unknown;
+  value!: Record<string, unknown>;
 
   @ApiPropertyOptional({
     description: 'TTL in seconds overriding the definition TTL',

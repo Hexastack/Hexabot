@@ -75,6 +75,7 @@ describe('WorkflowController (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       definitionYaml: stringify(definition),
+      memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
     };
   };
