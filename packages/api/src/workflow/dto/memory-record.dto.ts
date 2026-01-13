@@ -91,10 +91,9 @@ export class MemoryRecordCreateDto {
     description: 'Owner profile id for user-scoped memory',
     type: String,
   })
-  @IsOptional()
   @IsString()
   @IsUUIDv4({ message: 'owner must be a valid UUID' })
-  owner?: string | null;
+  owner: string;
 
   @ApiPropertyOptional({
     description: 'Workflow id when scope is workflow or run',

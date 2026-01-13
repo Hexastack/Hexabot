@@ -5,15 +5,19 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { FindOptionsWhere, IsNull, MoreThan } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import type { MemoryDefinition } from '../dto/memory-definition.dto';
 import {
   MemoryRecordDtoConfig,
+  MemoryRecordFull,
   MemoryRecordTransformerDto,
 } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 import { MemoryRecordRepository } from '../repositories/memory-record.repository';
+import { MemoryScope, MemoryStoreIdentifier } from '../types';
 
 @Injectable()
 export class MemoryRecordService extends BaseOrmService<
@@ -23,5 +27,132 @@ export class MemoryRecordService extends BaseOrmService<
 > {
   constructor(readonly repository: MemoryRecordRepository) {
     super(repository);
+  }
+
+  /**
+   * Load active memory records for the owner and optional workflow/run scope.
+   *
+   * Records are filtered to entries without expiration or with a future expiry,
+   * and ordered by most recently updated then created.
+   *
+   * @param identifiers - Owner and optional workflow/run identifiers.
+   * @returns Active memory records across global/workflow/run scopes.
+   * @throws Error when ownerId is missing.
+   */
+  async findActiveByScope({
+    ownerId,
+    workflowId,
+    runId,
+  }: MemoryStoreIdentifier): Promise<MemoryRecordFull[]> {
+    if (!ownerId) {
+      throw new Error('An owner id is required to build memory store.');
+    }
+
+    const where: FindOptionsWhere<MemoryRecordOrmEntity>[] = [
+      {
+        owner: { id: ownerId },
+        definition: { scope: MemoryScope.global },
+      },
+    ];
+
+    if (workflowId) {
+      where.push({
+        owner: { id: ownerId },
+        workflow: { id: workflowId },
+        definition: { scope: MemoryScope.workflow },
+      });
+    }
+
+    if (runId) {
+      where.push({
+        owner: { id: ownerId },
+        run: { id: runId },
+        definition: { scope: MemoryScope.run },
+      });
+    }
+
+    const now = new Date();
+    const scopedWhere = where.flatMap((scope) => [
+      { ...scope, expiresAt: IsNull() },
+      { ...scope, expiresAt: MoreThan(now) },
+    ]);
+
+    return this.findAndPopulate({
+      where: scopedWhere,
+      order: {
+        updatedAt: 'DESC',
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  /**
+   * Create or update a scoped memory record for the given definition and owner.
+   *
+   * Existing records are updated in place with refreshed TTL/expiry metadata;
+   * otherwise a new record is created for the requested scope.
+   *
+   * @param params - Memory definition, identifiers, and value to persist.
+   * @returns Resolves once the record is persisted.
+   */
+  async upsertScopedRecord({
+    definition,
+    ownerId,
+    workflowId,
+    runId,
+    value,
+  }: {
+    definition: Pick<MemoryDefinition, 'id' | 'scope' | 'ttlSeconds'>;
+    ownerId: string;
+    workflowId?: string | null;
+    runId?: string | null;
+    value: Record<string, unknown>;
+  }): Promise<void> {
+    const ttlSeconds = definition.ttlSeconds ?? null;
+    const expiresAt =
+      ttlSeconds && ttlSeconds > 0
+        ? new Date(Date.now() + ttlSeconds * 1000)
+        : null;
+    const where: FindOptionsWhere<MemoryRecordOrmEntity> = {
+      definition: { id: definition.id },
+      owner: { id: ownerId },
+    };
+
+    if (definition.scope === MemoryScope.workflow) {
+      where.workflow = { id: workflowId! };
+    }
+
+    if (definition.scope === MemoryScope.run) {
+      where.run = { id: runId! };
+    }
+
+    const existing = await this.findOne({
+      where,
+      order: {
+        updatedAt: 'DESC',
+        createdAt: 'DESC',
+      },
+    });
+
+    if (existing) {
+      await this.updateOne(existing.id, {
+        value,
+        ttlSeconds,
+        expiresAt,
+      });
+
+      return;
+    }
+
+    await this.create({
+      definition: definition.id,
+      owner: ownerId,
+      workflow:
+        definition.scope === MemoryScope.global ? null : (workflowId ?? null),
+      run: definition.scope === MemoryScope.run ? (runId ?? null) : null,
+      value,
+      ttlSeconds,
+      expiresAt,
+    });
   }
 }

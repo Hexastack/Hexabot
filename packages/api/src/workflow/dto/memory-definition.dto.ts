@@ -27,8 +27,6 @@ import {
 
 import { MemoryScope } from '../types';
 
-const jsonSchemaSchema = z.union([z.boolean(), z.object({}).passthrough()]);
-
 @Exclude()
 export class MemoryDefinitionStub extends BaseStub {
   @Expose()
@@ -84,8 +82,8 @@ export class MemoryDefinitionCreateDto {
     description: 'JSON Schema describing the memory structure',
     type: Object,
   })
-  @Validate(jsonSchemaSchema)
-  schema!: JSONSchema7 | boolean;
+  @Validate(z.object({}).passthrough())
+  schema!: JSONSchema7;
 
   @ApiPropertyOptional({
     description: 'Default TTL in seconds applied to records of this memory',

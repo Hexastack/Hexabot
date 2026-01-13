@@ -165,7 +165,7 @@ export const installMemoryRecordFixturesTypeOrm = async (
     repository.create({
       id: fixture.id,
       definition: { id: fixture.definition },
-      owner: fixture.owner ? { id: fixture.owner } : null,
+      owner: { id: fixture.owner! },
       workflow: fixture.workflow ? { id: fixture.workflow } : null,
       run: fixture.run ? { id: fixture.run } : null,
       value: fixture.value,
