@@ -26,6 +26,8 @@ export const TaskHeader = () => {
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            marginTop: "10px",
+            fontSize: "22px",
           }}
         >
           {name}

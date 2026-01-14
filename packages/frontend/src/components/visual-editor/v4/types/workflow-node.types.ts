@@ -18,15 +18,50 @@ import type { CSSProperties, FC, ReactNode, SVGProps } from "react";
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
+import { Agent } from "../components/workflow-nodes/Agent";
+import { Model } from "../components/workflow-nodes/Agent/Model";
+import { Tool } from "../components/workflow-nodes/Agent/Tool";
 import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 
 type CommonNodeData<T extends ENodeType> = {
+  title?: string;
   ports: Port<T>[];
   level?: number;
   groupName?: string;
+};
+
+// model types
+export type ModelData = CommonNodeData<ENodeType.MODEL> & {
+  theme: {
+    Icon: FC;
+    color: CSSProperties["color"];
+    bgColor: CSSProperties["color"];
+  };
+};
+
+// Tool types
+export type ToolData = CommonNodeData<ENodeType.TOOL> & {
+  theme: {
+    Icon: FC;
+    color: CSSProperties["color"];
+    bgColor: CSSProperties["color"];
+  };
+};
+
+// Agent types
+export type AgentData = CommonNodeData<ENodeType.AGENT> & {
+  theme: {
+    Icon: FC;
+    color: CSSProperties["color"];
+    bgColor: CSSProperties["color"];
+  };
+  tools: string[];
+  model: string;
+  memory: string;
+  description?: string;
 };
 
 // Task types
@@ -43,13 +78,13 @@ export type TaskData = CommonNodeData<ENodeType.TASK> & {
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
-  title: { i18n: TTranslationKeys; color: string };
+  i18n: TTranslationKeys;
   theme: {
     Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
       muiName: string;
     };
     color: string;
-    backgroundColor: string;
+    bgColor: string;
   };
   taskName?: string;
 };
@@ -68,13 +103,13 @@ export enum EOperatorType {
 
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
-  title: { i18n: TTranslationKeys; color: string };
+  i18n: TTranslationKeys;
   theme: {
     Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
       muiName: string;
     };
     color: string;
-    backgroundColor: string;
+    bgColor: string;
   };
   taskName?: string;
 };
@@ -83,7 +118,7 @@ export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
 export type GroupData = {
   ports: Port<ENodeType.GROUP>[];
   theme: {
-    backgroundColor: string;
+    bgColor: string;
   };
   groupName?: never;
 };
@@ -97,8 +132,16 @@ export enum EHandleType {
 }
 
 export enum ELinkType {
+  MODEL_IN = "modelIn",
+  TOOL_IN = "toolIn",
+  AGENT_IN = "agentIn",
+  AGENT_OUT = "agentOut",
+  AGENT_MEMORY = "agentMemory",
+  AGENT_MODEL = "agentModel",
+  AGENT_TOOL = "agentTool",
   TASK_IN = "taskIn",
   TASK_OUT = "taskOut",
+  TASK_TOOL = "taskTool",
   INDICATOR_IN = "indicatorIn",
   INDICATOR_OUT = "indicatorOut",
   OPERATOR_IN = "operatorIn",
@@ -148,6 +191,9 @@ export interface IBuildNodesAndEdgesProps {
 }
 
 export type NodeDataTypes = {
+  [ENodeType.MODEL]: ModelData;
+  [ENodeType.TOOL]: ToolData;
+  [ENodeType.AGENT]: AgentData;
   [ENodeType.INDICATOR]: IndicatorData;
   [ENodeType.OPERATOR]: OperatorData;
   [ENodeType.TASK]: TaskData;
@@ -162,12 +208,18 @@ export type NodeData<T extends keyof NodeDataTypes | null = null> =
   T extends keyof NodeDataTypes
     ? Node<NodeDataTypes[T], T>
     :
+        | Node<ModelData, ENodeType.MODEL>
+        | Node<ToolData, ENodeType.TOOL>
+        | Node<AgentData, ENodeType.AGENT>
         | Node<IndicatorData, ENodeType.INDICATOR>
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
         | Node<GroupData, ENodeType.GROUP>;
 
 export enum ENodeType {
+  MODEL = "model",
+  TOOL = "tool",
+  AGENT = "agent",
   INDICATOR = "indicator",
   OPERATOR = "operator",
   TASK = "task",
@@ -179,6 +231,9 @@ export enum EEdgeType {
 }
 
 export const NODE_TYPES = {
+  [ENodeType.MODEL]: Model,
+  [ENodeType.TOOL]: Tool,
+  [ENodeType.AGENT]: Agent,
   [ENodeType.INDICATOR]: Indicator,
   [ENodeType.OPERATOR]: Operator,
   [ENodeType.TASK]: Task,
@@ -209,3 +264,5 @@ export interface IWorkflowNodeProps {
   id: string;
   children: ReactNode;
 }
+
+export type WorkflowGraph = { nodes: NodeData[]; edges: Edge[] };

@@ -28,7 +28,8 @@ export interface IWorkflowContext {
   setDirection?: Dispatch<SetStateAction<ResizeControlDirection>>;
   removeWorkflowParams: () => Promise<void>;
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
-  yaml?: string;
+  yaml: string;
+  setYaml: Dispatch<SetStateAction<string>>;
   workflow?: IWorkflow;
   workflows?: IWorkflow[];
   debouncedWorkflowUpdate: ((params: Partial<IWorkflowAttributes>) => void) &

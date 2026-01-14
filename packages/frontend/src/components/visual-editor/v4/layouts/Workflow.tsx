@@ -7,7 +7,7 @@
 import { Actions } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
@@ -19,6 +19,7 @@ import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
+import { WorkflowGraph } from "../types/workflow-node.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
 import {
   buildNodesAndEdges,
@@ -81,6 +82,16 @@ export const Workflow = () => {
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
   );
+  const definition = useSafeMemo(
+    () =>
+      yaml ? getDefinition(yaml, { actions: DEFAULT_ACTIONS }) : undefined,
+    [yaml],
+    undefined,
+  );
+  const [graph, setGraph] = useState<WorkflowGraph>({
+    nodes: [],
+    edges: [],
+  });
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
     if (nodesInitialized) {
@@ -92,25 +103,44 @@ export const Workflow = () => {
     }
   });
 
-  const graph = useSafeMemo(
-    () => {
-      if (yaml) {
-        const definition = getDefinition(yaml, { actions: DEFAULT_ACTIONS });
-        const config = getWorkflowDefaultConfig(direction);
+  useEffect(() => {
+    let isCancelled = false;
 
-        return (
-          buildNodesAndEdges({ config, definition }) ?? { nodes: [], edges: [] }
-        );
+    const layoutGraph = async () => {
+      if (!definition) {
+        setGraph({ nodes: [], edges: [] });
+
+        return;
       }
-    },
-    [yaml, direction],
-    { nodes: [], edges: [] },
-  );
+
+      try {
+        const config = getWorkflowDefaultConfig(direction);
+        const layoutedGraph = await buildNodesAndEdges({
+          config,
+          definition,
+        });
+
+        if (!isCancelled) {
+          setGraph(layoutedGraph ?? { nodes: [], edges: [] });
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to layout workflow graph:", error);
+        if (!isCancelled) {
+          setGraph({ nodes: [], edges: [] });
+        }
+      }
+    };
+
+    layoutGraph();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [definition, direction]);
 
   useEffect(() => {
-    if (!selectedFlowId && yaml) {
-      const definition = getDefinition(yaml, { actions: DEFAULT_ACTIONS });
-
+    if (!selectedFlowId && yaml && definition) {
       createWorkflow(
         {
           definitionYaml: yaml,
@@ -124,7 +154,7 @@ export const Workflow = () => {
         },
       );
     }
-  }, [yaml]);
+  }, [yaml, definition]);
 
   return (
     <div className="visual-editor-v4">

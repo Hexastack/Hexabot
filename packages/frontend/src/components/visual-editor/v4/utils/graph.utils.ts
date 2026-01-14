@@ -25,6 +25,7 @@ import {
 import {
   EEdgeType,
   EIndicatorType,
+  ELinkType,
   ENodeType,
   EOperatorType,
   type INodeConfig,
@@ -32,7 +33,7 @@ import {
   type THighlightGroups,
 } from "../types/workflow-node.types";
 
-export const getDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
+export const getNodeDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
   config?.dimensions?.[nodeType] || { height: 0, width: 0 };
 
 export function humanizeTaskName(name: string) {
@@ -146,6 +147,7 @@ function addEdge(
   ctx: TraversalContext,
   source: string,
   target: string,
+  sourceHandle?: string,
   label?: string,
 ) {
   addGroupEdge(ctx, source, target, label);
@@ -157,6 +159,7 @@ function addEdge(
     source,
     target,
     label,
+    sourceHandle,
   });
 }
 
@@ -198,7 +201,7 @@ const getIndicator = <T extends EIndicatorType>(
   }
 
   return {
-    ...getDimensions(ENodeType.INDICATOR, ctx.config),
+    ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
     id: `${EIndicatorType.START}-${id}`,
     type: ENodeType.INDICATOR,
@@ -274,19 +277,86 @@ export function walkSteps({
         ctx.edges.push(startIndicatorEdge);
       }
 
-      ctx.nodes.push({
-        ...getDimensions(ENodeType.TASK, ctx.config),
-        ...DEFAULT_NODE_PROPS,
-        selectable: true,
-        id: taskNodeId,
-        type: ENodeType.TASK,
-        position: { x: 0, y: 0 },
-        data: {
-          ...ctx.config.nodes[ENodeType.TASK](taskNodeId, step, tasks),
-          level,
-          groupName,
-        },
-      });
+      const task = tasks[taskName];
+      const tools: string[] = task.settings?.["tools"] || [];
+
+      if (tools.length) {
+        ctx.nodes.push({
+          ...getNodeDimensions(ENodeType.AGENT, ctx.config),
+          ...DEFAULT_NODE_PROPS,
+          selectable: true,
+          id: taskNodeId,
+          type: ENodeType.AGENT,
+          position: { x: 0, y: 0 },
+          data: {
+            description: getTaskDescription(step["do"], tasks),
+            ...ctx.config.nodes[ENodeType.AGENT],
+            level,
+            groupName,
+          },
+        });
+
+        const model: string = task.settings?.["model"] || "";
+
+        if (model) {
+          ctx.nodes.push({
+            ...getNodeDimensions(ENodeType.MODEL, ctx.config),
+            ...DEFAULT_NODE_PROPS,
+            id: `model-${taskNodeId}`,
+            type: ENodeType.MODEL,
+            position: { x: 0, y: 0 },
+            data: {
+              ...ctx.config.nodes[ENodeType.MODEL],
+              title: model,
+              level,
+            },
+          });
+
+          addEdge(
+            ctx,
+            taskNodeId,
+            `model-${taskNodeId}`,
+            ELinkType.AGENT_MODEL,
+          );
+        }
+
+        tools.forEach((tool) => {
+          const toolId = `tool-${tool}`;
+
+          if (!ctx.config) {
+            return;
+          }
+
+          ctx.nodes.push({
+            ...getNodeDimensions(ENodeType.TOOL, ctx.config),
+            ...DEFAULT_NODE_PROPS,
+            id: toolId,
+            type: ENodeType.TOOL,
+            position: { x: 0, y: 0 },
+            data: {
+              ...ctx.config.nodes[ENodeType.TOOL],
+              title: tool,
+              level,
+            },
+          });
+
+          addEdge(ctx, taskNodeId, toolId, ELinkType.AGENT_TOOL);
+        });
+      } else {
+        ctx.nodes.push({
+          ...getNodeDimensions(ENodeType.TASK, ctx.config),
+          ...DEFAULT_NODE_PROPS,
+          selectable: true,
+          id: taskNodeId,
+          type: ENodeType.TASK,
+          position: { x: 0, y: 0 },
+          data: {
+            ...ctx.config.nodes[ENodeType.TASK](taskNodeId, step, tasks),
+            level,
+            groupName,
+          },
+        });
+      }
 
       currentSources.forEach((source) => addEdge(ctx, source, taskNodeId));
       currentSources = [taskNodeId];
@@ -299,6 +369,7 @@ export function walkSteps({
       const groupName = getGroupId(parallelNodeId, ctx.config.highlights);
 
       ctx.nodes.push({
+        ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
         ...DEFAULT_NODE_PROPS,
         id: parallelNodeId,
         type: ENodeType.OPERATOR,
@@ -334,6 +405,7 @@ export function walkSteps({
       const groupName = getGroupId(conditionalNodeId, ctx.config.highlights);
 
       ctx.nodes.push({
+        ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
         ...DEFAULT_NODE_PROPS,
         id: conditionalNodeId,
         type: ENodeType.OPERATOR,
@@ -372,6 +444,7 @@ export function walkSteps({
       const groupName = getGroupId(loopNodeId, ctx.config.highlights);
 
       ctx.nodes.push({
+        ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
         ...DEFAULT_NODE_PROPS,
         id: loopNodeId,
         type: ENodeType.OPERATOR,
