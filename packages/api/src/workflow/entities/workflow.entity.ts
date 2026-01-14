@@ -10,6 +10,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   RelationId,
 } from 'typeorm';
@@ -21,6 +23,8 @@ import { AsRelation } from '@/utils';
 
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { DirectionType, WorkflowType } from '../types';
+
+import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
 
 @Entity({ name: 'workflows' })
 @Index(['name', 'version'], { unique: true })
@@ -47,6 +51,22 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   /** Cron expression used when the workflow is scheduled. */
   @Column({ type: 'varchar', length: 255, nullable: true })
   schedule?: string | null;
+
+  /** Memory definitions available for this workflow. */
+  @ManyToMany(() => MemoryDefinitionOrmEntity, {
+    cascade: false,
+  })
+  @JoinTable({
+    name: 'workflow_memory_definitions',
+    joinColumn: { name: 'workflow_id' },
+    inverseJoinColumn: { name: 'memory_definition_id' },
+  })
+  @AsRelation({ allowArray: true })
+  memoryDefinitions: MemoryDefinitionOrmEntity[];
+
+  /** Identifiers of the related memory definitions. */
+  @RelationId((workflow: WorkflowOrmEntity) => workflow.memoryDefinitions)
+  private readonly memoryDefinitionIds: string[];
 
   /** User who created the workflow definition. */
   @ManyToOne(() => UserOrmEntity, {

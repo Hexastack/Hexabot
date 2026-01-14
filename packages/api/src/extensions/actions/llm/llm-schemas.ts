@@ -76,6 +76,9 @@ export const llmCommonSettingsSchema = SettingsSchema.extend({
   base_url: z.string().url().optional(),
   organization: z.string().optional(),
   tools: z.array(z.string().min(1)).optional(),
+  memory_enabled: z.boolean().optional(),
+  stop_step_count: z.number().int().positive().optional(),
+  stop_tool_call: z.string().trim().min(1).optional(),
 });
 
 export const llmGenerateTextInputSchema = llmPromptSchema;
@@ -88,10 +91,7 @@ export const llmGenerateTextOutputSchema = z.object({
   raw: llmRawResponseSchema.optional(),
 });
 
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema.extend({
-  stop_step_count: z.number().int().positive().optional(),
-  stop_tool_call: z.string().trim().min(1).optional(),
-});
+export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema;
 
 export const jsonSchemaInput = z.custom<JSONSchema7>(
   (value) =>

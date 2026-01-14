@@ -1,0 +1,115 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { TestingModule } from '@nestjs/testing';
+
+import {
+  installMemoryDefinitionFixturesTypeOrm,
+  memoryDefinitionFixtureIds,
+  memoryDefinitionOrmFixtures,
+} from '@/utils/test/fixtures/memory-definition';
+import {
+  installMemoryRecordFixturesTypeOrm,
+  memoryWorkflowFixtureId,
+} from '@/utils/test/fixtures/memory-record';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
+
+import { MemoryScope } from '../types';
+
+import { MemoryDefinitionService } from './memory-definition.service';
+
+const globalDefinition = memoryDefinitionOrmFixtures.find(
+  (fixture) => fixture.id === memoryDefinitionFixtureIds.global,
+)!;
+const workflowDefinition = memoryDefinitionOrmFixtures.find(
+  (fixture) => fixture.id === memoryDefinitionFixtureIds.workflow,
+)!;
+const runDefinition = memoryDefinitionOrmFixtures.find(
+  (fixture) => fixture.id === memoryDefinitionFixtureIds.run,
+)!;
+
+describe('MemoryDefinitionService (TypeORM)', () => {
+  let module: TestingModule;
+  let memoryDefinitionService: MemoryDefinitionService;
+
+  beforeAll(async () => {
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
+      providers: [MemoryDefinitionService],
+      typeorm: {
+        fixtures: [
+          installMemoryDefinitionFixturesTypeOrm,
+          installMemoryRecordFixturesTypeOrm,
+        ],
+      },
+    });
+
+    module = testing.module;
+    [memoryDefinitionService] = await testing.getMocks([
+      MemoryDefinitionService,
+    ]);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.useRealTimers();
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  describe('findBySlug', () => {
+    it('returns the matching definition', async () => {
+      const result = await memoryDefinitionService.findBySlug(
+        globalDefinition.slug,
+      );
+
+      expect(result).not.toBeNull();
+      expect(result).toMatchObject({
+        id: globalDefinition.id,
+        name: globalDefinition.name,
+        slug: globalDefinition.slug,
+        scope: globalDefinition.scope,
+      });
+    });
+
+    it('returns null when no definition matches the slug', async () => {
+      const result = await memoryDefinitionService.findBySlug('missing_slug');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('buildDefinitionCache', () => {
+    it('returns only global definitions when workflowId is omitted', async () => {
+      const cache = await memoryDefinitionService.buildDefinitionCache();
+
+      expect(cache.get(globalDefinition.slug)?.id).toBe(globalDefinition.id);
+      const scopes = new Set(
+        Array.from(cache.values()).map((definition) => definition.scope),
+      );
+      expect(scopes).toEqual(new Set([MemoryScope.global]));
+    });
+
+    it('includes workflow definitions when workflowId is provided', async () => {
+      const cache = await memoryDefinitionService.buildDefinitionCache(
+        memoryWorkflowFixtureId,
+      );
+
+      expect(cache.get(globalDefinition.slug)?.id).toBe(globalDefinition.id);
+      expect(cache.get(workflowDefinition.slug)?.id).toBe(
+        workflowDefinition.id,
+      );
+      expect(cache.get(runDefinition.slug)?.id).toBe(runDefinition.id);
+      expect(cache.size).toBe(3);
+    });
+  });
+});

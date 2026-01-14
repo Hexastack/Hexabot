@@ -26,6 +26,7 @@ import {
 } from '@/utils/types/dto.types';
 
 import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
+import { WorkflowContextState } from '../types';
 
 import { Workflow } from './workflow.dto';
 
@@ -41,7 +42,7 @@ export class WorkflowRunStub extends BaseStub {
   output?: Record<string, unknown> | null;
 
   @Expose()
-  context?: Record<string, unknown> | null;
+  context: WorkflowContextState;
 
   @Expose()
   snapshot?: WorkflowSnapshot | null;
@@ -81,7 +82,7 @@ export class WorkflowRun extends WorkflowRunStub {
 
   @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
-  triggeredBy?: string | null;
+  triggeredBy: string | null;
 }
 
 @Exclude()
@@ -94,7 +95,7 @@ export class WorkflowRunFull extends WorkflowRunStub {
   @Type((options) =>
     options?.object.triggeredBy instanceof UserOrmEntity ? User : Subscriber,
   )
-  triggeredBy?: Subscriber | User;
+  triggeredBy: Subscriber | User;
 }
 
 export class WorkflowRunCreateDto {

@@ -44,7 +44,12 @@ describe('LlmGenerateObjectAction', () => {
     multiplier: 1,
   };
   const createContext = () =>
-    ({ services: { logger } }) as unknown as WorkflowRuntimeContext;
+    ({
+      services: {
+        logger,
+        actions: { get: jest.fn() },
+      },
+    }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {
     jest.clearAllMocks();

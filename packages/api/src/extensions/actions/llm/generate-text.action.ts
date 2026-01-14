@@ -60,7 +60,11 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context);
+    const promptPayload = this.addMemoryToPrompt(
+      await this.buildPrompt(input, context),
+      context,
+      settings,
+    );
     const callSettings = this.buildCallSettings(settings);
     const tools = this.buildTools(context, settings.tools) as
       | ToolSet

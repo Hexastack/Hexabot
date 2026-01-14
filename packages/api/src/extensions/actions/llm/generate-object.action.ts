@@ -6,7 +6,7 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { Output, generateText, jsonSchema } from 'ai';
+import { Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -60,10 +60,18 @@ export class LlmGenerateObjectAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context);
+    const promptPayload = this.addMemoryToPrompt(
+      await this.buildPrompt(input, context),
+      context,
+      settings,
+    );
     // Structured outputs do not support stop sequences in the AI SDK call.
     const { stopSequences: _stopSequences, ...callSettings } =
       this.buildCallSettings(settings);
+    const tools = this.buildTools(context, settings.tools) as
+      | ToolSet
+      | undefined;
+    const { stopWhen } = this.buildStopWhen(settings, tools);
     const structuredSchema = jsonSchema(input.schema);
     const output = Output.object({
       schema: structuredSchema,
@@ -84,6 +92,8 @@ export class LlmGenerateObjectAction extends LlmBaseAction<
       ...callSettings,
       model,
       output,
+      ...(tools ? { tools } : {}),
+      ...(stopWhen ? { stopWhen } : {}),
     });
 
     return {
