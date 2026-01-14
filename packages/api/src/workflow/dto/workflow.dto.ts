@@ -146,6 +146,7 @@ export class WorkflowNewDto {
     type: Number,
   })
   @IsNumber()
+  @IsOptional()
   x?: number;
 
   @ApiPropertyOptional({
@@ -153,6 +154,7 @@ export class WorkflowNewDto {
     type: Number,
   })
   @IsNumber()
+  @IsOptional()
   y?: number;
 
   @ApiPropertyOptional({
@@ -160,6 +162,7 @@ export class WorkflowNewDto {
     type: Number,
   })
   @IsNumber({ maxDecimalPlaces: 20 })
+  @IsOptional()
   zoom?: number;
 
   @ApiPropertyOptional({
@@ -167,6 +170,7 @@ export class WorkflowNewDto {
     type: Number,
   })
   @IsEnum(DirectionType)
+  @IsOptional()
   direction?: DirectionType;
 }
 

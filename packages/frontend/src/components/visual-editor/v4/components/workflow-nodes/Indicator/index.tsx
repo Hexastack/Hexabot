@@ -9,17 +9,19 @@ import type { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
-
-import { IndicatorIcon } from "./IndicatorIcon";
-import { IndicatorPorts } from "./IndicatorPorts";
-import { IndicatorTitle } from "./IndicatorTitle";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodeIcon } from "../GenericNodeIcon";
+import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Indicator: FC<NodeProps<NodeData<ENodeType.INDICATOR>>> = ({
   id,
 }) => (
   <WorkflowNodeProvider id={id}>
-    <IndicatorIcon />
-    <IndicatorPorts />
-    <IndicatorTitle />
+    <GenericNodeContainer isRounded>
+      <GenericNodeIcon />
+      <GenericNodePorts />
+    </GenericNodeContainer>
+    <GenericNodeTitle />
   </WorkflowNodeProvider>
 );

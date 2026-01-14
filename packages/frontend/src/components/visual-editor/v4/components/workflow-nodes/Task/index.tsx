@@ -10,8 +10,8 @@ import { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, NodeData } from "../../../types/workflow-node.types";
+import { GenericNodeIcon } from "../GenericNodeIcon";
 
-import { TaskAction } from "./TaskAction";
 import { TaskBody } from "./TaskBody";
 import { TaskContainer } from "./TaskContainer";
 import { TaskHeader } from "./TaskHeader";
@@ -23,7 +23,7 @@ export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
       <TaskPorts />
       <Grid container height="100%" direction="row">
         <Grid item width={50}>
-          <TaskAction />
+          <GenericNodeIcon />
         </Grid>
         <Grid item xs>
           <TaskHeader />

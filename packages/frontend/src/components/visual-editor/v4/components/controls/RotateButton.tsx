@@ -49,7 +49,7 @@ export const RotateButton = () => {
                   setDirection?.(direction);
                   setTimeout(() => {
                     fitView({ duration: 100, interpolate: "smooth" });
-                  }, 10);
+                  }, 100);
                 }
               },
             },

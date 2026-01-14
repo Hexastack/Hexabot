@@ -16,16 +16,15 @@ type YamlEditorProps = {
 };
 
 export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
-  const { yaml } = useWorkflow();
+  const { yaml, setYaml } = useWorkflow();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const completionDisposableRef = useRef<IDisposable | null>(null);
   const handleChange = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (nextValue?: string) => {
-      // setText(nextValue ?? "");
+      setYaml(nextValue || "");
     },
-    [yaml],
+    [setYaml],
   );
   const applyMarkers = useCallback(() => {
     if (!editorRef.current || !monacoRef.current) return;

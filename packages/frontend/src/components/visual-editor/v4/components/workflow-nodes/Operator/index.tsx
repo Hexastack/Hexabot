@@ -9,20 +9,23 @@ import type { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
-
-import { OperatorContainer } from "./OperatorContainer";
-import { OperatorIcon } from "./OperatorIcon";
-import { OperatorPorts } from "./OperatorPorts";
-import { OperatorTitle } from "./OperatorTitle";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodeIcon } from "../GenericNodeIcon";
+import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = (
   operator,
 ) => (
   <WorkflowNodeProvider id={operator.id}>
-    <OperatorContainer>
-      <OperatorIcon />
-      <OperatorPorts />
-    </OperatorContainer>
-    <OperatorTitle />
+    <GenericNodeContainer>
+      <GenericNodeIcon />
+      <GenericNodePorts<ENodeType.OPERATOR>
+        getDisabled={(index, { groupName, level }) =>
+          !!groupName && level === 0 && index === 0
+        }
+      />
+    </GenericNodeContainer>
+    <GenericNodeTitle />
   </WorkflowNodeProvider>
 );

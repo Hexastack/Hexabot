@@ -5,10 +5,13 @@
  */
 
 import {
+  Build,
   DragHandle,
   MarkChatRead,
   PlayArrowRounded,
+  Psychology,
   Repeat,
+  SmartToyOutlined,
   StopRounded,
 } from "@mui/icons-material";
 import { MarkerType, Node } from "@xyflow/react";
@@ -36,14 +39,17 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
+  [ENodeType.MODEL]: { width: 90, height: 90 },
+  [ENodeType.TOOL]: { width: 90, height: 90 },
+  [ENodeType.AGENT]: { width: 352, height: 132 },
   [ENodeType.INDICATOR]: { width: 90, height: 90 },
   [ENodeType.TASK]: { width: 352, height: 132 },
-  [ENodeType.OPERATOR]: { width: 140, height: 82 },
+  [ENodeType.OPERATOR]: { width: 90, height: 90 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
-  [EOperatorType.LOOP]: { color: "#eeff01", padding: 60 },
-  [EOperatorType.PARALLEL]: { color: "#00acfc", padding: 60 },
-  [EOperatorType.CONDITIONAL]: { color: "#ffa600", padding: 60 },
+  [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
+  [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
+  [EOperatorType.CONDITIONAL]: { color: "#f0e68c", padding: 60 },
 } satisfies INodeConfig["highlights"];
 export const EDGES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {
@@ -56,24 +62,58 @@ export const EDGES = {
   },
 } satisfies INodeConfig["edges"];
 export const NODES = {
+  [ENodeType.AGENT]: {
+    memory: "",
+    model: "",
+    tools: [],
+    ports: [
+      ELinkType.AGENT_IN,
+      ELinkType.AGENT_OUT,
+      ELinkType.AGENT_TOOL,
+      ELinkType.AGENT_MODEL,
+    ],
+    theme: {
+      Icon: SmartToyOutlined,
+      color: "#444444",
+      bgColor: "#7bb0ff",
+    },
+  },
+  [ENodeType.TOOL]: {
+    title: "",
+    ports: [ELinkType.TOOL_IN],
+    theme: {
+      Icon: Build,
+      color: "#555555",
+      bgColor: "#7bb0ff",
+    },
+  },
+  [ENodeType.MODEL]: {
+    title: "",
+    ports: [ELinkType.MODEL_IN],
+    theme: {
+      Icon: Psychology,
+      color: "#555555",
+      bgColor: "#8160f7",
+    },
+  },
   [ENodeType.INDICATOR]: {
     [EIndicatorType.START]: {
       theme: {
         Icon: PlayArrowRounded,
-        color: "#000",
-        backgroundColor: "#97d445",
+        color: "#555555",
+        bgColor: "#97d445",
       },
       ports: [ELinkType.INDICATOR_OUT],
-      title: { color: "#000", i18n: "message.start" },
+      i18n: "message.start",
     },
     [EIndicatorType.END]: {
       theme: {
         Icon: StopRounded,
-        backgroundColor: "#e95d32",
-        color: "#000",
+        color: "#555555",
+        bgColor: "#e95d32",
       },
       ports: [ELinkType.INDICATOR_IN],
-      title: { color: "#000", i18n: "message.end" },
+      i18n: "message.end",
     },
   },
   [ENodeType.OPERATOR]: {
@@ -81,10 +121,10 @@ export const NODES = {
       operatorType: EOperatorType.PARALLEL,
       theme: {
         Icon: DragHandle,
-        color: "#000",
-        backgroundColor: "#0c9ba0",
+        color: "#555555",
+        bgColor: "#0c9ba0",
       },
-      title: { i18n: "message.parallel_indicator", color: "#000" },
+      i18n: "message.parallel_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.CONDITIONAL]: {
@@ -92,20 +132,20 @@ export const NODES = {
       taskName: "conditional",
       theme: {
         Icon: MarkChatRead,
-        color: "#000",
-        backgroundColor: "#0c9ba0",
+        color: "#555555",
+        bgColor: "#0c9ba0",
       },
-      title: { i18n: "message.conditional_indicator", color: "#000" },
+      i18n: "message.conditional_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.LOOP]: {
       operatorType: EOperatorType.LOOP,
       theme: {
         Icon: Repeat,
-        color: "#000",
-        backgroundColor: "#0c9ba0",
+        color: "#555555",
+        bgColor: "#0c9ba0",
       },
-      title: { i18n: "message.loop_indicator", color: "#000" },
+      i18n: "message.loop_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
@@ -119,7 +159,7 @@ export const NODES = {
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
         Icon: SimpleTextIcon,
-        color: "#444444",
+        color: "#555555",
         bgColor: "#7bb0ff",
       },
       groupName,
@@ -128,7 +168,7 @@ export const NODES = {
   [ENodeType.GROUP]: {
     ports: [ELinkType.GROUP_IN, ELinkType.GROUP_OUT],
     theme: {
-      backgroundColor: "#7bb0ff",
+      bgColor: "#7bb0ff",
     },
   },
 } satisfies INodeConfig["nodes"];

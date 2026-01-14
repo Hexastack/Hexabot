@@ -12,7 +12,7 @@ import {
   applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
@@ -52,9 +52,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const yaml = useMemo(() => {
-    return workflow?.definitionYaml;
-  }, [workflow?.definitionYaml]);
+  const [yaml, setYaml] = useState("");
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
@@ -117,6 +115,10 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     },
   );
 
+  useEffect(() => {
+    setYaml(workflow?.definitionYaml || "");
+  }, [workflow?.definitionYaml]);
+
   return (
     <WorkflowContext.Provider
       value={{
@@ -135,6 +137,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         updateWorkflowURL,
         removeWorkflowParams,
         yaml,
+        setYaml,
         workflow,
         workflows,
         updateWorkflow,

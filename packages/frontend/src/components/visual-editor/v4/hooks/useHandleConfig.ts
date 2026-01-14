@@ -36,6 +36,10 @@ export const useHandleConfig = <T extends ENodeType>(handlerId: Port<T>) => {
     // eslint-disable-next-line react-hooks/use-memo
     [JSON.stringify(sourceConnections), JSON.stringify(otherLinks)],
   );
+  const handleConfig = useMemo(
+    () => getHandleConfig(handlerId, isActive, direction),
+    [handlerId, isActive, direction],
+  );
 
-  return getHandleConfig(handlerId, isActive, direction);
+  return handleConfig;
 };
