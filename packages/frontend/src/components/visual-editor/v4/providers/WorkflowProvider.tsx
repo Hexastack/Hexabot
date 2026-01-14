@@ -53,9 +53,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
   const [yaml, setYaml] = useState("");
-  // const yaml = useMemo(() => {
-  //   return workflow?.definitionYaml;
-  // }, [workflow?.definitionYaml]);
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
