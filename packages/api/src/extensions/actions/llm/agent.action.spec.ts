@@ -152,7 +152,6 @@ describe('LlmAgentAction', () => {
     const input = {
       prompt: 'Hello there',
       system: 'system prompt',
-      instructions: 'Be concise',
     };
     const result = await action.execute({ input, settings, context });
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
@@ -165,13 +164,13 @@ describe('LlmAgentAction', () => {
       baseURL: 'https://api.openai.com',
       organization: 'org-1',
     });
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
     expect(agentOptions).toEqual(
       expect.objectContaining({
         model: 'model-instance',
-        instructions: 'Be concise',
+        instructions: 'system prompt',
         temperature: 0.7,
         topP: 0.8,
         topK: 5,

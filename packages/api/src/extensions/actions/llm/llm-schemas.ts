@@ -120,11 +120,8 @@ export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
     }
   });
 
-export const llmAgentInputSchema = llmPromptBaseSchema
-  .extend({
-    instructions: z.string().min(1).optional(),
-  })
-  .superRefine(validatePromptSource);
+export const llmAgentInputSchema =
+  llmPromptBaseSchema.superRefine(validatePromptSource);
 
 export const llmAgentOutputSchema = z.object({
   text: z.string().optional(),
@@ -143,9 +140,7 @@ export const llmAgentOutputSchema = z.object({
   raw: llmRawResponseSchema.optional(),
 });
 
-export const llmAgentSettingsSchema = llmCommonSettingsSchema.extend({
-  instructions: z.string().min(1).optional(),
-});
+export const llmAgentSettingsSchema = llmCommonSettingsSchema;
 
 export type LlmPromptInput = z.infer<typeof llmPromptSchema>;
 

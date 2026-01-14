@@ -60,11 +60,7 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = this.addMemoryToPrompt(
-      await this.buildPrompt(input, context),
-      context,
-      settings,
-    );
+    const promptPayload = await this.buildPrompt(input, context, settings);
     // Structured outputs do not support stop sequences in the AI SDK call.
     const callSettings = this.buildCallSettings(settings);
     const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =

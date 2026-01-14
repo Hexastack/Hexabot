@@ -60,8 +60,7 @@ export class LlmAgentAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const basePrompt = await this.buildPrompt(input, context);
-    const promptPayload = this.addMemoryToPrompt(basePrompt, context, settings);
+    const promptPayload = await this.buildPrompt(input, context, settings);
     const callSettings = this.buildCallSettings(settings);
     const tools = this.buildTools(context, settings.tools) as
       | ToolSet
@@ -70,17 +69,9 @@ export class LlmAgentAction extends LlmBaseAction<
       settings,
       tools,
     );
-    const instructions = this.addMemoryToPrompt(
-      {
-        system:
-          input.instructions ?? basePrompt.system ?? settings.instructions,
-      },
-      context,
-      settings,
-    ).system;
     const agent = new ToolLoopAgent({
       ...callSettings,
-      ...(instructions ? { instructions } : {}),
+      ...(promptPayload.system ? { instructions: promptPayload.system } : {}),
       ...(stopWhen ? { stopWhen } : {}),
       model,
       tools,
@@ -98,9 +89,16 @@ export class LlmAgentAction extends LlmBaseAction<
         },
       },
     );
+    const agentPrompt =
+      'messages' in promptPayload
+        ? promptPayload.messages
+        : promptPayload.prompt;
 
-    const { system: _system, ...prompt } = promptPayload;
-    const result = await agent.generate(prompt);
+    if (!agentPrompt) {
+      throw new Error('Prompt is required to call the agent.');
+    }
+
+    const result = await agent.generate({ prompt: agentPrompt });
 
     return {
       text: result.text,
