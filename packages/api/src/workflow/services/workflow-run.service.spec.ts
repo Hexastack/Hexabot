@@ -103,6 +103,7 @@ describe('WorkflowRunService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
+      memoryDefinitions: [],
     });
 
     workflowRun = await workflowRunService.create({

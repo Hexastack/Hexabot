@@ -100,6 +100,7 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     definitionYaml: messagingWorkflowDefinitionYaml,
     type: WorkflowType.conversational,
     schedule: null,
+    memoryDefinitions: [],
     createdBy: userFixtureIds.admin,
     direction: DirectionType.HORIZONTAL,
     x: 0,
@@ -116,6 +117,7 @@ export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
     definitionYaml: scheduledWorkflowDefinitionYaml,
     type: WorkflowType.scheduled,
     schedule: '*/10 * * * * *',
+    memoryDefinitions: [],
     createdBy: userFixtureIds.admin,
   },
 ];
@@ -134,6 +136,9 @@ export const installScheduledWorkflowFixturesTypeOrm = async (
     scheduledWorkflowFixtures.map((fixture) => ({
       ...fixture,
       createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
+      memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
+        id: definitionId,
+      })),
     })),
   );
 
@@ -154,6 +159,9 @@ export const installMessagingWorkflowFixturesTypeOrm = async (
     messagingWorkflowFixtures.map((fixture) => ({
       ...fixture,
       createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
+      memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
+        id: definitionId,
+      })),
     })),
   );
 

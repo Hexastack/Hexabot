@@ -378,6 +378,101 @@ export abstract class LlmBaseAction<
     );
   }
 
+  protected buildMemoryPrompt(context: C): string | undefined {
+    const memoryStore = context.memoryStore;
+    if (!memoryStore) {
+      return undefined;
+    }
+
+    const { definitionCache, instances } = memoryStore;
+    if (!definitionCache || definitionCache.size === 0) {
+      return undefined;
+    }
+
+    const sections: string[] = [];
+    for (const [slug, definition] of definitionCache.entries()) {
+      const instance = instances[slug];
+      if (!instance) {
+        continue;
+      }
+
+      const lines: string[] = [];
+      for (const field of instance.fields({ includeAdditional: true })) {
+        if (field.value === undefined) {
+          continue;
+        }
+
+        const label = (field.title ?? field.name).trim();
+        const value = this.formatMemoryValue(field.value);
+        lines.push(`- ${label}: ${value}`);
+      }
+
+      if (lines.length === 0) {
+        continue;
+      }
+
+      sections.push(`## ${definition.name}\n${lines.join('\n')}`);
+    }
+
+    if (sections.length === 0) {
+      return undefined;
+    }
+
+    return `# Working Memory\n${sections.join('\n\n')}`;
+  }
+
+  protected formatMemoryValue(value: unknown): string {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+
+    if (value === null) {
+      return 'null';
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  protected addMemoryToPrompt<P extends { system?: string }>(
+    prompt: P,
+    context: C,
+    settings: S,
+  ): P {
+    if (!settings.memory_enabled) {
+      return prompt;
+    }
+
+    const memoryPrompt = this.buildMemoryPrompt(context);
+    if (!memoryPrompt) {
+      return prompt;
+    }
+    const system = prompt.system
+      ? `${prompt.system}\n\n${memoryPrompt}`
+      : memoryPrompt;
+
+    return { ...prompt, system };
+  }
+
+  protected safeStringify(value: unknown): string {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  }
+
   protected buildCallSettings(settings: S) {
     const resolved: {
       temperature?: number;
@@ -413,11 +508,8 @@ export abstract class LlmBaseAction<
   protected buildTools(
     context: C,
     toolNames?: string[],
+    isMemoryEnabled: boolean = false,
   ): Record<string, ToolDefinition> | undefined {
-    if (!toolNames || toolNames.length === 0) {
-      return undefined;
-    }
-
     const actionService = context.services.actions;
     if (!actionService) {
       throw new Error('Action service is unavailable in the workflow context.');
@@ -425,16 +517,12 @@ export abstract class LlmBaseAction<
 
     const uniqueNames = Array.from(
       new Set(
-        toolNames.filter(
+        (toolNames ?? []).filter(
           (name) => typeof name === 'string' && name.trim().length > 0,
         ),
       ),
     );
-    if (uniqueNames.length === 0) {
-      return undefined;
-    }
-
-    return uniqueNames.reduce(
+    const tools = uniqueNames.reduce(
       (tools, actionName) => {
         const normalizedName = actionName.trim() as ActionName;
         const action = actionService.get(normalizedName);
@@ -450,6 +538,19 @@ export abstract class LlmBaseAction<
       },
       {} as Record<string, ToolDefinition>,
     );
+
+    if (isMemoryEnabled) {
+      const updateMemoryAction = actionService.get('update_memory');
+      const memorySchema = context.memoryStore.buildUpdateMemorySchema();
+      tools['update_memory'] = {
+        description: updateMemoryAction.description,
+        inputSchema: memorySchema,
+        outputSchema: memorySchema,
+        execute: async (input) => updateMemoryAction.run(input, context),
+      };
+    }
+
+    return Object.keys(tools).length > 0 ? tools : undefined;
   }
 
   protected normalizeUsage(usage?: LanguageModelUsage) {

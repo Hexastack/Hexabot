@@ -88,6 +88,7 @@ export class WorkflowService extends BaseOrmService<
         type: WorkflowType.conversational,
         schedule: null,
         createdBy: creator.id,
+        memoryDefinitions: [],
       });
     } catch (err) {
       this.logger.error('Unable to ensure default workflow exists', err);

@@ -17,18 +17,30 @@ import { ManualWorkflowContext } from './contexts/manual-workflow.context';
 import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context';
 import { WorkflowContextFactory } from './contexts/workflow-context-factory';
 import { WorkflowController } from './controllers/workflow.controller';
+import { MemoryDefinitionOrmEntity } from './entities/memory-definition.entity';
+import { MemoryRecordOrmEntity } from './entities/memory-record.entity';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
+import { MemoryDefinitionRepository } from './repositories/memory-definition.repository';
+import { MemoryRecordRepository } from './repositories/memory-record.repository';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { AgenticService } from './services/agentic.service';
+import { MemoryDefinitionService } from './services/memory-definition.service';
+import { MemoryRecordService } from './services/memory-record.service';
+import { MemoryService } from './services/memory.service';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowService } from './services/workflow.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([WorkflowOrmEntity, WorkflowRunOrmEntity]),
+    TypeOrmModule.forFeature([
+      WorkflowOrmEntity,
+      WorkflowRunOrmEntity,
+      MemoryDefinitionOrmEntity,
+      MemoryRecordOrmEntity,
+    ]),
     forwardRef(() => CmsModule),
     forwardRef(() => ChatModule),
     UserModule,
@@ -37,8 +49,13 @@ import { WorkflowService } from './services/workflow.service';
   providers: [
     WorkflowRepository,
     WorkflowRunRepository,
+    MemoryDefinitionRepository,
+    MemoryRecordRepository,
     WorkflowService,
     WorkflowRunService,
+    MemoryDefinitionService,
+    MemoryRecordService,
+    MemoryService,
     SchedulerRegistry,
     WorkflowSchedulerService,
     ConversationalWorkflowContext,
@@ -50,8 +67,13 @@ import { WorkflowService } from './services/workflow.service';
   exports: [
     WorkflowRepository,
     WorkflowRunRepository,
+    MemoryDefinitionRepository,
+    MemoryRecordRepository,
     WorkflowService,
     WorkflowRunService,
+    MemoryDefinitionService,
+    MemoryRecordService,
+    MemoryService,
     ConversationalWorkflowContext,
     AgenticService,
   ],

@@ -73,6 +73,7 @@ describe('WorkflowService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
+      memoryDefinitions: [],
     });
   });
 
@@ -112,6 +113,7 @@ describe('WorkflowService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
+      memoryDefinitions: [],
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();

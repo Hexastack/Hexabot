@@ -8,6 +8,7 @@ import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -27,6 +28,8 @@ import {
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { DirectionType, WorkflowType } from '../types';
+
+import { MemoryDefinition } from './memory-definition.dto';
 
 @Exclude()
 export class WorkflowStub extends BaseStub {
@@ -73,6 +76,9 @@ export class WorkflowStub extends BaseStub {
 export class Workflow extends WorkflowStub {
   @Expose({ name: 'createdById' })
   createdBy!: string;
+
+  @Expose({ name: 'memoryDefinitionIds' })
+  memoryDefinitions!: string[];
 }
 
 @Exclude()
@@ -80,6 +86,10 @@ export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => User)
   createdBy!: User;
+
+  @Expose()
+  @Type(() => MemoryDefinition)
+  memoryDefinitions!: MemoryDefinition[];
 }
 
 export class WorkflowNewDto {
@@ -116,6 +126,14 @@ export class WorkflowNewDto {
   @IsOptional()
   @IsString()
   schedule?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Memory definitions available to this workflow',
+    type: [String],
+  })
+  @IsArray()
+  @IsUUIDv4({ each: true, message: 'Memory definition must be a valid UUID' })
+  memoryDefinitions: string[];
 
   @ApiProperty({ description: 'Workflow definition as YAML', type: String })
   @IsNotEmpty()
