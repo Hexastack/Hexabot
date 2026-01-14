@@ -60,7 +60,8 @@ export class LlmAgentAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context);
+    const basePrompt = await this.buildPrompt(input, context);
+    const promptPayload = this.addMemoryToPrompt(basePrompt, context, settings);
     const callSettings = this.buildCallSettings(settings);
     const tools = this.buildTools(context, settings.tools) as
       | ToolSet
@@ -69,8 +70,14 @@ export class LlmAgentAction extends LlmBaseAction<
       settings,
       tools,
     );
-    const instructions =
-      input.instructions ?? promptPayload.system ?? settings.instructions;
+    const instructions = this.addMemoryToPrompt(
+      {
+        system:
+          input.instructions ?? basePrompt.system ?? settings.instructions,
+      },
+      context,
+      settings,
+    ).system;
     const agent = new ToolLoopAgent({
       ...callSettings,
       ...(instructions ? { instructions } : {}),

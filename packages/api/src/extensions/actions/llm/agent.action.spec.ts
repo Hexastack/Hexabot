@@ -43,8 +43,12 @@ describe('LlmAgentAction', () => {
   let action: LlmAgentAction;
   let actionService: ActionService;
   const ToolLoopAgentMock = ToolLoopAgent as unknown as jest.Mock;
-  const stepCountIsMock = stepCountIs as jest.MockedFunction<typeof stepCountIs>;
-  const hasToolCallMock = hasToolCall as jest.MockedFunction<typeof hasToolCall>;
+  const stepCountIsMock = stepCountIs as jest.MockedFunction<
+    typeof stepCountIs
+  >;
+  const hasToolCallMock = hasToolCall as jest.MockedFunction<
+    typeof hasToolCall
+  >;
   const logger = { debug: jest.fn() };
   const defaultRetries = {
     max_attempts: 3,
@@ -81,12 +85,8 @@ describe('LlmAgentAction', () => {
       }),
     };
     const context = createContext({ actions: actionsService });
-
     const buildPromptSpy = jest.spyOn(action as any, 'buildPrompt');
-    const buildCallSettingsSpy = jest.spyOn(
-      action as any,
-      'buildCallSettings',
-    );
+    const buildCallSettingsSpy = jest.spyOn(action as any, 'buildCallSettings');
     const createModelSpy = jest
       .spyOn(action as any, 'createModel')
       .mockReturnValue('model-instance');
@@ -250,6 +250,75 @@ describe('LlmAgentAction', () => {
         warnings: ['warn'],
       },
     });
+  });
+
+  it('adds memory to the instructions when enabled', async () => {
+    const provider = Object.assign(
+      jest.fn().mockReturnValue('model-instance'),
+      {
+        languageModel: jest.fn(),
+      },
+    );
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo tool',
+        inputSchema: {},
+        outputSchema: {},
+        run: jest.fn(),
+      }),
+    };
+    const context = createContext({ actions: actionsService });
+    const definitionCache = new Map([
+      [
+        'user_profile',
+        {
+          name: 'User Profile',
+          slug: 'user_profile',
+        },
+      ],
+    ]);
+    const instances = {
+      user_profile: {
+        fields: jest
+          .fn()
+          .mockReturnValue([{ name: 'name', title: 'Name', value: 'Ada' }]),
+      },
+    };
+    (context as any).memoryStore = { definitionCache, instances };
+
+    jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
+    jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
+
+    toolLoopAgentGenerateMock.mockResolvedValue({
+      text: 'Agent reply',
+      finishReason: 'stop',
+      rawFinishReason: 'stop',
+    } as any);
+
+    const settings = {
+      provider: 'openai',
+      timeout_ms: 0,
+      retries: defaultRetries,
+      model: 'gpt-4o-mini',
+      api_key: 'test-key',
+      memory_enabled: true,
+    };
+    const input = { prompt: 'Hello there', system: 'Base system' };
+
+    await action.execute({ input, settings, context });
+
+    const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >;
+
+    expect(instances.user_profile.fields).toHaveBeenCalledWith({
+      includeAdditional: true,
+    });
+    expect(agentOptions.instructions).toContain('Base system');
+    expect(agentOptions.instructions).toContain('# Working Memory');
+    expect(agentOptions.instructions).toContain('## User Profile');
+    expect(agentOptions.instructions).toContain('- Name: Ada');
   });
 
   it('combines stop conditions when provided in settings', async () => {

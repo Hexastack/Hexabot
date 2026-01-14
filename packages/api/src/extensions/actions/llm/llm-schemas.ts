@@ -118,8 +118,6 @@ export const llmAgentOutputSchema = z.object({
 
 export const llmAgentSettingsSchema = llmCommonSettingsSchema.extend({
   instructions: z.string().min(1).optional(),
-  stop_step_count: z.number().int().positive().optional(),
-  stop_tool_call: z.string().trim().min(1).optional(),
 });
 
 export const jsonSchemaInput = z.custom<JSONSchema7>(
