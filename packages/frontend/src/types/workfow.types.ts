@@ -24,6 +24,7 @@ export interface IWorkflowAttributes {
   x?: number;
   y?: number;
   direction?: ResizeControlDirection;
+  memoryDefinitions: [];
 }
 
 export interface IWorkflowFilters {
