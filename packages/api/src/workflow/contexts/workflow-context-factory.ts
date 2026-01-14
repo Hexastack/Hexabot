@@ -9,6 +9,7 @@ import { ModuleRef } from '@nestjs/core';
 
 import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
+import { MemoryService } from '../services/memory.service';
 import { WorkflowType } from '../types';
 
 import { ConversationalWorkflowContext } from './conversational-workflow.context';
@@ -24,7 +25,10 @@ export class WorkflowContextFactory {
     [WorkflowType.scheduled]: ScheduledWorkflowContext,
   };
 
-  constructor(private readonly moduleRef: ModuleRef) {}
+  constructor(
+    private readonly moduleRef: ModuleRef,
+    private readonly memoryService: MemoryService,
+  ) {}
 
   async create<E extends TriggerEventWrapper>(
     run: WorkflowRunFull,
@@ -36,7 +40,15 @@ export class WorkflowContextFactory {
     }
 
     const ctx = await this.moduleRef.resolve<WorkflowRuntimeContext<E>>(Ctx);
+    const memory = await this.memoryService.buildStore(
+      {
+        ownerId: run.triggeredBy.id,
+        workflowId: run.workflow.id,
+        runId: run.id,
+      },
+      ctx,
+    );
 
-    return await ctx.buildFromRun(run, event);
+    return await ctx.buildFromRun(run, event, memory);
   }
 }

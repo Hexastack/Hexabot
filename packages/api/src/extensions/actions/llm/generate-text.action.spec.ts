@@ -48,7 +48,11 @@ describe('LlmGenerateTextAction', () => {
   };
   const createContext = (services: Record<string, unknown> = {}) =>
     ({
-      services: { logger, ...services },
+      services: {
+        logger,
+        actions: { get: jest.fn() },
+        ...services,
+      },
     }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {
@@ -179,6 +183,67 @@ describe('LlmGenerateTextAction', () => {
         warnings: ['warn'],
       },
     });
+  });
+
+  it('adds memory to the system prompt when enabled', async () => {
+    const provider = Object.assign(
+      jest.fn().mockReturnValue('model-instance'),
+      {
+        languageModel: jest.fn(),
+      },
+    );
+    const context = createContext();
+    const definitionCache = new Map([
+      [
+        'user_profile',
+        {
+          name: 'User Profile',
+          slug: 'user_profile',
+        },
+      ],
+    ]);
+    const instances = {
+      user_profile: {
+        fields: jest
+          .fn()
+          .mockReturnValue([{ name: 'name', title: 'Name', value: 'Ada' }]),
+      },
+    };
+    (context as any).memoryStore = { definitionCache, instances };
+
+    jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
+    jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
+
+    generateTextMock.mockResolvedValue({
+      text: 'Generated text',
+      finishReason: 'stop',
+      request: { foo: 'req' },
+      response: { status: 200 },
+      providerMetadata: {},
+      warnings: [],
+    } as any);
+
+    const settings = {
+      provider: 'openai',
+      timeout_ms: 0,
+      retries: defaultRetries,
+      model: 'gpt-4o-mini',
+      api_key: 'test-key',
+      memory_enabled: true,
+    };
+    const input = { prompt: 'Hello there', system: 'Base system' };
+
+    await action.execute({ input, settings, context });
+
+    const callArgs = generateTextMock.mock.calls[0][0] as any;
+
+    expect(instances.user_profile.fields).toHaveBeenCalledWith({
+      includeAdditional: true,
+    });
+    expect(callArgs.system).toContain('Base system');
+    expect(callArgs.system).toContain('# Working Memory');
+    expect(callArgs.system).toContain('## User Profile');
+    expect(callArgs.system).toContain('- Name: Ada');
   });
 
   it('defaults stopWhen to the number of provided tools', async () => {

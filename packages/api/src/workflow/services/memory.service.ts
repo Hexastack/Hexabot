@@ -5,21 +5,13 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { FindOptionsWhere } from 'typeorm';
 
-import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
-import { MemoryScope } from '../types';
+import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
+import { MemoryStoreIdentifier } from '../types';
+import { MemoryStore } from '../utils/memory-store';
 
 import { MemoryDefinitionService } from './memory-definition.service';
 import { MemoryRecordService } from './memory-record.service';
-
-export type MemoryStore = Record<MemoryScope, Record<string, unknown>>;
-
-export type BuildMemoryStoreOptions = {
-  ownerId?: string | null;
-  workflowId?: string | null;
-  runId?: string | null;
-};
 
 @Injectable()
 export class MemoryService {
@@ -29,71 +21,29 @@ export class MemoryService {
   ) {}
 
   /**
-   * Build a structured memory store for a given owner, grouped by scope then slug.
+   * Build a structured memory store for a given owner, keyed by slug.
    */
-  async buildStore({
-    ownerId,
-    workflowId,
-    runId,
-  }: BuildMemoryStoreOptions): Promise<MemoryStore> {
-    const store: MemoryStore = {
-      [MemoryScope.global]: {},
-      [MemoryScope.workflow]: {},
-      [MemoryScope.run]: {},
-    };
-
-    if (!ownerId) {
-      return store;
-    }
-
-    const where: FindOptionsWhere<MemoryRecordOrmEntity>[] = [
-      {
-        owner: { id: ownerId },
-        definition: { scope: MemoryScope.global },
-      },
-    ];
-
-    if (workflowId) {
-      where.push({
-        owner: { id: ownerId },
-        workflow: { id: workflowId },
-        definition: { scope: MemoryScope.workflow },
-      });
-    }
-
-    if (runId) {
-      where.push({
-        owner: { id: ownerId },
-        run: { id: runId },
-        definition: { scope: MemoryScope.run },
-      });
-    }
-
-    const records = await this.memoryRecordService.findAndPopulate({
-      where,
-      order: {
-        updatedAt: 'DESC',
-        createdAt: 'DESC',
-      },
+  async buildStore(
+    { ownerId, workflowId, runId }: MemoryStoreIdentifier,
+    context: WorkflowRuntimeContext,
+  ): Promise<MemoryStore> {
+    const definitionCache =
+      await this.memoryDefinitionService.buildDefinitionCache(workflowId);
+    const records = await this.memoryRecordService.findActiveByScope({
+      ownerId,
+      workflowId,
+      runId,
     });
-    const now = Date.now();
-    const finalStore = records.reduce((acc, record) => {
-      if (record.expiresAt && record.expiresAt.getTime() <= now) {
-        return acc;
-      }
 
-      const { definition, value } = record;
-      const { slug, scope } = definition;
-      const scopedStore = acc[scope];
-      if (Object.prototype.hasOwnProperty.call(scopedStore, slug)) {
-        return acc;
-      }
-
-      scopedStore[slug] = value;
-
-      return acc;
-    }, store);
-
-    return finalStore;
+    return MemoryStore.createStore(
+      {
+        identifiers: { ownerId, workflowId, runId },
+        definitionCache,
+        records,
+        upsertRecord: (params) =>
+          this.memoryRecordService.upsertScopedRecord(params),
+      },
+      context,
+    );
   }
 }

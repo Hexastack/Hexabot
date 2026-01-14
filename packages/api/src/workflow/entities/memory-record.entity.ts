@@ -19,6 +19,8 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
+import type { MemoryValue } from '../types';
+
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
 import { WorkflowRunOrmEntity } from './workflow-run.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
@@ -81,7 +83,7 @@ export class MemoryRecordOrmEntity extends BaseOrmEntity {
 
   /** Stored JSON payload adhering to the associated memory schema. */
   @JsonColumn()
-  value!: Record<string, unknown>;
+  value!: MemoryValue;
 
   /** TTL in seconds applied to this record; defaults to the definition's TTL. */
   @Column({ name: 'ttl_seconds', type: 'int', nullable: true })

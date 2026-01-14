@@ -24,6 +24,8 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
+import type { MemoryValue } from '../types';
+
 import { MemoryDefinition } from './memory-definition.dto';
 import { WorkflowRun } from './workflow-run.dto';
 import { Workflow } from './workflow.dto';
@@ -31,7 +33,7 @@ import { Workflow } from './workflow.dto';
 @Exclude()
 export class MemoryRecordStub extends BaseStub {
   @Expose()
-  value!: Record<string, unknown>;
+  value!: MemoryValue;
 
   @Expose()
   ttlSeconds?: number | null;
@@ -118,7 +120,7 @@ export class MemoryRecordCreateDto {
     type: Object,
   })
   @IsDefined()
-  value!: Record<string, unknown>;
+  value!: MemoryValue;
 
   @ApiPropertyOptional({
     description: 'TTL in seconds overriding the definition TTL',

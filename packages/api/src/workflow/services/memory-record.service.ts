@@ -17,7 +17,7 @@ import {
 } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 import { MemoryRecordRepository } from '../repositories/memory-record.repository';
-import { MemoryScope, MemoryStoreIdentifier } from '../types';
+import { MemoryScope, MemoryStoreIdentifier, MemoryValue } from '../types';
 
 @Injectable()
 export class MemoryRecordService extends BaseOrmService<
@@ -106,7 +106,7 @@ export class MemoryRecordService extends BaseOrmService<
     ownerId: string;
     workflowId?: string | null;
     runId?: string | null;
-    value: Record<string, unknown>;
+    value: MemoryValue;
   }): Promise<void> {
     const ttlSeconds = definition.ttlSeconds ?? null;
     const expiresAt =

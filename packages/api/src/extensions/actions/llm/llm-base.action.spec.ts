@@ -125,6 +125,10 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.buildPrompt(input as any, context);
   }
 
+  public buildMemoryPromptPublic(context: WorkflowRuntimeContext) {
+    return this.buildMemoryPrompt(context);
+  }
+
   public buildCallSettingsPublic(settings: LlmCommonSettings) {
     return this.buildCallSettings(settings);
   }
@@ -487,6 +491,82 @@ describe('LlmBaseAction', () => {
       ).rejects.toThrow(
         'Provide either "prompt" or "messages_limit" to build the model request.',
       );
+    });
+  });
+
+  describe('buildMemoryPrompt', () => {
+    it('returns undefined when memory store is missing', () => {
+      expect(
+        action.buildMemoryPromptPublic({} as WorkflowRuntimeContext),
+      ).toBeUndefined();
+    });
+
+    it('builds a markdown prompt grouped by memory definition names', () => {
+      const definitionCache = new Map([
+        [
+          'user_infos',
+          {
+            name: 'User infos',
+            slug: 'user_infos',
+          },
+        ],
+        [
+          'weather_workflow',
+          {
+            name: 'Weather Workflow',
+            slug: 'weather_workflow',
+          },
+        ],
+      ]);
+      const userFields = [
+        { name: 'phone', title: 'Phone', value: '+1 876 876 876' },
+        { name: 'nickname', title: 'Nickname', value: undefined },
+        { name: 'age', title: 'Age', value: 42 },
+        { name: 'verified', title: 'Verified', value: true },
+        {
+          name: 'updated_at',
+          title: 'Updated at',
+          value: new Date('2024-01-02T03:04:05Z'),
+        },
+      ];
+      const weatherFields = [
+        { name: 'city', title: 'City', value: 'Paris' },
+        { name: 'details', title: 'Details', value: { country: 'France' } },
+      ];
+      const instances = {
+        user_infos: {
+          fields: jest.fn().mockReturnValue(userFields),
+        },
+        weather_workflow: {
+          fields: jest.fn().mockReturnValue(weatherFields),
+        },
+      };
+      const context = {
+        memoryStore: { definitionCache, instances },
+      } as unknown as WorkflowRuntimeContext;
+      const result = action.buildMemoryPromptPublic(context);
+
+      expect(instances.user_infos.fields).toHaveBeenCalledWith({
+        includeAdditional: true,
+      });
+      expect(instances.weather_workflow.fields).toHaveBeenCalledWith({
+        includeAdditional: true,
+      });
+      expect(result).toBe(
+        [
+          '# Working Memory',
+          '## User infos',
+          '- Phone: +1 876 876 876',
+          '- Age: 42',
+          '- Verified: true',
+          '- Updated at: 2024-01-02T03:04:05.000Z',
+          '',
+          '## Weather Workflow',
+          '- City: Paris',
+          '- Details: {"country":"France"}',
+        ].join('\n'),
+      );
+      expect(result).not.toContain('Nickname');
     });
   });
 
