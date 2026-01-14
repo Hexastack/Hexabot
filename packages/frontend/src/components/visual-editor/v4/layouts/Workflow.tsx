@@ -5,17 +5,15 @@
  */
 
 import { Actions } from "@hexabot-ai/agentic";
-import { Box, debounce, IconButton, styled } from "@mui/material";
-import { useReactFlow, useViewport } from "@xyflow/react";
-import { useEffect } from "react";
+import { Box, styled } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
+import { useEffect, useMemo } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { useQueryChange } from "@/hooks/useQueryChange";
-import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType } from "@/services/types";
 
-import { AnimatedIcon } from "../components/icons/AnimatedIcon";
+import { RotateButton } from "../components/controls/RotateButton";
 import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -26,7 +24,6 @@ import {
   buildNodesAndEdges,
   getDefinition,
 } from "../utils/workflow-node.utils";
-
 //TODO: Mock data need to be removed
 const DEFAULT_ACTIONS: Actions = [
   "call_api",
@@ -64,38 +61,37 @@ const StyledBox = styled(Box)(() => ({
   height: "100%",
 }));
 
-export const Main = () => {
-  const { setViewport, fitView } = useReactFlow();
+export const Workflow = () => {
+  const { setViewport } = useReactFlow();
   const {
     selectedFlowId,
-    direction,
-    setDirection,
     yaml,
-    setYaml,
-    setSelectedFlowId,
+    workflow,
+    direction,
+    debouncedWorkflowUpdate,
     updateWorkflowURL,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const { mutate: createWorkflow } = useCreate(EntityType.WORKFLOW);
-  const defaultViewport = useViewport();
+  const defaultViewport = useMemo(
+    () => ({
+      x: workflow?.x || 0,
+      y: workflow?.y || 0,
+      zoom: workflow?.zoom || 1,
+    }),
+    [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
+  );
 
-  useNodesMeasured((nodesToFocus, selectedNodes, nodesInitialized) => {
-    setViewport(defaultViewport);
-    if (nodesInitialized && nodesToFocus.length) {
-      animateFocus(nodesToFocus);
-    } else if (!selectedNodes.length) {
-      fitView({ duration: 100, interpolate: "smooth" });
+  useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
+    if (nodesInitialized) {
+      if (nodesToFocus.length) {
+        animateFocus(nodesToFocus);
+      } else {
+        setViewport(defaultViewport);
+      }
     }
   });
 
-  const handleViewportUpdate = useSafeCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    debounce(({ zoom, x, y }) => {}, 400),
-    [selectedFlowId],
-    (memoizedFn) => {
-      memoizedFn.clear();
-    },
-  );
   const graph = useSafeMemo(
     () => {
       if (yaml) {
@@ -110,17 +106,9 @@ export const Main = () => {
     [yaml, direction],
     { nodes: [], edges: [] },
   );
-  const queryFlowId = useQueryChange("flowId", (value) => {
-    if (value) {
-      setSelectedFlowId(value);
-    } else {
-      setSelectedFlowId("");
-      setYaml("");
-    }
-  });
 
   useEffect(() => {
-    if (!queryFlowId && yaml) {
+    if (!selectedFlowId && yaml) {
       const definition = getDefinition(yaml, { actions: DEFAULT_ACTIONS });
 
       createWorkflow(
@@ -143,36 +131,13 @@ export const Main = () => {
       <FlowsTabs />
       <StyledBox>
         <ReactFlowWrapper
-          onViewport={handleViewportUpdate}
+          onViewport={debouncedWorkflowUpdate}
           defaultEdges={graph?.edges || []}
           defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
       </StyledBox>
-      <IconButton
-        style={{
-          position: "absolute",
-          bottom: 119,
-          left: 14,
-          height: "26px",
-          width: "28px",
-          backgroundColor: "#fff",
-          borderRadius: 0,
-          border: "1px solid #0001",
-          padding: "2px 3px",
-        }}
-        size="small"
-        onClick={() => {
-          setDirection(direction === "horizontal" ? "vertical" : "horizontal");
-        }}
-      >
-        <AnimatedIcon
-          canRotate={direction === "vertical"}
-          from="-45"
-          to="45"
-          htmlColor="#000000de"
-        />
-      </IconButton>
+      <RotateButton />
     </div>
   );
 };

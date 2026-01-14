@@ -11,6 +11,7 @@ import {
   IsArray,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateIf,
@@ -26,7 +27,7 @@ import {
 
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
-import { WorkflowType } from '../types';
+import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinition } from './memory-definition.dto';
 
@@ -57,6 +58,18 @@ export class WorkflowStub extends BaseStub {
       : parseWorkflowDefinition(obj.definitionYaml),
   )
   definition!: WorkflowDefinition;
+
+  @Expose()
+  x!: number;
+
+  @Expose()
+  y!: number;
+
+  @Expose()
+  zoom!: number;
+
+  @Expose()
+  direction: DirectionType;
 }
 
 @Exclude()
@@ -127,6 +140,34 @@ export class WorkflowNewDto {
   @IsString()
   @IsWorkflowYaml()
   definitionYaml!: string;
+
+  @ApiPropertyOptional({
+    description: 'Workflow x offset',
+    type: Number,
+  })
+  @IsNumber()
+  x?: number;
+
+  @ApiPropertyOptional({
+    description: 'Workflow y offset',
+    type: Number,
+  })
+  @IsNumber()
+  y?: number;
+
+  @ApiPropertyOptional({
+    description: 'Workflow zoom',
+    type: Number,
+  })
+  @IsNumber({ maxDecimalPlaces: 20 })
+  zoom?: number;
+
+  @ApiPropertyOptional({
+    description: 'Workflow direction',
+    type: Number,
+  })
+  @IsEnum(DirectionType)
+  direction?: DirectionType;
 }
 
 export class WorkflowCreateDto extends WorkflowNewDto {

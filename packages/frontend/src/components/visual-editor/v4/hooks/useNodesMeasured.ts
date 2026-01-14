@@ -9,17 +9,21 @@ import { useEffect } from "react";
 
 import { useWorkflow } from "./useWorkflow";
 
-export const useNodesMeasured = (
-  cb: (
-    nodesToFocus: string[],
-    selectedNodes: string[],
-    nodesInitialized: boolean,
-  ) => void,
-) => {
+interface CbProps {
+  nodesToFocus: string[];
+  selectedNodes: string[];
+  nodesInitialized: boolean;
+}
+
+export const useNodesMeasured = (cb: (props: CbProps) => void) => {
   const nodesInitialized = useNodesInitialized();
   const { toFocusIds, selectedNodeIds } = useWorkflow();
 
   useEffect(() => {
-    cb(toFocusIds, selectedNodeIds, nodesInitialized);
+    cb({
+      nodesToFocus: toFocusIds,
+      selectedNodes: selectedNodeIds,
+      nodesInitialized,
+    });
   }, [nodesInitialized]);
 };

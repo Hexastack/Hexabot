@@ -5,11 +5,12 @@
  */
 
 import { Cancelable } from "@mui/utils/debounce";
+import { UseMutateFunction } from "@tanstack/react-query";
 import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
-import type { IWorkflow } from "@/types/workfow.types";
+import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
 export interface IWorkflowContext {
   getCentroid: () => XYPosition;
@@ -17,19 +18,30 @@ export interface IWorkflowContext {
   getWorkflowFromCache: (id: string) => IWorkflow | undefined;
   selectedNodeIds: string[];
   setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;
-  selectedFlowId: string;
-  setSelectedFlowId: (id: string) => void;
+  selectedFlowId?: string;
   toFocusIds: string[];
   setToFocusIds: Dispatch<SetStateAction<string[]>>;
   openSearchPanel: boolean;
   setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;
   getQuery: (key: string) => string;
-  direction: ResizeControlDirection;
-  setDirection: Dispatch<SetStateAction<ResizeControlDirection>>;
+  direction?: ResizeControlDirection;
+  setDirection?: Dispatch<SetStateAction<ResizeControlDirection>>;
   removeWorkflowParams: () => Promise<void>;
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
-  yaml: string;
-  setYaml: Dispatch<SetStateAction<string>>;
+  yaml?: string;
+  workflow?: IWorkflow;
+  workflows?: IWorkflow[];
+  debouncedWorkflowUpdate: ((params: Partial<IWorkflowAttributes>) => void) &
+    Cancelable;
+  updateWorkflow: UseMutateFunction<
+    IWorkflow,
+    Error,
+    {
+      id: string;
+      params: Partial<IWorkflowAttributes>;
+    },
+    IWorkflow
+  >;
 }
 
 export interface WorkflowContextProps {

@@ -37,7 +37,7 @@ import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
-import { WorkflowType } from '../types';
+import { DirectionType, WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
 
@@ -77,6 +77,10 @@ describe('WorkflowController (TypeORM)', () => {
       definitionYaml: stringify(definition),
       memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
+      direction: DirectionType.HORIZONTAL,
+      x: 0,
+      y: 0,
+      zoom: 1,
     };
   };
 

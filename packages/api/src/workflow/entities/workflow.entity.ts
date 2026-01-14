@@ -22,7 +22,7 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
-import { WorkflowType } from '../types';
+import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
 
@@ -84,6 +84,27 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   /** Raw YAML workflow definition provided by the user. */
   @Column({ name: 'definition_yaml', type: 'text' })
   definitionYaml!: string;
+
+  @Column({
+    type: 'decimal',
+    default: 0,
+  })
+  x!: number;
+
+  @Column({
+    type: 'decimal',
+    default: 0,
+  })
+  y!: number;
+
+  @Column({
+    type: 'decimal',
+    default: 1,
+  })
+  zoom!: number;
+
+  @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
+  direction!: DirectionType;
 
   /** Structured workflow definition consumed by the agent runtime. */
   get definition(): WorkflowDefinition {

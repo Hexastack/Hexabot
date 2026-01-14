@@ -89,3 +89,8 @@ export type MemoryStorePersistRecordFn = (params: {
   runId?: string | null;
   value: MemoryValue;
 }) => Promise<void>;
+
+export enum DirectionType {
+  HORIZONTAL = 'horizontal',
+  VERTICAL = 'vertical',
+}
