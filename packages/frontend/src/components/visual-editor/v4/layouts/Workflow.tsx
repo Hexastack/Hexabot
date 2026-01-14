@@ -37,7 +37,6 @@ const DEFAULT_ACTIONS: Actions = [
   "await_user_input",
   "decision_router",
   "create_ticket",
-  "llm_generate_object",
   "send_text_message",
   "await_reply",
   "send_text_message",

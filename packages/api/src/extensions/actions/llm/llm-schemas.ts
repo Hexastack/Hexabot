@@ -81,17 +81,44 @@ export const llmCommonSettingsSchema = SettingsSchema.extend({
   stop_tool_call: z.string().trim().min(1).optional(),
 });
 
+export const jsonSchemaInput = z.custom<JSONSchema7>(
+  (value) =>
+    value !== undefined &&
+    value !== null &&
+    (typeof value === 'boolean' || typeof value === 'object'),
+  { message: 'schema must be a valid JSON Schema object or boolean' },
+);
+
 export const llmGenerateTextInputSchema = llmPromptSchema;
 
 export const llmGenerateTextOutputSchema = z.object({
   text: z.string(),
+  object: z.any().optional(),
+  reasoning: z.string().optional(),
   finish_reason: z.string().optional(),
   model: z.string().optional(),
   usage: llmUsageSchema.optional(),
   raw: llmRawResponseSchema.optional(),
 });
 
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema;
+export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
+  .extend({
+    output_schema: jsonSchemaInput.optional(),
+    output_schema_name: z.string().min(1).optional(),
+    output_schema_description: z.string().min(1).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (
+      (value.output_schema_name || value.output_schema_description) &&
+      !value.output_schema
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide "output_schema" to use output schema metadata.',
+        path: ['output_schema'],
+      });
+    }
+  });
 
 export const llmAgentInputSchema = llmPromptBaseSchema
   .extend({
@@ -120,33 +147,6 @@ export const llmAgentSettingsSchema = llmCommonSettingsSchema.extend({
   instructions: z.string().min(1).optional(),
 });
 
-export const jsonSchemaInput = z.custom<JSONSchema7>(
-  (value) =>
-    value !== undefined &&
-    value !== null &&
-    (typeof value === 'boolean' || typeof value === 'object'),
-  { message: 'schema must be a valid JSON Schema object or boolean' },
-);
-
-export const llmGenerateObjectInputSchema = llmPromptBaseSchema
-  .extend({
-    schema: jsonSchemaInput,
-    schema_name: z.string().min(1).optional(),
-    schema_description: z.string().min(1).optional(),
-  })
-  .superRefine(validatePromptSource);
-
-export const llmGenerateObjectOutputSchema = z.object({
-  object: z.any(),
-  reasoning: z.string().optional(),
-  finish_reason: z.string().optional(),
-  model: z.string().optional(),
-  usage: llmUsageSchema.optional(),
-  raw: llmRawResponseSchema.optional(),
-});
-
-export const llmGenerateObjectSettingsSchema = llmCommonSettingsSchema;
-
 export type LlmPromptInput = z.infer<typeof llmPromptSchema>;
 
 export type LlmCommonSettings = Settings &
@@ -165,15 +165,3 @@ export type LlmAgentInput = z.infer<typeof llmAgentInputSchema>;
 export type LlmAgentOutput = z.infer<typeof llmAgentOutputSchema>;
 
 export type LlmAgentSettings = z.infer<typeof llmAgentSettingsSchema>;
-
-export type LlmGenerateObjectInput = z.infer<
-  typeof llmGenerateObjectInputSchema
->;
-
-export type LlmGenerateObjectOutput = z.infer<
-  typeof llmGenerateObjectOutputSchema
->;
-
-export type LlmGenerateObjectSettings = z.infer<
-  typeof llmGenerateObjectSettingsSchema
->;

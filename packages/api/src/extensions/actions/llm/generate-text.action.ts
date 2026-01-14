@@ -6,7 +6,7 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { ToolSet, generateText } from 'ai';
+import { Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -33,7 +33,7 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       {
         name: 'llm_generate_text',
         description:
-          'Generates text using a language model via the Vercel AI SDK, returning the text, usage, and raw response metadata.',
+          'Generates text or structured output using a language model via the Vercel AI SDK, returning the response, usage, and raw response metadata.',
         inputSchema: llmGenerateTextInputSchema,
         outputSchema: llmGenerateTextOutputSchema,
         settingsSchema: llmGenerateTextSettingsSchema,
@@ -65,7 +65,10 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       context,
       settings,
     );
+    // Structured outputs do not support stop sequences in the AI SDK call.
     const callSettings = this.buildCallSettings(settings);
+    const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =
+      callSettings;
     const tools = this.buildTools(context, settings.tools) as
       | ToolSet
       | undefined;
@@ -73,6 +76,13 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       settings,
       tools,
     );
+    const output = settings.output_schema
+      ? Output.object({
+          schema: jsonSchema(settings.output_schema),
+          name: settings.output_schema_name,
+          description: settings.output_schema_description,
+        })
+      : undefined;
 
     logger.debug(
       `Calling model "${modelId}" via llm_generate_text action using provider "${providerName}"`,
@@ -89,14 +99,22 @@ export class LlmGenerateTextAction extends LlmBaseAction<
 
     const result = await generateText({
       ...promptPayload,
-      ...callSettings,
+      ...(settings.output_schema ? callSettingsWithoutStops : callSettings),
       model,
-      tools,
+      ...(output ? { output } : {}),
+      ...(tools ? { tools } : {}),
       ...(stopWhen ? { stopWhen } : {}),
     });
+    const reasoning =
+      result.reasoningText ??
+      (result.reasoning?.length
+        ? result.reasoning.map((part) => part.text).join('\n')
+        : undefined);
 
     return {
       text: result.text,
+      ...(output ? { object: result.output } : {}),
+      ...(reasoning ? { reasoning } : {}),
       finish_reason: result.finishReason,
       model: modelId,
       usage: this.normalizeUsage(result.usage),
