@@ -50,6 +50,16 @@ type ToolDefinition = {
   execute: (input: unknown) => Promise<unknown>;
 };
 
+type PromptPayload =
+  | {
+      prompt: string;
+      system?: string;
+    }
+  | {
+      messages: ModelMessage[];
+      system?: string;
+    };
+
 export abstract class LlmBaseAction<
   I,
   O,
@@ -344,9 +354,27 @@ export abstract class LlmBaseAction<
       .map(({ role, content }) => ({ role, content }));
   }
 
-  protected async buildPrompt(input: LlmPromptInput, context: C) {
-    if (input.prompt) {
-      return { prompt: input.prompt, system: input.system };
+  protected async buildPrompt(
+    input: LlmPromptInput,
+    context: C,
+    settings: S,
+  ): Promise<PromptPayload> {
+    const promptPayload = { prompt: input.prompt, system: input.system };
+
+    if (settings.memory_enabled) {
+      const memoryPrompt = this.buildMemoryPrompt(context);
+      if (memoryPrompt) {
+        promptPayload.system = promptPayload.system
+          ? `${promptPayload.system}\n\n${memoryPrompt}`
+          : memoryPrompt;
+      }
+    }
+
+    if (promptPayload.prompt) {
+      return {
+        prompt: promptPayload.prompt,
+        system: promptPayload.system,
+      };
     }
 
     if (input.messages_limit !== undefined) {
@@ -370,7 +398,7 @@ export abstract class LlmBaseAction<
       );
       const messages = this.normalizeMessagesForModel(history, subscriberId);
 
-      return { messages, system: input.system };
+      return { messages, system: promptPayload.system };
     }
 
     throw new Error(
@@ -443,26 +471,6 @@ export abstract class LlmBaseAction<
     } catch {
       return String(value);
     }
-  }
-
-  protected addMemoryToPrompt<P extends { system?: string }>(
-    prompt: P,
-    context: C,
-    settings: S,
-  ): P {
-    if (!settings.memory_enabled) {
-      return prompt;
-    }
-
-    const memoryPrompt = this.buildMemoryPrompt(context);
-    if (!memoryPrompt) {
-      return prompt;
-    }
-    const system = prompt.system
-      ? `${prompt.system}\n\n${memoryPrompt}`
-      : memoryPrompt;
-
-    return { ...prompt, system };
   }
 
   protected safeStringify(value: unknown): string {

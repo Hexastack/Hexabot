@@ -6,37 +6,37 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { Output, ToolSet, generateText, jsonSchema } from 'ai';
+import { ToolLoopAgent, ToolSet } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { LlmBaseAction } from './llm-base.action';
 import {
-  LlmGenerateTextInput,
-  LlmGenerateTextOutput,
-  LlmGenerateTextSettings,
-  llmGenerateTextInputSchema,
-  llmGenerateTextOutputSchema,
-  llmGenerateTextSettingsSchema,
+  LlmAgentInput,
+  LlmAgentOutput,
+  LlmAgentSettings,
+  llmAgentInputSchema,
+  llmAgentOutputSchema,
+  llmAgentSettingsSchema,
 } from './llm-schemas';
 
 @Injectable()
-export class LlmGenerateTextAction extends LlmBaseAction<
-  LlmGenerateTextInput,
-  LlmGenerateTextOutput,
+export class LlmAgentAction extends LlmBaseAction<
+  LlmAgentInput,
+  LlmAgentOutput,
   WorkflowRuntimeContext,
-  LlmGenerateTextSettings
+  LlmAgentSettings
 > {
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_generate_text',
+        name: 'llm_agent',
         description:
-          'Generates text or structured output using a language model via the Vercel AI SDK, returning the response, usage, and raw response metadata.',
-        inputSchema: llmGenerateTextInputSchema,
-        outputSchema: llmGenerateTextOutputSchema,
-        settingsSchema: llmGenerateTextSettingsSchema,
+          'Runs a ToolLoopAgent with optional tools to generate multi-step outputs via the Vercel AI SDK.',
+        inputSchema: llmAgentInputSchema,
+        outputSchema: llmAgentOutputSchema,
+        settingsSchema: llmAgentSettingsSchema,
       },
       actionService,
     );
@@ -47,9 +47,9 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     settings,
     context,
   }: ActionExecutionArgs<
-    LlmGenerateTextInput,
+    LlmAgentInput,
     WorkflowRuntimeContext,
-    LlmGenerateTextSettings
+    LlmAgentSettings
   >) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
@@ -61,10 +61,7 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
     const promptPayload = await this.buildPrompt(input, context, settings);
-    // Structured outputs do not support stop sequences in the AI SDK call.
     const callSettings = this.buildCallSettings(settings);
-    const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =
-      callSettings;
     const tools = this.buildTools(context, settings.tools) as
       | ToolSet
       | undefined;
@@ -72,16 +69,16 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       settings,
       tools,
     );
-    const output = settings.output_schema
-      ? Output.object({
-          schema: jsonSchema(settings.output_schema),
-          name: settings.output_schema_name,
-          description: settings.output_schema_description,
-        })
-      : undefined;
+    const agent = new ToolLoopAgent({
+      ...callSettings,
+      ...(promptPayload.system ? { instructions: promptPayload.system } : {}),
+      ...(stopWhen ? { stopWhen } : {}),
+      model,
+      tools,
+    });
 
     logger.debug(
-      `Calling model "${modelId}" via llm_generate_text action using provider "${providerName}"`,
+      `Calling model "${modelId}" via llm_agent action using provider "${providerName}"`,
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
@@ -92,28 +89,35 @@ export class LlmGenerateTextAction extends LlmBaseAction<
         },
       },
     );
+    const agentPrompt =
+      'messages' in promptPayload
+        ? promptPayload.messages
+        : promptPayload.prompt;
 
-    const result = await generateText({
-      ...promptPayload,
-      ...(settings.output_schema ? callSettingsWithoutStops : callSettings),
-      model,
-      ...(output ? { output } : {}),
-      ...(tools ? { tools } : {}),
-      ...(stopWhen ? { stopWhen } : {}),
-    });
-    const reasoning =
-      result.reasoningText ??
-      (result.reasoning?.length
-        ? result.reasoning.map((part) => part.text).join('\n')
-        : undefined);
+    if (!agentPrompt) {
+      throw new Error('Prompt is required to call the agent.');
+    }
+
+    const result = await agent.generate({ prompt: agentPrompt });
 
     return {
       text: result.text,
-      ...(output ? { object: result.output } : {}),
-      ...(reasoning ? { reasoning } : {}),
+      content: result.content,
+      reasoning:
+        result.reasoningText ??
+        (result.reasoning?.length
+          ? result.reasoning.map((part) => part.text).join('\n')
+          : undefined),
+      files: result.files,
+      sources: result.sources,
+      tool_calls: result.toolCalls,
+      tool_results: result.toolResults,
       finish_reason: result.finishReason,
+      raw_finish_reason: result.rawFinishReason,
       model: modelId,
       usage: this.normalizeUsage(result.usage),
+      total_usage: this.normalizeUsage(result.totalUsage),
+      steps: result.steps,
       raw: {
         request: result.request,
         response: result.response,
@@ -124,4 +128,4 @@ export class LlmGenerateTextAction extends LlmBaseAction<
   }
 }
 
-export default LlmGenerateTextAction;
+export default LlmAgentAction;

@@ -26,8 +26,6 @@ export * from './helpers/local-storage/index.helper';
 
 export * from './helpers/local-storage/settings';
 
-export * from './actions/llm/generate-object.action';
-
 export * from './actions/llm/generate-text.action';
 
 export * from './actions/messaging/text-message.action';

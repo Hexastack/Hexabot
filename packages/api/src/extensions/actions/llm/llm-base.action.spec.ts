@@ -121,8 +121,12 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.resolveModelId(settings);
   }
 
-  public buildPromptPublic(input: unknown, context: WorkflowRuntimeContext) {
-    return this.buildPrompt(input as any, context);
+  public buildPromptPublic(
+    input: unknown,
+    context: WorkflowRuntimeContext,
+    settings: LlmCommonSettings = {} as LlmCommonSettings,
+  ) {
+    return this.buildPrompt(input as any, context, settings);
   }
 
   public buildMemoryPromptPublic(context: WorkflowRuntimeContext) {
@@ -442,6 +446,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         },
         context,
+        {} as LlmCommonSettings,
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
@@ -464,6 +469,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         },
         {} as WorkflowRuntimeContext,
+        {} as LlmCommonSettings,
       );
 
       expect(result).toEqual({
@@ -474,9 +480,13 @@ describe('LlmBaseAction', () => {
 
     it('throws when subscriber id is missing for message history requests', async () => {
       await expect(
-        action.buildPromptPublic({ messages_limit: 1 }, {
-          services: { message: { findLastMessages: jest.fn() } },
-        } as unknown as WorkflowRuntimeContext),
+        action.buildPromptPublic(
+          { messages_limit: 1 },
+          {
+            services: { message: { findLastMessages: jest.fn() } },
+          } as unknown as WorkflowRuntimeContext,
+          {} as LlmCommonSettings,
+        ),
       ).rejects.toThrow(
         'A subscriber id is required to load previous messages for this action.',
       );
@@ -487,6 +497,7 @@ describe('LlmBaseAction', () => {
         action.buildPromptPublic(
           {} as unknown as Record<string, unknown>,
           {} as WorkflowRuntimeContext,
+          {} as LlmCommonSettings,
         ),
       ).rejects.toThrow(
         'Provide either "prompt" or "messages_limit" to build the model request.',
