@@ -22,6 +22,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import HomeIcon from "@mui/icons-material/Home";
+import MemoryIcon from "@mui/icons-material/Memory";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccessibilityRounded";
 import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
@@ -116,6 +117,14 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     Icon: AppsIcon,
     requires: {
       [EntityType.WORKFLOW]: [PermissionAction.READ],
+    },
+  },
+  {
+    text: "menu.memory_definitions",
+    href: "/workflow/memory-definitions",
+    Icon: MemoryIcon,
+    requires: {
+      [EntityType.MEMORY_DEFINITION]: [PermissionAction.READ],
     },
   },
   {

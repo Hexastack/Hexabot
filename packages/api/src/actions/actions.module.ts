@@ -7,6 +7,7 @@
 import { Global, Module } from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
+import { ActionsController } from './actions.controller';
 import { ActionService } from './actions.service';
 
 @Global()
@@ -19,6 +20,7 @@ import { ActionService } from './actions.service';
   'dist/extensions/actions/**/*.action.js',
 )
 @Module({
+  controllers: [ActionsController],
   providers: [ActionService],
   exports: [ActionService],
 })

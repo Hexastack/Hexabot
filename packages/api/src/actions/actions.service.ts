@@ -6,11 +6,18 @@
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ZodTypeAny } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { LoggerService } from '@/logger/logger.service';
 
 import { BaseAction } from './base-action';
-import { ActionName, ActionRegistry } from './types';
+import {
+  ActionName,
+  ActionRegistry,
+  ActionSchemaDefinition,
+  JsonSchema,
+} from './types';
 
 @Injectable()
 export class ActionService {
@@ -45,6 +52,39 @@ export class ActionService {
 
   getAll() {
     return Array.from(this.registry.values());
+  }
+
+  private buildJsonSchema(schema: ZodTypeAny, name: string): JsonSchema {
+    // Avoid TS2589 by narrowing zod-to-json-schema's generic signature.
+    const converter = zodToJsonSchema as unknown as (
+      schema: ZodTypeAny,
+      options: { name: string; target: 'jsonSchema7' },
+    ) => JsonSchema;
+
+    return converter(schema, {
+      name,
+      target: 'jsonSchema7',
+    });
+  }
+
+  getAllSchemaDefinitions(): ActionSchemaDefinition[] {
+    return this.getAll().map((action) => {
+      const name = action.getName();
+
+      return {
+        name,
+        description: action.description,
+        inputSchema: this.buildJsonSchema(action.inputSchema, `${name}_input`),
+        outputSchema: this.buildJsonSchema(
+          action.outputSchema,
+          `${name}_output`,
+        ),
+        settingsSchema: this.buildJsonSchema(
+          action.settingSchema,
+          `${name}_settings`,
+        ),
+      };
+    });
   }
 
   getRegistry(): Record<

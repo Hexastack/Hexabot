@@ -103,6 +103,16 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
+    name: 'MemoryDefinition',
+    identity: 'memorydefinition',
+    attributes: {},
+  },
+  {
+    name: 'MemoryRecord',
+    identity: 'memoryrecord',
+    attributes: {},
+  },
+  {
     name: 'BotStats',
     identity: 'botstats',
     attributes: {},
