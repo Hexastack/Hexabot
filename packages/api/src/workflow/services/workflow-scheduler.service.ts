@@ -5,12 +5,16 @@
  */
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
+import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
 
+import { Workflow as WorkflowDto } from '../dto/workflow.dto';
+import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 import { WorkflowType } from '../types';
 
@@ -19,6 +23,15 @@ import { WorkflowService } from './workflow.service';
 
 @Injectable()
 export class WorkflowSchedulerService implements OnModuleInit {
+  /**
+   * Create the scheduler service with workflow, user, and cron dependencies.
+   *
+   * @param workflowService - Service used to fetch workflows.
+   * @param agenticService - Service used to trigger workflows.
+   * @param schedulerRegistry - Registry that stores cron jobs.
+   * @param logger - Logger instance for scheduler events.
+   * @param userService - Service used to resolve workflow initiators.
+   */
   constructor(
     private readonly workflowService: WorkflowService,
     private readonly agenticService: AgenticService,
@@ -27,10 +40,58 @@ export class WorkflowSchedulerService implements OnModuleInit {
     private readonly userService: UserService,
   ) {}
 
+  /**
+   * Register scheduled workflows when the module boots.
+   */
   async onModuleInit(): Promise<void> {
     await this.registerScheduledWorkflows();
   }
 
+  /**
+   * Register a workflow when a creation event is emitted.
+   *
+   * @param event - Insert event containing the created workflow entity.
+   */
+  @OnEvent('hook:workflow:postCreate')
+  async handleWorkflowCreated(
+    event: InsertEvent<WorkflowOrmEntity>,
+  ): Promise<void> {
+    if (event.entity.id) {
+      await this.registerScheduledWorkflow(event.entity.id);
+    }
+  }
+
+  /**
+   * Re-register a workflow when it is updated.
+   *
+   * @param event - Update event containing the workflow identifier.
+   */
+  @OnEvent('hook:workflow:postUpdate')
+  async handleWorkflowUpdated(
+    event: UpdateEvent<WorkflowOrmEntity>,
+  ): Promise<void> {
+    if (event.databaseEntity.id) {
+      await this.registerScheduledWorkflow(event.databaseEntity.id);
+    }
+  }
+
+  /**
+   * Unregister a workflow when it is deleted.
+   *
+   * @param event - Remove event containing the workflow identifier.
+   */
+  @OnEvent('hook:workflow:postDelete')
+  async handleWorkflowDeleted(
+    event: RemoveEvent<WorkflowOrmEntity>,
+  ): Promise<void> {
+    if (event.databaseEntity.id) {
+      this.unregisterScheduledWorkflow(event.databaseEntity.id);
+    }
+  }
+
+  /**
+   * Register cron jobs for all stored scheduled workflows.
+   */
   private async registerScheduledWorkflows(): Promise<void> {
     const workflows = await this.workflowService.find({
       where: { type: WorkflowType.scheduled },
@@ -43,78 +104,132 @@ export class WorkflowSchedulerService implements OnModuleInit {
     }
 
     for (const workflow of workflows) {
-      if (!workflow.schedule) {
-        this.logger.warn(
-          'Skipping scheduled workflow without a cron expression',
-          workflow.id,
-        );
+      await this.registerScheduledWorkflow(workflow.id);
+    }
+  }
 
-        continue;
-      }
+  /**
+   * Register the cron job for a specific workflow.
+   *
+   * @param workflowId - Identifier of the workflow to schedule.
+   */
+  private async registerScheduledWorkflow(workflowId: string): Promise<void> {
+    const workflow = await this.workflowService.findOne(workflowId);
+    if (!workflow) {
+      this.logger.warn('Skipping scheduled workflow without an identifier');
 
-      if (!workflow.createdBy) {
-        this.logger.warn(
-          'Skipping scheduled workflow without an initiator',
-          workflow.id,
-        );
+      return;
+    }
 
-        continue;
-      }
+    const jobName = this.getJobName(workflow.id);
+    this.removeCronJob(jobName);
 
-      const initiator = await this.userService.findOne(workflow.createdBy);
+    if (workflow.type !== WorkflowType.scheduled) {
+      return;
+    }
 
-      if (!initiator) {
-        this.logger.warn(
-          'Skipping scheduled workflow without an initiator',
-          workflow.id,
-        );
+    if (!workflow.schedule) {
+      this.logger.warn(
+        'Skipping scheduled workflow without a cron expression',
+        workflow.id,
+      );
 
-        continue;
-      }
+      return;
+    }
 
-      const jobName = `workflow:${workflow.id}`;
+    const initiatorId = workflow.createdBy;
 
-      try {
-        const existing = this.schedulerRegistry.getCronJob(jobName);
-        existing.stop();
-        this.schedulerRegistry.deleteCronJob(jobName);
-      } catch {
-        // No existing job to clean up.
-      }
+    if (!initiatorId) {
+      this.logger.warn(
+        'Skipping scheduled workflow without an initiator',
+        workflow.id,
+      );
 
-      try {
-        const job = new CronJob(workflow.schedule, async () => {
-          const triggeredAt = new Date();
-          this.logger.log('Triggering scheduled workflow', {
-            workflowId: workflow.id,
-            schedule: workflow.schedule,
-          });
+      return;
+    }
 
-          const event = new ScheduledEventWrapper({
-            schedule: workflow.schedule,
-            triggeredAt,
-          });
-          event.setInitiator(initiator);
-          await this.agenticService.handleEvent(event, workflow);
-        });
+    const initiator = await this.userService.findOne(initiatorId);
 
-        this.schedulerRegistry.addCronJob(jobName, job);
-        job.start();
+    if (!initiator) {
+      this.logger.warn(
+        'Skipping scheduled workflow without an initiator',
+        workflow.id,
+      );
 
-        this.logger.debug('Registered scheduled workflow', {
+      return;
+    }
+
+    try {
+      const job = new CronJob(workflow.schedule, async () => {
+        const triggeredAt = new Date();
+        this.logger.log('Triggering scheduled workflow', {
           workflowId: workflow.id,
           schedule: workflow.schedule,
         });
-      } catch (err) {
-        this.logger.error(
-          'Unable to register scheduled workflow cron job',
-          err,
-          {
-            workflowId: workflow.id,
-            schedule: workflow.schedule,
-          },
-        );
-      }
+
+        const event = new ScheduledEventWrapper({
+          schedule: workflow.schedule,
+          triggeredAt,
+        });
+        event.setInitiator(initiator);
+        await this.agenticService.handleEvent(event, workflow as WorkflowDto);
+      });
+
+      this.schedulerRegistry.addCronJob(jobName, job);
+      job.start();
+
+      this.logger.debug('Registered scheduled workflow', {
+        workflowId: workflow.id,
+        schedule: workflow.schedule,
+      });
+    } catch (err) {
+      this.logger.error('Unable to register scheduled workflow cron job', err, {
+        workflowId: workflow.id,
+        schedule: workflow.schedule,
+      });
+    }
+  }
+
+  /**
+   * Unregister the cron job for the specified workflow id.
+   *
+   * @param workflowId - Identifier of the workflow to unschedule.
+   */
+  private unregisterScheduledWorkflow(workflowId: string): void {
+    const jobName = this.getJobName(workflowId);
+
+    if (this.removeCronJob(jobName)) {
+      this.logger.debug('Unregistered scheduled workflow', {
+        workflowId,
+      });
+    }
+  }
+
+  /**
+   * Build the cron job name for a workflow.
+   *
+   * @param workflowId - Identifier of the workflow.
+   * @returns The cron job name used in the scheduler registry.
+   */
+  private getJobName(workflowId: string): string {
+    return `workflow:${workflowId}`;
+  }
+
+  /**
+   * Stop and delete a cron job if it exists.
+   *
+   * @param jobName - Name of the cron job to remove.
+   * @returns True when a job was found and removed.
+   */
+  private removeCronJob(jobName: string): boolean {
+    try {
+      const existing = this.schedulerRegistry.getCronJob(jobName);
+      existing.stop();
+      this.schedulerRegistry.deleteCronJob(jobName);
+
+      return true;
+    } catch {
+      return false;
     }
   }
 }
