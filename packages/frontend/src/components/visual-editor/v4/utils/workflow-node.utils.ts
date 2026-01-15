@@ -10,7 +10,7 @@ import {
   type WorkflowCompileOptions,
 } from "@hexabot-ai/agentic";
 import { Edge, getNodesBounds, Position } from "@xyflow/react";
-import ELK, { ElkNode } from "elkjs/lib/elk.bundled.js";
+import ELK from "elkjs/lib/elk.bundled.js";
 import type { FC } from "react";
 
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
@@ -24,6 +24,7 @@ import { generateId } from "@/utils/generateId";
 import { DEFAULT_NODE_PROPS } from "../constants/workflow.constants";
 import {
   EEdgeType,
+  EHandleType,
   EIndicatorType,
   ELinkType,
   ENodeType,
@@ -37,6 +38,7 @@ import {
   walkSteps,
   type TraversalContext,
 } from "./graph.utils";
+import { getHandleConfig } from "./handle.utils";
 
 // TODO
 enum EActionType {
@@ -71,74 +73,137 @@ export const getActionConfig = (
   }
 };
 
-const getElkGraph = (
-  ctx: TraversalContext,
-  isHorizontal: boolean,
-  edges: Edge[],
-) => {
-  const nodeIds = new Set(ctx.nodes.map((node) => node.id));
-  const elkEdges = edges.filter(
-    (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target),
-  );
-  const elkNodes = ctx.nodes.map((node) => {
-    const { width, height } = getNodeDimensions(node.type, ctx.config);
+const elk = new ELK();
+const getElkSide = (position: Position) => {
+  switch (position) {
+    case Position.Top:
+      return "NORTH";
+    case Position.Bottom:
+      return "SOUTH";
+    case Position.Left:
+      return "WEST";
+    case Position.Right:
+      return "EAST";
+    default:
+      return "EAST";
+  }
+};
 
-    return {
-      id: node.id,
-      width,
-      height,
-    };
-  }) satisfies ElkNode[];
+type ElkPort = {
+  handleId: ELinkType;
+  elkId: string;
+  side: string;
+  type: EHandleType;
+};
+
+const toElk = (nodes: NodeData[], edges: Edge[], ctx: TraversalContext) => {
+  const isVertical = ctx.config?.direction === "vertical";
+  const direction = ctx.config?.direction ?? "horizontal";
+  const elkDirection = isVertical ? "DOWN" : "RIGHT";
+  const nodeIds = new Set(nodes.map((n) => n.id));
+  const nodePorts = new Map<string, ElkPort[]>();
+  const resolvePort = (
+    ports: ElkPort[] | undefined,
+    preferredHandle?: string | null,
+    preferredType?: EHandleType,
+  ) => {
+    if (!ports?.length) return;
+
+    if (preferredHandle) {
+      const handlePort = ports.find((p) => p.handleId === preferredHandle);
+
+      if (handlePort) {
+        return handlePort.elkId;
+      }
+    }
+
+    if (preferredType) {
+      const typedPort = ports.find((p) => p.type === preferredType);
+
+      if (typedPort) {
+        return typedPort.elkId;
+      }
+    }
+
+    return ports[0]?.elkId;
+  };
 
   return {
     id: "root",
     layoutOptions: {
-      "elk.direction": isHorizontal ? "RIGHT" : "DOWN",
+      "elk.algorithm": "layered",
+      "org.eclipse.elk.direction": elkDirection,
       "elk.spacing.nodeNode": "20",
       "elk.layered.spacing.nodeNodeBetweenLayers": "140",
-      // "elk.layered.crossingMinimization.forceNodeModelOrder": "false",
-      // "elk.partitioning.activate": "true",
-      // Ensure the algorithm respects the partition order
-      // "elk.layered.crossingMinimization.semiInteractive": "true",
-      // "elk.layered.crossingMinimization.semiInteractive": "true",
     },
-    children: elkNodes,
-    edges: elkEdges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  } satisfies ElkNode;
+    children: nodes.map((n) => {
+      const ports =
+        (n.data as { ports?: ELinkType[] })?.ports?.map((handleId) => {
+          const handle = getHandleConfig(handleId, false, direction);
+
+          return {
+            handleId,
+            elkId: `${n.id}__${handleId}`,
+            side: getElkSide(handle.position),
+            type: handle.type,
+          } as ElkPort;
+        }) ?? [];
+
+      nodePorts.set(n.id, ports);
+
+      return {
+        id: n.id,
+        ...getNodeDimensions(n.type, ctx.config),
+        layoutOptions: {
+          "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+        },
+        ports: ports.map((port) => ({
+          id: port.elkId,
+          properties: { "org.eclipse.elk.port.side": port.side },
+        })),
+      };
+    }),
+    edges: edges
+      .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+      .map((e) => {
+        return {
+          id: e.id,
+          sources: [
+            resolvePort(
+              nodePorts.get(e.source),
+              e.sourceHandle,
+              EHandleType.SOURCE,
+            ) ?? `${e.source}__out`,
+          ],
+          targets: [
+            resolvePort(
+              nodePorts.get(e.target),
+              e.targetHandle,
+              EHandleType.TARGET,
+            ) ?? `${e.target}__in`,
+          ],
+        };
+      }),
+  };
 };
 
-export const getElkLayoutedElements = async (ctx: TraversalContext) => {
-  const elk = new ELK();
+export const layoutNodesWithElk = async (
+  nodes: NodeData[],
+  edges: Edge[],
+  ctx: TraversalContext,
+) => {
+  const g = await elk.layout(toElk(nodes, edges, ctx));
+  const pos = new Map<string, { x: number; y: number }>();
 
-  if (!ctx.config?.direction) {
-    return { edges: ctx.edges, nodes: ctx.nodes };
-  }
+  g.children?.forEach((c: any) => pos.set(c.id, { x: c.x, y: c.y }));
 
-  const isHorizontal = ctx.config.direction === "horizontal";
-  const elkGraph = getElkGraph(ctx, isHorizontal, ctx.edges);
-  const { children = [] } = await elk.layout(elkGraph);
-  const layoutById = new Map(children.map((child) => [child.id, child]));
-  const nodes = ctx.nodes.map((node) => {
-    const layoutNode = layoutById.get(node.id);
-    const x = layoutNode?.x ?? 0;
-    const y = layoutNode?.y ?? 0;
-
-    return {
-      ...node,
-      targetPosition: isHorizontal ? Position.Left : Position.Top,
-      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-      position: { x, y },
-    };
-  });
-
-  return { nodes, edges: ctx.edges };
+  return nodes.map((n) => ({
+    ...n,
+    position: pos.get(n.id) ?? n.position,
+  }));
 };
 
-const placeExtraNodes = (
+const getExtraNodes = (
   nodes: NodeData[],
   edges: Edge[],
   ctx: TraversalContext,
@@ -225,18 +290,20 @@ const placeExtraNodes = (
     }
   });
 
-  return nodes.map((node) => {
-    const override = overridePositions.get(node.id);
+  return nodes
+    .filter((n) => overridePositions.get(n.id))
+    .map((node) => {
+      const { sourcePosition, targetPosition, x, y } = overridePositions.get(
+        node.id,
+      )!;
 
-    if (!override) return node;
-
-    return {
-      ...node,
-      position: { x: override.x, y: override.y },
-      targetPosition: override.targetPosition,
-      sourcePosition: override.sourcePosition,
-    };
-  });
+      return {
+        ...node,
+        position: { x, y },
+        targetPosition,
+        sourcePosition,
+      };
+    });
 };
 
 export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
@@ -345,10 +412,10 @@ export const buildNodesAndEdges = async ({
       });
     }
   });
-  const { nodes, edges } = await getElkLayoutedElements(ctx);
-  const nodesWithTools = placeExtraNodes(
+  const nodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
+  const extraNodes = getExtraNodes(
     nodes,
-    edges.filter((e) =>
+    ctx.edges.filter((e) =>
       [ELinkType.AGENT_TOOL, ELinkType.AGENT_MODEL].includes(
         e.sourceHandle as ELinkType,
       ),
@@ -356,10 +423,10 @@ export const buildNodesAndEdges = async ({
     ctx,
   );
   const groupNodes = getGroupNodes(nodes, ctx);
-  const anchoredNodes = [...nodesWithTools, ...groupNodes];
+  const anchoredNodes = [...nodes, ...extraNodes, ...groupNodes];
 
   return {
-    edges,
+    edges: ctx.edges,
     nodes: anchoredNodes,
   };
 };
