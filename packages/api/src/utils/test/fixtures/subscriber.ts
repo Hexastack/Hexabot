@@ -27,9 +27,6 @@ export const subscriberDefaultValues: TSubscriberFixtures['defaultValues'] = {
   lastvisit: new Date(),
   retainedFrom: new Date(),
   avatar: null,
-  context: {
-    vars: {},
-  },
 };
 
 const subscribers: TSubscriberFixtures['values'][] = [

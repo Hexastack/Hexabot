@@ -52,7 +52,6 @@ export const ROUTES = {
   [EntityType.USER]: "/user",
   [EntityType.PERMISSION]: "/permission",
   [EntityType.MODEL]: "/model",
-  [EntityType.CONTEXT_VAR]: "/contextVar",
   [EntityType.MENU]: "/menu",
   [EntityType.MENUTREE]: "/menu/tree",
   [EntityType.CONTENT]: "/content",

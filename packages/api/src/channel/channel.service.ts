@@ -160,7 +160,6 @@ export class ChannelService {
       const profile = await this.subscriberService.updateOne(
         req.session.passport.user.id,
         {
-          context: { vars: {} },
           channel: {
             name: CONSOLE_CHANNEL_NAME,
             data: { isSocket: true },

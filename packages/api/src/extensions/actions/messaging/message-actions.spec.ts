@@ -105,7 +105,6 @@ describe('MessageAction base', () => {
       firstName: 'Recipient',
       lastName: 'User',
       language: 'fr',
-      context: { vars: { sender: 'value' } },
     };
     event = {
       getInitiator: jest.fn(() => recipient),

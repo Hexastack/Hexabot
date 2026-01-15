@@ -131,14 +131,6 @@ export const ModelEntity = new schema.Entity(
   },
 );
 
-export const ContextVarsEntity = new schema.Entity(
-  EntityType.CONTEXT_VAR,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-  },
-);
-
 export const MenuLeafEntity = new schema.Entity(EntityType.MENU, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -300,7 +292,6 @@ export const ENTITY_MAP = {
   [EntityType.USER]: UserEntity,
   [EntityType.PERMISSION]: PermissionEntity,
   [EntityType.MODEL]: ModelEntity,
-  [EntityType.CONTEXT_VAR]: ContextVarsEntity,
   [EntityType.MENU]: MenuItemEntity,
   [EntityType.MESSAGE]: MessageEntity,
   [EntityType.MENUTREE]: MenuNodeEntity,

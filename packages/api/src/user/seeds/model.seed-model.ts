@@ -73,11 +73,6 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'ContextVar',
-    identity: 'contextvar',
-    attributes: {},
-  },
-  {
     name: 'Message',
     identity: 'message',
     attributes: {},

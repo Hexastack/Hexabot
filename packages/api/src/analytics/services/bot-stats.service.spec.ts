@@ -147,7 +147,6 @@ describe('BotStatsService', () => {
         first_name: 'John',
         last_name: 'Doe',
         channel: {} as any,
-        context: { vars: {} },
         assignedTo: null,
         assignedToId: null,
         ...partial,
