@@ -31,6 +31,8 @@ import { UserSeeder } from './user/seeds/user.seed';
 import { userModels } from './user/seeds/user.seed-model';
 import { MemoryDefinitionSeeder } from './workflow/seeds/memory-definition.seed';
 import { memoryDefinitionModels } from './workflow/seeds/memory-definition.seed-model';
+import { WorkflowSeeder } from './workflow/seeds/workflow.seed';
+import { workflowModels } from './workflow/seeds/workflow.seed-model';
 
 export async function seedDatabase(app: INestApplicationContext) {
   const logger = await app.resolve(LoggerService);
@@ -45,6 +47,7 @@ export async function seedDatabase(app: INestApplicationContext) {
   const nlpEntitySeeder = app.get(NlpEntitySeeder);
   const nlpValueSeeder = app.get(NlpValueSeeder);
   const memoryDefinitionSeeder = app.get(MemoryDefinitionSeeder);
+  const workflowSeeder = app.get(WorkflowSeeder);
   const existingUsers = await userSeeder.findAll();
 
   if (existingUsers.length > 0) {
@@ -119,6 +122,22 @@ export async function seedDatabase(app: INestApplicationContext) {
     await memoryDefinitionSeeder.seed(memoryDefinitionModels);
   } catch (e) {
     logger.error('Unable to seed the database with memory definitions!');
+    throw e;
+  }
+
+  // Seed workflows
+  try {
+    const [creator] = await userSeeder.findAll({
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+    if (!creator?.id) {
+      throw new Error('Unable to seed workflows: missing creator');
+    }
+
+    await workflowSeeder.seed(workflowModels(creator.id));
+  } catch (e) {
+    logger.error('Unable to seed the database with workflows!');
     throw e;
   }
 

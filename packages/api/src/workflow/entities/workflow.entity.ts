@@ -6,6 +6,7 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import {
+  BeforeRemove,
   Column,
   Entity,
   Index,
@@ -51,6 +52,10 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   /** Cron expression used when the workflow is scheduled. */
   @Column({ type: 'varchar', length: 255, nullable: true })
   schedule?: string | null;
+
+  /** Indicates if the workflow is built-in and protected from deletion. */
+  @Column({ default: false })
+  builtin!: boolean;
 
   /** Memory definitions available for this workflow. */
   @ManyToMany(() => MemoryDefinitionOrmEntity, {
@@ -105,6 +110,13 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
 
   @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
   direction!: DirectionType;
+
+  @BeforeRemove()
+  protected preventBuiltinRemoval(): void {
+    if (this.builtin) {
+      throw new Error('Cannot delete builtin workflow');
+    }
+  }
 
   /** Structured workflow definition consumed by the agent runtime. */
   get definition(): WorkflowDefinition {
