@@ -19,8 +19,6 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { SubscriberContext } from '../types/subscriberContext';
-
 import { LabelOrmEntity } from './label.entity';
 
 export class SubscriberChannel {
@@ -89,9 +87,6 @@ export class SubscriberOrmEntity extends UserProfileOrmEntity {
 
   @Column(() => SubscriberChannel)
   channel!: SubscriberChannel;
-
-  @JsonColumn({ default: JSON.stringify({ vars: {} }) })
-  context: SubscriberContext;
 
   ensureProvider(): void {}
 

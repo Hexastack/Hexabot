@@ -11,7 +11,6 @@ import {
   IsDate,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -28,7 +27,6 @@ import { Validate } from '@/utils/decorators/validate.decorator';
 import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
-import { SubscriberContext } from '../types/subscriberContext';
 
 import { Label } from './label.dto';
 
@@ -57,9 +55,6 @@ export class SubscriberStub extends UserProfileStub {
 
   @Expose()
   channel!: SubscriberChannelData<ChannelName>;
-
-  @Expose()
-  context!: SubscriberContext;
 }
 
 @Exclude()
@@ -177,11 +172,6 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @IsString()
   @IsUUIDv4({ message: 'Avatar Attachment ID must be a valid UUID' })
   avatar: string | null = null;
-
-  @ApiPropertyOptional({ description: 'Context', type: Object })
-  @IsOptional()
-  @IsObject()
-  context: SubscriberContext;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

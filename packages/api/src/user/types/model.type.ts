@@ -18,7 +18,6 @@ export type TModel =
   | 'permission'
   | 'label'
   | 'labelgroup'
-  | 'contextvar'
   | 'message'
   | 'subscriber'
   | 'language'
