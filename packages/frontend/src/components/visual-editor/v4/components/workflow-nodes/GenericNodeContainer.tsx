@@ -4,37 +4,39 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Grid } from "@mui/material";
 import { PropsWithChildren, useMemo } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
-  isRounded,
+  borderRadius = "10px",
   children,
-}: PropsWithChildren & { isRounded?: boolean }) => {
+}: PropsWithChildren & { borderRadius?: string }) => {
   const workflowNode = useWorkflowNode<T>();
   const bgColor = useMemo(() => {
     return workflowNode.theme.bgColor;
   }, [workflowNode.theme.bgColor]);
 
   return (
-    <div
+    <Grid
+      container
       style={{
         position: "relative",
         width: workflowNode.width,
         height: workflowNode.height,
         textAlign: "center",
-        borderRadius: isRounded ? "50%" : "20%",
+        borderRadius,
         outline: "none",
         pointerEvents: "none",
-        border: `1px solid ${bgColor}cc`,
+        border: `1px solid ${workflowNode.theme.bgColor}`,
         boxShadow: "0 0 13px #0002 inset",
         backgroundColor: "#fffa",
         backgroundImage: `linear-gradient(to top, ${bgColor}22, ${bgColor}00)`,
       }}
     >
       {children}
-    </div>
+    </Grid>
   );
 };

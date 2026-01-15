@@ -251,7 +251,7 @@ const getConfig = (
         style: {
           ...(direction === "horizontal"
             ? { bottom: "-6px", left: 50 }
-            : { left: "-7px" }),
+            : { top: "40px", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -267,7 +267,7 @@ const getConfig = (
         style: {
           ...(direction === "horizontal"
             ? { bottom: "-6px", left: 250 }
-            : { left: "-7px" }),
+            : { top: "80px", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };

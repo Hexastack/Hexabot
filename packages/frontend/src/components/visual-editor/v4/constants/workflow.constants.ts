@@ -153,7 +153,7 @@ export const NODES = {
     const groupName = getGroupId(id, HIGHLIGHTS);
 
     return {
-      name: step["do"],
+      title: step["do"],
       action: getTaskAction(step["do"], tasks),
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],

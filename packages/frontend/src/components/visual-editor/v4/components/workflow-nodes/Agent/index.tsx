@@ -10,31 +10,21 @@ import { type FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodeIcon } from "../GenericNodeIcon";
 import { GenericNodePorts } from "../GenericNodePorts";
-
-import { AgentBody } from "./AgentBody";
-import { AgentContainer } from "./AgentContainer";
+import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Agent: FC<NodeProps<NodeData<ENodeType.AGENT>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
-    <AgentContainer>
-      <Grid container height="100%" direction="row">
-        <Grid
-          item
-          width={90}
-          height="100%"
-          color="gray"
-          alignContent="center"
-          textAlign="center"
-        >
-          <GenericNodeIcon />
-        </Grid>
-        <Grid item xs>
-          <AgentBody />
-        </Grid>
+    <GenericNodeContainer>
+      <GenericNodeIcon hasBgColor />
+      <Grid xs flexDirection="column" pl="10px">
+        <GenericNodeTitle />
+        <GenericNodeDescription />
       </Grid>
-      <GenericNodePorts />
-    </AgentContainer>
+    </GenericNodeContainer>
+    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

@@ -9,27 +9,30 @@ import { NodeProps } from "@xyflow/react";
 import { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import { ENodeType, NodeData } from "../../../types/workflow-node.types";
+import {
+  ELinkType,
+  ENodeType,
+  NodeData,
+} from "../../../types/workflow-node.types";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodeIcon } from "../GenericNodeIcon";
-
-import { TaskBody } from "./TaskBody";
-import { TaskContainer } from "./TaskContainer";
-import { TaskHeader } from "./TaskHeader";
-import { TaskPorts } from "./TaskPorts";
+import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
-    <TaskContainer>
-      <TaskPorts />
-      <Grid container height="100%" direction="row">
-        <Grid item width={50}>
-          <GenericNodeIcon />
-        </Grid>
-        <Grid item xs>
-          <TaskHeader />
-          <TaskBody />
-        </Grid>
+    <GenericNodeContainer>
+      <GenericNodeIcon hasBgColor />
+      <Grid xs flexDirection="column" pl="10px">
+        <GenericNodeTitle />
+        <GenericNodeDescription />
       </Grid>
-    </TaskContainer>
+    </GenericNodeContainer>
+    <GenericNodePorts<ENodeType.TASK>
+      getDisabled={({ port, hasEnabledPort }) =>
+        port === ELinkType.TASK_OUT && hasEnabledPort
+      }
+    />
   </WorkflowNodeProvider>
 );

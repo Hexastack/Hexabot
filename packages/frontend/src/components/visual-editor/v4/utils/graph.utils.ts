@@ -293,6 +293,7 @@ export function walkSteps({
             ...ctx.config.nodes[ENodeType.AGENT],
             level,
             groupName,
+            title: taskName,
           },
         });
 
