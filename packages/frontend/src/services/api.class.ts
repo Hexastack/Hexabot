@@ -73,6 +73,7 @@ export const ROUTES = {
   [EntityType.FLOW_ESCAPE_HELPER]: "helper/flow_escape",
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
+  [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
 } as const;
 
 export class ApiClient {

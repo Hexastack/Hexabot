@@ -21,6 +21,7 @@ import { Inbox } from "@/components/inbox";
 import { Labels } from "@/components/labels";
 import { Languages } from "@/components/languages";
 import { MediaLibrary } from "@/components/media-library";
+import { MemoryDefinitions } from "@/components/memory-definitions";
 import { Menu } from "@/components/menu";
 import { Nlp } from "@/components/nlp";
 import { Profile } from "@/components/profile";
@@ -69,6 +70,15 @@ export const routes: RouteObjectItem[] = [
     path: `/workflow-editor/:flowId?/:nodeIds?`,
     Component: WorkflowEditor,
     handle: { hasNoPadding: true },
+  },
+  {
+    path: "/workflow/memory-definitions",
+    Component: MemoryDefinitions,
+    handle: {
+      requiredPermissions: [
+        [EntityType.MEMORY_DEFINITION, PermissionAction.READ],
+      ],
+    },
   },
   {
     path: "/nlp/nlp-entities?/:id?/nlpValues?",
