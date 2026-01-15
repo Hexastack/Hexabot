@@ -31,6 +31,35 @@ describe('ActionService', () => {
     expect(actions.every((action) => action instanceof BaseAction)).toBe(true);
   });
 
+  it('should expose JSON schema definitions for action IO and settings', () => {
+    const definitions = actionService.getAllSchemaDefinitions();
+    const dummyName = dummyAction.getName();
+    const definition = definitions.find(({ name }) => name === dummyName);
+
+    expect(definition).toBeDefined();
+    if (!definition) {
+      throw new Error(`Missing schema definition for ${dummyName}`);
+    }
+
+    const inputKey = `${dummyName}_input`;
+    const outputKey = `${dummyName}_output`;
+    const settingsKey = `${dummyName}_settings`;
+
+    expect(definition.inputSchema.$schema).toBe(
+      'http://json-schema.org/draft-07/schema#',
+    );
+    const inputDefinition = definition.inputSchema.definitions?.[inputKey] as
+      | { properties?: Record<string, { type?: string }> }
+      | undefined;
+    const outputDefinition = definition.outputSchema.definitions?.[
+      outputKey
+    ] as { properties?: Record<string, { type?: string }> } | undefined;
+
+    expect(inputDefinition?.properties?.message?.type).toBe('string');
+    expect(outputDefinition?.properties?.echoed?.type).toBe('string');
+    expect(definition.settingsSchema.definitions?.[settingsKey]).toBeDefined();
+  });
+
   it('should expose a registry keyed by action name', () => {
     const registry = actionService.getRegistry();
     expect(registry[dummyAction.getName()]).toBe(dummyAction);
