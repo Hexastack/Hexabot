@@ -35,6 +35,7 @@ export enum EntityType {
   FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
+  MEMORY_DEFINITION = "MemoryDefinition",
 }
 
 export type NormalizedEntities = Record<string, Record<string, any>>;

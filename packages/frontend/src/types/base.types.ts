@@ -27,6 +27,10 @@ import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
 import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
+  IMemoryDefinition,
+  IMemoryDefinitionAttributes,
+} from "./memory-definition.types";
+import {
   IMenuNode,
   IMenuNodeAttributes,
   IMenuNodeFull,
@@ -98,6 +102,7 @@ export interface IFormat<F = Format> {
 
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: [],
+  [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
   [EntityType.LABEL]: ["users", "group"],
@@ -155,6 +160,10 @@ export interface IEntityMapTypes {
     IWorkflowAttributes,
     IWorkflowFilters,
     IWorkflowFull
+  >;
+  [EntityType.MEMORY_DEFINITION]: IEntityTypes<
+    IMemoryDefinition,
+    IMemoryDefinitionAttributes
   >;
   [EntityType.CONTENT]: IEntityTypes<
     IContent,
