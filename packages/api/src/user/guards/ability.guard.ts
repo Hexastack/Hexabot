@@ -64,6 +64,7 @@ export class Ability implements CanActivate {
           '/auth/me',
           '/channel',
           '/i18n',
+          '/action',
           // Allow to update own profile
           `/user/edit/${user.id}`,
           // Allow access to own avatar
