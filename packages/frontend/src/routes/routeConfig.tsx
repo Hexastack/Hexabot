@@ -16,7 +16,6 @@ import { Register } from "@/app-components/auth/Register";
 import { ResetPassword } from "@/app-components/auth/ResetPassword";
 import { ContentTypes } from "@/components/content-types";
 import { Contents } from "@/components/contents";
-import { ContextVars } from "@/components/context-vars";
 import { Dashboard } from "@/components/dashboard";
 import { Inbox } from "@/components/inbox";
 import { Labels } from "@/components/labels";
@@ -79,13 +78,6 @@ export const routes: RouteObjectItem[] = [
     path: "/inbox/subscribers?/:subscriber?",
     Component: Inbox,
     handle: { hasNoPadding: true },
-  },
-  {
-    path: "/context-vars",
-    Component: ContextVars,
-    handle: {
-      requiredPermissions: [[EntityType.CONTEXT_VAR, PermissionAction.READ]],
-    },
   },
   {
     path: "/content/persistent-menu",

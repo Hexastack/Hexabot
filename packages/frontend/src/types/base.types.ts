@@ -22,7 +22,6 @@ import {
   IContentFilters,
   IContentFull,
 } from "./content.types";
-import { IContextVar, IContextVarAttributes } from "./context-var.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
@@ -99,7 +98,6 @@ export interface IFormat<F = Format> {
 
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: [],
-  [EntityType.CONTEXT_VAR]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
   [EntityType.LABEL]: ["users", "group"],
@@ -165,7 +163,6 @@ export interface IEntityMapTypes {
     IContentFull
   >;
   [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
-  [EntityType.CONTEXT_VAR]: IEntityTypes<IContextVar, IContextVarAttributes>;
   [EntityType.LABEL]: IEntityTypes<ILabel, ILabelAttributes, never, ILabelFull>;
   [EntityType.LABEL_GROUP]: IEntityTypes<ILabelGroup, ILabelGroupAttributes>;
   [EntityType.MENU]: IEntityTypes<

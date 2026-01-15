@@ -6,7 +6,6 @@
 
 import {
   faAlignLeft,
-  faAsterisk,
   faBars,
   faCogs,
   faComments,
@@ -133,14 +132,6 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     Icon: faComments,
     requires: {
       [EntityType.MESSAGE]: [PermissionAction.READ],
-    },
-  },
-  {
-    text: "menu.context_vars",
-    href: "/context-vars",
-    Icon: faAsterisk,
-    requires: {
-      [EntityType.CONTEXT_VAR]: [PermissionAction.READ],
     },
   },
   {
