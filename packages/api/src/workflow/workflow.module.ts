@@ -16,6 +16,7 @@ import { ConversationalWorkflowContext } from './contexts/conversational-workflo
 import { ManualWorkflowContext } from './contexts/manual-workflow.context';
 import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context';
 import { WorkflowContextFactory } from './contexts/workflow-context-factory';
+import { MemoryDefinitionController } from './controllers/memory-definition.controller';
 import { WorkflowController } from './controllers/workflow.controller';
 import { MemoryDefinitionOrmEntity } from './entities/memory-definition.entity';
 import { MemoryRecordOrmEntity } from './entities/memory-record.entity';
@@ -45,7 +46,7 @@ import { WorkflowService } from './services/workflow.service';
     forwardRef(() => ChatModule),
     UserModule,
   ],
-  controllers: [WorkflowController],
+  controllers: [WorkflowController, MemoryDefinitionController],
   providers: [
     WorkflowRepository,
     WorkflowRunRepository,
