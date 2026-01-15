@@ -29,6 +29,8 @@ import { RoleSeeder } from './user/seeds/role.seed';
 import { roleModels } from './user/seeds/role.seed-model';
 import { UserSeeder } from './user/seeds/user.seed';
 import { userModels } from './user/seeds/user.seed-model';
+import { MemoryDefinitionSeeder } from './workflow/seeds/memory-definition.seed';
+import { memoryDefinitionModels } from './workflow/seeds/memory-definition.seed-model';
 
 export async function seedDatabase(app: INestApplicationContext) {
   const logger = await app.resolve(LoggerService);
@@ -42,6 +44,7 @@ export async function seedDatabase(app: INestApplicationContext) {
   const translationSeeder = app.get(TranslationSeeder);
   const nlpEntitySeeder = app.get(NlpEntitySeeder);
   const nlpValueSeeder = app.get(NlpValueSeeder);
+  const memoryDefinitionSeeder = app.get(MemoryDefinitionSeeder);
   const existingUsers = await userSeeder.findAll();
 
   if (existingUsers.length > 0) {
@@ -108,6 +111,14 @@ export async function seedDatabase(app: INestApplicationContext) {
     await metadataSeeder.seed(DEFAULT_METADATA);
   } catch (e) {
     logger.error('Unable to seed the database with settings and metadata!');
+    throw e;
+  }
+
+  // Seed memory definitions
+  try {
+    await memoryDefinitionSeeder.seed(memoryDefinitionModels);
+  } catch (e) {
+    logger.error('Unable to seed the database with memory definitions!');
     throw e;
   }
 
