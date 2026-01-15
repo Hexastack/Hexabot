@@ -145,6 +145,7 @@ export const Workflow = () => {
         {
           definitionYaml: yaml,
           definition,
+          memoryDefinitions: [],
           ...definition.workflow,
         },
         {
