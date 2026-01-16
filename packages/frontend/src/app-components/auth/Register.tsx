@@ -7,11 +7,11 @@
 import {
   Button,
   FormControlLabel,
-  Grid,
   Paper,
   Switch,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
   ChevronRight as KeyboardArrowRightIcon,
   Key as KeyIcon,

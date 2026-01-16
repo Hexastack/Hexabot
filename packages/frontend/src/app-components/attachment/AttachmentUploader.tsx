@@ -9,10 +9,10 @@ import {
   Button,
   CircularProgress,
   Divider,
-  Grid,
   styled,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
   CloudUpload as CloudUploadIcon,
   FolderOpen as FolderCopyIcon,
@@ -151,7 +151,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   return (
     <Grid>
       <Grid container>
-        <Grid item xs={enableMediaLibrary ? 5 : 12}>
+        <Grid size={enableMediaLibrary ? 5 : 12}>
           <HiddenInput
             onChange={handleChange}
             accept={accept}
@@ -200,14 +200,13 @@ const AttachmentUploader: FC<FileUploadProps> = ({
         </Grid>
         {enableMediaLibrary ? (
           <>
-            <Grid container item xs={2}>
+            <Grid container size={2}>
               <Divider orientation="vertical" flexItem sx={{ margin: "20px" }}>
                 {t("label.or")}
               </Divider>
             </Grid>
             <Grid
-              item
-              xs={5}
+              size={5}
               display="flex"
               justifyContent="center"
               alignItems="center"

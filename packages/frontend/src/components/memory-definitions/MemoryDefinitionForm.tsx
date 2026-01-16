@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormHelperText, Grid, MenuItem } from "@mui/material";
+import { FormHelperText, MenuItem } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 
@@ -179,7 +180,7 @@ export const MemoryDefinitionForm: FC<
       <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
         <form onSubmit={handleSubmit(onSubmitForm)}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <ContentContainer>
                 <ContentItem>
                   <Input
@@ -273,7 +274,7 @@ export const MemoryDefinitionForm: FC<
                 </ContentItem>
               </ContentContainer>
             </Grid>
-            <Grid item xs={12} md={7}>
+            <Grid size={{ xs: 12, md: 7 }}>
               <ContentContainer>
                 <ContentItem>
                   <JsonSchemaObjectBuilder

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
+import { Box, Button, MenuItem, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Check, Key, Languages, Mail } from "lucide-react";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -88,7 +89,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <Grid container gap={8} alignContent="center" justifyContent="center">
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Controller
             name="avatar"
             control={control}
@@ -114,7 +115,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             )}
           />
         </Grid>
-        <Grid item xs={6} gap={2} container>
+        <Grid container size={6} gap={2}>
           <ContentContainer gap={2}>
             <ContentItem>
               <Input

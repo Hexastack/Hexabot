@@ -7,13 +7,13 @@
 import {
   Box,
   Chip,
-  Grid,
   IconButton,
   InputAdornment,
   MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Circle, Download, X } from "lucide-react";
 import { useState } from "react";
@@ -310,7 +310,7 @@ export default function NlpSample() {
   };
 
   return (
-    <Grid item xs={12}>
+    <Grid size={12}>
       <Grid container alignItems="center">
         <Grid
           container

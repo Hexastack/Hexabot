@@ -9,10 +9,10 @@ import {
   Button,
   FormHelperText,
   FormLabel,
-  Grid,
   IconButton,
   TextFieldProps,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { CircleMinus, Plus } from "lucide-react";
 import {
   ChangeEvent,

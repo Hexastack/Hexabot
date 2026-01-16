@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
+import { CSSObject, IconButton, styled, Theme } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import MuiDrawer from "@mui/material/Drawer";
 import type { LucideIcon } from "lucide-react";
 // eslint-disable-next-line no-duplicate-imports
@@ -296,10 +297,10 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
       }}
     >
       <StyledDrawerHeader>
-        <Grid item xs ml="10px">
+        <Grid size="grow" ml="10px">
           <HexabotLogo />
         </Grid>
-        <Grid>
+        <Grid size="auto">
           <IconButton onClick={onToggleOut}>
             <ChevronLeft size={20} />
           </IconButton>

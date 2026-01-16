@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, GridProps, SxProps, Theme } from "@mui/material";
+import { SxProps, Theme } from "@mui/material";
+import Grid, { type Grid2Props as GridProps } from "@mui/material/Grid2";
 import * as React from "react";
 
 interface TabPanelProps {
@@ -19,8 +20,7 @@ export function TabPanel(props: TabPanelProps & GridProps) {
 
   return (
     <Grid
-      item
-      xs
+      size="grow"
       role="tabpanel"
       hidden={value !== index}
       id={`vertical-tabpanel-${index}`}

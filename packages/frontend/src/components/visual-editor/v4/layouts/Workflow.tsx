@@ -15,7 +15,6 @@ import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
-import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
@@ -160,7 +159,7 @@ export const Workflow = () => {
 
   return (
     <div className="visual-editor-v4">
-      <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
+      {/* <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} /> */}
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}

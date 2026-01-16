@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";

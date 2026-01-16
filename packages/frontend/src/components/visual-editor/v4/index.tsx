@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, styled } from "@mui/material";
+import { styled } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { ReactFlowProvider } from "@xyflow/react";
 
 import { Workflow } from "./layouts/Workflow";
@@ -29,7 +30,7 @@ export const WorkflowEditor = () => (
       <StyledContainerGrid container>
         <Grid container height="100%" margin="auto">
           <YamlEditor />
-          <StyledGrid item xs>
+          <StyledGrid size="grow">
             <Workflow />
           </StyledGrid>
         </Grid>

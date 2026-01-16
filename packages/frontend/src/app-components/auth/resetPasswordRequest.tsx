@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
