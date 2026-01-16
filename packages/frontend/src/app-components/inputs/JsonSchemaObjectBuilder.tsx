@@ -4,9 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -22,6 +19,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import {
+  ChevronDown as ExpandMoreIcon,
+  Plus as AddIcon,
+  Trash2 as DeleteIcon,
+} from "lucide-react";
 import * as React from "react";
 import {
   Controller,

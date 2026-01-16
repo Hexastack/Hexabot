@@ -4,9 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChevronRight } from "@mui/icons-material";
 import {
   Collapse,
   Divider,
@@ -16,13 +13,11 @@ import {
   ListItemText,
   ListSubheader,
   Tooltip as MuiTooltip,
-  SvgIconTypeMap,
   Theme,
   TooltipProps,
   styled,
 } from "@mui/material";
-// @icon
-import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -33,10 +28,8 @@ import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 import { AnimatedComponent } from "../AnimatedComponent";
 
-type TIcon = OverridableComponent<SvgIconTypeMap<{}, "svg">>;
-
 export type TMenuItem = {
-  Icon?: TIcon | IconDefinition;
+  Icon?: LucideIcon;
   text: string;
   href?: string;
   selected?: boolean;
@@ -188,18 +181,9 @@ const VerticalMenuItem = ({
         {...linkProps}
         // isHovered={isSubmenuOpen}
       >
-        {Icon && !("icon" in Icon) ? (
+        {Icon ? (
           <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
-            <Icon htmlColor={color} />
-          </StyledListItemIcon>
-        ) : null}
-        {Icon && "icon" in Icon ? (
-          <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
-            <FontAwesomeIcon
-              style={{ minWidth: "24px" }}
-              color={color}
-              icon={Icon}
-            />
+            <Icon color={color} size="1.1em" />
           </StyledListItemIcon>
         ) : null}
         {isToggled ? (
@@ -212,7 +196,7 @@ const VerticalMenuItem = ({
         {isMenuItemHead && isToggled ? (
           <AnimatedComponent
             component={ChevronRight}
-            htmlColor={color}
+            color={color}
             canRotate={isSubmenuOpen}
           />
         ) : null}

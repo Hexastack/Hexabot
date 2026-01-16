@@ -15,7 +15,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import defaultWorkflowDefinition from '../defaults/default-workflow';
 import { Workflow } from '../dto/workflow.dto';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
@@ -126,18 +125,11 @@ describe('WorkflowService (TypeORM)', () => {
     expect(picked?.name).toBe(workflow.name);
   });
 
-  it('creates and returns the default workflow when none exist', async () => {
+  it('returns null when no workflows exist', async () => {
     await workflowRepository.deleteMany();
 
     const picked = await workflowService.pickWorkflow();
 
-    expect(picked).not.toBeNull();
-    expect(picked).toMatchObject({
-      name: defaultWorkflowDefinition.workflow.name,
-      version: defaultWorkflowDefinition.workflow.version,
-      description: defaultWorkflowDefinition.workflow.description,
-      type: WorkflowType.conversational,
-      schedule: null,
-    });
+    expect(picked).toBeNull();
   });
 });

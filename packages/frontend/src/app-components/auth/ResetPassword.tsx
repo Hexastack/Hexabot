@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import KeyIcon from "@mui/icons-material/Key";
 import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Key as KeyIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 

@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faUsers } from "@fortawesome/free-solid-svg-icons";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { UserPlus, Users as UsersIcon } from "lucide-react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
@@ -179,7 +178,7 @@ export const Users = () => {
         {
           permissionAction: PermissionAction.CREATE,
           children: t("button.invite"),
-          startIcon: <PersonAddAlt1Icon />,
+          startIcon: <UserPlus />,
           onClick: () => {
             dialogs.open(InviteUserFormDialog, {
               defaultValues: null,
@@ -188,7 +187,7 @@ export const Users = () => {
         },
       ]}
       columns={columns}
-      headerIcon={faUsers}
+      headerIcon={UsersIcon}
       searchParams={{
         $or: ["firstName", "lastName", "email"],
         syncUrl: true,

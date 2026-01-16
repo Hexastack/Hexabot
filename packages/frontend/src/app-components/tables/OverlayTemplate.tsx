@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Theme } from "@emotion/react";
-import { Alert, AlertProps, Box, SxProps } from "@mui/material";
-import { FC } from "react";
+import { Alert, AlertProps, Box } from "@mui/material";
+import type { LucideIcon } from "lucide-react";
+import { type ComponentType, type SVGProps } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
@@ -19,7 +19,7 @@ export const OverlayTemplate = ({
   color,
 }: {
   i18nKey: TTranslationKeys;
-  icon?: FC<{ sx?: SxProps<Theme> }>;
+  icon?: LucideIcon | ComponentType<SVGProps<SVGSVGElement>>;
   color?: AlertProps["color"];
 }) => {
   const Icon = icon || NoDataIcon;
@@ -27,7 +27,7 @@ export const OverlayTemplate = ({
 
   return (
     <Alert
-      icon={<Icon sx={{ fontSize: "50px" }} />}
+      icon={<Icon width={50} height={50} />}
       color={color}
       className="custom-alert"
     >

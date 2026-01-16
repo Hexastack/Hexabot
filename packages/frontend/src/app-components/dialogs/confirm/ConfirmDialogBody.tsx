@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import ErrorIcon from "@mui/icons-material/Error";
-import { Grid, Typography } from "@mui/material";
+import { Grid, Typography, useTheme } from "@mui/material";
+import { AlertTriangle } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -17,6 +17,7 @@ export const ConfirmDialogBody = ({
   count?: number;
 }) => {
   const { t } = useTranslate();
+  const theme = useTheme();
   const dialogBodyText =
     mode === "selection"
       ? count === 1
@@ -29,7 +30,7 @@ export const ConfirmDialogBody = ({
   return (
     <Grid container gap={1}>
       <Grid item height="1.75rem">
-        <ErrorIcon sx={{ fontSize: "1.75rem" }} color="error" />
+        <AlertTriangle color={theme.palette.error.main} size={28} />
       </Grid>
       <Grid item alignSelf="center">
         <Typography>{dialogBodyText}</Typography>

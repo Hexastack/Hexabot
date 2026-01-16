@@ -106,6 +106,7 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
     x: 0,
     y: 0,
     zoom: 1,
+    builtin: false,
   },
 ];
 
@@ -119,6 +120,7 @@ export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
     schedule: '*/10 * * * * *',
     memoryDefinitions: [],
     createdBy: userFixtureIds.admin,
+    builtin: false,
   },
 ];
 

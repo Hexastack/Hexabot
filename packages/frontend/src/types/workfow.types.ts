@@ -20,7 +20,6 @@ export interface IWorkflowAttributes {
   type?: string;
   definitionYaml?: string;
   zoom?: number;
-  // offset?: [number, number];
   x?: number;
   y?: number;
   direction?: ResizeControlDirection;

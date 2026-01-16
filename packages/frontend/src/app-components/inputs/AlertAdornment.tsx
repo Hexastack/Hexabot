@@ -4,11 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
-import { InputAdornment, Tooltip } from "@mui/material";
+import { InputAdornment, Tooltip, useTheme } from "@mui/material";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+} from "lucide-react";
 
 type AlertType = "warning" | "error" | "info" | "success";
 
@@ -23,17 +25,17 @@ type ColorType =
   | "success"
   | "warning";
 
-const getIcon = (type: AlertType, color: ColorType = type) => {
+const getIcon = (type: AlertType, color: string) => {
   switch (type) {
     case "error":
-      return <ErrorOutlineIcon color={color} />;
+      return <AlertCircle color={color} size={18} />;
     case "info":
-      return <InfoOutlinedIcon color={color} />;
+      return <Info color={color} size={18} />;
     case "success":
-      return <CheckCircleOutlineOutlinedIcon color={color} />;
+      return <CheckCircle2 color={color} size={18} />;
     case "warning":
     default:
-      return <WarningAmberOutlinedIcon color={color} />;
+      return <AlertTriangle color={color} size={18} />;
   }
 };
 
@@ -46,6 +48,33 @@ export const AlertAdornment = ({
   type?: AlertType;
   color?: ColorType;
 }) => {
+  const theme = useTheme();
+  const resolvedColor = (() => {
+    const value = color ?? type;
+
+    switch (value) {
+      case "inherit":
+        return "currentColor";
+      case "action":
+        return theme.palette.action.active;
+      case "disabled":
+        return theme.palette.action.disabled;
+      case "primary":
+        return theme.palette.primary.main;
+      case "secondary":
+        return theme.palette.secondary.main;
+      case "error":
+        return theme.palette.error.main;
+      case "info":
+        return theme.palette.info.main;
+      case "success":
+        return theme.palette.success.main;
+      case "warning":
+      default:
+        return theme.palette.warning.main;
+    }
+  })();
+
   return (
     <Tooltip
       arrow
@@ -60,7 +89,9 @@ export const AlertAdornment = ({
         },
       }}
     >
-      <InputAdornment position="end">{getIcon(type, color)}</InputAdornment>
+      <InputAdornment position="end">
+        {getIcon(type, resolvedColor)}
+      </InputAdornment>
     </Tooltip>
   );
 };

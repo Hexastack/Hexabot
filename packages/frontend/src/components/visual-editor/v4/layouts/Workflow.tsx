@@ -9,11 +9,11 @@ import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useCreate } from "@/hooks/crud/useCreate";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
-import { EntityType } from "@/services/types";
 
 import { RotateButton } from "../components/controls/RotateButton";
+import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -64,7 +64,6 @@ const StyledBox = styled(Box)(() => ({
 export const Workflow = () => {
   const { setViewport } = useReactFlow();
   const {
-    selectedFlowId,
     yaml,
     workflow,
     direction,
@@ -72,7 +71,7 @@ export const Workflow = () => {
     updateWorkflowURL,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
-  const { mutate: createWorkflow } = useCreate(EntityType.WORKFLOW);
+  const dialogs = useDialogs();
   const defaultViewport = useMemo(
     () => ({
       x: workflow?.x || 0,
@@ -137,28 +136,34 @@ export const Workflow = () => {
       isCancelled = true;
     };
   }, [definition, direction]);
-
-  useEffect(() => {
-    if (!selectedFlowId && yaml && definition) {
-      createWorkflow(
-        {
-          definitionYaml: yaml,
-          definition,
-          memoryDefinitions: [],
-          ...definition.workflow,
+  const handleNewWorkflow = () => {
+    dialogs.open(WorkflowFormDialog, {
+      defaultValues: null,
+      presetValues: {
+        definition,
+        definitionYaml: yaml,
+        onCreated: (createdWorkflow) => {
+          updateWorkflowURL(createdWorkflow.id);
         },
-        {
-          onSuccess(data) {
-            updateWorkflowURL(data.id);
-          },
-        },
-      );
+      },
+    });
+  };
+  const handleEditWorkflow = () => {
+    if (!workflow) {
+      return;
     }
-  }, [yaml, definition]);
+
+    dialogs.open(WorkflowFormDialog, {
+      defaultValues: workflow,
+    });
+  };
 
   return (
     <div className="visual-editor-v4">
-      <FlowsTabs />
+      <FlowsTabs
+        onNew={handleNewWorkflow}
+        onEdit={workflow ? handleEditWorkflow : undefined}
+      />
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}

@@ -4,19 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Build,
-  DragHandle,
-  MarkChatRead,
-  PlayArrowRounded,
-  Psychology,
-  Repeat,
-  SmartToyOutlined,
-  StopRounded,
-} from "@mui/icons-material";
 import { MarkerType, Node } from "@xyflow/react";
-
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+import {
+  Bot,
+  Brain,
+  GitBranch,
+  GripVertical,
+  MessageSquare,
+  Play,
+  Repeat,
+  SquareStop,
+  Wrench,
+} from "lucide-react";
 
 import {
   EEdgeType,
@@ -73,7 +72,7 @@ export const NODES = {
       ELinkType.AGENT_MODEL,
     ],
     theme: {
-      Icon: SmartToyOutlined,
+      Icon: Bot,
       color: "#444444",
       bgColor: "#7bb0ff",
     },
@@ -82,7 +81,7 @@ export const NODES = {
     title: "",
     ports: [ELinkType.TOOL_IN],
     theme: {
-      Icon: Build,
+      Icon: Wrench,
       color: "#555555",
       bgColor: "#7bb0ff",
     },
@@ -91,7 +90,7 @@ export const NODES = {
     title: "",
     ports: [ELinkType.MODEL_IN],
     theme: {
-      Icon: Psychology,
+      Icon: Brain,
       color: "#555555",
       bgColor: "#8160f7",
     },
@@ -99,7 +98,7 @@ export const NODES = {
   [ENodeType.INDICATOR]: {
     [EIndicatorType.START]: {
       theme: {
-        Icon: PlayArrowRounded,
+        Icon: Play,
         color: "#555555",
         bgColor: "#97d445",
       },
@@ -108,7 +107,7 @@ export const NODES = {
     },
     [EIndicatorType.END]: {
       theme: {
-        Icon: StopRounded,
+        Icon: SquareStop,
         color: "#555555",
         bgColor: "#e95d32",
       },
@@ -120,7 +119,7 @@ export const NODES = {
     [EOperatorType.PARALLEL]: {
       operatorType: EOperatorType.PARALLEL,
       theme: {
-        Icon: DragHandle,
+        Icon: GripVertical,
         color: "#555555",
         bgColor: "#0c9ba0",
       },
@@ -131,7 +130,7 @@ export const NODES = {
       operatorType: EOperatorType.CONDITIONAL,
       taskName: "conditional",
       theme: {
-        Icon: MarkChatRead,
+        Icon: GitBranch,
         color: "#555555",
         bgColor: "#0c9ba0",
       },
@@ -158,7 +157,7 @@ export const NODES = {
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
-        Icon: SimpleTextIcon,
+        Icon: MessageSquare,
         color: "#555555",
         bgColor: "#7bb0ff",
       },

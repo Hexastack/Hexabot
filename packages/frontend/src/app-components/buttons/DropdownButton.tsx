@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ArrowDropDown } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -16,6 +15,7 @@ import {
   SxProps,
   Theme,
 } from "@mui/material";
+import { ChevronDown } from "lucide-react";
 import React, { useState } from "react";
 
 export interface DropdownButtonAction {
@@ -62,7 +62,7 @@ const DropdownButton: React.FC<AddPatternProps> = ({
         variant="contained"
         onClick={handleOpen}
         startIcon={icon}
-        endIcon={<ArrowDropDown />}
+        endIcon={<ChevronDown size={18} />}
         disabled={disabled}
       >
         {label}

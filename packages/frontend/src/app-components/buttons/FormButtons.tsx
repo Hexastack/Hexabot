@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import { Button, Grid } from "@mui/material";
+import { Check as CheckIcon, X as CloseIcon } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";

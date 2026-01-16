@@ -9,6 +9,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -47,6 +48,9 @@ export class WorkflowStub extends BaseStub {
 
   @Expose()
   schedule?: string | null;
+
+  @Expose()
+  builtin!: boolean;
 
   @Expose()
   definitionYaml!: string;
@@ -126,6 +130,15 @@ export class WorkflowNewDto {
   @IsOptional()
   @IsString()
   schedule?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Indicates if the workflow is built-in',
+    type: Boolean,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  builtin?: boolean;
 
   @ApiPropertyOptional({
     description: 'Memory definitions available to this workflow',

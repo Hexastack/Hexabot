@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Button,
@@ -19,6 +17,7 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
+import { Plus as AddIcon, Trash2 as DeleteIcon } from "lucide-react";
 import { FC, Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 

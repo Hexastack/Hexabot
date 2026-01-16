@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
+import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState } from "react";
 
 import { Input } from "./Input";
@@ -29,9 +28,9 @@ export const PasswordInput = forwardRef<any, TextFieldProps>(
             <InputAdornment position="end">
               <IconButton onClick={handleTogglePasswordVisibility} edge="end">
                 {showPassword ? (
-                  <VisibilityOffOutlinedIcon />
+                  <EyeOff size={20} />
                 ) : (
-                  <VisibilityOutlinedIcon />
+                  <Eye size={20} />
                 )}
               </IconButton>
             </InputAdornment>

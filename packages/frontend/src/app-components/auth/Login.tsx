@@ -4,10 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { Button, Grid, Paper, Typography } from "@mui/material";
+import {
+  ChevronRight as KeyboardArrowRightIcon,
+  Key as KeyIcon,
+  Mail as EmailIcon,
+} from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";

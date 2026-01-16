@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ErrorOutline } from "@mui/icons-material";
 import { styled } from "@mui/material";
 import { Property } from "csstype";
+import { ImageOff } from "lucide-react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 
@@ -19,12 +19,12 @@ export const GenericNodeIcon = ({
   minWidth?: string;
   alignItems?: Property.AlignItems;
 }) => {
-  const workflowNode = useWorkflowNode();
-  const { theme, height = 1, width = 1 } = workflowNode;
+  const { theme } = useWorkflowNode();
   const IconComponent: React.ComponentType<any> =
-    "Icon" in theme ? theme.Icon : ErrorOutline;
+    "Icon" in theme ? theme.Icon : ImageOff;
   const StyledIcon = styled(IconComponent)(() => ({
-    fontSize: "100%",
+    width: "35px",
+    height: "35px",
   }));
   const bgColor = "bgColor" in theme ? theme.bgColor : "#444";
 
@@ -33,16 +33,14 @@ export const GenericNodeIcon = ({
       style={{
         color: bgColor,
         backgroundColor: hasBgColor ? `${bgColor}22` : "transparent",
-        fontSize: Math.min(height, width) / 2,
         boxOrient: "vertical",
         lineClamp: 2,
         overflow: "hidden",
         textOverflow: "ellipsis",
-        alignContent: "center",
         display: "flex",
-        height,
         justifyContent: "center",
         alignItems,
+        maxWidth: "89px",
         minWidth,
       }}
     >

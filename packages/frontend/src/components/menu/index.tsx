@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faBars } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, debounce, Grid, Paper } from "@mui/material";
+import { Menu as MenuIcon, Plus } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -44,7 +43,7 @@ export const Menu = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faBars} title={t("title.manage_persistent_menu")}>
+      <PageHeader icon={MenuIcon} title={t("title.manage_persistent_menu")}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -62,7 +61,7 @@ export const Menu = () => {
                 })
               }
               disabled={menus?.length === 10}
-              startIcon={<AddIcon />}
+              startIcon={<Plus />}
             >
               {t("button.add")}
             </Button>

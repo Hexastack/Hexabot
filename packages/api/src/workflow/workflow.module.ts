@@ -27,6 +27,7 @@ import { MemoryRecordRepository } from './repositories/memory-record.repository'
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { MemoryDefinitionSeeder } from './seeds/memory-definition.seed';
+import { WorkflowSeeder } from './seeds/workflow.seed';
 import { AgenticService } from './services/agentic.service';
 import { MemoryDefinitionService } from './services/memory-definition.service';
 import { MemoryRecordService } from './services/memory-record.service';
@@ -54,6 +55,7 @@ import { WorkflowService } from './services/workflow.service';
     MemoryDefinitionRepository,
     MemoryRecordRepository,
     MemoryDefinitionSeeder,
+    WorkflowSeeder,
     WorkflowService,
     WorkflowRunService,
     MemoryDefinitionService,

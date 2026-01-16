@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Cancel } from "@mui/icons-material";
 import {
   Box,
   Chip,
@@ -16,6 +15,7 @@ import {
   useTheme,
 } from "@mui/material";
 import Autocomplete, { AutocompleteProps } from "@mui/material/Autocomplete";
+import { X } from "lucide-react";
 import { forwardRef, SyntheticEvent, useRef } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
@@ -265,7 +265,14 @@ const NlpPatternSelect = (
                               <CircularProgress color="inherit" size={20} />
                             ) : (
                               <IconButton
-                                sx={{ p: 0, pr: "2px" }}
+                                sx={{
+                                  p: 0,
+                                  pr: "2px",
+                                  color: theme.palette.grey[500],
+                                  "&:hover": {
+                                    color: theme.palette.grey[700],
+                                  },
+                                }}
                                 onClick={(e) => {
                                   onDelete(e);
 
@@ -276,16 +283,7 @@ const NlpPatternSelect = (
                                 edge="end"
                                 size="small"
                               >
-                                <Cancel
-                                  sx={{
-                                    fontSize: "16px",
-                                    transition: ".05s",
-                                    "&:hover": {
-                                      color: theme.palette.grey[700],
-                                    },
-                                  }}
-                                  htmlColor={theme.palette.grey[500]}
-                                />
+                                <X size={16} />
                               </IconButton>
                             )}
                           </InputAdornment>
