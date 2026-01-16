@@ -11,14 +11,7 @@ import {
 } from "@hexabot-ai/agentic";
 import { Edge, getNodesBounds, Position } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
-import type { FC } from "react";
 
-import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
-import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
-import ListIcon from "@/app-components/svg/toolbar/ListIcon";
-import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
-import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import { generateId } from "@/utils/generateId";
 
 import { DEFAULT_NODE_PROPS } from "../constants/workflow.constants";
@@ -39,39 +32,6 @@ import {
   type TraversalContext,
 } from "./graph.utils";
 import { getHandleConfig } from "./handle.utils";
-
-// TODO
-enum EActionType {
-  TEXT = "send_text_message",
-  ATTACHMENT = "send_attachment",
-  QUICK_REPLIES = "send_quick_replies",
-  BUTTONS = "send_buttons",
-  LIST = "send_list",
-  REPLY = "reply",
-}
-
-// TODO
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getActionConfig = (
-  action: `${EActionType}`,
-): { color: string; Icon: FC<React.SVGProps<SVGSVGElement>> } => {
-  switch (action) {
-    case "send_text_message":
-      return { color: "#009185", Icon: SimpleTextIcon };
-    case "send_attachment":
-      return { color: "#e6a23c", Icon: AttachmentIcon };
-    case "send_quick_replies":
-      return { color: "#a80551", Icon: QuickRepliesIcon };
-    case "send_buttons":
-      return { color: "#570063", Icon: ButtonsIcon };
-    case "send_list":
-      return { color: "#108aa8", Icon: ListIcon };
-    case "reply":
-      return { color: "#a8ba33", Icon: PluginIcon };
-    default:
-      throw new Error("Unexpected case");
-  }
-};
 
 const elk = new ELK();
 const getElkSide = (position: Position) => {

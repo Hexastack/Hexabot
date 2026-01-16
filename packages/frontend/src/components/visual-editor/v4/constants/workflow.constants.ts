@@ -13,10 +13,9 @@ import {
   Play,
   Repeat,
   SquareStop,
+  Type,
   Wrench,
 } from "lucide-react";
-
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 
 import {
   EEdgeType,
@@ -158,7 +157,7 @@ export const NODES = {
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
-        Icon: SimpleTextIcon,
+        Icon: Type,
         color: "#555555",
         bgColor: "#7bb0ff",
       },
