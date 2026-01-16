@@ -31,7 +31,7 @@ export type TTranslationKeys =
 export type TNestedTranslation<T extends keyof TTranslation> =
   TFilterNestedKeysOfType<TTranslation[T]>;
 
-export type TOptionsBaseExtended = TOptionsBase & { 0?: string };
+export type TOptionsBaseExtended = TOptionsBase & { 0?: string | number };
 
 export type TTranslateProps = {
   <K extends TTranslationKeys>(

@@ -572,6 +572,7 @@
     "last_created": "Last created",
     "last_modified": "Last modified",
     "rename": "Rename",
+    "more": "More",
     "duplicate": "Duplicate",
     "remove": "Remove",
     "remove_property": "Remove property",
@@ -689,6 +690,33 @@
       "out": "Zoom Out",
       "reset": "Reset zoom to default",
       "fitScreen": "Fit to screen"
+    },
+    "flows_drawer": {
+      "title": "Flows",
+      "search_placeholder": "Search name or description",
+      "search_workflows": "Search workflows",
+      "new_workflow": "New workflow",
+      "status": {
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "errors": "Errors {{0}}",
+      "badge": {
+        "entry_point": "Entry point",
+        "input_schema": "Input schema"
+      },
+      "meta": {
+        "cron": "Cron: {{0}}",
+        "no_schedule": "No schedule",
+        "requires_params": "Requires {{0}} params",
+        "no_params": "No params",
+        "no_details": "No details"
+      },
+      "empty": {
+        "search": "No workflows match your search.",
+        "list": "No workflows yet.",
+        "section": "No workflows in this section."
+      }
     }
   }
 }

@@ -72,9 +72,11 @@
 
 .visual-editor-v4 {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
   position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* node */
