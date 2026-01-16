@@ -115,7 +115,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             )}
           />
         </Grid>
-        <Grid container size={6} gap={2}>
+        <Grid container flexDirection="column" size={6} gap={2}>
           <ContentContainer gap={2}>
             <ContentItem>
               <Input
