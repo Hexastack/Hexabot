@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, debounce, Grid, Paper } from "@mui/material";
+import { Box, Button, Grid, Paper } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import { Menu as MenuIcon, Plus } from "lucide-react";
 import { useRef, useState } from "react";
 

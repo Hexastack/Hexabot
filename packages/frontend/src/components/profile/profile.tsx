@@ -145,8 +145,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                       errors.language ? errors.language.message : null
                     }
                     select
-                    InputProps={{
-                      startAdornment: <Adornment Icon={Languages} />,
+                    slotProps={{
+                      input: {
+                        startAdornment: <Adornment Icon={Languages} />,
+                      },
                     }}
                     {...field}
                   >
@@ -163,8 +165,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.email}
                 helperText={errors.email ? errors.email.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Mail} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Mail} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -175,8 +179,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.password}
                 helperText={errors.password ? errors.password.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Key} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Key} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -187,8 +193,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.password2}
                 helperText={errors.password2 ? errors.password2.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Key} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Key} />,
+                  },
                 }}
               />
             </ContentItem>

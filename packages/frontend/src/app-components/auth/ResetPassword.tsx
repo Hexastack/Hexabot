@@ -72,8 +72,10 @@ export const ResetPassword = () => {
               label={t("label.password")}
               error={!!errors.password}
               required
-              InputProps={{
-                startAdornment: <Adornment Icon={KeyIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={KeyIcon} />,
+                },
               }}
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}
@@ -83,8 +85,10 @@ export const ResetPassword = () => {
               label={t("placeholder.password2")}
               error={!!errors.password2}
               required
-              InputProps={{
-                startAdornment: <Adornment Icon={KeyIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={KeyIcon} />,
+                },
               }}
               helperText={errors.password2 ? errors.password2.message : null}
               {...register("password2", validationRules.password2)}

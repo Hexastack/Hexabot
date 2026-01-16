@@ -12,7 +12,8 @@ import {
   MessageInput,
   MessageList,
 } from "@chatscope/chat-ui-kit-react";
-import { debounce, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import { MessageSquare } from "lucide-react";
 
 import { useCreate } from "@/hooks/crud/useCreate";

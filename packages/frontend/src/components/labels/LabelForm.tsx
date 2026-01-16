@@ -131,10 +131,12 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
               required
               autoFocus
               {...register("title", validationRules.title)}
-              InputProps={{
-                onChange: ({ target: { value } }) => {
-                  setValue("title", value);
-                  setValue("name", slugify(value).toUpperCase());
+              slotProps={{
+                input: {
+                  onChange: ({ target: { value } }) => {
+                    setValue("title", value);
+                    setValue("name", slugify(value).toUpperCase());
+                  },
                 },
               }}
               helperText={errors.title ? errors.title.message : null}

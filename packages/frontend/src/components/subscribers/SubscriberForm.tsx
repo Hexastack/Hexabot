@@ -66,8 +66,10 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
               label={t("label.user")}
               value={subscriber ? getFullName(subscriber) : undefined}
               disabled
-              InputProps={{
-                readOnly: true,
+              slotProps={{
+                input: {
+                  readOnly: true,
+                },
               }}
             />
           </ContentItem>

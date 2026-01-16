@@ -4,15 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  debounce,
-  FormControl,
-  Grid,
-  Paper,
-  styled,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { FormControl, Paper, styled, Tab, Tabs } from "@mui/material";
+import Grid from "@mui/material/Grid2";
+import debounce from "@mui/utils/debounce";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -152,7 +146,7 @@ export const Settings = () => {
   return (
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={SettingsIcon} title={t("title.settings")} />
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Paper sx={{ padding: 3 }}>
           <Grid sx={{ display: "flex", maxWidth: "md" }}>
             <Tabs

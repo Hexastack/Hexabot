@@ -119,7 +119,7 @@ const Tooltip = ({ children, ...rest }: TooltipProps) => (
   <MuiTooltip
     arrow
     placement="right"
-    componentsProps={{
+    slotProps={{
       tooltip: {
         sx: {
           p: 1,

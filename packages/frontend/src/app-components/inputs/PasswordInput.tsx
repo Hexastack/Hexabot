@@ -10,31 +10,42 @@ import { forwardRef, useState } from "react";
 
 import { Input } from "./Input";
 
-export const PasswordInput = forwardRef<any, TextFieldProps>(
-  ({ InputProps, ...rest }, ref) => {
+type PasswordInputProps = Omit<
+  TextFieldProps,
+  "FormHelperTextProps" | "InputLabelProps" | "InputProps" | "inputProps"
+>;
+
+export const PasswordInput = forwardRef<any, PasswordInputProps>(
+  ({ slotProps, ...rest }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const handleTogglePasswordVisibility = () => {
       setShowPassword(!showPassword);
     };
+    const inputSlotProps = slotProps?.input ?? {};
 
     return (
       <Input
         ref={ref}
         type={showPassword ? "text" : "password"}
         {...rest}
-        InputProps={{
-          ...InputProps,
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={handleTogglePasswordVisibility} edge="end">
-                {showPassword ? (
-                  <EyeOff size={20} />
-                ) : (
-                  <Eye size={20} />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          ...slotProps,
+          input: {
+            ...inputSlotProps,
+            endAdornment: (
+              <>
+                {inputSlotProps.endAdornment}
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleTogglePasswordVisibility}
+                    edge="end"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </IconButton>
+                </InputAdornment>
+              </>
+            ),
+          },
         }}
       />
     );

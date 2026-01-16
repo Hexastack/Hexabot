@@ -152,10 +152,12 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
                     : t("message.weight_positive_number_error"),
               })}
               type="number"
-              inputProps={{
-                min: 0,
-                step: 0.01,
-                inputMode: "numeric",
+              slotProps={{
+                htmlInput: {
+                  min: 0,
+                  step: 0.01,
+                  inputMode: "numeric",
+                },
               }}
               error={!!errors.weight}
               helperText={errors.weight?.message}

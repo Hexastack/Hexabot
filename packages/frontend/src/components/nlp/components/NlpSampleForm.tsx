@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   Chip,
-  debounce,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -17,6 +16,7 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import { Plus as AddIcon, Trash2 as DeleteIcon } from "lucide-react";
 import { FC, Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";

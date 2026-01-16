@@ -57,8 +57,10 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
         <PasswordInput
           label={label}
           helperText={helperText}
-          InputProps={{
-            startAdornment: <Adornment Icon={KeyIcon} />,
+          slotProps={{
+            input: {
+              startAdornment: <Adornment Icon={KeyIcon} />,
+            },
           }}
           {...field}
         />
@@ -78,15 +80,15 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
       return (
         <Input
           type="number"
-          inputProps={
-            setting.config
+          slotProps={{
+            htmlInput: setting.config
               ? {
                   step: setting.config.step,
                   min: setting.config.min,
                   max: setting.config.max,
                 }
-              : {}
-          }
+              : {},
+          }}
           label={label}
           helperText={helperText}
           {...field}

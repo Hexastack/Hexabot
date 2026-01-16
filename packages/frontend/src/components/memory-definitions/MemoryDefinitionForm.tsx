@@ -254,7 +254,7 @@ export const MemoryDefinitionForm: FC<
                         label={t("label.ttl_seconds")}
                         error={!!errors.ttlSeconds}
                         type="number"
-                        inputProps={{ min: 1, step: 1 }}
+                        slotProps={{ htmlInput: { min: 1, step: 1 } }}
                         helperText={
                           errors.ttlSeconds ? errors.ttlSeconds.message : null
                         }
