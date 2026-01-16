@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import UploadIcon from "@mui/icons-material/Upload";
 import { Button, CircularProgress } from "@mui/material";
+import { Upload as UploadIcon } from "lucide-react";
 import { ChangeEvent, forwardRef } from "react";
 
 import { useConfig } from "@/hooks/useConfig";

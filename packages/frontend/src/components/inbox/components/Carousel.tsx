@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
   Button,
   Card,
@@ -16,6 +14,7 @@ import {
   styled,
   Typography,
 } from "@mui/material";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
@@ -161,7 +160,7 @@ export const Carousel = (props: StdOutgoingListMessage) => {
         }}
         onClick={decrementScroll}
       >
-        <ArrowBackIosNewIcon />
+        <ChevronLeft size={20} />
       </StyledIconButton>
 
       <StyledIconButton
@@ -172,7 +171,7 @@ export const Carousel = (props: StdOutgoingListMessage) => {
         }}
         onClick={incrementScroll}
       >
-        <ArrowForwardIosIcon />
+        <ChevronRight size={20} />
       </StyledIconButton>
 
       <Shadow left visible={scrollTo !== 0} />

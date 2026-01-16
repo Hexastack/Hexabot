@@ -4,10 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import ClearIcon from "@mui/icons-material/Clear";
-import FileOpenIcon from "@mui/icons-material/FileOpen";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import VideoCameraBackOutlinedIcon from "@mui/icons-material/VideoCameraBackOutlined";
 import {
   Button,
   Card,
@@ -16,6 +12,12 @@ import {
   CardMedia,
   Typography,
 } from "@mui/material";
+import {
+  File as FileOpenIcon,
+  Music as MusicNoteIcon,
+  Video as VideoCameraBackOutlinedIcon,
+  X as ClearIcon,
+} from "lucide-react";
 import { FC } from "react";
 
 import { useGet } from "@/hooks/crud/useGet";
@@ -45,11 +47,11 @@ const AttachmentPreview = ({
       title={isImage ? attachment.name : undefined}
     >
       {attachment?.type.startsWith("audio") ? (
-        <MusicNoteIcon sx={{ fontSize: size }} />
+        <MusicNoteIcon size={size} />
       ) : attachment?.type.startsWith("video") ? (
-        <VideoCameraBackOutlinedIcon sx={{ fontSize: size }} />
+        <VideoCameraBackOutlinedIcon size={size} />
       ) : !attachment?.type.startsWith("image") ? (
-        <FileOpenIcon sx={{ fontSize: size }} />
+        <FileOpenIcon size={size} />
       ) : null}
     </CardMedia>
   );
@@ -100,7 +102,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
               <Button
                 color="inherit"
                 variant="contained"
-                startIcon={<ClearIcon />}
+                startIcon={<ClearIcon size={18} />}
                 onClick={(e) => {
                   onChange?.(null);
                   e.preventDefault();

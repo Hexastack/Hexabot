@@ -4,11 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import CheckIcon from "@mui/icons-material/Check";
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import LanguageIcon from "@mui/icons-material/Language";
 import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
+import { Check, Key, Languages, Mail } from "lucide-react";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -149,7 +146,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                     }
                     select
                     InputProps={{
-                      startAdornment: <Adornment Icon={LanguageIcon} />,
+                      startAdornment: <Adornment Icon={Languages} />,
                     }}
                     {...field}
                   >
@@ -167,7 +164,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 error={!!errors.email}
                 helperText={errors.email ? errors.email.message : null}
                 InputProps={{
-                  startAdornment: <Adornment Icon={EmailIcon} />,
+                  startAdornment: <Adornment Icon={Mail} />,
                 }}
               />
             </ContentItem>
@@ -179,7 +176,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 error={!!errors.password}
                 helperText={errors.password ? errors.password.message : null}
                 InputProps={{
-                  startAdornment: <Adornment Icon={KeyIcon} />,
+                  startAdornment: <Adornment Icon={Key} />,
                 }}
               />
             </ContentItem>
@@ -191,7 +188,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 error={!!errors.password2}
                 helperText={errors.password2 ? errors.password2.message : null}
                 InputProps={{
-                  startAdornment: <Adornment Icon={KeyIcon} />,
+                  startAdornment: <Adornment Icon={Key} />,
                 }}
               />
             </ContentItem>
@@ -200,7 +197,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <Button
               variant="contained"
               type="submit"
-              startIcon={<CheckIcon />}
+              startIcon={<Check />}
               onClick={handleSubmit(onSubmitForm)}
               disabled={isPending}
             >

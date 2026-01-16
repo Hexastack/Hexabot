@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, styled, Theme } from "@mui/material";
 
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
@@ -30,7 +29,6 @@ const StyledListItemIcon = styled(ListItemIcon, {
     })({ theme });
   },
 );
-const StyledFontAwesomeIcon = styled(FontAwesomeIcon)(SXStyleOptions({}));
 
 export const UnifiedIcon = ({
   Icon,
@@ -39,32 +37,17 @@ export const UnifiedIcon = ({
   isNested = false,
   isToggled = false,
 }: {
-  Icon: TMenuItem["Icon"];
+  Icon?: TMenuItem["Icon"];
   color?: string;
-  size?: string;
+  size?: number | string;
   isNested?: boolean;
   isToggled?: boolean;
 }) => {
+  if (!Icon) return null;
+
   return (
-    <>
-      {Icon && !("icon" in Icon) ? (
-        <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
-          <Icon sx={{ fontSize: size, color }} />
-        </StyledListItemIcon>
-      ) : null}
-      {Icon && "icon" in Icon ? (
-        <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
-          <StyledFontAwesomeIcon
-            sx={{
-              color,
-              minWidth: "24px",
-              fontSize: `calc(${size} - 5px)`,
-              marginTop: "3px",
-            }}
-            icon={Icon}
-          />
-        </StyledListItemIcon>
-      ) : null}
-    </>
+    <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
+      <Icon color={color} size={size} />
+    </StyledListItemIcon>
   );
 };

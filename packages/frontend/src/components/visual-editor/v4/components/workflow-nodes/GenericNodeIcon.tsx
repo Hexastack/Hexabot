@@ -4,18 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ErrorOutline } from "@mui/icons-material";
-import { styled } from "@mui/material";
+import { AlertCircle } from "lucide-react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
+import type { WorkflowIcon } from "../../types/workflow-node.types";
 
 export const GenericNodeIcon = () => {
   const { theme, height = 1, width = 1 } = useWorkflowNode();
-  const IconComponent: React.ComponentType<any> =
-    "Icon" in theme ? theme.Icon : ErrorOutline;
-  const StyledIcon = styled(IconComponent)(() => ({
-    fontSize: "100%",
-  }));
+  const IconComponent: WorkflowIcon =
+    "Icon" in theme ? theme.Icon : AlertCircle;
 
   return (
     <div
@@ -33,7 +30,7 @@ export const GenericNodeIcon = () => {
         alignItems: "center",
       }}
     >
-      <StyledIcon />
+      <IconComponent width="1em" height="1em" />
     </div>
   );
 };

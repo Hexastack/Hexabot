@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import LinkIcon from "@mui/icons-material/Link";
 import { FormControl, FormControlLabel, Switch } from "@mui/material";
+import { Link as LinkIcon } from "lucide-react";
 import { FC, Fragment, useEffect } from "react";
 import {
   Controller,

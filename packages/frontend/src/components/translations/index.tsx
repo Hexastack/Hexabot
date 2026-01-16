@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faLanguage } from "@fortawesome/free-solid-svg-icons";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { Languages, RefreshCw } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -136,13 +135,13 @@ export const Translations = () => {
         {
           permissionAction: PermissionAction.CREATE,
           children: t("button.refresh"),
-          startIcon: <AutorenewIcon />,
+          startIcon: <RefreshCw />,
           onClick: checkRefreshTranslations,
           disabled: isPending,
         },
       ]}
       columns={columns}
-      headerIcon={faLanguage}
+      headerIcon={Languages}
       searchParams={{
         $iLike: ["str"],
         syncUrl: true,

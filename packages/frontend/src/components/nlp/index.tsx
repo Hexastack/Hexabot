@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { Grid, Paper, Tab, Tabs } from "@mui/material";
+import { GraduationCap } from "lucide-react";
 import React, { useMemo } from "react";
 
 import { TabPanel } from "@/app-components/tabs/TabPanel";
@@ -48,7 +48,7 @@ export const Nlp = () => {
 
   return (
     <Grid container gap={2} flexDirection="column">
-      <PageHeader title={t("title.nlp_train")} icon={faGraduationCap} />
+      <PageHeader title={t("title.nlp_train")} icon={GraduationCap} />
       <Grid item xs={12}>
         <Grid container flexDirection="row">
           <Grid item xs={7}>

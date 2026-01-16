@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import SendIcon from "@mui/icons-material/Send";
+import { Send as SendIcon } from "lucide-react";
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";

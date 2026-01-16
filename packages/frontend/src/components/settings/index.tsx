@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faCogs } from "@fortawesome/free-solid-svg-icons";
 import {
   debounce,
   FormControl,
@@ -14,6 +13,7 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
+import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -151,7 +151,7 @@ export const Settings = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faCogs} title={t("title.settings")} />
+      <PageHeader icon={SettingsIcon} title={t("title.settings")} />
       <Grid item xs={12}>
         <Paper sx={{ padding: 3 }}>
           <Grid sx={{ display: "flex", maxWidth: "md" }}>

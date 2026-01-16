@@ -4,26 +4,25 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SvgIconTypeMap, Tooltip } from "@mui/material";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { Tooltip } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
+
+import type { WorkflowIcon } from "../types/workflow-node.types";
 
 export const TooltipIcon = ({
   icon: Icon,
   translationKey,
 }: {
-  icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-    muiName: string;
-  };
+  icon: WorkflowIcon;
   translationKey: TTranslationKeys;
 }) => {
   const { t } = useTranslate();
 
   return (
     <Tooltip title={t(translationKey)} placement="top" arrow>
-      <Icon sx={{ fontSize: "20px" }} />
+      <Icon width={20} height={20} />
     </Tooltip>
   );
 };

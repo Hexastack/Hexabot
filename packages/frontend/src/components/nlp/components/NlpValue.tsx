@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Button, Chip, Grid, Slide } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { ArrowLeft, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
@@ -207,13 +206,13 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
               }}
               sx={{ fontWeight: 500 }}
               variant="text"
-              startIcon={<ArrowBackIcon />}
+              startIcon={<ArrowLeft size={18} />}
             >
               {t("button.back")}
             </Button>
             <PageHeader
               title={t("title.nlp_entity_values")}
-              icon={faGraduationCap}
+              icon={GraduationCap}
               chip={
                 <Grid>
                   <Chip label={nlpEntity?.name} variant="title" />

@@ -12,8 +12,8 @@ import {
   MessageInput,
   MessageList,
 } from "@chatscope/chat-ui-kit-react";
-import QuestionAnswerTwoToneIcon from "@mui/icons-material/QuestionAnswerTwoTone";
 import { debounce, Grid } from "@mui/material";
+import { MessageSquare } from "lucide-react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,9 +53,7 @@ export function Chat() {
         justifyContent="center"
         alignItems="center"
       >
-        <QuestionAnswerTwoToneIcon
-          sx={{ height: "100px", width: "100px", opacity: 0.3 }}
-        />
+        <MessageSquare size={100} style={{ opacity: 0.3 }} />
         {t("message.no_message_to_display")}
       </Grid>
     );
