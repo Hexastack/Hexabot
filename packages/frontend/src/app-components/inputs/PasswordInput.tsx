@@ -21,7 +21,25 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
     const handleTogglePasswordVisibility = () => {
       setShowPassword(!showPassword);
     };
-    const inputSlotProps = slotProps?.input ?? {};
+    const resolveInputSlotProps = (ownerState: any) => {
+      const resolved = (typeof slotProps?.input === "function"
+        ? slotProps.input(ownerState)
+        : slotProps?.input) as { endAdornment?: React.ReactNode } | undefined;
+
+      return {
+        ...(resolved ?? {}),
+        endAdornment: (
+          <>
+            {resolved?.endAdornment}
+            <InputAdornment position="end">
+              <IconButton onClick={handleTogglePasswordVisibility} edge="end">
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </IconButton>
+            </InputAdornment>
+          </>
+        ),
+      };
+    };
 
     return (
       <Input
@@ -30,22 +48,7 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
         {...rest}
         slotProps={{
           ...slotProps,
-          input: {
-            ...inputSlotProps,
-            endAdornment: (
-              <>
-                {inputSlotProps.endAdornment}
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleTogglePasswordVisibility}
-                    edge="end"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </IconButton>
-                </InputAdornment>
-              </>
-            ),
-          },
+          input: resolveInputSlotProps,
         }}
       />
     );

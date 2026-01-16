@@ -28,7 +28,7 @@ export const WorkflowEditor = () => (
   <ReactFlowProvider>
     <WorkflowProvider>
       <StyledContainerGrid container>
-        <Grid container height="100%" margin="auto">
+        <Grid container height="100%" width="100%" wrap="nowrap">
           <YamlEditor />
           <StyledGrid size="grow">
             <Workflow />

@@ -135,7 +135,7 @@ export const Languages = () => {
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={
             params.value ||
             !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)

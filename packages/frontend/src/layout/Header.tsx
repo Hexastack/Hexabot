@@ -12,8 +12,8 @@ import {
   Typography,
   styled,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import Grid from "@mui/material/Grid2";
 import { Menu } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 

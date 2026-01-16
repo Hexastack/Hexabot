@@ -29,7 +29,7 @@ export const FlowsDrawerSearchActions = ({
         placeholder={searchPlaceholder}
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        inputProps={{ "aria-label": searchLabel }}
+        slotProps={{ input: { "aria-label": searchLabel } }}
       />
     </SearchBox>
   </Box>
