@@ -5,14 +5,13 @@
  */
 
 import { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
-import type { SvgIconTypeMap } from "@mui/material";
-import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
   EdgeMarkerType,
   NodeConnection,
   ResizeControlDirection,
 } from "@xyflow/system";
+import type { LucideIcon } from "lucide-react";
 import type { CSSProperties, FC, ReactNode, SVGProps } from "react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
@@ -33,10 +32,12 @@ type CommonNodeData<T extends ENodeType> = {
   groupName?: string;
 };
 
+export type WorkflowIcon = LucideIcon | FC<SVGProps<SVGSVGElement>>;
+
 // model types
 export type ModelData = CommonNodeData<ENodeType.MODEL> & {
   theme: {
-    Icon: FC;
+    Icon: WorkflowIcon;
     color: CSSProperties["color"];
     bgColor: CSSProperties["color"];
   };
@@ -45,7 +46,7 @@ export type ModelData = CommonNodeData<ENodeType.MODEL> & {
 // Tool types
 export type ToolData = CommonNodeData<ENodeType.TOOL> & {
   theme: {
-    Icon: FC;
+    Icon: WorkflowIcon;
     color: CSSProperties["color"];
     bgColor: CSSProperties["color"];
   };
@@ -54,7 +55,7 @@ export type ToolData = CommonNodeData<ENodeType.TOOL> & {
 // Agent types
 export type AgentData = CommonNodeData<ENodeType.AGENT> & {
   theme: {
-    Icon: FC;
+    Icon: WorkflowIcon;
     color: CSSProperties["color"];
     bgColor: CSSProperties["color"];
   };
@@ -67,7 +68,7 @@ export type AgentData = CommonNodeData<ENodeType.AGENT> & {
 // Task types
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
   theme: {
-    Icon: FC<SVGProps<SVGSVGElement>>;
+    Icon: WorkflowIcon;
     color: CSSProperties["color"];
     bgColor: CSSProperties["color"];
   };
@@ -80,9 +81,7 @@ export type TaskData = CommonNodeData<ENodeType.TASK> & {
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
   i18n: TTranslationKeys;
   theme: {
-    Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-      muiName: string;
-    };
+    Icon: WorkflowIcon;
     color: string;
     bgColor: string;
   };
@@ -105,9 +104,7 @@ export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
   i18n: TTranslationKeys;
   theme: {
-    Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-      muiName: string;
-    };
+    Icon: WorkflowIcon;
     color: string;
     bgColor: string;
   };

@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { MenuItem } from "@mui/material";
+import { Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { Control, Controller, UseFormSetValue } from "react-hook-form";
 
@@ -42,7 +42,7 @@ export const FieldInput = ({
         onClick={() => remove(idx)}
         disabled={isDisabled}
       >
-        <DeleteOutlineIcon strokeWidth={1} fontSize="medium" />
+        <Trash2 size={20} strokeWidth={1.5} />
       </IconButton>
       <Controller
         control={control}

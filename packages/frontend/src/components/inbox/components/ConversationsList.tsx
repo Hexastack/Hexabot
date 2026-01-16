@@ -5,8 +5,8 @@
  */
 
 import { Conversation, ConversationList } from "@chatscope/chat-ui-kit-react";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
+import { Inbox } from "lucide-react";
 import { useEffect } from "react";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
@@ -49,7 +49,7 @@ export const SubscribersList = (props: {
   return (
     <>
       <Grid padding={2}>
-        <Title title={t(props.assignedTo)} icon={InboxIcon} />
+        <Title title={t(props.assignedTo)} icon={Inbox} />
       </Grid>
       {subscribers?.length > 0 ? (
         <ConversationList

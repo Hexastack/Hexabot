@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import FolderCopyIcon from "@mui/icons-material/FolderCopy";
 import {
   Box,
   Button,
@@ -15,6 +13,10 @@ import {
   styled,
   Typography,
 } from "@mui/material";
+import {
+  CloudUpload as CloudUploadIcon,
+  FolderOpen as FolderCopyIcon,
+} from "lucide-react";
 import { ChangeEvent, DragEvent, FC, useId, useState } from "react";
 
 import { useUpload } from "@/hooks/crud/useUpload";
@@ -187,7 +189,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                 />
               ) : (
                 <IconText height="100%" width="80%">
-                  <CloudUploadIcon fontSize="large" />
+                  <CloudUploadIcon size={36} />
                   <Typography>
                     {t("label.click_or_dragndrop_to_upload")}
                   </Typography>
@@ -211,7 +213,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               alignItems="center"
             >
               <Button
-                startIcon={<FolderCopyIcon />}
+                startIcon={<FolderCopyIcon size={18} />}
                 variant="contained"
                 color="primary"
                 onClick={() =>

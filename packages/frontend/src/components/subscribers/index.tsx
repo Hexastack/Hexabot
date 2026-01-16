@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import DeleteIcon from "@mui/icons-material/Close";
 import { IconButton, MenuItem } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { UserCircle, X } from "lucide-react";
 import { useState } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
@@ -155,7 +154,7 @@ export const Subscribers = () => {
     <GenericDataGrid
       entity={EntityType.SUBSCRIBER}
       columns={columns}
-      headerIcon={AccountCircleIcon}
+      headerIcon={UserCircle}
       searchParams={{
         $eq: labelFilter ? [{ labels: [{ id: labelFilter }] }] : [],
         $or: ["firstName", "lastName"],
@@ -173,7 +172,7 @@ export const Subscribers = () => {
             ...(labelFilter !== "" && {
               IconComponent: () => (
                 <IconButton size="small" onClick={() => setLabelFilter("")}>
-                  <DeleteIcon />
+                  <X size={16} />
                 </IconButton>
               ),
             }),

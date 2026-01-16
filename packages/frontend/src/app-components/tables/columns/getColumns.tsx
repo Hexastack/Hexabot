@@ -4,16 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import CachedIcon from "@mui/icons-material/Cached";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DeleteIcon from "@mui/icons-material/DeleteOutlined";
-import EditIcon from "@mui/icons-material/EditOutlined";
-import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import TocOutlinedIcon from "@mui/icons-material/TocOutlined";
-import ViewListIcon from "@mui/icons-material/ViewListOutlined";
 import { Stack, Tooltip } from "@mui/material";
 import {
   GridActionsCellItem,
@@ -22,6 +12,18 @@ import {
   GridTreeNodeWithRender,
   GridValidRowModel,
 } from "@mui/x-data-grid";
+import {
+  CheckCircle2,
+  FileText,
+  List,
+  ListOrdered,
+  Pencil,
+  RefreshCw,
+  Shield,
+  Tag,
+  Trash2,
+  UserCog,
+} from "lucide-react";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -73,25 +75,25 @@ export const getActionsWidth = (itemsNumber: number) =>
 function getIcon(label: ActionColumnLabel) {
   switch (label) {
     case ActionColumnLabel.Edit:
-      return <EditIcon />;
+      return <Pencil />;
     case ActionColumnLabel.Delete:
-      return <DeleteIcon />;
+      return <Trash2 />;
     case ActionColumnLabel.Values:
-      return <ViewListIcon />;
+      return <List />;
     case ActionColumnLabel.Manage_Roles:
-      return <ManageAccountsIcon />;
+      return <UserCog />;
     case ActionColumnLabel.Permissions:
-      return <AdminPanelSettingsIcon />;
+      return <Shield />;
     case ActionColumnLabel.Content:
-      return <ListAltOutlinedIcon />;
+      return <FileText />;
     case ActionColumnLabel.Fields:
-      return <TocOutlinedIcon />;
+      return <ListOrdered />;
     case ActionColumnLabel.Manage_Labels:
-      return <LocalOfferIcon />;
+      return <Tag />;
     case ActionColumnLabel.Toggle:
-      return <CheckCircleIcon />;
+      return <CheckCircle2 />;
     case ActionColumnLabel.Annotate:
-      return <CachedIcon />;
+      return <RefreshCw />;
     default:
       return <></>;
   }

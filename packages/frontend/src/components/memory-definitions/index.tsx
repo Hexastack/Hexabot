@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import MemoryIcon from "@mui/icons-material/Memory";
 import { GridColDef } from "@mui/x-data-grid";
+import { MemoryStick, Plus } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -137,7 +136,7 @@ export const MemoryDefinitions = () => {
         {
           permissionAction: PermissionAction.CREATE,
           children: t("button.add"),
-          startIcon: <AddIcon />,
+          startIcon: <Plus />,
           onClick: () =>
             dialogs.open(
               MemoryDefinitionFormDialog,
@@ -147,7 +146,7 @@ export const MemoryDefinitions = () => {
         },
       ]}
       columns={columns}
-      headerIcon={MemoryIcon}
+      headerIcon={MemoryStick}
       searchParams={{ $or: ["name", "slug"], syncUrl: true }}
       headerI18nTitle="title.memory_definitions"
     />

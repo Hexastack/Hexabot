@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ScreenRotation } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
+import { RotateCw } from "lucide-react";
 
 import { AnimatedComponent } from "@/app-components/AnimatedComponent";
 
@@ -58,7 +58,7 @@ export const RotateButton = () => {
       }}
     >
       <AnimatedComponent
-        component={ScreenRotation}
+        component={RotateCw}
         canRotate={direction === "vertical"}
         from="-45"
         to="45"

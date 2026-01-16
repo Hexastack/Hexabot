@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import ErrorIcon from "@mui/icons-material/ErrorOutline";
+import { AlertCircle as ErrorIcon } from "lucide-react";
 
 import { OverlayTemplate } from "./OverlayTemplate";
 

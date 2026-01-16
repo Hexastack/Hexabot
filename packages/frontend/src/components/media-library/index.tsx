@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import { Box } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
+import { FolderUp } from "lucide-react";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
@@ -108,7 +108,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
     <GenericDataGrid
       entity={EntityType.ATTACHMENT}
       columns={columns}
-      headerIcon={DriveFolderUploadIcon}
+      headerIcon={FolderUp}
       searchParams={{
         $iLike: ["name"],
         syncUrl: !onSelect, // Sync URL only in the media library page (not the modal)

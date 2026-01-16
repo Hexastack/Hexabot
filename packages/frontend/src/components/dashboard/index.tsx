@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import Home from "@mui/icons-material/Home";
 import { Grid, GridProps } from "@mui/material";
+import { Home } from "lucide-react";
 import { PropsWithChildren } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";

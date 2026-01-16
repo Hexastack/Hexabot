@@ -5,12 +5,12 @@
  */
 
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
-import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid, Tooltip } from "@mui/material";
 import Autolinker from "autolinker";
+import { Menu, Reply } from "lucide-react";
 import React, { ReactNode } from "react";
 
+import { theme } from "@/layout/themes/theme";
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
@@ -152,11 +152,11 @@ export function getMessageContent(
 
   if ("buttons" in message) {
     chips = message.buttons;
-    chipsIcon = <MenuRoundedIcon color="disabled" />;
+    chipsIcon = <Menu color={theme.palette.action.disabled} size={16} />;
   }
   if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
     chips = message.quickReplies as { title: string }[];
-    chipsIcon = <ReplyIcon color="disabled" />;
+    chipsIcon = <Reply color={theme.palette.action.disabled} size={16} />;
   }
 
   if (chips.length > 0) {

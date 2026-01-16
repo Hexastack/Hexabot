@@ -4,9 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import CircleIcon from "@mui/icons-material/Circle";
-import ClearIcon from "@mui/icons-material/Clear";
-import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
   Chip,
@@ -18,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { Circle, Download, X } from "lucide-react";
 import { useState } from "react";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
@@ -352,14 +350,14 @@ export default function NlpSample() {
             onChange={(e) => setType(e.target.value as NlpSampleType)}
             SelectProps={{
               ...(type && {
-                endAdornment: (
-                  <InputAdornment sx={{ marginRight: "1rem" }} position="end">
-                    <IconButton size="small" onClick={() => setType("all")}>
-                      <ClearIcon sx={{ fontSize: "1.25rem" }} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }),
+                    endAdornment: (
+                      <InputAdornment sx={{ marginRight: "1rem" }} position="end">
+                        <IconButton size="small" onClick={() => setType("all")}>
+                          <X size={20} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }),
               renderValue: (value) => <Box>{t(`label.${value}`)}</Box>,
             }}
           >
@@ -367,10 +365,11 @@ export default function NlpSample() {
               (nlpSampleType, index) => (
                 <MenuItem key={index} value={nlpSampleType}>
                   <Box display="flex" gap={1}>
-                    <CircleIcon
-                      sx={{
-                        color: NLP_SAMPLE_TYPE_COLORS[nlpSampleType],
-                      }}
+                    <Circle
+                      size={14}
+                      color={NLP_SAMPLE_TYPE_COLORS[nlpSampleType]}
+                      fill={NLP_SAMPLE_TYPE_COLORS[nlpSampleType]}
+                      strokeWidth={0}
                     />
                     <Typography>{t(`label.${nlpSampleType}`)}</Typography>
                   </Box>
@@ -400,7 +399,7 @@ export default function NlpSample() {
                   [EntityType.NLP_SAMPLE]: PermissionAction.READ,
                   [EntityType.NLP_SAMPLE_ENTITY]: PermissionAction.READ,
                 },
-                startIcon: <DownloadIcon />,
+                startIcon: <Download />,
                 children: t("button.export"),
                 href: buildURL(
                   apiUrl,

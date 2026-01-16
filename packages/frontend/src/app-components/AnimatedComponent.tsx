@@ -6,33 +6,32 @@
 
 import type { StyledOptions } from "@emotion/styled";
 import { styled, type Theme } from "@mui/material";
-import { useMemo, type FC } from "react";
+import { useMemo, type ElementType, type FC } from "react";
 
 type IconProps = {
-  component: React.ComponentType<any>;
+  component: ElementType;
+  color?: string;
   htmlColor?: string;
+  size?: number | string;
   canRotate?: boolean;
   from?: string;
   to?: string;
 };
 
-const createStyledComponent = <
-  C extends React.ComponentType<any>,
-  P extends object = {},
->(
+const createStyledComponent = <C extends ElementType, P extends object = {}>(
   Component: C,
   options?: StyledOptions<P>,
 ) => {
   return styled(Component as React.ComponentType<any>, options)<P>;
 };
-const getStyledComponent = <C extends React.ComponentType<C>>(
-  componentType: C,
-) =>
+const getStyledComponent = (componentType: ElementType) =>
   createStyledComponent(componentType, {
-    shouldForwardProp: (prop) => prop !== "canRotate",
+    shouldForwardProp: (prop) =>
+      !["canRotate", "from", "to", "htmlColor"].includes(String(prop)),
   })(
     ({
       canRotate = false,
+      color,
       htmlColor,
       theme,
       from = "0",
@@ -42,19 +41,25 @@ const getStyledComponent = <C extends React.ComponentType<C>>(
     } & IconProps) => {
       return {
         fontSize: "18px",
-        color: htmlColor || theme?.palette.common.white,
+        color: color || htmlColor || theme?.palette.common.white,
         transition: "all 300ms",
+        width: "1em",
+        height: "1em",
         ...(from && { transform: `rotate(${from}deg)` }),
         ...(canRotate && { transform: `rotate(${to}deg)` }),
       };
     },
   );
 
-export const AnimatedComponent: FC<IconProps> = ({ component, ...rest }) => {
+export const AnimatedComponent: FC<IconProps> = ({
+  component,
+  size = "1em",
+  ...rest
+}) => {
   const StyledComponent = useMemo(
     () => getStyledComponent(component),
     [component],
   );
 
-  return <StyledComponent {...rest} />;
+  return <StyledComponent {...rest} size={size} />;
 };

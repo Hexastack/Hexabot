@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { AlignLeft, ArrowLeft } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -198,7 +197,7 @@ export const Contents = () => {
         },
       ]}
       columns={columns}
-      headerIcon={faAlignLeft}
+      headerIcon={AlignLeft}
       searchParams={{
         $eq: [{ "contentType.id": query.id?.toString() }],
         $iLike: ["title"],
@@ -211,7 +210,7 @@ export const Contents = () => {
           component={RouterLink}
           to="/content/types"
           variant="text"
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowLeft size={18} />}
         >
           <Typography sx={{ fontWeight: 500 }}>{t("button.back")}</Typography>
         </Button>

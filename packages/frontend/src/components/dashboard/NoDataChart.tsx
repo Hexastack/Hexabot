@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faChartLine } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { styled, Typography } from "@mui/material";
+import { ChartLine } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
@@ -26,7 +25,7 @@ export const NoDataChart = () => {
 
   return (
     <StyledMessage>
-      <FontAwesomeIcon icon={faChartLine} />
+      <ChartLine size={18} style={{ marginRight: 6, verticalAlign: "middle" }} />
       {t("charts.no_data")}
     </StyledMessage>
   );

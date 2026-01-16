@@ -4,11 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import AbcIcon from "@mui/icons-material/Abc";
-import KeyIcon from "@mui/icons-material/Key";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import MarkunreadIcon from "@mui/icons-material/Markunread";
-import PersonIcon from "@mui/icons-material/Person";
 import {
   Button,
   FormControlLabel,
@@ -17,6 +12,13 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
+import {
+  ChevronRight as KeyboardArrowRightIcon,
+  Key as KeyIcon,
+  Mail as MarkunreadIcon,
+  Type as AbcIcon,
+  User as PersonIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 

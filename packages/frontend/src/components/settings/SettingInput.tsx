@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import KeyIcon from "@mui/icons-material/Key";
 import { FormControlLabel, Switch } from "@mui/material";
+import { Key as KeyIcon } from "lucide-react";
 import { ControllerRenderProps } from "react-hook-form";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";

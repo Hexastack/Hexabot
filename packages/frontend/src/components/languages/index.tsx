@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Flag } from "@mui/icons-material";
-import AddIcon from "@mui/icons-material/Add";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { Flag, Plus } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -179,7 +178,7 @@ export const Languages = () => {
         {
           permissionAction: PermissionAction.CREATE,
           children: t("button.add"),
-          startIcon: <AddIcon />,
+          startIcon: <Plus />,
           onClick: () => {
             dialogs.open(LanguageFormDialog, { defaultValues: null });
           },

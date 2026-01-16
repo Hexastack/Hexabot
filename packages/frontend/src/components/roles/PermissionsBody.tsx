@@ -4,9 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import {
   Accordion,
   AccordionDetails,
@@ -17,6 +14,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import { ChevronUp, Plus, Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
@@ -133,7 +131,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
           }}
         >
           <AccordionSummary
-            expandIcon={<KeyboardArrowUpIcon />}
+            expandIcon={<ChevronUp size={18} />}
             sx={{
               backgroundColor: "background.default",
               borderRadius: 1,
@@ -179,7 +177,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                             onClick={() => deletePermission(id)}
                             size="small"
                           >
-                            <DeleteOutlinedIcon fontSize="small" />
+                            <Trash2 size={16} />
                           </IconButton>
                         </Grid>
                         <Grid item xs>
@@ -216,7 +214,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     }}
                     disabled={!payload.action || !payload.relation}
                   >
-                    <AddIcon fontSize="small" />
+                    <Plus size={16} />
                   </IconButton>
                 </Grid>
                 <Grid item xs alignContent="center">

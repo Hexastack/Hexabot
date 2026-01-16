@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { Grid, Paper } from "@mui/material";
+import { User } from "lucide-react";
 import React from "react";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +20,7 @@ export const Profile = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faUser} title={t("title.edit_my_account")} />
+      <PageHeader icon={User} title={t("title.edit_my_account")} />
       <Paper sx={{ padding: 7 }}>
         {user ? <ProfileForm user={user} /> : null}
       </Paper>
