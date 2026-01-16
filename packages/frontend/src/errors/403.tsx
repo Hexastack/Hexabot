@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 
 import { useTranslate } from "@/hooks/useTranslate";
 

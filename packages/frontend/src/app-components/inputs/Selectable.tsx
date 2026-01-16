@@ -81,7 +81,7 @@ const SelectionEntityBackground: React.FC<{
         placement="top"
         title={e.entity}
         arrow
-        componentsProps={{
+        slotProps={{
           tooltip: {
             sx: {
               color: "#FFF",

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Grid, Link } from "@mui/material";
+import { Button, Link } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -76,14 +77,16 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
               disabled
               label={t("label.full_name")}
               value={user ? getFullName(user) : undefined}
-              InputProps={{
-                readOnly: true,
+              slotProps={{
+                input: {
+                  readOnly: true,
+                },
               }}
             />
           </ContentItem>
           <ContentItem>
             <Grid container gap={3}>
-              <Grid item xs>
+              <Grid size="grow">
                 <Controller
                   name="roles"
                   rules={validationRules.roles}
@@ -113,7 +116,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
                   }}
                 />
               </Grid>
-              <Grid alignContent="center">
+              <Grid size="auto" alignContent="center">
                 <Link href="/roles">
                   <Button variant="contained">{t("button.manage")}</Button>
                 </Link>

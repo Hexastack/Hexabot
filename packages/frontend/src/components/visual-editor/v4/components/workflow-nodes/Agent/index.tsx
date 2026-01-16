@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { type NodeProps } from "@xyflow/react";
 import { type FC } from "react";
 
@@ -20,7 +20,7 @@ export const Agent: FC<NodeProps<NodeData<ENodeType.AGENT>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon hasBgColor />
-      <Grid xs flexDirection="column" pl="10px">
+      <Grid size="grow" flexDirection="column" pl="10px">
         <GenericNodeTitle />
         <GenericNodeDescription />
       </Grid>

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip, Grid } from "@mui/material";
+import { Chip } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
   DataGridProps,
   GridColDef,
@@ -91,10 +92,10 @@ export const GenericDataGrid = <
             width="auto"
             justifyContent="end"
           >
-            <Grid item maxWidth="300px">
+            <Grid size="auto" maxWidth="300px">
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            <Grid item>
+            <Grid size="auto">
               {headerFilterInputs}
               {buttons ? (
                 <ButtonActionsGroup entity={entity} buttons={buttons} />

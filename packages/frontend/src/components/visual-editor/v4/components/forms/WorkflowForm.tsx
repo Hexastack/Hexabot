@@ -240,7 +240,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                 label={t("label.version", { defaultValue: "Version" })}
                 value={versionValue}
                 disabled
-                InputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
               />
             </ContentItem>
             <ContentItem>

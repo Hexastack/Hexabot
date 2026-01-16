@@ -69,7 +69,7 @@ const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
           value="" // to trigger an automatic reset to allow the same file to be selected multiple times
           sx={{ display: "none" }}
           onChange={handleImportChange}
-          inputProps={{ accept }}
+          slotProps={{ htmlInput: { accept } }}
         />
       </>
     );

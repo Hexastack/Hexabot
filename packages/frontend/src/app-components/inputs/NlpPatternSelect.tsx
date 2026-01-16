@@ -233,95 +233,118 @@ const NlpPatternSelect = (
                       },
                     },
                   }}
-                  renderInput={(props) => (
-                    <Input
-                      {...props}
-                      InputProps={{
-                        ...props.InputProps,
-                        readOnly: true,
-                        sx: {
-                          padding: 0,
-                          overflow: "hidden",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                        },
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Chip
-                              sx={{
-                                p: "0 0.3rem",
-                                border: "none",
-                                borderRadius: 0,
-                              }}
-                              color="primary"
-                              label={name}
-                              variant="role"
-                            />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {isLoading ? (
-                              <CircularProgress color="inherit" size={20} />
-                            ) : (
-                              <IconButton
-                                sx={{
-                                  p: 0,
-                                  pr: "2px",
-                                  color: theme.palette.grey[500],
-                                  "&:hover": {
-                                    color: theme.palette.grey[700],
-                                  },
-                                }}
-                                onClick={(e) => {
-                                  onDelete(e);
+                  renderInput={(params) => {
+                    const {
+                      InputProps,
+                      InputLabelProps,
+                      inputProps,
+                      ...rest
+                    } = params;
 
-                                  onChange(
-                                    patterns.filter((p) => p.entity !== name),
-                                  );
-                                }}
-                                edge="end"
-                                size="small"
-                              >
-                                <X size={16} />
-                              </IconButton>
-                            )}
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
+                    return (
+                      <Input
+                        {...rest}
+                        slotProps={{
+                          inputLabel: InputLabelProps,
+                          htmlInput: inputProps,
+                          input: {
+                            ...InputProps,
+                            readOnly: true,
+                            sx: {
+                              padding: 0,
+                              overflow: "hidden",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            },
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Chip
+                                  sx={{
+                                    p: "0 0.3rem",
+                                    border: "none",
+                                    borderRadius: 0,
+                                  }}
+                                  color="primary"
+                                  label={name}
+                                  variant="role"
+                                />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                {isLoading ? (
+                                  <CircularProgress color="inherit" size={20} />
+                                ) : (
+                                  <IconButton
+                                    sx={{
+                                      p: 0,
+                                      pr: "2px",
+                                      color: theme.palette.grey[500],
+                                      "&:hover": {
+                                        color: theme.palette.grey[700],
+                                      },
+                                    }}
+                                    onClick={(e) => {
+                                      onDelete(e);
+
+                                      onChange(
+                                        patterns.filter(
+                                          (p) => p.entity !== name,
+                                        ),
+                                      );
+                                    }}
+                                    edge="end"
+                                    size="small"
+                                  >
+                                    <X size={16} />
+                                  </IconButton>
+                                )}
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    );
+                  }}
                 />
               );
             })}
           </Box>
         );
       }}
-      renderInput={(props) => (
-        <Input
-          {...props}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              paddingRight: "6px !important",
-            },
-          }}
-          size="small"
-          label={t("label.nlp")}
-          InputProps={{
-            ...props.InputProps,
-            inputRef,
-            onClick: (event) => {
-              if (event.target !== inputRef.current) {
-                event.stopPropagation();
-                event.preventDefault();
-              }
-            },
-            endAdornment: isLoading ? (
-              <CircularProgress color="inherit" size={20} />
-            ) : null,
-          }}
-        />
-      )}
+      renderInput={(params) => {
+        const { InputProps, InputLabelProps, inputProps, ...rest } = params;
+
+        return (
+          <Input
+            {...rest}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                paddingRight: "6px !important",
+              },
+            }}
+            size="small"
+            label={t("label.nlp")}
+            slotProps={{
+              inputLabel: InputLabelProps,
+              htmlInput: inputProps,
+              input: {
+                ...InputProps,
+                inputRef,
+                onClick: (event) => {
+                  if (event.target !== inputRef.current) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                  }
+                },
+                endAdornment: isLoading ? (
+                  <CircularProgress color="inherit" size={20} />
+                ) : null,
+              },
+            }}
+          />
+        );
+      }}
     />
   );
 };

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, Typography, useTheme } from "@mui/material";
+import { Typography, useTheme } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { AlertTriangle } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -29,10 +30,10 @@ export const ConfirmDialogBody = ({
 
   return (
     <Grid container gap={1}>
-      <Grid item height="1.75rem">
+      <Grid size="auto" height="1.75rem">
         <AlertTriangle color={theme.palette.error.main} size={28} />
       </Grid>
-      <Grid item alignSelf="center">
+      <Grid size="auto" alignSelf="center">
         <Typography>{dialogBodyText}</Typography>
       </Grid>
     </Grid>

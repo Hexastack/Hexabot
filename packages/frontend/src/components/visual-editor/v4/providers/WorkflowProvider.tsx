@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { debounce } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import {
   type Node,
   type NodeChange,

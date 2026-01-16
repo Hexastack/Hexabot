@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, Typography, useTheme } from "@mui/material";
+import { Typography, useTheme } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { ReactNode } from "react";
 
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";

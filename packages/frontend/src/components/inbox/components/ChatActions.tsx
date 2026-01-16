@@ -5,7 +5,8 @@
  */
 
 import { Avatar } from "@chatscope/chat-ui-kit-react";
-import { Button, Grid, IconButton, MenuItem, Typography } from "@mui/material";
+import { Button, IconButton, MenuItem, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 

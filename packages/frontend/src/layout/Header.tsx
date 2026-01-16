@@ -7,13 +7,13 @@
 import {
   Avatar,
   Box,
-  Grid,
   IconButton,
   Toolbar,
   Typography,
   styled,
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import Grid from "@mui/material/Grid2";
 import { Menu } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 
@@ -114,8 +114,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
             display="flex"
             justifyContent="end"
             alignItems="center"
-            item
-            xs
+            size="grow"
             textAlign="right"
             mr="20px"
           >

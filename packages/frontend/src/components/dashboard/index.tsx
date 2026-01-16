@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, GridProps } from "@mui/material";
+import Grid, { type Grid2Props as GridProps } from "@mui/material/Grid2";
 import { Home } from "lucide-react";
 import { PropsWithChildren } from "react";
 
@@ -15,7 +15,7 @@ import AudienceChart from "./AudienceChart";
 import MessageChart from "./MessageChart";
 
 const DashboardContent = (props: PropsWithChildren<GridProps>) => (
-  <Grid item md={12} lg={6} {...props} />
+  <Grid size={{ md: 12, lg: 6 }} {...props} />
 );
 
 export const Dashboard = () => {
@@ -25,10 +25,10 @@ export const Dashboard = () => {
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={Home} title={t("title.dashboard")} />
       <Grid container spacing={3}>
-        <DashboardContent item container gap={2}>
+        <DashboardContent container gap={2}>
           <MessageChart />
         </DashboardContent>
-        <DashboardContent item container gap={2}>
+        <DashboardContent container gap={2}>
           <AudienceChart />
         </DashboardContent>
       </Grid>

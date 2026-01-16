@@ -64,10 +64,12 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
           label={t(`label.${contentField.name}`, {
             defaultValue: contentField.label,
           })}
-          InputProps={
+          slotProps={
             contentField.type === ContentFieldType.URL
               ? {
-                  startAdornment: <Adornment Icon={LinkIcon} />,
+                  input: {
+                    startAdornment: <Adornment Icon={LinkIcon} />,
+                  },
                 }
               : undefined
           }

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
+import { Button, styled, Tab, Tabs, tabsClasses } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { SyntheticEvent } from "react";
 
 import { useWorkflow } from "../../hooks/useWorkflow";

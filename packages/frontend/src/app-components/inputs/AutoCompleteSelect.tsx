@@ -154,29 +154,37 @@ const AutoCompleteSelect = <
           )}
         </Box>
       )}
-      renderInput={(props) => (
-        <Input
-          {...props}
-          label={label}
-          onChange={(e) => handleSearch(e.target.value)}
-          error={error}
-          helperText={helperText}
-          InputProps={{
-            ...props.InputProps,
-            endAdornment: (
-              <>
-                {options.length === 0 && !loading && noOptionsWarning && (
-                  <AlertAdornment title={noOptionsWarning} type="warning" />
-                )}
-                {loading ? (
-                  <CircularProgress color="inherit" size={20} />
-                ) : null}
-                {props.InputProps.endAdornment}
-              </>
-            ),
-          }}
-        />
-      )}
+      renderInput={(params) => {
+        const { InputProps, InputLabelProps, inputProps, ...rest } = params;
+
+        return (
+          <Input
+            {...rest}
+            label={label}
+            onChange={(e) => handleSearch(e.target.value)}
+            error={error}
+            helperText={helperText}
+            slotProps={{
+              inputLabel: InputLabelProps,
+              htmlInput: inputProps,
+              input: {
+                ...InputProps,
+                endAdornment: (
+                  <>
+                    {options.length === 0 && !loading && noOptionsWarning && (
+                      <AlertAdornment title={noOptionsWarning} type="warning" />
+                    )}
+                    {loading ? (
+                      <CircularProgress color="inherit" size={20} />
+                    ) : null}
+                    {InputProps.endAdornment}
+                  </>
+                ),
+              },
+            }}
+          />
+        );
+      }}
     />
   );
 };

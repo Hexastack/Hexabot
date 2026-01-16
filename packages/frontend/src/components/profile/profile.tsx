@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
+import { Box, Button, MenuItem, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Check, Key, Languages, Mail } from "lucide-react";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -88,7 +89,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <Grid container gap={8} alignContent="center" justifyContent="center">
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Controller
             name="avatar"
             control={control}
@@ -114,7 +115,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             )}
           />
         </Grid>
-        <Grid item xs={6} gap={2} container>
+        <Grid container flexDirection="column" size={6} gap={2}>
           <ContentContainer gap={2}>
             <ContentItem>
               <Input
@@ -145,8 +146,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                       errors.language ? errors.language.message : null
                     }
                     select
-                    InputProps={{
-                      startAdornment: <Adornment Icon={Languages} />,
+                    slotProps={{
+                      input: {
+                        startAdornment: <Adornment Icon={Languages} />,
+                      },
                     }}
                     {...field}
                   >
@@ -163,8 +166,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.email}
                 helperText={errors.email ? errors.email.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Mail} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Mail} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -175,8 +180,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.password}
                 helperText={errors.password ? errors.password.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Key} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Key} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -187,8 +194,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 required
                 error={!!errors.password2}
                 helperText={errors.password2 ? errors.password2.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={Key} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={Key} />,
+                  },
                 }}
               />
             </ContentItem>

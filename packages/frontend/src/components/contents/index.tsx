@@ -135,7 +135,7 @@ export const Contents = () => {
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={!hasPermission(EntityType.CONTENT, PermissionAction.UPDATE)}
           onChange={() => {
             updateContent({

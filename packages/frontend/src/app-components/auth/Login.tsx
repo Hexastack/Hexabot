@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
   ChevronRight as KeyboardArrowRightIcon,
   Key as KeyIcon,
@@ -104,8 +105,10 @@ export const Login = () => {
               error={!!errors.identifier}
               required
               autoFocus
-              InputProps={{
-                startAdornment: <Adornment Icon={EmailIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={EmailIcon} />,
+                },
               }}
               helperText={errors.identifier ? errors.identifier.message : null}
               {...register("identifier", validationRules.email)}
@@ -115,8 +118,10 @@ export const Login = () => {
               label={t("label.password")}
               error={!!errors.password}
               required
-              InputProps={{
-                startAdornment: <Adornment Icon={KeyIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={KeyIcon} />,
+                },
               }}
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}

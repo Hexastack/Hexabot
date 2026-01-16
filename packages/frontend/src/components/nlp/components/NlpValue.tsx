@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Chip, Grid, Slide } from "@mui/material";
+import { Box, Button, Chip, Slide } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -198,7 +199,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   return (
     <Grid container gap={2} flexDirection="column">
       <Slide direction={direction} in={true} mountOnEnter unmountOnExit>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Box sx={{ padding: 1 }}>
             <Button
               onClick={() => {
@@ -224,7 +225,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                 alignItems="center"
                 sx={{ width: "max-content", gap: 1 }}
               >
-                <Grid item>
+                <Grid size="auto">
                   <FilterTextfield
                     onChange={onSearch}
                     defaultValue={searchText}

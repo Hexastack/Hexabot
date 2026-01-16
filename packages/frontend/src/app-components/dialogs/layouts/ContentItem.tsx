@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, GridProps } from "@mui/material";
+import Grid, { type Grid2Props as GridProps } from "@mui/material/Grid2";
 
 export const ContentItem = ({
   children,

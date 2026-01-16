@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, Paper, Tab, Tabs } from "@mui/material";
+import { Paper, Tab, Tabs } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { GraduationCap } from "lucide-react";
 import React, { useMemo } from "react";
 
@@ -49,21 +50,21 @@ export const Nlp = () => {
   return (
     <Grid container gap={2} flexDirection="column">
       <PageHeader title={t("title.nlp_train")} icon={GraduationCap} />
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Grid container flexDirection="row">
-          <Grid item xs={7}>
+          <Grid size={7}>
             <Paper sx={{ px: 3, py: 2 }}>
               <NlpSampleForm data={{ defaultValues: null }} />
             </Paper>
           </Grid>
-          <Grid item xs={5} pl={2}>
+          <Grid size={5} pl={2}>
             <Paper>
               <NlpDatasetCounter />
             </Paper>
           </Grid>
         </Grid>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Paper sx={{ pb: "20px" }}>
           <Tabs
             orientation="horizontal"

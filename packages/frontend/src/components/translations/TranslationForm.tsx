@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormLabel, Grid, Typography } from "@mui/material";
+import { FormLabel, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { FC, Fragment } from "react";
 import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
 

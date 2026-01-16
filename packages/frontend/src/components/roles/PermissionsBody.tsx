@@ -9,11 +9,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Divider,
-  Grid,
   MenuItem,
   Paper,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { ChevronUp, Plus, Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 
@@ -44,13 +44,13 @@ const AccordionModelHead = () => (
     alignContent="center"
     bgcolor="#0001"
   >
-    <Grid item width="6rem" m="0.2rem" />
-    <Grid item xs textAlign="left">
+    <Grid size="auto" width="6rem" m="0.2rem" />
+    <Grid size="grow" textAlign="left">
       <Typography fontWeight={700} fontSize="body2.fontSize">
         Action
       </Typography>
     </Grid>
-    <Grid item xs textAlign="left">
+    <Grid size="grow" textAlign="left">
       <Typography fontWeight={700} fontSize="body2.fontSize">
         Relation
       </Typography>
@@ -170,7 +170,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                         }}
                         alignItems="center"
                       >
-                        <Grid item width="6rem">
+                        <Grid size="auto" width="6rem">
                           <IconButton
                             variant="text"
                             color="error"
@@ -180,10 +180,10 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                             <Trash2 size={16} />
                           </IconButton>
                         </Grid>
-                        <Grid item xs>
+                        <Grid size="grow">
                           <Typography>{action}</Typography>
                         </Grid>
-                        <Grid item xs>
+                        <Grid size="grow">
                           <Typography sx={{ ml: "0.2rem" }}>
                             {relation}
                           </Typography>
@@ -198,7 +198,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                 padding="1rem 0"
                 borderTop="1px solid #0002"
               >
-                <Grid item width="6rem" alignContent="center" pl="0.6rem">
+                <Grid size="auto" width="6rem" alignContent="center" pl="0.6rem">
                   <IconButton
                     size="small"
                     color="primary"
@@ -217,7 +217,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     <Plus size={16} />
                   </IconButton>
                 </Grid>
-                <Grid item xs alignContent="center">
+                <Grid size="grow" alignContent="center">
                   <Input
                     select
                     sx={{ width: "6.875rem" }}
@@ -237,7 +237,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     <MenuItem value="delete">{t("label.delete")}</MenuItem>
                   </Input>
                 </Grid>
-                <Grid item xs alignContent="center">
+                <Grid size="grow" alignContent="center">
                   <Input
                     select
                     sx={{ width: "6.875rem" }}

@@ -4,12 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  debounce,
-  IconButton,
-  InputAdornment,
-  TextFieldProps,
-} from "@mui/material";
+import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import { Search as SearchIcon, X as ClearIcon } from "lucide-react";
 import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -78,15 +74,17 @@ export const FilterTextfield: FC<FilterTextFieldProps> = ({
   return (
     <Input
       inputRef={ref}
-      InputProps={{
-        startAdornment: <Adornment Icon={SearchIcon} />,
-        endAdornment: clearable && (
-          <InputAdornment position="end" onClick={handleClear}>
-            <IconButton size="small" sx={{ marginRight: -1 }}>
-              <ClearIcon size={16} />
-            </IconButton>
-          </InputAdornment>
-        ),
+      slotProps={{
+        input: {
+          startAdornment: <Adornment Icon={SearchIcon} />,
+          endAdornment: clearable && (
+            <InputAdornment position="end" onClick={handleClear}>
+              <IconButton size="small" sx={{ marginRight: -1 }}>
+                <ClearIcon size={16} />
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
       }}
       placeholder={t("placeholder.keywords")}
       {...props}

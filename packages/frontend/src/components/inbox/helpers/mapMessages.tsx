@@ -5,7 +5,8 @@
  */
 
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import { Chip, Grid, Tooltip } from "@mui/material";
+import { Chip, Tooltip } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import Autolinker from "autolinker";
 import { Menu, Reply } from "lucide-react";
 import React, { ReactNode } from "react";
@@ -172,11 +173,11 @@ export function getMessageContent(
           alignItems="center"
           gap="0.5rem"
         >
-          <Grid item height="fit-content" display="flex">
+          <Grid size="auto" height="fit-content" display="flex">
             {chipsIcon}
           </Grid>
           {chips.map((chip) => (
-            <Grid key={chip.title} item>
+            <Grid key={chip.title} size="auto">
               <Chip label={chip.title} variant="inbox" />
             </Grid>
           ))}
