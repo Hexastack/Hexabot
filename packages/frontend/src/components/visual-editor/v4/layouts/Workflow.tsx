@@ -11,10 +11,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
+import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
-import { FlowsTabs } from "../components/main/FlowsTabs";
+import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
@@ -59,6 +60,9 @@ const DEFAULT_ACTIONS: Actions = [
 const StyledBox = styled(Box)(() => ({
   position: "relative",
   height: "100%",
+  flex: 1,
+  minWidth: 0,
+  overflow: "hidden",
 }));
 
 export const Workflow = () => {
@@ -148,22 +152,15 @@ export const Workflow = () => {
       },
     });
   };
-  const handleEditWorkflow = () => {
-    if (!workflow) {
-      return;
-    }
-
+  const handleEditWorkflow = (workflowToEdit: IWorkflow) => {
     dialogs.open(WorkflowFormDialog, {
-      defaultValues: workflow,
+      defaultValues: workflowToEdit,
     });
   };
 
   return (
     <div className="visual-editor-v4">
-      <FlowsTabs
-        onNew={handleNewWorkflow}
-        onEdit={workflow ? handleEditWorkflow : undefined}
-      />
+      <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
@@ -171,8 +168,8 @@ export const Workflow = () => {
           defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
+        <RotateButton />
       </StyledBox>
-      <RotateButton />
     </div>
   );
 };

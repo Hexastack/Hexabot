@@ -572,6 +572,7 @@
     "last_created": "Dernière création",
     "last_modified": "Dernière modification",
     "rename": "Renommer",
+    "more": "Plus",
     "duplicate": "Dupliquer",
     "remove": "Supprimer",
     "remove_property": "Supprimer la propriété",
@@ -689,6 +690,32 @@
       "out": "Zoom arrière",
       "reset": "Réinitialiser le niveau de zoom",
       "fitScreen": "Zoom adapté à l'écran"
+    },
+    "flows_drawer": {
+      "title": "Flux",
+      "search_placeholder": "Rechercher par nom ou description",
+      "search_workflows": "Rechercher des workflows",
+      "new_workflow": "Nouveau workflow",
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié"
+      },
+      "errors": "Erreurs {{0}}",
+      "badge": {
+        "input_schema": "Schéma d'entrée"
+      },
+      "meta": {
+        "cron": "Cron : {{0}}",
+        "no_schedule": "Aucun planning",
+        "requires_params": "Requiert {{0}} paramètres",
+        "no_params": "Aucun paramètre",
+        "no_details": "Aucun détail"
+      },
+      "empty": {
+        "search": "Aucun workflow ne correspond à votre recherche.",
+        "list": "Aucun workflow pour le moment.",
+        "section": "Aucun workflow dans cette section."
+      }
     }
   }
 }

@@ -50,7 +50,9 @@ export type NeqParam<T> = {
 export type SearchItem<T> = {
   [K in keyof T]?:
     | T[K]
-    | (T[K] extends string ? { contains?: T[K] } : undefined)
+    | (Extract<T[K], string> extends never
+        ? undefined
+        : { contains?: Extract<T[K], string> })
     | {
         "!="?: T[K];
       }

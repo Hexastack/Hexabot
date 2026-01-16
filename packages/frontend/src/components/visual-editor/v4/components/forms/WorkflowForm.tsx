@@ -17,11 +17,17 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
+import {
+  WorkflowType,
+  type IWorkflow,
+  type IWorkflowAttributes,
+} from "@/types/workfow.types";
 
-const WORKFLOW_TYPES = ["conversational", "scheduled", "manual"] as const;
-
-type WorkflowTypeValue = (typeof WORKFLOW_TYPES)[number];
+const WORKFLOW_TYPES: WorkflowType[] = [
+  WorkflowType.conversational,
+  WorkflowType.scheduled,
+  WorkflowType.manual,
+];
 
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
@@ -33,7 +39,7 @@ type WorkflowFormPreset = {
 type WorkflowFormValues = {
   name: string;
   description: string;
-  type: WorkflowTypeValue;
+  type: WorkflowType;
   schedule: string;
 };
 
@@ -71,9 +77,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
           ? {
               name: workflow.name ?? "",
               description: workflow.description ?? "",
-              type:
-                (workflow.type as WorkflowTypeValue | undefined) ??
-                WORKFLOW_TYPES[0],
+              type: workflow.type ?? WORKFLOW_TYPES[0],
               schedule: workflow.schedule ?? "",
             }
           : {
@@ -103,7 +107,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
     });
     const scheduleRegister = register("schedule", {
       validate: (value) => {
-        if (typeValue !== "scheduled") {
+        if (typeValue !== WorkflowType.scheduled) {
           return true;
         }
 
@@ -149,7 +153,9 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
       const name = params.name.trim();
       const description = params.description.trim() || null;
       const schedule =
-        params.type === "scheduled" ? params.schedule.trim() || null : null;
+        params.type === WorkflowType.scheduled
+          ? params.schedule.trim() || null
+          : null;
 
       if (workflow?.id) {
         updateWorkflow({
@@ -195,7 +201,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
     }, [defaultValues, reset]);
 
     useEffect(() => {
-      if (typeValue !== "scheduled") {
+      if (typeValue !== WorkflowType.scheduled) {
         clearErrors("schedule");
       }
     }, [clearErrors, typeValue]);
@@ -256,19 +262,24 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                     inputRef={field.ref}
                     {...field}
                   >
-                    {WORKFLOW_TYPES.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {t(`label.${type}`, {
-                          defaultValue:
-                            type.charAt(0).toUpperCase() + type.slice(1),
-                        })}
-                      </MenuItem>
-                    ))}
+                    {WORKFLOW_TYPES.map((type) => {
+                      const typeLabel = String(type);
+
+                      return (
+                        <MenuItem key={typeLabel} value={type}>
+                          {t(`label.${typeLabel}`, {
+                            defaultValue:
+                              typeLabel.charAt(0).toUpperCase() +
+                              typeLabel.slice(1),
+                          })}
+                        </MenuItem>
+                      );
+                    })}
                   </Input>
                 )}
               />
             </ContentItem>
-            {typeValue === "scheduled" && (
+            {typeValue === WorkflowType.scheduled && (
               <ContentItem>
                 <Input
                   label={t("label.schedule", { defaultValue: "Schedule" })}
