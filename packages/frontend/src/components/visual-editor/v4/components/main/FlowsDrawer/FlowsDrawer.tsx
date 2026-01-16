@@ -200,7 +200,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
 
   useEffect(() => {
     if (!typeGroups.length) {
-      setOpenTypeKeys([]);
+      setOpenTypeKeys((prev) => (prev.length ? [] : prev));
 
       return;
     }
@@ -232,7 +232,16 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         openSet.add(fallbackKey);
       }
 
-      return Array.from(openSet);
+      const nextKeys = Array.from(openSet);
+
+      if (
+        nextKeys.length === prev.length &&
+        nextKeys.every((key, index) => key === prev[index])
+      ) {
+        return prev;
+      }
+
+      return nextKeys;
     });
   }, [isSearching, selectedFlowTypeKey, typeGroups]);
 
