@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionMetadata, SettingsSchema } from '@hexabot-ai/agentic';
+import { SettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
+import { ActionMetadataWithColor } from '@/actions/types';
 import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -74,11 +75,16 @@ export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
 > extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
+  private static readonly DEFAULT_COLOR = '#e47800';
+
   protected constructor(
-    metadata: ActionMetadata<I, MessageActionOutput, S>,
+    metadata: ActionMetadataWithColor<I, MessageActionOutput, S>,
     actionService: ActionService,
   ) {
-    super(metadata, actionService);
+    super(
+      { ...metadata, color: metadata.color ?? MessageAction.DEFAULT_COLOR },
+      actionService,
+    );
   }
 
   private ensureEvent(context: ConversationalWorkflowContext) {
