@@ -702,7 +702,6 @@
       },
       "errors": "Errors {{0}}",
       "badge": {
-        "entry_point": "Entry point",
         "input_schema": "Input schema"
       },
       "meta": {

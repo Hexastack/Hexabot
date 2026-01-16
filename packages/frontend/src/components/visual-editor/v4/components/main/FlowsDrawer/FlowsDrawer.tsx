@@ -4,10 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Divider, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Divider, useMediaQuery, useTheme } from "@mui/material";
+import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
+import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -35,35 +38,49 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
   const [open, setOpen] = useState(!isCompact);
   const [query, setQuery] = useState("");
+  const trimmedQuery = query.trim();
+  const normalizedQuery = normalizeQuery(trimmedQuery);
+  const isSearching = trimmedQuery.length > 0;
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const [openTypeKeys, setOpenTypeKeys] = useState<string[]>([]);
+  const searchParams = useMemo(
+    () => ({
+      where: {
+        or: [
+          { name: { contains: trimmedQuery } },
+          { description: { contains: trimmedQuery } },
+        ],
+      },
+    }),
+    [trimmedQuery],
+  );
+  const { data: searchedWorkflows = [] } = useFind(
+    { entity: EntityType.WORKFLOW },
+    {
+      hasCount: false,
+      initialSortState: [{ field: "createdAt", sort: "asc" }],
+      params: isSearching ? searchParams : undefined,
+    },
+    { enabled: isSearching },
+  );
+  const workflowsList = isSearching ? searchedWorkflows : workflows;
 
   useEffect(() => {
     setOpen(!isCompact);
   }, [isCompact]);
 
-  const searchPlaceholder = t("visual_editor.flows_drawer.search_placeholder");
-  const searchLabel = t("visual_editor.flows_drawer.search_workflows");
-  const newWorkflowLabel = t("visual_editor.flows_drawer.new_workflow");
-  const renameLabel = t("button.rename");
-  const moreLabel = t("button.more");
-  const emptySectionLabel = t("visual_editor.flows_drawer.empty.section");
-  const titleLabel = t("visual_editor.flows_drawer.title");
-  const normalizedQuery = normalizeQuery(query);
-  const isSearching = normalizedQuery.length > 0;
   const hasUnsaved = Boolean(
     workflow?.id &&
       workflow.id === selectedFlowId &&
       (workflow.definitionYaml ?? "") !== yaml,
   );
   const matches = useMemo<FlowMatch[]>(() => {
-    const list = workflows ?? [];
+    const list = workflowsList ?? [];
     const getTypeMeta = (flow: IWorkflow, typeKey: string) => {
       if (typeKey === WorkflowType.conversational) {
         return {
           secondaryText: flow.description?.trim() ?? "",
-          badge: t("visual_editor.flows_drawer.badge.entry_point"),
         };
       }
 
@@ -99,7 +116,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       };
     };
 
-    return list.flatMap((flow) => {
+    return list.map((flow) => {
       const nameMatch = normalizedQuery
         ? fuzzyMatchIndices(normalizedQuery, flow.name)
         : [];
@@ -107,37 +124,30 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         normalizedQuery && flow.description
           ? fuzzyMatchIndices(normalizedQuery, flow.description)
           : [];
-
-      if (normalizedQuery && !nameMatch.length && !descriptionMatch.length) {
-        return [];
-      }
-
       const typeInfo = BASE_TYPES[flow.type];
       const isDraft = isDraftWorkflow(flow);
       const errorCount = getErrorCount(flow);
 
-      return [
-        {
-          workflow: flow,
-          nameMatch,
-          descriptionMatch,
-          typeInfo,
-          typeMeta: getTypeMeta(flow, typeInfo.key),
-          statusLabel: isDraft
-            ? t("visual_editor.flows_drawer.status.draft")
-            : t("visual_editor.flows_drawer.status.published"),
-          isDraft,
-          isSelected: flow.id === selectedFlowId,
-          hasUnsaved: flow.id === selectedFlowId && hasUnsaved,
-          errorCount,
-          errorLabel:
-            errorCount > 0
-              ? t("visual_editor.flows_drawer.errors", { 0: errorCount })
-              : undefined,
-        },
-      ];
+      return {
+        workflow: flow,
+        nameMatch,
+        descriptionMatch,
+        typeInfo,
+        typeMeta: getTypeMeta(flow, typeInfo.key),
+        statusLabel: isDraft
+          ? t("visual_editor.flows_drawer.status.draft")
+          : t("visual_editor.flows_drawer.status.published"),
+        isDraft,
+        isSelected: flow.id === selectedFlowId,
+        hasUnsaved: flow.id === selectedFlowId && hasUnsaved,
+        errorCount,
+        errorLabel:
+          errorCount > 0
+            ? t("visual_editor.flows_drawer.errors", { 0: errorCount })
+            : undefined,
+      };
     });
-  }, [hasUnsaved, normalizedQuery, selectedFlowId, t, workflows]);
+  }, [hasUnsaved, normalizedQuery, selectedFlowId, t, workflowsList]);
   const selectedFlowTypeKey = useMemo(() => {
     if (!workflows || !selectedFlowId) return null;
 
@@ -249,27 +259,23 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     }
     handleCloseMenu();
   };
-  const emptyState =
-    !matches.length && workflows && workflows.length
-      ? t("visual_editor.flows_drawer.empty.search")
-      : t("visual_editor.flows_drawer.empty.list");
 
   return (
     <StyledDrawer variant="permanent" open={open}>
       <FlowsDrawerHeader
         open={open}
-        title={titleLabel}
+        title={t("visual_editor.flows_drawer.title")}
         onToggle={handleToggleDrawer}
       />
       {open ? (
         <>
           <FlowsDrawerSearchActions
             query={query}
-            searchPlaceholder={searchPlaceholder}
-            searchLabel={searchLabel}
-            newWorkflowLabel={newWorkflowLabel}
+            searchPlaceholder={t(
+              "visual_editor.flows_drawer.search_placeholder",
+            )}
+            searchLabel={t("visual_editor.flows_drawer.search_workflows")}
             onQueryChange={setQuery}
-            onNew={onNew}
           />
           <Divider />
           <FlowsDrawerList
@@ -280,17 +286,33 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
             onEdit={onEdit}
             onOpenMenu={handleOpenMenu}
             normalizedQuery={normalizedQuery}
-            emptySectionLabel={emptySectionLabel}
-            emptyState={emptyState}
+            emptySectionLabel={t("visual_editor.flows_drawer.empty.section")}
+            emptyState={
+              !matches.length && workflows && workflows.length
+                ? t("visual_editor.flows_drawer.empty.search")
+                : t("visual_editor.flows_drawer.empty.list")
+            }
             hasMatches={matches.length > 0}
-            renameLabel={renameLabel}
-            moreLabel={moreLabel}
+            renameLabel={t("button.rename")}
+            moreLabel={t("button.more")}
           />
+          <Divider />
+          <Box px={2} pb={2} pt={1} display="flex" justifyContent="center">
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<Plus size={16} />}
+              onClick={onNew}
+              disabled={!onNew}
+            >
+              {t("visual_editor.flows_drawer.new_workflow")}
+            </Button>
+          </Box>
         </>
       ) : (
         <FlowsDrawerCollapsedActions
-          searchLabel={searchLabel}
-          newWorkflowLabel={newWorkflowLabel}
+          searchLabel={t("visual_editor.flows_drawer.search_workflows")}
+          newWorkflowLabel={t("visual_editor.flows_drawer.new_workflow")}
           onOpen={() => setOpen(true)}
           onNew={onNew}
         />
@@ -300,7 +322,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
         onRename={handleRename}
-        renameLabel={renameLabel}
+        renameLabel={t("button.rename")}
       />
     </StyledDrawer>
   );

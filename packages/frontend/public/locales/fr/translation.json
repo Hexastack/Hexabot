@@ -702,7 +702,6 @@
       },
       "errors": "Erreurs {{0}}",
       "badge": {
-        "entry_point": "Point d'entrée",
         "input_schema": "Schéma d'entrée"
       },
       "meta": {
