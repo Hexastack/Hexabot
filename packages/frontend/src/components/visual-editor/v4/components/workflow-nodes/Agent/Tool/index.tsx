@@ -15,15 +15,15 @@ import {
 
 import { GenericNodeContainer } from "../../GenericNodeContainer";
 import { GenericNodeIcon } from "../../GenericNodeIcon";
+import { GenericNodeLabel } from "../../GenericNodeLabel";
 import { GenericNodePorts } from "../../GenericNodePorts";
-import { GenericNodeTitle } from "../../GenericNodeTitle";
 
 export const Tool: FC<NodeProps<NodeData<ENodeType.TOOL>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon />
-      <GenericNodePorts />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts />
+    <GenericNodeLabel />
   </WorkflowNodeProvider>
 );

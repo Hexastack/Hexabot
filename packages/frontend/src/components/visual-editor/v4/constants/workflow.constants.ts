@@ -10,10 +10,10 @@ import {
   Brain,
   GitBranch,
   GripVertical,
+  MessageSquare,
   Play,
   Repeat,
   SquareStop,
-  Type,
   Wrench,
 } from "lucide-react";
 
@@ -152,12 +152,12 @@ export const NODES = {
     const groupName = getGroupId(id, HIGHLIGHTS);
 
     return {
-      name: step["do"],
+      title: step["do"],
       action: getTaskAction(step["do"], tasks),
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
-        Icon: Type,
+        Icon: MessageSquare,
         color: "#555555",
         bgColor: "#7bb0ff",
       },

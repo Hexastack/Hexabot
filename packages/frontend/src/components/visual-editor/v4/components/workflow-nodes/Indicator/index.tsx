@@ -11,17 +11,17 @@ import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeIcon } from "../GenericNodeIcon";
+import { GenericNodeLabel } from "../GenericNodeLabel";
 import { GenericNodePorts } from "../GenericNodePorts";
-import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Indicator: FC<NodeProps<NodeData<ENodeType.INDICATOR>>> = ({
   id,
 }) => (
   <WorkflowNodeProvider id={id}>
-    <GenericNodeContainer isRounded>
+    <GenericNodeContainer borderRadius="50%">
       <GenericNodeIcon />
-      <GenericNodePorts />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts />
+    <GenericNodeLabel />
   </WorkflowNodeProvider>
 );

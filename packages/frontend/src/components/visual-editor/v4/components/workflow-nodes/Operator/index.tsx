@@ -11,21 +11,21 @@ import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeIcon } from "../GenericNodeIcon";
+import { GenericNodeLabel } from "../GenericNodeLabel";
 import { GenericNodePorts } from "../GenericNodePorts";
-import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = (
-  operator,
-) => (
-  <WorkflowNodeProvider id={operator.id}>
+export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = ({
+  id,
+}) => (
+  <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon />
-      <GenericNodePorts<ENodeType.OPERATOR>
-        getDisabled={(index, { groupName, level }) =>
-          !!groupName && level === 0 && index === 0
-        }
-      />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts<ENodeType.OPERATOR>
+      getDisabled={({ idx, node }) =>
+        !!node.groupName && node.level === 0 && idx === 0
+      }
+    />
+    <GenericNodeLabel />
   </WorkflowNodeProvider>
 );

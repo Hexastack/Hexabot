@@ -9,14 +9,10 @@ import { type FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
-
-import { GroupContainer } from "./GroupContainer";
-import { GroupPorts } from "./GroupPorts";
+import { GenericNodePorts } from "../GenericNodePorts";
 
 export const Group: FC<NodeProps<NodeData<ENodeType.GROUP>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
-    <GroupContainer>
-      <GroupPorts />
-    </GroupContainer>
+    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

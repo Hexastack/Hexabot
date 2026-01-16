@@ -30,61 +30,37 @@ type CommonNodeData<T extends ENodeType> = {
   ports: Port<T>[];
   level?: number;
   groupName?: string;
+  theme: {
+    Icon: FC;
+    color: CSSProperties["color"];
+    bgColor: CSSProperties["color"];
+  };
+  description?: string;
 };
 
 export type WorkflowIcon = LucideIcon | FC<SVGProps<SVGSVGElement>>;
 
 // model types
-export type ModelData = CommonNodeData<ENodeType.MODEL> & {
-  theme: {
-    Icon: WorkflowIcon;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-};
+export type ModelData = CommonNodeData<ENodeType.MODEL> & {};
 
 // Tool types
-export type ToolData = CommonNodeData<ENodeType.TOOL> & {
-  theme: {
-    Icon: WorkflowIcon;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-};
+export type ToolData = CommonNodeData<ENodeType.TOOL> & {};
 
 // Agent types
 export type AgentData = CommonNodeData<ENodeType.AGENT> & {
-  theme: {
-    Icon: WorkflowIcon;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
   tools: string[];
   model: string;
   memory: string;
-  description?: string;
 };
 
 // Task types
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
-  theme: {
-    Icon: WorkflowIcon;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-  description?: string;
   action?: string;
-  name?: string;
 };
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
   i18n: TTranslationKeys;
-  theme: {
-    Icon: WorkflowIcon;
-    color: string;
-    bgColor: string;
-  };
   taskName?: string;
 };
 
