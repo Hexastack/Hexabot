@@ -7,7 +7,6 @@
 import {
   AbstractAction,
   ActionExecutionArgs,
-  ActionMetadata,
   BaseWorkflowContext,
   Settings,
 } from '@hexabot-ai/agentic';
@@ -19,7 +18,11 @@ import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { ActionService } from './actions.service';
-import { ActionName } from './types';
+import {
+  ActionMetadataWithColor,
+  ActionName,
+  DEFAULT_ACTION_COLOR,
+} from './types';
 
 @Injectable()
 export abstract class BaseAction<
@@ -33,11 +36,14 @@ export abstract class BaseAction<
 {
   private translations?: I18nTranslation | Observable<I18nTranslation>;
 
+  public readonly color: string;
+
   protected constructor(
-    metadata: ActionMetadata<I, O, S>,
+    metadata: ActionMetadataWithColor<I, O, S>,
     private readonly actionService: ActionService,
   ) {
     super(metadata);
+    this.color = metadata.color ?? DEFAULT_ACTION_COLOR;
   }
 
   getName(): ActionName {
