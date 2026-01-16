@@ -118,6 +118,11 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   useEffect(() => {
     setYaml(workflow?.definitionYaml || "");
   }, [workflow?.definitionYaml]);
+  useEffect(() => {
+    if (!flowId && workflows?.length) {
+      updateWorkflowURL(workflows[0].id);
+    }
+  }, [flowId, workflows, updateWorkflowURL]);
 
   return (
     <WorkflowContext.Provider
