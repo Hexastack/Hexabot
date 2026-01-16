@@ -10,18 +10,18 @@ type FlowsDrawerMenuProps = {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
-  onRename: () => void;
-  renameLabel: string;
+  onDelete: () => void;
+  deleteLabel: string;
 };
 
 export const FlowsDrawerMenu = ({
   anchorEl,
   open,
   onClose,
-  onRename,
-  renameLabel,
+  onDelete,
+  deleteLabel,
 }: FlowsDrawerMenuProps) => (
   <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
-    <MenuItem onClick={onRename}>{renameLabel}</MenuItem>
+    <MenuItem onClick={onDelete}>{deleteLabel}</MenuItem>
   </Menu>
 );

@@ -8,7 +8,10 @@ import { Box, Button, Divider, useMediaQuery, useTheme } from "@mui/material";
 import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
+import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
@@ -32,6 +35,7 @@ import {
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
+  const dialogs = useDialogs();
   const { workflows, selectedFlowId, updateWorkflowURL, workflow, yaml } =
     useWorkflow();
   const theme = useTheme();
@@ -64,6 +68,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     },
     { enabled: isSearching },
   );
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const workflowsList = isSearching ? searchedWorkflows : workflows;
 
   useEffect(() => {
@@ -253,11 +258,30 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const selectedMenuFlow = menuFlowId
     ? matches.find((match) => match.workflow.id === menuFlowId)?.workflow
     : undefined;
-  const handleRename = () => {
-    if (selectedMenuFlow) {
-      onEdit?.(selectedMenuFlow);
+  const handleDelete = async () => {
+    if (!selectedMenuFlow) {
+      handleCloseMenu();
+
+      return;
     }
+
+    const flowId = selectedMenuFlow.id;
+    const fallbackFlowId = workflows?.find((flow) => flow.id !== flowId)?.id;
+
     handleCloseMenu();
+    const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    deleteWorkflow(flowId, {
+      onSuccess: () => {
+        if (selectedFlowId === flowId && fallbackFlowId) {
+          updateWorkflowURL(fallbackFlowId);
+        }
+      },
+    });
   };
 
   return (
@@ -321,8 +345,8 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
-        onRename={handleRename}
-        renameLabel={t("button.rename")}
+        onDelete={handleDelete}
+        deleteLabel={t("button.delete")}
       />
     </StyledDrawer>
   );
