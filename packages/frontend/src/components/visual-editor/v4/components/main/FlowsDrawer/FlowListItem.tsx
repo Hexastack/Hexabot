@@ -127,12 +127,19 @@ export const FlowListItem = ({
         sx={{
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
+          flexWrap: "nowrap",
           gap: 1,
           mt: 0.5,
+          minWidth: 0,
         }}
       >
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          noWrap
+          component="div"
+          sx={{ flex: 1, minWidth: 0 }}
+        >
           {match.typeMeta.secondaryText}
         </Typography>
         {match.typeMeta.badge && (
@@ -146,6 +153,7 @@ export const FlowListItem = ({
               color: "#475569",
               border: "1px solid #d7dde4",
               backgroundColor: "#f8fafc",
+              flexShrink: 0,
             }}
           />
         )}
@@ -154,7 +162,13 @@ export const FlowListItem = ({
         !match.nameMatch.length &&
         match.descriptionMatch.length &&
         match.workflow.description && (
-          <Typography variant="caption" color="text.secondary" noWrap>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            noWrap
+            component="div"
+            sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+          >
             <HighlightedText
               text={match.workflow.description}
               matches={match.descriptionMatch}
