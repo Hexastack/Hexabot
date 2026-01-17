@@ -9,12 +9,15 @@ import { TestingModule } from '@nestjs/testing';
 import { UpdateEvent } from 'typeorm';
 
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageService } from '@/chat/services/message.service';
 import {
   installStatsFixturesTypeOrm,
   statsFixtures,
 } from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { StatsType } from '../entities/stats.entity';
 import { StatsRepository } from '../repositories/stats.repository';
@@ -26,7 +29,15 @@ describe('StatsService', () => {
   let statsRepository: StatsRepository;
   let module: TestingModule;
   let eventEmitter: EventEmitter2;
-
+  const workflowService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowService, 'count'>>;
+  const workflowRunService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'count'>>;
+  const messageService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<MessageService, 'count'>>;
   const sortByDayAndType = <T extends { day: Date; type: string }>(
     items: T[],
   ) =>
@@ -43,7 +54,12 @@ describe('StatsService', () => {
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [StatsService],
+      providers: [
+        StatsService,
+        { provide: WorkflowService, useValue: workflowService },
+        { provide: WorkflowRunService, useValue: workflowRunService },
+        { provide: MessageService, useValue: messageService },
+      ],
       typeorm: {
         fixtures: installStatsFixturesTypeOrm,
       },
@@ -189,6 +205,29 @@ describe('StatsService', () => {
         expect.objectContaining({ id: 'subscriber-id' }),
         true,
       );
+    });
+  });
+
+  describe('getSummary', () => {
+    it('should aggregate workflow, run, success, and message stats', async () => {
+      workflowService.count.mockResolvedValue(4);
+      workflowRunService.count
+        .mockResolvedValueOnce(20)
+        .mockResolvedValueOnce(12)
+        .mockResolvedValueOnce(8);
+      messageService.count.mockResolvedValue(105);
+
+      const result = await statsService.getSummary();
+
+      expect(result).toEqual({
+        totalWorkflows: 4,
+        totalRunsLast24h: 20,
+        successRateLast24h: 0.6,
+        totalMessagesLast24h: 105,
+      });
+      expect(workflowService.count).toHaveBeenCalledTimes(1);
+      expect(workflowRunService.count).toHaveBeenCalledTimes(3);
+      expect(messageService.count).toHaveBeenCalledTimes(1);
     });
   });
 });

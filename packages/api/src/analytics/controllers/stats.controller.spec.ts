@@ -7,12 +7,15 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
+import { MessageService } from '@/chat/services/message.service';
 import {
   installStatsFixturesTypeOrm,
   statsFixtures,
 } from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { StatsType } from '../entities/stats.entity';
 
@@ -21,12 +24,26 @@ import { StatsController } from './stats.controller';
 describe('StatsController', () => {
   let statsController: StatsController;
   let module: TestingModule;
+  const workflowService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowService, 'count'>>;
+  const workflowRunService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'count'>>;
+  const messageService = {
+    count: jest.fn(),
+  } as jest.Mocked<Pick<MessageService, 'count'>>;
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [StatsController],
-      providers: [EventEmitter2],
+      providers: [
+        EventEmitter2,
+        { provide: WorkflowService, useValue: workflowService },
+        { provide: WorkflowRunService, useValue: workflowRunService },
+        { provide: MessageService, useValue: messageService },
+      ],
       typeorm: {
         fixtures: installStatsFixturesTypeOrm,
       },
@@ -171,6 +188,26 @@ describe('StatsController', () => {
           ],
         },
       ]);
+    });
+  });
+
+  describe('summary', () => {
+    it('should return summary stats for the last 24 hours', async () => {
+      workflowService.count.mockResolvedValue(2);
+      workflowRunService.count
+        .mockResolvedValueOnce(11)
+        .mockResolvedValueOnce(7)
+        .mockResolvedValueOnce(4);
+      messageService.count.mockResolvedValue(42);
+
+      const result = await statsController.summary();
+
+      expect(result).toEqual({
+        totalWorkflows: 2,
+        totalRunsLast24h: 11,
+        successRateLast24h: 0.6363636363636364,
+        totalMessagesLast24h: 42,
+      });
     });
   });
 });

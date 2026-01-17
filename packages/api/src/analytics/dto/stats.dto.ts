@@ -114,3 +114,10 @@ export class StatsFindDatumDto extends StatsFindDto {
   @IsNotEmpty()
   type: StatsType;
 }
+
+export type StatsSummaryDto = {
+  totalWorkflows: number;
+  totalRunsLast24h: number;
+  successRateLast24h: number;
+  totalMessagesLast24h: number;
+};

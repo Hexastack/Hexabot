@@ -12,6 +12,7 @@ import {
   StatsActionDto,
   StatsFindDatumDto,
   StatsFindDto,
+  StatsSummaryDto,
   StatsTransformerDto,
 } from '../dto/stats.dto';
 import {
@@ -91,5 +92,15 @@ export class StatsController extends BaseOrmController<
     const result = await this.statsService.findMessages(from, to, types);
 
     return StatsOrmEntity.toLines(result, types);
+  }
+
+  /**
+   * Retrieves overview stats for workflows, runs, success rate, and messages.
+   *
+   * @returns A promise that resolves to the overview stats for the last 24 hours.
+   */
+  @Get('summary')
+  async summary(): Promise<StatsSummaryDto> {
+    return await this.statsService.getSummary();
   }
 }
