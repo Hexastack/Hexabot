@@ -4,49 +4,49 @@
  * Full terms: see LICENSE.md.
  */
 
-import { botstatsFixtures } from '@/utils/test/fixtures/botstats';
+import { statsFixtures } from '@/utils/test/fixtures/stats';
 
-import { BotStatsOrmEntity, BotStatsType } from './bot-stats.entity';
+import { StatsOrmEntity, StatsType } from './stats.entity';
 
-describe('BotStats entity helpers', () => {
+describe('Stats entity helpers', () => {
   describe('toLines', () => {
     it('should transform the data based on the given types', () => {
-      const result = BotStatsOrmEntity.toLines(
+      const result = StatsOrmEntity.toLines(
         [
           {
-            ...botstatsFixtures[4],
+            ...statsFixtures[4],
             id: '1',
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as BotStatsOrmEntity,
+          } as StatsOrmEntity,
           {
-            ...botstatsFixtures[5],
+            ...statsFixtures[5],
             id: '2',
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as BotStatsOrmEntity,
+          } as StatsOrmEntity,
         ],
-        [BotStatsType.incoming, BotStatsType.outgoing],
+        [StatsType.incoming, StatsType.outgoing],
       );
 
       expect(result).toEqualPayload([
         {
           id: 1,
-          name: BotStatsType.incoming,
+          name: StatsType.incoming,
           values: [
             {
-              ...botstatsFixtures[4],
-              date: botstatsFixtures[4].day,
+              ...statsFixtures[4],
+              date: statsFixtures[4].day,
             },
           ],
         },
         {
           id: 2,
-          name: BotStatsType.outgoing,
+          name: StatsType.outgoing,
           values: [
             {
-              ...botstatsFixtures[5],
-              date: botstatsFixtures[5].day,
+              ...statsFixtures[5],
+              date: statsFixtures[5].day,
             },
           ],
         },

@@ -8,31 +8,31 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
 import {
-  botstatsFixtures,
-  installBotStatsFixturesTypeOrm,
-} from '@/utils/test/fixtures/botstats';
+  installStatsFixturesTypeOrm,
+  statsFixtures,
+} from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsType } from '../entities/bot-stats.entity';
+import { StatsType } from '../entities/stats.entity';
 
-import { BotStatsController } from './bot-stats.controller';
+import { StatsController } from './stats.controller';
 
-describe('BotStatsController', () => {
-  let botStatsController: BotStatsController;
+describe('StatsController', () => {
+  let statsController: StatsController;
   let module: TestingModule;
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
-      controllers: [BotStatsController],
+      controllers: [StatsController],
       providers: [EventEmitter2],
       typeorm: {
-        fixtures: installBotStatsFixturesTypeOrm,
+        fixtures: installStatsFixturesTypeOrm,
       },
     });
     module = testingModule;
-    [botStatsController] = await getMocks([BotStatsController]);
+    [statsController] = await getMocks([StatsController]);
   });
 
   afterAll(async () => {
@@ -48,7 +48,7 @@ describe('BotStatsController', () => {
 
   describe('findMessages', () => {
     it('should return no messages in the given date range', async () => {
-      const result = await botStatsController.findMessages({
+      const result = await statsController.findMessages({
         from: new Date('2024-11-01T23:00:00.000Z'),
         to: new Date('2024-11-05T23:00:00.000Z'),
       });
@@ -56,17 +56,17 @@ describe('BotStatsController', () => {
       expect(result).toEqualPayload([
         {
           id: 1,
-          name: BotStatsType.all_messages,
+          name: StatsType.all_messages,
           values: [],
         },
         {
           id: 2,
-          name: BotStatsType.incoming,
+          name: StatsType.incoming,
           values: [],
         },
         {
           id: 3,
-          name: BotStatsType.outgoing,
+          name: StatsType.outgoing,
           values: [],
         },
       ]);
@@ -75,34 +75,34 @@ describe('BotStatsController', () => {
     it('should return messages in the given date range', async () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-05T23:00:00.000Z');
-      const result = await botStatsController.findMessages({
+      const result = await statsController.findMessages({
         from,
         to,
       });
       expect(result).toEqualPayload([
         {
           id: 1,
-          name: BotStatsType.all_messages,
+          name: StatsType.all_messages,
           values: [
             {
-              ...botstatsFixtures[0],
-              date: botstatsFixtures[0].day,
+              ...statsFixtures[0],
+              date: statsFixtures[0].day,
             },
           ],
         },
         {
           id: 2,
-          name: BotStatsType.incoming,
+          name: StatsType.incoming,
           values: [
             {
-              ...botstatsFixtures[4],
-              date: botstatsFixtures[4].day,
+              ...statsFixtures[4],
+              date: statsFixtures[4].day,
             },
           ],
         },
         {
           id: 3,
-          name: BotStatsType.outgoing,
+          name: StatsType.outgoing,
           values: [],
         },
       ]);
@@ -111,20 +111,20 @@ describe('BotStatsController', () => {
 
   describe('datum', () => {
     it('should return messages of a given type', async () => {
-      const result = await botStatsController.datum({
+      const result = await statsController.datum({
         from: new Date('2023-11-06T23:00:00.000Z'),
         to: new Date('2023-11-08T23:00:00.000Z'),
-        type: BotStatsType.outgoing,
+        type: StatsType.outgoing,
       });
 
       expect(result).toEqualPayload([
         {
           id: 1,
-          name: BotStatsType.outgoing,
+          name: StatsType.outgoing,
           values: [
             {
-              ...botstatsFixtures[5],
-              date: botstatsFixtures[5].day,
+              ...statsFixtures[5],
+              date: statsFixtures[5].day,
             },
           ],
         },
@@ -134,7 +134,7 @@ describe('BotStatsController', () => {
 
   describe('audiance', () => {
     it('should return audiance messages', async () => {
-      const result = await botStatsController.audiance({
+      const result = await statsController.audiance({
         from: new Date('2023-11-01T23:00:00.000Z'),
         to: new Date('2023-11-08T23:00:00.000Z'),
       });
@@ -142,31 +142,31 @@ describe('BotStatsController', () => {
       expect(result).toEqualPayload([
         {
           id: 1,
-          name: BotStatsType.new_users,
+          name: StatsType.new_users,
           values: [
             {
-              ...botstatsFixtures[1],
-              date: botstatsFixtures[1].day,
+              ...statsFixtures[1],
+              date: statsFixtures[1].day,
             },
           ],
         },
         {
           id: 2,
-          name: BotStatsType.returning_users,
+          name: StatsType.returning_users,
           values: [
             {
-              ...botstatsFixtures[2],
-              date: botstatsFixtures[2].day,
+              ...statsFixtures[2],
+              date: statsFixtures[2].day,
             },
           ],
         },
         {
           id: 3,
-          name: BotStatsType.retention,
+          name: StatsType.retention,
           values: [
             {
-              ...botstatsFixtures[3],
-              date: botstatsFixtures[3].day,
+              ...statsFixtures[3],
+              date: statsFixtures[3].day,
             },
           ],
         },

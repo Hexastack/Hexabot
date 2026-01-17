@@ -9,27 +9,27 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 
 import {
-  BotStatsActionDto,
-  BotStatsFindDatumDto,
-  BotStatsFindDto,
-  BotStatsTransformerDto,
-} from '../dto/bot-stats.dto';
+  StatsActionDto,
+  StatsFindDatumDto,
+  StatsFindDto,
+  StatsTransformerDto,
+} from '../dto/stats.dto';
 import {
-  BotStatsOrmEntity,
-  BotStatsType,
+  StatsOrmEntity,
+  StatsType,
   ToLinesType,
-} from '../entities/bot-stats.entity';
-import { BotStatsService } from '../services/bot-stats.service';
+} from '../entities/stats.entity';
+import { StatsService } from '../services/stats.service';
 import { aMonthAgo } from '../utilities/a-month-ago';
 
-@Controller('botstats')
-export class BotStatsController extends BaseOrmController<
-  BotStatsOrmEntity,
-  BotStatsTransformerDto,
-  BotStatsActionDto
+@Controller('stats')
+export class StatsController extends BaseOrmController<
+  StatsOrmEntity,
+  StatsTransformerDto,
+  StatsActionDto
 > {
-  constructor(protected readonly botStatsService: BotStatsService) {
-    super(botStatsService);
+  constructor(protected readonly statsService: StatsService) {
+    super(statsService);
   }
 
   /**
@@ -41,17 +41,17 @@ export class BotStatsController extends BaseOrmController<
   @Get('messages')
   async findMessages(
     @Query()
-    dto: BotStatsFindDto,
+    dto: StatsFindDto,
   ): Promise<ToLinesType[]> {
     const { from = aMonthAgo(), to = new Date() } = dto;
-    const types: BotStatsType[] = [
-      BotStatsType.all_messages,
-      BotStatsType.incoming,
-      BotStatsType.outgoing,
+    const types: StatsType[] = [
+      StatsType.all_messages,
+      StatsType.incoming,
+      StatsType.outgoing,
     ];
-    const result = await this.botStatsService.findMessages(from, to, types);
+    const result = await this.statsService.findMessages(from, to, types);
 
-    return BotStatsOrmEntity.toLines(result, types);
+    return StatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -63,12 +63,12 @@ export class BotStatsController extends BaseOrmController<
   @Get('datum')
   async datum(
     @Query()
-    dto: BotStatsFindDatumDto,
+    dto: StatsFindDatumDto,
   ): Promise<ToLinesType[]> {
     const { from = aMonthAgo(), to = new Date(), type } = dto;
-    const result = await this.botStatsService.findMessages(from, to, [type]);
+    const result = await this.statsService.findMessages(from, to, [type]);
 
-    return BotStatsOrmEntity.toLines(result, [type]);
+    return StatsOrmEntity.toLines(result, [type]);
   }
 
   /**
@@ -80,16 +80,16 @@ export class BotStatsController extends BaseOrmController<
   @Get('audiance')
   async audiance(
     @Query()
-    dto: BotStatsFindDto,
+    dto: StatsFindDto,
   ): Promise<ToLinesType[]> {
     const { from = aMonthAgo(), to = new Date() } = dto;
-    const types: BotStatsType[] = [
-      BotStatsType.new_users,
-      BotStatsType.returning_users,
-      BotStatsType.retention,
+    const types: StatsType[] = [
+      StatsType.new_users,
+      StatsType.returning_users,
+      StatsType.retention,
     ];
-    const result = await this.botStatsService.findMessages(from, to, types);
+    const result = await this.statsService.findMessages(from, to, types);
 
-    return BotStatsOrmEntity.toLines(result, types);
+    return StatsOrmEntity.toLines(result, types);
   }
 }

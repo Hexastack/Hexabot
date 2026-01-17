@@ -7,7 +7,7 @@
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
+import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import {
@@ -175,12 +175,12 @@ describe('MessageAction base', () => {
     });
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       'hook:stats:entry',
-      BotStatsType.outgoing,
+      StatsType.outgoing,
       'Outgoing',
     );
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       'hook:stats:entry',
-      BotStatsType.all_messages,
+      StatsType.all_messages,
       'All Messages',
     );
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(

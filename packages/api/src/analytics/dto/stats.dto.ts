@@ -22,13 +22,13 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { BotStatsType } from '../entities/bot-stats.entity';
+import { StatsType } from '../entities/stats.entity';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
 
 @Exclude()
-export class BotStatsStub extends BaseStub {
+export class StatsStub extends BaseStub {
   @Expose()
-  type!: BotStatsType;
+  type!: StatsType;
 
   @Expose()
   @Type(() => Date)
@@ -42,13 +42,13 @@ export class BotStatsStub extends BaseStub {
 }
 
 @Exclude()
-export class BotStats extends BotStatsStub {}
+export class Stats extends StatsStub {}
 
-export class BotStatsCreateDto {
-  @ApiProperty({ description: 'Bot statistic type', enum: BotStatsType })
+export class StatsCreateDto {
+  @ApiProperty({ description: 'Bot statistic type', enum: StatsType })
   @IsNotEmpty()
   @IsString()
-  type: BotStatsType;
+  type: StatsType;
 
   @ApiProperty({
     description: 'Aggregation day of the statistic',
@@ -73,19 +73,19 @@ export class BotStatsCreateDto {
   name: string;
 }
 
-export class BotStatsUpdateDto extends PartialType(BotStatsCreateDto) {}
+export class StatsUpdateDto extends PartialType(StatsCreateDto) {}
 
-export type BotStatsTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof BotStats;
-  FullCls: typeof BotStats;
+export type StatsTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Stats;
+  FullCls: typeof Stats;
 }>;
 
-export type BotStatsActionDto = DtoActionConfig<{
-  create: BotStatsCreateDto;
-  update: BotStatsUpdateDto;
+export type StatsActionDto = DtoActionConfig<{
+  create: StatsCreateDto;
+  update: StatsUpdateDto;
 }>;
 
-export class BotStatsFindDto {
+export class StatsFindDto {
   /**
    * Start date for message retrieval.
    */
@@ -106,11 +106,11 @@ export class BotStatsFindDto {
   to?: Date;
 }
 
-export class BotStatsFindDatumDto extends BotStatsFindDto {
+export class StatsFindDatumDto extends StatsFindDto {
   /**
    * Type for message to retrieve.
    */
-  @IsEnum(BotStatsType)
+  @IsEnum(StatsType)
   @IsNotEmpty()
-  type: BotStatsType;
+  type: StatsType;
 }

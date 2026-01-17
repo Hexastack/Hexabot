@@ -22,7 +22,7 @@ export type TModel =
   | 'subscriber'
   | 'language'
   | 'translation'
-  | 'botstats'
+  | 'stats'
   | 'menu'
   | 'workflow'
   | 'workflowrun'

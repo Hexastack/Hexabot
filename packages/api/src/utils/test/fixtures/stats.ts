@@ -6,61 +6,56 @@
 
 import { DataSource } from 'typeorm';
 
-import { BotStatsCreateDto } from '@/analytics/dto/bot-stats.dto';
-import {
-  BotStatsOrmEntity,
-  BotStatsType,
-} from '@/analytics/entities/bot-stats.entity';
+import { StatsCreateDto } from '@/analytics/dto/stats.dto';
+import { StatsOrmEntity, StatsType } from '@/analytics/entities/stats.entity';
 
-export const botstatsFixtures: BotStatsCreateDto[] = [
+export const statsFixtures: StatsCreateDto[] = [
   {
     day: new Date('2023-11-01T23:00:00.000Z'),
-    type: BotStatsType.all_messages,
+    type: StatsType.all_messages,
     name: 'All Messages',
     value: 1580,
   },
   {
     day: new Date('2023-11-02T23:00:00.000Z'),
-    type: BotStatsType.new_users,
+    type: StatsType.new_users,
     name: 'New users',
     value: 76,
   },
   {
     day: new Date('2023-11-03T22:00:00.000Z'),
-    type: BotStatsType.returning_users,
+    type: StatsType.returning_users,
     name: 'Returning users',
     value: 34,
   },
   {
     day: new Date('2023-11-04T23:00:00.000Z'),
-    type: BotStatsType.retention,
+    type: StatsType.retention,
     name: 'Retentioned users',
     value: 492,
   },
   {
     day: new Date('2023-11-05T23:00:00.000Z'),
-    type: BotStatsType.incoming,
+    type: StatsType.incoming,
     name: 'Incoming',
     value: 886,
   },
   {
     day: new Date('2023-11-07T23:00:00.000Z'),
-    type: BotStatsType.outgoing,
+    type: StatsType.outgoing,
     name: 'outgoing',
     value: 199,
   },
   {
     day: new Date('2023-11-03T23:00:00.000Z'),
-    type: BotStatsType.echo,
+    type: StatsType.echo,
     name: 'Echo',
     value: 12,
   },
 ];
 
-export const installBotStatsFixturesTypeOrm = async (
-  dataSource: DataSource,
-) => {
-  const repository = dataSource.getRepository(BotStatsOrmEntity);
-  const entities = repository.create(botstatsFixtures);
+export const installStatsFixturesTypeOrm = async (dataSource: DataSource) => {
+  const repository = dataSource.getRepository(StatsOrmEntity);
+  const entities = repository.create(statsFixtures);
   await repository.save(entities);
 };
