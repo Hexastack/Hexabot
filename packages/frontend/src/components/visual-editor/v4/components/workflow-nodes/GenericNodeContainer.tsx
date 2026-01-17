@@ -5,35 +5,37 @@
  */
 
 import Grid from "@mui/material/Grid2";
-import { PropsWithChildren, useMemo } from "react";
+import { PropsWithChildren } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
-  borderRadius = "10px",
+  borderRadius = "14px",
   children,
 }: PropsWithChildren & { borderRadius?: string }) => {
-  const workflowNode = useWorkflowNode<T>();
-  const bgColor = useMemo(() => {
-    return workflowNode.theme.bgColor;
-  }, [workflowNode.theme.bgColor]);
+  const { executionState, theme, width, height } = useWorkflowNode<T>();
 
   return (
     <Grid
       container
+      gap="14px"
       style={{
         position: "relative",
-        width: workflowNode.width,
-        height: workflowNode.height,
+        width,
+        height,
         textAlign: "center",
         borderRadius,
         outline: "none",
         pointerEvents: "none",
-        border: `1px solid ${workflowNode.theme.bgColor}`,
-        boxShadow: "0 0 13px #0002 inset",
-        backgroundColor: "#fffa",
-        backgroundImage: `linear-gradient(to top, ${bgColor}22, ${bgColor}00)`,
+        border:
+          executionState === "start"
+            ? "2px solid green"
+            : `2px solid ${theme.borderColor}`,
+        backgroundColor: theme.bgColor,
+        overflow: "hidden",
+        boxShadow: "0 3px 6px #0002",
+        padding: "1rem",
       }}
     >
       {children}

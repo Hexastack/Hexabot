@@ -6,44 +6,42 @@
 
 import { Tooltip } from "@mui/material";
 
+import { useTranslate } from "@/hooks/useTranslate";
+
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
-export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
-  const workflowNode = useWorkflowNode<T>();
+const normalizeTitle = (text?: string) => {
+  return text?.replaceAll("_", " ");
+};
 
-  if (!("title" in workflowNode)) {
-    return null;
-  }
+export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
+  const { title, i18nTitle, theme } = useWorkflowNode<T>();
+  const { t } = useTranslate();
+  const normalizedTitle = i18nTitle ? t(i18nTitle) : normalizeTitle(title);
 
   return (
     <div
       style={{
-        color: workflowNode.theme.color,
+        color: theme.color,
         display: "flex",
-        fontWeight: "bolder",
+        fontWeight: 600,
         fontSize: "14px",
-        flex: "1",
+        placeItems: "center",
       }}
-      className="node-title-off"
     >
-      <Tooltip
-        sx={{ minHeight: "135px" }}
-        arrow
-        title={workflowNode.title}
-        placement="top"
-      >
+      <Tooltip arrow title={normalizedTitle} placement="top">
         <div
           style={{
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            marginTop: "10px",
-            fontSize: "22px",
+            fontSize: "0.875rem",
             zIndex: 4,
+            textTransform: "capitalize",
           }}
         >
-          {workflowNode.title}
+          {normalizedTitle}
         </div>
       </Tooltip>
     </div>

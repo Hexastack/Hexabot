@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StepInfo } from '@hexabot-ai/agentic';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -102,6 +103,22 @@ export class WebsocketGateway
       op: 'updateSubscriber',
       profile: subscriber,
     });
+  }
+
+  broadcastWorkflowStepStart(payload: {
+    runId?: string;
+    step: StepInfo;
+  }): void {
+    this.io.to(Room.WORKFLOW).emit('workflow', { state: 'start', ...payload });
+  }
+
+  broadcastWorkflowStepSuccess(payload: {
+    runId?: string;
+    step: StepInfo;
+  }): void {
+    this.io
+      .to(Room.WORKFLOW)
+      .emit('workflow', { state: 'success', ...payload });
   }
 
   broadcast(

@@ -26,6 +26,20 @@ export const WorkflowEntity = new schema.Entity(
   },
 );
 
+export const WorkflowActionEntity = new schema.Entity(
+  EntityType.WORKFLOW_ACTIONS,
+  undefined,
+  {
+    idAttribute: ({ name }) => name,
+    processStrategy: (entity) => {
+      return {
+        ...entity,
+        parseSettings: (payload) => payload,
+      };
+    },
+  },
+);
+
 export const MemoryDefinitionEntity = new schema.Entity(
   EntityType.MEMORY_DEFINITION,
   undefined,
@@ -294,6 +308,7 @@ export const StorageHelperEntity = new schema.Entity(
 
 export const ENTITY_MAP = {
   [EntityType.WORKFLOW]: WorkflowEntity,
+  [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,

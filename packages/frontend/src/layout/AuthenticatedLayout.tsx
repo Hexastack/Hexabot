@@ -31,6 +31,8 @@ export const AuthenticatedLayout: React.FC<LayoutProps> = ({
 
   useSocketGetQuery("/subscriber/subscribe/");
 
+  useSocketGetQuery("/workflow/subscribe/");
+
   const hasPermissions =
     !requiredPermissions?.length ||
     requiredPermissions?.every(([entity, action]) =>

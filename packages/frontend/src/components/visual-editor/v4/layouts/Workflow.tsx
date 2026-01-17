@@ -4,13 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Actions } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
+import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
+import { EntityType } from "@/services/types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
@@ -26,37 +27,7 @@ import {
   buildNodesAndEdges,
   getDefinition,
 } from "../utils/workflow-node.utils";
-//TODO: Mock data need to be removed
-const DEFAULT_ACTIONS: Actions = [
-  "call_api",
-  "call_llm",
-  "send_email",
-  "get_user_profile",
-  "search_web",
-  "query_memory",
-  "get_calendar_events",
-  "await_user_input",
-  "decision_router",
-  "create_ticket",
-  "send_text_message",
-  "await_reply",
-  "send_text_message",
-  "send_attachment",
-  "send_quick_replies",
-  "send_buttons",
-  "send_list",
-  "reply",
-  "llm_generate_text",
-  "content_upsert",
-  "html_extract_main",
-  "http_request",
-].reduce((acc, cur) => {
-  acc[cur] = {
-    parseSettings: () => {},
-  };
 
-  return acc;
-}, {});
 const StyledBox = styled(Box)(() => ({
   position: "relative",
   height: "100%",
@@ -66,6 +37,10 @@ const StyledBox = styled(Box)(() => ({
 }));
 
 export const Workflow = () => {
+  const { data: actions } = useFind(
+    { entity: EntityType.WORKFLOW_ACTIONS },
+    { hasCount: false },
+  );
   const { setViewport } = useReactFlow();
   const {
     yaml,
@@ -86,8 +61,16 @@ export const Workflow = () => {
   );
   const definition = useSafeMemo(
     () =>
-      yaml ? getDefinition(yaml, { actions: DEFAULT_ACTIONS }) : undefined,
-    [yaml],
+      yaml && actions
+        ? getDefinition(yaml, {
+            actions: actions?.reduce((acc, cur) => {
+              acc[cur.name] = cur;
+
+              return acc;
+            }, {}),
+          })
+        : undefined,
+    [yaml, JSON.stringify(actions)],
     undefined,
   );
   const [graph, setGraph] = useState<WorkflowGraph>({

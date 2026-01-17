@@ -140,7 +140,7 @@
     "item_selected": "{{0}} élément sélectionné",
     "items_selected": "{{0}} éléments sélectionnés",
     "start": "Début",
-    "end": "Fin",
+    "stop": "Fin",
     "wait_message": "Veuillez patienter",
     "conditional_operator": "Condition",
     "parallel_indicator": "Parallèle",

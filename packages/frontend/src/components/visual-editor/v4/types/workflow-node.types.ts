@@ -25,26 +25,34 @@ import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 
-type CommonNodeData<T extends ENodeType> = {
-  title?: string;
-  ports: Port<T>[];
-  level?: number;
+export type WorkflowIcon = LucideIcon | FC<SVGProps<SVGSVGElement>>;
+type NodeDataTitle =
+  | { title: string; i18nTitle?: never }
+  | { i18nTitle: TTranslationKeys; title?: never };
+
+export type CommonNodeDadaTypes = NodeDataTitle & {
+  description?: string;
   groupName?: string;
   theme: {
-    Icon: FC;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
+    color?: CSSProperties["color"];
+    Icon?: WorkflowIcon;
+    borderColor?: CSSProperties["color"];
+    bgColor?: CSSProperties["color"];
+    iconColor?: CSSProperties["color"];
   };
-  description?: string;
+  level?: number;
+  executionState?: "start" | "success" | "error";
 };
 
-export type WorkflowIcon = LucideIcon | FC<SVGProps<SVGSVGElement>>;
+type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
+  ports: Port<T>[];
+};
 
 // model types
-export type ModelData = CommonNodeData<ENodeType.MODEL> & {};
+export type ModelData = CommonNodeData<ENodeType.MODEL>;
 
 // Tool types
-export type ToolData = CommonNodeData<ENodeType.TOOL> & {};
+export type ToolData = CommonNodeData<ENodeType.TOOL>;
 
 // Agent types
 export type AgentData = CommonNodeData<ENodeType.AGENT> & {
@@ -60,7 +68,6 @@ export type TaskData = CommonNodeData<ENodeType.TASK> & {
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
-  i18n: TTranslationKeys;
   taskName?: string;
 };
 
@@ -78,13 +85,6 @@ export enum EOperatorType {
 
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
-  i18n: TTranslationKeys;
-  theme: {
-    Icon: WorkflowIcon;
-    color: string;
-    bgColor: string;
-  };
-  taskName?: string;
 };
 
 // Group types
@@ -229,9 +229,10 @@ type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
 
 // Context types
 export type IWorkflowNodeContext<T extends ENodeType = ENodeType> =
-  FlattenedNodeData<T> & {
-    connections: NodeConnection[];
-  };
+  FlattenedNodeData<T> &
+    Partial<CommonNodeDadaTypes> & {
+      connections: NodeConnection[];
+    };
 
 export interface IWorkflowNodeProps {
   id: string;

@@ -8,13 +8,13 @@ import { MarkerType, Node } from "@xyflow/react";
 import {
   Bot,
   Brain,
+  CircleStop,
   GitBranch,
   GripVertical,
   MessageSquare,
   Play,
   Repeat,
-  SquareStop,
-  Wrench,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -38,17 +38,17 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 90, height: 90 },
-  [ENodeType.TOOL]: { width: 90, height: 90 },
-  [ENodeType.AGENT]: { width: 352, height: 132 },
-  [ENodeType.INDICATOR]: { width: 90, height: 90 },
-  [ENodeType.TASK]: { width: 352, height: 132 },
-  [ENodeType.OPERATOR]: { width: 90, height: 90 },
+  [ENodeType.MODEL]: { width: 280, height: 65 },
+  [ENodeType.TOOL]: { width: 280, height: 65 },
+  [ENodeType.AGENT]: { width: 280, height: 110 },
+  [ENodeType.INDICATOR]: { width: 110, height: 65 },
+  [ENodeType.TASK]: { width: 280, height: 90 },
+  [ENodeType.OPERATOR]: { width: 150, height: 65 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
-  [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
-  [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
-  [EOperatorType.CONDITIONAL]: { color: "#f0e68c", padding: 60 },
+  // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
+  // [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
+  // [EOperatorType.CONDITIONAL]: { color: "#fefbe8", padding: 60 },
 } satisfies INodeConfig["highlights"];
 export const EDGES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {
@@ -73,17 +73,22 @@ export const NODES = {
     ],
     theme: {
       Icon: Bot,
-      color: "#444444",
-      bgColor: "#7bb0ff",
+      iconColor: "#7bb0ff",
+      color: "#4a5565",
+      bgColor: "#e9f2ff",
+      borderColor: "#7bb0ff",
     },
+    title: "",
   },
   [ENodeType.TOOL]: {
     title: "",
     ports: [ELinkType.TOOL_IN],
     theme: {
-      Icon: Wrench,
+      Icon: Zap,
       color: "#555555",
-      bgColor: "#7bb0ff",
+      iconColor: "orange",
+      borderColor: "orange",
+      bgColor: "#fff",
     },
   },
   [ENodeType.MODEL]: {
@@ -92,7 +97,9 @@ export const NODES = {
     theme: {
       Icon: Brain,
       color: "#555555",
-      bgColor: "#8160f7",
+      iconColor: "#ad46fc",
+      bgColor: "#faf5ff",
+      borderColor: "#ad46fc",
     },
   },
   [ENodeType.INDICATOR]: {
@@ -100,19 +107,23 @@ export const NODES = {
       theme: {
         Icon: Play,
         color: "#555555",
-        bgColor: "#97d445",
+        borderColor: "#37b765",
+        iconColor: "#37b765",
+        bgColor: "#f0fdf4",
       },
       ports: [ELinkType.INDICATOR_OUT],
-      i18n: "message.start",
+      i18nTitle: "message.start",
     },
     [EIndicatorType.END]: {
       theme: {
-        Icon: SquareStop,
+        Icon: CircleStop,
         color: "#555555",
-        bgColor: "#e95d32",
+        iconColor: "#e95d32",
+        bgColor: "#fef2f2",
+        borderColor: "#e95d32",
       },
       ports: [ELinkType.INDICATOR_IN],
-      i18n: "message.end",
+      i18nTitle: "message.stop",
     },
   },
   [ENodeType.OPERATOR]: {
@@ -123,18 +134,19 @@ export const NODES = {
         color: "#555555",
         bgColor: "#0c9ba0",
       },
-      i18n: "message.parallel_indicator",
+      i18nTitle: "message.parallel_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.CONDITIONAL]: {
       operatorType: EOperatorType.CONDITIONAL,
-      taskName: "conditional",
       theme: {
         Icon: GitBranch,
+        iconColor: "#2162fb",
         color: "#555555",
-        bgColor: "#0c9ba0",
+        bgColor: "#eef6fe",
+        borderColor: "#2162fb",
       },
-      i18n: "message.conditional_indicator",
+      i18nTitle: "message.conditional_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.LOOP]: {
@@ -144,7 +156,7 @@ export const NODES = {
         color: "#555555",
         bgColor: "#0c9ba0",
       },
-      i18n: "message.loop_indicator",
+      i18nTitle: "message.loop_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
@@ -158,8 +170,10 @@ export const NODES = {
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
         Icon: MessageSquare,
-        color: "#555555",
-        bgColor: "#7bb0ff",
+        iconColor: "#eca151",
+        color: "#4a5565",
+        bgColor: "#fffbea",
+        borderColor: "#eca151",
       },
       groupName,
     };
