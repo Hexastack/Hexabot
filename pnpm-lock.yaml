@@ -556,12 +556,6 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.18
-      eazychart-css:
-        specifier: ^0.2.1-alpha.0
-        version: 0.2.1-alpha.0
-      eazychart-react:
-        specifier: ^0.8.0-alpha.0
-        version: 0.8.0-alpha.0(react@18.3.1)
       elkjs:
         specifier: ^0.11.0
         version: 0.11.0
@@ -4660,10 +4654,6 @@ packages:
     resolution: {integrity: sha512-YyUI6AEuY/Wpt8KWLgZHsIU86atmikuoOmCfommt0LYHiQSPjvX2AcFc38PX0CBpr2RCyZhjex+NS/LPOv6YqA==}
     engines: {node: '>=12'}
 
-  d3-geo@3.1.1:
-    resolution: {integrity: sha512-637ln3gXKXOwhalDzinUgY83KzNWZRKbYubaG+fGVuc/dxO64RRljtCTnf5ecMyE1RIdtqpkVcq0IbtU2S8j2Q==}
-    engines: {node: '>=12'}
-
   d3-interpolate@3.0.1:
     resolution: {integrity: sha512-3bYs1rOD33uo8aqJfKP3JWPAibgw8Zm2+L9vBKEHJ2Rg+viTR7o5Mmv5mZcieN+FRYaAOWX5SJATX6k1PWz72g==}
     engines: {node: '>=12'}
@@ -4937,18 +4927,6 @@ packages:
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
-
-  eazychart-core@0.7.1-alpha.0:
-    resolution: {integrity: sha512-oJwBiiOBuOBGjqEr/o5j1ACNpuI/ZJ7qNO4oV4Qkw7uw38pYIbSpyVW87dF4SSzPwtqp7f3lpkx2JCk8vpZewQ==}
-    engines: {node: '>=16'}
-
-  eazychart-css@0.2.1-alpha.0:
-    resolution: {integrity: sha512-S0TDMQXk3/PRf/PrwnwKd/vDsRl8vP+nzGUEbVa01ShQSF/g7N788QvZvQW4n40bJ1jLka5pPIIoaBgw5RWAFQ==}
-
-  eazychart-react@0.8.0-alpha.0:
-    resolution: {integrity: sha512-l1ikVAK2Rs6QKo749e5YRBsnH2f5thIK/v8DmbiGoRdWN5J3UOZfZs4yWTSis9FC8jj9Ai9Gzif0xpwfIyuFCQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
@@ -13575,10 +13553,6 @@ snapshots:
 
   d3-format@3.1.0: {}
 
-  d3-geo@3.1.1:
-    dependencies:
-      d3-array: 3.2.4
-
   d3-interpolate@3.0.1:
     dependencies:
       d3-color: 3.1.0
@@ -13856,21 +13830,6 @@ snapshots:
   duplexer@0.1.2: {}
 
   eastasianwidth@0.2.0: {}
-
-  eazychart-core@0.7.1-alpha.0:
-    dependencies:
-      d3-ease: 3.0.1
-      d3-geo: 3.1.1
-      d3-interpolate: 3.0.1
-      d3-scale: 4.0.2
-      d3-shape: 3.2.0
-
-  eazychart-css@0.2.1-alpha.0: {}
-
-  eazychart-react@0.8.0-alpha.0(react@18.3.1):
-    dependencies:
-      eazychart-core: 0.7.1-alpha.0
-      react: 18.3.1
 
   ecdsa-sig-formatter@1.0.11:
     dependencies:
