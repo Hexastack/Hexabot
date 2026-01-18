@@ -22,7 +22,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
-import { ActionService } from '@/actions';
+import { ActionSchemaDefinition, ActionService } from '@/actions';
 import { UserService } from '@/user';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
@@ -116,12 +116,13 @@ export class WorkflowController extends BaseOrmController<
   }
 
   /**
-   * Retrieves actions.
-   * @returns Actions.
+   * Retrieves actions with JSON schemas for input, output, and settings.
+   *
+   * @returns Action metadata with JSON schemas.
    */
   @Get('actions')
-  find() {
-    return this.actionService.getAll();
+  find(): ActionSchemaDefinition[] {
+    return this.actionService.getAllSchemaDefinitions();
   }
 
   /**
