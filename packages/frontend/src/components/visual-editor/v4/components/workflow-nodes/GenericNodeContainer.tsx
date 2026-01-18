@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { PropsWithChildren } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";

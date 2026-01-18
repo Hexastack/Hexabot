@@ -6,7 +6,7 @@
 
 import { Conversation, ConversationList } from "@chatscope/chat-ui-kit-react";
 import { Chip } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
 import { Inbox } from "lucide-react";
 import { useEffect } from "react";

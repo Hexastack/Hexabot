@@ -5,7 +5,7 @@
  */
 
 import { SxProps, Theme } from "@mui/material";
-import Grid, { type Grid2Props as GridProps } from "@mui/material/Grid2";
+import Grid, { type GridProps } from "@mui/material/Grid";
 import * as React from "react";
 
 interface TabPanelProps {

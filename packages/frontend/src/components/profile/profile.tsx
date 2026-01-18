@@ -5,7 +5,7 @@
  */
 
 import { Box, Button, MenuItem, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Check, Key, Languages, Mail } from "lucide-react";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";

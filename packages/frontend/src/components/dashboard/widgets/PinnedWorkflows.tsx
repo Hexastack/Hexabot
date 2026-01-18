@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Card, CardContent, Grid2 as Grid, IconButton, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Grid, IconButton, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { Calendar, FileText, MousePointer2, Play } from "lucide-react";
 

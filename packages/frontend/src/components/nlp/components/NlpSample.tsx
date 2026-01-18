@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Circle, Download, X } from "lucide-react";
 import { useState } from "react";

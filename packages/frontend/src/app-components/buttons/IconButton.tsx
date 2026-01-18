@@ -17,8 +17,12 @@ export const IconButton = styled(MuiIconButton)<{
   variant?: IconButtonVariant;
 }>(({ theme, variant, color, disabled }) => {
   const overrides: CSSObject = {};
+  const borderRadius =
+    typeof theme.shape.borderRadius === "number"
+      ? theme.shape.borderRadius
+      : Number.parseFloat(theme.shape.borderRadius);
 
-  overrides.borderRadius = theme.shape.borderRadius * 3;
+  overrides.borderRadius = borderRadius * 3;
 
   const colorAsVariant =
     color === undefined || color === "inherit" || color === "default"

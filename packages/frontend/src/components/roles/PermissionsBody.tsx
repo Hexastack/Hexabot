@@ -13,7 +13,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { ChevronUp, Plus, Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 
