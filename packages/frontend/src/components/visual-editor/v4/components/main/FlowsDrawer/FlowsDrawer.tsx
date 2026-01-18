@@ -24,7 +24,7 @@ import { EntityType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { YamlEditor } from "../../../yamlEditor/YamlEditor";
+import { YamlEditor } from "../../yaml-editor";
 
 import {
   BASE_TYPES,

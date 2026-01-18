@@ -26,7 +26,7 @@ import { SocketProvider } from "@/websocket/socket-hooks";
 
 import "@/components/inbox/inbox.css";
 import "@/components/visual-editor/v4/styles/index.css";
-import "@/components/visual-editor/v4/yamlEditor/styles/yaml-editor.css";
+import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
 import "@/i18n/config";
 import "@/styles/globals.css";
 import "@fontsource/roboto/100.css";

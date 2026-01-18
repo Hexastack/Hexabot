@@ -1,0 +1,17 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+export type YamlEditorProps = {
+  errorLine?: number;
+  errorMessage?: string;
+};
+
+export type YamlCompletionSuggestion = {
+  label: string;
+  insertText: string;
+  documentation?: string;
+  detail?: string;
+};
