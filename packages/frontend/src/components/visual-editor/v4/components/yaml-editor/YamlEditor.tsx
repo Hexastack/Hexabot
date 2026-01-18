@@ -14,15 +14,21 @@ import { registerYamlCompletionProvider } from "./completion";
 import {
   DEFAULT_YAML_STATUS_MESSAGE,
   YAML_EDITOR_OPTIONS,
+  YAML_VALIDATION_DEBOUNCE_MS,
+  YAML_WORKFLOW_VALIDATION_OWNER,
 } from "./constants";
+import { ensureYamlLanguageService } from "./language";
 import { applyYamlMarkers } from "./markers";
 import type { YamlEditorProps } from "./types";
+import { applyWorkflowValidationMarkers } from "./validation";
+import "./yaml.worker";
 
 export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
   const { yaml, setYaml } = useWorkflow();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const completionDisposableRef = useRef<IDisposable | null>(null);
+  const validationTimeoutRef = useRef<number | null>(null);
   const handleChange = useCallback(
     (nextValue?: string) => {
       setYaml(nextValue || "");
@@ -50,14 +56,25 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
     },
     [disposeCompletion],
   );
+  const applyWorkflowValidation = useCallback(() => {
+    applyWorkflowValidationMarkers({
+      editorInstance: editorRef.current,
+      monacoInstance: monacoRef.current,
+      yaml,
+    });
+  }, [yaml]);
+  const handleBeforeMount = useCallback((monacoInstance: Monaco) => {
+    ensureYamlLanguageService(monacoInstance);
+  }, []);
   const handleMount = useCallback(
     (editorInstance: editor.IStandaloneCodeEditor, monacoInstance: Monaco) => {
       editorRef.current = editorInstance;
       monacoRef.current = monacoInstance;
       registerCompletion(monacoInstance);
       applyMarkers();
+      applyWorkflowValidation();
     },
-    [applyMarkers, registerCompletion],
+    [applyMarkers, applyWorkflowValidation, registerCompletion],
   );
 
   useEffect(() => {
@@ -65,10 +82,47 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
   }, [applyMarkers]);
 
   useEffect(() => {
+    if (!editorRef.current || !monacoRef.current) {
+      return;
+    }
+
+    if (validationTimeoutRef.current) {
+      window.clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = window.setTimeout(() => {
+      applyWorkflowValidation();
+      validationTimeoutRef.current = null;
+    }, YAML_VALIDATION_DEBOUNCE_MS);
+
+    return () => {
+      if (validationTimeoutRef.current) {
+        window.clearTimeout(validationTimeoutRef.current);
+        validationTimeoutRef.current = null;
+      }
+    };
+  }, [applyWorkflowValidation]);
+
+  useEffect(() => {
     return () => {
       disposeCompletion();
     };
   }, [disposeCompletion]);
+
+  useEffect(() => {
+    return () => {
+      if (!editorRef.current || !monacoRef.current) return;
+      const model = editorRef.current.getModel();
+
+      if (!model) return;
+
+      monacoRef.current.editor.setModelMarkers(
+        model,
+        YAML_WORKFLOW_VALIDATION_OWNER,
+        [],
+      );
+    };
+  }, []);
 
   return (
     <div className="yaml-editor nokey">
@@ -77,6 +131,7 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
           value={yaml}
           onChange={handleChange}
           defaultLanguage="yaml"
+          beforeMount={handleBeforeMount}
           theme="light"
           height="100%"
           width="100%"
