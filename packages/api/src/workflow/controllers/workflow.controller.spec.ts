@@ -156,6 +156,18 @@ describe('WorkflowController (TypeORM)', () => {
     });
   });
 
+  describe('find', () => {
+    it('returns action schema definitions', () => {
+      const actions = workflowController.find();
+      const action = actions.find(({ name }) => name === 'send_text_message');
+
+      expect(action).toBeDefined();
+      expect(action?.inputSchema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+    });
+  });
+
   describe('create', () => {
     it('creates a workflow definition', async () => {
       const payload = buildWorkflowPayload();
