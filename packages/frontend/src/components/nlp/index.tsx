@@ -5,7 +5,7 @@
  */
 
 import { Paper, Tab, Tabs } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { GraduationCap } from "lucide-react";
 import React, { useMemo } from "react";
 

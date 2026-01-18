@@ -6,7 +6,7 @@
 
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import { Chip, Tooltip } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import Autolinker from "autolinker";
 import { Menu, Reply } from "lucide-react";
 import React, { ReactNode } from "react";

@@ -12,7 +12,7 @@ import {
   MessageInput,
   MessageList,
 } from "@chatscope/chat-ui-kit-react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
 import { MessageSquare } from "lucide-react";
 

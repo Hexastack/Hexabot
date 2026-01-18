@@ -5,7 +5,7 @@
  */
 
 import { Box, Button, Chip, Slide } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";

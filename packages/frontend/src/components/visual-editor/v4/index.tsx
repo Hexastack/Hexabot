@@ -5,7 +5,7 @@
  */
 
 import { styled } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { ReactFlowProvider } from "@xyflow/react";
 
 import { Workflow } from "./layouts/Workflow";

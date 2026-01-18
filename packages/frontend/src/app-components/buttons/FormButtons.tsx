@@ -5,7 +5,7 @@
  */
 
 import { Button } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Check as CheckIcon, X as CloseIcon } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";

@@ -5,7 +5,7 @@
  */
 
 import { Button, Paper, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 

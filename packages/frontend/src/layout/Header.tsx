@@ -13,7 +13,7 @@ import {
   styled,
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Menu } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 

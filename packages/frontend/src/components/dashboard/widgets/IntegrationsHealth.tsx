@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Card, CardContent, CardHeader, Chip, Grid2 as Grid, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, CardHeader, Chip, Grid, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { Link2, Mail, MessageCircle } from "lucide-react";
 

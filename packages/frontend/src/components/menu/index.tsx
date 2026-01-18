@@ -5,7 +5,7 @@
  */
 
 import { Box, Button, Paper } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
 import { Menu as MenuIcon, Plus } from "lucide-react";
 import { useRef, useState } from "react";

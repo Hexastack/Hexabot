@@ -5,7 +5,7 @@
  */
 
 import { Typography, useTheme } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { AlertTriangle } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
