@@ -1,5 +1,0 @@
-{
-  "model": "Modèle LLM",
-  "language_classifier_prompt_template": "Modèle de prompt de détection de langue",
-  "trait_classifier_prompt_template": "Modèle de prompt du classificateur de traits"
-}

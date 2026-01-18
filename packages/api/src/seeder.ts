@@ -11,10 +11,6 @@ import { languageModels } from './i18n/seeds/language.seed-model';
 import { TranslationSeeder } from './i18n/seeds/translation.seed';
 import { translationModels } from './i18n/seeds/translation.seed-model';
 import { LoggerService } from './logger/logger.service';
-import { NlpEntitySeeder } from './nlp/seeds/nlp-entity.seed';
-import { nlpEntityModels } from './nlp/seeds/nlp-entity.seed-model';
-import { NlpValueSeeder } from './nlp/seeds/nlp-value.seed';
-import { nlpValueModels } from './nlp/seeds/nlp-value.seed-model';
 import { MetadataSeeder } from './setting/seeds/metadata.seed';
 import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
@@ -44,8 +40,6 @@ export async function seedDatabase(app: INestApplicationContext) {
   const userSeeder = app.get(UserSeeder);
   const languageSeeder = app.get(LanguageSeeder);
   const translationSeeder = app.get(TranslationSeeder);
-  const nlpEntitySeeder = app.get(NlpEntitySeeder);
-  const nlpValueSeeder = app.get(NlpValueSeeder);
   const memoryDefinitionSeeder = app.get(MemoryDefinitionSeeder);
   const workflowSeeder = app.get(WorkflowSeeder);
   const existingUsers = await userSeeder.findAll();
@@ -154,15 +148,6 @@ export async function seedDatabase(app: INestApplicationContext) {
     await translationSeeder.seed(translationModels);
   } catch (e) {
     logger.error('Unable to seed the database with translations!');
-    throw e;
-  }
-
-  // Seed Nlp entities and values
-  try {
-    await nlpEntitySeeder.seed(nlpEntityModels);
-    await nlpValueSeeder.seed(nlpValueModels);
-  } catch (e) {
-    logger.error('Unable to seed the database with nlp entities!');
     throw e;
   }
 }

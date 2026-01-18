@@ -13,7 +13,6 @@ import {
   StdIncomingMessage,
 } from '@/chat/types/message';
 import { Payload } from '@/chat/types/quick-reply';
-import { NLU } from '@/helper/types';
 import { TriggerEventWrapper } from '@/workflow/lib/trigger-event-wrapper';
 import { WorkflowType } from '@/workflow/types';
 
@@ -44,8 +43,6 @@ export default abstract class ConversationalEventWrapper<
   _handler: C;
 
   channelAttrs: S;
-
-  _nlp!: NLU.ParseEntities;
 
   /**
    * Constructor : Class used to wrap any channel's event in order
@@ -146,24 +143,6 @@ export default abstract class ConversationalEventWrapper<
     return attr in (this._adapter as any).raw
       ? ((this._adapter as any).raw as any)[attr]
       : otherwise || {};
-  }
-
-  /**
-   * Returns attached NLP parse results
-   *
-   * @returns The parsed NLP entities, or null if not available.
-   */
-  getNLP(): NLU.ParseEntities | null {
-    return this._nlp;
-  }
-
-  /**
-   * Attaches the NLP object to the event
-   *
-   * @param nlp - NLP parse results
-   */
-  setNLP(nlp: NLU.ParseEntities) {
-    this._nlp = nlp;
   }
 
   /**
