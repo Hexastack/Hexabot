@@ -13,11 +13,20 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 
-import { collapsedWidth, drawerWidth } from "./constants";
+type StyledDrawerProps = {
+  open: boolean;
+  drawerWidth: number;
+  collapsedWidth: number;
+};
+
+type DrawerResizerProps = {
+  disabled?: boolean;
+};
 
 export const StyledDrawer = styled(Drawer, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
+  shouldForwardProp: (prop) =>
+    prop !== "open" && prop !== "drawerWidth" && prop !== "collapsedWidth",
+})<StyledDrawerProps>(({ theme, open, drawerWidth, collapsedWidth }) => ({
   width: open ? drawerWidth : collapsedWidth,
   flexShrink: 0,
   whiteSpace: "nowrap",
@@ -31,17 +40,13 @@ export const StyledDrawer = styled(Drawer, {
         ? theme.transitions.duration.enteringScreen
         : theme.transitions.duration.leavingScreen,
     }),
+    display: "flex",
+    flexDirection: "column",
     position: "relative",
     height: "100%",
-    overflowX: "hidden",
+    overflow: "hidden",
     borderRight: "1px solid #e3e5e8",
     backgroundColor: "#f7f8fa",
-  },
-  [theme.breakpoints.down("md")]: {
-    width: open ? 280 : 56,
-    "& .MuiDrawer-paper": {
-      width: open ? 280 : 56,
-    },
   },
 }));
 
@@ -51,6 +56,48 @@ export const DrawerHeader = styled(Box)(() => ({
   justifyContent: "space-between",
   padding: "12px 12px 8px 16px",
   minHeight: 48,
+}));
+
+export const DrawerBody = styled(Box)(() => ({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minHeight: 0,
+}));
+
+export const YamlEditorContainer = styled(Box)(() => ({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minHeight: 0,
+  padding: "12px",
+}));
+
+export const DrawerResizer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "disabled",
+})<DrawerResizerProps>(({ theme, disabled }) => ({
+  position: "absolute",
+  top: 0,
+  right: 0,
+  height: "100%",
+  width: 6,
+  cursor: disabled ? "default" : "col-resize",
+  zIndex: 2,
+  pointerEvents: disabled ? "none" : "auto",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    right: 2,
+    width: 2,
+    height: "100%",
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+    opacity: 0,
+    transition: "opacity 0.15s ease",
+  },
+  "&:hover::after": {
+    opacity: 1,
+  },
 }));
 
 export const SearchBox = styled(Box)(({ theme }) => ({

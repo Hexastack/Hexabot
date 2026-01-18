@@ -1,12 +1,12 @@
 .yaml-editor {
-  flex: 0 0 auto;
-  width: 420px;
-  max-width: 60%;
-  min-width: 320px;
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  border-left: 0;
   display: flex;
   flex-direction: column;
-  resize: horizontal;
   overflow: hidden;
 }
 
@@ -45,5 +45,5 @@
 
 .yaml-editor__body {
   flex: 1;
-  min-height: 72vh;
+  min-height: 0;
 }

@@ -5,20 +5,26 @@
  */
 
 import { Box, IconButton, Tooltip } from "@mui/material";
-import { Plus, Search } from "lucide-react";
+import { Code, Plus, Search } from "lucide-react";
 
 type FlowsDrawerCollapsedActionsProps = {
   searchLabel: string;
   newWorkflowLabel: string;
+  yamlLabel: string;
   onOpen: () => void;
   onNew?: () => void;
+  onToggleYaml: () => void;
+  isYamlOpen: boolean;
 };
 
 export const FlowsDrawerCollapsedActions = ({
   searchLabel,
   newWorkflowLabel,
+  yamlLabel,
   onOpen,
   onNew,
+  onToggleYaml,
+  isYamlOpen,
 }: FlowsDrawerCollapsedActionsProps) => (
   <Box
     display="flex"
@@ -31,6 +37,16 @@ export const FlowsDrawerCollapsedActions = ({
     <Tooltip title={searchLabel}>
       <IconButton size="small" onClick={onOpen}>
         <Search size={16} />
+      </IconButton>
+    </Tooltip>
+    <Tooltip title={yamlLabel}>
+      <IconButton
+        size="small"
+        onClick={onToggleYaml}
+        color={isYamlOpen ? "primary" : "default"}
+        aria-pressed={isYamlOpen}
+      >
+        <Code size={16} />
       </IconButton>
     </Tooltip>
     <Tooltip title={newWorkflowLabel}>
