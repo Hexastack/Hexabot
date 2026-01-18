@@ -4,19 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import Grid, { type Grid2Props as GridProps } from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid2";
 import { Home } from "lucide-react";
-import { PropsWithChildren } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 
-import AudienceChart from "./AudienceChart";
-import MessageChart from "./MessageChart";
-
-const DashboardContent = (props: PropsWithChildren<GridProps>) => (
-  <Grid size={{ md: 12, lg: 6 }} {...props} />
-);
+import { AttentionRequired } from "./widgets/AttentionRequired";
+import { ConversationSnapshot } from "./widgets/ConversationSnapshot";
+import { IntegrationsHealth } from "./widgets/IntegrationsHealth";
+import { KPICards } from "./widgets/KPICards";
+import { PinnedWorkflows } from "./widgets/PinnedWorkflows";
+import { QuickActions } from "./widgets/QuickActions";
+import { RecentActivity } from "./widgets/RecentActivity";
+import { RecentRuns } from "./widgets/RecentRuns";
+import { UpcomingSchedule } from "./widgets/UpcomingSchedule";
 
 export const Dashboard = () => {
   const { t } = useTranslate();
@@ -24,13 +26,55 @@ export const Dashboard = () => {
   return (
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={Home} title={t("title.dashboard")} />
+      
+      {/* 1. Key Metrics (Top Priority) */}
       <Grid container spacing={3}>
-        <DashboardContent container gap={2}>
-          <MessageChart />
-        </DashboardContent>
-        <DashboardContent container gap={2}>
-          <AudienceChart />
-        </DashboardContent>
+         <Grid size={12}>
+            <KPICards />
+         </Grid>
+      </Grid>
+
+      {/* 2. Main Dashboard Layout */}
+      <Grid container spacing={3}>
+        {/* Left Column: Activity & Actions */}
+        <Grid size={{ md: 8, xs: 12 }} container spacing={3} flexDirection="column">
+             {/* Quick Actions Bar */}
+             <Grid size={12}>
+                <QuickActions />
+             </Grid>
+
+             <Grid size={12}>
+                <PinnedWorkflows />
+             </Grid>
+
+             <Grid size={12}>
+                <RecentRuns />
+             </Grid>
+
+            <Grid container spacing={3}>
+                <Grid size={{ md: 6, xs: 12 }}>
+                    <ConversationSnapshot />
+                </Grid>
+                <Grid size={{ md: 6, xs: 12 }}>
+                    <RecentActivity />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        {/* Right Column: Status & Schedule */}
+        <Grid size={{ md: 4, xs: 12 }} container spacing={3} flexDirection="column">
+            <Grid size={12}>
+                <AttentionRequired />
+            </Grid>
+
+            <Grid size={12}>
+                <UpcomingSchedule />
+            </Grid>
+
+            <Grid size={12}>
+                <IntegrationsHealth />
+            </Grid>
+        </Grid>
       </Grid>
     </Grid>
   );
