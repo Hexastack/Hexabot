@@ -12,6 +12,9 @@ import type { FlowTypeInfo } from "./types";
 
 export const drawerWidth = 320;
 export const collapsedWidth = 64;
+export const minDrawerWidth = 260;
+export const maxDrawerWidth = 920;
+export const drawerWidthStorageKey = "hexabot.visual_editor.drawer_width";
 
 export const BASE_TYPES: Record<WorkflowType, FlowTypeInfo> = {
   [WorkflowType.conversational]: {

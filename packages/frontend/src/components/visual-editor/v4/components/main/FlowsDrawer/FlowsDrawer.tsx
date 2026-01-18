@@ -6,7 +6,14 @@
 
 import { Box, Button, Divider, useMediaQuery, useTheme } from "@mui/material";
 import { Plus } from "lucide-react";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useDelete } from "@/hooks/crud/useDelete";
@@ -17,14 +24,28 @@ import { EntityType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import { YamlEditor } from "../../../yamlEditor/YamlEditor";
 
-import { BASE_TYPES, TYPE_ORDER } from "./constants";
+import {
+  BASE_TYPES,
+  TYPE_ORDER,
+  collapsedWidth,
+  drawerWidth as defaultDrawerWidth,
+  drawerWidthStorageKey,
+  maxDrawerWidth,
+  minDrawerWidth,
+} from "./constants";
 import { FlowsDrawerCollapsedActions } from "./FlowsDrawerCollapsedActions";
 import { FlowsDrawerHeader } from "./FlowsDrawerHeader";
 import { FlowsDrawerList } from "./FlowsDrawerList";
 import { FlowsDrawerMenu } from "./FlowsDrawerMenu";
 import { FlowsDrawerSearchActions } from "./FlowsDrawerSearchActions";
-import { StyledDrawer } from "./styles";
+import {
+  DrawerBody,
+  DrawerResizer,
+  StyledDrawer,
+  YamlEditorContainer,
+} from "./styles";
 import type { FlowMatch, FlowTypeGroup, FlowsDrawerProps } from "./types";
 import {
   fuzzyMatchIndices,
@@ -40,8 +61,28 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     useWorkflow();
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(!isCompact);
+  const [showYaml, setShowYaml] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState(() => {
+    if (typeof window === "undefined") return defaultDrawerWidth;
+
+    try {
+      const storedWidth = window.localStorage.getItem(drawerWidthStorageKey);
+      const parsed = storedWidth ? Number(storedWidth) : Number.NaN;
+
+      if (!Number.isFinite(parsed)) return defaultDrawerWidth;
+
+      return Math.min(Math.max(parsed, minDrawerWidth), maxDrawerWidth);
+    } catch {
+      return defaultDrawerWidth;
+    }
+  });
   const [query, setQuery] = useState("");
+  const resizeStartXRef = useRef(0);
+  const resizeStartWidthRef = useRef(defaultDrawerWidth);
+  const isResizingRef = useRef(false);
+  const latestDrawerWidthRef = useRef(drawerWidth);
   const trimmedQuery = query.trim();
   const normalizedQuery = normalizeQuery(trimmedQuery);
   const isSearching = trimmedQuery.length > 0;
@@ -70,10 +111,72 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   );
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const workflowsList = isSearching ? searchedWorkflows : workflows;
+  const minAllowedWidth = isSmall ? 240 : minDrawerWidth;
+  const maxAllowedWidth = isSmall ? 280 : maxDrawerWidth;
+  const collapsedSize = isSmall ? 56 : collapsedWidth;
+  const clampDrawerWidth = useCallback(
+    (value: number) =>
+      Math.min(Math.max(value, minAllowedWidth), maxAllowedWidth),
+    [maxAllowedWidth, minAllowedWidth],
+  );
+  const yamlToggleLabel = showYaml
+    ? t("visual_editor.yaml_editor.hide")
+    : t("visual_editor.yaml_editor.show");
 
   useEffect(() => {
     setOpen(!isCompact);
   }, [isCompact]);
+
+  useEffect(() => {
+    latestDrawerWidthRef.current = drawerWidth;
+  }, [drawerWidth]);
+
+  useEffect(() => {
+    setDrawerWidth((prev) => clampDrawerWidth(prev));
+  }, [clampDrawerWidth]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isResizingRef.current) return;
+
+      const delta = event.clientX - resizeStartXRef.current;
+      const nextWidth = clampDrawerWidth(
+        resizeStartWidthRef.current + delta,
+      );
+
+      latestDrawerWidthRef.current = nextWidth;
+      setDrawerWidth(nextWidth);
+    };
+    const handleMouseUp = () => {
+      if (!isResizingRef.current) return;
+
+      isResizingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.setItem(
+            drawerWidthStorageKey,
+            String(latestDrawerWidthRef.current),
+          );
+        } catch {
+          // Ignore storage failures.
+        }
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [clampDrawerWidth]);
 
   const hasUnsaved = Boolean(
     workflow?.id &&
@@ -246,6 +349,29 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   }, [isSearching, selectedFlowTypeKey, typeGroups]);
 
   const handleToggleDrawer = () => setOpen((prev) => !prev);
+  const handleResizeStart = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (!open) return;
+
+      isResizingRef.current = true;
+      resizeStartXRef.current = event.clientX;
+      resizeStartWidthRef.current = drawerWidth;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      event.preventDefault();
+    },
+    [drawerWidth, open],
+  );
+  const handleToggleYaml = () => {
+    setShowYaml((prev) => !prev);
+    if (!open) {
+      setOpen(true);
+    }
+  };
+  const handleOpenDrawer = () => {
+    setShowYaml(false);
+    setOpen(true);
+  };
   const handleToggleType = (key: string) =>
     setOpenTypeKeys((prev) =>
       prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key],
@@ -255,7 +381,10 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       updateWorkflowURL(flowId);
     }
   };
-  const handleOpenMenu = (event: MouseEvent<HTMLElement>, flowId: string) => {
+  const handleOpenMenu = (
+    event: ReactMouseEvent<HTMLElement>,
+    flowId: string,
+  ) => {
     event.stopPropagation();
     setMenuAnchorEl(event.currentTarget);
     setMenuFlowId(flowId);
@@ -294,60 +423,91 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   };
 
   return (
-    <StyledDrawer variant="permanent" open={open}>
+    <StyledDrawer
+      variant="permanent"
+      open={open}
+      anchor="left"
+      drawerWidth={drawerWidth}
+      collapsedWidth={collapsedSize}
+    >
       <FlowsDrawerHeader
         open={open}
         title={t("visual_editor.flows_drawer.title")}
         onToggle={handleToggleDrawer}
+        yamlLabel={yamlToggleLabel}
+        onToggleYaml={handleToggleYaml}
+        isYamlOpen={showYaml}
       />
       {open ? (
-        <>
-          <FlowsDrawerSearchActions
-            query={query}
-            searchPlaceholder={t(
-              "visual_editor.flows_drawer.search_placeholder",
-            )}
-            searchLabel={t("visual_editor.flows_drawer.search_workflows")}
-            onQueryChange={setQuery}
-          />
-          <Divider />
-          <FlowsDrawerList
-            typeGroups={typeGroups}
-            openTypeKeys={openTypeKeys}
-            onToggleType={handleToggleType}
-            onSelectFlow={handleSelectFlow}
-            onEdit={onEdit}
-            onOpenMenu={handleOpenMenu}
-            normalizedQuery={normalizedQuery}
-            emptySectionLabel={t("visual_editor.flows_drawer.empty.section")}
-            emptyState={
-              !matches.length && workflows && workflows.length
-                ? t("visual_editor.flows_drawer.empty.search")
-                : t("visual_editor.flows_drawer.empty.list")
-            }
-            hasMatches={matches.length > 0}
-            renameLabel={t("button.rename")}
-            moreLabel={t("button.more")}
-          />
-          <Divider />
-          <Box px={2} pb={2} pt={1} display="flex" justifyContent="center">
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<Plus size={16} />}
-              onClick={onNew}
-              disabled={!onNew}
-            >
-              {t("visual_editor.flows_drawer.new_workflow")}
-            </Button>
-          </Box>
-        </>
+        <DrawerBody>
+          {showYaml ? (
+            <>
+              <Divider />
+              <YamlEditorContainer>
+                <YamlEditor />
+              </YamlEditorContainer>
+            </>
+          ) : (
+            <>
+              <FlowsDrawerSearchActions
+                query={query}
+                searchPlaceholder={t(
+                  "visual_editor.flows_drawer.search_placeholder",
+                )}
+                searchLabel={t("visual_editor.flows_drawer.search_workflows")}
+                onQueryChange={setQuery}
+              />
+              <Divider />
+              <FlowsDrawerList
+                typeGroups={typeGroups}
+                openTypeKeys={openTypeKeys}
+                onToggleType={handleToggleType}
+                onSelectFlow={handleSelectFlow}
+                onEdit={onEdit}
+                onOpenMenu={handleOpenMenu}
+                normalizedQuery={normalizedQuery}
+                emptySectionLabel={t("visual_editor.flows_drawer.empty.section")}
+                emptyState={
+                  !matches.length && workflows && workflows.length
+                    ? t("visual_editor.flows_drawer.empty.search")
+                    : t("visual_editor.flows_drawer.empty.list")
+                }
+                hasMatches={matches.length > 0}
+                renameLabel={t("button.rename")}
+                moreLabel={t("button.more")}
+              />
+              <Divider />
+              <Box px={2} pb={2} pt={1} display="flex" justifyContent="center">
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<Plus size={16} />}
+                  onClick={onNew}
+                  disabled={!onNew}
+                >
+                  {t("visual_editor.flows_drawer.new_workflow")}
+                </Button>
+              </Box>
+            </>
+          )}
+        </DrawerBody>
       ) : (
         <FlowsDrawerCollapsedActions
           searchLabel={t("visual_editor.flows_drawer.search_workflows")}
           newWorkflowLabel={t("visual_editor.flows_drawer.new_workflow")}
-          onOpen={() => setOpen(true)}
+          yamlLabel={yamlToggleLabel}
+          onOpen={handleOpenDrawer}
           onNew={onNew}
+          onToggleYaml={handleToggleYaml}
+          isYamlOpen={showYaml}
+        />
+      )}
+      {open && (
+        <DrawerResizer
+          onMouseDown={handleResizeStart}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t("visual_editor.flows_drawer.resize")}
         />
       )}
       <FlowsDrawerMenu

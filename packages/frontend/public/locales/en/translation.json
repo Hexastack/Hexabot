@@ -696,6 +696,7 @@
       "search_placeholder": "Search name or description",
       "search_workflows": "Search workflows",
       "new_workflow": "New workflow",
+      "resize": "Resize drawer",
       "status": {
         "draft": "Draft",
         "published": "Published"
@@ -716,6 +717,10 @@
         "list": "No workflows yet.",
         "section": "No workflows in this section."
       }
+    },
+    "yaml_editor": {
+      "show": "Show YAML editor",
+      "hide": "Hide YAML editor"
     }
   }
 }

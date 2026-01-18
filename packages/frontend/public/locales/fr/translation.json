@@ -696,6 +696,7 @@
       "search_placeholder": "Rechercher par nom ou description",
       "search_workflows": "Rechercher des workflows",
       "new_workflow": "Nouveau workflow",
+      "resize": "Redimensionner le panneau",
       "status": {
         "draft": "Brouillon",
         "published": "Publié"
@@ -716,6 +717,10 @@
         "list": "Aucun workflow pour le moment.",
         "section": "Aucun workflow dans cette section."
       }
+    },
+    "yaml_editor": {
+      "show": "Afficher l'éditeur YAML",
+      "hide": "Masquer l'éditeur YAML"
     }
   }
 }

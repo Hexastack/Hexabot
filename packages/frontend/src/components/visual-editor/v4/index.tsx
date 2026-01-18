@@ -10,7 +10,6 @@ import { ReactFlowProvider } from "@xyflow/react";
 
 import { Workflow } from "./layouts/Workflow";
 import { WorkflowProvider } from "./providers/WorkflowProvider";
-import { YamlEditor } from "./yamlEditor/YamlEditor";
 
 const StyledContainerGrid = styled(Grid)(() => ({
   gap: 2,
@@ -29,7 +28,6 @@ export const WorkflowEditor = () => (
     <WorkflowProvider>
       <StyledContainerGrid container>
         <Grid container height="100%" width="100%" wrap="nowrap">
-          <YamlEditor />
           <StyledGrid size="grow">
             <Workflow />
           </StyledGrid>
