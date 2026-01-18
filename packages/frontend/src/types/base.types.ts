@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/agentic";
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
 import { Path, PathValue } from "react-hook-form";
 
@@ -102,6 +103,7 @@ export interface IFormat<F = Format> {
 
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: [],
+  [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
@@ -160,6 +162,13 @@ export interface IEntityMapTypes {
     IWorkflowAttributes,
     IWorkflowFilters,
     IWorkflowFull
+  >;
+  [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<
+    //TODO need to be revised
+    Action & IBaseSchema,
+    never,
+    never,
+    never
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,

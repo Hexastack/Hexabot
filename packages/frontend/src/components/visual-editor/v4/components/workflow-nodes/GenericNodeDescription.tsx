@@ -8,25 +8,21 @@ import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeDescription = <T extends ENodeType = ENodeType>() => {
-  const workflowNode = useWorkflowNode<T>();
-
-  if (!("description" in workflowNode)) {
-    return null;
-  }
+  const { description } = useWorkflowNode<T>();
 
   return (
     <div
-      title={workflowNode.description}
+      title={description}
       style={{
-        color: "#444",
-        fontSize: "14px",
+        color: "#666f7a",
+        fontSize: "0.75rem",
         textAlign: "left",
         display: "flex",
         flex: "auto",
-        marginTop: "8px",
+        marginTop: "5px",
       }}
     >
-      {workflowNode.description}
+      {description}
     </div>
   );
 };

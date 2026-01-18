@@ -43,7 +43,6 @@ export const ROUTES = {
   NLP_SAMPLE_ANNOTATE: "/nlpsample/annotate",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
   CONTENT_IMPORT: "/content/import",
-  WORKFLOW_ACTION: "/workflow/action",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -73,6 +72,7 @@ export const ROUTES = {
   [EntityType.FLOW_ESCAPE_HELPER]: "helper/flow_escape",
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
+  [EntityType.WORKFLOW_ACTIONS]: "/workflow/actions",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
 } as const;
 
@@ -255,12 +255,6 @@ export class ApiClient {
     const { data } = await this.request.get(
       `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
     );
-
-    return data;
-  }
-
-  async getWorkflowAction() {
-    const { data } = await this.request.get(`${ROUTES.WORKFLOW_ACTION}`);
 
     return data;
   }

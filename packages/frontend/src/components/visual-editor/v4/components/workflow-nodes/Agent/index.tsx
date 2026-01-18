@@ -19,8 +19,8 @@ import { GenericNodeTitle } from "../GenericNodeTitle";
 export const Agent: FC<NodeProps<NodeData<ENodeType.AGENT>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeIcon hasBgColor />
-      <Grid size="grow" flexDirection="column" pl="10px">
+      <GenericNodeIcon />
+      <Grid size="grow" flexDirection="column">
         <GenericNodeTitle />
         <GenericNodeDescription />
       </Grid>

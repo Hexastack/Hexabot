@@ -4,9 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import {
+  IOOutgoingSubscribeMessage,
+  Room,
+  SocketGet,
+  SocketPost,
+  SocketReq,
+  SocketRequest,
+  SocketRes,
+  SocketResponse,
+  WebsocketGateway,
+} from '@/websocket';
 
 import {
   Workflow as WorkflowDto,
@@ -27,7 +38,10 @@ export class WorkflowService extends BaseOrmService<
    *
    * @param repository - ORM repository used to manage workflow entities.
    */
-  constructor(readonly repository: WorkflowRepository) {
+  constructor(
+    readonly repository: WorkflowRepository,
+    private readonly gateway: WebsocketGateway,
+  ) {
     super(repository);
   }
 
@@ -41,5 +55,31 @@ export class WorkflowService extends BaseOrmService<
     });
 
     return latest ?? null;
+  }
+
+  /**
+   * Internally subscribe web-sockets to user's event
+   * For example : Notify chat if new user interacted with the chatbot
+   *
+   * @param req - The socket request object
+   * @param res - The socket response object
+   */
+  @SocketGet('/workflow/subscribe/')
+  @SocketPost('/workflow/subscribe/')
+  async subscribe(
+    @SocketReq() req: SocketRequest,
+    @SocketRes() res: SocketResponse,
+  ): Promise<IOOutgoingSubscribeMessage> {
+    try {
+      await this.gateway.joinNotificationSockets(req, Room.WORKFLOW);
+
+      return res.status(200).json({
+        success: true,
+        subscribe: Room.WORKFLOW,
+      });
+    } catch (e) {
+      this.logger.error('Websocket subscription', e);
+      throw new InternalServerErrorException(e);
+    }
   }
 }

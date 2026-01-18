@@ -294,6 +294,7 @@ export function walkSteps({
             level,
             groupName,
             title: taskName,
+            i18nTitle: undefined,
           },
         });
 
@@ -309,6 +310,7 @@ export function walkSteps({
             data: {
               ...ctx.config.nodes[ENodeType.MODEL],
               title: model,
+              i18nTitle: undefined,
               level,
             },
           });
@@ -337,6 +339,7 @@ export function walkSteps({
             data: {
               ...ctx.config.nodes[ENodeType.TOOL],
               title: tool,
+              i18nTitle: undefined,
               level,
             },
           });

@@ -43,6 +43,10 @@ export interface IWorkflowContext {
     },
     IWorkflow
   >;
+  executionStates: Record<string, { state: "start" | "success" }>;
+  setExecutionStates: Dispatch<
+    SetStateAction<Record<string, { state: "start" | "success" }>>
+  >;
 }
 
 export interface WorkflowContextProps {

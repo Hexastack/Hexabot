@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StepInfo } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
   type Node,
@@ -22,6 +23,7 @@ import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, RouterType } from "@/services/types";
 import { IWorkflowAttributes } from "@/types/workfow.types";
+import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import type { WorkflowContextProps } from "../types/workflow.types";
@@ -54,6 +56,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   }, [flowId, workflow?.direction]);
   const [yaml, setYaml] = useState("");
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
+  const [executionStates, setExecutionStates] = useState<
+    Record<string, { state: "start" | "success" }>
+  >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
@@ -124,6 +129,33 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     }
   }, [flowId, workflows, updateWorkflowURL]);
 
+  useSubscribe(
+    "workflow",
+    (test: { state: "start" | "success"; runId?: string; step: StepInfo }) => {
+      if (test.state) {
+        const stepId = `^step-${test.step.id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
+        const idRegex = new RegExp(stepId);
+        const foundedNode = getNodes().find((n) => n.id.match(idRegex));
+
+        if (foundedNode?.id) {
+          if (test.state === "start") {
+            setExecutionStates((old) => ({
+              ...old,
+              [foundedNode.id]: { state: "start" },
+            }));
+          } else if (test.state === "success") {
+            setTimeout(() => {
+              setExecutionStates((old) => ({
+                ...old,
+                [foundedNode.id]: { state: "success" },
+              }));
+            }, 500);
+          }
+        }
+      }
+    },
+  );
+
   return (
     <WorkflowContext.Provider
       value={{
@@ -147,6 +179,8 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         workflows,
         updateWorkflow,
         debouncedWorkflowUpdate,
+        executionStates,
+        setExecutionStates,
       }}
     >
       {children}

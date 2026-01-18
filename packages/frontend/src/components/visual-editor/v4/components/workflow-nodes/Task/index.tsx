@@ -23,8 +23,8 @@ import { GenericNodeTitle } from "../GenericNodeTitle";
 export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeIcon hasBgColor />
-      <Grid size="grow" flexDirection="column" pl="10px">
+      <GenericNodeIcon />
+      <Grid size="grow" flexDirection="column">
         <GenericNodeTitle />
         <GenericNodeDescription />
       </Grid>

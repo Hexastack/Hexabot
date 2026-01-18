@@ -35,6 +35,7 @@ export enum EntityType {
   FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
+  WORKFLOW_ACTIONS = "WorkflowActions",
   MEMORY_DEFINITION = "MemoryDefinition",
 }
 

@@ -8,6 +8,7 @@ import { useNodeConnections, useReactFlow } from "@xyflow/react";
 import { type FC, useMemo } from "react";
 
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
+import { useWorkflow } from "../hooks/useWorkflow";
 import type {
   IWorkflowNodeProps,
   NodeData,
@@ -20,9 +21,13 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   const { getNode } = useReactFlow();
   const { data, ...rest } = useMemo(() => getNode(id) as NodeData, [id]);
   const connections = useNodeConnections({ id });
+  const { executionStates } = useWorkflow();
+  const executionState = executionStates[id]?.state;
 
   return (
-    <WorkflowNodeContext.Provider value={{ ...data, ...rest, connections }}>
+    <WorkflowNodeContext.Provider
+      value={{ ...data, ...rest, connections, executionState }}
+    >
       {children}
     </WorkflowNodeContext.Provider>
   );
