@@ -44,6 +44,7 @@
     "jsonschema": "^1.5.0",
     "lucide-react": "^0.562.0",
     "monaco-editor": "^0.55.1",
+    "monaco-yaml": "^5.4.0",
     "normalizr": "^3.6.2",
     "notistack": "^3.0.1",
     "qs": "^6.12.1",
@@ -55,7 +56,9 @@
     "react-i18next": "^14.1.1",
     "react-router-dom": "^6.26.2",
     "react-window": "^1.8.5",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "yaml": "^2.5.0",
+    "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.90.2",
