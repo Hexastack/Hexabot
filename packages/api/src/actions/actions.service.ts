@@ -74,6 +74,7 @@ export class ActionService {
       return {
         name,
         description: action.description,
+        icon: action.icon,
         color: action.color,
         inputSchema: this.buildJsonSchema(action.inputSchema, `${name}_input`),
         outputSchema: this.buildJsonSchema(

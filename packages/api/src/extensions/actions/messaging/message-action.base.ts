@@ -75,6 +75,8 @@ export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
 > extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
+  private static readonly DEFAULT_ICON = 'Zap';
+
   private static readonly DEFAULT_COLOR = '#e47800';
 
   protected constructor(
@@ -82,7 +84,11 @@ export abstract class MessageAction<
     actionService: ActionService,
   ) {
     super(
-      { ...metadata, color: metadata.color ?? MessageAction.DEFAULT_COLOR },
+      {
+        ...metadata,
+        icon: metadata.icon ?? MessageAction.DEFAULT_ICON,
+        color: metadata.color ?? MessageAction.DEFAULT_COLOR,
+      },
       actionService,
     );
   }
