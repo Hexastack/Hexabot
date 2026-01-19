@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Action } from "@hexabot-ai/agentic";
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
 import { Path, PathValue } from "react-hook-form";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
+import { IAction, IActionAttributes } from "./action.types";
 import {
   IAttachment,
   IAttachmentAttributes,
@@ -163,13 +163,7 @@ export interface IEntityMapTypes {
     IWorkflowFilters,
     IWorkflowFull
   >;
-  [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<
-    //TODO need to be revised
-    Action & IBaseSchema,
-    never,
-    never,
-    never
-  >;
+  [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<IAction, IActionAttributes>;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,
     IMemoryDefinitionAttributes
