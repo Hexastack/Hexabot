@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CircularProgress } from "@mui/material";
 import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
@@ -159,10 +158,3 @@ export const NODES = {
     },
   },
 } satisfies INodeConfig["nodes"];
-
-export const ICON_STYLE = {
-  width: "20px",
-  height: "20px",
-} as const;
-export const LOADING_COLOR = "green" as const;
-export const Loading_ICON = CircularProgress;
