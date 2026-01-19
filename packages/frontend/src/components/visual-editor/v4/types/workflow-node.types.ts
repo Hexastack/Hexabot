@@ -19,6 +19,7 @@ import type {
 } from "react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
+import type { IAction } from "@/types/action.types";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { Agent } from "../components/workflow-nodes/Agent";
@@ -69,7 +70,7 @@ export type AgentData = CommonNodeData<ENodeType.AGENT> & {
 
 // Task types
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
-  action?: string;
+  actionName?: string;
 };
 
 // Indicator types
@@ -237,6 +238,7 @@ type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
 export type IWorkflowNodeContext<T extends ENodeType = ENodeType> =
   FlattenedNodeData<T> &
     Partial<CommonNodeDadaTypes> & {
+      action?: IAction | undefined;
       connections: NodeConnection[];
     };
 

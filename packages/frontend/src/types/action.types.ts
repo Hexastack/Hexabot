@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { IconName } from "lucide-react/dynamic";
 import { JSONSchema } from "monaco-yaml";
 
 import { EntityType, Format } from "@/services/types";
@@ -12,6 +13,7 @@ import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
 export interface IActionAttributes {
   name: string;
+  icon?: IconName;
   color?: string;
   description: string;
   inputSchema: JSONSchema;

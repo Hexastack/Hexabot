@@ -5,11 +5,11 @@
  */
 
 import { CircularProgress, styled } from "@mui/material";
-import { ImageOff } from "lucide-react";
+import * as Icons from "lucide-react";
+import { Zap } from "lucide-react";
 
 import { ENodeType, WorkflowNodeTheme } from "../types/workflow-node.types";
 
-import { useWorkflow } from "./useWorkflow";
 import { useWorkflowNode } from "./useWorkflowNode";
 
 const ICON_STYLE = {
@@ -20,25 +20,22 @@ const LOADING_COLOR = "green" as const;
 const Loading_ICON = CircularProgress;
 
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
-  const { theme, executionState, ...rest } = useWorkflowNode<T>();
-  const { getActionColor } = useWorkflow();
-  const mainColor =
-    executionState === "start"
-      ? LOADING_COLOR
-      : ("action" in rest &&
-          typeof rest.action === "string" &&
-          getActionColor(rest.action)) ||
-        theme.borderColor;
-  const StyledIcon = styled(
-    executionState === "start" ? Loading_ICON : theme.Icon || ImageOff,
-  )(() => ICON_STYLE);
+  const { theme, action, executionState } = useWorkflowNode<T>();
+  const isLoading = executionState === "start";
+  const uiColor = theme.borderColor;
+  const apiColor = action?.color;
+  const color = isLoading ? LOADING_COLOR : uiColor || apiColor;
+  const uiIcon = theme.Icon;
+  const apiIcon = Icons[action?.icon || ""];
+  const Icon = uiIcon || apiIcon || Zap;
+  const StyledIcon = styled(isLoading ? Loading_ICON : Icon)(() => ICON_STYLE);
 
   return {
     ...theme,
     Icon: StyledIcon,
     color: theme.color || "#4a5565",
-    bgColor: theme.bgColor || `color-mix(in srgb, ${mainColor}, white 95%)`,
-    iconColor: mainColor || theme.iconColor,
-    borderColor: mainColor || theme.borderColor,
+    bgColor: theme.bgColor || `color-mix(in srgb, ${color}, white 95%)`,
+    iconColor: color || theme.iconColor,
+    borderColor: color || theme.borderColor,
   } satisfies WorkflowNodeTheme;
 };

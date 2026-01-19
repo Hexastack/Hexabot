@@ -11,7 +11,6 @@ import {
   CircleStop,
   GitBranch,
   GripVertical,
-  MessageSquare,
   Play,
   Repeat,
   Zap,
@@ -145,13 +144,10 @@ export const NODES = {
 
     return {
       title: step["do"],
-      action: getTaskAction(step["do"], tasks),
+      actionName: getTaskAction(step["do"], tasks),
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
-      theme: {
-        Icon: MessageSquare,
-        borderColor: "#eca151",
-      },
+      theme: {},
       groupName,
     };
   },

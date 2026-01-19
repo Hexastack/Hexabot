@@ -51,7 +51,6 @@ export interface IWorkflowContext {
   >;
   actions: IAction[];
   definition?: WorkflowDefinition;
-  getActionColor: (actionName: string) => string;
 }
 
 export interface WorkflowContextProps {

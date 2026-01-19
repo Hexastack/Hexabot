@@ -176,8 +176,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     [yaml, JSON.stringify(actions)],
     undefined,
   ) satisfies WorkflowDefinition | undefined;
-  const getActionColor = (actionName: string) =>
-    actions.find((a) => a.name === actionName)?.color || "#fff";
 
   return (
     <WorkflowContext.Provider
@@ -206,7 +204,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         setExecutionStates,
         actions,
         definition,
-        getActionColor,
       }}
     >
       {children}
