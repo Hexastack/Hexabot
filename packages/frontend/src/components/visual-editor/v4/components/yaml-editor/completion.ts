@@ -8,6 +8,8 @@ import type { Monaco } from "@monaco-editor/react";
 import type { IDisposable, IPosition, editor } from "monaco-editor";
 import { parse as parseYaml } from "yaml";
 
+import type { IAction } from "@/types/action.types";
+
 import {
   YAML_COMPLETION_SUGGESTIONS,
   YAML_COMPLETION_TRIGGER_CHARACTERS,
@@ -21,6 +23,25 @@ const buildYamlCompletionItems = (monacoInstance: Monaco) =>
     insertTextRules:
       monacoInstance.languages.CompletionItemInsertTextRule.InsertAsSnippet,
   }));
+const countIndent = (line: string) => line.match(/^\s*/)?.[0].length ?? 0;
+const isCommentOrBlank = (line: string) => {
+  const trimmed = line.trim();
+
+  return trimmed.length === 0 || trimmed.startsWith("#");
+};
+const isInTasksBlock = (model: editor.ITextModel, position: IPosition) => {
+  for (let lineNumber = position.lineNumber; lineNumber >= 1; lineNumber -= 1) {
+    const line = model.getLineContent(lineNumber);
+
+    if (isCommentOrBlank(line)) continue;
+
+    if (countIndent(line) === 0) {
+      return /^tasks:\s*(#.*)?$/.test(line.trim());
+    }
+  }
+
+  return false;
+};
 const extractTaskIds = (value: string) => {
   try {
     const parsed = parseYaml(value);
@@ -75,9 +96,65 @@ const buildTaskCompletionItems = (
     detail: "Workflow task",
   }));
 };
+const buildActionCompletionItems = (
+  monacoInstance: Monaco,
+  model: editor.ITextModel,
+  position: IPosition,
+  actions?: IAction[],
+) => {
+  if (!actions?.length) {
+    return [];
+  }
+
+  const lineContent = model.getLineContent(position.lineNumber);
+
+  if (lineContent.trim().startsWith("#")) {
+    return [];
+  }
+
+  const linePrefix = lineContent.slice(0, position.column - 1);
+
+  if (!/^\s*action:\s*[^#]*$/.test(linePrefix)) {
+    return [];
+  }
+
+  if (!isInTasksBlock(model, position)) {
+    return [];
+  }
+
+  const wordInfo = model.getWordUntilPosition(position);
+  const range = {
+    startLineNumber: position.lineNumber,
+    startColumn: wordInfo.startColumn,
+    endLineNumber: position.lineNumber,
+    endColumn: wordInfo.endColumn,
+  };
+  const seen = new Set<string>();
+  const sortedActions = actions
+    .filter((action) => {
+      if (!action?.name || seen.has(action.name)) {
+        return false;
+      }
+
+      seen.add(action.name);
+
+      return true;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return sortedActions.map((action) => ({
+    label: action.name,
+    kind: monacoInstance.languages.CompletionItemKind.Function,
+    insertText: action.name,
+    range,
+    detail: "Workflow action",
+    documentation: action.description || undefined,
+  }));
+};
 
 export const registerYamlCompletionProvider = (
   monacoInstance: Monaco,
+  getActions?: () => IAction[] | undefined,
 ): IDisposable => {
   const suggestions = buildYamlCompletionItems(monacoInstance);
 
@@ -85,12 +162,28 @@ export const registerYamlCompletionProvider = (
     YAML_LANGUAGE_ID,
     {
       triggerCharacters: [...YAML_COMPLETION_TRIGGER_CHARACTERS],
-      provideCompletionItems: (model, position) => ({
-        suggestions: [
-          ...suggestions,
-          ...buildTaskCompletionItems(monacoInstance, model, position),
-        ],
-      }),
+      provideCompletionItems: (model, position, context) => {
+        const taskSuggestions = buildTaskCompletionItems(
+          monacoInstance,
+          model,
+          position,
+        );
+        const actionSuggestions = buildActionCompletionItems(
+          monacoInstance,
+          model,
+          position,
+          getActions?.(),
+        );
+        const includeBaseSuggestions = context?.triggerCharacter !== ":";
+
+        return {
+          suggestions: [
+            ...(includeBaseSuggestions ? suggestions : []),
+            ...taskSuggestions,
+            ...actionSuggestions,
+          ],
+        };
+      },
     },
   );
 };

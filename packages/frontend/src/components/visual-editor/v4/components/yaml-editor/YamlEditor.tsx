@@ -8,6 +8,10 @@ import Editor, { type Monaco } from "@monaco-editor/react";
 import type { IDisposable, editor } from "monaco-editor";
 import { useCallback, useEffect, useRef } from "react";
 
+import { useFind } from "@/hooks/crud/useFind";
+import { EntityType } from "@/services/types";
+import { IAction } from "@/types/action.types";
+
 import { useWorkflow } from "../../hooks/useWorkflow";
 
 import { registerYamlCompletionProvider } from "./completion";
@@ -20,11 +24,17 @@ import {
 import { ensureYamlLanguageService } from "./language";
 import { applyYamlMarkers } from "./markers";
 import type { YamlEditorProps } from "./types";
-import { applyWorkflowValidationMarkers } from "./validation";
+import { applyWorkflowValidationMarkers } from "./validation/validation";
 import "./yaml.worker";
 
 export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
+  const {
+    data: actions = [],
+    isLoading: actionsLoading,
+    isError: actionsError,
+  } = useFind({ entity: EntityType.WORKFLOW_ACTIONS }, { hasCount: false });
   const { yaml, setYaml } = useWorkflow();
+  const availableActions = actionsLoading || actionsError ? undefined : actions;
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const completionDisposableRef = useRef<IDisposable | null>(null);
@@ -48,11 +58,13 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
     completionDisposableRef.current = null;
   }, []);
   const registerCompletion = useCallback(
-    (monacoInstance: Monaco) => {
+    (monacoInstance: Monaco, nextActions?: IAction[]) => {
       disposeCompletion();
 
-      completionDisposableRef.current =
-        registerYamlCompletionProvider(monacoInstance);
+      completionDisposableRef.current = registerYamlCompletionProvider(
+        monacoInstance,
+        () => nextActions,
+      );
     },
     [disposeCompletion],
   );
@@ -61,8 +73,9 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
       editorInstance: editorRef.current,
       monacoInstance: monacoRef.current,
       yaml,
+      actions: actionsLoading || actionsError ? undefined : actions,
     });
-  }, [yaml]);
+  }, [actions, actionsError, actionsLoading, yaml]);
   const handleBeforeMount = useCallback((monacoInstance: Monaco) => {
     ensureYamlLanguageService(monacoInstance);
   }, []);
@@ -70,11 +83,16 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
     (editorInstance: editor.IStandaloneCodeEditor, monacoInstance: Monaco) => {
       editorRef.current = editorInstance;
       monacoRef.current = monacoInstance;
-      registerCompletion(monacoInstance);
+      registerCompletion(monacoInstance, availableActions);
       applyMarkers();
       applyWorkflowValidation();
     },
-    [applyMarkers, applyWorkflowValidation, registerCompletion],
+    [
+      applyMarkers,
+      applyWorkflowValidation,
+      availableActions,
+      registerCompletion,
+    ],
   );
 
   useEffect(() => {
@@ -108,6 +126,14 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
       disposeCompletion();
     };
   }, [disposeCompletion]);
+
+  useEffect(() => {
+    if (!monacoRef.current) {
+      return;
+    }
+
+    registerCompletion(monacoRef.current, availableActions);
+  }, [availableActions, registerCompletion]);
 
   useEffect(() => {
     return () => {
