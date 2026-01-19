@@ -718,6 +718,11 @@
         "section": "Aucun workflow dans cette section."
       }
     },
+    "actions_drawer": {
+      "title": "Actions",
+      "empty": "Aucune action disponible.",
+      "no_description": "Aucune description fournie."
+    },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"

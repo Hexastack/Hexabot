@@ -28,6 +28,9 @@ import {
   getDefinition,
 } from "../utils/workflow-node.utils";
 
+import { WorkflowActionsDrawer } from "./WorkflowActionsDrawer";
+import { WorkflowEmptyState } from "./WorkflowEmptyState";
+
 const StyledBox = styled(Box)(() => ({
   position: "relative",
   height: "100%",
@@ -77,6 +80,9 @@ export const Workflow = () => {
     nodes: [],
     edges: [],
   });
+  const isEmptyWorkflow = graph.nodes.length === 0;
+  const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
+  const actionsDrawerId = "workflow-actions-drawer";
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
     if (nodesInitialized) {
@@ -123,6 +129,12 @@ export const Workflow = () => {
       isCancelled = true;
     };
   }, [definition, direction]);
+
+  useEffect(() => {
+    if (!isEmptyWorkflow) {
+      setActionsDrawerOpen(false);
+    }
+  }, [isEmptyWorkflow]);
   const handleNewWorkflow = () => {
     dialogs.open(WorkflowFormDialog, {
       defaultValues: null,
@@ -150,6 +162,19 @@ export const Workflow = () => {
           defaultEdges={graph?.edges || []}
           defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
+        />
+        {isEmptyWorkflow && (
+          <WorkflowEmptyState
+            drawerId={actionsDrawerId}
+            drawerOpen={actionsDrawerOpen}
+            onOpenActionsDrawer={() => setActionsDrawerOpen(true)}
+          />
+        )}
+        <WorkflowActionsDrawer
+          actions={actions}
+          drawerId={actionsDrawerId}
+          open={actionsDrawerOpen}
+          onClose={() => setActionsDrawerOpen(false)}
         />
         <RotateButton />
       </StyledBox>

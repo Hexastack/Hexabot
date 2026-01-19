@@ -16,6 +16,7 @@ export interface IActionAttributes {
   inputSchema: JSONSchema;
   settingSchema: JSONSchema;
   outputSchema: JSONSchema;
+  color: string;
 }
 
 export interface IActionStub
