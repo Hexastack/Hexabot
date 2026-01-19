@@ -326,6 +326,7 @@ export const buildNodesAndEdges = async ({
     nodes: [],
     edges: [],
     edgeKeys: new Set(),
+    nodePaths: new Map(),
     config,
   };
   const endStepIds = walkSteps({
@@ -336,6 +337,7 @@ export const buildNodesAndEdges = async ({
     prefix: "step",
     incoming: [],
     ctx,
+    path: ["flow"],
   });
 
   if (!ctx.config) {
@@ -353,6 +355,12 @@ export const buildNodesAndEdges = async ({
 
   endStepIds.forEach((endEdgesId) => {
     const groupName = getGroupId(endEdgesId, ctx.config?.highlights);
+    const sourcePath = ctx.nodePaths.get(endEdgesId);
+    const lastIndex = sourcePath?.[sourcePath.length - 1];
+    const insertPath =
+      sourcePath && typeof lastIndex === "number"
+        ? [...sourcePath.slice(0, -1), lastIndex + 1]
+        : undefined;
 
     ctx.edges.push({
       id: generateId(),
@@ -360,6 +368,7 @@ export const buildNodesAndEdges = async ({
       target: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
+      data: insertPath ? { insertPath } : undefined,
     });
 
     if (ctx.edges.findIndex((n) => n.id === groupName) && groupName) {

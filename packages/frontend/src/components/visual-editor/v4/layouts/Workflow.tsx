@@ -5,10 +5,9 @@
  */
 
 import {
+  type FlowStep,
   type WorkflowCompileOptions,
   type WorkflowDefinition,
-  isSnakeCaseName,
-  toSnakeCase,
 } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
@@ -29,7 +28,16 @@ import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { WorkflowGraph } from "../types/workflow-node.types";
+import type {
+  EdgeInsertData,
+  FlowStepPath,
+} from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
+import {
+  createBaseDefinition,
+  createTaskName,
+  insertStepAtPath,
+} from "../utils/workflow-definition.utils";
 import {
   buildNodesAndEdges,
   getDefinition,
@@ -45,41 +53,6 @@ const StyledBox = styled(Box)(() => ({
   minWidth: 0,
   overflow: "hidden",
 }));
-const DEFAULT_WORKFLOW_NAME = "new_workflow";
-const DEFAULT_WORKFLOW_VERSION = "1.0.0";
-const createBaseDefinition = (workflow?: IWorkflow): WorkflowDefinition => ({
-  workflow: {
-    name: workflow?.name ?? DEFAULT_WORKFLOW_NAME,
-    version: workflow?.version ?? DEFAULT_WORKFLOW_VERSION,
-    ...(workflow?.description?.trim()
-      ? { description: workflow.description.trim() }
-      : {}),
-  },
-  tasks: {},
-  flow: [],
-  outputs: {},
-});
-const createTaskName = (
-  actionName: string,
-  tasks: WorkflowDefinition["tasks"],
-) => {
-  const snakeCaseName = toSnakeCase(actionName);
-  const baseName = isSnakeCaseName(snakeCaseName)
-    ? snakeCaseName
-    : snakeCaseName
-      ? `${snakeCaseName}_task`
-      : "new_task";
-  const normalizedBase = isSnakeCaseName(baseName) ? baseName : "new_task";
-  let candidate = normalizedBase;
-  let suffix = 2;
-
-  while (Object.prototype.hasOwnProperty.call(tasks, candidate)) {
-    candidate = `${normalizedBase}_${suffix}`;
-    suffix += 1;
-  }
-
-  return candidate;
-};
 
 export const Workflow = () => {
   const { data: actions } = useFind(
@@ -143,7 +116,13 @@ export const Workflow = () => {
   });
   const isEmptyWorkflow = graph.nodes.length === 0;
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
+  const [pendingInsertPath, setPendingInsertPath] =
+    useState<FlowStepPath | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
+  const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
+    setPendingInsertPath(insertPath);
+    setActionsDrawerOpen(true);
+  }, []);
   const handleActionSelect = useCallback(
     (action: IAction) => {
       const baseDefinition = definition ?? createBaseDefinition(workflow);
@@ -159,23 +138,30 @@ export const Workflow = () => {
           ...(taskDescription ? { description: taskDescription } : {}),
         },
       };
-      const nextFlow = [...(baseDefinition.flow ?? []), { do: nextTaskName }];
       const nextOutputs =
         baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
           ? baseDefinition.outputs
           : { result: `=$output.${nextTaskName}` };
-      const nextDefinition: WorkflowDefinition = {
+      const nextStep: FlowStep = { do: nextTaskName };
+      const definitionWithTask: WorkflowDefinition = {
         ...baseDefinition,
         tasks: nextTasks,
-        flow: nextFlow,
         outputs: nextOutputs,
+      };
+      const insertedDefinition = pendingInsertPath
+        ? insertStepAtPath(definitionWithTask, pendingInsertPath, nextStep)
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...definitionWithTask,
+        flow: [...(baseDefinition.flow ?? []), nextStep],
       };
 
       setDefinition(nextDefinition);
       setYaml(stringify(nextDefinition));
       setActionsDrawerOpen(false);
+      setPendingInsertPath(null);
     },
-    [definition, setYaml, workflow],
+    [definition, pendingInsertPath, setYaml, workflow],
   );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
@@ -249,6 +235,23 @@ export const Workflow = () => {
       setActionsDrawerOpen(false);
     }
   }, [isEmptyWorkflow]);
+  const edgesWithHandlers = useMemo(() => {
+    return graph.edges.map((edge) => {
+      const edgeData = edge.data as EdgeInsertData | undefined;
+
+      if (!edgeData?.insertPath) {
+        return edge;
+      }
+
+      return {
+        ...edge,
+        data: {
+          ...edgeData,
+          onInsert: handleEdgeInsert,
+        },
+      };
+    });
+  }, [graph.edges, handleEdgeInsert]);
   const handleNewWorkflow = () => {
     dialogs.open(WorkflowFormDialog, {
       defaultValues: null,
@@ -273,7 +276,7 @@ export const Workflow = () => {
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
-          defaultEdges={graph?.edges || []}
+          defaultEdges={edgesWithHandlers || []}
           defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
@@ -281,7 +284,10 @@ export const Workflow = () => {
           <WorkflowEmptyState
             drawerId={actionsDrawerId}
             drawerOpen={actionsDrawerOpen}
-            onOpenActionsDrawer={() => setActionsDrawerOpen(true)}
+            onOpenActionsDrawer={() => {
+              setPendingInsertPath(null);
+              setActionsDrawerOpen(true);
+            }}
           />
         )}
         <WorkflowActionsDrawer
@@ -289,7 +295,10 @@ export const Workflow = () => {
           drawerId={actionsDrawerId}
           open={actionsDrawerOpen}
           onActionSelect={handleActionSelect}
-          onClose={() => setActionsDrawerOpen(false)}
+          onClose={() => {
+            setActionsDrawerOpen(false);
+            setPendingInsertPath(null);
+          }}
         />
         <RotateButton />
       </StyledBox>

@@ -31,6 +31,9 @@ import {
   getTaskDescription,
 } from "../utils/graph.utils";
 
+export const DEFAULT_WORKFLOW_NAME = "new_workflow";
+export const DEFAULT_WORKFLOW_VERSION = "1.0.0";
+
 export const DEFAULT_NODE_PROPS = {
   draggable: false,
   focusable: false,
