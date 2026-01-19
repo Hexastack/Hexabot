@@ -1,0 +1,71 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import type { WorkflowRunStatus, WorkflowSnapshot } from "@hexabot-ai/agentic";
+
+import { EntityType, Format } from "@/services/types";
+
+import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import type { ISubscriber } from "./subscriber.types";
+import type { IUser } from "./user.types";
+import type { IWorkflow } from "./workfow.types";
+
+export interface IWorkflowRunAttributes {
+  workflow: string;
+  triggeredBy?: string | null;
+  status: WorkflowRunStatus;
+  input?: Record<string, unknown> | null;
+  output?: Record<string, unknown> | null;
+  context?: Record<string, unknown> | null;
+  snapshot?: WorkflowSnapshot | null;
+  suspendedStep?: string | null;
+  suspensionReason?: string | null;
+  suspensionData?: unknown;
+  lastResumeData?: unknown;
+  error?: string | null;
+  suspendedAt?: Date | null;
+  finishedAt?: Date | null;
+  failedAt?: Date | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface IWorkflowRunFilters {
+  workflow: string;
+  triggeredBy: string;
+  status: WorkflowRunStatus;
+  suspendedStep: string;
+  suspensionReason: string;
+  error: string;
+}
+
+export interface IWorkflowRunStub
+  extends IBaseSchema,
+    OmitPopulate<IWorkflowRunAttributes, EntityType.WORKFLOW_RUN> {
+  status: WorkflowRunStatus;
+  input?: Record<string, unknown> | null;
+  output?: Record<string, unknown> | null;
+  context?: Record<string, unknown> | null;
+  snapshot?: WorkflowSnapshot | null;
+  suspendedStep?: string | null;
+  suspensionReason?: string | null;
+  suspensionData?: unknown;
+  lastResumeData?: unknown;
+  error?: string | null;
+  suspendedAt?: Date | null;
+  finishedAt?: Date | null;
+  failedAt?: Date | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface IWorkflowRun extends IWorkflowRunStub, IFormat<Format.BASIC> {
+  workflow: string;
+  triggeredBy: string | null;
+}
+
+export interface IWorkflowRunFull extends IWorkflowRunStub, IFormat<Format.FULL> {
+  workflow: IWorkflow;
+  triggeredBy: ISubscriber | IUser | null;
+}

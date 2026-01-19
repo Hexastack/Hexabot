@@ -6,17 +6,14 @@
 
 import {
   type FlowStep,
-  type WorkflowCompileOptions,
-  type WorkflowDefinition,
+  type WorkflowDefinition
 } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { stringify } from "yaml";
 
-import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
@@ -39,8 +36,7 @@ import {
   insertStepAtPath,
 } from "../utils/workflow-definition.utils";
 import {
-  buildNodesAndEdges,
-  getDefinition,
+  buildNodesAndEdges
 } from "../utils/workflow-node.utils";
 
 import { WorkflowActionsDrawer } from "./WorkflowActionsDrawer";
@@ -55,10 +51,6 @@ const StyledBox = styled(Box)(() => ({
 }));
 
 export const Workflow = () => {
-  const { data: actions } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-  );
   const { setViewport } = useReactFlow();
   const {
     yaml,
@@ -67,40 +59,12 @@ export const Workflow = () => {
     debouncedWorkflowUpdate,
     updateWorkflowURL,
     setYaml,
+    definition,
+    setDefinition,
+    actions
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
-  // Cache the action map by content signature to avoid re-parsing on each render.
-  const actionsSignature = useMemo(
-    () =>
-      actions
-        .map(
-          (action) =>
-            `${action.id}:${action.name}:${action.updatedAt ?? ""}`,
-        )
-        .sort()
-        .join("|"),
-    [actions],
-  );
-  const actionsSignatureRef = useRef("");
-  const actionsByNameRef = useRef<WorkflowCompileOptions["actions"]>(
-    {} as WorkflowCompileOptions["actions"],
-  );
-
-  if (actionsSignatureRef.current !== actionsSignature) {
-    actionsSignatureRef.current = actionsSignature;
-    actionsByNameRef.current = actions.reduce(
-      (acc, cur) => {
-        acc[cur.name] =
-          cur as unknown as WorkflowCompileOptions["actions"][string];
-
-        return acc;
-      },
-      {} as WorkflowCompileOptions["actions"],
-    );
-  }
-
-  const actionsByName = actionsByNameRef.current;
   const defaultViewport = useMemo(
     () => ({
       x: workflow?.x || 0,
@@ -109,7 +73,6 @@ export const Workflow = () => {
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
   );
-  const [definition, setDefinition] = useState<WorkflowDefinition>();
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],
     edges: [],
@@ -173,26 +136,6 @@ export const Workflow = () => {
       }
     }
   });
-
-  useEffect(() => {
-    if (!yaml || actions.length === 0) {
-      setDefinition(undefined);
-
-      return;
-    }
-
-    try {
-      setDefinition(
-        getDefinition(yaml, {
-          actions: actionsByName,
-        }),
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to parse workflow definition:", error);
-      setDefinition(undefined);
-    }
-  }, [actions.length, actionsByName, yaml]);
 
   useEffect(() => {
     let isCancelled = false;

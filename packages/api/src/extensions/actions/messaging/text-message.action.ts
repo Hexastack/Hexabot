@@ -36,6 +36,7 @@ export class SendTextMessageAction extends MessageAction<
     super(
       {
         name: 'send_text_message',
+        icon: 'MessageSquare',
         description:
           'Sends a text message to the subscriber and optionally waits for the reply.',
         inputSchema: textMessageInputSchema,

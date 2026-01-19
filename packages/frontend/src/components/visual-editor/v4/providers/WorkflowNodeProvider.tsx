@@ -21,12 +21,13 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   const { getNode } = useReactFlow();
   const { data, ...rest } = useMemo(() => getNode(id) as NodeData, [id]);
   const connections = useNodeConnections({ id });
-  const { executionStates } = useWorkflow();
+  const { executionStates, actions } = useWorkflow();
+  const action = actions.find((a) => a.name === data["actionName"]);
   const executionState = executionStates[id]?.state;
 
   return (
     <WorkflowNodeContext.Provider
-      value={{ ...data, ...rest, connections, executionState }}
+      value={{ ...data, ...rest, action, connections, executionState }}
     >
       {children}
     </WorkflowNodeContext.Provider>

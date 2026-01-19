@@ -20,17 +20,21 @@ export type JsonSchema = ReturnType<typeof zodToJsonSchema>;
 
 export const DEFAULT_ACTION_COLOR = '#98a7ba';
 
+export const DEFAULT_ACTION_ICON = 'Zap';
+
 export type ActionMetadataWithColor<
   I,
   O,
   S extends Settings = Settings,
 > = ActionMetadata<I, O, S> & {
+  icon?: string;
   color?: string;
 };
 
 export type ActionSchemaDefinition = {
   name: ActionName;
   description: string;
+  icon: string;
   color: string;
   inputSchema: JsonSchema;
   outputSchema: JsonSchema;
