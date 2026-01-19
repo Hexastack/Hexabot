@@ -10,6 +10,8 @@ export * from './controllers/memory-definition.controller';
 
 export * from './controllers/workflow.controller';
 
+export * from './controllers/workflow-run.controller';
+
 export * from './dto/workflow.dto';
 
 export * from './dto/workflow-run.dto';
