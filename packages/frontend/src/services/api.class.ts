@@ -73,6 +73,7 @@ export const ROUTES = {
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
   [EntityType.WORKFLOW_ACTIONS]: "/workflow/actions",
+  [EntityType.WORKFLOW_RUN]: "/workflowrun",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
 } as const;
 

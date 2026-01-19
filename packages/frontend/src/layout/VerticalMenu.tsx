@@ -10,23 +10,24 @@ import Grid from "@mui/material/Grid";
 import type { LucideIcon } from "lucide-react";
 // eslint-disable-next-line no-duplicate-imports
 import {
-  AlignLeft,
-  ChevronLeft,
-  Database,
-  Flag,
-  FolderUp,
-  GraduationCap,
-  Home,
-  Languages,
-  LayoutGrid,
-  MemoryStick,
-  Menu,
-  MessagesSquare,
-  Settings,
-  Shield,
-  Tag,
-  UserCircle,
-  Users,
+    Activity,
+    AlignLeft,
+    ChevronLeft,
+    Database,
+    Flag,
+    FolderUp,
+    GraduationCap,
+    Home,
+    Languages,
+    LayoutGrid,
+    MemoryStick,
+    Menu,
+    MessagesSquare,
+    Settings,
+    Shield,
+    Tag,
+    UserCircle,
+    Users,
 } from "lucide-react";
 import { FC } from "react";
 
@@ -125,6 +126,14 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     Icon: MemoryStick,
     requires: {
       [EntityType.MEMORY_DEFINITION]: [PermissionAction.READ],
+    },
+  },
+  {
+    text: "menu.workflow_runs",
+    href: "/workflow/runs",
+    Icon: Activity,
+    requires: {
+      [EntityType.WORKFLOW_RUN]: [PermissionAction.READ],
     },
   },
   {

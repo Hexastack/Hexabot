@@ -71,6 +71,32 @@ export class WorkflowRunController extends BaseOrmController<
   }
 
   /**
+   * Counts the number of workflow runs matching the provided filters.
+   *
+   * @param options - Filters applied to the count query.
+   *
+   * @returns The count of workflow runs matching the filters.
+   */
+  @Get('count')
+  async filterCount(
+    @Query(
+      new TypeOrmSearchFilterPipe<WorkflowRunOrmEntity>({
+        allowedFields: [
+          'workflow.id',
+          'triggeredBy.id',
+          'status',
+          'suspendedStep',
+          'suspensionReason',
+          'error',
+        ],
+      }),
+    )
+    options?: FindManyOptions<WorkflowRunOrmEntity>,
+  ) {
+    return await this.count(options ?? {});
+  }
+
+  /**
    * Retrieves a workflow run by its identifier.
    *
    * @param id - The workflow run ID.
