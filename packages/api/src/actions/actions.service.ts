@@ -81,7 +81,7 @@ export class ActionService {
           action.outputSchema,
           `${name}_output`,
         ),
-        settingsSchema: this.buildJsonSchema(
+        settingSchema: this.buildJsonSchema(
           action.settingSchema,
           `${name}_settings`,
         ),

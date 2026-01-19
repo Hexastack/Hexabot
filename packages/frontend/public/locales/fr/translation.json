@@ -725,7 +725,30 @@
     "actions_drawer": {
       "title": "Actions",
       "empty": "Aucune action disponible.",
-      "no_description": "Aucune description fournie."
+      "no_description": "Aucune description fournie.",
+      "form": {
+        "section": {
+          "input": "Entrée",
+          "settings": "Paramètres",
+          "output": "Sortie"
+        },
+        "empty_schema": {
+          "input": "Aucun schéma d'entrée disponible.",
+          "settings": "Aucun schéma de paramètres disponible.",
+          "output": "Aucun schéma de sortie disponible."
+        },
+        "empty_state": {
+          "no_action": "Aucune action sélectionnée.",
+          "no_schema": "Aucun schéma d'action disponible."
+        },
+        "node_label": {
+          "agent": "Agent",
+          "task": "Tâche"
+        },
+        "action_label": {
+          "none": "Aucune action sélectionnée"
+        }
+      }
     },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",

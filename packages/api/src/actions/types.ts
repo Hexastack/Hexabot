@@ -38,7 +38,7 @@ export type ActionSchemaDefinition = {
   color: string;
   inputSchema: JsonSchema;
   outputSchema: JsonSchema;
-  settingsSchema: JsonSchema;
+  settingSchema: JsonSchema;
 };
 
 export type AnyAction = Action<

@@ -180,7 +180,7 @@ export const getTaskAction = (
   taskName: string,
   tasks: WorkflowDefinition["tasks"],
 ) => {
-  return tasks?.[taskName]?.action ?? "No action provided.";
+  return tasks?.[taskName]?.action;
 };
 
 export const getGroupId = (id: string, groups?: THighlightGroups) => {
@@ -296,6 +296,8 @@ export function walkSteps({
       const tools: string[] = task.settings?.["tools"] || [];
 
       if (tools.length) {
+        const action = getTaskAction(step["do"], tasks);
+
         ctx.nodes.push({
           ...getNodeDimensions(ENodeType.AGENT, ctx.config),
           ...DEFAULT_NODE_PROPS,
@@ -306,6 +308,7 @@ export function walkSteps({
           data: {
             description: getTaskDescription(step["do"], tasks),
             ...ctx.config.nodes[ENodeType.AGENT],
+            action,
             level,
             groupName,
             title: taskName,

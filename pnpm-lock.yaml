@@ -533,6 +533,9 @@ importers:
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@mui/icons-material':
+        specifier: ^7.0.0
+        version: 7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)
       '@mui/material':
         specifier: ^7.0.0
         version: 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -545,6 +548,18 @@ importers:
       '@mui/x-data-grid':
         specifier: ^7.29.9
         version: 7.29.9(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mui/system@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@rjsf/core':
+        specifier: ^6.2.5
+        version: 6.2.5(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1)
+      '@rjsf/mui':
+        specifier: ^6.2.5
+        version: 6.2.5(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@rjsf/core@6.2.5(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1))(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1)
+      '@rjsf/utils':
+        specifier: ^6.2.5
+        version: 6.2.5(react@18.3.1)
+      '@rjsf/validator-ajv8':
+        specifier: ^6.2.5
+        version: 6.2.5(@rjsf/utils@6.2.5(react@18.3.1))
       '@tanstack/react-query':
         specifier: ^5.90.8
         version: 5.90.8(react@18.3.1)
@@ -2409,6 +2424,17 @@ packages:
   '@mui/core-downloads-tracker@7.3.7':
     resolution: {integrity: sha512-8jWwS6FweMkpyRkrJooamUGe1CQfO1yJ+lM43IyUJbrhHW/ObES+6ry4vfGi8EKaldHL3t3BG1bcLcERuJPcjg==}
 
+  '@mui/icons-material@7.3.7':
+    resolution: {integrity: sha512-3Q+ulAqG+A1+R4ebgoIs7AccaJhIGy+Xi/9OnvX376jQ6wcy+rz4geDGrxQxCGzdjOQr4Z3NgyFSZCz4T999lA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@mui/material': ^7.3.7
+      '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   '@mui/material@7.3.7':
     resolution: {integrity: sha512-6bdIxqzeOtBAj2wAsfhWCYyMKPLkRO9u/2o5yexcL0C3APqyy91iGSWgT3H7hg+zR2XgE61+WAu12wXPON8b6A==}
     engines: {node: '>=14.0.0'}
@@ -3025,6 +3051,37 @@ packages:
   '@resvg/resvg-js@2.6.2':
     resolution: {integrity: sha512-xBaJish5OeGmniDj9cW5PRa/PtmuVU3ziqrbr5xJj901ZDN4TosrVaNZpEiLZAxdfnhAe7uQ7QFWfjPe9d9K2Q==}
     engines: {node: '>= 10'}
+
+  '@rjsf/core@6.2.5':
+    resolution: {integrity: sha512-k/2aAKj9IY7JBcnPrYv7frgHkfK0KsS7h8PgPW14GJREh+X5EX/icrypcQu5ge/Ggbwi+90plJll07YiRV/lFg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@rjsf/utils': ^6.2.x
+      react: '>=18'
+
+  '@rjsf/mui@6.2.5':
+    resolution: {integrity: sha512-tzWKR2CDkHbPaA68KCJpnVQrC3CC4QEfww21CIGkm4/SYkg4oRjUUgS18J0GY7rewu7srxzgdWPYaiv9sstOAA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@emotion/react': ^11.7.0
+      '@emotion/styled': ^11.6.0
+      '@mui/icons-material': ^7.0.0
+      '@mui/material': ^7.0.0
+      '@rjsf/core': ^6.2.x
+      '@rjsf/utils': ^6.2.x
+      react: '>=18'
+
+  '@rjsf/utils@6.2.5':
+    resolution: {integrity: sha512-29SvRuY3gKyAHUUnIiJiAF/mTnokgrE7XqUXMj+CZK+sGcmAegwhlnQMJgLQciTodMwTwOaDyV1Fxc47VKTHFw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+
+  '@rjsf/validator-ajv8@6.2.5':
+    resolution: {integrity: sha512-+yLhFRuT2aY91KiUujhUKg8SyTBrUuQP3QAFINeGi+RljA3S+NQN56oeCaNdz9X+35+Sdy6jqmxy/0Q2K+K9vQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@rjsf/utils': ^6.2.x
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -3793,6 +3850,9 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
+
+  '@x0k/json-schema-merge@1.0.2':
+    resolution: {integrity: sha512-1734qiJHNX3+cJGDMMw2yz7R+7kpbAtl5NdPs1c/0gO5kYT6s4dMbLXiIfpZNsOYhGZI3aH7FWrj4Zxz7epXNg==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -6393,6 +6453,10 @@ packages:
     resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
     engines: {'0': node >= 0.2.0}
 
+  jsonpointer@5.0.1:
+    resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
+    engines: {node: '>=0.10.0'}
+
   jsonschema@1.5.0:
     resolution: {integrity: sha512-K+A9hhqbn0f3pJX17Q/7H6yQfD/5OXgdrR5UE12gMXCiN9D5Xq2o5mddV2QEcX/bjla99ASsAAQUyMCCRWAEhw==}
 
@@ -6500,6 +6564,9 @@ packages:
   locate-path@7.2.0:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lodash-es@4.17.22:
+    resolution: {integrity: sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q==}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -6644,6 +6711,15 @@ packages:
 
   map-stream@0.0.7:
     resolution: {integrity: sha512-C0X0KQmGm3N2ftbTGBhSyuydQ+vV1LC3f3zPvT3RXHXNZrvfPZcoXp/N5DOa8vedX/rTMm2CjTtivFg2STJMRQ==}
+
+  markdown-to-jsx@8.0.0:
+    resolution: {integrity: sha512-hWEaRxeCDjes1CVUQqU+Ov0mCqBqkGhLKjL98KdbwHSgEWZZSJQeGlJQatVfeZ3RaxrfTrZZ3eczl2dhp5c/pA==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      react: '>= 0.14.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   marked@14.0.0:
     resolution: {integrity: sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==}
@@ -11139,6 +11215,14 @@ snapshots:
 
   '@mui/core-downloads-tracker@7.3.7': {}
 
+  '@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.2
+
   '@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.28.4
@@ -11756,6 +11840,43 @@ snapshots:
       '@resvg/resvg-js-win32-arm64-msvc': 2.6.2
       '@resvg/resvg-js-win32-ia32-msvc': 2.6.2
       '@resvg/resvg-js-win32-x64-msvc': 2.6.2
+
+  '@rjsf/core@6.2.5(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@rjsf/utils': 6.2.5(react@18.3.1)
+      lodash: 4.17.21
+      lodash-es: 4.17.22
+      markdown-to-jsx: 8.0.0(react@18.3.1)
+      prop-types: 15.8.1
+      react: 18.3.1
+
+  '@rjsf/mui@6.2.5(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@rjsf/core@6.2.5(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1))(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@emotion/react': 11.14.0(@types/react@18.3.2)(react@18.3.1)
+      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)
+      '@mui/icons-material': 7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)
+      '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@rjsf/core': 6.2.5(@rjsf/utils@6.2.5(react@18.3.1))(react@18.3.1)
+      '@rjsf/utils': 6.2.5(react@18.3.1)
+      react: 18.3.1
+
+  '@rjsf/utils@6.2.5(react@18.3.1)':
+    dependencies:
+      '@x0k/json-schema-merge': 1.0.2
+      fast-uri: 3.1.0
+      jsonpointer: 5.0.1
+      lodash: 4.17.21
+      lodash-es: 4.17.22
+      react: 18.3.1
+      react-is: 18.3.1
+
+  '@rjsf/validator-ajv8@6.2.5(@rjsf/utils@6.2.5(react@18.3.1))':
+    dependencies:
+      '@rjsf/utils': 6.2.5(react@18.3.1)
+      ajv: 8.17.1
+      ajv-formats: 2.1.1(ajv@8.17.1)
+      lodash: 4.17.21
+      lodash-es: 4.17.22
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
@@ -12594,6 +12715,10 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
+
+  '@x0k/json-schema-merge@1.0.2':
+    dependencies:
+      '@types/json-schema': 7.0.15
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -15915,6 +16040,8 @@ snapshots:
 
   jsonparse@1.3.1: {}
 
+  jsonpointer@5.0.1: {}
+
   jsonschema@1.5.0: {}
 
   jsonwebtoken@9.0.2:
@@ -16062,6 +16189,8 @@ snapshots:
   locate-path@7.2.0:
     dependencies:
       p-locate: 6.0.0
+
+  lodash-es@4.17.22: {}
 
   lodash.camelcase@4.3.0: {}
 
@@ -16217,6 +16346,10 @@ snapshots:
       tmpl: 1.0.5
 
   map-stream@0.0.7: {}
+
+  markdown-to-jsx@8.0.0(react@18.3.1):
+    optionalDependencies:
+      react: 18.3.1
 
   marked@14.0.0: {}
 

@@ -19,6 +19,8 @@ import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
+import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
+import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -39,7 +41,6 @@ import {
   buildNodesAndEdges
 } from "../utils/workflow-node.utils";
 
-import { WorkflowActionsDrawer } from "./WorkflowActionsDrawer";
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
 
 const StyledBox = styled(Box)(() => ({
@@ -233,7 +234,7 @@ export const Workflow = () => {
             }}
           />
         )}
-        <WorkflowActionsDrawer
+        <ActionListDrawer
           actions={actions}
           drawerId={actionsDrawerId}
           open={actionsDrawerOpen}
@@ -245,6 +246,7 @@ export const Workflow = () => {
         />
         <RotateButton />
       </StyledBox>
+      <ActionFormDrawer />
     </div>
   );
 };
