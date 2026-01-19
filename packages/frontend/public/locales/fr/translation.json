@@ -158,6 +158,7 @@
     "dashboard": "Tableau de bord",
     "visual_editor": "Editeur Visuel",
     "memory_definitions": "Définitions de mémoire",
+    "workflow_runs": "Exécutions de Workflow",
     "nlp": "NLU",
     "nlp_entities": "Entités NLU",
     "inbox": "Boîte de réception",
@@ -257,7 +258,8 @@
     "warning": "Avertissement",
     "console": "Console de Chat Admin",
     "group_label": "Groupe de l'étiquette",
-    "default_group": "Groupe par défaut"
+    "default_group": "Groupe par défaut",
+    "workflow_runs": "Exécutions de Workflow"
   },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",
@@ -401,6 +403,8 @@
     "subtitle": "Sous-titre",
     "description": "Description",
     "status": "Statut",
+    "duration": "Durée",
+    "error": "Erreur",
     "operations": "Opérations",
     "html_content": "Contenu HTML",
     "external_url": "URL Externe",

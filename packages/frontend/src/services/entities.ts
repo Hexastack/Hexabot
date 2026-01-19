@@ -75,6 +75,33 @@ export const UserEntity = new schema.Entity(
   },
 );
 
+export const WorkflowRunEntity = new schema.Entity(
+  EntityType.WORKFLOW_RUN,
+  {
+    workflow: WorkflowEntity,
+    triggeredBy: UserEntity,
+  },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: (entity) => {
+      const processed = processCommonStrategy(entity);
+      // Convert date fields
+
+      if (entity.suspendedAt) {
+        processed.suspendedAt = new Date(entity.suspendedAt);
+      }
+      if (entity.finishedAt) {
+        processed.finishedAt = new Date(entity.finishedAt);
+      }
+      if (entity.failedAt) {
+        processed.failedAt = new Date(entity.failedAt);
+      }
+      
+return processed;
+    },
+  },
+);
+
 export const SubscriberEntity = new schema.Entity(
   EntityType.SUBSCRIBER,
   {
@@ -309,6 +336,7 @@ export const StorageHelperEntity = new schema.Entity(
 export const ENTITY_MAP = {
   [EntityType.WORKFLOW]: WorkflowEntity,
   [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
+  [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,
