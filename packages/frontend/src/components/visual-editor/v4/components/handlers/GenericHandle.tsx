@@ -6,11 +6,13 @@
 
 import { Handle } from "@xyflow/react";
 
-import { useHandleConfig } from "../../hooks/useHandleConfig";
+import { useWorkflow } from "../../hooks/useWorkflow";
 import type { ENodeType, Port } from "../../types/workflow-node.types";
+import { getHandleConfig } from "../../utils/handle.utils";
 
 export const GenericHandle = <T extends ENodeType>({ id }: { id: Port<T> }) => {
-  const config = useHandleConfig(id);
+  const { direction } = useWorkflow();
+  const config = getHandleConfig(id, direction);
 
   return <Handle {...config} />;
 };
