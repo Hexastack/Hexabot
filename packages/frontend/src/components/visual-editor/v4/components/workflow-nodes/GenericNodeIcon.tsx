@@ -4,23 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CircularProgress, styled } from "@mui/material";
-import { ImageOff } from "lucide-react";
-
-import { useWorkflowNode } from "../../hooks/useWorkflowNode";
+import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
-  const { theme, executionState = "N/A" } = useWorkflowNode<T>();
-  const StyledIcon = styled(theme.Icon || ImageOff)(() => ({
-    width: "20px",
-    height: "20px",
-  }));
+  const { Icon, iconColor } = useWorkflowNodeTheme<T>();
 
   return (
     <div
       style={{
-        color: theme.iconColor,
+        color: iconColor,
         boxOrient: "vertical",
         lineClamp: 2,
         overflow: "hidden",
@@ -30,7 +23,7 @@ export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
         paddingTop: "2px",
       }}
     >
-      {executionState === "start" ? <CircularProgress /> : <StyledIcon />}
+      <Icon />
     </div>
   );
 };

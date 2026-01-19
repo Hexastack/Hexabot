@@ -8,12 +8,14 @@ import Grid from "@mui/material/Grid";
 import { PropsWithChildren } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
+import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
   children,
 }: PropsWithChildren) => {
-  const { executionState, theme, width, height } = useWorkflowNode<T>();
+  const { width, height } = useWorkflowNode<T>();
+  const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
 
   return (
     <Grid
@@ -27,11 +29,8 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
         borderRadius: "14px",
         outline: "none",
         pointerEvents: "none",
-        border:
-          executionState === "start"
-            ? "2px solid green"
-            : `2px solid ${theme.borderColor}`,
-        backgroundColor: theme.bgColor,
+        border: `2px solid ${borderColor}`,
+        backgroundColor: bgColor,
         overflow: "hidden",
         boxShadow: "0 3px 6px #0002",
         padding: "1rem",

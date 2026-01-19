@@ -22,6 +22,7 @@ import {
   ActionMetadataWithColor,
   ActionName,
   DEFAULT_ACTION_COLOR,
+  DEFAULT_ACTION_ICON,
 } from './types';
 
 @Injectable()
@@ -36,6 +37,8 @@ export abstract class BaseAction<
 {
   private translations?: I18nTranslation | Observable<I18nTranslation>;
 
+  public readonly icon: string;
+
   public readonly color: string;
 
   protected constructor(
@@ -43,7 +46,12 @@ export abstract class BaseAction<
     private readonly actionService: ActionService,
   ) {
     super(metadata);
+    this.icon = metadata.icon ?? DEFAULT_ACTION_ICON;
     this.color = metadata.color ?? DEFAULT_ACTION_COLOR;
+  }
+
+  getIcon(): string {
+    return this.icon as string;
   }
 
   getName(): ActionName {

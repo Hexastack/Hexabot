@@ -8,10 +8,7 @@ import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useSafeMemo } from "@/hooks/useSafeMemo";
-import { EntityType } from "@/services/types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
@@ -23,10 +20,7 @@ import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { WorkflowGraph } from "../types/workflow-node.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
-import {
-  buildNodesAndEdges,
-  getDefinition,
-} from "../utils/workflow-node.utils";
+import { buildNodesAndEdges } from "../utils/workflow-node.utils";
 
 const StyledBox = styled(Box)(() => ({
   position: "relative",
@@ -37,10 +31,6 @@ const StyledBox = styled(Box)(() => ({
 }));
 
 export const Workflow = () => {
-  const { data: actions } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-  );
   const { setViewport } = useReactFlow();
   const {
     yaml,
@@ -48,6 +38,7 @@ export const Workflow = () => {
     direction,
     debouncedWorkflowUpdate,
     updateWorkflowURL,
+    definition,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -58,20 +49,6 @@ export const Workflow = () => {
       zoom: workflow?.zoom || 1,
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
-  );
-  const definition = useSafeMemo(
-    () =>
-      yaml && actions
-        ? getDefinition(yaml, {
-            actions: actions?.reduce((acc, cur) => {
-              acc[cur.name] = cur;
-
-              return acc;
-            }, {}),
-          })
-        : undefined,
-    [yaml, JSON.stringify(actions)],
-    undefined,
   );
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],

@@ -8,8 +8,9 @@ import {
   compileWorkflow,
   validateWorkflow,
   type WorkflowCompileOptions,
+  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
-import { Edge, getNodesBounds, Position } from "@xyflow/react";
+import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
 import { generateId } from "@/utils/generateId";
@@ -394,7 +395,7 @@ export const buildNodesAndEdges = async ({
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
-) => {
+): WorkflowDefinition => {
   const validation = validateWorkflow(yaml);
 
   if (!validation.success) {
