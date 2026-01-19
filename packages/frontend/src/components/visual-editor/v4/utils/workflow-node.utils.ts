@@ -99,7 +99,7 @@ const toElk = (nodes: NodeData[], edges: Edge[], ctx: TraversalContext) => {
     children: nodes.map((n) => {
       const ports =
         (n.data as { ports?: ELinkType[] })?.ports?.map((handleId) => {
-          const handle = getHandleConfig(handleId, false, direction);
+          const handle = getHandleConfig(handleId, direction);
 
           return {
             handleId,

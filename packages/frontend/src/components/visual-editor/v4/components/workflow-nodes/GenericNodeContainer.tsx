@@ -11,9 +11,8 @@ import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
-  borderRadius = "14px",
   children,
-}: PropsWithChildren & { borderRadius?: string }) => {
+}: PropsWithChildren) => {
   const { executionState, theme, width, height } = useWorkflowNode<T>();
 
   return (
@@ -25,7 +24,7 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
         width,
         height,
         textAlign: "center",
-        borderRadius,
+        borderRadius: "14px",
         outline: "none",
         pointerEvents: "none",
         border:
