@@ -126,10 +126,11 @@ export const WorkflowActionsDrawer = ({
               const description =
                 action.description?.trim() ||
                 t("visual_editor.actions_drawer.no_description");
+              const actionKey = action.id || action.name;
 
               return (
                 <ActionItem
-                  key={action.id}
+                  key={actionKey}
                   onClick={() => onActionSelect?.(action)}
                   sx={{
                     borderLeft: `4px solid ${accentColor}`,
