@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepInfo } from "@hexabot-ai/agentic";
+import { StepInfo, WorkflowDefinition } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
   type Node,
@@ -21,16 +21,22 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
+import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType, RouterType } from "@/services/types";
 import { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import type { WorkflowContextProps } from "../types/workflow.types";
+import { getDefinition } from "../utils/workflow-node.utils";
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
 }) => {
+  const { data: actions } = useFind(
+    { entity: EntityType.WORKFLOW_ACTIONS },
+    { hasCount: false },
+  );
   const flowId = useQueryChange("flowId");
   const { data: workflows } = useFind(
     {
@@ -156,6 +162,23 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     },
   );
 
+  const definition = useSafeMemo<WorkflowDefinition | undefined>(
+    () =>
+      yaml && actions
+        ? getDefinition(yaml, {
+            actions: actions?.reduce((acc, cur) => {
+              acc[cur.name] = cur;
+
+              return acc;
+            }, {}),
+          })
+        : undefined,
+    [yaml, JSON.stringify(actions)],
+    undefined,
+  ) satisfies WorkflowDefinition | undefined;
+  const getActionColor = (actionName: string) =>
+    actions.find((a) => a.name === actionName)?.color || "#fff";
+
   return (
     <WorkflowContext.Provider
       value={{
@@ -181,6 +204,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         debouncedWorkflowUpdate,
         executionStates,
         setExecutionStates,
+        actions,
+        definition,
+        getActionColor,
       }}
     >
       {children}

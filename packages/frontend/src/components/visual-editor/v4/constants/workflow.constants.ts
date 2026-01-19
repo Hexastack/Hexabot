@@ -73,9 +73,6 @@ export const NODES = {
     ],
     theme: {
       Icon: Bot,
-      iconColor: "#7bb0ff",
-      color: "#4a5565",
-      bgColor: "#e9f2ff",
       borderColor: "#7bb0ff",
     },
     title: "",
@@ -85,10 +82,7 @@ export const NODES = {
     ports: [ELinkType.TOOL_IN],
     theme: {
       Icon: Zap,
-      color: "#555555",
-      iconColor: "orange",
       borderColor: "orange",
-      bgColor: "#fff",
     },
   },
   [ENodeType.MODEL]: {
@@ -96,9 +90,6 @@ export const NODES = {
     ports: [ELinkType.MODEL_IN],
     theme: {
       Icon: Brain,
-      color: "#555555",
-      iconColor: "#ad46fc",
-      bgColor: "#faf5ff",
       borderColor: "#ad46fc",
     },
   },
@@ -106,10 +97,7 @@ export const NODES = {
     [EIndicatorType.START]: {
       theme: {
         Icon: Play,
-        color: "#555555",
         borderColor: "#37b765",
-        iconColor: "#37b765",
-        bgColor: "#f0fdf4",
       },
       ports: [ELinkType.INDICATOR_OUT],
       i18nTitle: "message.start",
@@ -117,9 +105,6 @@ export const NODES = {
     [EIndicatorType.END]: {
       theme: {
         Icon: CircleStop,
-        color: "#555555",
-        iconColor: "#e95d32",
-        bgColor: "#fef2f2",
         borderColor: "#e95d32",
       },
       ports: [ELinkType.INDICATOR_IN],
@@ -131,7 +116,6 @@ export const NODES = {
       operatorType: EOperatorType.PARALLEL,
       theme: {
         Icon: GripVertical,
-        color: "#555555",
         bgColor: "#0c9ba0",
       },
       i18nTitle: "message.parallel_indicator",
@@ -141,9 +125,6 @@ export const NODES = {
       operatorType: EOperatorType.CONDITIONAL,
       theme: {
         Icon: GitBranch,
-        iconColor: "#2162fb",
-        color: "#555555",
-        bgColor: "#eef6fe",
         borderColor: "#2162fb",
       },
       i18nTitle: "message.conditional_indicator",
@@ -153,8 +134,7 @@ export const NODES = {
       operatorType: EOperatorType.LOOP,
       theme: {
         Icon: Repeat,
-        color: "#555555",
-        bgColor: "#0c9ba0",
+        borderColor: "#0c9ba0",
       },
       i18nTitle: "message.loop_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
@@ -170,9 +150,6 @@ export const NODES = {
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {
         Icon: MessageSquare,
-        iconColor: "#eca151",
-        color: "#4a5565",
-        bgColor: "#fffbea",
         borderColor: "#eca151",
       },
       groupName,

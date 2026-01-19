@@ -11,8 +11,12 @@ import type {
   NodeConnection,
   ResizeControlDirection,
 } from "@xyflow/system";
-import type { LucideIcon } from "lucide-react";
-import type { CSSProperties, FC, ReactNode, SVGProps } from "react";
+import type {
+  CSSProperties,
+  FC,
+  JSXElementConstructor,
+  ReactNode,
+} from "react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 
@@ -25,21 +29,23 @@ import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 
-export type WorkflowIcon = LucideIcon | FC<SVGProps<SVGSVGElement>>;
+export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
   | { title: string; i18nTitle?: never }
   | { i18nTitle: TTranslationKeys; title?: never };
 
+export type WorkflowNodeTheme = {
+  Icon?: WorkflowIcon;
+  color?: CSSProperties["color"];
+  bgColor?: CSSProperties["color"];
+  iconColor?: CSSProperties["color"];
+  borderColor?: CSSProperties["color"];
+};
+
 export type CommonNodeDadaTypes = NodeDataTitle & {
   description?: string;
   groupName?: string;
-  theme: {
-    color?: CSSProperties["color"];
-    Icon?: WorkflowIcon;
-    borderColor?: CSSProperties["color"];
-    bgColor?: CSSProperties["color"];
-    iconColor?: CSSProperties["color"];
-  };
+  theme: WorkflowNodeTheme;
   level?: number;
   executionState?: "start" | "success" | "error";
 };

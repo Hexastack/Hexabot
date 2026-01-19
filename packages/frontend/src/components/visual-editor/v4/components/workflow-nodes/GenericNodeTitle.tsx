@@ -9,6 +9,7 @@ import { Tooltip } from "@mui/material";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
+import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
 const normalizeTitle = (text?: string) => {
@@ -16,14 +17,15 @@ const normalizeTitle = (text?: string) => {
 };
 
 export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
-  const { title, i18nTitle, theme } = useWorkflowNode<T>();
   const { t } = useTranslate();
+  const { title, i18nTitle } = useWorkflowNode<T>();
+  const { color } = useWorkflowNodeTheme<T>();
   const normalizedTitle = i18nTitle ? t(i18nTitle) : normalizeTitle(title);
 
   return (
     <div
       style={{
-        color: theme.color,
+        color,
         display: "flex",
         fontWeight: 600,
         fontSize: "14px",

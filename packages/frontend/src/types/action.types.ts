@@ -12,6 +12,7 @@ import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
 export interface IActionAttributes {
   name: string;
+  color?: string;
   description: string;
   inputSchema: JSONSchema;
   settingSchema: JSONSchema;
@@ -22,5 +23,4 @@ export interface IActionStub
   extends IBaseSchema,
     OmitPopulate<IActionAttributes, EntityType.WORKFLOW_ACTIONS> {}
 
-export interface IAction extends IActionStub, IFormat<Format.BASIC> {
-}
+export interface IAction extends IActionStub, IFormat<Format.BASIC> {}

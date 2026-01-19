@@ -4,12 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowDefinition } from "@hexabot-ai/agentic";
 import { Cancelable } from "@mui/utils/debounce";
 import { UseMutateFunction } from "@tanstack/react-query";
 import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
+import { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
 export interface IWorkflowContext {
@@ -47,6 +49,9 @@ export interface IWorkflowContext {
   setExecutionStates: Dispatch<
     SetStateAction<Record<string, { state: "start" | "success" }>>
   >;
+  actions: IAction[];
+  definition?: WorkflowDefinition;
+  getActionColor: (actionName: string) => string;
 }
 
 export interface WorkflowContextProps {

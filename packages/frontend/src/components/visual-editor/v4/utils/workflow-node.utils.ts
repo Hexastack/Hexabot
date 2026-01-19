@@ -7,6 +7,7 @@
 import {
   compileWorkflow,
   validateWorkflow,
+  WorkflowDefinition,
   type WorkflowCompileOptions,
 } from "@hexabot-ai/agentic";
 import { Edge, getNodesBounds, Position } from "@xyflow/react";
@@ -394,7 +395,7 @@ export const buildNodesAndEdges = async ({
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
-) => {
+): WorkflowDefinition => {
   const validation = validateWorkflow(yaml);
 
   if (!validation.success) {
