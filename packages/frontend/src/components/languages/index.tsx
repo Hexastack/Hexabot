@@ -15,7 +15,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -52,13 +51,6 @@ export const Languages = () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [_qType, qEntity] = queryKey;
-
-          return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
-        },
-      });
       toast.success(t("message.item_delete_success"));
     },
   });

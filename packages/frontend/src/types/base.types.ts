@@ -11,90 +11,66 @@ import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
 import { IAction, IActionAttributes } from "./action.types";
 import {
-    IAttachment,
-    IAttachmentAttributes,
-    IAttachmentFilters,
+  IAttachment,
+  IAttachmentAttributes,
+  IAttachmentFilters,
 } from "./attachment.types";
 import { IChannel, IChannelAttributes } from "./channel.types";
 import { IContentType, IContentTypeAttributes } from "./content-type.types";
 import {
-    IContent,
-    IContentAttributes,
-    IContentFilters,
-    IContentFull,
+  IContent,
+  IContentAttributes,
+  IContentFilters,
+  IContentFull,
 } from "./content.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
 import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
-    IMemoryDefinition,
-    IMemoryDefinitionAttributes,
+  IMemoryDefinition,
+  IMemoryDefinitionAttributes,
 } from "./memory-definition.types";
 import {
-    IMenuNode,
-    IMenuNodeAttributes,
-    IMenuNodeFull,
+  IMenuNode,
+  IMenuNodeAttributes,
+  IMenuNodeFull,
 } from "./menu-tree.types";
 import { IMenuItem, IMenuItemAttributes, IMenuItemFull } from "./menu.types";
 import {
-    IMessage,
-    IMessageAttributes,
-    IMessageFilters,
-    IMessageFull,
+  IMessage,
+  IMessageAttributes,
+  IMessageFilters,
+  IMessageFull,
 } from "./message.types";
 import { IModel, IModelAttributes, IModelFull } from "./model.types";
 import {
-    INlpEntity,
-    INlpEntityAttributes,
-    INlpEntityFilters,
-    INlpEntityFull,
-} from "./nlp-entity.types";
-import {
-    INlpDatasetSampleAttributes,
-    INlpSample,
-    INlpSampleAttributes,
-    INlpSampleFilters,
-    INlpSampleFull,
-} from "./nlp-sample.types";
-import {
-    INlpSampleEntity,
-    INlpSampleEntityAttributes,
-    INlpSampleEntityFull,
-} from "./nlp-sample_entity.types";
-import {
-    INlpValue,
-    INlpValueAttributes,
-    INlpValueFilters,
-    INlpValueFull,
-} from "./nlp-value.types";
-import {
-    IPermission,
-    IPermissionAttributes,
-    IPermissionFull,
+  IPermission,
+  IPermissionAttributes,
+  IPermissionFull
 } from "./permission.types";
 import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
 import { SearchPayload } from "./search.types";
 import { ISetting, ISettingAttributes } from "./setting.types";
 import {
-    ISubscriber,
-    ISubscriberAttributes,
-    ISubscriberFilters,
-    ISubscriberFull,
+  ISubscriber,
+  ISubscriberAttributes,
+  ISubscriberFilters,
+  ISubscriberFull,
 } from "./subscriber.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
 import { IUser, IUserAttributes, IUserFull } from "./user.types";
 import {
-    IWorkflowRun,
-    IWorkflowRunAttributes,
-    IWorkflowRunFilters,
-    IWorkflowRunFull,
+  IWorkflowRun,
+  IWorkflowRunAttributes,
+  IWorkflowRunFilters,
+  IWorkflowRunFull,
 } from "./workflow-run.types";
 import {
-    IWorkflow,
-    IWorkflowAttributes,
-    IWorkflowFilters,
-    IWorkflowFull,
+  IWorkflow,
+  IWorkflowAttributes,
+  IWorkflowFilters,
+  IWorkflowFull,
 } from "./workfow.types";
 
 export interface IBaseSchema {
@@ -123,10 +99,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTENT]: ["entity"],
   [EntityType.SETTING]: [],
   [EntityType.BOTSTATS]: [],
-  [EntityType.NLP_SAMPLE]: ["language", "entities"],
-  [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
-  [EntityType.NLP_ENTITY]: ["values"],
-  [EntityType.NLP_VALUE]: ["entity"],
   [EntityType.MESSAGE]: ["sender", "recipient", "sentBy"],
   [EntityType.MENU]: ["parent"],
   [EntityType.MENUTREE]: [],
@@ -203,30 +175,6 @@ export interface IEntityMapTypes {
     IMenuNodeFull
   >;
   [EntityType.MODEL]: IEntityTypes<IModel, IModelAttributes, never, IModelFull>;
-  [EntityType.NLP_ENTITY]: IEntityTypes<
-    INlpEntity,
-    INlpEntityAttributes,
-    INlpEntityFilters,
-    INlpEntityFull
-  >;
-  [EntityType.NLP_SAMPLE]: IEntityTypes<
-    INlpSample,
-    INlpSampleAttributes | INlpDatasetSampleAttributes,
-    INlpSampleFilters,
-    INlpSampleFull
-  >;
-  [EntityType.NLP_VALUE]: IEntityTypes<
-    INlpValue,
-    INlpValueAttributes,
-    INlpValueFilters,
-    INlpValueFull
-  >;
-  [EntityType.NLP_SAMPLE_ENTITY]: IEntityTypes<
-    INlpSampleEntity,
-    INlpSampleEntityAttributes,
-    never,
-    INlpSampleEntityFull
-  >;
   [EntityType.PERMISSION]: IEntityTypes<
     IPermission,
     IPermissionAttributes,
