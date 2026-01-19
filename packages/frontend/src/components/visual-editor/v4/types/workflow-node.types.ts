@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
   EdgeMarkerType,

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepInfo, WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { StepInfo, WorkflowDefinition } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
   type Node,
@@ -23,7 +23,7 @@ import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType, RouterType } from "@/services/types";
-import { IWorkflowAttributes } from "@/types/workfow.types";
+import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";

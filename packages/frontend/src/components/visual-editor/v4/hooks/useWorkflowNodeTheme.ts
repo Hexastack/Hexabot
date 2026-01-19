@@ -4,20 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CircularProgress, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import * as Icons from "lucide-react";
 import { Zap } from "lucide-react";
 
-import { ENodeType, WorkflowNodeTheme } from "../types/workflow-node.types";
+import {
+  ICON_STYLE,
+  LOADING_COLOR,
+  Loading_ICON,
+} from "../constants/workflow.constants";
+import {
+  ENodeType,
+  type WorkflowNodeTheme,
+} from "../types/workflow-node.types";
 
 import { useWorkflowNode } from "./useWorkflowNode";
-
-const ICON_STYLE = {
-  width: "20px",
-  height: "20px",
-} as const;
-const LOADING_COLOR = "green" as const;
-const Loading_ICON = CircularProgress;
 
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const { theme, action, executionState } = useWorkflowNode<T>();

@@ -7,10 +7,10 @@
 import {
   compileWorkflow,
   validateWorkflow,
-  WorkflowDefinition,
   type WorkflowCompileOptions,
+  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
-import { Edge, getNodesBounds, Position } from "@xyflow/react";
+import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
 import { generateId } from "@/utils/generateId";
