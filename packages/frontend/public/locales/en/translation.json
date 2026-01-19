@@ -722,6 +722,11 @@
         "section": "No workflows in this section."
       }
     },
+    "actions_drawer": {
+      "title": "Actions",
+      "empty": "No actions available.",
+      "no_description": "No description provided."
+    },
     "yaml_editor": {
       "show": "Show YAML editor",
       "hide": "Hide YAML editor"

@@ -51,6 +51,7 @@ export interface IWorkflowContext {
   >;
   actions: IAction[];
   definition?: WorkflowDefinition;
+  setDefinition: (def: WorkflowDefinition) => void;
 }
 
 export interface WorkflowContextProps {

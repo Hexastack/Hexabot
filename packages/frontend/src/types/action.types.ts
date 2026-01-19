@@ -14,7 +14,7 @@ import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 export interface IActionAttributes {
   name: string;
   icon?: IconName;
-  color?: string;
+  color: string;
   description: string;
   inputSchema: JSONSchema;
   settingSchema: JSONSchema;

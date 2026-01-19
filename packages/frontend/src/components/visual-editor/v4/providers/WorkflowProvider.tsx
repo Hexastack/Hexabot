@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { StepInfo, WorkflowDefinition } from "@hexabot-ai/agentic";
+import type {
+  StepInfo,
+  WorkflowCompileOptions,
+  WorkflowDefinition,
+} from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
   type Node,
@@ -13,7 +17,7 @@ import {
   applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
@@ -21,7 +25,6 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
-import { useSafeMemo } from "@/hooks/useSafeMemo";
 import { EntityType, RouterType } from "@/services/types";
 import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
@@ -61,6 +64,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
   const [yaml, setYaml] = useState("");
+  const [definition, setDefinition] = useState<WorkflowDefinition>();
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const [executionStates, setExecutionStates] = useState<
     Record<string, { state: "start" | "success" }>
@@ -80,6 +84,36 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
     return screenToFlowPosition(screenCenter);
   };
+  // Cache the action map by content signature to avoid re-parsing on each render.
+  const actionsSignature = useMemo(
+    () =>
+      actions
+        .map(
+          (action) => `${action.id}:${action.name}:${action.updatedAt ?? ""}`,
+        )
+        .sort()
+        .join("|"),
+    [actions],
+  );
+  const actionsSignatureRef = useRef("");
+  const actionsByNameRef = useRef<WorkflowCompileOptions["actions"]>(
+    {} as WorkflowCompileOptions["actions"],
+  );
+
+  if (actionsSignatureRef.current !== actionsSignature) {
+    actionsSignatureRef.current = actionsSignature;
+    actionsByNameRef.current = actions.reduce(
+      (acc, cur) => {
+        acc[cur.name] =
+          cur as unknown as WorkflowCompileOptions["actions"][string];
+
+        return acc;
+      },
+      {} as WorkflowCompileOptions["actions"],
+    );
+  }
+
+  const actionsByName = actionsByNameRef.current;
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
     const changes = getNodes().map(({ id }) => ({
@@ -135,6 +169,26 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     }
   }, [flowId, workflows, updateWorkflowURL]);
 
+  useEffect(() => {
+    if (!yaml || actions.length === 0) {
+      setDefinition(undefined);
+
+      return;
+    }
+
+    try {
+      setDefinition(
+        getDefinition(yaml, {
+          actions: actionsByName,
+        }),
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to parse workflow definition:", error);
+      setDefinition(undefined);
+    }
+  }, [actions.length, actionsByName, yaml]);
+
   useSubscribe(
     "workflow",
     (test: { state: "start" | "success"; runId?: string; step: StepInfo }) => {
@@ -161,21 +215,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       }
     },
   );
-
-  const definition = useSafeMemo<WorkflowDefinition | undefined>(
-    () =>
-      yaml && actions
-        ? getDefinition(yaml, {
-            actions: actions?.reduce((acc, cur) => {
-              acc[cur.name] = cur;
-
-              return acc;
-            }, {}),
-          })
-        : undefined,
-    [yaml, JSON.stringify(actions)],
-    undefined,
-  ) satisfies WorkflowDefinition | undefined;
 
   return (
     <WorkflowContext.Provider
@@ -204,6 +243,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         setExecutionStates,
         actions,
         definition,
+        setDefinition,
       }}
     >
       {children}
