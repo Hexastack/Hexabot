@@ -10,24 +10,23 @@ import Grid from "@mui/material/Grid";
 import type { LucideIcon } from "lucide-react";
 // eslint-disable-next-line no-duplicate-imports
 import {
-    Activity,
-    AlignLeft,
-    ChevronLeft,
-    Database,
-    Flag,
-    FolderUp,
-    GraduationCap,
-    Home,
-    Languages,
-    LayoutGrid,
-    MemoryStick,
-    Menu,
-    MessagesSquare,
-    Settings,
-    Shield,
-    Tag,
-    UserCircle,
-    Users,
+  Activity,
+  AlignLeft,
+  ChevronLeft,
+  Database,
+  Flag,
+  FolderUp,
+  Home,
+  Languages,
+  LayoutGrid,
+  MemoryStick,
+  Menu,
+  MessagesSquare,
+  Settings,
+  Shield,
+  Tag,
+  UserCircle,
+  Users
 } from "lucide-react";
 import { FC } from "react";
 
@@ -134,14 +133,6 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     Icon: Activity,
     requires: {
       [EntityType.WORKFLOW_RUN]: [PermissionAction.READ],
-    },
-  },
-  {
-    text: "menu.nlp",
-    href: "/nlp",
-    Icon: GraduationCap,
-    requires: {
-      [EntityType.NLP_SAMPLE]: [PermissionAction.READ],
     },
   },
   {

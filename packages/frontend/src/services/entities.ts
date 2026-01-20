@@ -247,52 +247,6 @@ export const TranslationEntity = new schema.Entity(
   },
 );
 
-export const NlpValueEntity = new schema.Entity(
-  EntityType.NLP_VALUE,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
-export const NlpEntityEntity = new schema.Entity(
-  EntityType.NLP_ENTITY,
-  { values: [NlpValueEntity] },
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
-NlpValueEntity.define({
-  entity: NlpEntityEntity,
-});
-
-export const NlpSampleEntityEntity = new schema.Entity(
-  EntityType.NLP_SAMPLE_ENTITY,
-  {
-    entity: NlpEntityEntity,
-    value: NlpValueEntity,
-  },
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
-export const NlpSampleEntity = new schema.Entity(
-  EntityType.NLP_SAMPLE,
-  {
-    entities: [NlpSampleEntityEntity],
-    language: LanguageEntity,
-  },
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
 export const ChannelEntity = new schema.Entity(EntityType.CHANNEL, undefined, {
   idAttribute: ({ name }) => name,
 });
@@ -351,10 +305,6 @@ export const ENTITY_MAP = {
   [EntityType.CONTENT]: ContentEntity,
   [EntityType.CONTENT_TYPE]: ContentTypeEntity,
   [EntityType.SETTING]: SettingEntity,
-  [EntityType.NLP_SAMPLE]: NlpSampleEntity,
-  [EntityType.NLP_ENTITY]: NlpEntityEntity,
-  [EntityType.NLP_SAMPLE_ENTITY]: NlpSampleEntityEntity,
-  [EntityType.NLP_VALUE]: NlpValueEntity,
   [EntityType.LANGUAGE]: LanguageEntity,
   [EntityType.TRANSLATION]: TranslationEntity,
   [EntityType.ATTACHMENT]: AttachmentEntity,

@@ -18,10 +18,6 @@ export * from './channels/web/types';
 
 export * from './channels/web/wrapper';
 
-export * from './helpers/llm-nlu/index.helper';
-
-export * from './helpers/llm-nlu/settings';
-
 export * from './helpers/local-storage/index.helper';
 
 export * from './helpers/local-storage/settings';

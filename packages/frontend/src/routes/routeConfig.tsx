@@ -23,7 +23,6 @@ import { Languages } from "@/components/languages";
 import { MediaLibrary } from "@/components/media-library";
 import { MemoryDefinitions } from "@/components/memory-definitions";
 import { Menu } from "@/components/menu";
-import { Nlp } from "@/components/nlp";
 import { Profile } from "@/components/profile";
 import { Roles } from "@/components/roles";
 import { Settings } from "@/components/settings";
@@ -87,10 +86,6 @@ export const routes: RouteObjectItem[] = [
     handle: {
       requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
     },
-  },
-  {
-    path: "/nlp/nlp-entities?/:id?/nlpValues?",
-    Component: Nlp,
   },
   {
     path: "/inbox/subscribers?/:subscriber?",

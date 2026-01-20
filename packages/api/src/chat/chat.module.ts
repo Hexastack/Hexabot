@@ -9,7 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { CmsModule } from '@/cms/cms.module';
-import { NlpModule } from '@/nlp/nlp.module';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserModule } from '@/user/user.module';
 import { WorkflowModule } from '@/workflow/workflow.module';
@@ -44,7 +43,7 @@ import { SubscriberService } from './services/subscriber.service';
     CmsModule,
     AttachmentModule,
     UserModule,
-    NlpModule,
+
     forwardRef(() => WorkflowModule),
   ],
   controllers: [

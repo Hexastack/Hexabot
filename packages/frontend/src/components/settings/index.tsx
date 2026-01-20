@@ -97,18 +97,6 @@ export const Settings = () => {
     setSelectedTab(newValue);
     router.push(`/${RouterType.SETTINGS}/groups/${newValue}`);
   };
-  const isDisabled = (setting: ISetting) => {
-    return (
-      setting.group === "nlp_settings" &&
-      setting.label === "endpoint" &&
-      getSettingValue("provider") === "wit"
-    );
-  };
-  const getSettingValue = (label: string) => {
-    const setting = (settings || []).find((s) => s.label === label);
-
-    return setting ? setting.value : false;
-  };
   const debouncedUpdate = useCallback(
     debounce((group, label, value) => {
       const setting = (settings || []).find(
@@ -195,7 +183,6 @@ export const Settings = () => {
                             setting={setting}
                             field={field}
                             ns={setting.group}
-                            isDisabled={isDisabled}
                           />
                         </FormControl>
                       )}
