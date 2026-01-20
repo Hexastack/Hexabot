@@ -39,6 +39,7 @@ export const ROUTES = {
   FETCH_REMOTE_I18N: "/i18n",
   RESET: "/user/reset",
   CONTENT_IMPORT: "/content/import",
+  STATS_SUMMARY: "/stats/summary",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -194,6 +195,12 @@ export class ApiClient {
 
   async getBotStats<T>(type: StatsType) {
     const { data } = await this.request.get<T[]>(`${ROUTES.BOTSTATS}/${type}`);
+
+    return data;
+  }
+
+  async getStatsSummary<T>() {
+    const { data } = await this.request.get<T>(ROUTES.STATS_SUMMARY);
 
     return data;
   }

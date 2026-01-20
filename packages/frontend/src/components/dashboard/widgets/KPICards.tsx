@@ -6,9 +6,10 @@
 
 import { Box, Card, CardContent, Grid, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
-import { Activity, Layers, MessageSquare, TrendingUp, Wallet } from "lucide-react";
+import { Activity, Layers, MessageSquare, TrendingUp } from "lucide-react";
 
-import { mockStats } from "../mockData";
+import { useStatsSummary } from "@/hooks/entities/bot-stat-hooks";
+import { useTranslate } from "@/hooks/useTranslate";
 
 const KPICard = ({ title, value, subtext, icon: Icon, color = 'primary' }: any) => {
     const theme = useTheme();
@@ -77,52 +78,50 @@ return colors[c] || theme.palette.primary.main;
 }
 
 export const KPICards = () => {
-  const { workflows, runs, messages, cost } = mockStats;
+  const { t } = useTranslate();
+  const { data: summary } = useStatsSummary();
+  const loadingLabel = t("dashboard.kpi.loading");
+  const last24hLabel = t("dashboard.kpi.last_24h");
+  const formatNumber = (value?: number) =>
+    typeof value === "number" ? value.toLocaleString() : loadingLabel;
+  const formatPercentage = (value?: number) =>
+    typeof value === "number" ? `${value.toFixed(1)}%` : loadingLabel;
 
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 12, sm: 6, md: 'grow' }}>
         <KPICard
-          title="Total Workflows"
-          value={workflows.total}
+          title={t("dashboard.kpi.total_workflows")}
+          value={formatNumber(summary?.totalWorkflows)}
           icon={Layers}
           color="primary"
-          subtext={`${workflows.conversational} Conv.`}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 'grow' }}>
         <KPICard
-          title="Total Runs (24h)"
-          value={runs.total}
+          title={t("dashboard.kpi.total_runs")}
+          value={formatNumber(summary?.totalRunsLast24h)}
           icon={Activity}
           color="info"
-          subtext={`+${runs.trend}%`}
+          subtext={last24hLabel}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 'grow' }}>
         <KPICard
-          title="Success Rate"
-          value={`${runs.successRate}%`}
+          title={t("dashboard.kpi.success_rate")}
+          value={formatPercentage(summary?.successRateLast24h)}
           icon={TrendingUp}
           color="success"
+          subtext={last24hLabel}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 'grow' }}>
         <KPICard
-          title="Messages"
-          value={messages.total.toLocaleString()}
+          title={t("dashboard.kpi.messages")}
+          value={formatNumber(summary?.totalMessagesLast24h)}
           icon={MessageSquare}
           color="secondary"
-          subtext="Last 24h"
-        />
-      </Grid>
-       <Grid size={{ xs: 12, sm: 6, md: 'grow' }}>
-        <KPICard
-          title="Est. Cost"
-          value={`${cost.currency}${cost.amount}`}
-          icon={Wallet}
-          color="warning"
-          subtext="Last 24h"
+          subtext={last24hLabel}
         />
       </Grid>
     </Grid>
