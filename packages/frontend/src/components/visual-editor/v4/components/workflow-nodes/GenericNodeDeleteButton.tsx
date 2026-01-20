@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { removeStepAtPath } from "@hexabot-ai/agentic";
 import { IconButton, Tooltip } from "@mui/material";
 import { Trash2 } from "lucide-react";
 import { useCallback, type MouseEvent } from "react";
@@ -13,7 +14,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
-import { removeStepAtPath } from "../../utils/workflow-definition-path.utils";
 
 export const GenericNodeDeleteButton = () => {
   const { t } = useTranslate();

@@ -5,6 +5,7 @@
  */
 
 import {
+  insertStepAtPath,
   type FlowStep,
   type WorkflowDefinition
 } from "@hexabot-ai/agentic";
@@ -32,7 +33,6 @@ import type {
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
-import { insertStepAtPath } from "../utils/workflow-definition-path.utils";
 import {
   createBaseDefinition,
   createTaskName,

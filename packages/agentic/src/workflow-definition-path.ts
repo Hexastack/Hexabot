@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { FlowStep, WorkflowDefinition } from './dsl.types';
 
-import type { FlowStepPath } from "../types/workflow-path.types";
+export type FlowStepPath = Array<string | number>;
 
 /**
  * Resolve a nested value from a workflow definition by path.
@@ -17,9 +17,9 @@ export const getValueAtPath = (value: unknown, path: FlowStepPath) => {
       return undefined;
     }
     if (Array.isArray(acc)) {
-      return typeof key === "number" ? acc[key] : undefined;
+      return typeof key === 'number' ? acc[key] : undefined;
     }
-    if (typeof acc === "object") {
+    if (typeof acc === 'object') {
       return (acc as Record<string, unknown>)[String(key)];
     }
 
@@ -30,7 +30,7 @@ export const getValueAtPath = (value: unknown, path: FlowStepPath) => {
 /**
  * Create a new value with a nested path updated immutably.
  */
-export const setValueAtPath = <T,>(
+export const setValueAtPath = <T>(
   value: T,
   path: FlowStepPath,
   nextValue: unknown,
@@ -42,7 +42,7 @@ export const setValueAtPath = <T,>(
   const [key, ...rest] = path;
 
   if (Array.isArray(value)) {
-    if (typeof key !== "number") {
+    if (typeof key !== 'number') {
       return value;
     }
     const nextArray = [...value];
@@ -52,7 +52,7 @@ export const setValueAtPath = <T,>(
     return nextArray as unknown as T;
   }
 
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     return {
       ...(value as Record<string, unknown>),
       [String(key)]: setValueAtPath(
@@ -79,7 +79,7 @@ export const removeStepAtPath = (
 
   const removeIndex = stepPath[stepPath.length - 1];
 
-  if (typeof removeIndex !== "number") {
+  if (typeof removeIndex !== 'number') {
     return null;
   }
 
@@ -115,7 +115,7 @@ export const insertStepAtPath = (
 
   const insertIndex = insertPath[insertPath.length - 1];
 
-  if (typeof insertIndex !== "number") {
+  if (typeof insertIndex !== 'number') {
     return null;
   }
 

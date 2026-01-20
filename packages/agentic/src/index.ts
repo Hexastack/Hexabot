@@ -36,6 +36,14 @@ export {
 
 export * from './dsl.types';
 
+export {
+  getValueAtPath,
+  insertStepAtPath,
+  removeStepAtPath,
+  setValueAtPath,
+  type FlowStepPath,
+} from './workflow-definition-path';
+
 export { WorkflowSuspendedError } from './runtime-error';
 
 export {
