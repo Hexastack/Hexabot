@@ -242,7 +242,8 @@
     "console": "Admin Chat Console",
     "group_label": "Group Label",
     "default_group": "Default Group",
-    "workflow_runs": "Workflow Runs"
+    "workflow_runs": "Workflow Runs",
+    "recent_runs": "Recent Runs"
   },
   "label": {
     "terms": "I have read and approve the terms and conditions.",
@@ -253,6 +254,7 @@
     "no_quick_replies": "- No quick replies -",
     "text_patterns": " Text Patterns",
     "triggers": "Triggers",
+    "triggered_by": "Triggered By",
     "payloads": "Payloads",
     "general_payloads": "General Payloads",
     "exact_match": "Exact Match",

@@ -7,63 +7,133 @@
 import { Card, CardContent, CardHeader, Chip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useMemo } from "react";
 
-import { mockRecentRuns } from "../mockData";
+import { useFind } from "@/hooks/crud/useFind";
+import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType, Format } from "@/services/types";
+import { IWorkflowRunFull } from "@/types/workflow-run.types";
+import { getDateTimeFormatter } from "@/utils/date";
 
-const columns: GridColDef[] = [
-  { field: "time", headerName: "Time", flex: 0.8 },
-  { 
-      field: "workflow", 
-      headerName: "Workflow", 
-      flex: 1.5,
-      renderCell: (params) => (
-          <Typography variant="body2" fontWeight="medium">
-              {params.value}
-          </Typography>
-      )
-  },
-  { field: "type", headerName: "Type", flex: 1 },
-  { field: "trigger", headerName: "Trigger", flex: 1 },
-  { 
-    field: "status", 
-    headerName: "Status", 
-    flex: 1,
-    renderCell: (params) => {
-        let color: "success" | "warning" | "error" | "default" = "default";
-
-        if (params.value === "Success") color = "success";
-        if (params.value === "Warning") color = "warning";
-        if (params.value === "Failed") color = "error";
-        
-return <Chip label={params.value} color={color} size="small" variant="outlined" sx={{ fontWeight: 'bold' }} />;
-    }
-  },
-  { field: "duration", headerName: "Duration", flex: 0.8 },
-];
+const STATUS_COLORS = {
+  idle: "default",
+  running: "info",
+  suspended: "warning",
+  finished: "success",
+  failed: "error",
+} as const;
 
 export const RecentRuns = () => {
   const theme = useTheme();
+  const { t } = useTranslate();
+  const { dataGridProps } = useFind(
+    { entity: EntityType.WORKFLOW_RUN, format: Format.FULL },
+    {
+      initialPaginationState: {
+        page: 0,
+        pageSize: 5,
+      },
+      initialSortState: [{ field: "createdAt", sort: "desc" }],
+    },
+  ) as any;
+  const columns = useMemo<GridColDef<IWorkflowRunFull>[]>(
+    () => [
+      {
+        field: "createdAt",
+        headerName: t("label.createdAt"),
+        flex: 1,
+        valueGetter: (value) =>
+          t("datetime.created_at", getDateTimeFormatter(new Date(value))),
+      },
+      {
+        field: "workflow",
+        headerName: t("label.workflow"),
+        flex: 1.5,
+        valueGetter: (_value, row) => row.workflow?.name || "-",
+        renderCell: (params) => (
+          <Typography variant="body2" fontWeight="medium">
+            {params.value}
+          </Typography>
+        ),
+      },
+      {
+        field: "type",
+        headerName: t("label.type"),
+        flex: 1,
+        valueGetter: (_value, row) =>
+          row.workflow?.type ? t(`label.${row.workflow.type}`) : "-",
+      },
+      {
+        field: "triggeredBy",
+        headerName: t("label.triggered_by"),
+        flex: 1,
+        valueGetter: (_value, row) => {
+          if (!row.triggeredBy) return "-";
+          const { firstName, lastName } = row.triggeredBy;
+          
+return `${firstName} ${lastName}`.trim();
+        },
+      },
+      {
+        field: "status",
+        headerName: t("label.status"),
+        flex: 1,
+        renderCell: (params) => (
+          <Chip
+            label={params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : ""}
+            color={STATUS_COLORS[params.value] || "default"}
+            size="small"
+            variant="outlined"
+            sx={{ fontWeight: "bold" }}
+          />
+        ),
+      },
+      {
+        field: "duration",
+        headerName: t("label.duration"),
+        flex: 0.8,
+        sortable: false,
+        valueGetter: (_value, row) => {
+          const endTime = row.finishedAt || row.failedAt || new Date();
+          const start = new Date(row.createdAt).getTime();
+          const end = new Date(endTime).getTime();
+          const durationMs = end - start;
+          const secondsTotal = Math.max(0, Math.floor(durationMs / 1000));
+          const hours = Math.floor(secondsTotal / 3600);
+          const minutes = Math.floor((secondsTotal % 3600) / 60);
+          const seconds = secondsTotal % 60;
+
+          if (hours > 0) {
+            return `${hours}h ${minutes}m ${seconds}s`;
+          }
+
+          if (minutes > 0) {
+            return `${minutes}m ${seconds}s`;
+          }
+
+          return `${seconds}s`;
+        },
+      },
+    ],
+    [t],
+  );
   
   return (
-    <Card sx={{ height: "100%", borderRadius: 3, boxShadow: '0px 2px 10px rgba(0,0,0,0.03)' }}>
+    <Card sx={{ height: "100%", borderRadius: 3, boxShadow: '0px 2px 10px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' }}>
       <CardHeader 
-        title="Recent Runs" 
+        title={t("title.recent_runs")} 
         titleTypographyProps={{ variant: 'h6', fontWeight: 'bold' }}
       />
-      <CardContent sx={{ height: '100%', width: '100%', p: 0, '& .MuiDataGrid-root': { border: 'none' } }}>
+      <CardContent sx={{ width: '100%', p: 0, '& .MuiDataGrid-root': { border: 'none' }, flexGrow: 1 }}>
          <DataGrid
-            rows={mockRecentRuns}
+            {...dataGridProps}
             columns={columns}
-            initialState={{
-            pagination: {
-                paginationModel: {
-                pageSize: 5,
-                },
-            },
-            }}
             pageSizeOptions={[5]}
             disableRowSelectionOnClick
-            density="comfortable"
+            disableColumnMenu
+            disableColumnSelector
+            density="compact"
+            autoHeight
             sx={{ 
                 border: 0,
                 '& .MuiDataGrid-columnHeaders': {
