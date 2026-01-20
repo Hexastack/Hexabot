@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepInfo } from '@hexabot-ai/agentic';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { In, InsertEvent, UpdateEvent } from 'typeorm';
@@ -305,15 +304,5 @@ export class ChatService {
         this.websocketGateway.broadcastSubscriberUpdate(subscriber);
       }
     }
-  }
-
-  @OnEvent('hook:step:start')
-  sendWorkflowStepStart(payload: { runId?: string; step: StepInfo }) {
-    this.websocketGateway.broadcastWorkflowStepStart(payload);
-  }
-
-  @OnEvent('hook:step:success')
-  sendWorkflowStepSuccess(payload: { runId?: string; step: StepInfo }) {
-    this.websocketGateway.broadcastWorkflowStepSuccess(payload);
   }
 }

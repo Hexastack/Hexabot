@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepInfo } from '@hexabot-ai/agentic';
+import { type WorkflowEventMap } from '@hexabot-ai/agentic';
+import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -28,8 +29,13 @@ import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { OutgoingMessage, StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { PermissionService } from '@/user/services/permission.service';
+import { UserService } from '@/user/services/user.service';
+import { Action } from '@/user/types/action.type';
+import { type TModel } from '@/user/types/model.type';
 import { getSessionMiddleware } from '@/utils/constants/session-middleware';
 import { getSessionStore } from '@/utils/constants/session-store';
+import { type WorkflowContextState } from '@/workflow/types';
 
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
@@ -46,6 +52,8 @@ export class WebsocketGateway
     private readonly logger: LoggerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
+    private readonly userService: UserService,
+    private readonly permissionService: PermissionService,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -105,20 +113,21 @@ export class WebsocketGateway
     });
   }
 
-  broadcastWorkflowStepStart(payload: {
-    runId?: string;
-    step: StepInfo;
-  }): void {
-    this.io.to(Room.WORKFLOW).emit('workflow', { state: 'start', ...payload });
-  }
+  broadcastWorkflowStepState({
+    initiatorId,
+    ...rest
+  }: (
+    | WorkflowEventMap['hook:step:start']
+    | WorkflowEventMap['hook:step:success']
+  ) &
+    Partial<Pick<WorkflowContextState, 'initiatorId'>> & {
+      state: 'start' | 'success';
+    }): void {
+    const roomName = initiatorId
+      ? `${Room.WORKFLOW}_${initiatorId}`
+      : Room.WORKFLOW;
 
-  broadcastWorkflowStepSuccess(payload: {
-    runId?: string;
-    step: StepInfo;
-  }): void {
-    this.io
-      .to(Room.WORKFLOW)
-      .emit('workflow', { state: 'success', ...payload });
+    this.io.to(roomName).emit('workflow', rest);
   }
 
   broadcast(
@@ -435,5 +444,65 @@ export class WebsocketGateway
     }
 
     return await req.socket.join(room);
+  }
+
+  /**
+   * Determines if a user has permission to perform a specific action.
+   *
+   * @param userId - The user id
+   * @param model - The model
+   * @param action - The action
+   */
+  async hasAbility(userId: string, model: TModel, action: Action) {
+    const user = await this.userService.findOne(userId);
+    const roleIds = user?.roles || [];
+    const permissions = await this.permissionService.getPermissions();
+
+    if (permissions) {
+      const permissionsFromRoles = Object.entries(permissions)
+        .filter(([key, _]) => roleIds.includes(key))
+        .map(([_, value]) => value);
+
+      if (
+        model &&
+        permissionsFromRoles.some((permission) =>
+          permission[model]?.includes(action),
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+
+  /**
+   * Allows a given socket to join a room.
+   *
+   * @param req - Socket request
+   * @param room - The room name
+   */
+  async joinSockets<R extends Room>(
+    req: SocketRequest,
+    room: R,
+    model?: TModel,
+  ) {
+    const userId = req.session.passport?.user?.id;
+    if (!userId) {
+      throw new Error(
+        'Only authenticated users are allowed to join workflow rooms!',
+      );
+    }
+
+    const hasAbility = model
+      ? await this.hasAbility(userId, model, Action.READ)
+      : false;
+
+    if (!hasAbility) {
+      throw new ForbiddenException('You are not authorized to subscribe!');
+    }
+    const roomId = `${room}_${userId}` as const;
+
+    await req.socket.join(roomId);
+
+    return roomId;
   }
 }

@@ -5,11 +5,11 @@
  */
 
 import {
+  WorkflowCompileOptions,
+  WorkflowDefinition,
+  WorkflowEventMap,
   Workflow as WorkflowHelper,
   type FlowStep,
-  type StepInfo,
-  type WorkflowCompileOptions,
-  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
@@ -279,19 +279,27 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
   useSubscribe(
     "workflow",
-    (test: { state: "start" | "success"; runId?: string; step: StepInfo }) => {
-      if (test.state) {
-        const stepId = `^step-${test.step.id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
+    ({
+      step,
+      state,
+    }: (
+      | WorkflowEventMap["hook:step:start"]
+      | WorkflowEventMap["hook:step:success"]
+    ) & {
+      state: "start" | "success";
+    }) => {
+      if (state) {
+        const stepId = `^step-${step.id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
         const idRegex = new RegExp(stepId);
         const foundedNode = getNodes().find((n) => n.id.match(idRegex));
 
         if (foundedNode?.id) {
-          if (test.state === "start") {
+          if (state === "start") {
             setExecutionStates((old) => ({
               ...old,
               [foundedNode.id]: { state: "start" },
             }));
-          } else if (test.state === "success") {
+          } else if (state === "success") {
             setTimeout(() => {
               setExecutionStates((old) => ({
                 ...old,

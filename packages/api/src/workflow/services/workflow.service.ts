@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowEventMap } from '@hexabot-ai/agentic';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
-  IOOutgoingSubscribeMessage,
   Room,
   SocketGet,
   SocketPost,
@@ -26,6 +27,9 @@ import {
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
+import { WorkflowType } from '../types';
+
+import { WorkflowRunService } from './workflow-run.service';
 
 @Injectable()
 export class WorkflowService extends BaseOrmService<
@@ -41,6 +45,7 @@ export class WorkflowService extends BaseOrmService<
   constructor(
     readonly repository: WorkflowRepository,
     private readonly gateway: WebsocketGateway,
+    private readonly workflowRunService: WorkflowRunService,
   ) {
     super(repository);
   }
@@ -69,17 +74,66 @@ export class WorkflowService extends BaseOrmService<
   async subscribe(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
-  ): Promise<IOOutgoingSubscribeMessage> {
+  ) {
     try {
-      await this.gateway.joinNotificationSockets(req, Room.WORKFLOW);
+      const subscribeRoom = await this.gateway.joinSockets(
+        req,
+        Room.WORKFLOW,
+        'workflow',
+      );
 
       return res.status(200).json({
         success: true,
-        subscribe: Room.WORKFLOW,
+        subscribe: subscribeRoom,
       });
     } catch (e) {
       this.logger.error('Websocket subscription', e);
       throw new InternalServerErrorException(e);
     }
+  }
+
+  private async sendWorkflowStepState(
+    state: 'start' | 'success',
+    payload:
+      | WorkflowEventMap['hook:step:start']
+      | WorkflowEventMap['hook:step:success'],
+  ) {
+    if (!payload.runId) {
+      this.logger.error('runId is required');
+
+      return;
+    }
+    const workflowRun = await this.workflowRunService.findOneAndPopulate(
+      payload.runId,
+    );
+    if (!workflowRun?.context) {
+      this.logger.error('workflowRun context is required');
+
+      return;
+    }
+    const { initiatorId, workflowId } = workflowRun?.context;
+    const workflow = await this.findOne(workflowId);
+    const canBroadcastEvents =
+      initiatorId &&
+      workflow?.type &&
+      [WorkflowType.conversational].includes(workflow.type);
+
+    if (canBroadcastEvents) {
+      this.gateway.broadcastWorkflowStepState({
+        ...payload,
+        initiatorId,
+        state,
+      });
+    }
+  }
+
+  @OnEvent('hook:step:start')
+  sendWorkflowStepStart(payload: WorkflowEventMap['hook:step:start']) {
+    this.sendWorkflowStepState('start', payload);
+  }
+
+  @OnEvent('hook:step:success')
+  sendWorkflowStepSuccess(payload: WorkflowEventMap['hook:step:success']) {
+    this.sendWorkflowStepState('success', payload);
   }
 }
