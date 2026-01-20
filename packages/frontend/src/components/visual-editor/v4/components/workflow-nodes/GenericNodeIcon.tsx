@@ -23,7 +23,7 @@ export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
         paddingTop: "2px",
       }}
     >
-      <Icon />
+      <Icon size="20px" />
     </div>
   );
 };
