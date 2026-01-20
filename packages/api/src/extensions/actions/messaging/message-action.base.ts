@@ -75,7 +75,7 @@ export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
 > extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
-  private static readonly DEFAULT_ICON = 'Zap';
+  private static readonly DEFAULT_ICON = 'MessageSquare';
 
   private static readonly DEFAULT_COLOR = '#e47800';
 
