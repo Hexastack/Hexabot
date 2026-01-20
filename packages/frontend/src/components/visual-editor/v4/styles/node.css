@@ -128,3 +128,15 @@
 :root [data-node-type="list"] {
   --node-color: var(--node-list-color);
 }
+
+.workflow-node-delete {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.react-flow__node:hover .workflow-node-delete,
+.react-flow__node:focus-within .workflow-node-delete {
+  opacity: 1;
+  pointer-events: auto;
+}

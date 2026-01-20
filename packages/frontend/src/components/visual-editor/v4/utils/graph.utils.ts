@@ -311,6 +311,7 @@ export function walkSteps({
             action,
             level,
             groupName,
+            stepPath,
             title: taskName,
             i18nTitle: undefined,
           },
@@ -376,6 +377,7 @@ export function walkSteps({
             ...ctx.config.nodes[ENodeType.TASK](taskNodeId, step, tasks),
             level,
             groupName,
+            stepPath,
           },
         });
       }
@@ -404,6 +406,7 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.PARALLEL],
           level,
           groupName,
+          stepPath,
         },
       });
 
@@ -451,6 +454,7 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.CONDITIONAL],
           level,
           groupName,
+          stepPath,
         },
       });
 
@@ -502,6 +506,7 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.LOOP],
           level,
           groupName,
+          stepPath,
         },
       });
 

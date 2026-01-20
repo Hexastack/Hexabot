@@ -32,10 +32,10 @@ import type {
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
+import { insertStepAtPath } from "../utils/workflow-definition-path.utils";
 import {
   createBaseDefinition,
   createTaskName,
-  insertStepAtPath,
 } from "../utils/workflow-definition.utils";
 import {
   buildNodesAndEdges
