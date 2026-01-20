@@ -4,9 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import {
+  Workflow as AgenticWorkflow,
+  WorkflowDefinition,
+} from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
-import { stringify } from 'yaml';
 
 import {
   installUserFixturesTypeOrm,
@@ -16,6 +18,7 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Workflow } from '../dto/workflow.dto';
+import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
 
@@ -63,12 +66,11 @@ describe('WorkflowService (TypeORM)', () => {
     creatorId = userFixtureIds.admin;
 
     const definition = buildWorkflowDefinition();
-    const definitionYaml = stringify(definition);
     workflow = await workflowService.create({
       name: definition.workflow.name,
       version: definition.workflow.version,
       description: definition.workflow.description,
-      definitionYaml,
+      definition,
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
@@ -103,12 +105,25 @@ describe('WorkflowService (TypeORM)', () => {
     });
   });
 
+  it('serializes YAML from definitions before persistence', async () => {
+    const repository = workflowRepository
+      .getManager()
+      .getRepository(WorkflowOrmEntity);
+    const entity = await repository.findOne({
+      where: { id: workflow.id },
+    });
+
+    expect(entity?.definitionYaml).toBe(
+      AgenticWorkflow.stringifyDefinition(workflow.definition),
+    );
+  });
+
   it('enforces unique name/version pairs', async () => {
     const duplicatePayload = {
       name: workflow.name,
       version: workflow.version,
       description: workflow.description ?? undefined,
-      definitionYaml: stringify(workflow.definition),
+      definition: workflow.definition,
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,

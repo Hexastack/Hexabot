@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
-import { stringify } from 'yaml';
 
 import { MemoryRecordCreateDto } from '@/workflow/dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '@/workflow/entities/memory-record.entity';
@@ -36,7 +36,7 @@ export const memoryRecordFixtureIds = {
   run: 'f4444444-4444-4444-4444-444444444444',
 } as const;
 
-const memoryWorkflowDefinitionYaml = stringify({
+const memoryWorkflowDefinition: WorkflowDefinition = {
   workflow: {
     name: 'memory_workflow_fixture',
     version: '0.1.0',
@@ -51,7 +51,7 @@ const memoryWorkflowDefinitionYaml = stringify({
   outputs: {
     result: '="ok"',
   },
-});
+};
 
 export const memoryRecordOrmFixtures: MemoryRecordOrmFixture[] = [
   {
@@ -116,7 +116,7 @@ const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
       { id: memoryDefinitionFixtureIds.workflow },
       { id: memoryDefinitionFixtureIds.run },
     ],
-    definitionYaml: memoryWorkflowDefinitionYaml,
+    definition: memoryWorkflowDefinition,
   });
 
   return await repository.save(entity);

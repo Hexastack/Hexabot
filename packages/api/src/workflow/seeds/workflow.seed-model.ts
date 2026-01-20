@@ -5,7 +5,6 @@
  */
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
-import { stringify } from 'yaml';
 
 import { WorkflowCreateDto } from '../dto/workflow.dto';
 import { WorkflowType } from '../types';
@@ -31,16 +30,12 @@ export const defaultWorkflowDefinition: WorkflowDefinition = {
   },
 };
 
-export const defaultWorkflowDefinitionYaml = stringify(
-  defaultWorkflowDefinition,
-);
-
 export const workflowModels = (creatorId: string): WorkflowCreateDto[] => [
   {
     name: defaultWorkflowDefinition.workflow.name,
     version: defaultWorkflowDefinition.workflow.version,
     description: defaultWorkflowDefinition.workflow.description ?? undefined,
-    definitionYaml: defaultWorkflowDefinitionYaml,
+    definition: defaultWorkflowDefinition,
     type: WorkflowType.conversational,
     schedule: null,
     memoryDefinitions: [],
