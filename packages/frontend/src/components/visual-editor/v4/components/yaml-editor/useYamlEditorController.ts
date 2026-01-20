@@ -49,10 +49,7 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
       errorMessage,
     });
   }, [errorLine, errorMessage]);
-  const registerCompletion = useCallback((monacoInstance: Monaco, nextActions?: typeof actions) => {
-    completionDisposableRef.current?.dispose();
-    completionDisposableRef.current = registerYamlCompletionProvider(monacoInstance, () => nextActions);
-  }, []);
+  // completionDisposableRef holds the disposable returned from the completion provider
   const applyWorkflowValidation = useCallback(() => {
     applyWorkflowValidationMarkers({
       editorInstance: editorRef.current,
@@ -68,11 +65,10 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     (editorInstance: editor.IStandaloneCodeEditor, monacoInstance: Monaco) => {
       editorRef.current = editorInstance;
       monacoRef.current = monacoInstance;
-      registerCompletion(monacoInstance, availableActions);
       applyMarkers();
       applyWorkflowValidation();
     },
-    [applyMarkers, applyWorkflowValidation, availableActions, registerCompletion],
+    [applyMarkers, applyWorkflowValidation, availableActions],
   );
 
   useEffect(() => {
@@ -90,19 +86,20 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
   );
 
   useEffect(() => {
+    const monaco = monacoRef.current;
+
+    if (!monaco) return;
+
+    completionDisposableRef.current?.dispose();
+    completionDisposableRef.current = registerYamlCompletionProvider(monaco, () => availableActions);
+
     return () => {
       completionDisposableRef.current?.dispose();
       completionDisposableRef.current = null;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!monacoRef.current) {
-      return;
-    }
-
-    registerCompletion(monacoRef.current, availableActions);
-  }, [availableActions, registerCompletion]);
+    // we only want to re-run when `availableActions` changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableActions]);
 
   useEffect(() => {
     return () => {
