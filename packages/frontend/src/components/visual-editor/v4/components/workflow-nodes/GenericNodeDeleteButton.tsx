@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { removeStepAtPath } from "@hexabot-ai/agentic";
+import { Workflow, removeStepAtPath } from "@hexabot-ai/agentic";
 import { IconButton, Tooltip } from "@mui/material";
 import { Trash2 } from "lucide-react";
 import { useCallback, type MouseEvent } from "react";
-import { stringify } from "yaml";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -43,7 +42,7 @@ export const GenericNodeDeleteButton = () => {
       }
 
       setDefinition(nextDefinition);
-      setYaml(stringify(nextDefinition));
+      setYaml(Workflow.stringifyDefinition(nextDefinition));
 
       if (!selectedNodeIds.includes(id)) {
         return;

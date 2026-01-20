@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { stringify as stringifyYaml } from 'yaml';
+
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
   WorkflowDefinition,
@@ -76,6 +78,16 @@ export class Workflow {
     const compiled = compileWorkflow(validation.data, options);
 
     return new Workflow(compiled);
+  }
+
+  /**
+   * Convert a workflow definition to YAML.
+   * The definition is validated before serialization.
+   */
+  static stringifyDefinition(definition: WorkflowDefinition): string {
+    const parsed = WorkflowDefinitionSchema.parse(definition);
+
+    return stringifyYaml(parsed);
   }
 
   /**

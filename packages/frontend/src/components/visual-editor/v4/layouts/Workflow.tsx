@@ -6,13 +6,13 @@
 
 import {
   insertStepAtPath,
+  Workflow as WorkflowLib,
   type FlowStep,
-  type WorkflowDefinition
+  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { stringify } from "yaml";
 
 import { useDialogs } from "@/hooks/useDialogs";
 import type { IAction } from "@/types/action.types";
@@ -62,7 +62,7 @@ export const Workflow = () => {
     setYaml,
     definition,
     setDefinition,
-    actions
+    actions,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -121,7 +121,7 @@ export const Workflow = () => {
       };
 
       setDefinition(nextDefinition);
-      setYaml(stringify(nextDefinition));
+      setYaml(WorkflowLib.stringifyDefinition(nextDefinition));
       setActionsDrawerOpen(false);
       setPendingInsertPath(null);
     },
