@@ -15,9 +15,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{BASE_URL}}/botstats/messages",
+              "raw": "{{BASE_URL}}/stats/messages",
               "host": ["{{BASE_URL}}"],
-              "path": ["botstats", "messages"]
+              "path": ["stats", "messages"]
             }
           },
           "response": []
@@ -28,9 +28,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{BASE_URL}}/botstats/datum?type=new_users",
+              "raw": "{{BASE_URL}}/stats/datum?type=new_users",
               "host": ["{{BASE_URL}}"],
-              "path": ["botstats", "datum"],
+              "path": ["stats", "datum"],
               "query": [
                 {
                   "key": "type",
@@ -47,9 +47,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{BASE_URL}}/botstats/audiance",
+              "raw": "{{BASE_URL}}/stats/audiance",
               "host": ["{{BASE_URL}}"],
-              "path": ["botstats", "audiance"]
+              "path": ["stats", "audiance"]
             }
           },
           "response": []

@@ -8,31 +8,31 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
 import {
-  botstatsFixtures,
-  installBotStatsFixturesTypeOrm,
-} from '@/utils/test/fixtures/botstats';
+  installStatsFixturesTypeOrm,
+  statsFixtures,
+} from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsType } from '../entities/bot-stats.entity';
+import { StatsType } from '../entities/stats.entity';
 
-import { BotStatsRepository } from './bot-stats.repository';
+import { StatsRepository } from './stats.repository';
 
-describe('BotStatsRepository (TypeORM)', () => {
-  let botStatsRepository: BotStatsRepository;
+describe('StatsRepository (TypeORM)', () => {
+  let statsRepository: StatsRepository;
   let module: TestingModule;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [BotStatsRepository, EventEmitter2],
+      providers: [StatsRepository, EventEmitter2],
       typeorm: {
-        fixtures: installBotStatsFixturesTypeOrm,
+        fixtures: installStatsFixturesTypeOrm,
       },
     });
 
     module = testing.module;
-    botStatsRepository = module.get(BotStatsRepository);
+    statsRepository = module.get(StatsRepository);
   });
 
   afterEach(jest.clearAllMocks);
@@ -49,14 +49,14 @@ describe('BotStatsRepository (TypeORM)', () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-07T23:00:00.000Z');
       const types = [
-        BotStatsType.all_messages,
-        BotStatsType.incoming,
-        BotStatsType.outgoing,
+        StatsType.all_messages,
+        StatsType.incoming,
+        StatsType.outgoing,
       ];
-      const result = await botStatsRepository.findMessages(from, to, types);
+      const result = await statsRepository.findMessages(from, to, types);
 
       expect(result).toEqualPayload(
-        botstatsFixtures.filter(({ type }) => types.includes(type)),
+        statsFixtures.filter(({ type }) => types.includes(type)),
       );
     });
 
@@ -64,35 +64,35 @@ describe('BotStatsRepository (TypeORM)', () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-03T23:00:00.000Z');
       const types = [
-        BotStatsType.all_messages,
-        BotStatsType.incoming,
-        BotStatsType.outgoing,
+        StatsType.all_messages,
+        StatsType.incoming,
+        StatsType.outgoing,
       ];
-      const result = await botStatsRepository.findMessages(from, to, types);
+      const result = await statsRepository.findMessages(from, to, types);
 
-      expect(result).toEqualPayload([botstatsFixtures[0]]);
+      expect(result).toEqualPayload([statsFixtures[0]]);
     });
 
     it('should return audiance statistics', async () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-07T23:00:00.000Z');
-      const result = await botStatsRepository.findMessages(from, to, [
-        BotStatsType.new_users,
-        BotStatsType.returning_users,
-        BotStatsType.retention,
+      const result = await statsRepository.findMessages(from, to, [
+        StatsType.new_users,
+        StatsType.returning_users,
+        StatsType.retention,
       ]);
 
-      expect(result).toEqualPayload(botstatsFixtures.slice(1, 4));
+      expect(result).toEqualPayload(statsFixtures.slice(1, 4));
     });
 
     it('should return statistics of a given type', async () => {
       const from = new Date('2023-11-01T23:00:00.000Z');
       const to = new Date('2023-11-07T23:00:00.000Z');
-      const result = await botStatsRepository.findMessages(from, to, [
-        BotStatsType.incoming,
+      const result = await statsRepository.findMessages(from, to, [
+        StatsType.incoming,
       ]);
 
-      expect(result).toEqualPayload([botstatsFixtures[4]]);
+      expect(result).toEqualPayload([statsFixtures[4]]);
     });
   });
 });

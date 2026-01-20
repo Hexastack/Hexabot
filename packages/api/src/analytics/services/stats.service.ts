@@ -7,30 +7,39 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
-import { InsertEvent, UpdateEvent } from 'typeorm';
+import { Between, InsertEvent, UpdateEvent } from 'typeorm';
 
 import {
   Subscriber,
   Subscriber as SubscriberDto,
 } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import {
-  BotStatsActionDto,
-  BotStatsTransformerDto,
-} from '../dto/bot-stats.dto';
-import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
-import { BotStatsRepository } from '../repositories/bot-stats.repository';
+  StatsActionDto,
+  StatsSummaryDto,
+  StatsTransformerDto,
+} from '../dto/stats.dto';
+import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
+import { StatsRepository } from '../repositories/stats.repository';
 
 @Injectable()
-export class BotStatsService extends BaseOrmService<
-  BotStatsOrmEntity,
-  BotStatsTransformerDto,
-  BotStatsActionDto
+export class StatsService extends BaseOrmService<
+  StatsOrmEntity,
+  StatsTransformerDto,
+  StatsActionDto
 > {
-  constructor(readonly repository: BotStatsRepository) {
+  constructor(
+    readonly repository: StatsRepository,
+    private readonly workflowService: WorkflowService,
+    private readonly workflowRunService: WorkflowRunService,
+    private readonly messageService: MessageService,
+  ) {
     super(repository);
   }
 
@@ -47,7 +56,7 @@ export class BotStatsService extends BaseOrmService<
 
     this.eventEmitter.emit(
       'hook:stats:entry',
-      BotStatsType.new_users,
+      StatsType.new_users,
       'New users',
       subscriber,
     );
@@ -94,16 +103,52 @@ export class BotStatsService extends BaseOrmService<
    *
    * @param from - The start date for filtering messages.
    * @param to - The end date for filtering messages.
-   * @param types - An array of message types (of type BotStatsType) to filter the statistics.
+   * @param types - An array of message types (of type StatsType) to filter the statistics.
    *
-   * @returns A promise that resolves to an array of `BotStats` objects representing the message statistics.
+   * @returns A promise that resolves to an array of `Stats` objects representing the message statistics.
    */
   async findMessages(
     from: Date,
     to: Date,
-    types: BotStatsType[],
-  ): Promise<BotStatsOrmEntity[]> {
+    types: StatsType[],
+  ): Promise<StatsOrmEntity[]> {
     return await this.repository.findMessages(from, to, types);
+  }
+
+  async getSummary(): Promise<StatsSummaryDto> {
+    const now = new Date();
+    const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const [
+      totalWorkflows,
+      totalRunsLast24h,
+      totalMessagesLast24h,
+      successfulRunsLast24h,
+      failedRunsLast24h,
+    ] = await Promise.all([
+      this.workflowService.count(),
+      this.workflowRunService.count({
+        where: { createdAt: Between(since, now) },
+      }),
+      this.messageService.count({
+        where: { createdAt: Between(since, now) },
+      }),
+      this.workflowRunService.count({
+        where: { status: 'finished', finishedAt: Between(since, now) },
+      }),
+      this.workflowRunService.count({
+        where: { status: 'failed', failedAt: Between(since, now) },
+      }),
+    ]);
+    const completedRuns = successfulRunsLast24h + failedRunsLast24h;
+    const successRateLast24h =
+      completedRuns > 0 ? successfulRunsLast24h / completedRuns : 0;
+
+    return {
+      totalWorkflows,
+      totalRunsLast24h,
+      successRateLast24h,
+      totalMessagesLast24h,
+    };
   }
 
   /**
@@ -122,7 +167,7 @@ export class BotStatsService extends BaseOrmService<
       if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          BotStatsType.returning_users,
+          StatsType.returning_users,
           'Loyalty',
           subscriber,
         );
@@ -132,7 +177,7 @@ export class BotStatsService extends BaseOrmService<
       if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          BotStatsType.returning_users,
+          StatsType.returning_users,
           'Returning users',
           subscriber,
         );
@@ -145,7 +190,7 @@ export class BotStatsService extends BaseOrmService<
     ) {
       this.eventEmitter.emit(
         'hook:stats:entry',
-        BotStatsType.retention,
+        StatsType.retention,
         'Retentioned users',
       );
     }
@@ -158,7 +203,7 @@ export class BotStatsService extends BaseOrmService<
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  async handleStatEntry(type: BotStatsType, name: string): Promise<void> {
+  async handleStatEntry(type: StatsType, name: string): Promise<void> {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);

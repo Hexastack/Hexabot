@@ -7,14 +7,21 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { BotStatsController } from './controllers/bot-stats.controller';
-import { BotStatsOrmEntity } from './entities/bot-stats.entity';
-import { BotStatsRepository } from './repositories/bot-stats.repository';
-import { BotStatsService } from './services/bot-stats.service';
+import { ChatModule } from '@/chat/chat.module';
+import { WorkflowModule } from '@/workflow/workflow.module';
+
+import { StatsController } from './controllers/stats.controller';
+import { StatsOrmEntity } from './entities/stats.entity';
+import { StatsRepository } from './repositories/stats.repository';
+import { StatsService } from './services/stats.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BotStatsOrmEntity])],
-  controllers: [BotStatsController],
-  providers: [BotStatsService, BotStatsRepository],
+  imports: [
+    TypeOrmModule.forFeature([StatsOrmEntity]),
+    ChatModule,
+    WorkflowModule,
+  ],
+  controllers: [StatsController],
+  providers: [StatsService, StatsRepository],
 })
 export class AnalyticsModule {}

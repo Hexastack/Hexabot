@@ -21,9 +21,9 @@ import type { Socket } from 'socket.io';
 import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import type {
-  BotStatsOrmEntity,
-  BotStatsType,
-} from '@/analytics/entities/bot-stats.entity';
+  StatsOrmEntity,
+  StatsType,
+} from '@/analytics/entities/stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import type ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import type { Message, MessageCreateDto } from '@/chat/dto/message.dto';
@@ -123,7 +123,7 @@ declare module '@nestjs/event-emitter' {
 
   interface OrmEntityRegistry {
     attachment: AttachmentOrmEntity;
-    botStats: BotStatsOrmEntity;
+    stats: StatsOrmEntity;
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
     dummy: DummyOrmEntity;
@@ -196,7 +196,7 @@ declare module '@nestjs/event-emitter' {
     'hook:chatbot:received': [AnyEventWrapper];
     'hook:chatbot:sent': [MessageCreateDto, AnyEventWrapper?];
     'hook:message:preCreate': [THydratedDocument<Message>];
-    'hook:stats:entry': [BotStatsType, string, Subscriber?];
+    'hook:stats:entry': [StatsType, string, Subscriber?];
     'hook:subscriber:assign': [SubscriberUpdateDto, Subscriber];
     'hook:user:lastvisit': [Subscriber];
     'hook:user:logout': [ExpressSession];

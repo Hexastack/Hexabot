@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ActionMetadataWithColor } from '@/actions/types';
-import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
+import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
@@ -137,10 +137,10 @@ export abstract class MessageAction<
       .getHandler()
       .sendMessage(event, envelope, sendOptions);
 
-    eventEmitter.emit('hook:stats:entry', BotStatsType.outgoing, 'Outgoing');
+    eventEmitter.emit('hook:stats:entry', StatsType.outgoing, 'Outgoing');
     eventEmitter.emit(
       'hook:stats:entry',
-      BotStatsType.all_messages,
+      StatsType.all_messages,
       'All Messages',
     );
 

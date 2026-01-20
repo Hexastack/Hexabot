@@ -6,15 +6,15 @@
 
 export * from './analytics.module';
 
-export * from './controllers/bot-stats.controller';
+export * from './controllers/stats.controller';
 
-export * from './dto/bot-stats.dto';
+export * from './dto/stats.dto';
 
-export * from './entities/bot-stats.entity';
+export * from './entities/stats.entity';
 
-export * from './repositories/bot-stats.repository';
+export * from './repositories/stats.repository';
 
-export * from './services/bot-stats.service';
+export * from './services/stats.service';
 
 export * from './utilities/a-month-ago';
 

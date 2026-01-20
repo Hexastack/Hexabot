@@ -10,26 +10,22 @@ import { Between, In, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  BotStats,
-  BotStatsActionDto,
-  BotStatsTransformerDto,
-} from '../dto/bot-stats.dto';
-import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
+import { Stats, StatsActionDto, StatsTransformerDto } from '../dto/stats.dto';
+import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 
 @Injectable()
-export class BotStatsRepository extends BaseOrmRepository<
-  BotStatsOrmEntity,
-  BotStatsTransformerDto,
-  BotStatsActionDto
+export class StatsRepository extends BaseOrmRepository<
+  StatsOrmEntity,
+  StatsTransformerDto,
+  StatsActionDto
 > {
   constructor(
-    @InjectRepository(BotStatsOrmEntity)
-    repository: Repository<BotStatsOrmEntity>,
+    @InjectRepository(StatsOrmEntity)
+    repository: Repository<StatsOrmEntity>,
   ) {
     super(repository, [], {
-      PlainCls: BotStats,
-      FullCls: BotStats,
+      PlainCls: Stats,
+      FullCls: Stats,
     });
   }
 
@@ -44,8 +40,8 @@ export class BotStatsRepository extends BaseOrmRepository<
   async findMessages(
     from: Date,
     to: Date,
-    types: BotStatsType[],
-  ): Promise<BotStatsOrmEntity[]> {
+    types: StatsType[],
+  ): Promise<StatsOrmEntity[]> {
     if (!types.length) {
       return [];
     }

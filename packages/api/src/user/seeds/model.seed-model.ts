@@ -113,8 +113,8 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'BotStats',
-    identity: 'botstats',
+    name: 'Stats',
+    identity: 'stats',
     attributes: {},
   },
   {
