@@ -22,6 +22,7 @@ import {
   ActionMetadataWithColor,
   ActionName,
   DEFAULT_ACTION_COLOR,
+  DEFAULT_ACTION_GROUP,
   DEFAULT_ACTION_ICON,
 } from './types';
 
@@ -41,6 +42,8 @@ export abstract class BaseAction<
 
   public readonly color: string;
 
+  public readonly group: string;
+
   protected constructor(
     metadata: ActionMetadataWithColor<I, O, S>,
     private readonly actionService: ActionService,
@@ -48,6 +51,7 @@ export abstract class BaseAction<
     super(metadata);
     this.icon = metadata.icon ?? DEFAULT_ACTION_ICON;
     this.color = metadata.color ?? DEFAULT_ACTION_COLOR;
+    this.group = metadata.group ?? DEFAULT_ACTION_GROUP;
   }
 
   getIcon(): string {

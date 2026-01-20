@@ -33,6 +33,7 @@ export const DummyAction = createAction<
 >({
   name: 'dummy_action',
   description: 'Echoes the provided message',
+  group: 'dummy',
   inputSchema: InputSchema,
   outputSchema: OutputSchema,
   settingsSchema: ActionSettingsSchema,

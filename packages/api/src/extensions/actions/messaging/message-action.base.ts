@@ -79,6 +79,8 @@ export abstract class MessageAction<
 
   private static readonly DEFAULT_COLOR = '#e47800';
 
+  private static readonly DEFAULT_GROUP = 'messaging';
+
   protected constructor(
     metadata: ActionMetadataWithColor<I, MessageActionOutput, S>,
     actionService: ActionService,
@@ -88,6 +90,7 @@ export abstract class MessageAction<
         ...metadata,
         icon: metadata.icon ?? MessageAction.DEFAULT_ICON,
         color: metadata.color ?? MessageAction.DEFAULT_COLOR,
+        group: metadata.group ?? MessageAction.DEFAULT_GROUP,
       },
       actionService,
     );

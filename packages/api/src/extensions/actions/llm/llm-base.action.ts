@@ -67,12 +67,18 @@ export abstract class LlmBaseAction<
 > extends BaseAction<I, O, C, S> {
   private static readonly DEFAULT_COLOR = '#b65bfd';
 
+  private static readonly DEFAULT_GROUP = 'llm';
+
   protected constructor(
     metadata: ActionMetadataWithColor<I, O, S>,
     actionService: ActionService,
   ) {
     super(
-      { ...metadata, color: metadata.color ?? LlmBaseAction.DEFAULT_COLOR },
+      {
+        ...metadata,
+        color: metadata.color ?? LlmBaseAction.DEFAULT_COLOR,
+        group: metadata.group ?? LlmBaseAction.DEFAULT_GROUP,
+      },
       actionService,
     );
   }
