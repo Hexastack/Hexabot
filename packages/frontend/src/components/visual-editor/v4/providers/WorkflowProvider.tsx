@@ -33,13 +33,13 @@ import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
+import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
 import type { FlowStepPath } from "../types/workflow-path.types";
 import type { WorkflowContextProps } from "../types/workflow.types";
 import {
   createBaseDefinition,
   createTaskName,
 } from "../utils/workflow-definition.utils";
-import { getDefinition } from "../utils/workflow-node.utils";
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
@@ -71,7 +71,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const [yaml, setYaml] = useState("");
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const [executionStates, setExecutionStates] = useState<
     Record<string, { state: "start" | "success" }>
@@ -122,26 +121,17 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
   const actionsByName = actionsByNameRef.current;
   const hasActions = actions.length > 0;
-  const definitionResult = useMemo(() => {
-    if (!yaml || !hasActions) {
-      return { definition: undefined, error: null };
-    }
-
-    try {
-      return {
-        definition: getDefinition(yaml, {
-          actions: actionsByName,
-        }),
-        error: null,
-      };
-    } catch (error) {
-      return { definition: undefined, error: error as Error };
-    }
-  }, [actionsByName, hasActions, yaml]);
-  const definition = definitionResult.definition;
-  const updateDefinition = (nextDefinition: WorkflowDefinition) => {
-    setYaml(WorkflowHelper.stringifyDefinition(nextDefinition));
-  };
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const { yaml, setYaml, definition, updateDefinition } =
+    useWorkflowDefinitionState({
+      flowId,
+      workflow,
+      actionsByName,
+      hasActions,
+      updateWorkflow,
+    });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition(workflow);
     const nextTaskName = createTaskName(
@@ -237,9 +227,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       updateWorkflowURL(flowId, nextSelection);
     }
   };
-  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     debounce((props: Partial<IWorkflowAttributes>) => {
@@ -257,25 +244,10 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   );
 
   useEffect(() => {
-    setYaml(workflow?.definitionYaml || "");
-  }, [workflow?.definitionYaml]);
-  useEffect(() => {
     if (!flowId && workflows?.length) {
       updateWorkflowURL(workflows[0].id);
     }
   }, [flowId, workflows, updateWorkflowURL]);
-
-  useEffect(() => {
-    if (!definitionResult.error) {
-      return;
-    }
-
-    // eslint-disable-next-line no-console
-    console.error(
-      "Failed to parse workflow definition:",
-      definitionResult.error,
-    );
-  }, [definitionResult.error]);
 
   useSubscribe(
     "workflow",
