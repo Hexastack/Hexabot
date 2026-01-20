@@ -6,7 +6,6 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
-import { stringify } from 'yaml';
 
 import { QuickReplyType } from '@/chat/types/quick-reply';
 import {
@@ -84,20 +83,12 @@ export const scheduledWorkflowDefinition: WorkflowDefinition = {
   },
 };
 
-export const messagingWorkflowDefinitionYaml = stringify(
-  messagingWorkflowDefinition,
-);
-
-export const scheduledWorkflowDefinitionYaml = stringify(
-  scheduledWorkflowDefinition,
-);
-
 export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
   {
     name: messagingWorkflowDefinition.workflow.name,
     version: messagingWorkflowDefinition.workflow.version,
     description: messagingWorkflowDefinition.workflow.description ?? undefined,
-    definitionYaml: messagingWorkflowDefinitionYaml,
+    definition: messagingWorkflowDefinition,
     type: WorkflowType.conversational,
     schedule: null,
     memoryDefinitions: [],
@@ -115,7 +106,7 @@ export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
     name: scheduledWorkflowDefinition.workflow.name,
     version: scheduledWorkflowDefinition.workflow.version,
     description: scheduledWorkflowDefinition.workflow.description ?? undefined,
-    definitionYaml: scheduledWorkflowDefinitionYaml,
+    definition: scheduledWorkflowDefinition,
     type: WorkflowType.scheduled,
     schedule: '*/10 * * * * *',
     memoryDefinitions: [],

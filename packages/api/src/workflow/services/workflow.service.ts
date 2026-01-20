@@ -5,7 +5,11 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -22,6 +26,7 @@ import {
 
 import {
   Workflow as WorkflowDto,
+  WorkflowCreateDto,
   WorkflowDtoConfig,
   WorkflowTransformerDto,
 } from '../dto/workflow.dto';
@@ -60,6 +65,14 @@ export class WorkflowService extends BaseOrmService<
     });
 
     return latest ?? null;
+  }
+
+  async create(payload: WorkflowCreateDto) {
+    if (!payload.definition) {
+      throw new BadRequestException('Workflow definition is required');
+    }
+
+    return super.create(payload);
   }
 
   /**

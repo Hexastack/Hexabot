@@ -61,7 +61,7 @@ export class WorkflowController extends BaseOrmController<
   /**
    * Creates a new workflow definition.
    *
-   * @param workflowCreateDto - Workflow properties and definition to persist.
+   * @param workflowCreateDto - Workflow properties and definition object to persist.
    *
    * @returns The newly created workflow.
    */
@@ -153,7 +153,7 @@ export class WorkflowController extends BaseOrmController<
    * Updates an existing workflow definition.
    *
    * @param id - The workflow ID to update.
-   * @param workflowUpdateDto - Partial workflow attributes to apply.
+   * @param workflowUpdateDto - Partial workflow attributes (including definition) to apply.
    *
    * @returns The updated workflow definition.
    */
