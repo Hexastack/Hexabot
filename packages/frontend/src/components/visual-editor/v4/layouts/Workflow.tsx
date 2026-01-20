@@ -4,14 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  type FlowStep,
-  type WorkflowDefinition
-} from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { stringify } from "yaml";
 
 import { useDialogs } from "@/hooks/useDialogs";
 import type { IAction } from "@/types/action.types";
@@ -32,14 +27,7 @@ import type {
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
-import { insertStepAtPath } from "../utils/workflow-definition-path.utils";
-import {
-  createBaseDefinition,
-  createTaskName,
-} from "../utils/workflow-definition.utils";
-import {
-  buildNodesAndEdges
-} from "../utils/workflow-node.utils";
+import { buildNodesAndEdges } from "../utils/workflow-node.utils";
 
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
 
@@ -59,10 +47,9 @@ export const Workflow = () => {
     direction,
     debouncedWorkflowUpdate,
     updateWorkflowURL,
-    setYaml,
     definition,
-    setDefinition,
-    actions
+    actions,
+    addActionStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -89,43 +76,11 @@ export const Workflow = () => {
   }, []);
   const handleActionSelect = useCallback(
     (action: IAction) => {
-      const baseDefinition = definition ?? createBaseDefinition(workflow);
-      const nextTaskName = createTaskName(
-        action.name,
-        baseDefinition.tasks ?? {},
-      );
-      const taskDescription = action.description?.trim();
-      const nextTasks = {
-        ...baseDefinition.tasks,
-        [nextTaskName]: {
-          action: action.name,
-          ...(taskDescription ? { description: taskDescription } : {}),
-        },
-      };
-      const nextOutputs =
-        baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
-          ? baseDefinition.outputs
-          : { result: `=$output.${nextTaskName}` };
-      const nextStep: FlowStep = { do: nextTaskName };
-      const definitionWithTask: WorkflowDefinition = {
-        ...baseDefinition,
-        tasks: nextTasks,
-        outputs: nextOutputs,
-      };
-      const insertedDefinition = pendingInsertPath
-        ? insertStepAtPath(definitionWithTask, pendingInsertPath, nextStep)
-        : null;
-      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
-        ...definitionWithTask,
-        flow: [...(baseDefinition.flow ?? []), nextStep],
-      };
-
-      setDefinition(nextDefinition);
-      setYaml(stringify(nextDefinition));
+      addActionStep(action, pendingInsertPath);
       setActionsDrawerOpen(false);
       setPendingInsertPath(null);
     },
-    [definition, pendingInsertPath, setYaml, workflow],
+    [addActionStep, pendingInsertPath],
   );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {

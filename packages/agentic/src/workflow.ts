@@ -4,11 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { stringify as stringifyYaml } from 'yaml';
+
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
   WorkflowDefinition,
   WorkflowDefinitionSchema,
   validateWorkflow,
+  type FlowStep,
 } from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
 import {
@@ -35,6 +38,8 @@ export type {
 } from './workflow-types';
 
 export type { WorkflowCompileOptions } from './workflow-compiler';
+
+export type FlowStepPath = Array<string | number>;
 
 /**
  * Entry point for preparing and executing workflows from YAML or object definitions.
@@ -76,6 +81,142 @@ export class Workflow {
     const compiled = compileWorkflow(validation.data, options);
 
     return new Workflow(compiled);
+  }
+
+  /**
+   * Convert a workflow definition to YAML.
+   * The definition is validated before serialization.
+   */
+  static stringifyDefinition(definition: WorkflowDefinition): string {
+    const parsed = WorkflowDefinitionSchema.parse(definition);
+
+    return stringifyYaml(parsed);
+  }
+
+  /**
+   * Resolve a nested value from a workflow definition by path.
+   */
+  static getValueAtPath(value: unknown, path: FlowStepPath): unknown {
+    return path.reduce<unknown>((acc, key) => {
+      if (acc === null || acc === undefined) {
+        return undefined;
+      }
+      if (Array.isArray(acc)) {
+        return typeof key === 'number' ? acc[key] : undefined;
+      }
+      if (typeof acc === 'object') {
+        return (acc as Record<string, unknown>)[String(key)];
+      }
+
+      return undefined;
+    }, value);
+  }
+
+  /**
+   * Create a new value with a nested path updated immutably.
+   */
+  static setValueAtPath<T>(
+    value: T,
+    path: FlowStepPath,
+    nextValue: unknown,
+  ): T {
+    if (path.length === 0) {
+      return nextValue as T;
+    }
+
+    const [key, ...rest] = path;
+
+    if (Array.isArray(value)) {
+      if (typeof key !== 'number') {
+        return value;
+      }
+      const nextArray = [...value];
+
+      nextArray[key] = Workflow.setValueAtPath(value[key], rest, nextValue);
+
+      return nextArray as unknown as T;
+    }
+
+    if (value && typeof value === 'object') {
+      return {
+        ...(value as Record<string, unknown>),
+        [String(key)]: Workflow.setValueAtPath(
+          (value as Record<string, unknown>)[String(key)],
+          rest,
+          nextValue,
+        ),
+      } as T;
+    }
+
+    return value;
+  }
+
+  /**
+   * Remove a flow step from the definition at the given path, if valid.
+   */
+  static removeStepAtPath(
+    definition: WorkflowDefinition,
+    stepPath: FlowStepPath,
+  ): WorkflowDefinition | null {
+    if (!stepPath.length) {
+      return null;
+    }
+
+    const removeIndex = stepPath[stepPath.length - 1];
+
+    if (typeof removeIndex !== 'number') {
+      return null;
+    }
+
+    const stepsPath = stepPath.slice(0, -1);
+    const steps = Workflow.getValueAtPath(definition, stepsPath);
+
+    if (!Array.isArray(steps)) {
+      return null;
+    }
+
+    if (removeIndex < 0 || removeIndex >= steps.length) {
+      return null;
+    }
+
+    const nextSteps = [...steps];
+
+    nextSteps.splice(removeIndex, 1);
+
+    return Workflow.setValueAtPath(definition, stepsPath, nextSteps);
+  }
+
+  /**
+   * Insert a flow step into the definition at the given path, if valid.
+   */
+  static insertStepAtPath(
+    definition: WorkflowDefinition,
+    insertPath: FlowStepPath,
+    step: FlowStep,
+  ): WorkflowDefinition | null {
+    if (!insertPath.length) {
+      return null;
+    }
+
+    const insertIndex = insertPath[insertPath.length - 1];
+
+    if (typeof insertIndex !== 'number') {
+      return null;
+    }
+
+    const stepsPath = insertPath.slice(0, -1);
+    const steps = Workflow.getValueAtPath(definition, stepsPath);
+
+    if (!Array.isArray(steps)) {
+      return null;
+    }
+
+    const nextSteps = [...steps];
+    const safeIndex = Math.min(Math.max(insertIndex, 0), nextSteps.length);
+
+    nextSteps.splice(safeIndex, 0, step);
+
+    return Workflow.setValueAtPath(definition, stepsPath, nextSteps);
   }
 
   /**

@@ -40,9 +40,10 @@ export { WorkflowSuspendedError } from './runtime-error';
 
 export {
   compileWorkflow,
-  Workflow,
+  Workflow as Workflow,
   WorkflowEventEmitter,
   WorkflowRunner,
+  type FlowStepPath,
   type WorkflowCompileOptions,
   type WorkflowResumeResult,
   type WorkflowRunOptions,
