@@ -244,6 +244,16 @@
     "default_group": "Groupe par défaut",
     "workflow_runs": "Exécutions de Workflow"
   },
+  "dashboard": {
+    "kpi": {
+      "total_workflows": "Total des workflows",
+      "total_runs": "Total des exécutions",
+      "success_rate": "Taux de réussite",
+      "messages": "Messages",
+      "last_24h": "Dernières 24 h",
+      "loading": "—"
+    }
+  },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",
     "starts_conversation": "Point d'entrée",

@@ -41,3 +41,10 @@ export type ColumnChartStats = {
   name: BotStatsType;
   value: number;
 };
+
+export type StatsSummary = {
+  totalWorkflows: number;
+  totalRunsLast24h: number;
+  successRateLast24h: number;
+  totalMessagesLast24h: number;
+};

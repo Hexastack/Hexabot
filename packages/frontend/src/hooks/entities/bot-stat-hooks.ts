@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StatsType } from "@/types/bot-stat.types";
+import { StatsSummary, StatsType } from "@/types/bot-stat.types";
 
 import { useTanstackQuery } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
@@ -16,6 +16,17 @@ export const useFindStats = <T>(type: StatsType) => {
     queryKey: ["stats", type],
     queryFn: async () => {
       return await apiClient.getBotStats<T>(type);
+    },
+  });
+};
+
+export const useStatsSummary = () => {
+  const { apiClient } = useApiClient();
+
+  return useTanstackQuery({
+    queryKey: ["stats", "summary"],
+    queryFn: async () => {
+      return await apiClient.getStatsSummary<StatsSummary>();
     },
   });
 };
