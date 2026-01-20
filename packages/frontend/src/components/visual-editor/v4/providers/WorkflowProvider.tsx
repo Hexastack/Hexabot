@@ -4,18 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  StepInfo,
-  WorkflowCompileOptions,
-  WorkflowDefinition,
+import {
+  Workflow as WorkflowHelper,
+  type FlowStep,
+  type StepInfo,
+  type WorkflowCompileOptions,
+  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import {
+  applyNodeChanges,
+  useReactFlow,
   type Node,
   type NodeChange,
   type XYPosition,
-  applyNodeChanges,
-  useReactFlow,
 } from "@xyflow/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -26,11 +28,17 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, RouterType } from "@/services/types";
+import type { IAction } from "@/types/action.types";
 import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
+import type { FlowStepPath } from "../types/workflow-path.types";
 import type { WorkflowContextProps } from "../types/workflow.types";
+import {
+  createBaseDefinition,
+  createTaskName,
+} from "../utils/workflow-definition.utils";
 import { getDefinition } from "../utils/workflow-node.utils";
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
@@ -64,7 +72,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
   const [yaml, setYaml] = useState("");
-  const [definition, setDefinition] = useState<WorkflowDefinition>();
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const [executionStates, setExecutionStates] = useState<
     Record<string, { state: "start" | "success" }>
@@ -114,6 +121,65 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   }
 
   const actionsByName = actionsByNameRef.current;
+  const hasActions = actions.length > 0;
+  const definitionResult = useMemo(() => {
+    if (!yaml || !hasActions) {
+      return { definition: undefined, error: null };
+    }
+
+    try {
+      return {
+        definition: getDefinition(yaml, {
+          actions: actionsByName,
+        }),
+        error: null,
+      };
+    } catch (error) {
+      return { definition: undefined, error: error as Error };
+    }
+  }, [actionsByName, hasActions, yaml]);
+  const definition = definitionResult.definition;
+  const updateDefinition = (nextDefinition: WorkflowDefinition) => {
+    setYaml(WorkflowHelper.stringifyDefinition(nextDefinition));
+  };
+  const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
+    const baseDefinition = definition ?? createBaseDefinition(workflow);
+    const nextTaskName = createTaskName(
+      action.name,
+      baseDefinition.tasks ?? {},
+    );
+    const taskDescription = action.description?.trim();
+    const nextTasks = {
+      ...baseDefinition.tasks,
+      [nextTaskName]: {
+        action: action.name,
+        ...(taskDescription ? { description: taskDescription } : {}),
+      },
+    };
+    const nextOutputs =
+      baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
+        ? baseDefinition.outputs
+        : { result: `=$output.${nextTaskName}` };
+    const nextStep: FlowStep = { do: nextTaskName };
+    const definitionWithTask: WorkflowDefinition = {
+      ...baseDefinition,
+      tasks: nextTasks,
+      outputs: nextOutputs,
+    };
+    const insertedDefinition = insertPath
+      ? WorkflowHelper.insertStepAtPath(
+          definitionWithTask,
+          insertPath,
+          nextStep,
+        )
+      : null;
+    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+      ...definitionWithTask,
+      flow: [...(baseDefinition.flow ?? []), nextStep],
+    };
+
+    updateDefinition(nextDefinition);
+  };
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
     const changes = getNodes().map(({ id }) => ({
@@ -139,6 +205,36 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const removeWorkflowParams = async () => {
     if (flowId) {
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${flowId}`);
+    }
+  };
+  const removeStepAtPath = (stepPath: FlowStepPath, nodeId?: string) => {
+    if (!definition) {
+      return;
+    }
+
+    const nextDefinition = WorkflowHelper.removeStepAtPath(
+      definition,
+      stepPath,
+    );
+
+    if (!nextDefinition) {
+      return;
+    }
+
+    updateDefinition(nextDefinition);
+
+    if (!nodeId || !selectedNodeIds.includes(nodeId)) {
+      return;
+    }
+
+    const nextSelection = selectedNodeIds.filter(
+      (selectedNodeId) => selectedNodeId !== nodeId,
+    );
+
+    selectNodes(nextSelection);
+
+    if (flowId) {
+      updateWorkflowURL(flowId, nextSelection);
     }
   };
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
@@ -170,24 +266,16 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   }, [flowId, workflows, updateWorkflowURL]);
 
   useEffect(() => {
-    if (!yaml || actions.length === 0) {
-      setDefinition(undefined);
-
+    if (!definitionResult.error) {
       return;
     }
 
-    try {
-      setDefinition(
-        getDefinition(yaml, {
-          actions: actionsByName,
-        }),
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to parse workflow definition:", error);
-      setDefinition(undefined);
-    }
-  }, [actions.length, actionsByName, yaml]);
+    // eslint-disable-next-line no-console
+    console.error(
+      "Failed to parse workflow definition:",
+      definitionResult.error,
+    );
+  }, [definitionResult.error]);
 
   useSubscribe(
     "workflow",
@@ -241,9 +329,11 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         debouncedWorkflowUpdate,
         executionStates,
         setExecutionStates,
+        updateDefinition,
+        addActionStep,
+        removeStepAtPath,
         actions,
         definition,
-        setDefinition,
       }}
     >
       {children}

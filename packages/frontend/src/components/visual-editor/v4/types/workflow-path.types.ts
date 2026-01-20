@@ -4,7 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-export type FlowStepPath = Array<string | number>;
+import type { FlowStepPath } from "@hexabot-ai/agentic";
+
+export type { FlowStepPath };
 
 export type EdgeInsertData = {
   insertPath?: FlowStepPath;
