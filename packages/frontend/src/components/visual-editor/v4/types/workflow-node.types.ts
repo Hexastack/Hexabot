@@ -29,6 +29,7 @@ import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
+import type { FlowStepPath } from "../types/workflow-path.types";
 
 export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
@@ -46,6 +47,7 @@ export type WorkflowNodeTheme = {
 export type CommonNodeDadaTypes = NodeDataTitle & {
   description?: string;
   groupName?: string;
+  stepPath?: FlowStepPath;
   theme: WorkflowNodeTheme;
   level?: number;
   executionState?: "start" | "success" | "error";

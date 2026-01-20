@@ -11,6 +11,8 @@ import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
+import { GenericNodeDeleteButton } from "./GenericNodeDeleteButton";
+
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
   children,
 }: PropsWithChildren) => {
@@ -36,6 +38,7 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
         padding: "1rem",
       }}
     >
+      <GenericNodeDeleteButton />
       {children}
     </Grid>
   );
