@@ -41,23 +41,22 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     },
     [setYaml],
   );
-  const applyMarkers = useCallback(() => {
+  // Consolidated marker + validation application
+  const applyAllMarkers = useCallback(() => {
     applyYamlMarkers({
       editorInstance: editorRef.current,
       monacoInstance: monacoRef.current,
       errorLine,
       errorMessage,
     });
-  }, [errorLine, errorMessage]);
-  // completionDisposableRef holds the disposable returned from the completion provider
-  const applyWorkflowValidation = useCallback(() => {
+
     applyWorkflowValidationMarkers({
       editorInstance: editorRef.current,
       monacoInstance: monacoRef.current,
       yaml,
       actions: availableActions,
     });
-  }, [yaml, availableActions]);
+  }, [errorLine, errorMessage, yaml, availableActions]);
   const beforeMount = useCallback((monacoInstance: Monaco) => {
     ensureYamlLanguageService(monacoInstance);
   }, []);
@@ -65,23 +64,22 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     (editorInstance: editor.IStandaloneCodeEditor, monacoInstance: Monaco) => {
       editorRef.current = editorInstance;
       monacoRef.current = monacoInstance;
-      applyMarkers();
-      applyWorkflowValidation();
+      applyAllMarkers();
     },
-    [applyMarkers, applyWorkflowValidation, availableActions],
+    [applyAllMarkers],
   );
 
   useEffect(() => {
-    applyMarkers();
-  }, [applyMarkers]);
+    applyAllMarkers();
+  }, [applyAllMarkers]);
 
   useDebouncedEffect(
     () => {
       if (!editorRef.current || !monacoRef.current) return;
 
-      applyWorkflowValidation();
+      applyAllMarkers();
     },
-    [applyWorkflowValidation],
+    [applyAllMarkers],
     YAML_VALIDATION_DEBOUNCE_MS,
   );
 
@@ -117,7 +115,5 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     onChange,
     beforeMount,
     onMount,
-    errorLine,
-    errorMessage,
   };
 }
