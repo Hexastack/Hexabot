@@ -6,11 +6,14 @@
 
 import { Global, Module } from '@nestjs/common';
 
+import { UserModule } from '@/user/user.module';
+
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { WebsocketGateway } from './websocket.gateway';
 
 @Global()
 @Module({
+  imports: [UserModule],
   providers: [WebsocketGateway, SocketEventDispatcherService],
   exports: [WebsocketGateway],
 })
