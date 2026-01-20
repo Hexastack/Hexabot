@@ -66,6 +66,7 @@ export type AgentData = CommonNodeData<ENodeType.AGENT> & {
   tools: string[];
   model: string;
   memory: string;
+  action?: string;
 };
 
 // Task types
@@ -235,12 +236,14 @@ type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
   NodeData<T>["data"];
 
 // Context types
-export type IWorkflowNodeContext<T extends ENodeType = ENodeType> =
-  FlattenedNodeData<T> &
-    Partial<CommonNodeDadaTypes> & {
-      action?: IAction | undefined;
-      connections: NodeConnection[];
-    };
+export type IWorkflowNodeContext<T extends ENodeType = ENodeType> = Omit<
+  FlattenedNodeData<T>,
+  "action"
+> &
+  Partial<CommonNodeDadaTypes> & {
+    action?: IAction | undefined;
+    connections: NodeConnection[];
+  };
 
 export interface IWorkflowNodeProps {
   id: string;

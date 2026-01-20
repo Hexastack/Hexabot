@@ -725,7 +725,30 @@
     "actions_drawer": {
       "title": "Actions",
       "empty": "No actions available.",
-      "no_description": "No description provided."
+      "no_description": "No description provided.",
+      "form": {
+        "section": {
+          "input": "Input",
+          "settings": "Settings",
+          "output": "Output"
+        },
+        "empty_schema": {
+          "input": "No input schema available.",
+          "settings": "No settings schema available.",
+          "output": "No output schema available."
+        },
+        "empty_state": {
+          "no_action": "No action selected.",
+          "no_schema": "No action schema available."
+        },
+        "node_label": {
+          "agent": "Agent",
+          "task": "Task"
+        },
+        "action_label": {
+          "none": "No action selected"
+        }
+      }
     },
     "yaml_editor": {
       "show": "Show YAML editor",
