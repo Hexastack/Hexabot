@@ -15,6 +15,7 @@ export interface IActionAttributes {
   name: string;
   icon?: IconName;
   color: string;
+  group: string;
   description: string;
   inputSchema: JSONSchema;
   settingSchema: JSONSchema;

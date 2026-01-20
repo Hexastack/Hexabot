@@ -50,6 +50,9 @@ export class AwaitReplyAction extends BaseAction<
           'Suspends the workflow until a subscriber reply is received, returning the incoming message on resume.',
         inputSchema: awaitReplyInputSchema,
         outputSchema: stdIncomingMessageSchema,
+        icon: 'Hourglass',
+        color: '#040606',
+        group: 'messaging',
       },
       actionService,
     );

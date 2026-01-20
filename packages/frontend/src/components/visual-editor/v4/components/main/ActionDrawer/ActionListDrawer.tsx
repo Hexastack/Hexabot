@@ -6,11 +6,14 @@
 
 import { Box, List, ListItemButton, Typography, useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useMemo } from "react";
+import * as Icons from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IAction } from "@/types/action.types";
+
+import { SearchBox, SearchInput } from "../FlowsDrawer/styles";
 
 type ActionListDrawerContentProps = {
   actions: IAction[];
@@ -40,64 +43,157 @@ const ActionItem = styled(ListItemButton)(({ theme }) => ({
     backgroundColor: theme.palette.action.hover,
   },
 }));
-const ActionSwatch = styled(Box)(() => ({
-  width: 12,
-  height: 12,
-  borderRadius: "50%",
-  marginTop: 6,
+const ActionIcon = styled(Box)(({ theme }) => ({
+  width: 24,
+  height: 24,
+  borderRadius: theme.spacing(1),
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   flexShrink: 0,
+  marginTop: 2,
+}));
+const ActionGroups = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(2),
+}));
+const ActionGroup = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1),
+}));
+const ActionGroupLabel = styled(Typography)(({ theme }) => ({
+  padding: theme.spacing(0.5, 2, 0),
+  fontSize: 14,
+  fontWeight: 700,
+  color: theme.palette.text.secondary,
+}));
+const ActionSearchContainer = styled(Box)(({ theme }) => ({
+  paddingBottom: theme.spacing(1.5),
 }));
 const EmptyState = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: "center",
   color: theme.palette.text.secondary,
 }));
+const FALLBACK_GROUP = "custom";
 const ActionListDrawerContent = ({
   actions,
   onActionSelect,
 }: ActionListDrawerContentProps) => {
   const { t } = useTranslate();
   const theme = useTheme();
-  const sortedActions = useMemo(() => {
-    return [...actions].sort((a, b) => a.name.localeCompare(b.name));
-  }, [actions]);
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredActions = useMemo(() => {
+    if (!normalizedQuery) {
+      return actions;
+    }
+
+    return actions.filter((action) => {
+      const name = action.name.toLowerCase();
+      const description = action.description?.toLowerCase() ?? "";
+
+      return (
+        name.includes(normalizedQuery) ||
+        description.includes(normalizedQuery)
+      );
+    });
+  }, [actions, normalizedQuery]);
+  const groupedActions = useMemo(() => {
+    const grouped = new Map<string, IAction[]>();
+
+    filteredActions.forEach((action) => {
+      const groupKey = action.group.trim() || FALLBACK_GROUP;
+      const bucket = grouped.get(groupKey);
+
+      if (bucket) {
+        bucket.push(action);
+      } else {
+        grouped.set(groupKey, [action]);
+      }
+    });
+
+    return Array.from(grouped.entries())
+      .sort(([groupA], [groupB]) =>
+        groupA.localeCompare(groupB, undefined, { sensitivity: "base" }),
+      )
+      .map(([group, items]) => ({
+        group,
+        items: items.sort((a, b) => a.name.localeCompare(b.name)),
+      }));
+  }, [filteredActions]);
+  const emptyLabel = normalizedQuery
+    ? t("visual_editor.actions_drawer.empty_search")
+    : t("visual_editor.actions_drawer.empty");
 
   return (
     <>
-      {sortedActions.length ? (
-        <ActionsList>
-          {sortedActions.map((action) => {
-            const accentColor = action.color || theme.palette.primary.main;
-            const description =
-              action.description?.trim() ||
-              t("visual_editor.actions_drawer.no_description");
-            const actionKey = action.id || action.name;
+      <ActionSearchContainer>
+        <SearchBox>
+          <Icons.Search size={16} />
+          <SearchInput
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t("visual_editor.actions_drawer.search_placeholder")}
+            slotProps={{
+              input: {
+                "aria-label": t("visual_editor.actions_drawer.search_label"),
+              },
+            }}
+          />
+        </SearchBox>
+      </ActionSearchContainer>
+      {groupedActions.length ? (
+        <ActionGroups>
+          {groupedActions.map(({ group, items }) => (
+            <ActionGroup key={group}>
+              <ActionGroupLabel variant="caption">
+                {group.toUpperCase()}
+              </ActionGroupLabel>
+              <ActionsList>
+                {items.map((action) => {
+                  const accentColor =
+                    action.color || theme.palette.primary.main;
+                  const description =
+                    action.description?.trim() ||
+                    t("visual_editor.actions_drawer.no_description");
+                  const actionKey = action.id || action.name;
+                  const Icon = Icons[action.icon || ""] || Icons.Zap;
 
-            return (
-              <ActionItem
-                key={actionKey}
-                onClick={() => onActionSelect?.(action)}
-                sx={{
-                  borderLeft: `4px solid ${accentColor}`,
-                }}
-              >
-                <ActionSwatch sx={{ backgroundColor: accentColor }} />
-                <Box>
-                  <Typography variant="subtitle1">{action.name}</Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 0.5 }}
-                  >
-                    {description}
-                  </Typography>
-                </Box>
-              </ActionItem>
-            );
-          })}
-        </ActionsList>
+                  return (
+                    <ActionItem
+                      key={actionKey}
+                      onClick={() => onActionSelect?.(action)}
+                      sx={{
+                        borderLeft: `2px solid ${accentColor}`,
+                      }}
+                    >
+                      <ActionIcon sx={{ color: accentColor }}>
+                        <Icon size={16} />
+                      </ActionIcon>
+                      <Box>
+                        <Typography variant="subtitle1">
+                          {action.name}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mt: 0.5 }}
+                        >
+                          {description}
+                        </Typography>
+                      </Box>
+                    </ActionItem>
+                  );
+                })}
+              </ActionsList>
+            </ActionGroup>
+          ))}
+        </ActionGroups>
       ) : (
-        <EmptyState>{t("visual_editor.actions_drawer.empty")}</EmptyState>
+        <EmptyState>{emptyLabel}</EmptyState>
       )}
     </>
   );

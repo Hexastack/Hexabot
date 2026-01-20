@@ -679,7 +679,10 @@
     "actions_drawer": {
       "title": "Actions",
       "empty": "Aucune action disponible.",
+      "empty_search": "Aucune action ne correspond à votre recherche.",
       "no_description": "Aucune description fournie.",
+      "search_placeholder": "Rechercher des actions",
+      "search_label": "Rechercher des actions",
       "form": {
         "section": {
           "input": "Entrée",

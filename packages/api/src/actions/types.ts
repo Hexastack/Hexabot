@@ -22,6 +22,8 @@ export const DEFAULT_ACTION_COLOR = '#98a7ba';
 
 export const DEFAULT_ACTION_ICON = 'Zap';
 
+export const DEFAULT_ACTION_GROUP = 'custom';
+
 export type ActionMetadataWithColor<
   I,
   O,
@@ -29,6 +31,7 @@ export type ActionMetadataWithColor<
 > = ActionMetadata<I, O, S> & {
   icon?: string;
   color?: string;
+  group?: string;
 };
 
 export type ActionSchemaDefinition = {
@@ -36,6 +39,7 @@ export type ActionSchemaDefinition = {
   description: string;
   icon: string;
   color: string;
+  group: string;
   inputSchema: JsonSchema;
   outputSchema: JsonSchema;
   settingSchema: JsonSchema;
