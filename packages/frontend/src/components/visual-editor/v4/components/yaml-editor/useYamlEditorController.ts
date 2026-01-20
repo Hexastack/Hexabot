@@ -21,6 +21,7 @@ import {
 import { ensureYamlLanguageService } from "./language";
 import { applyYamlMarkers } from "./markers";
 import type { YamlEditorProps } from "./types";
+import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
 export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
@@ -34,7 +35,6 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const completionDisposableRef = useRef<IDisposable | null>(null);
-  const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onChange = useCallback(
     (nextValue?: string) => {
       setYaml(nextValue || "");
@@ -79,27 +79,15 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     applyMarkers();
   }, [applyMarkers]);
 
-  useEffect(() => {
-    if (!editorRef.current || !monacoRef.current) {
-      return;
-    }
+  useDebouncedEffect(
+    () => {
+      if (!editorRef.current || !monacoRef.current) return;
 
-    if (validationTimeoutRef.current) {
-      clearTimeout(validationTimeoutRef.current);
-    }
-
-    validationTimeoutRef.current = setTimeout(() => {
       applyWorkflowValidation();
-      validationTimeoutRef.current = null;
-    }, YAML_VALIDATION_DEBOUNCE_MS);
-
-    return () => {
-      if (validationTimeoutRef.current) {
-        clearTimeout(validationTimeoutRef.current);
-        validationTimeoutRef.current = null;
-      }
-    };
-  }, [applyWorkflowValidation]);
+    },
+    [applyWorkflowValidation],
+    YAML_VALIDATION_DEBOUNCE_MS,
+  );
 
   useEffect(() => {
     return () => {
