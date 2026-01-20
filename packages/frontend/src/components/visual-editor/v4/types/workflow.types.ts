@@ -14,6 +14,8 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
+import type { FlowStepPath } from "./workflow-path.types";
+
 export interface IWorkflowContext {
   getCentroid: () => XYPosition;
   selectNodes: (nodeIds: string[]) => void;
@@ -45,13 +47,15 @@ export interface IWorkflowContext {
     },
     IWorkflow
   >;
+  updateDefinition: (definition: WorkflowDefinition) => void;
+  addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
+  removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   executionStates: Record<string, { state: "start" | "success" }>;
   setExecutionStates: Dispatch<
     SetStateAction<Record<string, { state: "start" | "success" }>>
   >;
   actions: IAction[];
   definition?: WorkflowDefinition;
-  setDefinition: (def: WorkflowDefinition) => void;
 }
 
 export interface WorkflowContextProps {

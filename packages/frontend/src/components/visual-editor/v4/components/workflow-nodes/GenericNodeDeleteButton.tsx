@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow, removeStepAtPath } from "@hexabot-ai/agentic";
 import { IconButton, Tooltip } from "@mui/material";
 import { Trash2 } from "lucide-react";
 import { useCallback, type MouseEvent } from "react";
@@ -17,58 +16,19 @@ import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 export const GenericNodeDeleteButton = () => {
   const { t } = useTranslate();
   const { id, stepPath } = useWorkflowNode();
-  const {
-    definition,
-    setDefinition,
-    setYaml,
-    selectedFlowId,
-    selectedNodeIds,
-    selectNodes,
-    updateWorkflowURL,
-  } = useWorkflow();
+  const { removeStepAtPath } = useWorkflow();
   const handleDelete = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!definition || !stepPath) {
+      if (!stepPath) {
         return;
       }
 
-      const nextDefinition = removeStepAtPath(definition, stepPath);
-
-      if (!nextDefinition) {
-        return;
-      }
-
-      setDefinition(nextDefinition);
-      setYaml(Workflow.stringifyDefinition(nextDefinition));
-
-      if (!selectedNodeIds.includes(id)) {
-        return;
-      }
-
-      const nextSelection = selectedNodeIds.filter(
-        (nodeId) => nodeId !== id,
-      );
-
-      selectNodes(nextSelection);
-
-      if (selectedFlowId) {
-        updateWorkflowURL(selectedFlowId, nextSelection);
-      }
+      removeStepAtPath(stepPath, id);
     },
-    [
-      definition,
-      id,
-      selectedFlowId,
-      selectedNodeIds,
-      selectNodes,
-      setDefinition,
-      setYaml,
-      stepPath,
-      updateWorkflowURL,
-    ],
+    [id, removeStepAtPath, stepPath],
   );
 
   if (!stepPath) {
