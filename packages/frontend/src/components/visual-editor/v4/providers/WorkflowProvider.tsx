@@ -152,7 +152,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     updateWorkflow: updateWorkflowDefinition,
   });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
-    const baseDefinition = definition ?? createBaseDefinition(workflow);
+    const baseDefinition = definition ?? createBaseDefinition();
     const nextTaskName = createTaskName(
       action.name,
       baseDefinition.tasks ?? {},

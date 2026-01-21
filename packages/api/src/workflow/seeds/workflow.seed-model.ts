@@ -10,11 +10,6 @@ import { WorkflowCreateDto } from '../dto/workflow.dto';
 import { WorkflowType } from '../types';
 
 export const defaultWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'default',
-    version: '1.0.0',
-    description: 'Built-in default workflow.',
-  },
   tasks: {
     send_welcome: {
       action: 'send_text_message',
@@ -32,9 +27,9 @@ export const defaultWorkflowDefinition: WorkflowDefinition = {
 
 export const workflowModels = (creatorId: string): WorkflowCreateDto[] => [
   {
-    name: defaultWorkflowDefinition.workflow.name,
-    version: defaultWorkflowDefinition.workflow.version,
-    description: defaultWorkflowDefinition.workflow.description ?? undefined,
+    name: 'default',
+    version: '1.0.0',
+    description: 'Built-in default workflow.',
     definition: defaultWorkflowDefinition,
     type: WorkflowType.conversational,
     schedule: null,

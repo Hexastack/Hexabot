@@ -10,25 +10,10 @@ import {
   toSnakeCase,
 } from "@hexabot-ai/agentic";
 
-import type { IWorkflow } from "@/types/workfow.types";
-
-import {
-  DEFAULT_WORKFLOW_NAME,
-  DEFAULT_WORKFLOW_VERSION,
-} from "../constants/workflow.constants";
 /**
  * Build a minimal workflow definition with defaults and optional metadata.
  */
-export const createBaseDefinition = (
-  workflow?: IWorkflow,
-): WorkflowDefinition => ({
-  workflow: {
-    name: workflow?.name ?? DEFAULT_WORKFLOW_NAME,
-    version: workflow?.version ?? DEFAULT_WORKFLOW_VERSION,
-    ...(workflow?.description?.trim()
-      ? { description: workflow.description.trim() }
-      : {}),
-  },
+export const createBaseDefinition = (): WorkflowDefinition => ({
   tasks: {},
   flow: [],
   outputs: {},

@@ -37,10 +37,6 @@ describe('WorkflowRunService (TypeORM)', () => {
   let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
-    workflow: {
-      name: `Run workflow ${++counter}`,
-      version: `0.0.${counter}`,
-    },
     tasks: {
       greet: { action: 'greet' },
     },
@@ -94,8 +90,8 @@ describe('WorkflowRunService (TypeORM)', () => {
 
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
-      name: definition.workflow.name,
-      version: definition.workflow.version,
+      name: `Run workflow ${++counter}`,
+      version: `0.0.${counter}`,
       definition,
       description: 'Workflow for run tests',
       type: WorkflowType.conversational,

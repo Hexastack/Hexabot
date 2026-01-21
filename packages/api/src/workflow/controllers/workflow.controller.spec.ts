@@ -50,11 +50,6 @@ describe('WorkflowController (TypeORM)', () => {
 
   const buildWorkflowPayload = () => {
     const definition = {
-      workflow: {
-        name: `workflow_${++counter}`,
-        version: `1.0.${counter}`,
-        description: 'Workflow controller test definition',
-      },
       tasks: {
         send_greeting: {
           action: 'send_text_message',
@@ -66,9 +61,9 @@ describe('WorkflowController (TypeORM)', () => {
     };
 
     return {
-      name: definition.workflow.name,
-      version: definition.workflow.version,
-      description: definition.workflow.description,
+      name: `workflow_${++counter}`,
+      version: `1.0.${counter}`,
+      description: 'Workflow controller test definition',
       type: WorkflowType.conversational,
       schedule: null,
       definition,
@@ -134,7 +129,7 @@ describe('WorkflowController (TypeORM)', () => {
   describe('findMany', () => {
     it('returns workflows matching the provided filters', async () => {
       const options = {
-        where: { name: messagingWorkflowDefinition.workflow.name },
+        where: { name: 'messaging_workflow_fixture' },
       };
       const findSpy = jest.spyOn(workflowService, 'find');
       const result = await workflowController.findMany(options);

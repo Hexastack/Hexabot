@@ -21,11 +21,6 @@ import { DirectionType, WorkflowType } from '@/workflow/types';
  * It sends an initial text and follows up with a quick reply prompt.
  */
 export const messagingWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'messaging_workflow_fixture',
-    version: '0.1.0',
-    description: 'Test workflow using messaging actions.',
-  },
   tasks: {
     send_greeting: {
       action: 'send_text_message',
@@ -63,11 +58,6 @@ export const messagingWorkflowDefinition: WorkflowDefinition = {
  * Scheduled workflow definition used to validate cron-based execution.
  */
 export const scheduledWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'scheduled_workflow_fixture',
-    version: '0.1.0',
-    description: 'Test workflow triggered on a schedule.',
-  },
   tasks: {
     send_update: {
       // Dummy action used only for scheduled workflow testing.
@@ -85,9 +75,9 @@ export const scheduledWorkflowDefinition: WorkflowDefinition = {
 
 export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
   {
-    name: messagingWorkflowDefinition.workflow.name,
-    version: messagingWorkflowDefinition.workflow.version,
-    description: messagingWorkflowDefinition.workflow.description ?? undefined,
+    name: 'messaging_workflow_fixture',
+    version: '0.1.0',
+    description: 'Test workflow using messaging actions.',
     definition: messagingWorkflowDefinition,
     type: WorkflowType.conversational,
     schedule: null,
@@ -103,9 +93,9 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
 
 export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
   {
-    name: scheduledWorkflowDefinition.workflow.name,
-    version: scheduledWorkflowDefinition.workflow.version,
-    description: scheduledWorkflowDefinition.workflow.description ?? undefined,
+    name: 'scheduled_workflow_fixture',
+    version: '0.1.0',
+    description: 'Test workflow triggered on a schedule.',
     definition: scheduledWorkflowDefinition,
     type: WorkflowType.scheduled,
     schedule: '*/10 * * * * *',

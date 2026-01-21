@@ -13,12 +13,6 @@ import { stringify } from 'yaml';
  * until the next incoming message resumes the run.
  */
 export const defaultWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'default_messaging_workflow',
-    version: '0.1.0',
-    description:
-      'Fallback workflow that echoes the subscriber message using messaging actions.',
-  },
   tasks: {
     send_default_reply: {
       action: 'send_text_message',

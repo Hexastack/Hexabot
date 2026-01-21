@@ -37,11 +37,6 @@ export const memoryRecordFixtureIds = {
 } as const;
 
 const memoryWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'memory_workflow_fixture',
-    version: '0.1.0',
-    description: 'Workflow used by memory record fixtures.',
-  },
   tasks: {
     noop: {
       action: 'noop_task',

@@ -43,23 +43,6 @@ type WorkflowFormValues = {
   schedule: string;
 };
 
-const buildDefinitionPayload = (
-  definition: WorkflowDefinition,
-  updates: {
-    name: string;
-    version: string;
-    description?: string | null;
-  },
-) => ({
-  ...definition,
-  workflow: {
-    ...(definition.workflow ?? {}),
-    name: updates.name,
-    version: updates.version,
-    description: updates.description ?? undefined,
-  },
-});
-
 export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>> =
   ({
     data: { defaultValues: workflow, presetValues },
@@ -99,8 +82,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
       defaultValues,
     });
     const typeValue = useWatch({ control, name: "type" });
-    const versionValue =
-      workflow?.version ?? definition?.workflow?.version ?? "";
+    const versionValue = workflow?.version;
     const nameRegister = register("name", {
       required: t("message.name_is_required"),
       setValueAs: (value: string) => value?.trim(),
@@ -185,11 +167,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         type: params.type,
         schedule,
         definitionYaml,
-        definition: buildDefinitionPayload(definition, {
-          name,
-          version: versionValue,
-          description,
-        }),
+        definition,
         memoryDefinitions: workflow?.memoryDefinitions ?? [],
       };
 

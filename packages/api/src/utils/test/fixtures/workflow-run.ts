@@ -32,11 +32,6 @@ export const workflowRunFixtureIds = {
 } as const;
 
 const workflowRunWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'workflow_run_fixture',
-    version: '0.1.0',
-    description: 'Workflow used by workflow run fixtures.',
-  },
   tasks: {
     noop: {
       action: 'noop_task',
