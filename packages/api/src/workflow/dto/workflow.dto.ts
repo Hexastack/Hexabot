@@ -20,6 +20,7 @@ import {
 } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
+import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -28,6 +29,7 @@ import {
 } from '@/utils/types/dto.types';
 
 import { IsWorkflowDefinition } from '../decorators/is-workflow-definition.decorator';
+import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinition } from './memory-definition.dto';
@@ -121,6 +123,7 @@ export class WorkflowNewDto {
   @ValidateIf((payload) => payload.schedule !== undefined)
   @IsOptional()
   @IsString()
+  @Validate(NestCronSchema)
   schedule?: string | null;
 
   @ApiPropertyOptional({
