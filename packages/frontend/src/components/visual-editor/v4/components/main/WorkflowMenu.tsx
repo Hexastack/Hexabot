@@ -7,7 +7,7 @@
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { Trash2 } from "lucide-react";
 
-type FlowsDrawerMenuProps = {
+type WorkflowMenuProps = {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
@@ -16,14 +16,14 @@ type FlowsDrawerMenuProps = {
   deleteDisabled?: boolean;
 };
 
-export const FlowsDrawerMenu = ({
+export const WorkflowMenu = ({
   anchorEl,
   open,
   onClose,
   onDelete,
   deleteLabel,
   deleteDisabled = false,
-}: FlowsDrawerMenuProps) => (
+}: WorkflowMenuProps) => (
   <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
     <MenuItem onClick={onDelete} disabled={deleteDisabled}>
       <ListItemIcon>

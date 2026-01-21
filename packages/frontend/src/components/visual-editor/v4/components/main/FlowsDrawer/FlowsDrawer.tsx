@@ -26,6 +26,7 @@ import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { YamlEditor } from "../../yaml-editor";
+import { WorkflowMenu } from "../WorkflowMenu";
 
 import {
   BASE_TYPES,
@@ -39,7 +40,6 @@ import {
 import { FlowsDrawerCollapsedActions } from "./FlowsDrawerCollapsedActions";
 import { FlowsDrawerHeader } from "./FlowsDrawerHeader";
 import { FlowsDrawerList } from "./FlowsDrawerList";
-import { FlowsDrawerMenu } from "./FlowsDrawerMenu";
 import { FlowsDrawerSearchActions } from "./FlowsDrawerSearchActions";
 import {
   DrawerBody,
@@ -520,7 +520,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
           aria-label={t("visual_editor.flows_drawer.resize")}
         />
       )}
-      <FlowsDrawerMenu
+      <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
