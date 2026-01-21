@@ -7,6 +7,7 @@
 export enum Room {
   MESSAGE = 'Message',
   SUBSCRIBER = 'Subscriber',
+  WORKFLOW = 'Workflow',
 }
 
 export type SocketErrorResponse = {

@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import CloseIcon from "@mui/icons-material/Close";
 import {
   IconButton,
   DialogTitle as MuiDialogTitle,
   Typography,
   styled,
 } from "@mui/material";
+import { X as CloseIcon } from "lucide-react";
 
 const StyledDialogTitle = styled(Typography)(() => ({
   fontSize: "18px",

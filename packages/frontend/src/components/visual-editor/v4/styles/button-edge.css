@@ -7,17 +7,26 @@
 .button-edge__button {
   width: 25px;
   height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 1px solid #2222;
   color: var(--xy-edge-label-color-default);
   background-color: #f3f3f4dd;
   cursor: pointer;
   border-radius: 50%;
   font-size: 15px;
-  padding-top: 0px;
 }
 
 .button-edge__button:hover {
   background-color: var(--xy-theme-hover);
   color: #ffffff;
   text-shadow: 0 0 3px #000;
+}
+
+.button-edge__text {
+  color: var(--xy-edge-label-color-default);
+  font-size: 12px;
+  white-space: nowrap;
 }

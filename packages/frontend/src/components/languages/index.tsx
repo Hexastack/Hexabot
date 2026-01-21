@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Flag } from "@mui/icons-material";
-import AddIcon from "@mui/icons-material/Add";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { Flag, Plus } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -16,7 +15,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -53,13 +51,6 @@ export const Languages = () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [_qType, qEntity] = queryKey;
-
-          return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
-        },
-      });
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -136,7 +127,7 @@ export const Languages = () => {
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={
             params.value ||
             !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)
@@ -179,7 +170,7 @@ export const Languages = () => {
         {
           permissionAction: PermissionAction.CREATE,
           children: t("button.add"),
-          startIcon: <AddIcon />,
+          startIcon: <Plus />,
           onClick: () => {
             dialogs.open(LanguageFormDialog, { defaultValues: null });
           },

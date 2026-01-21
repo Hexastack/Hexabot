@@ -4,30 +4,30 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  faAlignLeft,
-  faBars,
-  faCogs,
-  faComments,
-  faDatabase,
-  faGraduationCap,
-  faLanguage,
-  faTags,
-  faUserCircle,
-  faUsers,
-  IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
-import { Flag, Language } from "@mui/icons-material";
-import AppsIcon from "@mui/icons-material/Apps";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import HomeIcon from "@mui/icons-material/Home";
-import MemoryIcon from "@mui/icons-material/Memory";
-import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
-import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccessibilityRounded";
-import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
+import { CSSObject, IconButton, styled, Theme } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
+import Grid from "@mui/material/Grid";
+import type { LucideIcon } from "lucide-react";
+// eslint-disable-next-line no-duplicate-imports
+import {
+  Activity,
+  AlignLeft,
+  ChevronLeft,
+  Database,
+  Flag,
+  FolderUp,
+  Home,
+  Languages,
+  LayoutGrid,
+  MemoryStick,
+  Menu,
+  MessagesSquare,
+  Settings,
+  Shield,
+  Tag,
+  UserCircle,
+  Users
+} from "lucide-react";
 import { FC } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
@@ -97,7 +97,7 @@ const StyledDrawerHeader = styled(DrawerHeader)(() => ({
 export type MenuItem = {
   text: string;
   href?: string;
-  Icon?: OverridableComponent<any> | IconDefinition;
+  Icon?: LucideIcon;
   requires?: { [key in EntityType]?: PermissionAction[] };
   submenuItems?: MenuItem[];
 };
@@ -106,7 +106,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
     text: "menu.dashboard",
     href: "/",
-    Icon: HomeIcon,
+    Icon: Home,
     requires: {
       [EntityType.BOTSTATS]: [PermissionAction.READ],
     },
@@ -114,7 +114,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
     text: "menu.visual_editor",
     href: "/workflow-editor",
-    Icon: AppsIcon,
+    Icon: LayoutGrid,
     requires: {
       [EntityType.WORKFLOW]: [PermissionAction.READ],
     },
@@ -122,35 +122,35 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
     text: "menu.memory_definitions",
     href: "/workflow/memory-definitions",
-    Icon: MemoryIcon,
+    Icon: MemoryStick,
     requires: {
       [EntityType.MEMORY_DEFINITION]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.nlp",
-    href: "/nlp",
-    Icon: faGraduationCap,
+    text: "menu.workflow_runs",
+    href: "/workflow/runs",
+    Icon: Activity,
     requires: {
-      [EntityType.NLP_SAMPLE]: [PermissionAction.READ],
+      [EntityType.WORKFLOW_RUN]: [PermissionAction.READ],
     },
   },
   {
     text: "menu.inbox",
     href: "/inbox",
-    Icon: faComments,
+    Icon: MessagesSquare,
     requires: {
       [EntityType.MESSAGE]: [PermissionAction.READ],
     },
   },
   {
     text: "menu.manage_content",
-    Icon: faDatabase,
+    Icon: Database,
     submenuItems: [
       {
         text: "menu.persistent_menu",
         href: "/content/persistent-menu",
-        Icon: faBars,
+        Icon: Menu,
         requires: {
           [EntityType.MENU]: [PermissionAction.READ],
         },
@@ -158,7 +158,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       {
         text: "menu.cms",
         href: "/content/types",
-        Icon: faAlignLeft,
+        Icon: AlignLeft,
         requires: {
           [EntityType.CONTENT_TYPE]: [PermissionAction.READ],
         },
@@ -166,7 +166,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       {
         text: "menu.media_library",
         href: "/content/media-library",
-        Icon: DriveFolderUploadIcon,
+        Icon: FolderUp,
         requires: {
           [EntityType.ATTACHMENT]: [PermissionAction.READ],
         },
@@ -175,12 +175,12 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   },
   {
     text: "menu.manage_subscribers",
-    Icon: faUserCircle,
+    Icon: UserCircle,
     submenuItems: [
       {
         text: "menu.subscribers",
         href: "/subscribers",
-        Icon: faUserCircle,
+        Icon: UserCircle,
         requires: {
           [EntityType.SUBSCRIBER]: [PermissionAction.READ],
         },
@@ -188,7 +188,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       {
         text: "menu.labels",
         href: "/subscribers/labels",
-        Icon: faTags,
+        Icon: Tag,
         requires: {
           [EntityType.LABEL]: [PermissionAction.READ],
         },
@@ -206,12 +206,12 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   },
   {
     text: "menu.manage_users",
-    Icon: faUsers,
+    Icon: Users,
     submenuItems: [
       {
         text: "menu.users",
         href: "/users",
-        Icon: PeopleAltRoundedIcon,
+        Icon: Users,
         requires: {
           [EntityType.USER]: [PermissionAction.READ],
         },
@@ -221,7 +221,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
             {
               text: "menu.roles",
               href: "/roles",
-              Icon: SettingsAccessibilityRoundedIcon,
+              Icon: Shield,
               requires: {
                 [EntityType.ROLE]: [PermissionAction.READ],
               },
@@ -232,7 +232,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   },
   {
     text: "menu.manage_localization",
-    Icon: Language,
+    Icon: Languages,
     submenuItems: [
       {
         text: "menu.languages",
@@ -245,7 +245,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       {
         text: "menu.translations",
         href: "/localization/translations",
-        Icon: faLanguage,
+        Icon: Languages,
         requires: {
           [EntityType.TRANSLATION]: [PermissionAction.READ],
         },
@@ -255,7 +255,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
     text: "menu.settings",
     href: "/settings",
-    Icon: faCogs,
+    Icon: Settings,
     requires: {
       [EntityType.SETTING]: [PermissionAction.READ, PermissionAction.UPDATE],
     },
@@ -297,12 +297,12 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
       }}
     >
       <StyledDrawerHeader>
-        <Grid item xs ml="10px">
+        <Grid size="grow" ml="10px">
           <HexabotLogo />
         </Grid>
-        <Grid>
+        <Grid size="auto">
           <IconButton onClick={onToggleOut}>
-            <ChevronLeftIcon />
+            <ChevronLeft size={20} />
           </IconButton>
         </Grid>
       </StyledDrawerHeader>

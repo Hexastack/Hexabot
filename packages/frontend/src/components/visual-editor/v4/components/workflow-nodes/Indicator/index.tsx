@@ -18,10 +18,10 @@ export const Indicator: FC<NodeProps<NodeData<ENodeType.INDICATOR>>> = ({
   id,
 }) => (
   <WorkflowNodeProvider id={id}>
-    <GenericNodeContainer isRounded>
+    <GenericNodeContainer>
       <GenericNodeIcon />
-      <GenericNodePorts />
+      <GenericNodeTitle />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

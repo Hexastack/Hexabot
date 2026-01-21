@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import { GridColDef } from "@mui/x-data-grid";
+import { AlignLeft } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -106,7 +106,7 @@ export const ContentTypes = () => {
         },
       ]}
       columns={columns}
-      headerIcon={faAlignLeft}
+      headerIcon={AlignLeft}
       searchParams={{ $iLike: ["name"], syncUrl: true }}
       headerI18nTitle="title.entities"
     />

@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import DownloadIcon from "@mui/icons-material/Download";
 import { Box, Button, Typography } from "@mui/material";
+import { Download } from "lucide-react";
 import { FC, useState } from "react";
 
 import { useDialogs } from "@/hooks/useDialogs";
@@ -91,7 +91,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
         </Typography>
         <Button
           href={props.url}
-          endIcon={<DownloadIcon />}
+          endIcon={<Download size={18} />}
           color="inherit"
           variant="contained"
         >

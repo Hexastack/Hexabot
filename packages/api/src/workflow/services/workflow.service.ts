@@ -4,15 +4,28 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable } from '@nestjs/common';
-
-import { UserOrmEntity } from '@/user/entities/user.entity';
-import { BaseOrmService } from '@/utils/generics/base-orm.service';
-
-import defaultWorkflowDefinition, {
-  defaultWorkflowDefinitionYaml,
-} from '../defaults/default-workflow';
+import { WorkflowEventMap } from '@hexabot-ai/agentic';
 import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
+
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import {
+  Room,
+  SocketGet,
+  SocketPost,
+  SocketReq,
+  SocketRequest,
+  SocketRes,
+  SocketResponse,
+  WebsocketGateway,
+} from '@/websocket';
+
+import {
+  WorkflowCreateDto,
   Workflow as WorkflowDto,
   WorkflowDtoConfig,
   WorkflowTransformerDto,
@@ -20,6 +33,8 @@ import {
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
+
+import { WorkflowRunService } from './workflow-run.service';
 
 @Injectable()
 export class WorkflowService extends BaseOrmService<
@@ -32,68 +47,130 @@ export class WorkflowService extends BaseOrmService<
    *
    * @param repository - ORM repository used to manage workflow entities.
    */
-  constructor(readonly repository: WorkflowRepository) {
+  constructor(
+    readonly repository: WorkflowRepository,
+    private readonly gateway: WebsocketGateway,
+    private readonly workflowRunService: WorkflowRunService,
+  ) {
     super(repository);
   }
 
   /**
-   * Pick the most recently created workflow or fall back to the built-in default.
+   * Pick the most recently created workflow if one exists.
    */
   async pickWorkflow(): Promise<WorkflowDto | null> {
     const [latest] = await this.find({
       order: { createdAt: 'DESC' },
       take: 1,
     });
-    const workflow = latest ?? (await this.ensureDefaultWorkflow());
 
-    return workflow;
+    return latest ?? null;
+  }
+
+  async create(payload: WorkflowCreateDto) {
+    if (!payload.definition) {
+      throw new BadRequestException('Workflow definition is required');
+    }
+
+    return super.create(payload);
   }
 
   /**
-   * Ensure a default workflow exists and return it when none are stored.
+   * Internally subscribe web-sockets to user's event
+   * For example : Notify chat if new user interacted with the chatbot
    *
-   * @returns The existing or newly created default workflow, or `null` when creation fails.
+   * @param req - The socket request object
+   * @param res - The socket response object
    */
-  private async ensureDefaultWorkflow(): Promise<WorkflowDto | null> {
+  @SocketGet('/workflow/subscribe/')
+  @SocketPost('/workflow/subscribe/')
+  async subscribe(
+    @SocketReq() req: SocketRequest,
+    @SocketRes() res: SocketResponse,
+  ) {
     try {
-      const existing = await this.findOne({
-        where: {
-          name: defaultWorkflowDefinition.workflow.name,
-          version: defaultWorkflowDefinition.workflow.version,
-        },
+      const subscribeRoom = await this.gateway.joinSockets(
+        req,
+        Room.WORKFLOW,
+        'workflow',
+      );
+
+      return res.status(200).json({
+        success: true,
+        subscribe: subscribeRoom,
       });
-
-      if (existing) {
-        return existing;
-      }
-
-      const creator = await this.getRepository()
-        .getManager()
-        .getRepository(UserOrmEntity)
-        .findOne({ select: ['id'], order: { createdAt: 'ASC' }, where: {} });
-
-      if (!creator?.id) {
-        this.logger.warn(
-          'Unable to ensure default workflow exists: missing creator',
-        );
-
-        return null;
-      }
-
-      return await this.create({
-        name: defaultWorkflowDefinition.workflow.name,
-        version: defaultWorkflowDefinition.workflow.version,
-        description: defaultWorkflowDefinition.workflow.description,
-        definitionYaml: defaultWorkflowDefinitionYaml,
-        type: WorkflowType.conversational,
-        schedule: null,
-        createdBy: creator.id,
-        memoryDefinitions: [],
-      });
-    } catch (err) {
-      this.logger.error('Unable to ensure default workflow exists', err);
-
-      return null;
+    } catch (e) {
+      this.logger.error('Websocket subscription', e);
+      throw new InternalServerErrorException(e);
     }
+  }
+
+  private async sendWorkflowEvent(
+    workflowEvent: HookEventKey,
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    const t = Date.now();
+
+    if (!payload.runId) {
+      this.logger.error('runId is required');
+
+      return;
+    }
+    const workflowRun = await this.workflowRunService.findOne(payload.runId);
+    if (!workflowRun?.context) {
+      this.logger.error('workflowRun context is required');
+
+      return;
+    }
+    const { initiatorId, workflowId } = workflowRun?.context;
+    const workflow = await this.findOne(workflowId);
+    const canBroadcastEvents =
+      initiatorId &&
+      workflow?.type &&
+      [WorkflowType.conversational].includes(workflow.type);
+
+    if (canBroadcastEvents) {
+      this.gateway.broadcastWorkflowEvent({
+        ...payload,
+        t,
+        initiatorId,
+        workflowEvent: workflowEvent.replace('hook:', ''),
+      });
+    }
+  }
+
+  @OnEvent('hook:workflow:start')
+  sendWorkflowStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:start', payload);
+  }
+
+  @OnEvent('hook:workflow:finish')
+  sendWorkflowFinish(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:finish', payload);
+  }
+
+  @OnEvent('hook:workflow:failure')
+  sendWorkflowFailure(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:failure', payload);
+  }
+
+  @OnEvent('hook:step:start')
+  sendWorkflowStepStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:start', payload);
+  }
+
+  @OnEvent('hook:step:suspended')
+  sendWorkflowStepSuspended(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:suspended', payload);
+  }
+
+  @OnEvent('hook:step:success')
+  sendWorkflowStepSuccess(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:success', payload);
+  }
+
+  @OnEvent('hook:step:error')
+  sendWorkflowStepError(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:error', payload);
   }
 }

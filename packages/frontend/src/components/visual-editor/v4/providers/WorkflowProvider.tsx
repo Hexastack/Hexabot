@@ -4,15 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { debounce } from "@mui/material";
 import {
+  WorkflowCompileOptions,
+  WorkflowDefinition,
+  Workflow as WorkflowHelper,
+  type FlowStep,
+} from "@hexabot-ai/agentic";
+import debounce from "@mui/utils/debounce";
+import {
+  applyNodeChanges,
+  useReactFlow,
   type Node,
   type NodeChange,
   type XYPosition,
-  applyNodeChanges,
-  useReactFlow,
 } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
@@ -21,14 +27,34 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, RouterType } from "@/services/types";
-import { IWorkflowAttributes } from "@/types/workfow.types";
+import type { IAction } from "@/types/action.types";
+import type { IWorkflowAttributes } from "@/types/workfow.types";
+import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
-import type { WorkflowContextProps } from "../types/workflow.types";
+import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
+import { EIndicatorType } from "../types/workflow-node.types";
+import type { FlowStepPath } from "../types/workflow-path.types";
+import type {
+  NodeExecutionState,
+  SubscribeWorkflowProps,
+  WorkflowContextProps,
+} from "../types/workflow.types";
+import {
+  createBaseDefinition,
+  createTaskName,
+} from "../utils/workflow-definition.utils";
+
+const getStepId = (id: string) =>
+  `^step-${id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
 }) => {
+  const { data: actions } = useFind(
+    { entity: EntityType.WORKFLOW_ACTIONS },
+    { hasCount: false },
+  );
   const flowId = useQueryChange("flowId");
   const { data: workflows } = useFind(
     {
@@ -52,8 +78,10 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const [yaml, setYaml] = useState("");
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
+  const [executionStates, setExecutionStates] = useState<
+    Record<string, { state: NodeExecutionState; t: number }[]>
+  >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
@@ -68,6 +96,98 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     };
 
     return screenToFlowPosition(screenCenter);
+  };
+  // Cache the action map by content signature to avoid re-parsing on each render.
+  const actionsSignature = useMemo(
+    () =>
+      actions
+        .map(
+          (action) => `${action.id}:${action.name}:${action.updatedAt ?? ""}`,
+        )
+        .sort()
+        .join("|"),
+    [actions],
+  );
+  const actionsSignatureRef = useRef("");
+  const actionsByNameRef = useRef<WorkflowCompileOptions["actions"]>(
+    {} as WorkflowCompileOptions["actions"],
+  );
+
+  if (actionsSignatureRef.current !== actionsSignature) {
+    actionsSignatureRef.current = actionsSignature;
+    actionsByNameRef.current = actions.reduce(
+      (acc, cur) => {
+        acc[cur.name] =
+          cur as unknown as WorkflowCompileOptions["actions"][string];
+
+        return acc;
+      },
+      {} as WorkflowCompileOptions["actions"],
+    );
+  }
+
+  const actionsByName = actionsByNameRef.current;
+  const hasActions = actions.length > 0;
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const {
+    mutate: updateWorkflowDefinition,
+    isPending: isDefinitionSaving,
+  } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const {
+    yaml,
+    setYaml,
+    definition,
+    updateDefinition,
+    saveDefinition,
+    isDefinitionDirty,
+  } = useWorkflowDefinitionState({
+    flowId,
+    workflow,
+    actionsByName,
+    hasActions,
+    updateWorkflow: updateWorkflowDefinition,
+  });
+  const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
+    const baseDefinition = definition ?? createBaseDefinition(workflow);
+    const nextTaskName = createTaskName(
+      action.name,
+      baseDefinition.tasks ?? {},
+    );
+    const taskDescription = action.description?.trim();
+    const nextTasks = {
+      ...baseDefinition.tasks,
+      [nextTaskName]: {
+        action: action.name,
+        ...(taskDescription ? { description: taskDescription } : {}),
+      },
+    };
+    const nextOutputs =
+      baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
+        ? baseDefinition.outputs
+        : { result: `=$output.${nextTaskName}` };
+    const nextStep: FlowStep = { do: nextTaskName };
+    const definitionWithTask: WorkflowDefinition = {
+      ...baseDefinition,
+      tasks: nextTasks,
+      outputs: nextOutputs,
+    };
+    const insertedDefinition = insertPath
+      ? WorkflowHelper.insertStepAtPath(
+          definitionWithTask,
+          insertPath,
+          nextStep,
+        )
+      : null;
+    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+      ...definitionWithTask,
+      flow: [...(baseDefinition.flow ?? []), nextStep],
+    };
+
+    updateDefinition(nextDefinition);
   };
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
@@ -96,9 +216,36 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${flowId}`);
     }
   };
-  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
+  const removeStepAtPath = (stepPath: FlowStepPath, nodeId?: string) => {
+    if (!definition) {
+      return;
+    }
+
+    const nextDefinition = WorkflowHelper.removeStepAtPath(
+      definition,
+      stepPath,
+    );
+
+    if (!nextDefinition) {
+      return;
+    }
+
+    updateDefinition(nextDefinition);
+
+    if (!nodeId || !selectedNodeIds.includes(nodeId)) {
+      return;
+    }
+
+    const nextSelection = selectedNodeIds.filter(
+      (selectedNodeId) => selectedNodeId !== nodeId,
+    );
+
+    selectNodes(nextSelection);
+
+    if (flowId) {
+      updateWorkflowURL(flowId, nextSelection);
+    }
+  };
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     debounce((props: Partial<IWorkflowAttributes>) => {
@@ -116,8 +263,91 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   );
 
   useEffect(() => {
-    setYaml(workflow?.definitionYaml || "");
-  }, [workflow?.definitionYaml]);
+    if (!flowId && workflows?.length) {
+      updateWorkflowURL(workflows[0].id);
+    }
+  }, [flowId, workflows, updateWorkflowURL]);
+
+  const findNode = (criteria: string) => {
+    const regexCriteria = new RegExp(criteria);
+
+    return getNodes().find((n) => n.id.match(regexCriteria));
+  };
+  const updateExecutionStates = (
+    criteria: string,
+    state: NodeExecutionState,
+    t?: number,
+  ) => {
+    const foundedNode = findNode(criteria);
+
+    if (foundedNode?.id) {
+      setExecutionStates((old) => ({
+        ...old,
+        [foundedNode.id]: [
+          ...(old?.[foundedNode.id] || []),
+          { state, t: t || Date.now() },
+        ],
+      }));
+    }
+  };
+
+  useSubscribe(
+    "workflow",
+    ({ workflowEvent, ...rest }: SubscribeWorkflowProps) => {
+      if (workflowEvent === "workflow:start") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_START, "start");
+      }
+
+      if (workflowEvent === "workflow:finish") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_END, "start");
+
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_END, "finish");
+          setExecutionStates({});
+        }, 1000);
+      }
+
+      if (workflowEvent === "workflow:suspended") {
+        // TODO
+      }
+
+      if (workflowEvent === "workflow:failure") {
+        // TODO
+      }
+
+      if ("step" in rest) {
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_START, "finish");
+        }, 1000);
+
+        if (workflowEvent === "step:start") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "start", rest.t);
+        }
+
+        if (workflowEvent === "step:error") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "error", rest.t);
+        }
+
+        if (workflowEvent === "step:success") {
+          const stepId = getStepId(rest.step.id);
+
+          setTimeout(() => {
+            updateExecutionStates(stepId, "finish", rest.t);
+          }, 800);
+        }
+
+        if (workflowEvent === "step:suspended") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "suspended", rest.t);
+        }
+      }
+    },
+  );
 
   return (
     <WorkflowContext.Provider
@@ -142,6 +372,16 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         workflows,
         updateWorkflow,
         debouncedWorkflowUpdate,
+        executionStates,
+        setExecutionStates,
+        updateDefinition,
+        saveDefinition,
+        isDefinitionDirty,
+        isDefinitionSaving,
+        addActionStep,
+        removeStepAtPath,
+        actions,
+        definition,
       }}
     >
       {children}

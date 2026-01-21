@@ -8,8 +8,6 @@ export * from './constants/cache';
 
 export * from './constants/mock';
 
-export * from './constants/nlp';
-
 export * from './constants/session-middleware';
 
 export * from './constants/session-store';

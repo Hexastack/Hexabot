@@ -4,27 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip, Grid } from "@mui/material";
+import { Chip } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import {
-  DataGridProps,
-  GridColDef,
-  GridRowSelectionModel,
+    DataGridProps,
+    GridColDef,
+    GridRowSelectionModel,
 } from "@mui/x-data-grid";
 
 import { useDataGridProps } from "@/hooks/useDataGridProps";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
+import { Format } from "@/services/types";
 import { THook } from "@/types/base.types";
 import {
-  SearchHookOptions,
-  SearchPayload,
-  TParamItem,
+    SearchHookOptions,
+    SearchPayload,
+    TParamItem,
 } from "@/types/search.types";
 
 import {
-  ButtonActionsGroup,
-  ButtonActionsGroupProps,
+    ButtonActionsGroup,
+    ButtonActionsGroupProps,
 } from "../buttons/ButtonActionsGroup";
 import { FilterTextfield } from "../inputs/FilterTextfield";
 import { TMenuItem } from "../menus/Sidebar";
@@ -40,6 +42,7 @@ export const GenericDataGrid = <
   columns,
   headerIcon,
   searchParams,
+  format,
   headerI18nTitle,
   headerTitleChip,
   headerLeftButtons,
@@ -55,6 +58,7 @@ export const GenericDataGrid = <
     SearchHookOptions & {
       getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;
     };
+  format?: Format;
   headerI18nTitle?: TTranslationKeys;
   headerTitleChip?: string;
   headerLeftButtons?: React.ReactElement;
@@ -65,6 +69,7 @@ export const GenericDataGrid = <
   const { dataGridProps, onSearch, searchText } = useDataGridProps(
     {
       entity,
+      format: format as any,
     },
     {
       searchParams,
@@ -91,10 +96,10 @@ export const GenericDataGrid = <
             width="auto"
             justifyContent="end"
           >
-            <Grid item maxWidth="300px">
+            <Grid size="auto" maxWidth="300px">
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            <Grid item>
+            <Grid size="auto">
               {headerFilterInputs}
               {buttons ? (
                 <ButtonActionsGroup entity={entity} buttons={buttons} />

@@ -23,11 +23,13 @@ export const RegexInput = forwardRef(
       <Input
         ref={ref}
         {...props}
-        InputProps={{
-          startAdornment: <InputAdornment position="start">/</InputAdornment>,
-          endAdornment: (
-            <InputAdornment position="end">/{flags.join("")}</InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: <InputAdornment position="start">/</InputAdornment>,
+            endAdornment: (
+              <InputAdornment position="end">/{flags.join("")}</InputAdornment>
+            ),
+          },
         }}
       />
     );

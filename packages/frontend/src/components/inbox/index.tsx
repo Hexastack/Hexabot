@@ -6,7 +6,8 @@
 
 import { MainContainer, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { Grid, MenuItem } from "@mui/material";
+import { MenuItem } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -45,7 +46,7 @@ export const Inbox = () => {
           maxHeight: "calc(100vh - 64px)",
         }}
       >
-        <Grid item width="100%" height="100%" overflow="hidden">
+        <Grid size="grow" width="100%" height="100%" overflow="hidden">
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left" style={{ flexBasis: "100%" }}>
               <Grid paddingX={1} paddingTop={2} paddingBottom={1} mx={1}>

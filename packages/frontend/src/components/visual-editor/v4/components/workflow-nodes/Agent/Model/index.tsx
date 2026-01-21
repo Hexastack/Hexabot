@@ -22,8 +22,8 @@ export const Model: FC<NodeProps<NodeData<ENodeType.MODEL>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon />
-      <GenericNodePorts />
+      <GenericNodeTitle />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

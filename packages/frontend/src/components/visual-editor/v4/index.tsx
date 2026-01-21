@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, styled } from "@mui/material";
+import { styled } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { ReactFlowProvider } from "@xyflow/react";
 
 import { Workflow } from "./layouts/Workflow";
 import { WorkflowProvider } from "./providers/WorkflowProvider";
-import { YamlEditor } from "./yamlEditor/YamlEditor";
 
 const StyledContainerGrid = styled(Grid)(() => ({
   gap: 2,
@@ -27,9 +27,8 @@ export const WorkflowEditor = () => (
   <ReactFlowProvider>
     <WorkflowProvider>
       <StyledContainerGrid container>
-        <Grid container height="100%" margin="auto">
-          <YamlEditor />
-          <StyledGrid item xs>
+        <Grid container height="100%" width="100%" wrap="nowrap">
+          <StyledGrid size="grow">
             <Workflow />
           </StyledGrid>
         </Grid>

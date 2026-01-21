@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
-import { stringify } from 'yaml';
 
 import { ActionService } from '@/actions/actions.service';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
@@ -24,7 +23,6 @@ import {
   installMessagingWorkflowFixturesTypeOrm,
   installScheduledWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
-  messagingWorkflowDefinitionYaml,
   messagingWorkflowFixtures,
 } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -34,7 +32,6 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { ManualWorkflowContext } from '../contexts/manual-workflow.context';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
-import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
@@ -74,13 +71,14 @@ describe('WorkflowController (TypeORM)', () => {
       description: definition.workflow.description,
       type: WorkflowType.conversational,
       schedule: null,
-      definitionYaml: stringify(definition),
+      definition,
       memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
       x: 0,
       y: 0,
       zoom: 1,
+      builtin: false,
     };
   };
 
@@ -147,10 +145,21 @@ describe('WorkflowController (TypeORM)', () => {
           {
             ...messagingWorkflowFixtures[0],
             definition: messagingWorkflowDefinition,
-            definitionYaml: messagingWorkflowDefinitionYaml,
           },
         ],
         [...IGNORED_TEST_FIELDS],
+      );
+    });
+  });
+
+  describe('find', () => {
+    it('returns action schema definitions', () => {
+      const actions = workflowController.find();
+      const action = actions.find(({ name }) => name === 'send_text_message');
+
+      expect(action).toBeDefined();
+      expect(action?.inputSchema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
       );
     });
   });
@@ -172,7 +181,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(created).toEqualPayload(
         {
           ...payload,
-          definition: parseWorkflowDefinition(payload.definitionYaml),
+          definition: payload.definition,
           createdBy: userId,
         },
         [...IGNORED_TEST_FIELDS],

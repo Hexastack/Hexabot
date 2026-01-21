@@ -40,6 +40,7 @@ export class UpdateMemoryAction extends BaseAction<
           'Updates workflow memory for the current subscriber using predefined memory definitions.',
         inputSchema: updateMemorySchema,
         outputSchema: updateMemorySchema,
+        group: 'memory',
       },
       actionService,
     );

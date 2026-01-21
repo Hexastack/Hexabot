@@ -4,36 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ErrorOutline } from "@mui/icons-material";
-import { styled } from "@mui/material";
+import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
+import { ENodeType } from "../../types/workflow-node.types";
 
-import { useWorkflowNode } from "../../hooks/useWorkflowNode";
-
-export const GenericNodeIcon = () => {
-  const { theme, height = 1, width = 1 } = useWorkflowNode();
-  const IconComponent: React.ComponentType<any> =
-    "Icon" in theme ? theme.Icon : ErrorOutline;
-  const StyledIcon = styled(IconComponent)(() => ({
-    fontSize: "100%",
-  }));
+export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
+  const { Icon, iconColor } = useWorkflowNodeTheme<T>();
 
   return (
     <div
       style={{
-        color: "bgColor" in theme ? theme.bgColor : "#444",
-        fontSize: Math.min(height, width) / 2,
+        color: iconColor,
         boxOrient: "vertical",
         lineClamp: 2,
         overflow: "hidden",
         textOverflow: "ellipsis",
-        alignContent: "center",
         display: "flex",
-        height,
         justifyContent: "center",
-        alignItems: "center",
+        paddingTop: "2px",
       }}
     >
-      <StyledIcon />
+      <Icon size="20px" />
     </div>
   );
 };

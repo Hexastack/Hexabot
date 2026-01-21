@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { Tags } from "lucide-react";
 import { useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -179,7 +179,7 @@ export const Labels = () => {
         },
       ]}
       columns={columns}
-      headerIcon={faTags}
+      headerIcon={Tags}
       searchParams={{ $or: ["name", "title"], syncUrl: true }}
       headerI18nTitle="title.labels"
       selectionChangeHandler={handleSelectionChange}

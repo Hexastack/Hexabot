@@ -19,10 +19,6 @@ export enum EntityType {
   CONTENT_TYPE = "ContentType",
   SETTING = "Setting",
   BOTSTATS = "BotStats",
-  NLP_SAMPLE = "NlpSample",
-  NLP_SAMPLE_ENTITY = "NlpSampleEntity",
-  NLP_ENTITY = "NlpEntity",
-  NLP_VALUE = "NlpValue",
   MESSAGE = "Message",
   MENU = "Menu",
   LANGUAGE = "Language",
@@ -35,6 +31,8 @@ export enum EntityType {
   FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
+  WORKFLOW_ACTIONS = "WorkflowActions",
+  WORKFLOW_RUN = "WorkflowRun",
   MEMORY_DEFINITION = "MemoryDefinition",
 }
 

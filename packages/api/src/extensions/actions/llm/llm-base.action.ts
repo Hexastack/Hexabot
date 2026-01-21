@@ -6,7 +6,6 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { ProviderV2, ProviderV3 } from '@ai-sdk/provider';
-import { ActionMetadata } from '@hexabot-ai/agentic';
 import {
   LanguageModel,
   LanguageModelUsage,
@@ -17,7 +16,7 @@ import {
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { ActionName } from '@/actions/types';
+import { ActionMetadataWithColor, ActionName } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
@@ -66,11 +65,22 @@ export abstract class LlmBaseAction<
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
   S extends LlmCommonSettings = LlmCommonSettings,
 > extends BaseAction<I, O, C, S> {
+  private static readonly DEFAULT_COLOR = '#b65bfd';
+
+  private static readonly DEFAULT_GROUP = 'llm';
+
   protected constructor(
-    metadata: ActionMetadata<I, O, S>,
+    metadata: ActionMetadataWithColor<I, O, S>,
     actionService: ActionService,
   ) {
-    super(metadata, actionService);
+    super(
+      {
+        ...metadata,
+        color: metadata.color ?? LlmBaseAction.DEFAULT_COLOR,
+        group: metadata.group ?? LlmBaseAction.DEFAULT_GROUP,
+      },
+      actionService,
+    );
   }
 
   protected buildProviderInitOptions(

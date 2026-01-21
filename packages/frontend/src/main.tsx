@@ -4,10 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { loader } from "@monaco-editor/react";
 import { CssBaseline } from "@mui/material";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import * as monaco from "monaco-editor";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -25,8 +27,8 @@ import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
 import "@/components/inbox/inbox.css";
+import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
 import "@/components/visual-editor/v4/styles/index.css";
-import "@/components/visual-editor/v4/yamlEditor/styles/yaml-editor.css";
 import "@/i18n/config";
 import "@/styles/globals.css";
 import "@fontsource/roboto/100.css";
@@ -35,7 +37,8 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@fontsource/roboto/900.css";
-import "eazychart-css";
+
+loader.config({ monaco });
 
 const queryClient = new QueryClient({
   defaultOptions: {

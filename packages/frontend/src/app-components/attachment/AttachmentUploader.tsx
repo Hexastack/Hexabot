@@ -4,17 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import FolderCopyIcon from "@mui/icons-material/FolderCopy";
 import {
   Box,
   Button,
   CircularProgress,
   Divider,
-  Grid,
   styled,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import {
+  CloudUpload as CloudUploadIcon,
+  FolderOpen as FolderCopyIcon,
+} from "lucide-react";
 import { ChangeEvent, DragEvent, FC, useId, useState } from "react";
 
 import { useUpload } from "@/hooks/crud/useUpload";
@@ -149,7 +151,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   return (
     <Grid>
       <Grid container>
-        <Grid item xs={enableMediaLibrary ? 5 : 12}>
+        <Grid size={enableMediaLibrary ? 5 : 12}>
           <HiddenInput
             onChange={handleChange}
             accept={accept}
@@ -187,7 +189,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                 />
               ) : (
                 <IconText height="100%" width="80%">
-                  <CloudUploadIcon fontSize="large" />
+                  <CloudUploadIcon size={36} />
                   <Typography>
                     {t("label.click_or_dragndrop_to_upload")}
                   </Typography>
@@ -198,20 +200,19 @@ const AttachmentUploader: FC<FileUploadProps> = ({
         </Grid>
         {enableMediaLibrary ? (
           <>
-            <Grid container item xs={2}>
+            <Grid container size={2}>
               <Divider orientation="vertical" flexItem sx={{ margin: "20px" }}>
                 {t("label.or")}
               </Divider>
             </Grid>
             <Grid
-              item
-              xs={5}
+              size={5}
               display="flex"
               justifyContent="center"
               alignItems="center"
             >
               <Button
-                startIcon={<FolderCopyIcon />}
+                startIcon={<FolderCopyIcon size={18} />}
                 variant="contained"
                 color="primary"
                 onClick={() =>

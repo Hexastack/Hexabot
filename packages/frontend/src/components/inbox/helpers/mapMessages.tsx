@@ -5,12 +5,13 @@
  */
 
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
-import ReplyIcon from "@mui/icons-material/Reply";
-import { Chip, Grid, Tooltip } from "@mui/material";
+import { Chip, Tooltip } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import Autolinker from "autolinker";
+import { Menu, Reply } from "lucide-react";
 import React, { ReactNode } from "react";
 
+import { theme } from "@/layout/themes/theme";
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
@@ -152,11 +153,11 @@ export function getMessageContent(
 
   if ("buttons" in message) {
     chips = message.buttons;
-    chipsIcon = <MenuRoundedIcon color="disabled" />;
+    chipsIcon = <Menu color={theme.palette.action.disabled} size={16} />;
   }
   if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
     chips = message.quickReplies as { title: string }[];
-    chipsIcon = <ReplyIcon color="disabled" />;
+    chipsIcon = <Reply color={theme.palette.action.disabled} size={16} />;
   }
 
   if (chips.length > 0) {
@@ -172,11 +173,11 @@ export function getMessageContent(
           alignItems="center"
           gap="0.5rem"
         >
-          <Grid item height="fit-content" display="flex">
+          <Grid size="auto" height="fit-content" display="flex">
             {chipsIcon}
           </Grid>
           {chips.map((chip) => (
-            <Grid key={chip.title} item>
+            <Grid key={chip.title} size="auto">
               <Chip label={chip.title} variant="inbox" />
             </Grid>
           ))}

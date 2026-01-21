@@ -4,17 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import MenuIcon from "@mui/icons-material/Menu";
 import {
   Avatar,
   Box,
-  Grid,
   IconButton,
   Toolbar,
   Typography,
   styled,
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import Grid from "@mui/material/Grid";
+import { Menu } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
@@ -97,7 +97,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 onClick={onToggleSidebar}
                 isToggled={isSideBarOpen}
               >
-                <MenuIcon />
+                <Menu size={20} />
               </StyledIconButton>
             ) : null}
           </Toolbar>
@@ -114,8 +114,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
             display="flex"
             justifyContent="end"
             alignItems="center"
-            item
-            xs
+            size="grow"
             textAlign="right"
             mr="20px"
           >

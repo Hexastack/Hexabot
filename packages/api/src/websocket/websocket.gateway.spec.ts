@@ -23,6 +23,7 @@ describe('WebsocketGateway', () => {
 
   beforeAll(async () => {
     const { module } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
       providers: [WebsocketGateway, SocketEventDispatcherService],
     });
     app = module.createNestApplication();

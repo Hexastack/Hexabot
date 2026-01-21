@@ -4,24 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  ActionExecutionArgs,
-  ActionMetadata,
-  Settings,
-} from '@hexabot-ai/agentic';
+import { ActionExecutionArgs, Settings } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
+import { ActionMetadataWithColor } from './types';
 
 type CreateActionParams<
   I,
   O,
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
   S extends Settings = Settings,
-> = ActionMetadata<I, O, S> & {
+> = ActionMetadataWithColor<I, O, S> & {
   /**
    * Optional path to the action folder. If omitted, it is resolved automatically
    * from the caller's file location.
@@ -43,6 +40,8 @@ export function createAction<
         {
           name: params.name,
           description: params.description,
+          color: params.color,
+          group: params.group,
           inputSchema: params.inputSchema,
           outputSchema: params.outputSchema,
           settingsSchema: params.settingsSchema,

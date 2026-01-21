@@ -4,19 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MarkerType, type Node } from "@xyflow/react";
 import {
-  Build,
-  DragHandle,
-  MarkChatRead,
-  PlayArrowRounded,
-  Psychology,
+  Bot,
+  Brain,
+  CircleStop,
+  GitBranch,
+  GripVertical,
+  Play,
   Repeat,
-  SmartToyOutlined,
-  StopRounded,
-} from "@mui/icons-material";
-import { MarkerType, Node } from "@xyflow/react";
-
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+  Zap,
+} from "lucide-react";
 
 import {
   EEdgeType,
@@ -32,6 +30,9 @@ import {
   getTaskDescription,
 } from "../utils/graph.utils";
 
+export const DEFAULT_WORKFLOW_NAME = "new_workflow";
+export const DEFAULT_WORKFLOW_VERSION = "1.0.0";
+
 export const DEFAULT_NODE_PROPS = {
   draggable: false,
   focusable: false,
@@ -39,17 +40,17 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 90, height: 90 },
-  [ENodeType.TOOL]: { width: 90, height: 90 },
-  [ENodeType.AGENT]: { width: 352, height: 132 },
-  [ENodeType.INDICATOR]: { width: 90, height: 90 },
-  [ENodeType.TASK]: { width: 352, height: 132 },
-  [ENodeType.OPERATOR]: { width: 90, height: 90 },
+  [ENodeType.MODEL]: { width: 280, height: 65 },
+  [ENodeType.TOOL]: { width: 280, height: 65 },
+  [ENodeType.AGENT]: { width: 280, height: 110 },
+  [ENodeType.INDICATOR]: { width: 110, height: 65 },
+  [ENodeType.TASK]: { width: 280, height: 90 },
+  [ENodeType.OPERATOR]: { width: 150, height: 65 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
-  [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
-  [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
-  [EOperatorType.CONDITIONAL]: { color: "#f0e68c", padding: 60 },
+  // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
+  // [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
+  // [EOperatorType.CONDITIONAL]: { color: "#fefbe8", padding: 60 },
 } satisfies INodeConfig["highlights"];
 export const EDGES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {
@@ -73,79 +74,71 @@ export const NODES = {
       ELinkType.AGENT_MODEL,
     ],
     theme: {
-      Icon: SmartToyOutlined,
-      color: "#444444",
-      bgColor: "#7bb0ff",
+      Icon: Bot,
+      borderColor: "#7bb0ff",
     },
+    title: "",
   },
   [ENodeType.TOOL]: {
     title: "",
     ports: [ELinkType.TOOL_IN],
     theme: {
-      Icon: Build,
-      color: "#555555",
-      bgColor: "#7bb0ff",
+      Icon: Zap,
+      borderColor: "orange",
     },
   },
   [ENodeType.MODEL]: {
     title: "",
     ports: [ELinkType.MODEL_IN],
     theme: {
-      Icon: Psychology,
-      color: "#555555",
-      bgColor: "#8160f7",
+      Icon: Brain,
+      borderColor: "#ad46fc",
     },
   },
   [ENodeType.INDICATOR]: {
-    [EIndicatorType.START]: {
+    [EIndicatorType.WORKFLOW_START]: {
       theme: {
-        Icon: PlayArrowRounded,
-        color: "#555555",
-        bgColor: "#97d445",
+        Icon: Play,
+        borderColor: "#37b765",
       },
       ports: [ELinkType.INDICATOR_OUT],
-      i18n: "message.start",
+      i18nTitle: "message.start",
     },
-    [EIndicatorType.END]: {
+    [EIndicatorType.WORKFLOW_END]: {
       theme: {
-        Icon: StopRounded,
-        color: "#555555",
-        bgColor: "#e95d32",
+        Icon: CircleStop,
+        borderColor: "#e95d32",
       },
       ports: [ELinkType.INDICATOR_IN],
-      i18n: "message.end",
+      i18nTitle: "message.stop",
     },
   },
   [ENodeType.OPERATOR]: {
     [EOperatorType.PARALLEL]: {
       operatorType: EOperatorType.PARALLEL,
       theme: {
-        Icon: DragHandle,
-        color: "#555555",
+        Icon: GripVertical,
         bgColor: "#0c9ba0",
       },
-      i18n: "message.parallel_indicator",
+      i18nTitle: "message.parallel_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.CONDITIONAL]: {
       operatorType: EOperatorType.CONDITIONAL,
-      taskName: "conditional",
       theme: {
-        Icon: MarkChatRead,
-        color: "#555555",
-        bgColor: "#0c9ba0",
+        Icon: GitBranch,
+        borderColor: "#2162fb",
       },
-      i18n: "message.conditional_indicator",
+      i18nTitle: "message.conditional_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [EOperatorType.LOOP]: {
       operatorType: EOperatorType.LOOP,
       theme: {
         Icon: Repeat,
-        color: "#555555",
-        bgColor: "#0c9ba0",
+        borderColor: "#0c9ba0",
       },
-      i18n: "message.loop_indicator",
+      i18nTitle: "message.loop_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
@@ -153,15 +146,11 @@ export const NODES = {
     const groupName = getGroupId(id, HIGHLIGHTS);
 
     return {
-      name: step["do"],
-      action: getTaskAction(step["do"], tasks),
+      title: step["do"],
+      actionName: getTaskAction(step["do"], tasks),
       description: getTaskDescription(step["do"], tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
-      theme: {
-        Icon: SimpleTextIcon,
-        color: "#555555",
-        bgColor: "#7bb0ff",
-      },
+      theme: {},
       groupName,
     };
   },

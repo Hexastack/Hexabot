@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
+import { Button, styled, Tab, Tabs, tabsClasses } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { SyntheticEvent } from "react";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
@@ -14,10 +15,12 @@ const StyledGrid = styled(Grid)(() => ({
   position: "relative",
   background: "#fff",
   flexDirection: "row",
+  alignItems: "center",
   borderBottom: "1.5px solid #DDDDDD",
 }));
 const StyledTabs = styled(Tabs)(() => ({
   backgroundColor: "#fff",
+  flex: 1,
   [`& .${tabsClasses.indicator}`]: {
     display: "none",
   },
@@ -52,11 +55,47 @@ const StyledTab = styled(Tab)(() => ({
     backgroundPosition: "-1px -1px",
   },
 }));
+const StyledNewButton = styled(Button)(() => ({
+  minHeight: "30px",
+  textTransform: "none",
+  backgroundColor: "#1ca089",
+  color: "#fff",
+  "&:hover": {
+    backgroundColor: "#178872",
+  },
+}));
+const StyledEditButton = styled(Button)(() => ({
+  minHeight: "30px",
+  textTransform: "none",
+  color: "#1ca089",
+  border: "1px solid #1ca089",
+  "&:hover": {
+    borderColor: "#178872",
+    backgroundColor: "#e6f5f2",
+  },
+}));
+const StyledActions = styled(Grid)(() => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  margin: "7px 8px 0 auto",
+}));
 
-export const FlowsTabs = () => {
+type FlowsTabsProps = {
+  onNew?: () => void;
+  onEdit?: () => void;
+};
+
+export const FlowsTabs = ({ onNew, onEdit }: FlowsTabsProps) => {
   const { workflows, selectedFlowId, updateWorkflowURL } = useWorkflow();
   const changeHandler = (_event: SyntheticEvent, workflowId: string) => {
     updateWorkflowURL(workflowId);
+  };
+  const handleNew = () => {
+    onNew?.();
+  };
+  const handleEdit = () => {
+    onEdit?.();
   };
 
   return (
@@ -71,6 +110,26 @@ export const FlowsTabs = () => {
           <StyledTab key={id} label={<Grid>{name}</Grid>} value={id} />
         ))}
       </StyledTabs>
+      <StyledActions>
+        {onEdit && (
+          <StyledEditButton
+            variant="outlined"
+            size="small"
+            onClick={handleEdit}
+            disabled={!selectedFlowId}
+          >
+            Edit
+          </StyledEditButton>
+        )}
+        <StyledNewButton
+          variant="contained"
+          size="small"
+          onClick={handleNew}
+          disabled={!onNew}
+        >
+          New
+        </StyledNewButton>
+      </StyledActions>
     </StyledGrid>
   );
 };

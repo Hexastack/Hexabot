@@ -104,26 +104,6 @@ export class HelperService {
   }
 
   /**
-   * Get default NLU helper.
-   *
-   * @deprecated Use getDefaultHelper() instead
-   * @returns - The helper
-   */
-  async getDefaultNluHelper() {
-    const settings = await this.settingService.getSettings();
-    const defaultHelper = this.get(
-      HelperType.NLU,
-      settings.chatbot_settings.default_nlu_helper as HelperName,
-    );
-
-    if (!defaultHelper) {
-      throw new Error(`Unable to find default NLU helper`);
-    }
-
-    return defaultHelper;
-  }
-
-  /**
    * Get default LLM helper.
    *
    * @deprecated Use getDefaultHelper() instead

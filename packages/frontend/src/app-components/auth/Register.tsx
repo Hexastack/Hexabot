@@ -4,19 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import AbcIcon from "@mui/icons-material/Abc";
-import KeyIcon from "@mui/icons-material/Key";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import MarkunreadIcon from "@mui/icons-material/Markunread";
-import PersonIcon from "@mui/icons-material/Person";
 import {
   Button,
   FormControlLabel,
-  Grid,
   Paper,
   Switch,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import {
+  ChevronRight as KeyboardArrowRightIcon,
+  Key as KeyIcon,
+  Mail as MarkunreadIcon,
+  Type as AbcIcon,
+  User as PersonIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -157,8 +159,10 @@ export const Register = () => {
                 required
                 autoFocus
                 {...register("firstName", validationRules.first_name)}
-                InputProps={{
-                  startAdornment: <Adornment Icon={AbcIcon} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={AbcIcon} />,
+                  },
                 }}
                 helperText={errors.firstName ? errors.firstName.message : null}
               />
@@ -169,8 +173,10 @@ export const Register = () => {
                 error={!!errors.lastName}
                 required
                 {...register("lastName", validationRules.last_name)}
-                InputProps={{
-                  startAdornment: <Adornment Icon={AbcIcon} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={AbcIcon} />,
+                  },
                 }}
                 helperText={errors.lastName ? errors.lastName.message : null}
               />
@@ -181,8 +187,10 @@ export const Register = () => {
                 error={!!errors.username}
                 required
                 {...register("username", validationRules.username)}
-                InputProps={{
-                  startAdornment: <Adornment Icon={PersonIcon} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={PersonIcon} />,
+                  },
                 }}
                 helperText={errors.username ? errors.username.message : null}
               />
@@ -194,10 +202,12 @@ export const Register = () => {
                 required
                 {...register("email", validationRules.email)}
                 helperText={errors.email ? errors.email.message : null}
-                InputProps={{
-                  disabled: readonlyEmail,
-                  readOnly: readonlyEmail,
-                  startAdornment: <Adornment Icon={MarkunreadIcon} />,
+                slotProps={{
+                  input: {
+                    disabled: readonlyEmail,
+                    readOnly: readonlyEmail,
+                    startAdornment: <Adornment Icon={MarkunreadIcon} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -208,8 +218,10 @@ export const Register = () => {
                 required
                 {...register("password", validationRules.password)}
                 helperText={errors.password ? errors.password.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={KeyIcon} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={KeyIcon} />,
+                  },
                 }}
               />
             </ContentItem>
@@ -220,8 +232,10 @@ export const Register = () => {
                 required
                 {...register("password2", validationRules.password2)}
                 helperText={errors.password2 ? errors.password2.message : null}
-                InputProps={{
-                  startAdornment: <Adornment Icon={KeyIcon} />,
+                slotProps={{
+                  input: {
+                    startAdornment: <Adornment Icon={KeyIcon} />,
+                  },
                 }}
               />
             </ContentItem>

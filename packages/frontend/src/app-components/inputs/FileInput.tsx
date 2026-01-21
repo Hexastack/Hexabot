@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import UploadIcon from "@mui/icons-material/Upload";
 import { Button, CircularProgress } from "@mui/material";
+import { Upload as UploadIcon } from "lucide-react";
 import { ChangeEvent, forwardRef } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
@@ -69,7 +69,7 @@ const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
           value="" // to trigger an automatic reset to allow the same file to be selected multiple times
           sx={{ display: "none" }}
           onChange={handleImportChange}
-          inputProps={{ accept }}
+          slotProps={{ htmlInput: { accept } }}
         />
       </>
     );

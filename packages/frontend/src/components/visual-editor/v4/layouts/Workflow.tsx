@@ -4,75 +4,83 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Actions } from "@hexabot-ai/agentic";
+import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useSafeMemo } from "@/hooks/useSafeMemo";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { useDelete } from "@/hooks/crud/useDelete";
+import { useDialogs } from "@/hooks/useDialogs";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { IAction } from "@/types/action.types";
+import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
-import { FlowsTabs } from "../components/main/FlowsTabs";
+import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
+import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
+import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
+import { FlowsDrawer } from "../components/main/FlowsDrawer";
+import { BASE_TYPES } from "../components/main/FlowsDrawer/constants";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
+import { WorkflowMenu } from "../components/main/WorkflowMenu";
+import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { WorkflowGraph } from "../types/workflow-node.types";
+import type {
+  EdgeInsertData,
+  FlowStepPath,
+} from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
-import {
-  buildNodesAndEdges,
-  getDefinition,
-} from "../utils/workflow-node.utils";
-//TODO: Mock data need to be removed
-const DEFAULT_ACTIONS: Actions = [
-  "call_api",
-  "call_llm",
-  "send_email",
-  "get_user_profile",
-  "search_web",
-  "query_memory",
-  "get_calendar_events",
-  "await_user_input",
-  "decision_router",
-  "create_ticket",
-  "send_text_message",
-  "await_reply",
-  "send_text_message",
-  "send_attachment",
-  "send_quick_replies",
-  "send_buttons",
-  "send_list",
-  "reply",
-  "llm_generate_text",
-  "content_upsert",
-  "html_extract_main",
-  "http_request",
-].reduce((acc, cur) => {
-  acc[cur] = {
-    parseSettings: () => {},
-  };
+import { createBaseDefinition } from "../utils/workflow-definition.utils";
+import { buildNodesAndEdges } from "../utils/workflow-node.utils";
 
-  return acc;
-}, {});
+import { WorkflowEmptyState } from "./WorkflowEmptyState";
+
 const StyledBox = styled(Box)(() => ({
   position: "relative",
   height: "100%",
+  flex: 1,
+  minWidth: 0,
+  overflow: "hidden",
+}));
+const WorkflowTitleOverlay = styled(Box)(() => ({
+  position: "absolute",
+  top: 12,
+  left: 12,
+  zIndex: 2,
+  maxWidth: "calc(100% - 24px)",
 }));
 
 export const Workflow = () => {
   const { setViewport } = useReactFlow();
+  const { t } = useTranslate();
   const {
-    selectedFlowId,
-    yaml,
     workflow,
+    workflows,
+    selectedFlowId,
     direction,
     debouncedWorkflowUpdate,
     updateWorkflowURL,
+    definition,
+    isDefinitionDirty,
+    isDefinitionSaving,
+    saveDefinition,
+    actions,
+    addActionStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
-  const { mutate: createWorkflow } = useCreate(EntityType.WORKFLOW);
+  const dialogs = useDialogs();
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const defaultViewport = useMemo(
     () => ({
       x: workflow?.x || 0,
@@ -81,16 +89,30 @@ export const Workflow = () => {
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
   );
-  const definition = useSafeMemo(
-    () =>
-      yaml ? getDefinition(yaml, { actions: DEFAULT_ACTIONS }) : undefined,
-    [yaml],
-    undefined,
-  );
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],
     edges: [],
   });
+  const isEmptyWorkflow = graph.nodes.length < 3;
+  const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
+  const [pendingInsertPath, setPendingInsertPath] =
+    useState<FlowStepPath | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
+  const actionsDrawerId = "workflow-actions-drawer";
+  const typeInfo = workflow ? BASE_TYPES[workflow.type] : undefined;
+  const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
+    setPendingInsertPath(insertPath);
+    setActionsDrawerOpen(true);
+  }, []);
+  const handleActionSelect = useCallback(
+    (action: IAction) => {
+      addActionStep(action, pendingInsertPath);
+      setActionsDrawerOpen(false);
+      setPendingInsertPath(null);
+    },
+    [addActionStep, pendingInsertPath],
+  );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
     if (nodesInitialized) {
@@ -139,35 +161,149 @@ export const Workflow = () => {
   }, [definition, direction]);
 
   useEffect(() => {
-    if (!selectedFlowId && yaml && definition) {
-      createWorkflow(
-        {
-          definitionYaml: yaml,
-          definition,
-          memoryDefinitions: [],
-          ...definition.workflow,
-        },
-        {
-          onSuccess(data) {
-            updateWorkflowURL(data.id);
-          },
-        },
-      );
+    if (!isEmptyWorkflow) {
+      setActionsDrawerOpen(false);
     }
-  }, [yaml, definition]);
+  }, [isEmptyWorkflow]);
+  const edgesWithHandlers = useMemo(() => {
+    return graph.edges.map((edge) => {
+      const edgeData = edge.data as EdgeInsertData | undefined;
+
+      if (!edgeData?.insertPath) {
+        return edge;
+      }
+
+      return {
+        ...edge,
+        data: {
+          ...edgeData,
+          onInsert: handleEdgeInsert,
+        },
+      };
+    });
+  }, [graph.edges, handleEdgeInsert]);
+  const handleNewWorkflow = () => {
+    const baseDefinition = createBaseDefinition();
+    const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
+
+    dialogs.open(WorkflowFormDialog, {
+      defaultValues: null,
+      presetValues: {
+        definition: baseDefinition,
+        definitionYaml: baseYaml,
+        onCreated: (createdWorkflow) => {
+          updateWorkflowURL(createdWorkflow.id);
+        },
+      },
+    });
+  };
+  const handleEditWorkflow = (workflowToEdit: IWorkflow) => {
+    dialogs.open(WorkflowFormDialog, {
+      defaultValues: workflowToEdit,
+    });
+  };
+  const handleOpenMenu = (
+    event: ReactMouseEvent<HTMLElement>,
+    flowId: string,
+  ) => {
+    setMenuAnchorEl(event.currentTarget);
+    setMenuFlowId(flowId);
+  };
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+    setMenuFlowId(null);
+  };
+  const handleDelete = async () => {
+    const selectedMenuWorkflow = menuFlowId
+      ? workflows?.find((flow) => flow.id === menuFlowId) ??
+        (workflow?.id === menuFlowId ? workflow : undefined)
+      : workflow;
+
+    if (!selectedMenuWorkflow) {
+      handleCloseMenu();
+
+      return;
+    }
+
+    const flowId = selectedMenuWorkflow.id;
+    const fallbackFlowId = workflows?.find((flow) => flow.id !== flowId)?.id;
+
+    handleCloseMenu();
+    const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    deleteWorkflow(flowId, {
+      onSuccess: () => {
+        if (selectedFlowId === flowId && fallbackFlowId) {
+          updateWorkflowURL(fallbackFlowId);
+        }
+      },
+    });
+  };
 
   return (
     <div className="visual-editor-v4">
-      <FlowsTabs />
+      <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
-          defaultEdges={graph?.edges || []}
-          defaultNodes={graph?.nodes || []}
+          defaultEdges={edgesWithHandlers || []}
+          defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
+        {workflow && (
+          <WorkflowTitleOverlay>
+            <WorkflowTitleBar
+              workflow={workflow}
+              typeIcon={typeInfo?.icon}
+              typeLabel={typeInfo ? t(typeInfo.labelKey) : undefined}
+              typeColor={typeInfo?.color}
+              typeBackground={typeInfo?.background}
+              onEdit={handleEditWorkflow}
+              onOpenMenu={handleOpenMenu}
+              onSave={saveDefinition}
+              saveDisabled={!definition || !isDefinitionDirty}
+              saveLoading={isDefinitionSaving}
+              saveLabel={t("button.save")}
+              renameLabel={t("button.rename")}
+              moreLabel={t("button.more")}
+            />
+          </WorkflowTitleOverlay>
+        )}
+        {isEmptyWorkflow && (
+          <WorkflowEmptyState
+            drawerId={actionsDrawerId}
+            drawerOpen={actionsDrawerOpen}
+            onOpenActionsDrawer={() => {
+              setPendingInsertPath(null);
+              setActionsDrawerOpen(true);
+            }}
+          />
+        )}
+        <ActionListDrawer
+          actions={actions}
+          drawerId={actionsDrawerId}
+          open={actionsDrawerOpen}
+          onActionSelect={handleActionSelect}
+          onClose={() => {
+            setActionsDrawerOpen(false);
+            setPendingInsertPath(null);
+          }}
+        />
+        <RotateButton />
       </StyledBox>
-      <RotateButton />
+      <ActionFormDrawer />
+      <WorkflowMenu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleCloseMenu}
+        deleteDisabled={Boolean(workflow?.builtin)}
+        onDelete={handleDelete}
+        deleteLabel={t("button.delete")}
+      />
     </div>
   );
 };

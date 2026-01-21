@@ -7,20 +7,33 @@
 import { TextField, TextFieldProps } from "@mui/material";
 import { ForwardedRef, forwardRef } from "react";
 
+type InputProps = Omit<
+  TextFieldProps,
+  "FormHelperTextProps" | "InputLabelProps" | "InputProps" | "inputProps"
+>;
+
 export const Input = forwardRef(
-  (props: TextFieldProps, ref: ForwardedRef<HTMLDivElement>) => (
-    <TextField
-      ref={ref}
-      type="text"
-      size="small"
-      fullWidth
-      inputProps={{
-        ...(props.required && { required: false }),
-        ...props.inputProps,
-      }}
-      {...props}
-    />
-  ),
+  (props: InputProps, ref: ForwardedRef<HTMLDivElement>) => {
+    const { slotProps, required, ...rest } = props;
+
+    return (
+      <TextField
+        ref={ref}
+        type="text"
+        size="small"
+        fullWidth
+        required={required}
+        slotProps={{
+          ...slotProps,
+          htmlInput: {
+            ...(required && { required: false }),
+            ...slotProps?.htmlInput,
+          },
+        }}
+        {...rest}
+      />
+    );
+  },
 );
 
 Input.displayName = "Input";

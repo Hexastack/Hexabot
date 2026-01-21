@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { defineAction } from '../action/action';
 import { BaseWorkflowContext } from '../context';
-import { Settings, WorkflowDefinition } from '../dsl.types';
+import { Settings, WorkflowDefinition, validateWorkflow } from '../dsl.types';
 import { Workflow, WorkflowEventEmitter } from '../workflow';
 import { EventEmitterLike } from '../workflow-event-emitter';
 
@@ -229,6 +229,28 @@ describe('Workflow execution', () => {
         actions: {} as Record<string, never>,
       }),
     ).toThrow(/Workflow validation failed/);
+  });
+
+  it('stringifies a workflow definition to YAML', () => {
+    const definition: WorkflowDefinition = {
+      workflow: { name: 'stringify_flow', version: '1.0.0' },
+      tasks: {
+        greet_user: {
+          action: 'greet_action',
+          inputs: { name: '=$input.name' },
+          outputs: { trimmed: '=$result.name' },
+        },
+      },
+      flow: [{ do: 'greet_user' }],
+      outputs: { result: '=$output.greet_user.trimmed' },
+    };
+    const yaml = Workflow.stringifyDefinition(definition);
+    const validation = validateWorkflow(yaml);
+
+    expect(validation.success).toBe(true);
+    if (validation.success) {
+      expect(validation.data).toEqual(definition);
+    }
   });
 
   it('propagates action errors thrown during run', async () => {

@@ -74,12 +74,15 @@ export class ActionService {
       return {
         name,
         description: action.description,
+        icon: action.icon,
+        color: action.color,
+        group: action.group,
         inputSchema: this.buildJsonSchema(action.inputSchema, `${name}_input`),
         outputSchema: this.buildJsonSchema(
           action.outputSchema,
           `${name}_output`,
         ),
-        settingsSchema: this.buildJsonSchema(
+        settingSchema: this.buildJsonSchema(
           action.settingSchema,
           `${name}_settings`,
         ),

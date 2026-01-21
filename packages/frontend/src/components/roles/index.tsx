@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
 import { GridColDef } from "@mui/x-data-grid";
+import { Accessibility } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -121,7 +121,7 @@ export const Roles = () => {
         },
       ]}
       columns={columns}
-      headerIcon={faUniversalAccess}
+      headerIcon={Accessibility}
       searchParams={{
         $iLike: ["name"],
         syncUrl: true,

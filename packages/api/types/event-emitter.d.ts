@@ -21,9 +21,9 @@ import type { Socket } from 'socket.io';
 import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import type {
-  BotStatsOrmEntity,
-  BotStatsType,
-} from '@/analytics/entities/bot-stats.entity';
+  StatsOrmEntity,
+  StatsType,
+} from '@/analytics/entities/stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import type ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import type { Message, MessageCreateDto } from '@/chat/dto/message.dto';
@@ -31,7 +31,6 @@ import type {
   Subscriber,
   SubscriberUpdateDto,
 } from '@/chat/dto/subscriber.dto';
-import type { ContextVarOrmEntity } from '@/chat/entities/context-var.entity';
 import type { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import type { LabelOrmEntity } from '@/chat/entities/label.entity';
 import type { MessageOrmEntity } from '@/chat/entities/message.entity';
@@ -41,10 +40,6 @@ import type { ContentOrmEntity } from '@/cms/entities/content.entity';
 import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import type { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
-import type { NlpEntityOrmEntity } from '@/nlp/entities/nlp-entity.entity';
-import type { NlpSampleEntityOrmEntity } from '@/nlp/entities/nlp-sample-entity.entity';
-import type { NlpSampleOrmEntity } from '@/nlp/entities/nlp-sample.entity';
-import type { NlpValueOrmEntity } from '@/nlp/entities/nlp-value.entity';
 import type { Setting } from '@/setting/dto/setting.dto';
 import type { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import type { SettingOrmEntity } from '@/setting/entities/setting.entity';
@@ -128,10 +123,9 @@ declare module '@nestjs/event-emitter' {
 
   interface OrmEntityRegistry {
     attachment: AttachmentOrmEntity;
-    botStats: BotStatsOrmEntity;
+    stats: StatsOrmEntity;
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
-    contextVar: ContextVarOrmEntity;
     dummy: DummyOrmEntity;
     invitation: InvitationOrmEntity;
     label: LabelOrmEntity;
@@ -141,10 +135,6 @@ declare module '@nestjs/event-emitter' {
     metadata: MetadataOrmEntity;
     message: MessageOrmEntity;
     model: ModelOrmEntity;
-    nlpEntity: NlpEntityOrmEntity;
-    nlpSample: NlpSampleOrmEntity;
-    nlpSampleEntity: NlpSampleEntityOrmEntity;
-    nlpValue: NlpValueOrmEntity;
     permission: PermissionOrmEntity;
     role: RoleOrmEntity;
     setting: SettingOrmEntity;
@@ -206,7 +196,7 @@ declare module '@nestjs/event-emitter' {
     'hook:chatbot:received': [AnyEventWrapper];
     'hook:chatbot:sent': [MessageCreateDto, AnyEventWrapper?];
     'hook:message:preCreate': [THydratedDocument<Message>];
-    'hook:stats:entry': [BotStatsType, string, Subscriber?];
+    'hook:stats:entry': [StatsType, string, Subscriber?];
     'hook:subscriber:assign': [SubscriberUpdateDto, Subscriber];
     'hook:user:lastvisit': [Subscriber];
     'hook:user:logout': [ExpressSession];

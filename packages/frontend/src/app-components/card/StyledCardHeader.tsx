@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, styled, Typography } from "@mui/material";
+import { styled, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid";
 
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 

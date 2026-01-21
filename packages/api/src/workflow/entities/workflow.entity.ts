@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { Workflow, WorkflowDefinition } from '@hexabot-ai/agentic';
 import {
+  BeforeInsert,
+  BeforeRemove,
+  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -17,11 +20,11 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
@@ -52,6 +55,10 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   schedule?: string | null;
 
+  /** Indicates if the workflow is built-in and protected from deletion. */
+  @Column({ default: false })
+  builtin!: boolean;
+
   /** Memory definitions available for this workflow. */
   @ManyToMany(() => MemoryDefinitionOrmEntity, {
     cascade: false,
@@ -81,7 +88,11 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @RelationId((workflow: WorkflowOrmEntity) => workflow.createdBy)
   private readonly createdById?: string | null;
 
-  /** Raw YAML workflow definition provided by the user. */
+  /** Structured workflow definition consumed by the agent runtime. */
+  @JsonColumn({ name: 'definition', nullable: true })
+  definition?: WorkflowDefinition;
+
+  /** Serialized YAML workflow definition persisted for portability. */
   @Column({ name: 'definition_yaml', type: 'text' })
   definitionYaml!: string;
 
@@ -106,26 +117,20 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
   direction!: DirectionType;
 
-  /** Structured workflow definition consumed by the agent runtime. */
-  get definition(): WorkflowDefinition {
-    if (
-      this.definitionCache?.yaml === this.definitionYaml &&
-      this.definitionCache.definition
-    ) {
-      return this.definitionCache.definition;
+  @BeforeRemove()
+  protected preventBuiltinRemoval(): void {
+    if (this.builtin) {
+      throw new Error('Cannot delete builtin workflow');
     }
-
-    const parsed = parseWorkflowDefinition(this.definitionYaml);
-    this.definitionCache = {
-      yaml: this.definitionYaml,
-      definition: parsed,
-    };
-
-    return parsed;
   }
 
-  private definitionCache?: {
-    yaml: string;
-    definition: WorkflowDefinition;
-  };
+  @BeforeInsert()
+  @BeforeUpdate()
+  private syncDefinitionYaml(): void {
+    if (!this.definition) {
+      return;
+    }
+
+    this.definitionYaml = Workflow.stringifyDefinition(this.definition);
+  }
 }

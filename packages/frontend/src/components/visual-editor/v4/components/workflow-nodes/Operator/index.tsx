@@ -14,18 +14,18 @@ import { GenericNodeIcon } from "../GenericNodeIcon";
 import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = (
-  operator,
-) => (
-  <WorkflowNodeProvider id={operator.id}>
+export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = ({
+  id,
+}) => (
+  <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon />
-      <GenericNodePorts<ENodeType.OPERATOR>
-        getDisabled={(index, { groupName, level }) =>
-          !!groupName && level === 0 && index === 0
-        }
-      />
+      <GenericNodeTitle />
     </GenericNodeContainer>
-    <GenericNodeTitle />
+    <GenericNodePorts<ENodeType.OPERATOR>
+      getDisabled={({ idx, node }) =>
+        !!node.groupName && node.level === 0 && idx === 0
+      }
+    />
   </WorkflowNodeProvider>
 );

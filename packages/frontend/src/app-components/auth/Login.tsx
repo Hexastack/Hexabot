@@ -4,10 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import {
+  ChevronRight as KeyboardArrowRightIcon,
+  Key as KeyIcon,
+  Mail as EmailIcon,
+} from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
@@ -102,8 +105,10 @@ export const Login = () => {
               error={!!errors.identifier}
               required
               autoFocus
-              InputProps={{
-                startAdornment: <Adornment Icon={EmailIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={EmailIcon} />,
+                },
               }}
               helperText={errors.identifier ? errors.identifier.message : null}
               {...register("identifier", validationRules.email)}
@@ -113,8 +118,10 @@ export const Login = () => {
               label={t("label.password")}
               error={!!errors.password}
               required
-              InputProps={{
-                startAdornment: <Adornment Icon={KeyIcon} />,
+              slotProps={{
+                input: {
+                  startAdornment: <Adornment Icon={KeyIcon} />,
+                },
               }}
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}

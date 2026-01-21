@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import LinkIcon from "@mui/icons-material/Link";
 import { FormControl, FormControlLabel, Switch } from "@mui/material";
+import { Link as LinkIcon } from "lucide-react";
 import { FC, Fragment, useEffect } from "react";
 import {
   Controller,
@@ -64,10 +64,12 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
           label={t(`label.${contentField.name}`, {
             defaultValue: contentField.label,
           })}
-          InputProps={
+          slotProps={
             contentField.type === ContentFieldType.URL
               ? {
-                  startAdornment: <Adornment Icon={LinkIcon} />,
+                  input: {
+                    startAdornment: <Adornment Icon={LinkIcon} />,
+                  },
                 }
               : undefined
           }

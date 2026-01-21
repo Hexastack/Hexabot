@@ -9,6 +9,7 @@ import { Path, PathValue } from "react-hook-form";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
+import { IAction, IActionAttributes } from "./action.types";
 import {
   IAttachment,
   IAttachmentAttributes,
@@ -44,33 +45,9 @@ import {
 } from "./message.types";
 import { IModel, IModelAttributes, IModelFull } from "./model.types";
 import {
-  INlpEntity,
-  INlpEntityAttributes,
-  INlpEntityFilters,
-  INlpEntityFull,
-} from "./nlp-entity.types";
-import {
-  INlpDatasetSampleAttributes,
-  INlpSample,
-  INlpSampleAttributes,
-  INlpSampleFilters,
-  INlpSampleFull,
-} from "./nlp-sample.types";
-import {
-  INlpSampleEntity,
-  INlpSampleEntityAttributes,
-  INlpSampleEntityFull,
-} from "./nlp-sample_entity.types";
-import {
-  INlpValue,
-  INlpValueAttributes,
-  INlpValueFilters,
-  INlpValueFull,
-} from "./nlp-value.types";
-import {
   IPermission,
   IPermissionAttributes,
-  IPermissionFull,
+  IPermissionFull
 } from "./permission.types";
 import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
 import { SearchPayload } from "./search.types";
@@ -83,6 +60,12 @@ import {
 } from "./subscriber.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
 import { IUser, IUserAttributes, IUserFull } from "./user.types";
+import {
+  IWorkflowRun,
+  IWorkflowRunAttributes,
+  IWorkflowRunFilters,
+  IWorkflowRunFull,
+} from "./workflow-run.types";
 import {
   IWorkflow,
   IWorkflowAttributes,
@@ -102,6 +85,8 @@ export interface IFormat<F = Format> {
 
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: [],
+  [EntityType.WORKFLOW_ACTIONS]: [],
+  [EntityType.WORKFLOW_RUN]: ["workflow", "triggeredBy"],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
@@ -114,10 +99,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTENT]: ["entity"],
   [EntityType.SETTING]: [],
   [EntityType.BOTSTATS]: [],
-  [EntityType.NLP_SAMPLE]: ["language", "entities"],
-  [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
-  [EntityType.NLP_ENTITY]: ["values"],
-  [EntityType.NLP_VALUE]: ["entity"],
   [EntityType.MESSAGE]: ["sender", "recipient", "sentBy"],
   [EntityType.MENU]: ["parent"],
   [EntityType.MENUTREE]: [],
@@ -161,6 +142,13 @@ export interface IEntityMapTypes {
     IWorkflowFilters,
     IWorkflowFull
   >;
+  [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<IAction, IActionAttributes>;
+  [EntityType.WORKFLOW_RUN]: IEntityTypes<
+    IWorkflowRun,
+    IWorkflowRunAttributes,
+    IWorkflowRunFilters,
+    IWorkflowRunFull
+  >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,
     IMemoryDefinitionAttributes
@@ -187,30 +175,6 @@ export interface IEntityMapTypes {
     IMenuNodeFull
   >;
   [EntityType.MODEL]: IEntityTypes<IModel, IModelAttributes, never, IModelFull>;
-  [EntityType.NLP_ENTITY]: IEntityTypes<
-    INlpEntity,
-    INlpEntityAttributes,
-    INlpEntityFilters,
-    INlpEntityFull
-  >;
-  [EntityType.NLP_SAMPLE]: IEntityTypes<
-    INlpSample,
-    INlpSampleAttributes | INlpDatasetSampleAttributes,
-    INlpSampleFilters,
-    INlpSampleFull
-  >;
-  [EntityType.NLP_VALUE]: IEntityTypes<
-    INlpValue,
-    INlpValueAttributes,
-    INlpValueFilters,
-    INlpValueFull
-  >;
-  [EntityType.NLP_SAMPLE_ENTITY]: IEntityTypes<
-    INlpSampleEntity,
-    INlpSampleEntityAttributes,
-    never,
-    INlpSampleEntityFull
-  >;
   [EntityType.PERMISSION]: IEntityTypes<
     IPermission,
     IPermissionAttributes,

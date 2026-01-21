@@ -4,18 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
-import type { SvgIconTypeMap } from "@mui/material";
-import type { OverridableComponent } from "@mui/material/OverridableComponent";
+import type { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
   EdgeMarkerType,
   NodeConnection,
   ResizeControlDirection,
 } from "@xyflow/system";
-import type { CSSProperties, FC, ReactNode, SVGProps } from "react";
+import type {
+  CSSProperties,
+  FC,
+  JSXElementConstructor,
+  ReactNode,
+} from "react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
+import type { IAction } from "@/types/action.types";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { Agent } from "../components/workflow-nodes/Agent";
@@ -25,73 +29,63 @@ import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
+import type { FlowStepPath } from "../types/workflow-path.types";
 
-type CommonNodeData<T extends ENodeType> = {
-  title?: string;
-  ports: Port<T>[];
-  level?: number;
+import { NodeExecutionState } from "./workflow.types";
+
+export type WorkflowIcon = JSXElementConstructor<any>;
+type NodeDataTitle =
+  | { title: string; i18nTitle?: never }
+  | { i18nTitle: TTranslationKeys; title?: never };
+
+export type WorkflowNodeTheme = {
+  Icon?: WorkflowIcon;
+  color?: CSSProperties["color"];
+  bgColor?: CSSProperties["color"];
+  iconColor?: CSSProperties["color"];
+  borderColor?: CSSProperties["color"];
+};
+
+export type CommonNodeDadaTypes = NodeDataTitle & {
+  description?: string;
   groupName?: string;
+  stepPath?: FlowStepPath;
+  theme: WorkflowNodeTheme;
+  level?: number;
+  executionState?: NodeExecutionState;
+};
+
+type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
+  ports: Port<T>[];
 };
 
 // model types
-export type ModelData = CommonNodeData<ENodeType.MODEL> & {
-  theme: {
-    Icon: FC;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-};
+export type ModelData = CommonNodeData<ENodeType.MODEL>;
 
 // Tool types
-export type ToolData = CommonNodeData<ENodeType.TOOL> & {
-  theme: {
-    Icon: FC;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-};
+export type ToolData = CommonNodeData<ENodeType.TOOL>;
 
 // Agent types
 export type AgentData = CommonNodeData<ENodeType.AGENT> & {
-  theme: {
-    Icon: FC;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
   tools: string[];
   model: string;
   memory: string;
-  description?: string;
+  action?: string;
 };
 
 // Task types
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
-  theme: {
-    Icon: FC<SVGProps<SVGSVGElement>>;
-    color: CSSProperties["color"];
-    bgColor: CSSProperties["color"];
-  };
-  description?: string;
-  action?: string;
-  name?: string;
+  actionName?: string;
 };
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
-  i18n: TTranslationKeys;
-  theme: {
-    Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-      muiName: string;
-    };
-    color: string;
-    bgColor: string;
-  };
   taskName?: string;
 };
 
 export enum EIndicatorType {
-  START = "start",
-  END = "end",
+  WORKFLOW_START = "workflowStart",
+  WORKFLOW_END = "workflowEnd",
 }
 
 // Operator types
@@ -103,15 +97,6 @@ export enum EOperatorType {
 
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
-  i18n: TTranslationKeys;
-  theme: {
-    Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-      muiName: string;
-    };
-    color: string;
-    bgColor: string;
-  };
-  taskName?: string;
 };
 
 // Group types
@@ -255,8 +240,12 @@ type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
   NodeData<T>["data"];
 
 // Context types
-export type IWorkflowNodeContext<T extends ENodeType = ENodeType> =
-  FlattenedNodeData<T> & {
+export type IWorkflowNodeContext<T extends ENodeType = ENodeType> = Omit<
+  FlattenedNodeData<T>,
+  "action"
+> &
+  Partial<CommonNodeDadaTypes> & {
+    action?: IAction | undefined;
     connections: NodeConnection[];
   };
 

@@ -4,19 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Divider,
-  Grid,
   MenuItem,
   Paper,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { ChevronUp, Plus, Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
@@ -46,13 +44,13 @@ const AccordionModelHead = () => (
     alignContent="center"
     bgcolor="#0001"
   >
-    <Grid item width="6rem" m="0.2rem" />
-    <Grid item xs textAlign="left">
+    <Grid size="auto" width="6rem" m="0.2rem" />
+    <Grid size="grow" textAlign="left">
       <Typography fontWeight={700} fontSize="body2.fontSize">
         Action
       </Typography>
     </Grid>
-    <Grid item xs textAlign="left">
+    <Grid size="grow" textAlign="left">
       <Typography fontWeight={700} fontSize="body2.fontSize">
         Relation
       </Typography>
@@ -133,7 +131,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
           }}
         >
           <AccordionSummary
-            expandIcon={<KeyboardArrowUpIcon />}
+            expandIcon={<ChevronUp size={18} />}
             sx={{
               backgroundColor: "background.default",
               borderRadius: 1,
@@ -172,20 +170,20 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                         }}
                         alignItems="center"
                       >
-                        <Grid item width="6rem">
+                        <Grid size="auto" width="6rem">
                           <IconButton
                             variant="text"
                             color="error"
                             onClick={() => deletePermission(id)}
                             size="small"
                           >
-                            <DeleteOutlinedIcon fontSize="small" />
+                            <Trash2 size={16} />
                           </IconButton>
                         </Grid>
-                        <Grid item xs>
+                        <Grid size="grow">
                           <Typography>{action}</Typography>
                         </Grid>
-                        <Grid item xs>
+                        <Grid size="grow">
                           <Typography sx={{ ml: "0.2rem" }}>
                             {relation}
                           </Typography>
@@ -200,7 +198,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                 padding="1rem 0"
                 borderTop="1px solid #0002"
               >
-                <Grid item width="6rem" alignContent="center" pl="0.6rem">
+                <Grid size="auto" width="6rem" alignContent="center" pl="0.6rem">
                   <IconButton
                     size="small"
                     color="primary"
@@ -216,10 +214,10 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     }}
                     disabled={!payload.action || !payload.relation}
                   >
-                    <AddIcon fontSize="small" />
+                    <Plus size={16} />
                   </IconButton>
                 </Grid>
-                <Grid item xs alignContent="center">
+                <Grid size="grow" alignContent="center">
                   <Input
                     select
                     sx={{ width: "6.875rem" }}
@@ -239,7 +237,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     <MenuItem value="delete">{t("label.delete")}</MenuItem>
                   </Input>
                 </Grid>
-                <Grid item xs alignContent="center">
+                <Grid size="grow" alignContent="center">
                   <Input
                     select
                     sx={{ width: "6.875rem" }}

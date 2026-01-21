@@ -11,16 +11,22 @@ import { EntityType, Format } from "@/services/types";
 
 import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
+export enum WorkflowType {
+  conversational = "conversational",
+  manual = "manual",
+  scheduled = "scheduled",
+}
+
 export interface IWorkflowAttributes {
   name: string;
   version: string;
   description?: string | null;
+  builtin?: boolean;
   definition: WorkflowDefinition;
   schedule?: string | null;
-  type?: string;
+  type: WorkflowType;
   definitionYaml?: string;
   zoom?: number;
-  // offset?: [number, number];
   x?: number;
   y?: number;
   direction?: ResizeControlDirection;

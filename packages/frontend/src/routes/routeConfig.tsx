@@ -23,7 +23,6 @@ import { Languages } from "@/components/languages";
 import { MediaLibrary } from "@/components/media-library";
 import { MemoryDefinitions } from "@/components/memory-definitions";
 import { Menu } from "@/components/menu";
-import { Nlp } from "@/components/nlp";
 import { Profile } from "@/components/profile";
 import { Roles } from "@/components/roles";
 import { Settings } from "@/components/settings";
@@ -31,6 +30,7 @@ import { Subscribers } from "@/components/subscribers";
 import { Translations } from "@/components/translations";
 import { Users } from "@/components/users";
 import { WorkflowEditor } from "@/components/visual-editor/v4";
+import { WorkflowRuns } from "@/components/workflow-runs";
 import { LayoutProps } from "@/layout";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -67,7 +67,7 @@ export const routes: RouteObjectItem[] = [
     Component: Dashboard,
   },
   {
-    path: `/workflow-editor/:flowId?/:nodeIds?`,
+    path: `/workflow-editor/:flowId?/:nodeIds?/*`,
     Component: WorkflowEditor,
     handle: { hasNoPadding: true },
   },
@@ -81,8 +81,11 @@ export const routes: RouteObjectItem[] = [
     },
   },
   {
-    path: "/nlp/nlp-entities?/:id?/nlpValues?",
-    Component: Nlp,
+    path: "/workflow/runs",
+    Component: WorkflowRuns,
+    handle: {
+      requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
+    },
   },
   {
     path: "/inbox/subscribers?/:subscriber?",

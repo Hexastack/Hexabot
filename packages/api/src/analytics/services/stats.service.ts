@@ -1,0 +1,228 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { plainToInstance } from 'class-transformer';
+import { Between, InsertEvent, UpdateEvent } from 'typeorm';
+
+import {
+  Subscriber,
+  Subscriber as SubscriberDto,
+} from '@/chat/dto/subscriber.dto';
+import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import { MessageService } from '@/chat/services/message.service';
+import { config } from '@/config';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
+
+import {
+  StatsActionDto,
+  StatsSummaryDto,
+  StatsTransformerDto,
+} from '../dto/stats.dto';
+import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
+import { StatsRepository } from '../repositories/stats.repository';
+
+@Injectable()
+export class StatsService extends BaseOrmService<
+  StatsOrmEntity,
+  StatsTransformerDto,
+  StatsActionDto
+> {
+  constructor(
+    readonly repository: StatsRepository,
+    private readonly workflowService: WorkflowService,
+    private readonly workflowRunService: WorkflowRunService,
+    private readonly messageService: MessageService,
+  ) {
+    super(repository);
+  }
+
+  @OnEvent('hook:subscriber:preCreate')
+  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
+    const entity = event.entity;
+    if (!entity) {
+      return;
+    }
+
+    const subscriber = plainToInstance(SubscriberDto, entity, {
+      exposeUnsetFields: false,
+    });
+
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      StatsType.new_users,
+      'New users',
+      subscriber,
+    );
+  }
+
+  @OnEvent('hook:subscriber:preUpdate')
+  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
+    const entity = event.entity as Partial<SubscriberOrmEntity> | undefined;
+    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
+
+    if (!entity || !previous) {
+      return;
+    }
+
+    const newAssignedTo = entity.assignedTo?.id;
+    const previousAssignedTo = previous.assignedTo?.id;
+
+    if (newAssignedTo === previousAssignedTo) {
+      return;
+    }
+
+    const newAssignmentExists = Boolean(newAssignedTo);
+    const previousAssignmentExists = Boolean(previousAssignedTo);
+
+    if (newAssignmentExists && previousAssignmentExists) {
+      return;
+    }
+
+    const previousSubscriber = plainToInstance(SubscriberDto, previous, {
+      exposeUnsetFields: false,
+    });
+
+    if (previousSubscriber) {
+      this.eventEmitter.emit(
+        'hook:analytics:passation',
+        previousSubscriber,
+        newAssignmentExists,
+      );
+    }
+  }
+
+  /**
+   * Retrieves statistics for messages within a specified time range and of specified types.
+   *
+   * @param from - The start date for filtering messages.
+   * @param to - The end date for filtering messages.
+   * @param types - An array of message types (of type StatsType) to filter the statistics.
+   *
+   * @returns A promise that resolves to an array of `Stats` objects representing the message statistics.
+   */
+  async findMessages(
+    from: Date,
+    to: Date,
+    types: StatsType[],
+  ): Promise<StatsOrmEntity[]> {
+    return await this.repository.findMessages(from, to, types);
+  }
+
+  async getSummary(): Promise<StatsSummaryDto> {
+    const now = new Date();
+    const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const [
+      totalWorkflows,
+      totalRunsLast24h,
+      totalMessagesLast24h,
+      successfulRunsLast24h,
+      failedRunsLast24h,
+    ] = await Promise.all([
+      this.workflowService.count(),
+      this.workflowRunService.count({
+        where: { createdAt: Between(since, now) },
+      }),
+      this.messageService.count({
+        where: { createdAt: Between(since, now) },
+      }),
+      this.workflowRunService.count({
+        where: { status: 'finished', finishedAt: Between(since, now) },
+      }),
+      this.workflowRunService.count({
+        where: { status: 'failed', failedAt: Between(since, now) },
+      }),
+    ]);
+    const completedRuns = successfulRunsLast24h + failedRunsLast24h;
+    const successRateLast24h =
+      completedRuns > 0 ? successfulRunsLast24h / completedRuns : 0;
+
+    return {
+      totalWorkflows,
+      totalRunsLast24h,
+      successRateLast24h,
+      totalMessagesLast24h,
+    };
+  }
+
+  /**
+   * Handles the event to track user activity and emit statistics for loyalty, returning users, and retention.
+   *
+   * This method checks the last visit of the subscriber and emits relevant analytics events
+   * based on configured thresholds for loyalty, returning users, and retention.
+   *
+   * @param {Subscriber} subscriber - The subscriber object that contains last visit and retention data.
+   */
+  @OnEvent('hook:user:lastvisit')
+  handleLastVisit(subscriber: Subscriber) {
+    const now = +new Date();
+    if (subscriber.lastvisit) {
+      // A loyal subscriber is a subscriber that comes back after some inactivity
+      if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          StatsType.returning_users,
+          'Loyalty',
+          subscriber,
+        );
+      }
+
+      // Returning subscriber is a subscriber that comes back after some inactivity
+      if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          StatsType.returning_users,
+          'Returning users',
+          subscriber,
+        );
+      }
+    }
+    // Retention
+    if (
+      subscriber.retainedFrom &&
+      now - +subscriber.retainedFrom > config.analytics.thresholds.retention
+    ) {
+      this.eventEmitter.emit(
+        'hook:stats:entry',
+        StatsType.retention,
+        'Retentioned users',
+      );
+    }
+  }
+
+  /**
+   * Handles the event to update bot statistics.
+   *
+   * @param type - The type of bot statistics being tracked (e.g., user messages, bot responses).
+   * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
+   */
+  @OnEvent('hook:stats:entry')
+  async handleStatEntry(type: StatsType, name: string): Promise<void> {
+    const day = new Date();
+    day.setMilliseconds(0);
+    day.setSeconds(0);
+    day.setMinutes(0);
+    day.setHours(0);
+
+    try {
+      const insight = await this.findOneOrCreate(
+        { where: { day, type, name } },
+        { day, type, name, value: 0 },
+      );
+
+      try {
+        await this.updateOne(insight.id, { value: insight.value + 1 });
+      } catch (err) {
+        this.logger.error('Unable to update insight', err);
+      }
+    } catch (err) {
+      this.logger.error('Unable to find or create insight', err);
+    }
+  }
+}

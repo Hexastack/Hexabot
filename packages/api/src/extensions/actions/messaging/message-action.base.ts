@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionMetadata, SettingsSchema } from '@hexabot-ai/agentic';
+import { SettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
+import { ActionMetadataWithColor } from '@/actions/types';
+import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
@@ -74,11 +75,25 @@ export abstract class MessageAction<
   I,
   S extends MessageActionSettings = MessageActionSettings,
 > extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
+  private static readonly DEFAULT_ICON = 'MessageSquare';
+
+  private static readonly DEFAULT_COLOR = '#e47800';
+
+  private static readonly DEFAULT_GROUP = 'messaging';
+
   protected constructor(
-    metadata: ActionMetadata<I, MessageActionOutput, S>,
+    metadata: ActionMetadataWithColor<I, MessageActionOutput, S>,
     actionService: ActionService,
   ) {
-    super(metadata, actionService);
+    super(
+      {
+        ...metadata,
+        icon: metadata.icon ?? MessageAction.DEFAULT_ICON,
+        color: metadata.color ?? MessageAction.DEFAULT_COLOR,
+        group: metadata.group ?? MessageAction.DEFAULT_GROUP,
+      },
+      actionService,
+    );
   }
 
   private ensureEvent(context: ConversationalWorkflowContext) {
@@ -125,10 +140,10 @@ export abstract class MessageAction<
       .getHandler()
       .sendMessage(event, envelope, sendOptions);
 
-    eventEmitter.emit('hook:stats:entry', BotStatsType.outgoing, 'Outgoing');
+    eventEmitter.emit('hook:stats:entry', StatsType.outgoing, 'Outgoing');
     eventEmitter.emit(
       'hook:stats:entry',
-      BotStatsType.all_messages,
+      StatsType.all_messages,
       'All Messages',
     );
 

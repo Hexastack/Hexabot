@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
@@ -30,6 +30,8 @@ export const AuthenticatedLayout: React.FC<LayoutProps> = ({
   useSocketGetQuery("/message/subscribe/");
 
   useSocketGetQuery("/subscriber/subscribe/");
+
+  useSocketGetQuery("/workflow/subscribe/");
 
   const hasPermissions =
     !requiredPermissions?.length ||

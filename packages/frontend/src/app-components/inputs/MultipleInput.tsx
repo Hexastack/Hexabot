@@ -4,17 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { RemoveCircleOutline } from "@mui/icons-material";
-import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
   FormHelperText,
   FormLabel,
-  Grid,
   IconButton,
   TextFieldProps,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { CircleMinus, Plus } from "lucide-react";
 import {
   ChangeEvent,
   forwardRef,
@@ -141,7 +140,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
                 onClick={() => handleRemoveInput(input.id)}
                 disabled={inputs.length <= minInput}
               >
-                <RemoveCircleOutline />
+                <CircleMinus size={20} />
               </IconButton>
             </Box>
           ))}
@@ -155,7 +154,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
               variant="contained"
               color="primary"
               onClick={handleAddInput}
-              startIcon={<AddIcon />}
+              startIcon={<Plus size={18} />}
               disabled={disabled}
             >
               {t("button.add")}

@@ -8,7 +8,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { In, InsertEvent, UpdateEvent } from 'typeorm';
 
-import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
+import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
@@ -92,12 +92,12 @@ export class ChatService {
       this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
       this.eventEmitter.emit(
         'hook:stats:entry',
-        BotStatsType.incoming,
+        StatsType.incoming,
         'Incoming',
       );
       this.eventEmitter.emit(
         'hook:stats:entry',
-        BotStatsType.all_messages,
+        StatsType.all_messages,
         'All Messages',
       );
     } catch (err) {
@@ -193,7 +193,7 @@ export class ChatService {
         };
 
         this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
-        this.eventEmitter.emit('hook:stats:entry', BotStatsType.echo, 'Echo');
+        this.eventEmitter.emit('hook:stats:entry', StatsType.echo, 'Echo');
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
       }

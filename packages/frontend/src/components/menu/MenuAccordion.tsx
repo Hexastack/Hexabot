@@ -4,13 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ChevronRight } from "@mui/icons-material";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import DoNotDisturbAltRoundedIcon from "@mui/icons-material/DoNotDisturbAltRounded";
-import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
-import LinkIcon from "@mui/icons-material/Link";
-import PlaylistAddRoundedIcon from "@mui/icons-material/PlaylistAddRounded";
-import ReplyIcon from "@mui/icons-material/Reply";
 import {
   Accordion,
   AccordionDetails,
@@ -18,11 +11,20 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Grid,
   Link,
   styled,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import {
+  Ban,
+  ChevronRight,
+  Link as LinkIcon,
+  ListPlus,
+  Pencil,
+  Reply,
+  Trash2,
+} from "lucide-react";
 import React, { FC, useState } from "react";
 
 import { AnimatedComponent } from "@/app-components/AnimatedComponent";
@@ -87,11 +89,11 @@ interface MenuAccordionProps {
 
 const getIcon = (menu: IMenuNode): TMenuItem["Icon"] | undefined => {
   if (menu.type === MenuType.postback) {
-    return ReplyIcon;
+    return Reply;
   }
   if (menu.type === MenuType.web_url) return LinkIcon;
   if (menu.type === MenuType.nested && menu.call_to_actions === undefined) {
-    return DoNotDisturbAltRoundedIcon;
+    return Ban;
   }
 
   return undefined;
@@ -188,7 +190,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
         {menu.type === "nested" &&
         hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
           <StyledButton
-            startIcon={<PlaylistAddRoundedIcon sx={{ opacity: 0.6 }} />}
+            startIcon={<ListPlus size={18} style={{ opacity: 0.6 }} />}
             onClick={(event) => {
               onAppend(menu.id);
               event.stopPropagation();
@@ -199,7 +201,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
         ) : null}
         {hasPermission(EntityType.MENU, PermissionAction.UPDATE) ? (
           <StyledButton
-            startIcon={<DriveFileRenameOutlineIcon sx={{ opacity: "60%" }} />}
+            startIcon={<Pencil size={18} style={{ opacity: 0.6 }} />}
             onClick={(event) => {
               onUpdate(menu);
               event.stopPropagation();
@@ -217,7 +219,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
               onDelete(menu);
               event.stopPropagation();
             }}
-            startIcon={<DeleteOutlineIcon color="error" />}
+            startIcon={<Trash2 size={18} color={theme.palette.error.main} />}
             sx={{
               "& .MuiButton-startIcon": {
                 marginRight: 0,

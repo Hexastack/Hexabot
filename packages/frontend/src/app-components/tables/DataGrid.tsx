@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Grid, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import {
   DataGridProps,
   gridClasses,
@@ -79,7 +80,7 @@ export const DataGrid = <T extends GridValidRowModel = any>({
     } as Partial<GridSlotsComponent> | undefined);
 
   return (
-    <Grid xs={12} item>
+    <Grid size={12}>
       <StyledDataGrid<T>
         autoHeight={autoHeight}
         disableRowSelectionOnClick={disableRowSelectionOnClick}

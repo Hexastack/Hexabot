@@ -97,7 +97,6 @@ const getBorderRadiusConfig = (
 };
 const getConfig = (
   id: ELinkType,
-  isActive: boolean,
   direction: ResizeControlDirection,
 ): getHandleConfigProps => {
   switch (id) {
@@ -180,11 +179,6 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? { top: "50%", right: "-6px" }
@@ -196,11 +190,6 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? {
@@ -226,15 +215,10 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? { top: "50%", right: "-6px" }
-            : { bottom: "-7px" }),
+            : { bottom: "-5px" }),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -243,15 +227,10 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? { bottom: "-6px", left: 50 }
-            : { left: "-7px" }),
+            : { top: "40px", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -259,15 +238,10 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? { bottom: "-6px", left: 250 }
-            : { left: "-7px" }),
+            : { top: "80px", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -275,11 +249,6 @@ const getConfig = (
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Top : Position.Right,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? {
@@ -296,11 +265,6 @@ const getConfig = (
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Top : Position.Right,
-        ...(isActive && {
-          "aria-disabled": true,
-          isConnectable: false,
-          isValidConnection: () => false,
-        }),
         style: {
           ...(direction === "horizontal"
             ? {
@@ -328,10 +292,9 @@ const getConfig = (
 
 export const getHandleConfig = (
   id: ELinkType,
-  isActive: boolean,
   direction: ResizeControlDirection = "horizontal",
 ): getHandleConfigProps => {
-  const config = getConfig(id, isActive, direction);
+  const config = getConfig(id, direction);
   const defaultConfig: Partial<HandleProps> = {
     id,
     style: {

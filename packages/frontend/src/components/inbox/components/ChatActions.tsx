@@ -5,8 +5,9 @@
  */
 
 import { Avatar } from "@chatscope/chat-ui-kit-react";
-import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
-import { Button, Grid, IconButton, MenuItem, Typography } from "@mui/material";
+import { Button, IconButton, MenuItem, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
@@ -84,7 +85,7 @@ export const ChatActions = () => {
           sx={{ outline: "#AAAAAA solid 1px" }}
           color="default"
         >
-          <UnifiedIcon Icon={faHandPointRight} color="black" />
+          <UnifiedIcon Icon={Hand} color="black" />
         </IconButton>
       </Grid>
 

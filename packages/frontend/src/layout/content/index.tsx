@@ -8,11 +8,11 @@ import {
   Box,
   BoxProps,
   CircularProgress,
-  Grid,
   styled,
   Theme,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { FC } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -74,7 +74,7 @@ export const Content: FC<ContentProps> = ({ children, ...rest }) => {
 
   return (
     <StyledBox component="main" {...rest}>
-      <Grid item xs>
+      <Grid size="grow">
         <DrawerHeader />
       </Grid>
       {children}

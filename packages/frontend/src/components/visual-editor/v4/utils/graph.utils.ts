@@ -32,6 +32,7 @@ import {
   type NodeData,
   type THighlightGroups,
 } from "../types/workflow-node.types";
+import type { FlowStepPath } from "../types/workflow-path.types";
 
 export const getNodeDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
   config?.dimensions?.[nodeType] || { height: 0, width: 0 };
@@ -48,6 +49,7 @@ export type TraversalContext = {
   nodes: NodeData[];
   edges: Edge[];
   edgeKeys: Set<string>;
+  nodePaths: Map<string, FlowStepPath>;
   config?: INodeConfig;
 };
 
@@ -59,6 +61,8 @@ type WalkArgs = {
   prefix: string;
   incoming: string[];
   ctx: TraversalContext;
+  path: FlowStepPath;
+  stepIndexes?: number[];
   nodeType?: EOperatorType;
 };
 
@@ -149,6 +153,7 @@ function addEdge(
   target: string,
   sourceHandle?: string,
   label?: string,
+  insertPath?: FlowStepPath,
 ) {
   addGroupEdge(ctx, source, target, label);
 
@@ -160,6 +165,7 @@ function addEdge(
     target,
     label,
     sourceHandle,
+    data: insertPath ? { insertPath } : undefined,
   });
 }
 
@@ -174,7 +180,7 @@ export const getTaskAction = (
   taskName: string,
   tasks: WorkflowDefinition["tasks"],
 ) => {
-  return tasks?.[taskName]?.action ?? "No action provided.";
+  return tasks?.[taskName]?.action;
 };
 
 export const getGroupId = (id: string, groups?: THighlightGroups) => {
@@ -203,7 +209,7 @@ const getIndicator = <T extends EIndicatorType>(
   return {
     ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
-    id: `${EIndicatorType.START}-${id}`,
+    id: `${EIndicatorType.WORKFLOW_START}-${id}`,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
     data: {
@@ -217,6 +223,7 @@ const getIndicatorEdge = <T extends EIndicatorType>(
   type: T,
   ctx: TraversalContext,
   target: string,
+  insertPath?: FlowStepPath,
 ) => {
   return {
     id: generateId(),
@@ -224,6 +231,7 @@ const getIndicatorEdge = <T extends EIndicatorType>(
     target,
     type: EEdgeType.EDGE_WITH_BUTTON,
     ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
+    data: insertPath ? { insertPath } : undefined,
   };
 };
 
@@ -234,6 +242,8 @@ export function walkSteps({
   prefix,
   incoming,
   ctx,
+  path,
+  stepIndexes,
 }: WalkArgs): string[] {
   if (!Array.isArray(steps) || steps.length === 0) {
     return uniqueIds(incoming);
@@ -247,15 +257,19 @@ export function walkSteps({
     }
 
     const idBase = `${prefix}-${index}`;
+    const stepIndex = stepIndexes?.[index] ?? index;
+    const stepPath: FlowStepPath = [...path, stepIndex];
 
     if ("do" in step && step.do) {
       const taskName = step.do;
       const taskNodeId = `${idBase}-${taskName}`;
       const groupName = getGroupId(taskNodeId, ctx.config.highlights);
 
+      ctx.nodePaths.set(taskNodeId, stepPath);
+
       if (!ctx.nodes.length) {
         const startIndicator = getIndicator(
-          EIndicatorType.START,
+          EIndicatorType.WORKFLOW_START,
           taskNodeId,
           ctx,
           level,
@@ -269,9 +283,10 @@ export function walkSteps({
 
       if (!incoming.length) {
         const startIndicatorEdge = getIndicatorEdge(
-          EIndicatorType.START,
+          EIndicatorType.WORKFLOW_START,
           ctx,
           taskNodeId,
+          stepPath,
         );
 
         ctx.edges.push(startIndicatorEdge);
@@ -281,6 +296,8 @@ export function walkSteps({
       const tools: string[] = task.settings?.["tools"] || [];
 
       if (tools.length) {
+        const action = getTaskAction(step["do"], tasks);
+
         ctx.nodes.push({
           ...getNodeDimensions(ENodeType.AGENT, ctx.config),
           ...DEFAULT_NODE_PROPS,
@@ -291,8 +308,12 @@ export function walkSteps({
           data: {
             description: getTaskDescription(step["do"], tasks),
             ...ctx.config.nodes[ENodeType.AGENT],
+            action,
             level,
             groupName,
+            stepPath,
+            title: taskName,
+            i18nTitle: undefined,
           },
         });
 
@@ -308,6 +329,7 @@ export function walkSteps({
             data: {
               ...ctx.config.nodes[ENodeType.MODEL],
               title: model,
+              i18nTitle: undefined,
               level,
             },
           });
@@ -336,6 +358,7 @@ export function walkSteps({
             data: {
               ...ctx.config.nodes[ENodeType.TOOL],
               title: tool,
+              i18nTitle: undefined,
               level,
             },
           });
@@ -354,11 +377,14 @@ export function walkSteps({
             ...ctx.config.nodes[ENodeType.TASK](taskNodeId, step, tasks),
             level,
             groupName,
+            stepPath,
           },
         });
       }
 
-      currentSources.forEach((source) => addEdge(ctx, source, taskNodeId));
+      currentSources.forEach((source) =>
+        addEdge(ctx, source, taskNodeId, undefined, undefined, stepPath),
+      );
       currentSources = [taskNodeId];
 
       return;
@@ -367,6 +393,8 @@ export function walkSteps({
     if ("parallel" in step && step.parallel?.steps) {
       const parallelNodeId = `${idBase}-parallel`;
       const groupName = getGroupId(parallelNodeId, ctx.config.highlights);
+
+      ctx.nodePaths.set(parallelNodeId, stepPath);
 
       ctx.nodes.push({
         ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
@@ -378,11 +406,19 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.PARALLEL],
           level,
           groupName,
+          stepPath,
         },
       });
 
-      currentSources.forEach((source) => addEdge(ctx, source, parallelNodeId));
+      currentSources.forEach((source) =>
+        addEdge(ctx, source, parallelNodeId, undefined, undefined, stepPath),
+      );
 
+      const parallelStepsPath: FlowStepPath = [
+        ...stepPath,
+        "parallel",
+        "steps",
+      ];
       const exits = step.parallel.steps.flatMap((branchStep, branchIndex) =>
         walkSteps({
           index,
@@ -392,6 +428,8 @@ export function walkSteps({
           prefix: `${parallelNodeId}${branchIndex}`,
           incoming: [parallelNodeId],
           ctx,
+          path: parallelStepsPath,
+          stepIndexes: [branchIndex],
         }),
       );
 
@@ -404,6 +442,8 @@ export function walkSteps({
       const conditionalNodeId = `${idBase}-conditional`;
       const groupName = getGroupId(conditionalNodeId, ctx.config.highlights);
 
+      ctx.nodePaths.set(conditionalNodeId, stepPath);
+
       ctx.nodes.push({
         ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
         ...DEFAULT_NODE_PROPS,
@@ -414,16 +454,25 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.CONDITIONAL],
           level,
           groupName,
+          stepPath,
         },
       });
 
       currentSources.forEach((source) =>
-        addEdge(ctx, source, conditionalNodeId),
+        addEdge(ctx, source, conditionalNodeId, undefined, undefined, stepPath),
       );
 
       const exits = collectConditionalBranches(step.conditional).flatMap(
-        (branchSteps, branchIndex) =>
-          walkSteps({
+        (branchSteps, branchIndex) => {
+          const conditionalStepsPath: FlowStepPath = [
+            ...stepPath,
+            "conditional",
+            "when",
+            branchIndex,
+            "steps",
+          ];
+
+          return walkSteps({
             index,
             steps: branchSteps,
             tasks,
@@ -431,7 +480,9 @@ export function walkSteps({
             prefix: `${conditionalNodeId}${branchIndex}`,
             incoming: [conditionalNodeId],
             ctx,
-          }),
+            path: conditionalStepsPath,
+          });
+        },
       );
 
       currentSources = uniqueIds(exits.length ? exits : currentSources);
@@ -443,6 +494,8 @@ export function walkSteps({
       const loopNodeId = `${idBase}-loop`;
       const groupName = getGroupId(loopNodeId, ctx.config.highlights);
 
+      ctx.nodePaths.set(loopNodeId, stepPath);
+
       ctx.nodes.push({
         ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
         ...DEFAULT_NODE_PROPS,
@@ -453,10 +506,13 @@ export function walkSteps({
           ...ctx.config.nodes[ENodeType.OPERATOR][EOperatorType.LOOP],
           level,
           groupName,
+          stepPath,
         },
       });
 
-      currentSources.forEach((source) => addEdge(ctx, source, loopNodeId));
+      currentSources.forEach((source) =>
+        addEdge(ctx, source, loopNodeId, undefined, undefined, stepPath),
+      );
 
       const exits = walkSteps({
         index,
@@ -466,6 +522,7 @@ export function walkSteps({
         prefix: loopNodeId,
         incoming: [loopNodeId],
         ctx,
+        path: [...stepPath, "loop", "steps"],
       });
 
       currentSources = uniqueIds(exits.length ? exits : currentSources);

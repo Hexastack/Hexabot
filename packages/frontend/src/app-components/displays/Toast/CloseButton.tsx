@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import CloseIcon from "@mui/icons-material/Close";
 import { IconButton } from "@mui/material";
+import { X as CloseIcon } from "lucide-react";
 import { useSnackbar } from "notistack";
 
 export const SnackbarCloseButton = ({

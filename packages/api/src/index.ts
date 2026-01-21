@@ -50,8 +50,6 @@ export * from './mailer';
 
 export * from './migration';
 
-export * from './nlp';
-
 export * from './setting';
 
 export * from './user';

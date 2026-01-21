@@ -4,16 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { faCogs } from "@fortawesome/free-solid-svg-icons";
-import {
-  debounce,
-  FormControl,
-  Grid,
-  Paper,
-  styled,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { FormControl, Paper, styled, Tab, Tabs } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import debounce from "@mui/utils/debounce";
+import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -103,18 +97,6 @@ export const Settings = () => {
     setSelectedTab(newValue);
     router.push(`/${RouterType.SETTINGS}/groups/${newValue}`);
   };
-  const isDisabled = (setting: ISetting) => {
-    return (
-      setting.group === "nlp_settings" &&
-      setting.label === "endpoint" &&
-      getSettingValue("provider") === "wit"
-    );
-  };
-  const getSettingValue = (label: string) => {
-    const setting = (settings || []).find((s) => s.label === label);
-
-    return setting ? setting.value : false;
-  };
   const debouncedUpdate = useCallback(
     debounce((group, label, value) => {
       const setting = (settings || []).find(
@@ -151,8 +133,8 @@ export const Settings = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faCogs} title={t("title.settings")} />
-      <Grid item xs={12}>
+      <PageHeader icon={SettingsIcon} title={t("title.settings")} />
+      <Grid size={12}>
         <Paper sx={{ padding: 3 }}>
           <Grid sx={{ display: "flex", maxWidth: "md" }}>
             <Tabs
@@ -201,7 +183,6 @@ export const Settings = () => {
                             setting={setting}
                             field={field}
                             ns={setting.group}
-                            isDisabled={isDisabled}
                           />
                         </FormControl>
                       )}

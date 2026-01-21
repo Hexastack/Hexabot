@@ -4,13 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Cancelable } from "@mui/utils/debounce";
-import { UseMutateFunction } from "@tanstack/react-query";
+import type { WorkflowDefinition, WorkflowEventMap } from "@hexabot-ai/agentic";
+import type { Cancelable } from "@mui/utils/debounce";
+import type { UseMutateFunction } from "@tanstack/react-query";
 import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
+import type { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
+
+import type { FlowStepPath } from "./workflow-path.types";
 
 export interface IWorkflowContext {
   getCentroid: () => XYPosition;
@@ -43,6 +47,18 @@ export interface IWorkflowContext {
     },
     IWorkflow
   >;
+  updateDefinition: (definition: WorkflowDefinition) => void;
+  saveDefinition: () => void;
+  isDefinitionDirty: boolean;
+  isDefinitionSaving: boolean;
+  addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
+  removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
+  executionStates: Record<string, { state: NodeExecutionState; t: number }[]>;
+  setExecutionStates: Dispatch<
+    Record<string, { state: NodeExecutionState; t: number }[]>
+  >;
+  actions: IAction[];
+  definition?: WorkflowDefinition;
 }
 
 export interface WorkflowContextProps {
@@ -50,3 +66,15 @@ export interface WorkflowContextProps {
 }
 
 export type TCb<T> = ((props: T) => void | undefined) & Cancelable;
+
+export type WorkflowEvent<
+  T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
+> = T extends `${string}:${infer Rest}` ? Rest : T;
+
+export type NodeExecutionState = "start" | "finish" | "suspended" | "error";
+
+export type SubscribeWorkflowProps =
+  WorkflowEventMap[keyof WorkflowEventMap] & {
+    workflowEvent: WorkflowEvent;
+    t: number;
+  };

@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SvgIconTypeMap, InputAdornment } from "@mui/material";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { InputAdornment } from "@mui/material";
+import { type LucideIcon } from "lucide-react";
 
 import { theme } from "@/layout/themes/theme";
 
@@ -13,14 +13,12 @@ export const Adornment = ({
   Icon,
   color = theme.palette.text.secondary,
 }: {
-  Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-    muiName: string;
-  };
+  Icon: LucideIcon;
   color?: string;
 }) => {
   return (
     <InputAdornment position="start" disablePointerEvents>
-      <Icon htmlColor={color} />
+      <Icon color={color} size="1.1em" />
     </InputAdornment>
   );
 };

@@ -10,33 +10,7 @@ import { HyphenToUnderscore } from '@/utils/types/extension';
 import BaseFlowEscapeHelper from './lib/base-flow-escape-helper';
 import BaseHelper from './lib/base-helper';
 import { BaseLlmHelper } from './lib/base-llm-helper';
-import { BaseNlpHelper } from './lib/base-nlp-helper';
 import { BaseStorageHelper } from './lib/base-storage-helper';
-
-export namespace NLU {
-  export interface ParseEntity {
-    entity: string; // Entity name
-    value: string; // Value name
-    confidence: number;
-    start?: number;
-    end?: number;
-    // When lookup strategy is either 'keywords' or 'pattern', the canonical value
-    // is the actual NlpValue.value, given the match is either a synonym (expression) or a pattern match
-    canonicalValue?: string;
-  }
-
-  export interface ParseEntities {
-    entities: ParseEntity[];
-  }
-
-  export interface ScoredEntity extends ParseEntity {
-    score: number; // Computed as confidence * weight
-  }
-
-  export interface ScoredEntities extends ParseEntities {
-    entities: ScoredEntity[];
-  }
-}
 
 export namespace LLM {
   /**
@@ -114,7 +88,6 @@ export namespace FlowEscape {
 }
 
 export enum HelperType {
-  NLU = 'nlu',
   LLM = 'llm',
   FLOW_ESCAPE = 'flow_escape',
   STORAGE = 'storage',
@@ -124,7 +97,6 @@ export enum HelperType {
 export type HelperName = `${string}-helper`;
 
 interface HelperTypeMap {
-  [HelperType.NLU]: BaseNlpHelper<HelperName>;
   [HelperType.LLM]: BaseLlmHelper<HelperName>;
   [HelperType.FLOW_ESCAPE]: BaseFlowEscapeHelper<HelperName>;
   [HelperType.STORAGE]: BaseStorageHelper<HelperName>;

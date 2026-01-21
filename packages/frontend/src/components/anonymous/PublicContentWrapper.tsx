@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CircularProgress, Grid } from "@mui/material";
+import { CircularProgress } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { FC } from "react";
 
 import { useAuth } from "@/hooks/useAuth";

@@ -4,18 +4,41 @@
  * Full terms: see LICENSE.md.
  */
 
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
+import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState } from "react";
 
 import { Input } from "./Input";
 
-export const PasswordInput = forwardRef<any, TextFieldProps>(
-  ({ InputProps, ...rest }, ref) => {
+type PasswordInputProps = Omit<
+  TextFieldProps,
+  "FormHelperTextProps" | "InputLabelProps" | "InputProps" | "inputProps"
+>;
+
+export const PasswordInput = forwardRef<any, PasswordInputProps>(
+  ({ slotProps, ...rest }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const handleTogglePasswordVisibility = () => {
       setShowPassword(!showPassword);
+    };
+    const resolveInputSlotProps = (ownerState: any) => {
+      const resolved = (typeof slotProps?.input === "function"
+        ? slotProps.input(ownerState)
+        : slotProps?.input) as { endAdornment?: React.ReactNode } | undefined;
+
+      return {
+        ...(resolved ?? {}),
+        endAdornment: (
+          <>
+            {resolved?.endAdornment}
+            <InputAdornment position="end">
+              <IconButton onClick={handleTogglePasswordVisibility} edge="end">
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </IconButton>
+            </InputAdornment>
+          </>
+        ),
+      };
     };
 
     return (
@@ -23,19 +46,9 @@ export const PasswordInput = forwardRef<any, TextFieldProps>(
         ref={ref}
         type={showPassword ? "text" : "password"}
         {...rest}
-        InputProps={{
-          ...InputProps,
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={handleTogglePasswordVisibility} edge="end">
-                {showPassword ? (
-                  <VisibilityOffOutlinedIcon />
-                ) : (
-                  <VisibilityOutlinedIcon />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          ...slotProps,
+          input: resolveInputSlotProps,
         }}
       />
     );

@@ -1,13 +1,15 @@
 # Hexabot API
 
-[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and action-driven extensions.
+[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, workflow execution, content management, analytics, and extension-driven actions.
 
 ## Key Features
 
-- **RESTful Architecture:** Simple, standardized API architecture following REST principles.
-- **Multi-Channel Support:** Handles requests from different communication channels (e.g., web, mobile).
-- **Modular Design:** Organized into multiple modules for better scalability and maintainability.
-- **Real-Time Communication:** Integrates WebSocket support for real-time features.
+- **REST + WebSocket API:** NestJS REST endpoints (prefixed with `/api`) plus Socket.IO for real-time events.
+- **Extensible Channels/Actions/Helpers:** Dynamic providers load built-in and external extensions at runtime.
+- **Workflow Engine:** Agentic workflows with runs, scheduling, and memory definitions.
+- **Content & Localization:** CMS for content types/menus and i18n languages/translations.
+- **Security & Auth:** Session-based auth, role/permission guard, CSRF protection, and JWT-backed flows (invite/reset/confirm).
+- **Operational Tooling:** TypeORM migrations, auto-seeding in non-production when the DB is empty, and optional static UI hosting.
 
 ## API Modules
 
@@ -15,27 +17,45 @@ The API is divided into several key modules, each responsible for specific funct
 
 ### Core Modules
 
-- **Analytics:** Tracks and serves analytics data such as the number of messages exchanged and end-user retention statistics.
-- **Attachment:** Manages file uploads and downloads, enabling attachment handling across the chatbot.
-- **Channel:** Manages different communication channels through which the chatbot operates (e.g., web, mobile apps, etc.).
-- **Chat:** The core module for handling incoming channel requests and managing the chat flow as defined by the visual editor in the UI.
-- **Knowledge Base:** Content management module for defining content types, managing content, and configuring menus for chatbot interactions.
-- **NLU:** Manages NLU (Natural Language Understanding) entities such as intents, languages, and values used to detect and process user inputs intelligently.
-- **Actions:** Manages reusable actions that integrate additional features and drive agentic workflows.
-- **User:** Manages user authentication, roles, and permissions, ensuring secure access to different parts of the system.
-- **Extensions:** A container for all types of extensions (channels, actions, helpers) that can be added to expand the chatbot's functionality.
-- **Settings:** A module for management all types of settings that can be adjusted to customize the chatbot.
+- **Analytics:** Tracks bot stats and retention metrics.
+- **Attachment:** Manages file uploads, downloads, and metadata.
+- **Channel:** Webhook entrypoints and channel registry for external platforms.
+- **Chat:** Messages, subscribers, and labels for inbox and conversation tracking.
+- **CMS:** Content types, content entries, and menus.
+- **Workflow:** Workflow definitions, runs, scheduling, memory definitions, and agentic execution.
+- **Actions:** Registry for action extensions used by workflows.
+- **Helper:** Registry for helper extensions (LLM helpers, storage, etc.).
+- **I18n:** Languages, translations, and runtime localization.
+- **User:** Authentication, roles, permissions, invitations, and password reset.
+- **Settings:** Settings and metadata management.
 
-### Utility Modules
+### Platform Modules
 
-- **WebSocket:** Adds support for Websicket with Socket.IO, enabling real-time communication for events like live chat and user interactions.
-- **Logger:** Provides logging functionality to track and debug API requests and events.
+- **WebSocket:** Socket.IO gateway with REST-style event dispatching.
+- **Mailer:** SMTP + MJML templates for transactional emails.
+- **Migration:** TypeORM migrations with CLI support and auto-migrate.
+- **Database:** TypeORM configuration and session storage.
+- **Logger:** Global logging utilities.
+- **Extension:** Extension lifecycle and cleanup of extension settings.
+
+### Extension System
+
+- Built-in extensions live in `packages/api/src/extensions` (channels, actions, helpers).
+- Additional extensions are discovered from `hexabot-channel-*`, `hexabot-action-*`, and `hexabot-helper-*` packages, plus compiled extensions in `dist/extensions`.
 
 ## Installation
 
 ```bash
 $ pnpm install
 ```
+
+## Configuration
+
+Environment variables are loaded from `packages/api/.env` (see `packages/api/.env.example`).
+
+- Default port is `3000` and the global API prefix is `/api`.
+- SQLite is the default database (`./hexabot.sqlite`); configure `DB_TYPE` and `DB_*` for Postgres.
+- Set `REDIS_ENABLED=true` to use Redis-backed cache and the Socket.IO adapter.
 
 ## Development Commands
 
@@ -44,7 +64,9 @@ Run all commands from the repository root so PNPM can resolve workspace dependen
 ```bash
 pnpm --filter @hexabot-ai/api run dev          # start the API with watch mode
 pnpm --filter @hexabot-ai/api run start:debug  # run with inspector attached
+pnpm --filter @hexabot-ai/api run build        # build API + frontend assets
 pnpm --filter @hexabot-ai/api run start:prod   # run the compiled build
+pnpm --filter @hexabot-ai/api run start:repl   # Nest REPL
 ```
 
 ### Testing
@@ -55,17 +77,36 @@ pnpm --filter @hexabot-ai/api run test:e2e  # end-to-end tests
 pnpm --filter @hexabot-ai/api run test:cov  # collect coverage
 ```
 
+### Quality
+
+```bash
+pnpm --filter @hexabot-ai/api run lint       # lint sources
+pnpm --filter @hexabot-ai/api run typecheck  # type checking
+```
+
 ## Migrations
 
-Hexabot includes a migration module to help manage database schema and data changes over time. Migrations allows us to apply or revert changes to the database and keep it in sync with the version release.
+Hexabot includes a migration module to help manage database schema and data changes over time. Migrations allow us to apply or revert changes to the database and keep it in sync with the version release.
 
-Check the Migration README file for more : [Migration Module](./src/migration/README.md)
+Use the CLI for migration workflows (create, up, down):
+
+```bash
+pnpm --filter @hexabot-ai/api run cli migration create <version>
+pnpm --filter @hexabot-ai/api run cli migration migrate up [version]
+pnpm --filter @hexabot-ai/api run cli migration migrate down [version]
+```
+
+Auto-migration runs outside production by default, or in production when `DB_AUTO_MIGRATE=true` and `API_IS_PRIMARY_NODE=true`.
+
+Check the Migration README file for more: [Migration Module](./src/migration/README.md)
 
 ## Documentation
 
-Access the Swagger API documentation by visiting the API url `/docs` once run it in development mode.
+Access the Swagger API documentation by visiting `/docs` when running outside production.
 
 It's also possible to access the API reference documentation by running `pnpm --filter @hexabot-ai/api run doc`.
+
+All REST endpoints are prefixed with `/api`.
 
 For detailed information about the API routes and usage, refer to the API documentation or visit [https://docs.hexabot.ai](https://docs.hexabot.ai).
 

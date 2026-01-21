@@ -4,37 +4,43 @@
  * Full terms: see LICENSE.md.
  */
 
-import { PropsWithChildren, useMemo } from "react";
+import Grid from "@mui/material/Grid";
+import { PropsWithChildren } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
+import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
+import { GenericNodeDeleteButton } from "./GenericNodeDeleteButton";
+
 export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
-  isRounded,
   children,
-}: PropsWithChildren & { isRounded?: boolean }) => {
-  const workflowNode = useWorkflowNode<T>();
-  const bgColor = useMemo(() => {
-    return workflowNode.theme.bgColor;
-  }, [workflowNode.theme.bgColor]);
+}: PropsWithChildren) => {
+  const { width, height } = useWorkflowNode<T>();
+  const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
 
   return (
-    <div
-      style={{
+    <Grid
+      container
+      gap="14px"
+      sx={{
         position: "relative",
-        width: workflowNode.width,
-        height: workflowNode.height,
+        width,
+        height,
         textAlign: "center",
-        borderRadius: isRounded ? "50%" : "20%",
+        borderRadius: "14px",
         outline: "none",
         pointerEvents: "none",
-        border: `1px solid ${bgColor}cc`,
-        boxShadow: "0 0 13px #0002 inset",
-        backgroundColor: "#fffa",
-        backgroundImage: `linear-gradient(to top, ${bgColor}22, ${bgColor}00)`,
+        border: `2px solid ${borderColor}`,
+        backgroundColor: bgColor,
+        overflow: "hidden",
+        boxShadow: "0 3px 6px #0002",
+        padding: "1rem",
+        transition: ".6s",
       }}
     >
+      <GenericNodeDeleteButton />
       {children}
-    </div>
+    </Grid>
   );
 };

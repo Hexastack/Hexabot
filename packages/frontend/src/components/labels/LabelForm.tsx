@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   createFilterOptions,
   IconButton,
@@ -13,6 +12,7 @@ import {
   ListItemText,
   Tooltip,
 } from "@mui/material";
+import { Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -131,10 +131,12 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
               required
               autoFocus
               {...register("title", validationRules.title)}
-              InputProps={{
-                onChange: ({ target: { value } }) => {
-                  setValue("title", value);
-                  setValue("name", slugify(value).toUpperCase());
+              slotProps={{
+                input: {
+                  onChange: ({ target: { value } }) => {
+                    setValue("title", value);
+                    setValue("name", slugify(value).toUpperCase());
+                  },
                 },
               }}
               helperText={errors.title ? errors.title.message : null}
@@ -196,7 +198,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
                   >
                     <Tooltip title={t("button.delete")} placement="left" arrow>
                       <IconButton size="small" sx={{ marginRight: 1 }}>
-                        <DeleteOutlineIcon fontSize="small" />
+                        <Trash2 size={16} />
                       </IconButton>
                     </Tooltip>
                   </InputAdornment>

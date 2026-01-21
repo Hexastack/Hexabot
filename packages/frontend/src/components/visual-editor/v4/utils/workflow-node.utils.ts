@@ -8,17 +8,11 @@ import {
   compileWorkflow,
   validateWorkflow,
   type WorkflowCompileOptions,
+  type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
-import { Edge, getNodesBounds, Position } from "@xyflow/react";
+import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
-import type { FC } from "react";
 
-import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
-import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
-import ListIcon from "@/app-components/svg/toolbar/ListIcon";
-import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
-import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import { generateId } from "@/utils/generateId";
 
 import { DEFAULT_NODE_PROPS } from "../constants/workflow.constants";
@@ -39,39 +33,6 @@ import {
   type TraversalContext,
 } from "./graph.utils";
 import { getHandleConfig } from "./handle.utils";
-
-// TODO
-enum EActionType {
-  TEXT = "send_text_message",
-  ATTACHMENT = "send_attachment",
-  QUICK_REPLIES = "send_quick_replies",
-  BUTTONS = "send_buttons",
-  LIST = "send_list",
-  REPLY = "reply",
-}
-
-// TODO
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getActionConfig = (
-  action: `${EActionType}`,
-): { color: string; Icon: FC<React.SVGProps<SVGSVGElement>> } => {
-  switch (action) {
-    case "send_text_message":
-      return { color: "#009185", Icon: SimpleTextIcon };
-    case "send_attachment":
-      return { color: "#e6a23c", Icon: AttachmentIcon };
-    case "send_quick_replies":
-      return { color: "#a80551", Icon: QuickRepliesIcon };
-    case "send_buttons":
-      return { color: "#570063", Icon: ButtonsIcon };
-    case "send_list":
-      return { color: "#108aa8", Icon: ListIcon };
-    case "reply":
-      return { color: "#a8ba33", Icon: PluginIcon };
-    default:
-      throw new Error("Unexpected case");
-  }
-};
 
 const elk = new ELK();
 const getElkSide = (position: Position) => {
@@ -139,7 +100,7 @@ const toElk = (nodes: NodeData[], edges: Edge[], ctx: TraversalContext) => {
     children: nodes.map((n) => {
       const ports =
         (n.data as { ports?: ELinkType[] })?.ports?.map((handleId) => {
-          const handle = getHandleConfig(handleId, false, direction);
+          const handle = getHandleConfig(handleId, direction);
 
           return {
             handleId,
@@ -203,107 +164,67 @@ export const layoutNodesWithElk = async (
   }));
 };
 
-const getExtraNodes = (
+const addExtraNodes = (
   nodes: NodeData[],
   edges: Edge[],
   ctx: TraversalContext,
 ) => {
-  const nodesById = new Map(nodes.map((node) => [node.id, node]));
-  const targetsBy = new Map<string, NodeData[]>();
-
-  edges.forEach((edge) => {
-    const sourceNode = nodesById.get(edge.source);
-    const targetNode = nodesById.get(edge.target);
-
-    if (sourceNode && targetNode) {
-      const list = targetsBy.get(sourceNode.id) || [];
-
-      list.push(targetNode);
-      targetsBy.set(sourceNode.id, list);
-    }
-  });
-
-  if (!targetsBy.size) {
-    return nodes;
-  }
-
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
+  const isHorizontal = ctx.config?.direction === "horizontal";
   const OFFSET = 80;
   const GAP = 20;
-  const overridePositions = new Map<
-    string,
-    { x: number; y: number; targetPosition: Position; sourcePosition: Position }
-  >();
-  const isHorizontal = ctx.config?.direction === "horizontal";
+  const adjacencyMap = edges.reduce((acc, { source, target }) => {
+    const src = nodesById.get(source);
+    const tgt = nodesById.get(target);
 
-  targetsBy.forEach((targets, id) => {
-    const node = nodesById.get(id);
-
-    if (!node) return;
-
-    const dimensions = getNodeDimensions(node.type, ctx.config);
-    const targetWithDimensions = targets.map((node) => ({
-      node,
-      dimensions: getNodeDimensions(node.type, ctx.config),
-    }));
-
-    if (isHorizontal) {
-      const totalWidth =
-        targetWithDimensions.reduce(
-          (acc, { dimensions }) => acc + dimensions.width,
-          0,
-        ) +
-        GAP * Math.max(0, targets.length - 1);
-      let currentX = node.position.x + (dimensions.width - totalWidth) / 2;
-      const y = node.position.y + dimensions.height + OFFSET;
-
-      targetWithDimensions.forEach(({ node: targetNode, dimensions }) => {
-        overridePositions.set(targetNode.id, {
-          x: currentX,
-          y,
-          targetPosition: Position.Top,
-          sourcePosition: Position.Bottom,
-        });
-        currentX += dimensions.width + GAP;
-      });
-    } else {
-      const maxWidth = Math.max(
-        ...targetWithDimensions.map(({ dimensions }) => dimensions.width),
-      );
-      const totalHeight =
-        targetWithDimensions.reduce(
-          (acc, { dimensions }) => acc + dimensions.height,
-          0,
-        ) +
-        GAP * Math.max(0, targets.length - 1);
-      const x = node.position.x - OFFSET - maxWidth;
-      let currentY = node.position.y + (dimensions.height - totalHeight) / 2;
-
-      targetWithDimensions.forEach(({ node: targetNode, dimensions }) => {
-        overridePositions.set(targetNode.id, {
-          x,
-          y: currentY,
-          targetPosition: Position.Right,
-          sourcePosition: Position.Left,
-        });
-        currentY += dimensions.height + GAP;
-      });
+    if (src && tgt) {
+      acc.set(source, [...(acc.get(source) || []), tgt]);
     }
+
+    return acc;
+  }, new Map<string, NodeData[]>());
+
+  if (adjacencyMap.size === 0) return nodes;
+
+  const overrides = new Map<
+    string,
+    Pick<NodeData, "position" | "targetPosition" | "sourcePosition">
+  >();
+
+  adjacencyMap.forEach((targets, sourceId) => {
+    const sourceNode = nodesById.get(sourceId)!;
+    const srcDim = getNodeDimensions(sourceNode.type, ctx.config);
+    const targetsWithDim = targets.map((t) => ({
+      node: t,
+      dim: getNodeDimensions(t.type, ctx.config),
+    }));
+    const totalBreadth =
+      targetsWithDim.reduce(
+        (sum, t) => sum + (isHorizontal ? t.dim.width : t.dim.height),
+        0,
+      ) +
+      GAP * (targets.length - 1);
+
+    let currentCursor = isHorizontal
+      ? sourceNode.position.x + (srcDim.width - totalBreadth) / 2
+      : sourceNode.position.y + (srcDim.height - totalBreadth) / 2;
+
+    targetsWithDim.forEach(({ node, dim }) => {
+      overrides.set(node.id, {
+        position: isHorizontal
+          ? {
+              x: currentCursor,
+              y: sourceNode.position.y + srcDim.height + OFFSET,
+            }
+          : { x: sourceNode.position.x - OFFSET - dim.width, y: currentCursor },
+        targetPosition: isHorizontal ? Position.Top : Position.Right,
+        sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
+      });
+      currentCursor += (isHorizontal ? dim.width : dim.height) + GAP;
+    });
   });
 
-  return nodes
-    .filter((n) => overridePositions.get(n.id))
-    .map((node) => {
-      const { sourcePosition, targetPosition, x, y } = overridePositions.get(
-        node.id,
-      )!;
-
-      return {
-        ...node,
-        position: { x, y },
-        targetPosition,
-        sourcePosition,
-      };
-    });
+  return nodes.map((n) => ({ ...n, ...overrides.get(n.id) }));
 };
 
 export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
@@ -366,6 +287,7 @@ export const buildNodesAndEdges = async ({
     nodes: [],
     edges: [],
     edgeKeys: new Set(),
+    nodePaths: new Map(),
     config,
   };
   const endStepIds = walkSteps({
@@ -376,6 +298,7 @@ export const buildNodesAndEdges = async ({
     prefix: "step",
     incoming: [],
     ctx,
+    path: ["flow"],
   });
 
   if (!ctx.config) {
@@ -385,36 +308,43 @@ export const buildNodesAndEdges = async ({
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
-    id: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+    id: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
-    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.END],
+    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
   });
 
   endStepIds.forEach((endEdgesId) => {
     const groupName = getGroupId(endEdgesId, ctx.config?.highlights);
+    const sourcePath = ctx.nodePaths.get(endEdgesId);
+    const lastIndex = sourcePath?.[sourcePath.length - 1];
+    const insertPath =
+      sourcePath && typeof lastIndex === "number"
+        ? [...sourcePath.slice(0, -1), lastIndex + 1]
+        : undefined;
 
     ctx.edges.push({
       id: generateId(),
       source: endEdgesId,
-      target: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+      target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
+      data: insertPath ? { insertPath } : undefined,
     });
 
     if (ctx.edges.findIndex((n) => n.id === groupName) && groupName) {
       ctx.edges.push({
         id: generateId(),
         source: groupName,
-        target: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+        target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
         type: EEdgeType.EDGE_WITH_BUTTON,
         ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       });
     }
   });
-  const nodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
-  const extraNodes = getExtraNodes(
-    nodes,
+  const elkNodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
+  const nodes = addExtraNodes(
+    elkNodes,
     ctx.edges.filter((e) =>
       [ELinkType.AGENT_TOOL, ELinkType.AGENT_MODEL].includes(
         e.sourceHandle as ELinkType,
@@ -423,7 +353,7 @@ export const buildNodesAndEdges = async ({
     ctx,
   );
   const groupNodes = getGroupNodes(nodes, ctx);
-  const anchoredNodes = [...nodes, ...extraNodes, ...groupNodes];
+  const anchoredNodes = [...nodes, ...groupNodes];
 
   return {
     edges: ctx.edges,
@@ -434,7 +364,7 @@ export const buildNodesAndEdges = async ({
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
-) => {
+): WorkflowDefinition => {
   const validation = validateWorkflow(yaml);
 
   if (!validation.success) {
