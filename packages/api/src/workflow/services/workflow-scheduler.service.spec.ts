@@ -163,7 +163,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       name: `scheduled-workflow-${Date.now()}`,
       version: '0.0.1',
       description: 'Created by workflow scheduler test',
-      definitionYaml: workflow.definitionYaml,
+      definition: workflow.definition,
       type: WorkflowType.scheduled,
       schedule: workflow.schedule ?? '*/10 * * * * *',
       memoryDefinitions: [],
