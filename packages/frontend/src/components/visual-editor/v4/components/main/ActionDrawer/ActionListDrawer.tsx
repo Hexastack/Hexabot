@@ -175,7 +175,10 @@ const ActionListDrawerContent = ({
                       </ActionIcon>
                       <Box>
                         <Typography variant="subtitle1">
-                          {action.name}
+                          {action.title}&nbsp;
+                          <Typography variant="caption" color="textSecondary">
+                            ({action.name})
+                          </Typography>
                         </Typography>
                         <Typography
                           variant="body2"
