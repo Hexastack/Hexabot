@@ -40,11 +40,11 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 280, height: 65 },
-  [ENodeType.TOOL]: { width: 280, height: 65 },
-  [ENodeType.AGENT]: { width: 280, height: 110 },
+  [ENodeType.MODEL]: { width: 260, height: 65 },
+  [ENodeType.TOOL]: { width: 260, height: 65 },
+  [ENodeType.AGENT]: { width: 260, height: 85 },
   [ENodeType.INDICATOR]: { width: 110, height: 65 },
-  [ENodeType.TASK]: { width: 280, height: 90 },
+  [ENodeType.TASK]: { width: 260, height: 85 },
   [ENodeType.OPERATOR]: { width: 150, height: 65 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Typography } from "@mui/material";
+
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
@@ -11,18 +13,8 @@ export const GenericNodeDescription = <T extends ENodeType = ENodeType>() => {
   const { description } = useWorkflowNode<T>();
 
   return (
-    <div
-      title={description}
-      style={{
-        color: "#666f7a",
-        fontSize: "0.75rem",
-        textAlign: "left",
-        display: "flex",
-        flex: "auto",
-        marginTop: "5px",
-      }}
-    >
+    <Typography noWrap sx={{ fontSize: "0.75rem", color: "#666f7a" }}>
       {description}
-    </div>
+    </Typography>
   );
 };
