@@ -289,20 +289,9 @@ export const WorkflowDefinitionSchema = z
     inputs: InputsSchema.optional(),
     context: z.record(JsonValueSchema).optional(),
     defaults: DefaultsSchema.optional(),
-    tasks: z.record(TaskDefinitionSchema).superRefine((value, ctx) => {
-      if (Object.keys(value).length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'At least one task must be declared',
-        });
-      }
-    }),
-    flow: z.array(FlowStepSchema).min(1, 'Flow must contain at least one step'),
-    outputs: z
-      .record(ExpressionStringSchema)
-      .refine((value) => Object.keys(value).length > 0, {
-        message: 'At least one output must be declared',
-      }),
+    tasks: z.record(TaskDefinitionSchema),
+    flow: z.array(FlowStepSchema),
+    outputs: z.record(ExpressionStringSchema),
   })
   .strict();
 

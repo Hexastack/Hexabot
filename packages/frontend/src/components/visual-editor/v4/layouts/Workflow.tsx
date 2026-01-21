@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import {
@@ -40,6 +41,7 @@ import type {
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
+import { createBaseDefinition } from "../utils/workflow-definition.utils";
 import { buildNodesAndEdges } from "../utils/workflow-node.utils";
 
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
@@ -63,7 +65,6 @@ export const Workflow = () => {
   const { setViewport } = useReactFlow();
   const { t } = useTranslate();
   const {
-    yaml,
     workflow,
     workflows,
     selectedFlowId,
@@ -89,7 +90,7 @@ export const Workflow = () => {
     nodes: [],
     edges: [],
   });
-  const isEmptyWorkflow = graph.nodes.length === 0;
+  const isEmptyWorkflow = graph.nodes.length < 3;
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
@@ -179,11 +180,14 @@ export const Workflow = () => {
     });
   }, [graph.edges, handleEdgeInsert]);
   const handleNewWorkflow = () => {
+    const baseDefinition = createBaseDefinition();
+    const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
+
     dialogs.open(WorkflowFormDialog, {
       defaultValues: null,
       presetValues: {
-        definition,
-        definitionYaml: yaml,
+        definition: baseDefinition,
+        definitionYaml: baseYaml,
         onCreated: (createdWorkflow) => {
           updateWorkflowURL(createdWorkflow.id);
         },
@@ -244,7 +248,7 @@ export const Workflow = () => {
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
-          defaultNodes={graph?.nodes || []}
+          defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
         {workflow && (
