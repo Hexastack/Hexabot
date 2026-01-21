@@ -28,9 +28,9 @@ describe('validateWorkflow', () => {
     expect(result.success).toBe(true);
 
     if (result.success) {
-      expect(result.data.workflow.name).toBe('research_and_reply');
       expect(Object.keys(result.data.tasks)).toContain('understand_request');
       expect(result.data.flow.length).toBeGreaterThan(0);
+      expect(result.data.outputs).toHaveProperty('delivered');
     }
   });
 

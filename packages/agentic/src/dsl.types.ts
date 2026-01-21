@@ -285,7 +285,6 @@ const DefaultsSchema = z
 
 export const WorkflowDefinitionSchema = z
   .object({
-    workflow: WorkflowMetadataSchema,
     inputs: InputsSchema.optional(),
     context: z.record(JsonValueSchema).optional(),
     defaults: DefaultsSchema.optional(),

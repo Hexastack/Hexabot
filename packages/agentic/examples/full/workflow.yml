@@ -2,14 +2,8 @@
 ### This single file is reference documentation for the YAML language used to orchestrate multi-step agents.
 ### Convention: strings beginning with "=" are JSONata expressions with scope {context, input, output, iteration, accumulator, result}; all other strings are treated as literals.
 ---
-# Root workflow metadata keeps runs self-describing and versioned.
-workflow:
-  name: "research_and_reply"
-  version: "1.1.0"
-  description: >
-    End-to-end assistant that classifies a user request, collects signals, performs a human-in-the-loop
-    clarification (pausing the run until the user replies), branches by intent/priority, and delivers an email.
-
+# End-to-end assistant that classifies a user request, collects signals, performs a human-in-the-loop
+# clarification (pausing the run until the user replies), branches by intent/priority, and delivers an email.
 # Declares external inputs the caller must provide when starting a run.
 inputs:
   schema:

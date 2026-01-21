@@ -58,7 +58,6 @@ describe('compileWorkflow', () => {
   it('binds actions, merges settings, and builds flow metadata', () => {
     const { action, parseSettings } = createAction();
     const definition: WorkflowDefinition = {
-      workflow: { name: 'test_flow', version: '1.0.0' },
       defaults: {
         settings: {
           timeout_ms: 25,
@@ -189,7 +188,6 @@ describe('compileWorkflow', () => {
 
   it('throws when an action implementation is missing', () => {
     const definition: WorkflowDefinition = {
-      workflow: { name: 'missing_action', version: '1.0.0' },
       tasks: {
         missing: {
           action: 'unknown_action',

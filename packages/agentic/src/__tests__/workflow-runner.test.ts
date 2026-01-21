@@ -119,7 +119,6 @@ describe('WorkflowRunner', () => {
       execute: echoExecute,
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'control_flow', version: '1.0.0' },
       defaults: { settings: { timeout_ms: 0, retries: baseRetries } },
       tasks: {
         first_task: {
@@ -246,7 +245,6 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'suspension_flow', version: '1.0.0' },
       tasks: {
         wait_step: {
           action: 'suspend_action',
@@ -297,7 +295,6 @@ describe('WorkflowRunner', () => {
       execute: async () => ({ ok: true }),
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'custom_emitter', version: '1.0.0' },
       tasks: {
         ping_step: { action: 'ping_action', outputs: { ok: '=$result.ok' } },
       },
@@ -376,7 +373,6 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'context_emitter', version: '1.0.0' },
       tasks: {
         emit_step: {
           action: 'emit_action',
@@ -422,7 +418,6 @@ describe('WorkflowRunner', () => {
       },
     );
     const definition: WorkflowDefinition = {
-      workflow: { name: 'failure_flow', version: '1.0.0' },
       tasks: {
         fail_step: {
           action: 'failing_action',
@@ -487,7 +482,6 @@ describe('WorkflowRunner', () => {
       execute: followExecute,
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'resume_flow', version: '1.0.0' },
       tasks: {
         wait_step: {
           action: 'resume_suspend_action',
@@ -556,7 +550,6 @@ describe('WorkflowRunner', () => {
       execute: async ({ input }) => `echo:${input.value}`,
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'raw_output', version: '1.0.0' },
       tasks: {
         raw_step: { action: 'raw_action', inputs: { value: '="hello"' } },
       },
@@ -597,7 +590,6 @@ describe('WorkflowRunner', () => {
       execute: async () => ({ ok: true }),
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'unrebuildable', version: '1.0.0' },
       tasks: {
         only_step: { action: 'noop_action', inputs: {} },
       },
@@ -643,7 +635,6 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'suspended_loop', version: '1.0.0' },
       tasks: {
         wait_step: {
           action: 'loop_suspend_action',
@@ -727,7 +718,6 @@ describe('WorkflowRunner', () => {
       execute: async ({ input }) => ({ delivered: input.text }),
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'i18n_flow', version: '1.0.0' },
       tasks: {
         send_goodbye: {
           action: 'send_action',

@@ -42,7 +42,6 @@ describe('Workflow execution', () => {
       }),
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'greeting_flow', version: '1.0.0' },
       defaults: {
         settings: {
           timeout_ms: 50,
@@ -124,7 +123,6 @@ describe('Workflow execution', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'suspension_flow', version: '1.0.0' },
       tasks: {
         ask_user: {
           action: 'await_reply',
@@ -174,7 +172,6 @@ describe('Workflow execution', () => {
       execute: async ({ input }) => ({ doubled: input.value * 2 }),
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'events_flow', version: '1.0.0' },
       tasks: {
         double_step: {
           action: 'double_value',
@@ -225,7 +222,7 @@ describe('Workflow execution', () => {
 
   it('throws on invalid YAML input', () => {
     expect(() =>
-      Workflow.fromYaml('workflow: {}', {
+      Workflow.fromYaml('tasks: {}', {
         actions: {} as Record<string, never>,
       }),
     ).toThrow(/Workflow validation failed/);
@@ -233,7 +230,6 @@ describe('Workflow execution', () => {
 
   it('stringifies a workflow definition to YAML', () => {
     const definition: WorkflowDefinition = {
-      workflow: { name: 'stringify_flow', version: '1.0.0' },
       tasks: {
         greet_user: {
           action: 'greet_action',
@@ -265,7 +261,6 @@ describe('Workflow execution', () => {
       },
     );
     const definition: WorkflowDefinition = {
-      workflow: { name: 'failure_flow', version: '1.0.0' },
       tasks: {
         failing_task: {
           action: 'failing_action',
@@ -309,7 +304,6 @@ describe('Workflow execution', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      workflow: { name: 'suspend_flow', version: '1.0.0' },
       tasks: {
         pause_step: {
           action: 'suspending_action',

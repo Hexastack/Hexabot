@@ -1,8 +1,4 @@
-workflow:
-  name: "suspend_resume_demo"
-  version: "1.0.0"
-  description: "Minimal flow that pauses until an external reply is supplied."
-
+# Minimal flow that pauses until an external reply is supplied.
 inputs:
   schema:
     question:
