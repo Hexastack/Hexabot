@@ -164,107 +164,67 @@ export const layoutNodesWithElk = async (
   }));
 };
 
-const getExtraNodes = (
+const addExtraNodes = (
   nodes: NodeData[],
   edges: Edge[],
   ctx: TraversalContext,
 ) => {
-  const nodesById = new Map(nodes.map((node) => [node.id, node]));
-  const targetsBy = new Map<string, NodeData[]>();
-
-  edges.forEach((edge) => {
-    const sourceNode = nodesById.get(edge.source);
-    const targetNode = nodesById.get(edge.target);
-
-    if (sourceNode && targetNode) {
-      const list = targetsBy.get(sourceNode.id) || [];
-
-      list.push(targetNode);
-      targetsBy.set(sourceNode.id, list);
-    }
-  });
-
-  if (!targetsBy.size) {
-    return nodes;
-  }
-
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
+  const isHorizontal = ctx.config?.direction === "horizontal";
   const OFFSET = 80;
   const GAP = 20;
-  const overridePositions = new Map<
-    string,
-    { x: number; y: number; targetPosition: Position; sourcePosition: Position }
-  >();
-  const isHorizontal = ctx.config?.direction === "horizontal";
+  const adjacencyMap = edges.reduce((acc, { source, target }) => {
+    const src = nodesById.get(source);
+    const tgt = nodesById.get(target);
 
-  targetsBy.forEach((targets, id) => {
-    const node = nodesById.get(id);
-
-    if (!node) return;
-
-    const dimensions = getNodeDimensions(node.type, ctx.config);
-    const targetWithDimensions = targets.map((node) => ({
-      node,
-      dimensions: getNodeDimensions(node.type, ctx.config),
-    }));
-
-    if (isHorizontal) {
-      const totalWidth =
-        targetWithDimensions.reduce(
-          (acc, { dimensions }) => acc + dimensions.width,
-          0,
-        ) +
-        GAP * Math.max(0, targets.length - 1);
-      let currentX = node.position.x + (dimensions.width - totalWidth) / 2;
-      const y = node.position.y + dimensions.height + OFFSET;
-
-      targetWithDimensions.forEach(({ node: targetNode, dimensions }) => {
-        overridePositions.set(targetNode.id, {
-          x: currentX,
-          y,
-          targetPosition: Position.Top,
-          sourcePosition: Position.Bottom,
-        });
-        currentX += dimensions.width + GAP;
-      });
-    } else {
-      const maxWidth = Math.max(
-        ...targetWithDimensions.map(({ dimensions }) => dimensions.width),
-      );
-      const totalHeight =
-        targetWithDimensions.reduce(
-          (acc, { dimensions }) => acc + dimensions.height,
-          0,
-        ) +
-        GAP * Math.max(0, targets.length - 1);
-      const x = node.position.x - OFFSET - maxWidth;
-      let currentY = node.position.y + (dimensions.height - totalHeight) / 2;
-
-      targetWithDimensions.forEach(({ node: targetNode, dimensions }) => {
-        overridePositions.set(targetNode.id, {
-          x,
-          y: currentY,
-          targetPosition: Position.Right,
-          sourcePosition: Position.Left,
-        });
-        currentY += dimensions.height + GAP;
-      });
+    if (src && tgt) {
+      acc.set(source, [...(acc.get(source) || []), tgt]);
     }
+
+    return acc;
+  }, new Map<string, NodeData[]>());
+
+  if (adjacencyMap.size === 0) return nodes;
+
+  const overrides = new Map<
+    string,
+    Pick<NodeData, "position" | "targetPosition" | "sourcePosition">
+  >();
+
+  adjacencyMap.forEach((targets, sourceId) => {
+    const sourceNode = nodesById.get(sourceId)!;
+    const srcDim = getNodeDimensions(sourceNode.type, ctx.config);
+    const targetsWithDim = targets.map((t) => ({
+      node: t,
+      dim: getNodeDimensions(t.type, ctx.config),
+    }));
+    const totalBreadth =
+      targetsWithDim.reduce(
+        (sum, t) => sum + (isHorizontal ? t.dim.width : t.dim.height),
+        0,
+      ) +
+      GAP * (targets.length - 1);
+
+    let currentCursor = isHorizontal
+      ? sourceNode.position.x + (srcDim.width - totalBreadth) / 2
+      : sourceNode.position.y + (srcDim.height - totalBreadth) / 2;
+
+    targetsWithDim.forEach(({ node, dim }) => {
+      overrides.set(node.id, {
+        position: isHorizontal
+          ? {
+              x: currentCursor,
+              y: sourceNode.position.y + srcDim.height + OFFSET,
+            }
+          : { x: sourceNode.position.x - OFFSET - dim.width, y: currentCursor },
+        targetPosition: isHorizontal ? Position.Top : Position.Right,
+        sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
+      });
+      currentCursor += (isHorizontal ? dim.width : dim.height) + GAP;
+    });
   });
 
-  return nodes
-    .filter((n) => overridePositions.get(n.id))
-    .map((node) => {
-      const { sourcePosition, targetPosition, x, y } = overridePositions.get(
-        node.id,
-      )!;
-
-      return {
-        ...node,
-        position: { x, y },
-        targetPosition,
-        sourcePosition,
-      };
-    });
+  return nodes.map((n) => ({ ...n, ...overrides.get(n.id) }));
 };
 
 export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
@@ -382,9 +342,9 @@ export const buildNodesAndEdges = async ({
       });
     }
   });
-  const nodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
-  const extraNodes = getExtraNodes(
-    nodes,
+  const elkNodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
+  const nodes = addExtraNodes(
+    elkNodes,
     ctx.edges.filter((e) =>
       [ELinkType.AGENT_TOOL, ELinkType.AGENT_MODEL].includes(
         e.sourceHandle as ELinkType,
@@ -393,7 +353,7 @@ export const buildNodesAndEdges = async ({
     ctx,
   );
   const groupNodes = getGroupNodes(nodes, ctx);
-  const anchoredNodes = [...nodes, ...extraNodes, ...groupNodes];
+  const anchoredNodes = [...nodes, ...groupNodes];
 
   return {
     edges: ctx.edges,
