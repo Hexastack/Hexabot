@@ -18,9 +18,10 @@ import {
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -57,6 +58,7 @@ import {
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
+  const queryClient = useTanstackQueryClient();
   const { workflows, selectedFlowId, updateWorkflowURL, workflow, yaml } =
     useWorkflow();
   const theme = useTheme();
@@ -109,7 +111,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     },
     { enabled: isSearching },
   );
-  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
   const workflowsList = isSearching ? searchedWorkflows : workflows;
   const minAllowedWidth = isSmall ? 240 : minDrawerWidth;
   const maxAllowedWidth = isSmall ? 280 : maxDrawerWidth;
@@ -418,6 +422,12 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         if (selectedFlowId === flowId && fallbackFlowId) {
           updateWorkflowURL(fallbackFlowId);
         }
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.collection, EntityType.WORKFLOW],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.count, EntityType.WORKFLOW],
+        });
       },
     });
   };
@@ -515,6 +525,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
         onDelete={handleDelete}
+        deleteDisabled={Boolean(selectedMenuFlow?.builtin)}
         deleteLabel={t("button.delete")}
       />
     </StyledDrawer>
