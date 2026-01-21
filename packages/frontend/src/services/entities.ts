@@ -34,6 +34,9 @@ export const WorkflowActionEntity = new schema.Entity(
     processStrategy: (entity) => {
       return {
         ...entity,
+        title: entity.name
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (char: string) => char.toUpperCase()),
         parseSettings: (payload) => payload,
       };
     },
