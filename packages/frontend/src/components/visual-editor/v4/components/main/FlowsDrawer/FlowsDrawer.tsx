@@ -515,6 +515,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
         onDelete={handleDelete}
+        deleteDisabled={Boolean(selectedMenuFlow?.builtin)}
         deleteLabel={t("button.delete")}
       />
     </StyledDrawer>

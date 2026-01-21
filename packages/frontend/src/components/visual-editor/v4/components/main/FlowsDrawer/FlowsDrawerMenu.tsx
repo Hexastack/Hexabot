@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Menu, MenuItem } from "@mui/material";
+import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import { Trash2 } from "lucide-react";
 
 type FlowsDrawerMenuProps = {
   anchorEl: HTMLElement | null;
@@ -12,6 +13,7 @@ type FlowsDrawerMenuProps = {
   onClose: () => void;
   onDelete: () => void;
   deleteLabel: string;
+  deleteDisabled?: boolean;
 };
 
 export const FlowsDrawerMenu = ({
@@ -20,8 +22,14 @@ export const FlowsDrawerMenu = ({
   onClose,
   onDelete,
   deleteLabel,
+  deleteDisabled = false,
 }: FlowsDrawerMenuProps) => (
   <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
-    <MenuItem onClick={onDelete}>{deleteLabel}</MenuItem>
+    <MenuItem onClick={onDelete} disabled={deleteDisabled}>
+      <ListItemIcon>
+        <Trash2 size={18} />
+      </ListItemIcon>
+      <ListItemText primary={deleteLabel} />
+    </MenuItem>
   </Menu>
 );
