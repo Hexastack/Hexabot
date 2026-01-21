@@ -131,14 +131,26 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
     invalidate: false,
   });
-  const { yaml, setYaml, definition, updateDefinition } =
-    useWorkflowDefinitionState({
-      flowId,
-      workflow,
-      actionsByName,
-      hasActions,
-      updateWorkflow,
-    });
+  const {
+    mutate: updateWorkflowDefinition,
+    isPending: isDefinitionSaving,
+  } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const {
+    yaml,
+    setYaml,
+    definition,
+    updateDefinition,
+    saveDefinition,
+    isDefinitionDirty,
+  } = useWorkflowDefinitionState({
+    flowId,
+    workflow,
+    actionsByName,
+    hasActions,
+    updateWorkflow: updateWorkflowDefinition,
+  });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition(workflow);
     const nextTaskName = createTaskName(
@@ -363,6 +375,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         executionStates,
         setExecutionStates,
         updateDefinition,
+        saveDefinition,
+        isDefinitionDirty,
+        isDefinitionSaving,
         addActionStep,
         removeStepAtPath,
         actions,

@@ -59,8 +59,13 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
   const queryClient = useTanstackQueryClient();
-  const { workflows, selectedFlowId, updateWorkflowURL, workflow, yaml } =
-    useWorkflow();
+  const {
+    workflows,
+    selectedFlowId,
+    updateWorkflowURL,
+    isDefinitionDirty,
+    isDefinitionSaving,
+  } = useWorkflow();
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
@@ -183,9 +188,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   }, [clampDrawerWidth]);
 
   const hasUnsaved = Boolean(
-    workflow?.id &&
-      workflow.id === selectedFlowId &&
-      (workflow.definitionYaml ?? "") !== yaml,
+    selectedFlowId && (isDefinitionDirty || isDefinitionSaving),
   );
   const matches = useMemo<FlowMatch[]>(() => {
     const list = workflowsList ?? [];

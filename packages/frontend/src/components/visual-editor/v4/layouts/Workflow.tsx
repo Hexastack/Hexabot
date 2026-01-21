@@ -72,6 +72,9 @@ export const Workflow = () => {
     debouncedWorkflowUpdate,
     updateWorkflowURL,
     definition,
+    isDefinitionDirty,
+    isDefinitionSaving,
+    saveDefinition,
     actions,
     addActionStep,
   } = useWorkflow();
@@ -261,6 +264,10 @@ export const Workflow = () => {
               typeBackground={typeInfo?.background}
               onEdit={handleEditWorkflow}
               onOpenMenu={handleOpenMenu}
+              onSave={saveDefinition}
+              saveDisabled={!definition || !isDefinitionDirty}
+              saveLoading={isDefinitionSaving}
+              saveLabel={t("button.save")}
               renameLabel={t("button.rename")}
               moreLabel={t("button.more")}
             />

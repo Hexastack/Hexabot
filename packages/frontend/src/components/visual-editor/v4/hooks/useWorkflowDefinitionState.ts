@@ -13,6 +13,7 @@ import debounce from "@mui/utils/debounce";
 import {
   type Dispatch,
   type SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -42,6 +43,8 @@ type UseWorkflowDefinitionStateResult = {
   setYaml: Dispatch<SetStateAction<string>>;
   definition?: WorkflowDefinition;
   updateDefinition: (nextDefinition: WorkflowDefinition) => void;
+  saveDefinition: () => void;
+  isDefinitionDirty: boolean;
 };
 
 export const useWorkflowDefinitionState = ({
@@ -53,6 +56,17 @@ export const useWorkflowDefinitionState = ({
 }: UseWorkflowDefinitionStateArgs): UseWorkflowDefinitionStateResult => {
   const [yaml, setYaml] = useState("");
   const definitionSignatureRef = useRef("");
+  const workflowDefinitionYaml = useMemo(() => {
+    if (workflow?.definitionYaml) {
+      return workflow.definitionYaml;
+    }
+
+    if (workflow?.definition) {
+      return WorkflowHelper.stringifyDefinition(workflow.definition);
+    }
+
+    return "";
+  }, [workflow?.definition, workflow?.definitionYaml]);
   const definitionResult = useMemo(() => {
     if (!yaml || !hasActions) {
       return { definition: undefined, error: null };
@@ -71,6 +85,13 @@ export const useWorkflowDefinitionState = ({
   }, [actionsByName, hasActions, yaml]);
   const definition = definitionResult.definition;
   const definitionError = definitionResult.error;
+  const isDefinitionDirty = useMemo(() => {
+    if (!flowId) {
+      return false;
+    }
+
+    return workflowDefinitionYaml !== yaml;
+  }, [flowId, workflowDefinitionYaml, yaml]);
   const updateDefinition = (nextDefinition: WorkflowDefinition) => {
     setYaml(WorkflowHelper.stringifyDefinition(nextDefinition));
   };
@@ -86,12 +107,34 @@ export const useWorkflowDefinitionState = ({
           definition: nextDefinition,
         },
       });
-    }, 400),
+    }, 4000),
     [flowId, updateWorkflow],
     (memoizedFn) => {
       memoizedFn.clear();
     },
   );
+  const saveDefinition = useCallback(() => {
+    if (!flowId || !definition || definitionError || !isDefinitionDirty) {
+      return;
+    }
+
+    definitionSignatureRef.current =
+      WorkflowHelper.stringifyDefinition(definition);
+    debouncedDefinitionUpdate.clear();
+    updateWorkflow({
+      id: flowId,
+      params: {
+        definition,
+      },
+    });
+  }, [
+    debouncedDefinitionUpdate,
+    definition,
+    definitionError,
+    flowId,
+    isDefinitionDirty,
+    updateWorkflow,
+  ]);
 
   useEffect(() => {
     const nextYaml =
@@ -131,5 +174,7 @@ export const useWorkflowDefinitionState = ({
     setYaml,
     definition,
     updateDefinition,
+    saveDefinition,
+    isDefinitionDirty,
   };
 };
