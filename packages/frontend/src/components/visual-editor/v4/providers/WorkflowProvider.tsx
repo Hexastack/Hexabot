@@ -7,7 +7,6 @@
 import {
   WorkflowCompileOptions,
   WorkflowDefinition,
-  WorkflowEventMap,
   Workflow as WorkflowHelper,
   type FlowStep,
 } from "@hexabot-ai/agentic";
@@ -34,12 +33,20 @@ import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
+import { EIndicatorType } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
-import type { WorkflowContextProps } from "../types/workflow.types";
+import type {
+  NodeExecutionState,
+  SubscribeWorkflowProps,
+  WorkflowContextProps,
+} from "../types/workflow.types";
 import {
   createBaseDefinition,
   createTaskName,
 } from "../utils/workflow-definition.utils";
+
+const getStepId = (id: string) =>
+  `^step-${id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
@@ -73,7 +80,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   }, [flowId, workflow?.direction]);
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const [executionStates, setExecutionStates] = useState<
-    Record<string, { state: "start" | "success" }>
+    Record<string, { state: NodeExecutionState; t: number }[]>
   >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
@@ -249,36 +256,82 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     }
   }, [flowId, workflows, updateWorkflowURL]);
 
+  const findNode = (criteria: string) => {
+    const regexCriteria = new RegExp(criteria);
+
+    return getNodes().find((n) => n.id.match(regexCriteria));
+  };
+  const updateExecutionStates = (
+    criteria: string,
+    state: NodeExecutionState,
+    t?: number,
+  ) => {
+    const foundedNode = findNode(criteria);
+
+    if (foundedNode?.id) {
+      setExecutionStates((old) => ({
+        ...old,
+        [foundedNode.id]: [
+          ...(old?.[foundedNode.id] || []),
+          { state, t: t || Date.now() },
+        ],
+      }));
+    }
+  };
+
   useSubscribe(
     "workflow",
-    ({
-      step,
-      state,
-    }: (
-      | WorkflowEventMap["hook:step:start"]
-      | WorkflowEventMap["hook:step:success"]
-    ) & {
-      state: "start" | "success";
-    }) => {
-      if (state) {
-        const stepId = `^step-${step.id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
-        const idRegex = new RegExp(stepId);
-        const foundedNode = getNodes().find((n) => n.id.match(idRegex));
+    ({ workflowEvent, ...rest }: SubscribeWorkflowProps) => {
+      if (workflowEvent === "workflow:start") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_START, "start");
+      }
 
-        if (foundedNode?.id) {
-          if (state === "start") {
-            setExecutionStates((old) => ({
-              ...old,
-              [foundedNode.id]: { state: "start" },
-            }));
-          } else if (state === "success") {
-            setTimeout(() => {
-              setExecutionStates((old) => ({
-                ...old,
-                [foundedNode.id]: { state: "success" },
-              }));
-            }, 500);
-          }
+      if (workflowEvent === "workflow:finish") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_END, "start");
+
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_END, "finish");
+          setExecutionStates({});
+        }, 1000);
+      }
+
+      if (workflowEvent === "workflow:suspended") {
+        // TODO
+      }
+
+      if (workflowEvent === "workflow:failure") {
+        // TODO
+      }
+
+      if ("step" in rest) {
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_START, "finish");
+        }, 1000);
+
+        if (workflowEvent === "step:start") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "start", rest.t);
+        }
+
+        if (workflowEvent === "step:error") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "error", rest.t);
+        }
+
+        if (workflowEvent === "step:success") {
+          const stepId = getStepId(rest.step.id);
+
+          setTimeout(() => {
+            updateExecutionStates(stepId, "finish", rest.t);
+          }, 800);
+        }
+
+        if (workflowEvent === "step:suspended") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "suspended", rest.t);
         }
       }
     },

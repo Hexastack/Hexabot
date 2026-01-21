@@ -96,7 +96,7 @@ export const NODES = {
     },
   },
   [ENodeType.INDICATOR]: {
-    [EIndicatorType.START]: {
+    [EIndicatorType.WORKFLOW_START]: {
       theme: {
         Icon: Play,
         borderColor: "#37b765",
@@ -104,7 +104,7 @@ export const NODES = {
       ports: [ELinkType.INDICATOR_OUT],
       i18nTitle: "message.start",
     },
-    [EIndicatorType.END]: {
+    [EIndicatorType.WORKFLOW_END]: {
       theme: {
         Icon: CircleStop,
         borderColor: "#e95d32",

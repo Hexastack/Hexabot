@@ -23,7 +23,7 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
     <Grid
       container
       gap="14px"
-      style={{
+      sx={{
         position: "relative",
         width,
         height,
@@ -36,6 +36,7 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
         overflow: "hidden",
         boxShadow: "0 3px 6px #0002",
         padding: "1rem",
+        transition: ".6s",
       }}
     >
       <GenericNodeDeleteButton />

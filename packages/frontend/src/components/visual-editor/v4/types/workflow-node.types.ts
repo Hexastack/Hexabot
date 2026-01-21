@@ -31,6 +31,8 @@ import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 import type { FlowStepPath } from "../types/workflow-path.types";
 
+import { NodeExecutionState } from "./workflow.types";
+
 export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
   | { title: string; i18nTitle?: never }
@@ -50,7 +52,7 @@ export type CommonNodeDadaTypes = NodeDataTitle & {
   stepPath?: FlowStepPath;
   theme: WorkflowNodeTheme;
   level?: number;
-  executionState?: "start" | "success" | "error";
+  executionState?: NodeExecutionState;
 };
 
 type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
@@ -82,8 +84,8 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
 };
 
 export enum EIndicatorType {
-  START = "start",
-  END = "end",
+  WORKFLOW_START = "workflowStart",
+  WORKFLOW_END = "workflowEnd",
 }
 
 // Operator types
