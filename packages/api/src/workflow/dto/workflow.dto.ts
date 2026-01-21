@@ -112,7 +112,7 @@ export class WorkflowNewDto {
   })
   @IsOptional()
   @IsEnum(WorkflowType)
-  type: WorkflowType = WorkflowType.conversational;
+  type?: WorkflowType;
 
   @ApiPropertyOptional({
     description: 'Cron expression used when the workflow is scheduled',
@@ -192,7 +192,16 @@ export type WorkflowTransformerDto = DtoTransformerConfig<{
   FullCls: typeof WorkflowFull;
 }>;
 
-export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {}
+export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
+  @ApiPropertyOptional({
+    description: 'Workflow trigger type',
+    enumName: 'WorkflowType',
+    enum: WorkflowType,
+  })
+  @IsOptional()
+  @IsEnum(WorkflowType)
+  type?: WorkflowType;
+}
 
 export type WorkflowDtoConfig = DtoActionConfig<{
   create: WorkflowCreateDto;
