@@ -54,7 +54,7 @@ export const DrawerHeader = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "12px 12px 8px 16px",
+  padding: "12px 12px 8px 12px",
   minHeight: 48,
 }));
 
