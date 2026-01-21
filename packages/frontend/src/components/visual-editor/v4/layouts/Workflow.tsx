@@ -6,9 +6,19 @@
 
 import { Box, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 
+import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { useDelete } from "@/hooks/crud/useDelete";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
@@ -17,7 +27,10 @@ import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
+import { BASE_TYPES } from "../components/main/FlowsDrawer/constants";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
+import { WorkflowMenu } from "../components/main/WorkflowMenu";
+import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
@@ -38,12 +51,22 @@ const StyledBox = styled(Box)(() => ({
   minWidth: 0,
   overflow: "hidden",
 }));
+const WorkflowTitleOverlay = styled(Box)(() => ({
+  position: "absolute",
+  top: 12,
+  left: 12,
+  zIndex: 2,
+  maxWidth: "calc(100% - 24px)",
+}));
 
 export const Workflow = () => {
   const { setViewport } = useReactFlow();
+  const { t } = useTranslate();
   const {
     yaml,
     workflow,
+    workflows,
+    selectedFlowId,
     direction,
     debouncedWorkflowUpdate,
     updateWorkflowURL,
@@ -53,6 +76,7 @@ export const Workflow = () => {
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const defaultViewport = useMemo(
     () => ({
       x: workflow?.x || 0,
@@ -69,7 +93,10 @@ export const Workflow = () => {
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
+  const typeInfo = workflow ? BASE_TYPES[workflow.type] : undefined;
   const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
     setPendingInsertPath(insertPath);
     setActionsDrawerOpen(true);
@@ -168,6 +195,47 @@ export const Workflow = () => {
       defaultValues: workflowToEdit,
     });
   };
+  const handleOpenMenu = (
+    event: ReactMouseEvent<HTMLElement>,
+    flowId: string,
+  ) => {
+    setMenuAnchorEl(event.currentTarget);
+    setMenuFlowId(flowId);
+  };
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+    setMenuFlowId(null);
+  };
+  const handleDelete = async () => {
+    const selectedMenuWorkflow = menuFlowId
+      ? workflows?.find((flow) => flow.id === menuFlowId) ??
+        (workflow?.id === menuFlowId ? workflow : undefined)
+      : workflow;
+
+    if (!selectedMenuWorkflow) {
+      handleCloseMenu();
+
+      return;
+    }
+
+    const flowId = selectedMenuWorkflow.id;
+    const fallbackFlowId = workflows?.find((flow) => flow.id !== flowId)?.id;
+
+    handleCloseMenu();
+    const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    deleteWorkflow(flowId, {
+      onSuccess: () => {
+        if (selectedFlowId === flowId && fallbackFlowId) {
+          updateWorkflowURL(fallbackFlowId);
+        }
+      },
+    });
+  };
 
   return (
     <div className="visual-editor-v4">
@@ -179,6 +247,21 @@ export const Workflow = () => {
           defaultNodes={graph?.nodes || []}
           defaultViewport={defaultViewport}
         />
+        {workflow && (
+          <WorkflowTitleOverlay>
+            <WorkflowTitleBar
+              workflow={workflow}
+              typeIcon={typeInfo?.icon}
+              typeLabel={typeInfo ? t(typeInfo.labelKey) : undefined}
+              typeColor={typeInfo?.color}
+              typeBackground={typeInfo?.background}
+              onEdit={handleEditWorkflow}
+              onOpenMenu={handleOpenMenu}
+              renameLabel={t("button.rename")}
+              moreLabel={t("button.more")}
+            />
+          </WorkflowTitleOverlay>
+        )}
         {isEmptyWorkflow && (
           <WorkflowEmptyState
             drawerId={actionsDrawerId}
@@ -202,6 +285,14 @@ export const Workflow = () => {
         <RotateButton />
       </StyledBox>
       <ActionFormDrawer />
+      <WorkflowMenu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleCloseMenu}
+        deleteDisabled={Boolean(workflow?.builtin)}
+        onDelete={handleDelete}
+        deleteLabel={t("button.delete")}
+      />
     </div>
   );
 };

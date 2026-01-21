@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
-import { MoreHorizontal, Pencil } from "lucide-react";
+import { Box, Chip, Tooltip, Typography } from "@mui/material";
 import type { MouseEvent } from "react";
 
 import type { IWorkflow } from "@/types/workfow.types";
+
+import { WorkflowActionButtons } from "../WorkflowActionButtons";
 
 import { HighlightedText } from "./HighlightedText";
 import { FlowItem } from "./styles";
@@ -101,27 +102,14 @@ export const FlowListItem = ({
             />
           )}
         </Box>
-        <Box className="flow-row-actions">
-          <Tooltip title={renameLabel}>
-            <IconButton
-              size="small"
-              onClick={(event) => {
-                event.stopPropagation();
-                onEdit?.(match.workflow);
-              }}
-            >
-              <Pencil size={14} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={moreLabel}>
-            <IconButton
-              size="small"
-              onClick={(event) => onOpenMenu(event, match.workflow.id)}
-            >
-              <MoreHorizontal size={16} />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <WorkflowActionButtons
+          className="flow-row-actions"
+          workflow={match.workflow}
+          onEdit={onEdit}
+          onOpenMenu={onOpenMenu}
+          renameLabel={renameLabel}
+          moreLabel={moreLabel}
+        />
       </Box>
       <Box
         sx={{
