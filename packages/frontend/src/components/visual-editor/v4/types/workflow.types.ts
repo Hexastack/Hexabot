@@ -48,6 +48,9 @@ export interface IWorkflowContext {
     IWorkflow
   >;
   updateDefinition: (definition: WorkflowDefinition) => void;
+  saveDefinition: () => void;
+  isDefinitionDirty: boolean;
+  isDefinitionSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   executionStates: Record<string, { state: "start" | "success" }>;

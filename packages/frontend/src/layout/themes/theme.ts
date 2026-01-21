@@ -66,7 +66,7 @@ const COLORS = {
     main: "#cc0000",
   },
   warning: {
-    main: "#deb100",
+    main: "#f59e0b",
   },
 };
 
