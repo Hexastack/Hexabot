@@ -348,10 +348,10 @@ export const buildNodesAndEdges = async ({
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
-    id: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+    id: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
-    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.END],
+    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
   });
 
   endStepIds.forEach((endEdgesId) => {
@@ -366,7 +366,7 @@ export const buildNodesAndEdges = async ({
     ctx.edges.push({
       id: generateId(),
       source: endEdgesId,
-      target: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+      target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       data: insertPath ? { insertPath } : undefined,
@@ -376,7 +376,7 @@ export const buildNodesAndEdges = async ({
       ctx.edges.push({
         id: generateId(),
         source: groupName,
-        target: `${EIndicatorType.END}-${endStepIds.at(-1)}`,
+        target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
         type: EEdgeType.EDGE_WITH_BUTTON,
         ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       });

@@ -209,7 +209,7 @@ const getIndicator = <T extends EIndicatorType>(
   return {
     ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
-    id: `${EIndicatorType.START}-${id}`,
+    id: `${EIndicatorType.WORKFLOW_START}-${id}`,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
     data: {
@@ -269,7 +269,7 @@ export function walkSteps({
 
       if (!ctx.nodes.length) {
         const startIndicator = getIndicator(
-          EIndicatorType.START,
+          EIndicatorType.WORKFLOW_START,
           taskNodeId,
           ctx,
           level,
@@ -283,7 +283,7 @@ export function walkSteps({
 
       if (!incoming.length) {
         const startIndicatorEdge = getIndicatorEdge(
-          EIndicatorType.START,
+          EIndicatorType.WORKFLOW_START,
           ctx,
           taskNodeId,
           stepPath,
