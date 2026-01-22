@@ -49,6 +49,7 @@ const PulseIconButtonRoot = styled(IconButton, {
     backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.secondary,
     boxShadow: theme.shadows[1],
+    transition: ".2s",
     "&::after": {
       content: '""',
       position: "absolute",
@@ -61,7 +62,7 @@ const PulseIconButtonRoot = styled(IconButton, {
       zIndex: -1,
     },
     "&:hover": {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: `color-mix(in srgb, ${theme.palette.background.paper}, black 10%)`,
     },
     "@media (prefers-reduced-motion: reduce)": {
       "&::after": {
