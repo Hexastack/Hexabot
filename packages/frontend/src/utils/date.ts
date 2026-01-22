@@ -5,6 +5,7 @@
  */
 
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isToday from "dayjs/plugin/isToday";
 import localizedFormat from "dayjs/plugin/localizedFormat";
@@ -18,6 +19,8 @@ dayjs.extend(isToday);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(weekday);
 dayjs.extend(localizedFormat);
+dayjs.extend(duration);
+
 export const getDateTimeFormatter = (date: Date) => ({
   date,
   formatParams: {
@@ -68,3 +71,29 @@ export function formatSmartDate(date: Date, locale: string = "en"): string {
     return inputDate.format("ll LT"); // e.g. "Jul 21, 2025 3:25 PM"
   }
 }
+
+export const calculateDuration = (
+  createdAt: string | Date,
+  finishedAt?: Date | null,
+  separator: string = " ",
+): string => {
+  if (!finishedAt) return "-";
+
+  const start = dayjs(createdAt);
+  const end = dayjs(finishedAt);
+  const diffMs = Math.max(0, end.diff(start));
+  const dur = dayjs.duration(diffMs);
+  const h = Math.floor(dur.asHours());
+  const m = dur.minutes();
+  const s = dur.seconds();
+
+  if (h > 0) {
+    return `${h}h${separator}${m}m${separator}${s}s`;
+  }
+
+  if (m > 0) {
+    return `${m}m${separator}${s}s`;
+  }
+
+  return `${s}s`;
+};

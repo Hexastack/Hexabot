@@ -40,7 +40,9 @@ export interface ISubscriberFilters {
 
 export interface ISubscriberStub
   extends IBaseSchema,
-    OmitPopulate<ISubscriberAttributes, EntityType.SUBSCRIBER> {}
+    OmitPopulate<ISubscriberAttributes, EntityType.SUBSCRIBER> {
+  fullName?: string;
+}
 
 export interface ISubscriber extends ISubscriberStub, IFormat<Format.BASIC> {
   labels: string[];
