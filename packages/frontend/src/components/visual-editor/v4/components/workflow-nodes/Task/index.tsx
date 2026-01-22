@@ -16,18 +16,21 @@ import {
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeTitle />
-      <GenericNodeDescription />
+      <GenericNodeRightContent>
+        <GenericNodeTitle />
+        <GenericNodeDescription />
+      </GenericNodeRightContent>
+      <GenericNodePorts<ENodeType.TASK>
+        getDisabled={({ port, hasEnabledPort }) =>
+          port === ELinkType.TASK_OUT && hasEnabledPort
+        }
+      />
     </GenericNodeContainer>
-    <GenericNodePorts<ENodeType.TASK>
-      getDisabled={({ port, hasEnabledPort }) =>
-        port === ELinkType.TASK_OUT && hasEnabledPort
-      }
-    />
   </WorkflowNodeProvider>
 );

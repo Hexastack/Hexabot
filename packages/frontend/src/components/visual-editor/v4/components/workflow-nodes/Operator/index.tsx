@@ -11,6 +11,7 @@ import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = ({
@@ -18,12 +19,14 @@ export const Operator: FC<NodeProps<NodeData<ENodeType.OPERATOR>>> = ({
 }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeTitle />
+      <GenericNodeRightContent>
+        <GenericNodeTitle />
+      </GenericNodeRightContent>
+      <GenericNodePorts<ENodeType.OPERATOR>
+        getDisabled={({ idx, node }) =>
+          !!node.groupName && node.level === 0 && idx === 0
+        }
+      />
     </GenericNodeContainer>
-    <GenericNodePorts<ENodeType.OPERATOR>
-      getDisabled={({ idx, node }) =>
-        !!node.groupName && node.level === 0 && idx === 0
-      }
-    />
   </WorkflowNodeProvider>
 );
