@@ -21,22 +21,21 @@ export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
 
   return (
     <Grid
-      container
-      gap="14px"
       sx={{
         position: "relative",
         width,
         height,
-        textAlign: "center",
         borderRadius: "14px",
         outline: "none",
         pointerEvents: "none",
         border: `2px solid ${borderColor}`,
         backgroundColor: bgColor,
-        overflow: "hidden",
         boxShadow: "0 3px 6px #0002",
         padding: "1rem",
         transition: ".6s",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
       }}
     >
       <GenericNodeDeleteButton />

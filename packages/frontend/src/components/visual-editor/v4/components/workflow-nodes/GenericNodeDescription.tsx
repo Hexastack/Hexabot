@@ -20,6 +20,7 @@ export const GenericNodeDescription = <T extends ENodeType = ENodeType>() => {
         color: "#666f7a",
         alignContent: "end",
         height: "100%",
+        marginLeft: "29px",
       }}
     >
       {description}
