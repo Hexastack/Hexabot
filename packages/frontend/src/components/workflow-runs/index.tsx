@@ -9,13 +9,13 @@ import { GridColDef } from "@mui/x-data-grid";
 import { Activity } from "lucide-react";
 import { useMemo } from "react";
 
+import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { THook } from "@/types/base.types";
-import { IWorkflowRunFull } from "@/types/workflow-run.types";
-import { WorkflowType } from "@/types/workfow.types";
+import { IWorkflowRun } from "@/types/workflow-run.types";
 import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
 const STATUS_COLORS = {
@@ -25,15 +25,10 @@ const STATUS_COLORS = {
   finished: "success",
   failed: "error",
 } as const;
-const WORKFLOW_TYPE_LABELS: Record<WorkflowType, string> = {
-  [WorkflowType.conversational]: "Conversational",
-  [WorkflowType.manual]: "Manual",
-  [WorkflowType.scheduled]: "Scheduled",
-};
 
 export const WorkflowRuns = () => {
   const { t } = useTranslate();
-  const columns: GridColDef<IWorkflowRunFull>[] = useMemo(
+  const columns: GridColDef<IWorkflowRun>[] = useMemo(
     () => [
       { field: "id", headerName: "ID", width: 100 },
       {
@@ -50,12 +45,20 @@ export const WorkflowRuns = () => {
       {
         flex: 1,
         minWidth: 200,
-        field: "workflow",
+        field: "name",
         headerName: t("label.workflow"),
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        valueGetter: (_value, row) => row.workflow?.name || "-",
+        renderCell: ({ row: { workflow } }) => (
+          <ChipEntity
+            id={workflow}
+            key={workflow}
+            variant="role"
+            field="name"
+            entity={EntityType.WORKFLOW}
+          />
+        ),
       },
       {
         minWidth: 140,
@@ -64,8 +67,15 @@ export const WorkflowRuns = () => {
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        valueGetter: (_value, row) =>
-          row.workflow?.type ? WORKFLOW_TYPE_LABELS[row.workflow.type] : "-",
+        renderCell: ({ row: { workflow } }) => (
+          <ChipEntity
+            id={workflow}
+            key={workflow}
+            variant="role"
+            field="type"
+            entity={EntityType.WORKFLOW}
+          />
+        ),
       },
       {
         minWidth: 120,

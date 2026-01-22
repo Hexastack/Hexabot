@@ -4,15 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Card, CardContent, CardHeader, Chip, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, Chip } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
+import { ChipEntity } from "@/app-components/displays/ChipEntity";
+import { useDataGridProps } from "@/hooks/useDataGridProps";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { IWorkflowRunFull } from "@/types/workflow-run.types";
+import { IWorkflowRun } from "@/types/workflow-run.types";
 import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
 const STATUS_COLORS = {
@@ -26,17 +27,18 @@ const STATUS_COLORS = {
 export const RecentRuns = () => {
   const theme = useTheme();
   const { t } = useTranslate();
-  const { dataGridProps } = useFind(
+  const { dataGridProps } = useDataGridProps(
     { entity: EntityType.WORKFLOW_RUN, format: Format.FULL },
     {
+      initialSortState: [{ field: "createdAt", sort: "desc" }],
       initialPaginationState: {
         page: 0,
         pageSize: 5,
       },
-      initialSortState: [{ field: "createdAt", sort: "desc" }],
+      searchParams: {},
     },
-  ) as any;
-  const columns = useMemo<GridColDef<IWorkflowRunFull>[]>(
+  );
+  const columns = useMemo<GridColDef<IWorkflowRun>[]>(
     () => [
       {
         field: "createdAt",
@@ -49,30 +51,43 @@ export const RecentRuns = () => {
         field: "workflow",
         headerName: t("label.workflow"),
         flex: 1.5,
-        valueGetter: (_value, row) => row.workflow?.name || "-",
-        renderCell: (params) => (
-          <Typography variant="body2" fontWeight="medium">
-            {params.value}
-          </Typography>
+        renderCell: ({ row: { workflow } }) => (
+          <ChipEntity
+            id={workflow}
+            key={workflow}
+            variant="text"
+            field="name"
+            entity={EntityType.WORKFLOW}
+          />
         ),
       },
       {
         field: "type",
         headerName: t("label.type"),
         flex: 1,
-        valueGetter: (_value, row) =>
-          row.workflow?.type ? t(`label.${row.workflow.type}`) : "-",
+        renderCell: ({ row: { workflow } }) => (
+          <ChipEntity
+            id={workflow}
+            key={workflow}
+            variant="text"
+            field="type"
+            entity={EntityType.WORKFLOW}
+          />
+        ),
       },
       {
         field: "triggeredBy",
         headerName: t("label.triggered_by"),
         flex: 1,
-        valueGetter: (_value, row) => {
-          if (!row.triggeredBy) return "-";
-          const { firstName, lastName } = row.triggeredBy;
-
-          return `${firstName} ${lastName}`.trim();
-        },
+        renderCell: ({ value }) => (
+          <ChipEntity
+            id={value}
+            key={value}
+            variant="text"
+            field="fullName"
+            entity={EntityType.SUBSCRIBER}
+          />
+        ),
       },
       {
         field: "status",
