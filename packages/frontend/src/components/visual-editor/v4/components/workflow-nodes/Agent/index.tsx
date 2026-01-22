@@ -12,14 +12,17 @@ import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Agent: FC<NodeProps<NodeData<ENodeType.AGENT>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeTitle />
-      <GenericNodeDescription />
+      <GenericNodeRightContent>
+        <GenericNodeTitle />
+        <GenericNodeDescription />
+      </GenericNodeRightContent>
+      <GenericNodePorts />
     </GenericNodeContainer>
-    <GenericNodePorts />
   </WorkflowNodeProvider>
 );
