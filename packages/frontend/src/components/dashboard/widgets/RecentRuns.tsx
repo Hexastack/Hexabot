@@ -5,7 +5,6 @@
  */
 
 import { Card, CardContent, CardHeader, Chip } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 
@@ -25,7 +24,6 @@ const STATUS_COLORS = {
 } as const;
 
 export const RecentRuns = () => {
-  const theme = useTheme();
   const { t } = useTranslate();
   const { dataGridProps } = useDataGridProps(
     { entity: EntityType.WORKFLOW_RUN, format: Format.FULL },
@@ -102,8 +100,6 @@ export const RecentRuns = () => {
             }
             color={STATUS_COLORS[params.value] || "default"}
             size="small"
-            variant="outlined"
-            sx={{ fontWeight: "bold" }}
           />
         ),
       },
@@ -139,6 +135,7 @@ export const RecentRuns = () => {
           p: 0,
           "& .MuiDataGrid-root": { border: "none" },
           flexGrow: 1,
+          padding: "0 17px",
         }}
       >
         <DataGrid
@@ -148,21 +145,6 @@ export const RecentRuns = () => {
           disableRowSelectionOnClick
           disableColumnMenu
           disableColumnSelector
-          density="compact"
-          autoHeight
-          sx={{
-            border: 0,
-            "& .MuiDataGrid-columnHeaders": {
-              bgcolor: alpha(theme.palette.background.default, 0.5),
-              borderBottom: `1px solid ${theme.palette.divider}`,
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-            },
-            "& .MuiDataGrid-row:hover": {
-              bgcolor: alpha(theme.palette.primary.main, 0.04),
-            },
-          }}
         />
       </CardContent>
     </Card>
