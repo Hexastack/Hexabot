@@ -20,7 +20,7 @@ export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
         textOverflow: "ellipsis",
         display: "flex",
         justifyContent: "center",
-        paddingTop: "2px",
+        paddingTop: "4px",
       }}
     >
       <Icon size="20px" />

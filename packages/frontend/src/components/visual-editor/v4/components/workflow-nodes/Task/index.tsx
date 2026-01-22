@@ -24,7 +24,7 @@ export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeIcon />
-      <Grid size="grow" flexDirection="column">
+      <Grid size="grow" flexDirection="column" display="flex">
         <GenericNodeTitle />
         <GenericNodeDescription />
       </Grid>

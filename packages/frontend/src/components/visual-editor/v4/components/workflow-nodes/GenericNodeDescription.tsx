@@ -13,7 +13,15 @@ export const GenericNodeDescription = <T extends ENodeType = ENodeType>() => {
   const { description } = useWorkflowNode<T>();
 
   return (
-    <Typography noWrap sx={{ fontSize: "0.75rem", color: "#666f7a" }}>
+    <Typography
+      noWrap
+      sx={{
+        fontSize: "0.75rem",
+        color: "#666f7a",
+        alignContent: "end",
+        height: "100%",
+      }}
+    >
       {description}
     </Typography>
   );
