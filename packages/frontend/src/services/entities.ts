@@ -99,8 +99,8 @@ export const WorkflowRunEntity = new schema.Entity(
       if (entity.failedAt) {
         processed.failedAt = new Date(entity.failedAt);
       }
-      
-return processed;
+
+      return processed;
     },
   },
 );
@@ -123,6 +123,10 @@ export const SubscriberEntity = new schema.Entity(
 
       if (entity.retainedFrom) {
         entity.retainedFrom = new Date(entity.retainedFrom);
+      }
+
+      if (entity.firstName && entity.lastName) {
+        entity.fullName = `${entity.firstName} ${entity.lastName}`;
       }
 
       return processCommonStrategy(entity);
