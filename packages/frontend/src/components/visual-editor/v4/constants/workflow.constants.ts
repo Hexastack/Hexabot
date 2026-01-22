@@ -40,12 +40,12 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 280, height: 65 },
-  [ENodeType.TOOL]: { width: 280, height: 65 },
-  [ENodeType.AGENT]: { width: 280, height: 110 },
-  [ENodeType.INDICATOR]: { width: 110, height: 65 },
-  [ENodeType.TASK]: { width: 280, height: 90 },
-  [ENodeType.OPERATOR]: { width: 150, height: 65 },
+  [ENodeType.MODEL]: { width: 210, height: 55 },
+  [ENodeType.TOOL]: { width: 210, height: 55 },
+  [ENodeType.AGENT]: { width: 260, height: 75 },
+  [ENodeType.INDICATOR]: { width: 100, height: 56 },
+  [ENodeType.TASK]: { width: 260, height: 75 },
+  [ENodeType.OPERATOR]: { width: 150, height: 55 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
   // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
@@ -96,7 +96,7 @@ export const NODES = {
     },
   },
   [ENodeType.INDICATOR]: {
-    [EIndicatorType.START]: {
+    [EIndicatorType.WORKFLOW_START]: {
       theme: {
         Icon: Play,
         borderColor: "#37b765",
@@ -104,7 +104,7 @@ export const NODES = {
       ports: [ELinkType.INDICATOR_OUT],
       i18nTitle: "message.start",
     },
-    [EIndicatorType.END]: {
+    [EIndicatorType.WORKFLOW_END]: {
       theme: {
         Icon: CircleStop,
         borderColor: "#e95d32",

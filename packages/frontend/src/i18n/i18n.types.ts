@@ -22,7 +22,8 @@ export type TTranslationPrefix =
   | "help"
   | "charts"
   | "datetime"
-  | "visual_editor";
+  | "visual_editor"
+  | "dashboard";
 
 export type TTranslationKeys =
   | `${TTranslationPrefix}`

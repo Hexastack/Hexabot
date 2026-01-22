@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import Grid from "@mui/material/Grid";
 import { NodeProps } from "@xyflow/react";
 import { FC } from "react";
 
@@ -16,23 +15,22 @@ import {
 } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
-import { GenericNodeIcon } from "../GenericNodeIcon";
 import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeIcon />
-      <Grid size="grow" flexDirection="column">
+      <GenericNodeRightContent>
         <GenericNodeTitle />
         <GenericNodeDescription />
-      </Grid>
+      </GenericNodeRightContent>
+      <GenericNodePorts<ENodeType.TASK>
+        getDisabled={({ port, hasEnabledPort }) =>
+          port === ELinkType.TASK_OUT && hasEnabledPort
+        }
+      />
     </GenericNodeContainer>
-    <GenericNodePorts<ENodeType.TASK>
-      getDisabled={({ port, hasEnabledPort }) =>
-        port === ELinkType.TASK_OUT && hasEnabledPort
-      }
-    />
   </WorkflowNodeProvider>
 );

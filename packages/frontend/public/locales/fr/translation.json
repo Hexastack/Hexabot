@@ -245,6 +245,16 @@
     "workflow_runs": "Exécutions de Workflow",
     "recent_runs": "Exécutions récentes"
   },
+  "dashboard": {
+    "kpi": {
+      "total_workflows": "Total des workflows",
+      "total_runs": "Total des exécutions",
+      "success_rate": "Taux de réussite",
+      "messages": "Messages",
+      "last_24h": "Dernières 24 h",
+      "loading": "—"
+    }
+  },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",
     "starts_conversation": "Point d'entrée",
@@ -671,7 +681,10 @@
     "actions_drawer": {
       "title": "Actions",
       "empty": "Aucune action disponible.",
+      "empty_search": "Aucune action ne correspond à votre recherche.",
       "no_description": "Aucune description fournie.",
+      "search_placeholder": "Rechercher des actions",
+      "search_label": "Rechercher des actions",
       "form": {
         "section": {
           "input": "Entrée",

@@ -113,15 +113,13 @@ export class WebsocketGateway
     });
   }
 
-  broadcastWorkflowStepState({
+  broadcastWorkflowEvent({
     initiatorId,
     ...rest
-  }: (
-    | WorkflowEventMap['hook:step:start']
-    | WorkflowEventMap['hook:step:success']
-  ) &
+  }: WorkflowEventMap[keyof WorkflowEventMap] &
     Partial<Pick<WorkflowContextState, 'initiatorId'>> & {
-      state: 'start' | 'success';
+      workflowEvent: string;
+      t: number;
     }): void {
     const roomName = initiatorId
       ? `${Room.WORKFLOW}_${initiatorId}`

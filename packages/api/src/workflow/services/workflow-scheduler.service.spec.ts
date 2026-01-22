@@ -5,9 +5,12 @@
  */
 
 import { ModuleRef } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TestingModule } from '@nestjs/testing';
+import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
+import { UserService } from '@/user';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import {
@@ -19,6 +22,7 @@ import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
 import { ScheduledWorkflowContext } from '../contexts/scheduled-workflow.context';
+import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 
 import { AgenticService } from './agentic.service';
@@ -32,6 +36,9 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   let schedulerRegistry: SchedulerRegistry;
   let workflow: Workflow;
   let agenticService: AgenticService;
+  let userService: UserService;
+  let eventEmitter: EventEmitter2;
+  let handleEventSpy: jest.SpyInstance;
 
   const flushCronCallbacks = async () =>
     await new Promise<void>((resolve) => setImmediate(resolve));
@@ -46,7 +53,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     });
   };
   const reloadScheduledWorkflow = async () => {
-    await workflowService.getRepository().deleteMany();
+    await workflowService.deleteMany();
     await installScheduledWorkflowFixturesTypeOrm(getLastTypeOrmDataSource());
     const [scheduled] = await workflowService.find({
       where: { type: WorkflowType.scheduled },
@@ -80,20 +87,32 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     });
 
     module = testing.module;
-    [agenticService, schedulerService, workflowService, schedulerRegistry] =
-      await testing.getMocks([
-        AgenticService,
-        WorkflowSchedulerService,
-        WorkflowService,
-        SchedulerRegistry,
-      ]);
+    await module.init();
+    [
+      agenticService,
+      schedulerService,
+      workflowService,
+      schedulerRegistry,
+      userService,
+      eventEmitter,
+    ] = await testing.getMocks([
+      AgenticService,
+      WorkflowSchedulerService,
+      WorkflowService,
+      SchedulerRegistry,
+      UserService,
+      EventEmitter2,
+    ]);
   });
 
   beforeEach(async () => {
     jest.clearAllMocks();
     clearCronJobs();
-    jest.spyOn(agenticService, 'handleEvent').mockResolvedValue(undefined);
+    handleEventSpy = jest
+      .spyOn(agenticService, 'handleEvent')
+      .mockResolvedValue(undefined);
     await reloadScheduledWorkflow();
+    clearCronJobs();
   });
 
   afterAll(async () => {
@@ -108,26 +127,68 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     await schedulerService.onModuleInit();
     const job = schedulerRegistry.getCronJob(getJobName());
 
+    expect(job.running).toBe(true);
+
     job.fireOnTick();
     await flushCronCallbacks();
 
-    expect(jest.spyOn(agenticService, 'handleEvent')).toHaveBeenCalledTimes(1);
+    expect(handleEventSpy).toHaveBeenCalledTimes(1);
+    const [eventArg, workflowArg] = handleEventSpy.mock.calls[0];
+    expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
+    expect(eventArg.getContextData()).toEqual(
+      expect.objectContaining({
+        schedule: workflow.schedule,
+        triggered_at: expect.any(Date),
+      }),
+    );
+    expect(eventArg.getInitiator()).toEqual(
+      expect.objectContaining({ id: workflow.createdBy }),
+    );
+    expect(workflowArg?.id).toBe(workflow.id);
+  });
 
-    jest
-      .spyOn(agenticService, 'handleEvent')
-      .mockImplementation(async (eventArg, workflowArg) => {
-        expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
-        expect(eventArg.getContextData()).toEqual(
-          expect.objectContaining({
-            schedule: workflow.schedule,
-            triggered_at: expect.any(Date),
-          }),
-        );
-        expect(eventArg.getInitiator()).toEqual(
-          expect.objectContaining({ id: workflow.createdBy }),
-        );
-        expect(workflowArg?.id).toBe(workflow.id);
-      });
+  it('skips registration when there are no scheduled workflows', async () => {
+    await workflowService.deleteMany();
+
+    await schedulerService.onModuleInit();
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('registers a cron job when a workflow is created', async () => {
+    await workflowService.deleteMany();
+    clearCronJobs();
+
+    const created = await workflowService.create({
+      name: `scheduled-workflow-${Date.now()}`,
+      version: '0.0.1',
+      description: 'Created by workflow scheduler test',
+      definition: workflow.definition,
+      type: WorkflowType.scheduled,
+      schedule: workflow.schedule ?? '*/10 * * * * *',
+      memoryDefinitions: [],
+      createdBy: workflow.createdBy,
+    });
+
+    expect(
+      schedulerRegistry.getCronJob(`workflow:${created.id}`),
+    ).toBeDefined();
+  });
+
+  it('ignores create events without an identifier', async () => {
+    await eventEmitter.emitAsync('hook:workflow:postCreate', {
+      entity: {} as WorkflowOrmEntity,
+    } as InsertEvent<WorkflowOrmEntity>);
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('ignores update events without an identifier', async () => {
+    await eventEmitter.emitAsync('hook:workflow:postUpdate', {
+      databaseEntity: {} as WorkflowOrmEntity,
+    } as UpdateEvent<WorkflowOrmEntity>);
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
 
   it('replaces an existing cron job when re-registering workflows', async () => {
@@ -143,23 +204,93 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     expect(replacementJob).not.toBe(existingJob);
   });
 
+  it('removes cron jobs when workflows change away from scheduled', async () => {
+    await schedulerService.onModuleInit();
+    expect(schedulerRegistry.getCronJobs().size).toBe(1);
+
+    await workflowService.updateOne(workflow.id, {
+      type: WorkflowType.conversational,
+    });
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('unregisters cron jobs when workflows are deleted', async () => {
+    await schedulerService.onModuleInit();
+
+    await workflowService.deleteOne(workflow.id);
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('ignores delete events without an identifier', async () => {
+    await eventEmitter.emitAsync('hook:workflow:postDelete', {
+      databaseEntity: {} as WorkflowOrmEntity,
+    } as RemoveEvent<WorkflowOrmEntity>);
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
   it('skips workflows that are missing a schedule', async () => {
-    jest.spyOn(agenticService, 'handleEvent');
+    await schedulerService.onModuleInit();
+    expect(schedulerRegistry.getCronJobs().size).toBe(1);
+
     await workflowService.updateOne(workflow.id, { schedule: null });
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('skips workflows when the initiator cannot be resolved', async () => {
+    await schedulerService.onModuleInit();
+    expect(schedulerRegistry.getCronJobs().size).toBe(1);
+
+    const findOneSpy = jest
+      .spyOn(userService, 'findOne')
+      .mockResolvedValue(null);
 
     await schedulerService.onModuleInit();
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
-    expect(agenticService.handleEvent).not.toHaveBeenCalled();
+    expect(findOneSpy).toHaveBeenCalled();
+
+    findOneSpy.mockRestore();
   });
 
   it('skips workflows that lack an initiator', async () => {
+    await schedulerService.onModuleInit();
+    expect(schedulerRegistry.getCronJobs().size).toBe(1);
+
     await workflowService.updateOne(workflow.id, {
       createdBy: null as unknown as string,
     });
 
-    await schedulerService.onModuleInit();
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('skips registration when the workflow cannot be found', async () => {
+    await workflowService.deleteOne(workflow.id);
+
+    await (schedulerService as any).registerScheduledWorkflow(workflow.id);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
+  });
+
+  it('handles cron registration errors gracefully', async () => {
+    const errorSpy = jest
+      .spyOn((schedulerService as any).logger, 'error')
+      .mockImplementation(() => undefined);
+    const addCronJobSpy = jest
+      .spyOn(schedulerRegistry, 'addCronJob')
+      .mockImplementation(() => {
+        throw new Error('cron failure');
+      });
+
+    await (schedulerService as any).registerScheduledWorkflow(workflow.id);
+
+    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+    expect(errorSpy).toHaveBeenCalled();
+
+    addCronJobSpy.mockRestore();
+    errorSpy.mockRestore();
   });
 });

@@ -21,6 +21,7 @@ export interface IWorkflowAttributes {
   name: string;
   version: string;
   description?: string | null;
+  builtin?: boolean;
   definition: WorkflowDefinition;
   schedule?: string | null;
   type: WorkflowType;

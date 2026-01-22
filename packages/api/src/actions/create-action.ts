@@ -41,6 +41,7 @@ export function createAction<
           name: params.name,
           description: params.description,
           color: params.color,
+          group: params.group,
           inputSchema: params.inputSchema,
           outputSchema: params.outputSchema,
           settingsSchema: params.settingsSchema,

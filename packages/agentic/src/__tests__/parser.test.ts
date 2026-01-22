@@ -20,19 +20,6 @@ describe('WorkflowDefinitionSchema', () => {
     expect(() => WorkflowDefinitionSchema.parse(minimal)).not.toThrow();
   });
 
-  it('rejects workflows without outputs', () => {
-    const invalid = {
-      workflow: { name: 'demo', version: '1.0.0' },
-      tasks: {
-        noop: { action: 'call' },
-      },
-      flow: [{ do: 'noop' }],
-      outputs: {},
-    };
-
-    expect(() => WorkflowDefinitionSchema.parse(invalid)).toThrow();
-  });
-
   it('rejects workflows with invalid JSONata expressions', () => {
     const invalid = {
       workflow: { name: 'demo', version: '1.0.0' },

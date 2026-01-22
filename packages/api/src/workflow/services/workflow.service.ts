@@ -5,8 +5,12 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
@@ -21,6 +25,7 @@ import {
 } from '@/websocket';
 
 import {
+  WorkflowCreateDto,
   Workflow as WorkflowDto,
   WorkflowDtoConfig,
   WorkflowTransformerDto,
@@ -62,6 +67,14 @@ export class WorkflowService extends BaseOrmService<
     return latest ?? null;
   }
 
+  async create(payload: WorkflowCreateDto) {
+    if (!payload.definition) {
+      throw new BadRequestException('Workflow definition is required');
+    }
+
+    return super.create(payload);
+  }
+
   /**
    * Internally subscribe web-sockets to user's event
    * For example : Notify chat if new user interacted with the chatbot
@@ -92,20 +105,18 @@ export class WorkflowService extends BaseOrmService<
     }
   }
 
-  private async sendWorkflowStepState(
-    state: 'start' | 'success',
-    payload:
-      | WorkflowEventMap['hook:step:start']
-      | WorkflowEventMap['hook:step:success'],
+  private async sendWorkflowEvent(
+    workflowEvent: HookEventKey,
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
   ) {
+    const t = Date.now();
+
     if (!payload.runId) {
       this.logger.error('runId is required');
 
       return;
     }
-    const workflowRun = await this.workflowRunService.findOneAndPopulate(
-      payload.runId,
-    );
+    const workflowRun = await this.workflowRunService.findOne(payload.runId);
     if (!workflowRun?.context) {
       this.logger.error('workflowRun context is required');
 
@@ -119,21 +130,47 @@ export class WorkflowService extends BaseOrmService<
       [WorkflowType.conversational].includes(workflow.type);
 
     if (canBroadcastEvents) {
-      this.gateway.broadcastWorkflowStepState({
+      this.gateway.broadcastWorkflowEvent({
         ...payload,
+        t,
         initiatorId,
-        state,
+        workflowEvent: workflowEvent.replace('hook:', ''),
       });
     }
   }
 
+  @OnEvent('hook:workflow:start')
+  sendWorkflowStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:start', payload);
+  }
+
+  @OnEvent('hook:workflow:finish')
+  sendWorkflowFinish(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:finish', payload);
+  }
+
+  @OnEvent('hook:workflow:failure')
+  sendWorkflowFailure(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:workflow:failure', payload);
+  }
+
   @OnEvent('hook:step:start')
-  sendWorkflowStepStart(payload: WorkflowEventMap['hook:step:start']) {
-    this.sendWorkflowStepState('start', payload);
+  sendWorkflowStepStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:start', payload);
+  }
+
+  @OnEvent('hook:step:suspended')
+  sendWorkflowStepSuspended(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:suspended', payload);
   }
 
   @OnEvent('hook:step:success')
-  sendWorkflowStepSuccess(payload: WorkflowEventMap['hook:step:success']) {
-    this.sendWorkflowStepState('success', payload);
+  sendWorkflowStepSuccess(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:success', payload);
+  }
+
+  @OnEvent('hook:step:error')
+  sendWorkflowStepError(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    this.sendWorkflowEvent('hook:step:error', payload);
   }
 }

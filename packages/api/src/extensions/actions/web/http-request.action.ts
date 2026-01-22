@@ -85,6 +85,7 @@ export const HttpRequestAction = createAction<
   name: 'http_request',
   description:
     'Performs an HTTP request (GET/POST) and returns status, headers, and body with a safe User-Agent.',
+  group: 'web',
   inputSchema: httpRequestInputSchema,
   outputSchema: httpRequestOutputSchema,
   settingsSchema: httpRequestSettingsSchema,

@@ -4,42 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import Grid from "@mui/material/Grid";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
-import { useWorkflowNode } from "../../hooks/useWorkflowNode";
-import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
-import { ENodeType } from "../../types/workflow-node.types";
-
-import { GenericNodeDeleteButton } from "./GenericNodeDeleteButton";
-
-export const GenericNodeContainer = <T extends ENodeType = ENodeType>({
-  children,
-}: PropsWithChildren) => {
-  const { width, height } = useWorkflowNode<T>();
-  const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
-
+export const GenericNodeContainer = ({ children }: PropsWithChildren) => {
   return (
-    <Grid
-      container
-      gap="14px"
+    <div
       style={{
         position: "relative",
-        width,
-        height,
-        textAlign: "center",
-        borderRadius: "14px",
-        outline: "none",
-        pointerEvents: "none",
-        border: `2px solid ${borderColor}`,
-        backgroundColor: bgColor,
-        overflow: "hidden",
-        boxShadow: "0 3px 6px #0002",
-        padding: "1rem",
+        padding: "5px",
       }}
     >
-      <GenericNodeDeleteButton />
       {children}
-    </Grid>
+    </div>
   );
 };

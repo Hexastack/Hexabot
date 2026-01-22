@@ -7,7 +7,6 @@
 import {
   WorkflowCompileOptions,
   WorkflowDefinition,
-  WorkflowEventMap,
   Workflow as WorkflowHelper,
   type FlowStep,
 } from "@hexabot-ai/agentic";
@@ -33,13 +32,21 @@ import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { WorkflowContext } from "../contexts/workflow.context";
+import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
+import { EIndicatorType } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
-import type { WorkflowContextProps } from "../types/workflow.types";
+import type {
+  NodeExecutionState,
+  SubscribeWorkflowProps,
+  WorkflowContextProps,
+} from "../types/workflow.types";
 import {
   createBaseDefinition,
   createTaskName,
 } from "../utils/workflow-definition.utils";
-import { getDefinition } from "../utils/workflow-node.utils";
+
+const getStepId = (id: string) =>
+  `^step-${id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
@@ -71,10 +78,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const [yaml, setYaml] = useState("");
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const [executionStates, setExecutionStates] = useState<
-    Record<string, { state: "start" | "success" }>
+    Record<string, { state: NodeExecutionState; t: number }[]>
   >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
@@ -122,26 +128,29 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
   const actionsByName = actionsByNameRef.current;
   const hasActions = actions.length > 0;
-  const definitionResult = useMemo(() => {
-    if (!yaml || !hasActions) {
-      return { definition: undefined, error: null };
-    }
-
-    try {
-      return {
-        definition: getDefinition(yaml, {
-          actions: actionsByName,
-        }),
-        error: null,
-      };
-    } catch (error) {
-      return { definition: undefined, error: error as Error };
-    }
-  }, [actionsByName, hasActions, yaml]);
-  const definition = definitionResult.definition;
-  const updateDefinition = (nextDefinition: WorkflowDefinition) => {
-    setYaml(WorkflowHelper.stringifyDefinition(nextDefinition));
-  };
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const {
+    mutate: updateWorkflowDefinition,
+    isPending: isDefinitionSaving,
+  } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const {
+    yaml,
+    setYaml,
+    definition,
+    updateDefinition,
+    saveDefinition,
+    isDefinitionDirty,
+  } = useWorkflowDefinitionState({
+    flowId,
+    workflow,
+    actionsByName,
+    hasActions,
+    updateWorkflow: updateWorkflowDefinition,
+  });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition(workflow);
     const nextTaskName = createTaskName(
@@ -237,9 +246,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       updateWorkflowURL(flowId, nextSelection);
     }
   };
-  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     debounce((props: Partial<IWorkflowAttributes>) => {
@@ -257,56 +263,87 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   );
 
   useEffect(() => {
-    setYaml(workflow?.definitionYaml || "");
-  }, [workflow?.definitionYaml]);
-  useEffect(() => {
     if (!flowId && workflows?.length) {
       updateWorkflowURL(workflows[0].id);
     }
   }, [flowId, workflows, updateWorkflowURL]);
 
-  useEffect(() => {
-    if (!definitionResult.error) {
-      return;
-    }
+  const findNode = (criteria: string) => {
+    const regexCriteria = new RegExp(criteria);
 
-    // eslint-disable-next-line no-console
-    console.error(
-      "Failed to parse workflow definition:",
-      definitionResult.error,
-    );
-  }, [definitionResult.error]);
+    return getNodes().find((n) => n.id.match(regexCriteria));
+  };
+  const updateExecutionStates = (
+    criteria: string,
+    state: NodeExecutionState,
+    t?: number,
+  ) => {
+    const foundedNode = findNode(criteria);
+
+    if (foundedNode?.id) {
+      setExecutionStates((old) => ({
+        ...old,
+        [foundedNode.id]: [
+          ...(old?.[foundedNode.id] || []),
+          { state, t: t || Date.now() },
+        ],
+      }));
+    }
+  };
 
   useSubscribe(
     "workflow",
-    ({
-      step,
-      state,
-    }: (
-      | WorkflowEventMap["hook:step:start"]
-      | WorkflowEventMap["hook:step:success"]
-    ) & {
-      state: "start" | "success";
-    }) => {
-      if (state) {
-        const stepId = `^step-${step.id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
-        const idRegex = new RegExp(stepId);
-        const foundedNode = getNodes().find((n) => n.id.match(idRegex));
+    ({ workflowEvent, ...rest }: SubscribeWorkflowProps) => {
+      if (workflowEvent === "workflow:start") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_START, "start");
+      }
 
-        if (foundedNode?.id) {
-          if (state === "start") {
-            setExecutionStates((old) => ({
-              ...old,
-              [foundedNode.id]: { state: "start" },
-            }));
-          } else if (state === "success") {
-            setTimeout(() => {
-              setExecutionStates((old) => ({
-                ...old,
-                [foundedNode.id]: { state: "success" },
-              }));
-            }, 500);
-          }
+      if (workflowEvent === "workflow:finish") {
+        updateExecutionStates(EIndicatorType.WORKFLOW_END, "start");
+
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_END, "finish");
+          setExecutionStates({});
+        }, 1000);
+      }
+
+      if (workflowEvent === "workflow:suspended") {
+        // TODO
+      }
+
+      if (workflowEvent === "workflow:failure") {
+        // TODO
+      }
+
+      if ("step" in rest) {
+        setTimeout(() => {
+          updateExecutionStates(EIndicatorType.WORKFLOW_START, "finish");
+        }, 1000);
+
+        if (workflowEvent === "step:start") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "start", rest.t);
+        }
+
+        if (workflowEvent === "step:error") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "error", rest.t);
+        }
+
+        if (workflowEvent === "step:success") {
+          const stepId = getStepId(rest.step.id);
+
+          setTimeout(() => {
+            updateExecutionStates(stepId, "finish", rest.t);
+          }, 800);
+        }
+
+        if (workflowEvent === "step:suspended") {
+          const stepId = getStepId(rest.step.id);
+
+          updateExecutionStates(stepId, "suspended", rest.t);
         }
       }
     },
@@ -338,6 +375,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         executionStates,
         setExecutionStates,
         updateDefinition,
+        saveDefinition,
+        isDefinitionDirty,
+        isDefinitionSaving,
         addActionStep,
         removeStepAtPath,
         actions,

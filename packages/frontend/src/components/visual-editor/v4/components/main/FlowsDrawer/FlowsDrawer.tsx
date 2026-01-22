@@ -18,13 +18,15 @@ import {
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { YamlEditor } from "../../yaml-editor";
+import { WorkflowMenu } from "../WorkflowMenu";
 
 import {
   BASE_TYPES,
@@ -38,7 +40,6 @@ import {
 import { FlowsDrawerCollapsedActions } from "./FlowsDrawerCollapsedActions";
 import { FlowsDrawerHeader } from "./FlowsDrawerHeader";
 import { FlowsDrawerList } from "./FlowsDrawerList";
-import { FlowsDrawerMenu } from "./FlowsDrawerMenu";
 import { FlowsDrawerSearchActions } from "./FlowsDrawerSearchActions";
 import {
   DrawerBody,
@@ -57,8 +58,14 @@ import {
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
-  const { workflows, selectedFlowId, updateWorkflowURL, workflow, yaml } =
-    useWorkflow();
+  const queryClient = useTanstackQueryClient();
+  const {
+    workflows,
+    selectedFlowId,
+    updateWorkflowURL,
+    isDefinitionDirty,
+    isDefinitionSaving,
+  } = useWorkflow();
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
@@ -109,7 +116,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     },
     { enabled: isSearching },
   );
-  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
   const workflowsList = isSearching ? searchedWorkflows : workflows;
   const minAllowedWidth = isSmall ? 240 : minDrawerWidth;
   const maxAllowedWidth = isSmall ? 280 : maxDrawerWidth;
@@ -179,9 +188,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   }, [clampDrawerWidth]);
 
   const hasUnsaved = Boolean(
-    workflow?.id &&
-      workflow.id === selectedFlowId &&
-      (workflow.definitionYaml ?? "") !== yaml,
+    selectedFlowId && (isDefinitionDirty || isDefinitionSaving),
   );
   const matches = useMemo<FlowMatch[]>(() => {
     const list = workflowsList ?? [];
@@ -418,6 +425,12 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         if (selectedFlowId === flowId && fallbackFlowId) {
           updateWorkflowURL(fallbackFlowId);
         }
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.collection, EntityType.WORKFLOW],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.count, EntityType.WORKFLOW],
+        });
       },
     });
   };
@@ -510,11 +523,12 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
           aria-label={t("visual_editor.flows_drawer.resize")}
         />
       )}
-      <FlowsDrawerMenu
+      <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
         onClose={handleCloseMenu}
         onDelete={handleDelete}
+        deleteDisabled={Boolean(selectedMenuFlow?.builtin)}
         deleteLabel={t("button.delete")}
       />
     </StyledDrawer>

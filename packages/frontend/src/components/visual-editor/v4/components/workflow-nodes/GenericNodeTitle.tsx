@@ -12,6 +12,8 @@ import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
+import { GenericNodeIcon } from "./GenericNodeIcon";
+
 const normalizeTitle = (text?: string) => {
   return text?.replaceAll("_", " ");
 };
@@ -25,27 +27,37 @@ export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
   return (
     <div
       style={{
-        color,
         display: "flex",
-        fontWeight: 600,
-        fontSize: "14px",
-        placeItems: "center",
+        flexDirection: "row",
+        height: "20px",
+        gap: "9px",
       }}
     >
-      <Tooltip arrow title={normalizedTitle} placement="top">
-        <div
-          style={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            fontSize: "0.875rem",
-            zIndex: 4,
-            textTransform: "capitalize",
-          }}
-        >
-          {normalizedTitle}
-        </div>
-      </Tooltip>
+      <GenericNodeIcon />
+      <div
+        style={{
+          color,
+          display: "flex",
+          placeItems: "center",
+          overflow: "hidden",
+        }}
+      >
+        <Tooltip arrow title={normalizedTitle} placement="top">
+          <div
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              fontWeight: 600,
+              textOverflow: "ellipsis",
+              fontSize: "0.875rem",
+              zIndex: 4,
+              textTransform: "capitalize",
+            }}
+          >
+            {normalizedTitle}
+          </div>
+        </Tooltip>
+      </div>
     </div>
   );
 };

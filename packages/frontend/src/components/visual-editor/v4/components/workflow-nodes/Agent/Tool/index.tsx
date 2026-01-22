@@ -14,16 +14,17 @@ import {
 } from "@/components/visual-editor/v4/types/workflow-node.types";
 
 import { GenericNodeContainer } from "../../GenericNodeContainer";
-import { GenericNodeIcon } from "../../GenericNodeIcon";
 import { GenericNodePorts } from "../../GenericNodePorts";
+import { GenericNodeRightContent } from "../../GenericNodeRightContent";
 import { GenericNodeTitle } from "../../GenericNodeTitle";
 
 export const Tool: FC<NodeProps<NodeData<ENodeType.TOOL>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeIcon />
-      <GenericNodeTitle />
+      <GenericNodeRightContent>
+        <GenericNodeTitle />
+      </GenericNodeRightContent>
+      <GenericNodePorts />
     </GenericNodeContainer>
-    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

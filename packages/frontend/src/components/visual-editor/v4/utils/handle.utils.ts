@@ -105,7 +105,6 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          ...(direction === "horizontal" ? { left: "-6px" } : { top: "-6px" }),
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
@@ -114,9 +113,6 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: {
-          ...(direction === "horizontal"
-            ? { right: "-6px" }
-            : { bottom: "-6px" }),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -125,7 +121,6 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          ...(direction === "horizontal" ? { left: "-6px" } : { top: "-6px" }),
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
@@ -136,9 +131,6 @@ const getConfig = (
         isConnectable: false,
         isValidConnection: () => false,
         style: {
-          ...(direction === "horizontal"
-            ? { right: "-6px" }
-            : { bottom: "-6px" }),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -147,7 +139,6 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          ...(direction === "horizontal" ? { left: "-6px" } : { top: "-6px" }),
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
@@ -158,9 +149,6 @@ const getConfig = (
         isConnectable: false,
         isValidConnection: () => false,
         style: {
-          ...(direction === "horizontal"
-            ? { right: "-6px" }
-            : { bottom: "-6px" }),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -169,9 +157,7 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          ...(direction === "horizontal"
-            ? { top: "50%", left: "-6px" }
-            : { top: "-6px" }),
+          ...(direction === "horizontal" ? {} : {}),
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
@@ -180,9 +166,7 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: {
-          ...(direction === "horizontal"
-            ? { top: "50%", right: "-6px" }
-            : { bottom: "-7px" }),
+          ...(direction === "horizontal" ? {} : {}),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -191,12 +175,6 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
-          ...(direction === "horizontal"
-            ? {
-                bottom: "-6px",
-                left: 50,
-              }
-            : { left: "-7px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -205,9 +183,7 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          ...(direction === "horizontal"
-            ? { top: "50%", left: "-6px" }
-            : { top: "-6px" }),
+          ...(direction === "horizontal" ? { top: "50%" } : {}),
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
@@ -216,9 +192,7 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: {
-          ...(direction === "horizontal"
-            ? { top: "50%", right: "-6px" }
-            : { bottom: "-5px" }),
+          ...(direction === "horizontal" ? { top: "50%" } : {}),
           ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
@@ -228,9 +202,7 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
-          ...(direction === "horizontal"
-            ? { bottom: "-6px", left: 50 }
-            : { top: "40px", left: "-6px" }),
+          ...(direction === "horizontal" ? { left: "10%" } : { top: "25%" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -239,9 +211,7 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
-          ...(direction === "horizontal"
-            ? { bottom: "-6px", left: 250 }
-            : { top: "80px", left: "-6px" }),
+          ...(direction === "horizontal" ? { left: "90%" } : { top: "75%" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -252,12 +222,9 @@ const getConfig = (
         style: {
           ...(direction === "horizontal"
             ? {
-                top: "-6px",
                 left: "50%",
               }
-            : {
-                right: "-6px",
-              }),
+            : {}),
           ...getBorderRadiusConfig(Position.Top, direction),
         },
       };
@@ -268,12 +235,9 @@ const getConfig = (
         style: {
           ...(direction === "horizontal"
             ? {
-                top: "-6px",
                 left: "50%",
               }
-            : {
-                right: "-6px",
-              }),
+            : {}),
           ...getBorderRadiusConfig(Position.Top, direction),
         },
       };
@@ -282,8 +246,6 @@ const getConfig = (
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
-          top: "70px",
-          left: "-6px",
           ...getBorderRadiusConfig(Position.Left, direction),
         },
       };

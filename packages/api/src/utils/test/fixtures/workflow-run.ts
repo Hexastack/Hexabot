@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
-import { stringify } from 'yaml';
 
 import { WorkflowRunCreateDto } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
@@ -31,7 +31,7 @@ export const workflowRunFixtureIds = {
   finished: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 } as const;
 
-const workflowRunWorkflowDefinitionYaml = stringify({
+const workflowRunWorkflowDefinition: WorkflowDefinition = {
   workflow: {
     name: 'workflow_run_fixture',
     version: '0.1.0',
@@ -46,7 +46,7 @@ const workflowRunWorkflowDefinitionYaml = stringify({
   outputs: {
     result: '="ok"',
   },
-});
+};
 
 export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
   {
@@ -113,7 +113,7 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
     schedule: null,
     createdBy: user ? { id: user.id } : undefined,
     memoryDefinitions: [],
-    definitionYaml: workflowRunWorkflowDefinitionYaml,
+    definition: workflowRunWorkflowDefinition,
     builtin: false,
     direction: DirectionType.HORIZONTAL,
     x: 0,

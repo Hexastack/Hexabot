@@ -10,8 +10,8 @@ import type { FC } from "react";
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
-import { GenericNodeIcon } from "../GenericNodeIcon";
 import { GenericNodePorts } from "../GenericNodePorts";
+import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const Indicator: FC<NodeProps<NodeData<ENodeType.INDICATOR>>> = ({
@@ -19,9 +19,10 @@ export const Indicator: FC<NodeProps<NodeData<ENodeType.INDICATOR>>> = ({
 }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeIcon />
-      <GenericNodeTitle />
+      <GenericNodeRightContent>
+        <GenericNodeTitle />
+      </GenericNodeRightContent>
+      <GenericNodePorts />
     </GenericNodeContainer>
-    <GenericNodePorts />
   </WorkflowNodeProvider>
 );

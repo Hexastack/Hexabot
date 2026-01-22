@@ -6,19 +6,21 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   ValidateIf,
 } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
+import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -26,8 +28,8 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
-import { parseWorkflowDefinition } from '../lib/workflow-definition';
+import { IsWorkflowDefinition } from '../decorators/is-workflow-definition.decorator';
+import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinition } from './memory-definition.dto';
@@ -53,14 +55,6 @@ export class WorkflowStub extends BaseStub {
   builtin!: boolean;
 
   @Expose()
-  definitionYaml!: string;
-
-  @Expose()
-  @Transform(({ obj }) =>
-    obj?.definition
-      ? obj.definition
-      : parseWorkflowDefinition(obj.definitionYaml),
-  )
   definition!: WorkflowDefinition;
 
   @Expose()
@@ -120,7 +114,7 @@ export class WorkflowNewDto {
   })
   @IsOptional()
   @IsEnum(WorkflowType)
-  type: WorkflowType = WorkflowType.conversational;
+  type?: WorkflowType;
 
   @ApiPropertyOptional({
     description: 'Cron expression used when the workflow is scheduled',
@@ -129,6 +123,7 @@ export class WorkflowNewDto {
   @ValidateIf((payload) => payload.schedule !== undefined)
   @IsOptional()
   @IsString()
+  @Validate(NestCronSchema)
   schedule?: string | null;
 
   @ApiPropertyOptional({
@@ -148,11 +143,11 @@ export class WorkflowNewDto {
   @IsUUIDv4({ each: true, message: 'Memory definition must be a valid UUID' })
   memoryDefinitions: string[];
 
-  @ApiProperty({ description: 'Workflow definition as YAML', type: String })
+  @ApiProperty({ description: 'Workflow definition object', type: Object })
   @IsNotEmpty()
-  @IsString()
-  @IsWorkflowYaml()
-  definitionYaml!: string;
+  @IsObject()
+  @IsWorkflowDefinition()
+  definition!: WorkflowDefinition;
 
   @ApiPropertyOptional({
     description: 'Workflow x offset',
@@ -200,7 +195,16 @@ export type WorkflowTransformerDto = DtoTransformerConfig<{
   FullCls: typeof WorkflowFull;
 }>;
 
-export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {}
+export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
+  @ApiPropertyOptional({
+    description: 'Workflow trigger type',
+    enumName: 'WorkflowType',
+    enum: WorkflowType,
+  })
+  @IsOptional()
+  @IsEnum(WorkflowType)
+  type?: WorkflowType;
+}
 
 export type WorkflowDtoConfig = DtoActionConfig<{
   create: WorkflowCreateDto;
