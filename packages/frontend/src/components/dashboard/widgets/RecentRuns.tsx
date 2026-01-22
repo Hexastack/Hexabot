@@ -13,7 +13,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IWorkflowRunFull } from "@/types/workflow-run.types";
-import { getDateTimeFormatter } from "@/utils/date";
+import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
 const STATUS_COLORS = {
   idle: "default",
@@ -70,8 +70,8 @@ export const RecentRuns = () => {
         valueGetter: (_value, row) => {
           if (!row.triggeredBy) return "-";
           const { firstName, lastName } = row.triggeredBy;
-          
-return `${firstName} ${lastName}`.trim();
+
+          return `${firstName} ${lastName}`.trim();
         },
       },
       {
@@ -80,7 +80,11 @@ return `${firstName} ${lastName}`.trim();
         flex: 1,
         renderCell: (params) => (
           <Chip
-            label={params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : ""}
+            label={
+              params.value
+                ? params.value.charAt(0).toUpperCase() + params.value.slice(1)
+                : ""
+            }
             color={STATUS_COLORS[params.value] || "default"}
             size="small"
             variant="outlined"
@@ -93,60 +97,57 @@ return `${firstName} ${lastName}`.trim();
         headerName: t("label.duration"),
         flex: 0.8,
         sortable: false,
-        valueGetter: (_value, row) => {
-          const endTime = row.finishedAt || row.failedAt || new Date();
-          const start = new Date(row.createdAt).getTime();
-          const end = new Date(endTime).getTime();
-          const durationMs = end - start;
-          const secondsTotal = Math.max(0, Math.floor(durationMs / 1000));
-          const hours = Math.floor(secondsTotal / 3600);
-          const minutes = Math.floor((secondsTotal % 3600) / 60);
-          const seconds = secondsTotal % 60;
-
-          if (hours > 0) {
-            return `${hours}h ${minutes}m ${seconds}s`;
-          }
-
-          if (minutes > 0) {
-            return `${minutes}m ${seconds}s`;
-          }
-
-          return `${seconds}s`;
-        },
+        valueGetter: (_value, row) =>
+          calculateDuration(row.createdAt, row.finishedAt || row.failedAt),
       },
     ],
     [t],
   );
-  
+
   return (
-    <Card sx={{ height: "100%", borderRadius: 3, boxShadow: '0px 2px 10px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' }}>
-      <CardHeader 
-        title={t("title.recent_runs")} 
-        titleTypographyProps={{ variant: 'h6', fontWeight: 'bold' }}
+    <Card
+      sx={{
+        height: "100%",
+        borderRadius: 3,
+        boxShadow: "0px 2px 10px rgba(0,0,0,0.03)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <CardHeader
+        title={t("title.recent_runs")}
+        titleTypographyProps={{ variant: "h6", fontWeight: "bold" }}
       />
-      <CardContent sx={{ width: '100%', p: 0, '& .MuiDataGrid-root': { border: 'none' }, flexGrow: 1 }}>
-         <DataGrid
-            {...dataGridProps}
-            columns={columns}
-            pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-            disableColumnMenu
-            disableColumnSelector
-            density="compact"
-            autoHeight
-            sx={{ 
-                border: 0,
-                '& .MuiDataGrid-columnHeaders': {
-                    bgcolor: alpha(theme.palette.background.default, 0.5),
-                    borderBottom: `1px solid ${theme.palette.divider}`,
-                },
-                '& .MuiDataGrid-cell': {
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`
-                },
-                '& .MuiDataGrid-row:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.04)
-                }
-             }}
+      <CardContent
+        sx={{
+          width: "100%",
+          p: 0,
+          "& .MuiDataGrid-root": { border: "none" },
+          flexGrow: 1,
+        }}
+      >
+        <DataGrid
+          {...dataGridProps}
+          columns={columns}
+          pageSizeOptions={[5]}
+          disableRowSelectionOnClick
+          disableColumnMenu
+          disableColumnSelector
+          density="compact"
+          autoHeight
+          sx={{
+            border: 0,
+            "& .MuiDataGrid-columnHeaders": {
+              bgcolor: alpha(theme.palette.background.default, 0.5),
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+            },
+            "& .MuiDataGrid-row:hover": {
+              bgcolor: alpha(theme.palette.primary.main, 0.04),
+            },
+          }}
         />
       </CardContent>
     </Card>

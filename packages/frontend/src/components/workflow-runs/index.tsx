@@ -16,7 +16,7 @@ import { EntityType, Format } from "@/services/types";
 import { THook } from "@/types/base.types";
 import { IWorkflowRunFull } from "@/types/workflow-run.types";
 import { WorkflowType } from "@/types/workfow.types";
-import { getDateTimeFormatter } from "@/utils/date";
+import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
 const STATUS_COLORS = {
   idle: "default",
@@ -33,30 +33,6 @@ const WORKFLOW_TYPE_LABELS: Record<WorkflowType, string> = {
 
 export const WorkflowRuns = () => {
   const { t } = useTranslate();
-  const calculateDuration = (
-    createdAt: string | Date,
-    finishedAt?: Date | null,
-    failedAt?: Date | null,
-  ): string => {
-    const endTime = finishedAt || failedAt;
-
-    if (!endTime) return "-";
-
-    const start = new Date(createdAt).getTime();
-    const end = new Date(endTime).getTime();
-    const durationMs = end - start;
-    const seconds = Math.floor(durationMs / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  };
   const columns: GridColDef<IWorkflowRunFull>[] = useMemo(
     () => [
       { field: "id", headerName: "ID", width: 100 },
@@ -69,7 +45,7 @@ export const WorkflowRuns = () => {
         resizable: false,
         headerAlign: "left",
         valueGetter: (value) =>
-        t("datetime.created_at", getDateTimeFormatter(value)),
+          t("datetime.created_at", getDateTimeFormatter(value)),
       },
       {
         flex: 1,
@@ -115,7 +91,7 @@ export const WorkflowRuns = () => {
         renderHeader,
         headerAlign: "left",
         valueGetter: (_value, row) =>
-          calculateDuration(row.createdAt, row.finishedAt, row.failedAt),
+          calculateDuration(row.createdAt, row.finishedAt || row.failedAt),
       },
       {
         flex: 1,
