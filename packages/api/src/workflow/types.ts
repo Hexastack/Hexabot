@@ -13,7 +13,7 @@ import {
 
 import { MemoryDefinition } from './dto/memory-definition.dto';
 import { WorkflowRunFull } from './dto/workflow-run.dto';
-import { Workflow } from './dto/workflow.dto';
+import { WorkflowFull } from './dto/workflow.dto';
 import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
 import { SchemaInstance } from './utils/schema-instance';
 
@@ -21,6 +21,14 @@ export enum WorkflowType {
   conversational = 'conversational',
   manual = 'manual',
   scheduled = 'scheduled',
+}
+
+export enum WorkflowVersionAction {
+  create = 'create',
+  update = 'update',
+  restore = 'restore',
+  import = 'import',
+  publish = 'publish',
 }
 
 export enum MemoryScope {
@@ -36,7 +44,7 @@ export type WorkflowResult = WorkflowStartResult | WorkflowResumeResult;
 export type RunWorkflowOptions =
   | {
       mode: 'start';
-      workflow: Workflow;
+      workflow: WorkflowFull;
       event: TriggerEventWrapper;
     }
   | {

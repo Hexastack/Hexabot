@@ -79,7 +79,7 @@ describe('TranslationService', () => {
 
   beforeEach(async () => {
     workflowService = {
-      find: jest.fn().mockResolvedValue(workflowFixtures),
+      findAndPopulate: jest.fn().mockResolvedValue(workflowFixtures),
     } as unknown as jest.Mocked<WorkflowService>;
 
     const { getMocks } = await buildTestingMocks({

@@ -14,6 +14,8 @@ export * from './controllers/workflow-run.controller';
 
 export * from './dto/workflow.dto';
 
+export * from './dto/workflow-version.dto';
+
 export * from './dto/workflow-run.dto';
 
 export * from './dto/memory-definition.dto';
@@ -22,6 +24,8 @@ export * from './dto/memory-record.dto';
 
 export * from './entities/workflow.entity';
 
+export * from './entities/workflow-version.entity';
+
 export * from './entities/workflow-run.entity';
 
 export * from './entities/memory-definition.entity';
@@ -29,6 +33,8 @@ export * from './entities/memory-definition.entity';
 export * from './entities/memory-record.entity';
 
 export * from './repositories/workflow.repository';
+
+export * from './repositories/workflow-version.repository';
 
 export * from './repositories/workflow-run.repository';
 
@@ -39,6 +45,8 @@ export * from './repositories/memory-record.repository';
 export * from './contexts/conversational-workflow.context';
 
 export * from './services/workflow.service';
+
+export * from './services/workflow-version.service';
 
 export * from './services/workflow-run.service';
 

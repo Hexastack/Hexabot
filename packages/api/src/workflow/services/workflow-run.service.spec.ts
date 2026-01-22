@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition, WorkflowSnapshot } from '@hexabot-ai/agentic';
+import {
+  WorkflowDefinition,
+  Workflow as WorkflowHelper,
+  WorkflowSnapshot,
+} from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
 import {
@@ -91,8 +95,7 @@ describe('WorkflowRunService (TypeORM)', () => {
     const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
       name: `Run workflow ${++counter}`,
-      version: `0.0.${counter}`,
-      definition,
+      definitionYml: WorkflowHelper.stringifyDefinition(definition),
       description: 'Workflow for run tests',
       type: WorkflowType.conversational,
       schedule: null,
@@ -266,7 +269,6 @@ describe('WorkflowRunService (TypeORM)', () => {
 
       expect(populated).toHaveLength(1);
       expect(populated[0]!.workflow.id).toBe(workflow.id);
-      expect(populated[0]!.workflow.version).toBe(workflow.version);
     });
   });
 

@@ -53,7 +53,7 @@ export class TranslationService extends BaseOrmService<
    * @returns A promise of all strings available in a array
    */
   async getAllWorkflowStrings(): Promise<string[]> {
-    const workflows = await this.workflowService.find({});
+    const workflows = await this.workflowService.findAndPopulate({});
     const allStrings: string[] = [];
 
     for (const workflow of workflows) {

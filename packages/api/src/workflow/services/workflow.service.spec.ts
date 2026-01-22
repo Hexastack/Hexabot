@@ -4,9 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createHash } from 'crypto';
+
 import {
-  Workflow as AgenticWorkflow,
   WorkflowDefinition,
+  Workflow as WorkflowHelper,
 } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
@@ -18,10 +20,11 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Workflow } from '../dto/workflow.dto';
-import { WorkflowOrmEntity } from '../entities/workflow.entity';
+import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
-import { WorkflowType } from '../types';
+import { WorkflowType, WorkflowVersionAction } from '../types';
 
+import { WorkflowVersionService } from './workflow-version.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowService (TypeORM)', () => {
@@ -29,6 +32,7 @@ describe('WorkflowService (TypeORM)', () => {
   let workflowService: WorkflowService;
   let workflowRepository: WorkflowRepository;
   let workflow: Workflow;
+  let workflowDefinition: WorkflowDefinition;
   let counter = 0;
   let creatorId: string;
 
@@ -60,12 +64,11 @@ describe('WorkflowService (TypeORM)', () => {
     await workflowRepository.deleteMany();
     creatorId = userFixtureIds.admin;
 
-    const definition = buildWorkflowDefinition();
+    workflowDefinition = buildWorkflowDefinition();
     workflow = await workflowService.create({
       name: `Test workflow ${++counter}`,
-      version: `1.0.${counter}`,
       description: 'Test workflow definition',
-      definition,
+      definitionYml: WorkflowHelper.stringifyDefinition(workflowDefinition),
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
@@ -86,39 +89,75 @@ describe('WorkflowService (TypeORM)', () => {
   });
 
   it('creates workflows and returns stored definitions', async () => {
-    const stored = await workflowService.findOne(workflow.id);
+    const stored = await workflowService.findOneAndPopulate(workflow.id);
 
     expect(stored).not.toBeNull();
     expect(stored).toMatchObject({
       id: workflow.id,
       name: workflow.name,
-      version: workflow.version,
       description: workflow.description,
-      definition: workflow.definition,
+      definition: workflowDefinition,
       type: WorkflowType.conversational,
       schedule: null,
+    });
+    const definitionYml =
+      WorkflowHelper.stringifyDefinition(workflowDefinition);
+    expect(stored?.currentVersion).toEqualPayload({
+      action: 'create',
+      workflow: workflow.id,
+      checksum: WorkflowVersionService.computeChecksum(definitionYml),
+      definitionYml,
+      version: 1,
+      createdBy: stored?.createdBy.id,
+      message: null,
+      parentVersionId: null,
     });
   });
 
   it('serializes YAML from definitions before persistence', async () => {
     const repository = workflowRepository
       .getManager()
-      .getRepository(WorkflowOrmEntity);
-    const entity = await repository.findOne({
-      where: { id: workflow.id },
+      .getRepository(WorkflowVersionOrmEntity);
+    const version = await repository.findOne({
+      where: { workflow: { id: workflow.id } },
+    });
+    const expectedYml = WorkflowHelper.stringifyDefinition(workflowDefinition);
+
+    expect(version?.definitionYml).toBe(expectedYml);
+    expect(version?.checksum).toBe(
+      createHash('sha256').update(expectedYml).digest('hex'),
+    );
+    expect(version?.action).toBe(WorkflowVersionAction.create);
+  });
+
+  it('creates a new version when definition changes', async () => {
+    const updatedDefinition = buildWorkflowDefinition();
+    updatedDefinition.outputs = { result: '=2' };
+
+    const updated = await workflowService.updateOne(workflow.id, {
+      definitionYml: WorkflowHelper.stringifyDefinition(updatedDefinition),
+      message: 'Update definition',
+    });
+    const versionRepository = workflowRepository
+      .getManager()
+      .getRepository(WorkflowVersionOrmEntity);
+    const versions = await versionRepository.find({
+      where: { workflow: { id: workflow.id } },
+      order: { version: 'ASC' },
+      relations: ['parentVersion'],
     });
 
-    expect(entity?.definitionYaml).toBe(
-      AgenticWorkflow.stringifyDefinition(workflow.definition),
-    );
+    expect(versions).toHaveLength(2);
+    expect(versions[1]?.action).toBe(WorkflowVersionAction.update);
+    expect(versions[1]?.parentVersion?.id).toBe(versions[0]?.id);
+    expect(updated.currentVersion).toBe(versions[1]?.id);
   });
 
   it('enforces unique name/version pairs', async () => {
     const duplicatePayload = {
       name: workflow.name,
-      version: workflow.version,
       description: workflow.description ?? undefined,
-      definition: workflow.definition,
+      definitionYml: WorkflowHelper.stringifyDefinition(workflowDefinition),
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,

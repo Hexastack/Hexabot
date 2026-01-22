@@ -4,9 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import {
+  WorkflowDefinition,
+  Workflow as WorkflowHelper,
+} from '@hexabot-ai/agentic';
 
-import { WorkflowCreateDto } from '../dto/workflow.dto';
+import { WorkflowNewVersionDto } from '../dto/workflow.dto';
 import { WorkflowType } from '../types';
 
 export const defaultWorkflowDefinition: WorkflowDefinition = {
@@ -25,12 +28,13 @@ export const defaultWorkflowDefinition: WorkflowDefinition = {
   },
 };
 
-export const workflowModels = (creatorId: string): WorkflowCreateDto[] => [
+export const workflowModels = (creatorId: string): WorkflowNewVersionDto[] => [
   {
     name: 'default',
-    version: '1.0.0',
     description: 'Built-in default workflow.',
-    definition: defaultWorkflowDefinition,
+    definitionYml: WorkflowHelper.stringifyDefinition(
+      defaultWorkflowDefinition,
+    ),
     type: WorkflowType.conversational,
     schedule: null,
     memoryDefinitions: [],

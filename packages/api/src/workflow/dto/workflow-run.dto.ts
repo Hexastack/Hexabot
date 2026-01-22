@@ -82,7 +82,7 @@ export class WorkflowRun extends WorkflowRunStub {
 
   @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
-  triggeredBy: string | null;
+  triggeredBy: string;
 }
 
 @Exclude()

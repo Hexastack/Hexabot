@@ -22,10 +22,12 @@ import { WorkflowController } from './controllers/workflow.controller';
 import { MemoryDefinitionOrmEntity } from './entities/memory-definition.entity';
 import { MemoryRecordOrmEntity } from './entities/memory-record.entity';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
+import { WorkflowVersionOrmEntity } from './entities/workflow-version.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
 import { MemoryDefinitionRepository } from './repositories/memory-definition.repository';
 import { MemoryRecordRepository } from './repositories/memory-record.repository';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
+import { WorkflowVersionRepository } from './repositories/workflow-version.repository';
 import { WorkflowRepository } from './repositories/workflow.repository';
 import { MemoryDefinitionSeeder } from './seeds/memory-definition.seed';
 import { WorkflowSeeder } from './seeds/workflow.seed';
@@ -35,12 +37,14 @@ import { MemoryRecordService } from './services/memory-record.service';
 import { MemoryService } from './services/memory.service';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
+import { WorkflowVersionService } from './services/workflow-version.service';
 import { WorkflowService } from './services/workflow.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       WorkflowOrmEntity,
+      WorkflowVersionOrmEntity,
       WorkflowRunOrmEntity,
       MemoryDefinitionOrmEntity,
       MemoryRecordOrmEntity,
@@ -56,12 +60,14 @@ import { WorkflowService } from './services/workflow.service';
   ],
   providers: [
     WorkflowRepository,
+    WorkflowVersionRepository,
     WorkflowRunRepository,
     MemoryDefinitionRepository,
     MemoryRecordRepository,
     MemoryDefinitionSeeder,
     WorkflowSeeder,
     WorkflowService,
+    WorkflowVersionService,
     WorkflowRunService,
     MemoryDefinitionService,
     MemoryRecordService,
@@ -76,10 +82,12 @@ import { WorkflowService } from './services/workflow.service';
   ],
   exports: [
     WorkflowRepository,
+    WorkflowVersionRepository,
     WorkflowRunRepository,
     MemoryDefinitionRepository,
     MemoryRecordRepository,
     WorkflowService,
+    WorkflowVersionService,
     WorkflowRunService,
     MemoryDefinitionService,
     MemoryRecordService,

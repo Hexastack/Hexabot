@@ -16,7 +16,10 @@ import { ActionService } from '@/actions/actions.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
-import { Workflow as WorkflowDto } from '@/workflow/dto/workflow.dto';
+import {
+  Workflow as WorkflowDto,
+  WorkflowFull,
+} from '@/workflow/dto/workflow.dto';
 
 import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
 import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
@@ -71,10 +74,18 @@ export class AgenticService {
         return;
       }
 
-      const workflowToRun =
-        workflow ?? (await this.workflowService.pickWorkflow());
+      const workflowToRun = workflow
+        ? await this.workflowService.findOneAndPopulate(workflow.id)
+        : await this.workflowService.pickWorkflow();
       if (!workflowToRun) {
         this.logger.warn('No workflow available to handle incoming event');
+
+        return;
+      }
+      if (!workflowToRun.definition) {
+        this.logger.warn('Workflow definition is missing', {
+          workflowId: workflowToRun.id,
+        });
 
         return;
       }
@@ -100,13 +111,20 @@ export class AgenticService {
    * Shared runner lifecycle for starting or resuming a workflow.
    */
   private async runWorkflow(options: RunWorkflowOptions): Promise<void> {
-    const { event } = options;
+    const { event, mode } = options;
     const run =
-      options.mode === 'start'
+      mode === 'start'
         ? await this.createRun(options.workflow, event)
         : options.run;
+    const workflow = await this.workflowService.findOneAndPopulate(
+      run.workflow.id,
+    );
+
+    if (!workflow?.definition) {
+      throw new Error('Workflow definition is required to run the workflow');
+    }
     const workflowInstance = AgenticWorkflow.fromDefinition(
-      run.workflow.definition,
+      workflow.definition,
       {
         actions: this.actionService.getRegistry(),
         jsonataFunctions: this.buildJsonataFunctions(event),
@@ -115,21 +133,21 @@ export class AgenticService {
     const context = await this.workflowContextFactory.create(run, event);
 
     this.logger.debug('Preparing workflow runner', {
-      mode: options.mode,
+      mode,
       runId: run.id,
-      workflowId: run.workflow?.id,
+      workflowId: workflow?.id,
       triggeredById: run.triggeredBy?.id,
     });
 
     const strategy = await this.createRunStrategy(
-      options.mode,
+      mode,
       run,
       context,
       workflowInstance,
     );
 
     this.logger.debug('Marking workflow run as running', {
-      mode: options.mode,
+      mode,
       runId: run.id,
       workflowId: run.workflow?.id,
       triggeredById: run.triggeredBy?.id,
@@ -146,7 +164,7 @@ export class AgenticService {
     let result: WorkflowResult;
     try {
       this.logger.debug('Executing workflow runner', {
-        mode: options.mode,
+        mode,
         runId: run.id,
         workflowId: run.workflow?.id,
         triggeredById: run.triggeredBy?.id,
@@ -160,7 +178,7 @@ export class AgenticService {
     }
 
     this.logger.debug('Workflow runner completed', {
-      mode: options.mode,
+      mode,
       runId: run.id,
       workflowId: run.workflow?.id,
       triggeredById: run.triggeredBy?.id,
@@ -251,10 +269,13 @@ export class AgenticService {
    * Create a workflow run record and load it with relations.
    */
   private async createRun(
-    workflow: WorkflowDto,
+    workflow: WorkflowFull,
     event: TriggerEventWrapper,
   ): Promise<WorkflowRunFull> {
     const initiator = event.getInitiator();
+    if (!workflow.definition) {
+      throw new Error('Workflow definition is required to create a run');
+    }
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
       triggeredBy: initiator.id,

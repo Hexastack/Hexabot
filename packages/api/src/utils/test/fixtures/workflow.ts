@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { Workflow, WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
 import { QuickReplyType } from '@/chat/types/quick-reply';
@@ -12,9 +12,15 @@ import {
   installUserFixturesTypeOrm,
   userFixtureIds,
 } from '@/utils/test/fixtures/user';
-import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
+import { WorkflowVersionService } from '@/workflow';
+import { WorkflowNewVersionDto } from '@/workflow/dto/workflow.dto';
+import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
-import { DirectionType, WorkflowType } from '@/workflow/types';
+import {
+  DirectionType,
+  WorkflowType,
+  WorkflowVersionAction,
+} from '@/workflow/types';
 
 /**
  * Simple workflow definition that exercises the built-in messaging actions.
@@ -73,12 +79,12 @@ export const scheduledWorkflowDefinition: WorkflowDefinition = {
   },
 };
 
-export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
+export const messagingWorkflowFixtures: WorkflowNewVersionDto[] = [
   {
     name: 'messaging_workflow_fixture',
-    version: '0.1.0',
     description: 'Test workflow using messaging actions.',
-    definition: messagingWorkflowDefinition,
+    definitionYml: Workflow.stringifyDefinition(messagingWorkflowDefinition),
+
     type: WorkflowType.conversational,
     schedule: null,
     memoryDefinitions: [],
@@ -91,12 +97,11 @@ export const messagingWorkflowFixtures: WorkflowCreateDto[] = [
   },
 ];
 
-export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
+export const scheduledWorkflowFixtures: WorkflowNewVersionDto[] = [
   {
     name: 'scheduled_workflow_fixture',
-    version: '0.1.0',
     description: 'Test workflow triggered on a schedule.',
-    definition: scheduledWorkflowDefinition,
+    definitionYml: Workflow.stringifyDefinition(scheduledWorkflowDefinition),
     type: WorkflowType.scheduled,
     schedule: '*/10 * * * * *',
     memoryDefinitions: [],
@@ -105,48 +110,62 @@ export const scheduledWorkflowFixtures: WorkflowCreateDto[] = [
   },
 ];
 
+const installWorkflowFixtures = async (
+  dataSource: DataSource,
+  fixtures: WorkflowNewVersionDto[],
+): Promise<WorkflowOrmEntity[]> => {
+  await installUserFixturesTypeOrm(dataSource);
+  const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
+
+  if (await workflowRepository.count()) {
+    return await workflowRepository.find({
+      relations: ['createdBy', 'currentVersion'],
+    });
+  }
+
+  const workflowEntities = workflowRepository.create(
+    fixtures.map((fixture) => {
+      return {
+        ...fixture,
+        createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
+        memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
+          id: definitionId,
+        })),
+      };
+    }),
+  );
+  const workflows = await workflowRepository.save(workflowEntities);
+  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+  const versions = await versionRepository.save(
+    fixtures.map((fixture, index) => {
+      return versionRepository.create({
+        workflow: workflows[index],
+        version: 1,
+        definitionYml: fixture.definitionYml,
+        checksum: WorkflowVersionService.computeChecksum(fixture.definitionYml),
+        action: WorkflowVersionAction.create,
+        createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
+      });
+    }),
+  );
+
+  workflows.forEach((workflow, index) => {
+    workflow.currentVersion = versions[index];
+  });
+
+  await workflowRepository.save(workflows);
+
+  return workflows;
+};
+
 export const installScheduledWorkflowFixturesTypeOrm = async (
   dataSource: DataSource,
 ): Promise<WorkflowOrmEntity[]> => {
-  await installUserFixturesTypeOrm(dataSource);
-  const repository = dataSource.getRepository(WorkflowOrmEntity);
-
-  if (await repository.count()) {
-    return await repository.find({ relations: ['createdBy'] });
-  }
-
-  const entities = repository.create(
-    scheduledWorkflowFixtures.map((fixture) => ({
-      ...fixture,
-      createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
-      memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
-        id: definitionId,
-      })),
-    })),
-  );
-
-  return await repository.save(entities);
+  return await installWorkflowFixtures(dataSource, scheduledWorkflowFixtures);
 };
 
 export const installMessagingWorkflowFixturesTypeOrm = async (
   dataSource: DataSource,
 ): Promise<WorkflowOrmEntity[]> => {
-  await installUserFixturesTypeOrm(dataSource);
-  const repository = dataSource.getRepository(WorkflowOrmEntity);
-
-  if (await repository.count()) {
-    return await repository.find();
-  }
-
-  const entities = repository.create(
-    messagingWorkflowFixtures.map((fixture) => ({
-      ...fixture,
-      createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
-      memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
-        id: definitionId,
-      })),
-    })),
-  );
-
-  return await repository.save(entities);
+  return await installWorkflowFixtures(dataSource, messagingWorkflowFixtures);
 };

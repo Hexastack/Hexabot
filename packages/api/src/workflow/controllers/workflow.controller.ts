@@ -30,16 +30,21 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
+  WorkflowVersion,
+  WorkflowVersionRestoreDto,
+} from '../dto/workflow-version.dto';
+import {
   Workflow,
   WorkflowDtoConfig,
   WorkflowFull,
-  WorkflowNewDto,
+  WorkflowNewVersionDto,
   WorkflowTransformerDto,
-  WorkflowUpdateDto,
+  WorkflowVersionCommitDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
+import { WorkflowVersionService } from '../services/workflow-version.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 
@@ -54,6 +59,7 @@ export class WorkflowController extends BaseOrmController<
     private readonly agenticService: AgenticService,
     private readonly userService: UserService,
     private readonly actionService: ActionService,
+    private readonly workflowVersionService: WorkflowVersionService,
   ) {
     super(workflowService);
   }
@@ -67,7 +73,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Post()
   async create(
-    @Body() workflowCreateDto: WorkflowNewDto,
+    @Body() workflowCreateDto: WorkflowNewVersionDto,
     @Req() req: Request,
   ): Promise<Workflow> {
     const userId = req.session?.passport?.user?.id;
@@ -97,7 +103,6 @@ export class WorkflowController extends BaseOrmController<
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
         allowedFields: [
           'name',
-          'version',
           'description',
           'type',
           'schedule',
@@ -150,6 +155,71 @@ export class WorkflowController extends BaseOrmController<
   }
 
   /**
+   * Retrieves all versions for a workflow.
+   *
+   * @param id - The workflow ID.
+   */
+  @Get(':id/versions')
+  async listVersions(@Param('id') id: string): Promise<WorkflowVersion[]> {
+    const workflow = await this.workflowService.findOne(id);
+    if (!workflow) {
+      this.logger.warn(`Unable to find Workflow by id ${id}`);
+      throw new NotFoundException(`Workflow with ID ${id} not found`);
+    }
+
+    return await this.workflowVersionService.findByWorkflow(id);
+  }
+
+  /**
+   * Retrieves a specific workflow version.
+   *
+   * @param id - The workflow ID.
+   * @param versionId - The version identifier.
+   */
+  @Get(':id/versions/:versionId')
+  async findVersion(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+  ): Promise<WorkflowVersion> {
+    const version = await this.workflowVersionService.findOneByWorkflow(
+      id,
+      versionId,
+    );
+
+    if (!version) {
+      this.logger.warn(`Unable to find Workflow version by id ${versionId}`);
+      throw new NotFoundException(
+        `Workflow version with ID ${versionId} not found`,
+      );
+    }
+
+    return version;
+  }
+
+  /**
+   * Restores a workflow by creating a new version from an older snapshot.
+   *
+   * @param id - The workflow ID.
+   * @param versionId - The version identifier to restore.
+   * @param payload - Optional message for the restored version.
+   * @param req - Express request containing the authenticated session.
+   */
+  @Post(':id/versions/:versionId/restore')
+  async restoreVersion(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() payload: WorkflowVersionRestoreDto,
+    @Req() req?: Request,
+  ): Promise<Workflow> {
+    const userId = req?.session?.passport?.user?.id;
+
+    return await this.workflowService.restoreVersion(id, versionId, {
+      updatedBy: userId,
+      message: payload?.message ?? null,
+    });
+  }
+
+  /**
    * Updates an existing workflow definition.
    *
    * @param id - The workflow ID to update.
@@ -160,7 +230,8 @@ export class WorkflowController extends BaseOrmController<
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
-    @Body() workflowUpdateDto: WorkflowUpdateDto,
+    @Body() workflowUpdateDto: WorkflowVersionCommitDto,
+    @Req() req?: Request,
   ): Promise<Workflow> {
     const workflow = await this.workflowService.findOne(id);
     if (!workflow) {
@@ -168,7 +239,12 @@ export class WorkflowController extends BaseOrmController<
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await this.workflowService.updateOne(id, workflowUpdateDto);
+    const userId = req?.session?.passport?.user?.id;
+
+    return await this.workflowService.updateOne(id, {
+      ...workflowUpdateDto,
+      updatedBy: userId,
+    });
   }
 
   /**
