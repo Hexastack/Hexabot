@@ -229,8 +229,8 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
           ...(direction === "horizontal"
-            ? { bottom: "-6px", left: 50 }
-            : { top: "40px", left: "-6px" }),
+            ? { bottom: "-5px", left: "10%" }
+            : { top: "25%", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -240,8 +240,8 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
           ...(direction === "horizontal"
-            ? { bottom: "-6px", left: 250 }
-            : { top: "80px", left: "-6px" }),
+            ? { bottom: "-5px", left: "90%" }
+            : { top: "75%", left: "-6px" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };

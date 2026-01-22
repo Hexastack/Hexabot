@@ -40,12 +40,12 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 280, height: 65 },
-  [ENodeType.TOOL]: { width: 280, height: 65 },
-  [ENodeType.AGENT]: { width: 280, height: 110 },
-  [ENodeType.INDICATOR]: { width: 110, height: 65 },
-  [ENodeType.TASK]: { width: 280, height: 90 },
-  [ENodeType.OPERATOR]: { width: 150, height: 65 },
+  [ENodeType.MODEL]: { width: 210, height: 59 },
+  [ENodeType.TOOL]: { width: 210, height: 59 },
+  [ENodeType.AGENT]: { width: 260, height: 79 },
+  [ENodeType.INDICATOR]: { width: 100, height: 60 },
+  [ENodeType.TASK]: { width: 260, height: 79 },
+  [ENodeType.OPERATOR]: { width: 150, height: 59 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
   // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
