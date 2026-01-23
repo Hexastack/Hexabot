@@ -26,7 +26,7 @@ import {
   Shield,
   Tag,
   UserCircle,
-  Users
+  Users,
 } from "lucide-react";
 import { FC } from "react";
 
@@ -108,7 +108,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     href: "/",
     Icon: Home,
     requires: {
-      [EntityType.BOTSTATS]: [PermissionAction.READ],
+      [EntityType.STATS]: [PermissionAction.READ],
     },
   },
   {

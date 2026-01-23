@@ -47,7 +47,7 @@ import { IModel, IModelAttributes, IModelFull } from "./model.types";
 import {
   IPermission,
   IPermissionAttributes,
-  IPermissionFull
+  IPermissionFull,
 } from "./permission.types";
 import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
 import { SearchPayload } from "./search.types";
@@ -111,6 +111,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.LLM_HELPER]: [],
   [EntityType.FLOW_ESCAPE_HELPER]: [],
   [EntityType.STORAGE_HELPER]: [],
+  [EntityType.STATS]: [],
 } as const;
 
 export type Populate<C extends EntityType> =
