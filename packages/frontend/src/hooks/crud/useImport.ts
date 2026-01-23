@@ -24,11 +24,11 @@ export const useImport = <
   const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
-  const { invalidate = true, ...rest } = options;
+  const { invalidate = true, routeParams, ...rest } = options;
 
   return useTanstackMutation({
     mutationFn: async (variables) => {
-      const data = await api.import(variables, params);
+      const data = await api.import(variables, params, routeParams);
       const { result, entities } = normalizeAndCache(data);
 
       // Invalidate current entity count and collection

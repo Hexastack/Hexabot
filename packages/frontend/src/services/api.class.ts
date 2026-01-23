@@ -23,6 +23,27 @@ import {
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
 
+export type RouteParams = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
+const resolveRoute = (route: string, params?: RouteParams) => {
+  if (!params) {
+    return route;
+  }
+
+  return route.replace(/:([A-Za-z0-9_]+)/g, (match, key) => {
+    const value = params[key];
+
+    if (value === undefined || value === null) {
+      return match;
+    }
+
+    return encodeURIComponent(String(value));
+  });
+};
+
 export const ROUTES = {
   // Misc
   ACCEPT_INVITE: "/auth/accept-invite",
@@ -65,6 +86,7 @@ export const ROUTES = {
   [EntityType.FLOW_ESCAPE_HELPER]: "helper/flow_escape",
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
+  [EntityType.WORKFLOW_VERSION]: "/workflow/:id/versions",
   [EntityType.WORKFLOW_ACTIONS]: "/workflow/actions",
   [EntityType.WORKFLOW_RUN]: "/workflowrun",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
@@ -243,8 +265,11 @@ export class ApiClient {
     return this.request;
   }
 
-  buildEntityClient<TE extends THook["entity"] = never>(entity: TE) {
-    return EntityApiClient.getInstance(this.request, entity);
+  buildEntityClient<TE extends THook["entity"] = never>(
+    entity: TE,
+    routeParams?: RouteParams,
+  ) {
+    return EntityApiClient.getInstance(this.request, entity, routeParams);
   }
 }
 
@@ -258,6 +283,7 @@ export class EntityApiClient<
   constructor(
     request: AxiosInstance,
     private readonly type: TE,
+    private readonly routeParams?: RouteParams,
   ) {
     super(request);
   }
@@ -265,32 +291,41 @@ export class EntityApiClient<
   static getInstance<TE extends THook["entity"]>(
     request: AxiosInstance,
     entity: TE,
+    routeParams?: RouteParams,
   ) {
-    return new EntityApiClient<TE>(request, entity);
+    return new EntityApiClient<TE>(request, entity, routeParams);
+  }
+
+  private getRoute(routeParams?: RouteParams) {
+    return resolveRoute(ROUTES[this.type], routeParams ?? this.routeParams);
   }
 
   /**
    * Create an entry to the given entity type.
    */
-  async create(payload: TAttr) {
+  async create(payload: TAttr, routeParams?: RouteParams) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.post<
       TBasic,
       AxiosResponse<TBasic>,
       TAttr
-    >(ROUTES[this.type], { ...payload, _csrf });
+    >(this.getRoute(routeParams), { ...payload, _csrf });
 
     return data;
   }
 
-  async import<T = TBasic>(file: File, params?: any) {
+  async import<T = TBasic>(
+    file: File,
+    params?: any,
+    routeParams?: RouteParams,
+  ) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
     formData.append("file", file);
 
     const { data } = await this.request.post<T[], AxiosResponse<T[]>, FormData>(
-      `${ROUTES[this.type]}/import`,
+      `${this.getRoute(routeParams)}/import`,
       formData,
       {
         params: { _csrf, ...params },
@@ -300,7 +335,11 @@ export class EntityApiClient<
     return data;
   }
 
-  async upload(file: File, resourceRef?: AttachmentResourceRef) {
+  async upload(
+    file: File,
+    resourceRef?: AttachmentResourceRef,
+    routeParams?: RouteParams,
+  ) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
@@ -311,7 +350,7 @@ export class EntityApiClient<
       AxiosResponse<TBasic[]>,
       FormData
     >(
-      `${ROUTES[this.type]}/upload?_csrf=${_csrf}${
+      `${this.getRoute(routeParams)}/upload?_csrf=${_csrf}${
         resourceRef ? `&resourceRef=${resourceRef}` : ""
       }`,
       formData,
@@ -333,9 +372,9 @@ export class EntityApiClient<
     P = string[] | undefined,
     F extends Format = P extends undefined ? Format.BASIC : Format.FULL,
     T = TypeByFormat<F, TBasic, TFull>,
-  >(id?: string, populate?: P) {
+  >(id?: string, populate?: P, routeParams?: RouteParams) {
     const { data } = await this.request.get<T>(
-      `${ROUTES[this.type]}${id ? `/${id}` : ""}`,
+      `${this.getRoute(routeParams)}${id ? `/${id}` : ""}`,
       {
         params: {
           ...(Array.isArray(populate) &&
@@ -351,8 +390,8 @@ export class EntityApiClient<
     P = string[] | undefined,
     F extends Format = P extends undefined ? Format.BASIC : Format.FULL,
     T = TypeByFormat<F, TBasic, TFull>,
-  >(params: any, populate: P) {
-    const { data } = await this.request.get<T[]>(ROUTES[this.type], {
+  >(params: any, populate: P, routeParams?: RouteParams) {
+    const { data } = await this.request.get<T[]>(this.getRoute(routeParams), {
       params: {
         ...params,
         ...(Array.isArray(populate) &&
@@ -366,10 +405,10 @@ export class EntityApiClient<
   /**
    * Update an entry in a entity type.
    */
-  async update(id: string, payload: Partial<TAttr>) {
+  async update(id: string, payload: Partial<TAttr>, routeParams?: RouteParams) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.patch<TBasic>(
-      `${ROUTES[this.type]}/${id}`,
+      `${this.getRoute(routeParams)}/${id}`,
       {
         ...payload,
         _csrf,
@@ -382,10 +421,14 @@ export class EntityApiClient<
   /**
    * Bulk Update entries.
    */
-  async updateMany(ids: string[], payload: Partial<TAttr>) {
+  async updateMany(
+    ids: string[],
+    payload: Partial<TAttr>,
+    routeParams?: RouteParams,
+  ) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.patch<string>(
-      `${ROUTES[this.type]}/bulk`,
+      `${this.getRoute(routeParams)}/bulk`,
       {
         _csrf,
         ids,
@@ -399,10 +442,10 @@ export class EntityApiClient<
   /**
    * Delete an entry.
    */
-  async delete(id: string) {
+  async delete(id: string, routeParams?: RouteParams) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.delete<string>(
-      `${ROUTES[this.type]}/${id}`,
+      `${this.getRoute(routeParams)}/${id}`,
       {
         data: { _csrf },
       },
@@ -414,14 +457,17 @@ export class EntityApiClient<
   /**
    * Bulk Delete entries.
    */
-  async deleteMany(ids: string[]) {
+  async deleteMany(ids: string[], routeParams?: RouteParams) {
     const { _csrf } = await this.getCsrf();
-    const { data } = await this.request.delete<string>(`${ROUTES[this.type]}`, {
-      data: {
-        _csrf,
-        ids,
+    const { data } = await this.request.delete<string>(
+      this.getRoute(routeParams),
+      {
+        data: {
+          _csrf,
+          ids,
+        },
       },
-    });
+    );
 
     return data;
   }
@@ -429,9 +475,9 @@ export class EntityApiClient<
   /**
    * Count elements.
    */
-  async count(params: { where?: TFilters }) {
+  async count(params: { where?: TFilters }, routeParams?: RouteParams) {
     const { data } = await this.request.get<TCount>(
-      `${ROUTES[this.type]}/count`,
+      `${this.getRoute(routeParams)}/count`,
       {
         params,
       },

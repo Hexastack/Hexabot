@@ -31,20 +31,22 @@ export const useGet = <
 ) => {
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string>(entity);
+  const { enabled, routeParams, ...otherOptions } = options ?? {};
 
   return useTanstackQuery({
     queryFn: async () => {
       const data = await api.get(
         id,
         format === Format.FULL ? POPULATE_BY_TYPE[entity] : undefined,
+        routeParams,
       );
       const { entities, result } = normalizeAndCache(data);
 
       return entities[entity]?.[result] as TBasic;
     },
     queryKey: [QueryType.item, entity, id],
-    enabled: options?.enabled && !!id,
-    ...options,
+    enabled: enabled && !!id,
+    ...otherOptions,
   });
 };
 

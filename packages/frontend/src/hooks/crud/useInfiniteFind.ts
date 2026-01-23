@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { RouteParams } from "@/services/api.class";
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 import { UseInfiniteQueryOptions } from "@/types/tanstack.types";
@@ -32,9 +33,14 @@ export const useInfiniteFind = <
       { limit: number; skip: number }
     >,
     "queryFn" | "onSuccess"
-  > & { onSuccess?: (result: TBasic[]) => void },
+  > & { routeParams?: RouteParams; onSuccess?: (result: TBasic[]) => void },
 ) => {
-  const { onSuccess, queryKey = [], ...otherOptions } = options || {};
+  const {
+    onSuccess,
+    queryKey = [],
+    routeParams,
+    ...otherOptions
+  } = options || {};
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
@@ -60,6 +66,7 @@ export const useInfiniteFind = <
           ...(config?.params || {}),
         },
         format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+        routeParams,
       );
       const { entities, result } = normalizeAndCache(data);
 

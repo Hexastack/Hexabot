@@ -25,11 +25,11 @@ export const useCreate = <
   const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache<string>(entity);
-  const { invalidate = true, ...otherOptions } = options || {};
+  const { invalidate = true, routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async (variables) => {
-      const data = await api.create(variables);
+      const data = await api.create(variables, routeParams);
       const { entities, result } = normalizeAndCache(data);
 
       // Invalidate all counts & collections

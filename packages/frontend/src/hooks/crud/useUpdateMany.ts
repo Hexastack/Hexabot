@@ -30,11 +30,11 @@ export const useUpdateMany = <
 ) => {
   const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
-  const { invalidate = true, ...otherOptions } = options || {};
+  const { invalidate = true, routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async ({ ids, payload }) => {
-      const result = await api.updateMany(ids, payload);
+      const result = await api.updateMany(ids, payload, routeParams);
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {
