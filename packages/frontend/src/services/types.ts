@@ -34,6 +34,7 @@ export enum EntityType {
   WORKFLOW_ACTIONS = "WorkflowActions",
   WORKFLOW_RUN = "WorkflowRun",
   MEMORY_DEFINITION = "MemoryDefinition",
+  STATS = "Stats",
 }
 
 export type NormalizedEntities = Record<string, Record<string, any>>;
