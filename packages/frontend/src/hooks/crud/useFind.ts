@@ -67,7 +67,11 @@ export const useFind = <
 
       return result;
     },
-    queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
+    queryKey: [
+      QueryType.collection,
+      entity,
+      JSON.stringify({ params: normalizedParams, routeParams }),
+    ],
     onSuccess: (ids) => {
       onSuccess?.(ids.map((id) => getFromCache(id) as TBasic));
     },

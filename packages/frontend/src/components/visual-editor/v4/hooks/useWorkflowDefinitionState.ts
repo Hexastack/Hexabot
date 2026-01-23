@@ -8,6 +8,7 @@ import {
   type WorkflowCompileOptions,
   type WorkflowDefinition,
   Workflow as WorkflowHelper,
+  validateWorkflow,
 } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -46,9 +47,14 @@ export const useWorkflowDefinitionState = ({
       onSuccess(data) {
         queryClient.setQueryData(
           [QueryType.item, EntityType.WORKFLOW, workflow?.id],
-          {
-            ...workflow,
-            currentVersion: data.id,
+          (cached?: IWorkflow) => {
+            if (!cached) {
+              return workflow
+                ? { ...workflow, currentVersion: data.id }
+                : cached;
+            }
+
+            return { ...cached, currentVersion: data.id };
           },
         );
       },
@@ -80,30 +86,24 @@ export const useWorkflowDefinitionState = ({
   }, [actionsByName, hasActions, yaml, workflow?.id]);
   // New definition version not yet saved ?
   const isDefinitionDirty = useMemo(() => {
-    return currentVersion?.definitionYml !== yaml;
-  }, [workflow?.id, currentVersion, yaml]);
-  // Update local YML stae
-  const updateDefinitionState = (
-    nextDefinition: string | WorkflowDefinition,
-  ) => {
-    const nextSignature =
-      typeof nextDefinition === "string"
-        ? nextDefinition
-        : WorkflowHelper.stringifyDefinition(nextDefinition);
-
-    if (definitionSignatureRef.current === nextSignature) {
-      return;
+    if (workflow?.currentVersion && !currentVersion) {
+      return false;
     }
 
-    definitionSignatureRef.current = nextSignature;
+    const baseline = currentVersion?.definitionYml ?? "";
 
-    setYaml(nextSignature);
-    debouncedDefinitionUpdate(nextSignature);
-  };
+    return baseline !== yaml;
+  }, [currentVersion?.definitionYml, workflow?.currentVersion, yaml]);
   // Commit new definition version
   const debouncedDefinitionUpdate = useSafeCallback(
     debounce((nextDefinitionYml: string) => {
       if (!workflow?.id) {
+        return;
+      }
+
+      const validation = validateWorkflow(nextDefinitionYml);
+
+      if (!validation.success) {
         return;
       }
 
@@ -116,6 +116,25 @@ export const useWorkflowDefinitionState = ({
     (memoizedFn) => {
       memoizedFn.clear();
     },
+  );
+  // Update local YML stae
+  const updateDefinitionState = useCallback(
+    (nextDefinition: string | WorkflowDefinition) => {
+      const nextSignature =
+        typeof nextDefinition === "string"
+          ? nextDefinition
+          : WorkflowHelper.stringifyDefinition(nextDefinition);
+
+      if (definitionSignatureRef.current === nextSignature) {
+        return;
+      }
+
+      definitionSignatureRef.current = nextSignature;
+
+      setYaml(nextSignature);
+      debouncedDefinitionUpdate(nextSignature);
+    },
+    [debouncedDefinitionUpdate],
   );
   // Immediate commit of the definition version
   const persistDefinition = useCallback(() => {
