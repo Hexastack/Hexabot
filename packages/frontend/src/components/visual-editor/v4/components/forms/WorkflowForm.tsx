@@ -18,9 +18,9 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
+  IWorkflowSubmitAttributes,
   WorkflowType,
   type IWorkflow,
-  type IWorkflowAttributes,
 } from "@/types/workfow.types";
 
 const WORKFLOW_TYPES: WorkflowType[] = [
@@ -82,7 +82,6 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
       defaultValues,
     });
     const typeValue = useWatch({ control, name: "type" });
-    const versionValue = workflow?.version;
     const nameRegister = register("name", {
       required: t("message.name_is_required"),
       setValueAs: (value: string) => value?.trim(),
@@ -153,21 +152,19 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         return;
       }
 
-      if (!definition || !definitionYaml || !versionValue) {
+      if (!definition || !definitionYaml) {
         rest.onError?.();
         toast.error(t("message.unable_to_save"));
 
         return;
       }
 
-      const payload: IWorkflowAttributes = {
+      const payload: IWorkflowSubmitAttributes = {
         name,
         description,
-        version: versionValue,
         type: params.type,
         schedule,
-        definitionYaml,
-        definition,
+        definitionYml: definitionYaml,
         memoryDefinitions: workflow?.memoryDefinitions ?? [],
       };
 
@@ -211,14 +208,6 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                 multiline
                 minRows={3}
                 {...register("description")}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("label.version", { defaultValue: "Version" })}
-                value={versionValue}
-                disabled
-                slotProps={{ input: { readOnly: true } }}
               />
             </ContentItem>
             <ContentItem>

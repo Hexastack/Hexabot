@@ -10,6 +10,8 @@ import type { ResizeControlDirection } from "@xyflow/system";
 import { EntityType, Format } from "@/services/types";
 
 import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { IMemoryDefinition } from "./memory-definition.types";
+import { IWorkflowVersion } from "./workfow-version.types";
 
 export enum WorkflowType {
   conversational = "conversational",
@@ -19,17 +21,18 @@ export enum WorkflowType {
 
 export interface IWorkflowAttributes {
   name: string;
-  version: string;
   description?: string | null;
   builtin?: boolean;
-  definition: WorkflowDefinition;
   schedule?: string | null;
   type: WorkflowType;
-  definitionYaml?: string;
   zoom?: number;
   x?: number;
   y?: number;
   direction?: ResizeControlDirection;
+}
+
+export interface IWorkflowSubmitAttributes extends IWorkflowAttributes {
+  definitionYml?: string;
   memoryDefinitions: string[];
 }
 
@@ -41,16 +44,16 @@ export interface IWorkflowFilters {
 
 export interface IWorkflowStub
   extends IBaseSchema,
-    OmitPopulate<IWorkflowAttributes, EntityType.WORKFLOW> {
-  name: string;
+    OmitPopulate<IWorkflowAttributes, EntityType.WORKFLOW> {}
 
-  version: string;
-
-  description?: string | null;
-
-  definition: WorkflowDefinition;
+export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {
+  currentVersion: string | null;
+  memoryDefinitions: string[];
 }
 
-export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {}
-
-export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {}
+export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {
+  currentVersion: IWorkflowVersion | null;
+  definitionYml: string;
+  definition: WorkflowDefinition;
+  memoryDefinitions: IMemoryDefinition[];
+}

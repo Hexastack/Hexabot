@@ -712,6 +712,27 @@
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"
+    },
+    "workflow_versions": {
+      "show": "Afficher les versions du workflow",
+      "hide": "Masquer les versions du workflow",
+      "title": "Historique des versions",
+      "empty": "Aucune version pour le moment.",
+      "empty_selection": "Sélectionnez un workflow pour voir ses versions.",
+      "current": "Actuelle",
+      "message_fallback": "Aucun message",
+      "system": "Système",
+      "unknown_user": "Utilisateur inconnu",
+      "by": "par {{0}}",
+      "version": "Version {{0}}",
+      "actions": {
+        "create": "Créée",
+        "update": "Mise à jour",
+        "restore": "Restaurée",
+        "import": "Importée",
+        "publish": "Publiée",
+        "unknown": "Mise à jour"
+      }
     }
   }
 }

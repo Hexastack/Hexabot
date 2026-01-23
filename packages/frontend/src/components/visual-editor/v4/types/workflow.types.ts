@@ -33,7 +33,7 @@ export interface IWorkflowContext {
   removeWorkflowParams: () => Promise<void>;
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
   yaml: string;
-  setYaml: Dispatch<SetStateAction<string>>;
+  updateDefinitionState: (nextDefinition: string | WorkflowDefinition) => void;
   workflow?: IWorkflow;
   workflows?: IWorkflow[];
   debouncedWorkflowUpdate: ((params: Partial<IWorkflowAttributes>) => void) &
@@ -50,7 +50,7 @@ export interface IWorkflowContext {
   updateDefinition: (definition: WorkflowDefinition) => void;
   saveDefinition: () => void;
   isDefinitionDirty: boolean;
-  isDefinitionSaving: boolean;
+  isSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   executionStates: Record<string, { state: NodeExecutionState; t: number }[]>;

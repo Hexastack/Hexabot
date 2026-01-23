@@ -5,7 +5,7 @@
  */
 
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
-import { ChevronLeft, ChevronRight, Code } from "lucide-react";
+import { ChevronLeft, ChevronRight, Code, History } from "lucide-react";
 
 import { DrawerHeader } from "./styles";
 
@@ -16,6 +16,9 @@ type FlowsDrawerHeaderProps = {
   yamlLabel: string;
   onToggleYaml: () => void;
   isYamlOpen: boolean;
+  versionsLabel: string;
+  onToggleVersions: () => void;
+  isVersionsOpen: boolean;
 };
 
 export const FlowsDrawerHeader = ({
@@ -25,6 +28,9 @@ export const FlowsDrawerHeader = ({
   yamlLabel,
   onToggleYaml,
   isYamlOpen,
+  versionsLabel,
+  onToggleVersions,
+  isVersionsOpen,
 }: FlowsDrawerHeaderProps) => (
   <DrawerHeader>
     {open ? (
@@ -35,6 +41,16 @@ export const FlowsDrawerHeader = ({
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
+          <Tooltip title={versionsLabel}>
+            <IconButton
+              size="small"
+              onClick={onToggleVersions}
+              color={isVersionsOpen ? "primary" : "default"}
+              aria-pressed={isVersionsOpen}
+            >
+              <History size={16} />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={yamlLabel}>
             <IconButton
               size="small"

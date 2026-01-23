@@ -58,7 +58,5 @@ export const getErrorCount = (workflow: IWorkflow) => {
 };
 
 export const isDraftWorkflow = (workflow: IWorkflow) => {
-  const version = workflow.version?.toLowerCase() ?? "";
-
-  return !version || version.startsWith("0") || version.includes("draft");
+  return !workflow.currentVersion;
 };

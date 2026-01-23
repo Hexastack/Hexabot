@@ -54,6 +54,7 @@ import {
   isDraftWorkflow,
   normalizeQuery,
 } from "./utils";
+import { WorkflowVersions } from "./WorkflowVersions";
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
@@ -64,13 +65,14 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     selectedFlowId,
     updateWorkflowURL,
     isDefinitionDirty,
-    isDefinitionSaving,
+    isSaving,
   } = useWorkflow();
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(!isCompact);
   const [showYaml, setShowYaml] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState(() => {
     if (typeof window === "undefined") return defaultDrawerWidth;
 
@@ -131,6 +133,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const yamlToggleLabel = showYaml
     ? t("visual_editor.yaml_editor.hide")
     : t("visual_editor.yaml_editor.show");
+  const versionsToggleLabel = showVersions
+    ? t("visual_editor.workflow_versions.hide")
+    : t("visual_editor.workflow_versions.show");
 
   useEffect(() => {
     setOpen(!isCompact);
@@ -187,9 +192,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     };
   }, [clampDrawerWidth]);
 
-  const hasUnsaved = Boolean(
-    selectedFlowId && (isDefinitionDirty || isDefinitionSaving),
-  );
+  const hasUnsaved = Boolean(selectedFlowId && (isDefinitionDirty || isSaving));
   const matches = useMemo<FlowMatch[]>(() => {
     const list = workflowsList ?? [];
     const getTypeMeta = (flow: IWorkflow, typeKey: string) => {
@@ -371,12 +374,21 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   );
   const handleToggleYaml = () => {
     setShowYaml((prev) => !prev);
+    setShowVersions(false);
+    if (!open) {
+      setOpen(true);
+    }
+  };
+  const handleToggleVersions = () => {
+    setShowVersions((prev) => !prev);
+    setShowYaml(false);
     if (!open) {
       setOpen(true);
     }
   };
   const handleOpenDrawer = () => {
     setShowYaml(false);
+    setShowVersions(false);
     setOpen(true);
   };
   const handleToggleType = (key: string) =>
@@ -450,6 +462,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         yamlLabel={yamlToggleLabel}
         onToggleYaml={handleToggleYaml}
         isYamlOpen={showYaml}
+        versionsLabel={versionsToggleLabel}
+        onToggleVersions={handleToggleVersions}
+        isVersionsOpen={showVersions}
       />
       {open ? (
         <DrawerBody>
@@ -459,6 +474,11 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
               <YamlEditorContainer>
                 <YamlEditor />
               </YamlEditorContainer>
+            </>
+          ) : showVersions ? (
+            <>
+              <Divider />
+              <WorkflowVersions />
             </>
           ) : (
             <>
@@ -479,7 +499,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
                 onEdit={onEdit}
                 onOpenMenu={handleOpenMenu}
                 normalizedQuery={normalizedQuery}
-                emptySectionLabel={t("visual_editor.flows_drawer.empty.section")}
+                emptySectionLabel={t(
+                  "visual_editor.flows_drawer.empty.section",
+                )}
                 emptyState={
                   !matches.length && workflows && workflows.length
                     ? t("visual_editor.flows_drawer.empty.search")

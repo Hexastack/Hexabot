@@ -22,11 +22,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
-import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
-import { EntityType, RouterType } from "@/services/types";
+import { EntityType, Format, RouterType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflowAttributes } from "@/types/workfow.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
@@ -59,6 +58,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const { data: workflows } = useFind(
     {
       entity: EntityType.WORKFLOW,
+      format: Format.FULL,
     },
     {
       hasCount: false,
@@ -69,6 +69,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     flowId || "",
     {
       entity: EntityType.WORKFLOW,
+      format: Format.FULL,
     },
     {
       enabled: !!flowId,
@@ -128,28 +129,18 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
   const actionsByName = actionsByNameRef.current;
   const hasActions = actions.length > 0;
-  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
-  const {
-    mutate: updateWorkflowDefinition,
-    isPending: isDefinitionSaving,
-  } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
   const {
     yaml,
-    setYaml,
     definition,
-    updateDefinition,
-    saveDefinition,
+    updateDefinitionState,
+    persistDefinition: saveDefinition,
     isDefinitionDirty,
+    updateWorkflow,
+    isSaving,
   } = useWorkflowDefinitionState({
-    flowId,
     workflow,
     actionsByName,
     hasActions,
-    updateWorkflow: updateWorkflowDefinition,
   });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition();
@@ -187,7 +178,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       flow: [...(baseDefinition.flow ?? []), nextStep],
     };
 
-    updateDefinition(nextDefinition);
+    updateDefinitionState(nextDefinition);
   };
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
@@ -230,7 +221,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       return;
     }
 
-    updateDefinition(nextDefinition);
+    updateDefinitionState(nextDefinition);
 
     if (!nodeId || !selectedNodeIds.includes(nodeId)) {
       return;
@@ -367,17 +358,17 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         updateWorkflowURL,
         removeWorkflowParams,
         yaml,
-        setYaml,
+        updateDefinitionState,
         workflow,
         workflows,
         updateWorkflow,
         debouncedWorkflowUpdate,
         executionStates,
         setExecutionStates,
-        updateDefinition,
+        updateDefinition: updateDefinitionState,
         saveDefinition,
         isDefinitionDirty,
-        isDefinitionSaving,
+        isSaving,
         addActionStep,
         removeStepAtPath,
         actions,

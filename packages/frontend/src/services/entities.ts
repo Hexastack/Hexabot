@@ -17,41 +17,6 @@ const processCommonStrategy = <T extends IBaseSchema>(entity: T) => ({
   ...(entity.updatedAt && { updatedAt: new Date(entity.updatedAt) }),
 });
 
-export const WorkflowEntity = new schema.Entity(
-  EntityType.WORKFLOW,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
-export const WorkflowActionEntity = new schema.Entity(
-  EntityType.WORKFLOW_ACTIONS,
-  undefined,
-  {
-    idAttribute: ({ name }) => name,
-    processStrategy: (entity) => {
-      return {
-        ...entity,
-        title: entity.name
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (char: string) => char.toUpperCase()),
-        parseSettings: (payload) => payload,
-      };
-    },
-  },
-);
-
-export const MemoryDefinitionEntity = new schema.Entity(
-  EntityType.MEMORY_DEFINITION,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
 export const RoleEntity = new schema.Entity(EntityType.ROLE, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -75,33 +40,6 @@ export const UserEntity = new schema.Entity(
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,
-  },
-);
-
-export const WorkflowRunEntity = new schema.Entity(
-  EntityType.WORKFLOW_RUN,
-  {
-    workflow: WorkflowEntity,
-    triggeredBy: UserEntity,
-  },
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: (entity) => {
-      const processed = processCommonStrategy(entity);
-      // Convert date fields
-
-      if (entity.suspendedAt) {
-        processed.suspendedAt = new Date(entity.suspendedAt);
-      }
-      if (entity.finishedAt) {
-        processed.finishedAt = new Date(entity.finishedAt);
-      }
-      if (entity.failedAt) {
-        processed.failedAt = new Date(entity.failedAt);
-      }
-
-      return processed;
-    },
   },
 );
 
@@ -294,8 +232,88 @@ export const StorageHelperEntity = new schema.Entity(
   },
 );
 
+export const WorkflowVersionEntity = new schema.Entity(
+  EntityType.WORKFLOW_VERSION,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
+export const WorkflowEntity = new schema.Entity(
+  EntityType.WORKFLOW,
+  {
+    currentVersion: WorkflowVersionEntity,
+  },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
+WorkflowVersionEntity.define({
+  workflow: WorkflowEntity,
+  parentVersion: WorkflowVersionEntity,
+  createdBy: UserEntity,
+});
+
+export const WorkflowActionEntity = new schema.Entity(
+  EntityType.WORKFLOW_ACTIONS,
+  undefined,
+  {
+    idAttribute: ({ name }) => name,
+    processStrategy: (entity) => {
+      return {
+        ...entity,
+        title: entity.name
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (char: string) => char.toUpperCase()),
+        parseSettings: (payload) => payload,
+      };
+    },
+  },
+);
+
+export const WorkflowRunEntity = new schema.Entity(
+  EntityType.WORKFLOW_RUN,
+  {
+    workflow: WorkflowEntity,
+    triggeredBy: UserEntity,
+  },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: (entity) => {
+      const processed = processCommonStrategy(entity);
+      // Convert date fields
+
+      if (entity.suspendedAt) {
+        processed.suspendedAt = new Date(entity.suspendedAt);
+      }
+      if (entity.finishedAt) {
+        processed.finishedAt = new Date(entity.finishedAt);
+      }
+      if (entity.failedAt) {
+        processed.failedAt = new Date(entity.failedAt);
+      }
+
+      return processed;
+    },
+  },
+);
+
+export const MemoryDefinitionEntity = new schema.Entity(
+  EntityType.MEMORY_DEFINITION,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const ENTITY_MAP = {
   [EntityType.WORKFLOW]: WorkflowEntity,
+  [EntityType.WORKFLOW_VERSION]: WorkflowVersionEntity,
   [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
   [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
