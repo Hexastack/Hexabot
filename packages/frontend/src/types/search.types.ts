@@ -15,8 +15,9 @@ export type TParamItem<
   TF extends THook<{ entity: TE }>["filters"] = THook<{
     entity: TE;
   }>["filters"],
+  N = TNestedPaths<TF>,
 > = {
-  $eq?: { [K in keyof TF]?: TF[K] }[];
+  $eq?: { [K in keyof N]?: N[K] }[];
   $iLike?: TFilterStringFields<TF>[];
   $neq?: { [K in keyof TF]?: TF[K] }[];
   $or?: TFilterStringFields<TF>[];

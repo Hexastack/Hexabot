@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowRunStatus } from "@hexabot-ai/agentic";
 import { useCallback, useMemo } from "react";
 import {
   NavigateOptions,
@@ -100,6 +101,9 @@ export type TQuery = {
   subscriber?: string;
   flowId?: string;
   nodeIds?: string;
+  workflow?: string;
+  type?: string;
+  status?: WorkflowRunStatus;
 };
 
 export const useAppRouter = <T extends TQuery>(): AppRouter<T> => {

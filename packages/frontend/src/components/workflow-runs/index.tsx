@@ -4,18 +4,25 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip } from "@mui/material";
+import { WorkflowRunStatus } from "@hexabot-ai/agentic";
+import { Chip, MenuItem } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import { GridColDef } from "@mui/x-data-grid";
 import { Activity } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
+import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import { Input } from "@/app-components/inputs/Input";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
+import { TQuery, useAppRouter } from "@/hooks/useAppRouter";
+import { useQueryChange } from "@/hooks/useQueryChange";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { THook } from "@/types/base.types";
-import { IWorkflowRun } from "@/types/workflow-run.types";
+import { EWorkflowRunStatus, IWorkflowRun } from "@/types/workflow-run.types";
+import { IWorkflow, WorkflowType } from "@/types/workfow.types";
 import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
 const STATUS_COLORS = {
@@ -117,22 +124,98 @@ export const WorkflowRuns = () => {
     ],
     [t],
   );
+  const router = useAppRouter();
+  const workflowName = useQueryChange("workflow");
+  const workflowType = useQueryChange("type");
+  const workflowRunStatus = useQueryChange("status");
+  const updateQuery = useCallback(
+    <F extends keyof TQuery>(field: F, value?: TQuery[F]) => {
+      router.push({
+        pathname: router.pathname,
+        query: { ...router.query, [field]: value || undefined },
+      });
+    },
+    [router],
+  );
 
   return (
-    <GenericDataGrid
-      entity={EntityType.WORKFLOW_RUN}
-      format={Format.FULL}
-      columns={
-        columns as GridColDef<
-          THook<{ entity: EntityType.WORKFLOW_RUN }>["basic"]
-        >[]
-      }
-      headerIcon={Activity}
-      searchParams={{
-        $iLike: ["status", "error"],
-        syncUrl: true,
-      }}
-      headerI18nTitle="title.workflow_runs"
-    />
+    <>
+      <Grid container gap="15px" pb="10px" px="8px">
+        <Grid flex={1}>
+          <AutoCompleteEntitySelect<IWorkflow, "name", false>
+            value={workflowName}
+            searchFields={[]}
+            entity={EntityType.WORKFLOW}
+            format={Format.BASIC}
+            idKey="name"
+            labelKey="name"
+            label={t("label.workflow")}
+            multiple={false}
+            onChange={(_e, value) => {
+              updateQuery("workflow", value?.name);
+            }}
+          />
+        </Grid>
+        <Grid flex={1}>
+          <Input
+            onChange={(e) => {
+              updateQuery("type", e.target.value);
+            }}
+            label={t("label.type")}
+            select
+            value={workflowType || ""}
+          >
+            <MenuItem value="">{t("label.all")}</MenuItem>
+            {Object.entries(WorkflowType).map(([key, value]) => (
+              <MenuItem key={key} value={value}>
+                {value.charAt(0).toUpperCase() + value.slice(1)}
+              </MenuItem>
+            ))}
+          </Input>
+        </Grid>
+        <Grid flex={1}>
+          <Input
+            onChange={(e) => {
+              updateQuery(
+                "status",
+                e.target.value as WorkflowRunStatus | undefined,
+              );
+            }}
+            label={t("label.status")}
+            select
+            value={workflowRunStatus || ""}
+          >
+            <MenuItem value="">{t("label.all")}</MenuItem>
+            {Object.entries(EWorkflowRunStatus).map(([key, value]) => (
+              <MenuItem key={key} value={value}>
+                {value.charAt(0).toUpperCase() + value.slice(1)}
+              </MenuItem>
+            ))}
+          </Input>
+        </Grid>
+      </Grid>
+      <GenericDataGrid
+        entity={EntityType.WORKFLOW_RUN}
+        format={Format.FULL}
+        columns={
+          columns as GridColDef<
+            THook<{ entity: EntityType.WORKFLOW_RUN }>["basic"]
+          >[]
+        }
+        headerIcon={Activity}
+        searchParams={{
+          $iLike: ["status", "error"],
+          syncUrl: true,
+          $eq: [
+            {
+              status: workflowRunStatus,
+              "workflow.name": workflowName,
+              "workflow.type": workflowType,
+            },
+          ],
+        }}
+        headerI18nTitle="title.workflow_runs"
+      />
+    </>
   );
 };
