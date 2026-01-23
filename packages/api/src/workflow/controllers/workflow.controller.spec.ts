@@ -23,6 +23,7 @@ import { userFixtureIds } from '@/utils/test/fixtures/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
   installScheduledWorkflowFixturesTypeOrm,
+  messagingWorkflowDefinition,
   messagingWorkflowFixtures,
 } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -34,7 +35,7 @@ import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
-import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
+import { DirectionType, WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
 
@@ -54,16 +55,6 @@ describe('WorkflowController (TypeORM)', () => {
       description: 'Workflow controller test definition',
       type: WorkflowType.conversational,
       schedule: null,
-      definitionYml: WorkflowHelper.stringifyDefinition({
-        tasks: {
-          send_greeting: {
-            action: 'send_text_message',
-            inputs: { text: '="Hi"' },
-          },
-        },
-        flow: [{ do: 'send_greeting' }],
-        outputs: { result: '=1' },
-      }),
       memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
@@ -128,14 +119,29 @@ describe('WorkflowController (TypeORM)', () => {
       const options = {
         where: { name: 'messaging_workflow_fixture' },
       };
-      const findSpy = jest.spyOn(workflowService, 'find');
-      const result = await workflowController.findMany(options);
+      const findSpy = jest.spyOn(workflowService, 'findAndPopulate');
+      const result = await workflowController.findMany(options, [
+        'currentVersion',
+        'createdBy',
+      ]);
+
       expect(findSpy).toHaveBeenCalledWith(options);
-      const { definitionYml: _, ...expected } = messagingWorkflowFixtures[0];
-      expect(result[0].currentVersion).toEqual(expect.any(String));
       expect(result).toEqualPayload(
-        [expected],
-        [...IGNORED_TEST_FIELDS, 'currentVersion'],
+        [
+          {
+            ...messagingWorkflowFixtures[0],
+            definition: messagingWorkflowDefinition,
+            currentVersion: {
+              definitionYml: WorkflowHelper.stringifyDefinition(
+                messagingWorkflowDefinition,
+              ),
+              message: null,
+              parentVersion: null,
+              version: 1,
+            },
+          },
+        ],
+        [...IGNORED_TEST_FIELDS, 'createdBy', 'action', 'checksum', 'workflow'],
       );
     });
   });
@@ -153,7 +159,7 @@ describe('WorkflowController (TypeORM)', () => {
   });
 
   describe('create', () => {
-    it('creates a workflow definition', async () => {
+    it('creates a workflow', async () => {
       const payload = buildWorkflowPayload();
       const createSpy = jest.spyOn(workflowService, 'create');
       const userId = userFixtureIds.admin;
@@ -166,14 +172,12 @@ describe('WorkflowController (TypeORM)', () => {
         ...payload,
         createdBy: userId,
       });
-      expect(created.currentVersion).toEqual(expect.any(String));
-      const { definitionYml: _, ...expected } = payload;
       expect(created).toEqualPayload(
         {
-          ...expected,
+          ...payload,
           createdBy: userId,
         },
-        [...IGNORED_TEST_FIELDS, 'currentVersion'],
+        [...IGNORED_TEST_FIELDS],
       );
     });
   });
@@ -218,10 +222,13 @@ describe('WorkflowController (TypeORM)', () => {
       expect(findOneSpy).toHaveBeenCalledWith(created.id);
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
       expect(result).toEqualPayload(
-        { ...created, ...updates, createdBy: userFixtureIds.admin },
-        [...IGNORED_TEST_FIELDS],
+        {
+          ...created,
+          ...updates,
+          createdBy: userFixtureIds.admin,
+        },
+        [...IGNORED_TEST_FIELDS, 'currentVersion'],
       );
-      expect(result.currentVersion).toBe(created.currentVersion);
     });
 
     it('throws NotFoundException when attempting to update a missing workflow', async () => {
@@ -239,84 +246,6 @@ describe('WorkflowController (TypeORM)', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         `Unable to update Workflow by id ${id}`,
       );
-    });
-  });
-
-  describe('versions', () => {
-    it('returns version history for a workflow', async () => {
-      const payload = buildWorkflowPayload();
-      const created = await workflowService.create({
-        ...payload,
-        createdBy: userFixtureIds.admin,
-      });
-      createdWorkflowIds.add(created.id);
-
-      await workflowController.updateOne(created.id, {
-        definitionYml: WorkflowHelper.stringifyDefinition({
-          tasks: {
-            send_greeting: {
-              action: 'send_text_message',
-              inputs: { text: '="Hello world"' },
-            },
-          },
-          flow: [{ do: 'send_greeting' }],
-          outputs: { result: '=2' },
-        }),
-      });
-
-      const versions = await workflowController.listVersions(created.id);
-
-      expect(versions).toHaveLength(2);
-      expect(versions[0]?.version).toBeGreaterThan(versions[1]?.version ?? 0);
-      expect(versions[0]?.action).toBe(WorkflowVersionAction.update);
-      expect(versions[1]?.action).toBe(WorkflowVersionAction.create);
-    });
-
-    it('restores a workflow by creating a new version', async () => {
-      const payload = buildWorkflowPayload();
-      const created = await workflowService.create({
-        ...payload,
-        createdBy: userFixtureIds.admin,
-      });
-      createdWorkflowIds.add(created.id);
-
-      await workflowController.updateOne(created.id, {
-        definitionYml: WorkflowHelper.stringifyDefinition({
-          tasks: {
-            send_greeting: {
-              action: 'send_text_message',
-              inputs: { text: '="Hello world"' },
-            },
-          },
-          flow: [{ do: 'send_greeting' }],
-          outputs: { result: '=2' },
-        }),
-      });
-
-      const versions = await workflowController.listVersions(created.id);
-      const original = versions.find(
-        (version) => version.action === WorkflowVersionAction.create,
-      );
-      expect(original).toBeDefined();
-
-      const restored = await workflowController.restoreVersion(
-        created.id,
-        original!.id,
-        { message: 'Restore original version' },
-        {
-          session: { passport: { user: { id: userFixtureIds.admin } } },
-        } as any,
-      );
-
-      expect(restored.currentVersion).not.toBe(original!.id);
-
-      const refreshedVersions = await workflowController.listVersions(
-        created.id,
-      );
-      expect(refreshedVersions).toHaveLength(3);
-      expect(refreshedVersions[0]?.action).toBe(WorkflowVersionAction.restore);
-      expect(refreshedVersions[0]?.parentVersionId).toBe(original!.id);
-      expect(refreshedVersions[0]?.message).toBe('Restore original version');
     });
   });
 

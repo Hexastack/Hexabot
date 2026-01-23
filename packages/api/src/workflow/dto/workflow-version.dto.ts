@@ -6,7 +6,7 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
@@ -35,15 +35,15 @@ export class WorkflowVersionStub extends BaseStub {
   @Expose()
   message?: string | null;
 
-  @Expose({ name: 'parentVersionId' })
-  parentVersionId?: string | null;
-
   @Expose()
   action?: WorkflowVersionAction | null;
 }
 
 @Exclude()
 export class WorkflowVersion extends WorkflowVersionStub {
+  @Expose({ name: 'parentVersionId' })
+  parentVersion?: string | null;
+
   @Expose({ name: 'workflowId' })
   workflow!: string;
 
@@ -54,6 +54,10 @@ export class WorkflowVersion extends WorkflowVersionStub {
 @Exclude()
 export class WorkflowVersionFull extends WorkflowVersionStub {
   @Expose()
+  @Type(() => WorkflowVersion)
+  parentVersion!: WorkflowVersion;
+
+  @Expose()
   @Type(() => Workflow)
   workflow!: Workflow;
 
@@ -62,13 +66,21 @@ export class WorkflowVersionFull extends WorkflowVersionStub {
   createdBy: User | null;
 }
 
-export class WorkflowVersionCreateDto {
+export class WorkflowNewVersionDto {
+  @ApiPropertyOptional({
+    description: 'Workflow trigger type',
+    enumName: 'WorkflowType',
+    enum: WorkflowVersionAction,
+  })
+  @IsEnum(WorkflowVersionAction)
+  action: WorkflowVersionAction;
+
   @ApiProperty({ description: 'Workflow to execute', type: String })
-  @IsNotEmpty()
+  @IsOptional()
   @IsUUIDv4({
     message: 'Workflow must be a valid UUID',
   })
-  workflow!: string;
+  workflow: string;
 
   @ApiPropertyOptional({
     description: 'Workflow definition YAML',
@@ -86,26 +98,25 @@ export class WorkflowVersionCreateDto {
   @IsString()
   message?: string;
 
-  @ApiPropertyOptional({
-    description: 'Workflow trigger type',
-    enumName: 'WorkflowType',
-    enum: WorkflowVersionAction,
+  @ApiProperty({ description: 'Workflow version creator', type: String })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'createdBy must be a valid UUID',
   })
-  @IsEnum(WorkflowVersionAction)
-  action: WorkflowVersionAction;
+  createdBy: string;
 
   @ApiProperty({ description: 'Parent version ID', type: String })
   @IsOptional()
   @IsUUIDv4({
     message: 'Parent version must be a valid UUID',
   })
-  parentVersionId?: string | null;
+  parentVersion?: string | null;
+}
 
-  @ApiProperty({ description: 'Workflow version creator', type: String })
-  @IsUUIDv4({
-    message: 'createdBy must be a valid UUID',
-  })
-  createdBy?: string | null;
+export class WorkflowVersionCreateDto extends WorkflowNewVersionDto {
+  @ApiProperty({ description: 'Workflow version', type: String })
+  @IsNumber({ allowInfinity: false, allowNaN: false })
+  version: number;
 }
 
 export type WorkflowVersionTransformerDto = DtoTransformerConfig<{
@@ -113,7 +124,9 @@ export type WorkflowVersionTransformerDto = DtoTransformerConfig<{
   FullCls: typeof WorkflowVersionFull;
 }>;
 
-export type WorkflowVersionDtoConfig = DtoActionConfig<{}>;
+export type WorkflowVersionDtoConfig = DtoActionConfig<{
+  create: WorkflowVersionCreateDto;
+}>;
 
 export class WorkflowVersionRestoreDto {
   @ApiPropertyOptional({

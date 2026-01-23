@@ -1,0 +1,185 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { randomUUID } from 'crypto';
+
+import { Workflow as WorkflowHelper } from '@hexabot-ai/agentic';
+import { NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+
+import { LoggerService } from '@/logger/logger.service';
+import { userFixtureIds } from '@/utils/test/fixtures/user';
+import {
+  installMessagingWorkflowFixturesTypeOrm,
+  installScheduledWorkflowFixturesTypeOrm,
+} from '@/utils/test/fixtures/workflow';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
+
+import { WorkflowVersionService } from '../services/workflow-version.service';
+import { WorkflowService } from '../services/workflow.service';
+import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
+
+import { WorkflowVersionController } from './workflow-version.controller';
+
+describe('WorkflowVersionController (TypeORM)', () => {
+  let module: TestingModule;
+  let controller: WorkflowVersionController;
+  let workflowService: WorkflowService;
+  let workflowVersionService: WorkflowVersionService;
+  let logger: LoggerService;
+  const createdWorkflowIds = new Set<string>();
+  let counter = 0;
+
+  const buildWorkflowPayload = () => {
+    return {
+      name: `workflow_${++counter}`,
+      description: 'Workflow version controller test definition',
+      type: WorkflowType.conversational,
+      schedule: null,
+      definitionYml: WorkflowHelper.stringifyDefinition({
+        tasks: {
+          send_greeting: {
+            action: 'send_text_message',
+            inputs: { text: '="Hi"' },
+          },
+        },
+        flow: [{ do: 'send_greeting' }],
+        outputs: { result: '=1' },
+      }),
+      memoryDefinitions: [],
+      createdBy: userFixtureIds.admin,
+      direction: DirectionType.HORIZONTAL,
+      x: 0,
+      y: 0,
+      zoom: 1,
+      builtin: false,
+    };
+  };
+
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
+      controllers: [WorkflowVersionController],
+      typeorm: {
+        fixtures: [
+          installMessagingWorkflowFixturesTypeOrm,
+          installScheduledWorkflowFixturesTypeOrm,
+        ],
+      },
+    });
+    module = testingModule;
+    [controller, workflowService, workflowVersionService] = await getMocks([
+      WorkflowVersionController,
+      WorkflowService,
+      WorkflowVersionService,
+    ]);
+    logger = controller.logger;
+  });
+
+  afterEach(async () => {
+    jest.clearAllMocks();
+    const ids = Array.from(createdWorkflowIds);
+
+    for (const id of ids) {
+      await workflowService.deleteOne(id);
+      createdWorkflowIds.delete(id);
+    }
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  describe('findMany', () => {
+    it('returns version history for a workflow', async () => {
+      const payload = buildWorkflowPayload();
+      const created = await workflowService.create({
+        ...payload,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      await workflowVersionService.commit({
+        action: WorkflowVersionAction.update,
+        workflow: created.id,
+        definitionYml: WorkflowHelper.stringifyDefinition({
+          tasks: {
+            send_greeting: {
+              action: 'send_text_message',
+              inputs: { text: '="Hello world"' },
+            },
+          },
+          flow: [{ do: 'send_greeting' }],
+          outputs: { result: '=2' },
+        }),
+        createdBy: created.createdBy,
+      });
+
+      const versions = await controller.findMany(created.id, {
+        order: { createdAt: 'DESC' },
+      });
+
+      expect(versions).toHaveLength(2);
+      expect(versions[0]?.version).toBeGreaterThan(versions[1]?.version ?? 0);
+      expect(versions[0]?.action).toBe(WorkflowVersionAction.update);
+      expect(versions[1]?.action).toBe(WorkflowVersionAction.create);
+    });
+
+    it('throws NotFoundException when workflow is missing', async () => {
+      const id = randomUUID();
+      const warnSpy = jest.spyOn(logger, 'warn');
+
+      await expect(controller.findMany(id)).rejects.toThrow(
+        new NotFoundException(`Workflow with ID ${id} not found`),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Unable to find Workflow by id ${id}`,
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('returns a workflow version when it exists', async () => {
+      const payload = buildWorkflowPayload();
+      const created = await workflowService.create({
+        ...payload,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      const latest = (await workflowVersionService.findOne({
+        where: { workflow: { id: created.id } },
+      }))!;
+      expect(latest).toBeDefined();
+
+      const result = (await controller.findOne(created.id, latest.id))!;
+
+      expect(result.id).toBe(latest.id);
+      expect(result.version).toBe(latest.version);
+      expect(result.workflow).toBe(created.id);
+    });
+
+    it('throws NotFoundException when version is missing', async () => {
+      const payload = buildWorkflowPayload();
+      const created = await workflowService.create({
+        ...payload,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+      const versionId = randomUUID();
+
+      await expect(controller.findOne(created.id, versionId)).rejects.toThrow(
+        new NotFoundException(
+          `Workflow version with ID ${versionId} not found`,
+        ),
+      );
+    });
+  });
+});

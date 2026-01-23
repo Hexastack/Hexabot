@@ -18,6 +18,7 @@ import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context'
 import { WorkflowContextFactory } from './contexts/workflow-context-factory';
 import { MemoryDefinitionController } from './controllers/memory-definition.controller';
 import { WorkflowRunController } from './controllers/workflow-run.controller';
+import { WorkflowVersionController } from './controllers/workflow-version.controller';
 import { WorkflowController } from './controllers/workflow.controller';
 import { MemoryDefinitionOrmEntity } from './entities/memory-definition.entity';
 import { MemoryRecordOrmEntity } from './entities/memory-record.entity';
@@ -55,6 +56,7 @@ import { WorkflowService } from './services/workflow.service';
   ],
   controllers: [
     WorkflowController,
+    WorkflowVersionController,
     WorkflowRunController,
     MemoryDefinitionController,
   ],

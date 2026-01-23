@@ -9,8 +9,8 @@ import { Injectable } from '@nestjs/common';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
 import {
+  WorkflowCreateDto,
   WorkflowDtoConfig,
-  WorkflowNewVersionDto,
   WorkflowTransformerDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
@@ -30,7 +30,7 @@ export class WorkflowSeeder extends BaseOrmSeeder<
     super(workflowRepository);
   }
 
-  async seed(models: WorkflowNewVersionDto[]): Promise<boolean> {
+  async seed(models: WorkflowCreateDto[]): Promise<boolean> {
     if (await this.isEmpty()) {
       for (const model of models) {
         await this.workflowService.create(model);

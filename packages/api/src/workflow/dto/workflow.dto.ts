@@ -27,7 +27,6 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
@@ -90,6 +89,17 @@ export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => MemoryDefinition)
   memoryDefinitions!: MemoryDefinition[];
+
+  @Expose()
+  @Transform(({ obj }) => {
+    const definitionYml = obj?.currentVersion?.definitionYml;
+    if (typeof definitionYml !== 'string' || definitionYml.trim() === '') {
+      return undefined;
+    }
+
+    return definitionYml;
+  })
+  definitionYml?: string;
 
   @Expose()
   @Transform(({ obj }) => {
@@ -184,28 +194,11 @@ export class WorkflowCreateDto {
   direction?: DirectionType;
 
   @ApiProperty({ description: 'Workflow creator', type: String })
+  @IsOptional()
   @IsUUIDv4({
     message: 'createdBy must be a valid UUID',
   })
   createdBy!: string;
-}
-
-export class WorkflowNewVersionDto extends WorkflowCreateDto {
-  @ApiPropertyOptional({
-    description: 'Workflow definition YAML',
-    type: String,
-  })
-  @IsString()
-  @IsWorkflowYaml()
-  definitionYml: string;
-
-  @ApiPropertyOptional({
-    description: 'Workflow version message',
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  message?: string;
 }
 
 export type WorkflowTransformerDto = DtoTransformerConfig<{
@@ -229,30 +222,6 @@ export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
     message: 'Current version must be a valid UUID',
   })
   currentVersion?: string | null;
-
-  @ApiProperty({ description: 'Workflow updater', type: String })
-  @IsUUIDv4({
-    message: 'updatedBy must be a valid UUID',
-  })
-  updatedBy?: string | null;
-}
-
-export class WorkflowVersionCommitDto extends WorkflowUpdateDto {
-  @ApiPropertyOptional({
-    description: 'Workflow definition YAML',
-    type: String,
-  })
-  @IsString()
-  @IsWorkflowYaml()
-  definitionYml?: string;
-
-  @ApiPropertyOptional({
-    description: 'Workflow version message',
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  message?: string;
 }
 
 export type WorkflowDtoConfig = DtoActionConfig<{

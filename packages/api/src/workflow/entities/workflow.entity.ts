@@ -4,7 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from '@hexabot-ai/agentic';
 import {
+  AfterInsert,
   BeforeRemove,
   Column,
   Entity,
@@ -21,7 +23,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import { DirectionType, WorkflowType } from '../types';
+import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
@@ -29,6 +31,12 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
 export class WorkflowOrmEntity extends BaseOrmEntity {
+  private static readonly BLANK_DEFINITION_YML = Workflow.stringifyDefinition({
+    tasks: {},
+    flow: [],
+    outputs: {},
+  });
+
   /** Human-readable workflow name, unique per version. */
   @Column({ type: 'varchar', length: 255 })
   name!: string;
@@ -114,6 +122,28 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
 
   @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
   direction!: DirectionType;
+
+  @AfterInsert()
+  protected async createBlankDefinitionVersion(): Promise<void> {
+    if (this.currentVersion || this.currentVersionId) {
+      return;
+    }
+
+    const manager = WorkflowOrmEntity.getEntityManager();
+    const createdById =
+      typeof this.createdBy === 'string' ? this.createdBy : this.createdBy?.id;
+    const version = manager.create(WorkflowVersionOrmEntity, {
+      workflow: { id: this.id },
+      version: 0,
+      definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
+      action: WorkflowVersionAction.create,
+      createdBy: createdById ? { id: createdById } : null,
+      parentVersion: null,
+      message: null,
+    });
+
+    await manager.save(WorkflowVersionOrmEntity, version);
+  }
 
   @BeforeRemove()
   protected preventBuiltinRemoval(): void {

@@ -29,7 +29,6 @@ describe('WorkflowVersionService (TypeORM)', () => {
   let module: TestingModule;
   let workflowVersionService: WorkflowVersionService;
   let workflowRepository: Repository<WorkflowOrmEntity>;
-  let versionRepository: Repository<WorkflowVersionOrmEntity>;
 
   const createWorkflow = async (
     overrides: Partial<WorkflowOrmEntity> = {},
@@ -46,34 +45,6 @@ describe('WorkflowVersionService (TypeORM)', () => {
 
     return await workflowRepository.save(workflow);
   };
-  const createVersion = async ({
-    workflowId,
-    version,
-    definitionYml,
-    action = WorkflowVersionAction.create,
-    createdById = userFixtureIds.admin,
-    parentVersionId = null,
-  }: {
-    workflowId: string;
-    version: number;
-    definitionYml: string;
-    action?: WorkflowVersionAction;
-    createdById?: string | null;
-    parentVersionId?: string | null;
-  }): Promise<WorkflowVersionOrmEntity> => {
-    const entity = versionRepository.create({
-      workflow: { id: workflowId },
-      version,
-      definitionYml,
-      checksum: WorkflowVersionService.computeChecksum(definitionYml),
-      action,
-      createdBy: createdById ? { id: createdById } : null,
-      parentVersion: parentVersionId ? { id: parentVersionId } : null,
-    });
-
-    return await versionRepository.save(entity);
-  };
-
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
@@ -87,7 +58,12 @@ describe('WorkflowVersionService (TypeORM)', () => {
     [workflowVersionService] = await testing.getMocks([WorkflowVersionService]);
     const dataSource = getLastTypeOrmDataSource();
     workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
-    versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+    WorkflowOrmEntity.registerEntityManagerProvider(
+      () => workflowRepository.manager,
+    );
+    WorkflowVersionOrmEntity.registerEntityManagerProvider(
+      () => dataSource.getRepository(WorkflowVersionOrmEntity).manager,
+    );
   });
 
   afterEach(() => {
@@ -100,76 +76,6 @@ describe('WorkflowVersionService (TypeORM)', () => {
       await module.close();
     }
     await closeTypeOrmConnections();
-  });
-
-  describe('findByWorkflow', () => {
-    it('returns versions ordered by version desc for the workflow', async () => {
-      const workflow = await createWorkflow();
-      const otherWorkflow = await createWorkflow();
-      const first = await createVersion({
-        workflowId: workflow.id,
-        version: 1,
-        definitionYml: 'version: 1',
-      });
-      const second = await createVersion({
-        workflowId: workflow.id,
-        version: 2,
-        definitionYml: 'version: 2',
-        action: WorkflowVersionAction.update,
-        parentVersionId: first.id,
-      });
-      await createVersion({
-        workflowId: otherWorkflow.id,
-        version: 1,
-        definitionYml: 'version: other',
-      });
-
-      const results = await workflowVersionService.findByWorkflow(workflow.id);
-
-      expect(results).toHaveLength(2);
-      expect(results.map((version) => version.version)).toEqual([2, 1]);
-      expect(results.map((version) => version.workflow)).toEqual([
-        workflow.id,
-        workflow.id,
-      ]);
-      expect(results[0]?.id).toBe(second.id);
-      expect(results[1]?.id).toBe(first.id);
-    });
-  });
-
-  describe('findOneByWorkflow', () => {
-    it('returns the matching version for a workflow', async () => {
-      const workflow = await createWorkflow();
-      const version = await createVersion({
-        workflowId: workflow.id,
-        version: 1,
-        definitionYml: 'version: 1',
-      });
-      const result = await workflowVersionService.findOneByWorkflow(
-        workflow.id,
-        version.id,
-      );
-
-      expect(result).not.toBeNull();
-      expect(result?.id).toBe(version.id);
-      expect(result?.workflow).toBe(workflow.id);
-    });
-
-    it('returns null when the workflow does not match the version', async () => {
-      const workflow = await createWorkflow();
-      const otherWorkflow = await createWorkflow();
-      const version = await createVersion({
-        workflowId: workflow.id,
-        version: 1,
-        definitionYml: 'version: 1',
-      });
-      const result = await workflowVersionService.findOneByWorkflow(
-        otherWorkflow.id,
-        version.id,
-      );
-
-      expect(result).toBeNull();
-    });
   });
 
   describe('createSnapshot', () => {
@@ -186,12 +92,12 @@ describe('WorkflowVersionService (TypeORM)', () => {
 
       expect(created.version).toBe(1);
       expect(created.checksum).toBe(
-        WorkflowVersionService.computeChecksum(definitionYml),
+        WorkflowVersionOrmEntity.computeChecksum(definitionYml),
       );
       expect(created.workflow).toBe(workflow.id);
       expect(created.message).toBe('Initial version');
       expect(created.createdBy).toBe(userFixtureIds.admin);
-      expect(created.parentVersionId ?? null).toBeNull();
+      expect(created.parentVersion ?? null).toBeNull();
     });
 
     it('increments version and maps parent/creator fields', async () => {
@@ -209,15 +115,15 @@ describe('WorkflowVersionService (TypeORM)', () => {
         definitionYml: updatedDefinition,
         message: 'Update workflow',
         action: WorkflowVersionAction.update,
-        parentVersionId: initial.id,
+        parentVersion: initial.id,
         createdBy: userFixtureIds.admin,
       });
 
       expect(created.version).toBe(initial.version + 1);
       expect(created.checksum).toBe(
-        WorkflowVersionService.computeChecksum(updatedDefinition),
+        WorkflowVersionOrmEntity.computeChecksum(updatedDefinition),
       );
-      expect(created.parentVersionId).toBe(initial.id);
+      expect(created.parentVersion).toBe(initial.id);
       expect(created.createdBy).toBe(userFixtureIds.admin);
       expect(created.message).toBe('Update workflow');
     });

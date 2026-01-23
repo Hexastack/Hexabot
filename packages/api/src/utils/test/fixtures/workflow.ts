@@ -12,8 +12,7 @@ import {
   installUserFixturesTypeOrm,
   userFixtureIds,
 } from '@/utils/test/fixtures/user';
-import { WorkflowVersionService } from '@/workflow';
-import { WorkflowNewVersionDto } from '@/workflow/dto/workflow.dto';
+import { WorkflowCreateDto } from '@/workflow';
 import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 import {
@@ -21,6 +20,8 @@ import {
   WorkflowType,
   WorkflowVersionAction,
 } from '@/workflow/types';
+
+type WorkflowFixture = WorkflowCreateDto & { definitionYml: string };
 
 /**
  * Simple workflow definition that exercises the built-in messaging actions.
@@ -79,12 +80,11 @@ export const scheduledWorkflowDefinition: WorkflowDefinition = {
   },
 };
 
-export const messagingWorkflowFixtures: WorkflowNewVersionDto[] = [
+export const messagingWorkflowFixtures: WorkflowFixture[] = [
   {
     name: 'messaging_workflow_fixture',
     description: 'Test workflow using messaging actions.',
     definitionYml: Workflow.stringifyDefinition(messagingWorkflowDefinition),
-
     type: WorkflowType.conversational,
     schedule: null,
     memoryDefinitions: [],
@@ -97,7 +97,7 @@ export const messagingWorkflowFixtures: WorkflowNewVersionDto[] = [
   },
 ];
 
-export const scheduledWorkflowFixtures: WorkflowNewVersionDto[] = [
+export const scheduledWorkflowFixtures: WorkflowFixture[] = [
   {
     name: 'scheduled_workflow_fixture',
     description: 'Test workflow triggered on a schedule.',
@@ -112,10 +112,17 @@ export const scheduledWorkflowFixtures: WorkflowNewVersionDto[] = [
 
 const installWorkflowFixtures = async (
   dataSource: DataSource,
-  fixtures: WorkflowNewVersionDto[],
+  fixtures: WorkflowFixture[],
 ): Promise<WorkflowOrmEntity[]> => {
   await installUserFixturesTypeOrm(dataSource);
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
+  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+  WorkflowOrmEntity.registerEntityManagerProvider(
+    () => workflowRepository.manager,
+  );
+  WorkflowVersionOrmEntity.registerEntityManagerProvider(
+    () => versionRepository.manager,
+  );
 
   if (await workflowRepository.count()) {
     return await workflowRepository.find({
@@ -124,7 +131,7 @@ const installWorkflowFixtures = async (
   }
 
   const workflowEntities = workflowRepository.create(
-    fixtures.map((fixture) => {
+    fixtures.map(({ definitionYml: _, ...fixture }) => {
       return {
         ...fixture,
         createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
@@ -135,14 +142,12 @@ const installWorkflowFixtures = async (
     }),
   );
   const workflows = await workflowRepository.save(workflowEntities);
-  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
   const versions = await versionRepository.save(
     fixtures.map((fixture, index) => {
       return versionRepository.create({
         workflow: workflows[index],
         version: 1,
         definitionYml: fixture.definitionYml,
-        checksum: WorkflowVersionService.computeChecksum(fixture.definitionYml),
         action: WorkflowVersionAction.create,
         createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
       });

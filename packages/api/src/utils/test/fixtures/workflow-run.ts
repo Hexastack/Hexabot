@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { createHash } from 'crypto';
-
 import {
   Workflow as AgenticWorkflow,
   WorkflowDefinition,
@@ -100,6 +98,13 @@ const findRunsWithRelations = async (dataSource: DataSource) =>
   });
 const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
+  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+  WorkflowOrmEntity.registerEntityManagerProvider(
+    () => workflowRepository.manager,
+  );
+  WorkflowVersionOrmEntity.registerEntityManagerProvider(
+    () => versionRepository.manager,
+  );
   const existing = await workflowRepository.findOne({
     where: { id: workflowRunWorkflowFixtureId },
   });
@@ -127,13 +132,11 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const definitionYml = AgenticWorkflow.stringifyDefinition(
     workflowRunWorkflowDefinition,
   );
-  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
   const version = await versionRepository.save(
     versionRepository.create({
       workflow,
       version: 1,
       definitionYml,
-      checksum: createHash('sha256').update(definitionYml).digest('hex'),
       action: WorkflowVersionAction.create,
       createdBy: user ? { id: user.id } : undefined,
     }),

@@ -4,20 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { createHash } from 'crypto';
-
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
+  WorkflowNewVersionDto,
   WorkflowVersion,
-  WorkflowVersionCreateDto,
   WorkflowVersionDtoConfig,
   WorkflowVersionTransformerDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
+import { WorkflowVersionAction } from '../types';
+
+import { WorkflowService } from './workflow.service';
 
 @Injectable()
 export class WorkflowVersionService extends BaseOrmService<
@@ -29,34 +30,22 @@ export class WorkflowVersionService extends BaseOrmService<
    * Create the service with a workflow version repository.
    * @param repository Repository for workflow version entities.
    */
-  constructor(readonly repository: WorkflowVersionRepository) {
+  constructor(
+    readonly repository: WorkflowVersionRepository,
+    private readonly workflowService: WorkflowService,
+  ) {
     super(repository);
   }
 
   /**
-   * List workflow versions for a workflow, ordered by newest version first.
-   * @param workflowId Workflow identifier.
-   * @returns Matching workflow versions.
+   * Persist the version snapshot and mark as current version.
+   *
+   * @param payload - Workflow creation payload including the definition.
+   * @returns The current version set.
    */
-  async findByWorkflow(workflowId: string): Promise<WorkflowVersion[]> {
-    return await this.find({
-      where: { workflow: { id: workflowId } },
-      order: { version: 'DESC', createdAt: 'DESC' },
-    });
-  }
-
-  /**
-   * Find a workflow version by workflow id and version id.
-   * @param workflowId Workflow identifier.
-   * @param versionId Workflow version identifier.
-   * @returns The matching workflow version or null.
-   */
-  async findOneByWorkflow(
-    workflowId: string,
-    versionId: string,
-  ): Promise<WorkflowVersion | null> {
-    return await this.findOne({
-      where: { id: versionId, workflow: { id: workflowId } },
+  async commit(payload: WorkflowNewVersionDto) {
+    return await this.createSnapshot({
+      ...payload,
     });
   }
 
@@ -66,7 +55,7 @@ export class WorkflowVersionService extends BaseOrmService<
    * @returns The created workflow version.
    */
   public async createSnapshot(
-    params: WorkflowVersionCreateDto,
+    params: WorkflowNewVersionDto,
   ): Promise<WorkflowVersion> {
     const latestVersion = await this.findOne({
       where: { workflow: { id: params.workflow } },
@@ -77,20 +66,50 @@ export class WorkflowVersionService extends BaseOrmService<
     return await this.create({
       ...params,
       version: nextVersion,
-      checksum: WorkflowVersionService.computeChecksum(params.definitionYml),
-      parentVersion: params.parentVersionId
-        ? { id: params.parentVersionId }
-        : null,
-      createdBy: params.createdBy ? { id: params.createdBy } : null,
+      parentVersion: params.parentVersion,
+      createdBy: params.createdBy,
     });
   }
 
   /**
-   * Compute a SHA-256 checksum for the workflow definition.
-   * @param definitionYml Workflow definition in YAML format.
-   * @returns Hex-encoded checksum.
+   * Restore a workflow to a prior version by creating a new snapshot.
+   *
+   * @param workflowId - Workflow identifier.
+   * @param versionId - Version identifier to restore.
+   * @param payload - Optional restore metadata.
+   * @returns The updated workflow pointing at the restored version.
    */
-  public static computeChecksum(definitionYml: string): string {
-    return createHash('sha256').update(definitionYml).digest('hex');
+  async restoreVersion(
+    workflowId: string,
+    versionId: string,
+    payload: {
+      updatedBy: string;
+      message?: string | null;
+    },
+  ): Promise<WorkflowVersion> {
+    const targetVersion = await this.findOne({
+      where: { id: versionId, workflow: { id: workflowId } },
+    });
+
+    if (!targetVersion) {
+      throw new NotFoundException(
+        `Workflow version with ID ${versionId} not found`,
+      );
+    }
+
+    const restoredVersion = await this.createSnapshot({
+      workflow: workflowId,
+      definitionYml: targetVersion.definitionYml,
+      message: payload?.message ?? undefined,
+      action: WorkflowVersionAction.restore,
+      createdBy: payload?.updatedBy ?? null,
+      parentVersion: targetVersion.id,
+    });
+
+    await this.workflowService.updateOne(workflowId, {
+      currentVersion: restoredVersion.id,
+    });
+
+    return restoredVersion;
   }
 }

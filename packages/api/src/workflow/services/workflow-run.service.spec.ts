@@ -21,12 +21,14 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowRun } from '../dto/workflow-run.dto';
 import { Workflow } from '../dto/workflow.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
+import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
-import { WorkflowType } from '../types';
+import { WorkflowType, WorkflowVersionAction } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
+import { WorkflowVersionService } from './workflow-version.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowRunService (TypeORM)', () => {
@@ -35,6 +37,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   let workflowRepository: WorkflowRepository;
   let workflowRunService: WorkflowRunService;
   let workflowRunRepository: WorkflowRunRepository;
+  let workflowVersionService: WorkflowVersionService;
   let workflow: Workflow;
   let workflowRun: WorkflowRun;
   let counter = 0;
@@ -66,9 +69,14 @@ describe('WorkflowRunService (TypeORM)', () => {
         WorkflowRepository,
         WorkflowRunService,
         WorkflowRunRepository,
+        WorkflowVersionService,
       ],
       typeorm: {
-        entities: [WorkflowOrmEntity, WorkflowRunOrmEntity],
+        entities: [
+          WorkflowOrmEntity,
+          WorkflowRunOrmEntity,
+          WorkflowVersionOrmEntity,
+        ],
         fixtures: [installUserFixturesTypeOrm],
       },
     });
@@ -79,11 +87,13 @@ describe('WorkflowRunService (TypeORM)', () => {
       workflowRepository,
       workflowRunService,
       workflowRunRepository,
+      workflowVersionService,
     ] = await testing.getMocks([
       WorkflowService,
       WorkflowRepository,
       WorkflowRunService,
       WorkflowRunRepository,
+      WorkflowVersionService,
     ]);
   });
 
@@ -92,16 +102,24 @@ describe('WorkflowRunService (TypeORM)', () => {
     await workflowRepository.deleteMany();
     creatorId = userFixtureIds.admin;
 
-    const definition = buildWorkflowDefinition();
     workflow = await workflowService.create({
       name: `Run workflow ${++counter}`,
-      definitionYml: WorkflowHelper.stringifyDefinition(definition),
       description: 'Workflow for run tests',
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
       memoryDefinitions: [],
     });
+
+    const definition = buildWorkflowDefinition();
+    await workflowVersionService.commit({
+      workflow: workflow.id,
+      definitionYml: WorkflowHelper.stringifyDefinition(definition),
+      action: WorkflowVersionAction.create,
+      createdBy: creatorId,
+    });
+
+    workflow = (await workflowService.findOne(workflow.id))!;
 
     workflowRun = await workflowRunService.create({
       workflow: workflow.id,
