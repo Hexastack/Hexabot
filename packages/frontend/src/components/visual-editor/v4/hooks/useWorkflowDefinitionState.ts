@@ -180,6 +180,21 @@ export const useWorkflowDefinitionState = ({
       currentVersion?.id,
     ],
   );
+  const restoreVersion = useCallback(
+    (parentVersion: string, definitionYml: string) => {
+      if (!workflow?.id || !parentVersion || !definitionYml) {
+        return;
+      }
+
+      debouncedDefinitionUpdate.clear();
+      commitVersion({
+        action: WorkflowVersionAction.restore,
+        definitionYml,
+        parentVersion,
+      });
+    },
+    [debouncedDefinitionUpdate, workflow?.id, commitVersion],
+  );
 
   useEffect(() => {
     const nextYaml = currentVersion?.definitionYml ?? "";
@@ -202,6 +217,7 @@ export const useWorkflowDefinitionState = ({
     definition,
     updateDefinitionState,
     persistDefinition,
+    restoreVersion,
     isDefinitionDirty,
     updateWorkflow,
     isSaving,

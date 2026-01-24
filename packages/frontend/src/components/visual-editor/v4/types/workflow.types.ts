@@ -50,6 +50,7 @@ export interface IWorkflowContext {
   >;
   updateDefinition: (definition: WorkflowDefinition) => void;
   persistDefinition: (action?: WorkflowVersionAction) => void;
+  restoreVersion: (parentVersion: string, definitionYml: string) => void;
   isDefinitionDirty: boolean;
   isSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;

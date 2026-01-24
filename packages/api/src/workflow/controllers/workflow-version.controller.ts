@@ -26,12 +26,12 @@ import {
   WorkflowNewVersionDto,
   WorkflowVersion,
   WorkflowVersionDtoConfig,
-  WorkflowVersionRestoreDto,
   WorkflowVersionTransformerDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionService } from '../services/workflow-version.service';
 import { WorkflowService } from '../services/workflow.service';
+import { WorkflowVersionAction } from '../types';
 
 @Controller('workflow')
 export class WorkflowVersionController extends BaseOrmController<
@@ -65,14 +65,14 @@ export class WorkflowVersionController extends BaseOrmController<
   /**
    * Creates a new workflow definition version.
    *
-   * @param workflowVersionCreateDto - Workflow definition version object to persist.
+   * @param dto - Workflow definition version object to persist.
    *
    * @returns The newly created workflow.
    */
   @Post(':id/versions')
   async commit(
     @Param('id') id: string,
-    @Body() workflowVersionCreateDto: WorkflowNewVersionDto,
+    @Body() dto: WorkflowNewVersionDto,
     @Req() req: Request,
   ): Promise<WorkflowVersion> {
     const workflow = await this.workflowService.findOne(id);
@@ -88,8 +88,23 @@ export class WorkflowVersionController extends BaseOrmController<
       );
     }
 
+    if (dto.action === WorkflowVersionAction.restore) {
+      if (!dto.parentVersion) {
+        throw new UnauthorizedException('Parent version must be supplied ');
+      }
+
+      return await this.workflowVersionService.restoreVersion(
+        id,
+        dto.parentVersion,
+        {
+          updatedBy: userId,
+          message: dto?.message ?? null,
+        },
+      );
+    }
+
     return await this.workflowVersionService.commit({
-      ...workflowVersionCreateDto,
+      ...dto,
       workflow: id,
       parentVersion: workflow.currentVersion,
       createdBy: userId,
@@ -167,40 +182,5 @@ export class WorkflowVersionController extends BaseOrmController<
     }
 
     return version;
-  }
-
-  /**
-   * Restores a workflow by creating a new version from an older snapshot.
-   *
-   * @param id - The workflow ID.
-   * @param versionId - The version identifier to restore.
-   * @param payload - Optional message for the restored version.
-   * @param req - Express request containing the authenticated session.
-   */
-  @Post(':id/versions/:versionId/restore')
-  async restoreVersion(
-    @Param('id') id: string,
-    @Param('versionId') versionId: string,
-    @Body() payload: WorkflowVersionRestoreDto,
-    @Req() req?: Request,
-  ): Promise<WorkflowVersion> {
-    const workflow = await this.workflowService.findOneAndPopulate(id);
-
-    if (!workflow) {
-      throw new NotFoundException(`Workflow with ID ${id} not found`);
-    }
-
-    const userId = req?.session?.passport?.user?.id;
-
-    if (!userId) {
-      throw new UnauthorizedException(
-        'Only authenticated users can create workflows',
-      );
-    }
-
-    return await this.workflowVersionService.restoreVersion(id, versionId, {
-      updatedBy: userId,
-      message: payload?.message ?? null,
-    });
   }
 }
