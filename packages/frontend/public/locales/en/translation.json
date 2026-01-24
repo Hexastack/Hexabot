@@ -494,7 +494,8 @@
     "full_name": "First and last name",
     "password": "Password",
     "current_flow": "Current flow",
-    "all_flows": "All flows"
+    "all_flows": "All flows",
+    "types": "Types"
   },
   "placeholder": {
     "your_username": "Your username",

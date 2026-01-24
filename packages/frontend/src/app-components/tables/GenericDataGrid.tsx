@@ -7,35 +7,36 @@
 import { Chip } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
-    DataGridProps,
-    GridColDef,
-    GridRowSelectionModel,
+  DataGridProps,
+  GridColDef,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 
 import { useDataGridProps } from "@/hooks/useDataGridProps";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
-import { Format } from "@/services/types";
 import { THook } from "@/types/base.types";
 import {
-    SearchHookOptions,
-    SearchPayload,
-    TParamItem,
+  SearchHookOptions,
+  SearchPayload,
+  TParamItem,
 } from "@/types/search.types";
 
 import {
-    ButtonActionsGroup,
-    ButtonActionsGroupProps,
+  ButtonActionsGroup,
+  ButtonActionsGroupProps,
 } from "../buttons/ButtonActionsGroup";
 import { FilterTextfield } from "../inputs/FilterTextfield";
 import { TMenuItem } from "../menus/Sidebar";
 
 import { DataGrid } from "./DataGrid";
+import { GenericFilters, GenericFiltersProps } from "./GenericFilters";
 
 export const GenericDataGrid = <
   TP extends THook["params"],
-  TE extends THook<TP>["entity"],
+  TE extends TP["entity"],
+  F extends TP["format"],
 >({
   entity,
   buttons,
@@ -48,22 +49,24 @@ export const GenericDataGrid = <
   headerLeftButtons,
   headerFilterInputs,
   selectionChangeHandler,
+  filters,
   ...restDataGridProps
 }: {
   entity: TE;
   buttons?: ButtonActionsGroupProps["buttons"];
-  columns: GridColDef<THook<{ entity: TE }>["basic"]>[];
   headerIcon?: TMenuItem["Icon"];
   searchParams: TParamItem<TE> &
     SearchHookOptions & {
       getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;
     };
-  format?: Format;
+  format?: F;
+  columns: GridColDef<THook<{ entity: TE; format: F }>["current"]>[];
   headerI18nTitle?: TTranslationKeys;
   headerTitleChip?: string;
   headerLeftButtons?: React.ReactElement;
   headerFilterInputs?: React.ReactElement;
   selectionChangeHandler?: (selection: GridRowSelectionModel) => void;
+  filters?: GenericFiltersProps<TP, TE, F>[];
 } & DataGridProps) => {
   const { t } = useTranslate();
   const { dataGridProps, onSearch, searchText } = useDataGridProps(
@@ -99,6 +102,7 @@ export const GenericDataGrid = <
             <Grid size="auto" maxWidth="300px">
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
+            <GenericFilters filters={filters} />
             <Grid size="auto">
               {headerFilterInputs}
               {buttons ? (

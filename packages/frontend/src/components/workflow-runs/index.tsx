@@ -5,41 +5,34 @@
  */
 
 import { WorkflowRunStatus } from "@hexabot-ai/agentic";
-import { Chip, MenuItem } from "@mui/material";
-import Grid from "@mui/material/Grid";
 import { GridColDef } from "@mui/x-data-grid";
-import { Activity } from "lucide-react";
+import { Activity, GalleryHorizontalEnd } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
+import { BadgeWithTitle } from "@/app-components/displays/Badge";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { TQuery, useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryChange } from "@/hooks/useQueryChange";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { THook } from "@/types/base.types";
-import { EWorkflowRunStatus, IWorkflowRun } from "@/types/workflow-run.types";
-import { IWorkflow, WorkflowType } from "@/types/workfow.types";
+import { IWorkflowRunFull } from "@/types/workflow-run.types";
 import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
 
-const STATUS_COLORS = {
-  idle: "default",
-  running: "info",
-  suspended: "warning",
-  finished: "success",
-  failed: "error",
-} as const;
+import {
+  BASE_STATUS,
+  BASE_TYPES,
+} from "../visual-editor/v4/components/main/FlowsDrawer/constants";
 
 export const WorkflowRuns = () => {
   const { t } = useTranslate();
-  const columns: GridColDef<IWorkflowRun>[] = useMemo(
+  const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
+  const columns: GridColDef<IWorkflowRunFull>[] = useMemo(
     () => [
       { field: "id", headerName: "ID", width: 100 },
       {
-        minWidth: 160,
+        maxWidth: 160,
         field: "createdAt",
         headerName: t("label.createdAt"),
         disableColumnMenu: true,
@@ -52,55 +45,32 @@ export const WorkflowRuns = () => {
       {
         flex: 1,
         minWidth: 200,
-        field: "name",
+        field: "workflow.name",
+        resizable: true,
         headerName: t("label.workflow"),
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        renderCell: ({ row: { workflow } }) => (
-          <ChipEntity
-            id={workflow}
-            key={workflow}
-            variant="role"
-            field="name"
-            entity={EntityType.WORKFLOW}
-          />
-        ),
+        renderCell: ({ row }) => {
+          const workflowId = String(row.workflow);
+          const { type, name } = getWorkflowFromCache(workflowId)!;
+
+          return <BadgeWithTitle {...BASE_TYPES[type]} title={name} />;
+        },
       },
       {
-        minWidth: 140,
-        field: "type",
-        headerName: t("label.type"),
-        disableColumnMenu: true,
-        renderHeader,
-        headerAlign: "left",
-        renderCell: ({ row: { workflow } }) => (
-          <ChipEntity
-            id={workflow}
-            key={workflow}
-            variant="role"
-            field="type"
-            entity={EntityType.WORKFLOW}
-          />
-        ),
-      },
-      {
-        minWidth: 120,
+        maxWidth: 120,
         field: "status",
         headerName: t("label.status"),
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        renderCell: ({ row }) => (
-          <Chip
-            label={row.status}
-            color={STATUS_COLORS[row.status] || "default"}
-            size="small"
-          />
+        renderCell: ({ value }) => (
+          <BadgeWithTitle {...BASE_STATUS[value]} title={value} />
         ),
       },
       {
-        minWidth: 120,
+        maxWidth: 100,
         field: "duration",
         headerName: t("label.duration"),
         sortable: false,
@@ -125,8 +95,8 @@ export const WorkflowRuns = () => {
     [t],
   );
   const router = useAppRouter();
-  const workflowName = useQueryChange("workflow");
-  const workflowType = useQueryChange("type");
+  const workflowName = useQueryChange("workflow.name");
+  const workflowType = useQueryChange("workflow.type");
   const workflowRunStatus = useQueryChange("status");
   const updateQuery = useCallback(
     <F extends keyof TQuery>(field: F, value?: TQuery[F]) => {
@@ -139,83 +109,81 @@ export const WorkflowRuns = () => {
   );
 
   return (
-    <>
-      <Grid container gap="15px" pb="10px" px="8px">
-        <Grid flex={1}>
-          <AutoCompleteEntitySelect<IWorkflow, "name", false>
-            value={workflowName}
-            searchFields={[]}
-            entity={EntityType.WORKFLOW}
-            format={Format.BASIC}
-            idKey="name"
-            labelKey="name"
-            label={t("label.workflow")}
-            multiple={false}
-            onChange={(_e, value) => {
-              updateQuery("workflow", value?.name);
-            }}
-          />
-        </Grid>
-        <Grid flex={1}>
-          <Input
-            onChange={(e) => {
-              updateQuery("type", e.target.value);
-            }}
-            label={t("label.type")}
-            select
-            value={workflowType || ""}
-          >
-            <MenuItem value="">{t("label.all")}</MenuItem>
-            {Object.entries(WorkflowType).map(([key, value]) => (
-              <MenuItem key={key} value={value}>
-                {value.charAt(0).toUpperCase() + value.slice(1)}
-              </MenuItem>
-            ))}
-          </Input>
-        </Grid>
-        <Grid flex={1}>
-          <Input
-            onChange={(e) => {
-              updateQuery(
-                "status",
-                e.target.value as WorkflowRunStatus | undefined,
-              );
-            }}
-            label={t("label.status")}
-            select
-            value={workflowRunStatus || ""}
-          >
-            <MenuItem value="">{t("label.all")}</MenuItem>
-            {Object.entries(EWorkflowRunStatus).map(([key, value]) => (
-              <MenuItem key={key} value={value}>
-                {value.charAt(0).toUpperCase() + value.slice(1)}
-              </MenuItem>
-            ))}
-          </Input>
-        </Grid>
-      </Grid>
-      <GenericDataGrid
-        entity={EntityType.WORKFLOW_RUN}
-        format={Format.FULL}
-        columns={
-          columns as GridColDef<
-            THook<{ entity: EntityType.WORKFLOW_RUN }>["basic"]
-          >[]
-        }
-        headerIcon={Activity}
-        searchParams={{
-          $iLike: ["status", "error"],
-          syncUrl: true,
-          $eq: [
-            {
-              status: workflowRunStatus,
-              "workflow.name": workflowName,
-              "workflow.type": workflowType,
-            },
-          ],
-        }}
-        headerI18nTitle="title.workflow_runs"
-      />
-    </>
+    <GenericDataGrid
+      entity={EntityType.WORKFLOW_RUN}
+      format={Format.FULL}
+      columns={columns}
+      headerIcon={Activity}
+      searchParams={{
+        $iLike: ["status", "error"],
+        syncUrl: true,
+        $eq: [
+          {
+            status:
+              !workflowRunStatus || workflowRunStatus === "all"
+                ? undefined
+                : (workflowRunStatus as WorkflowRunStatus),
+            "workflow.name": workflowName,
+            "workflow.type": workflowType === "all" ? undefined : workflowType,
+          },
+        ],
+      }}
+      filters={[
+        {
+          entity: EntityType.WORKFLOW,
+          type: "entitySelect",
+          field: "workflow.name",
+          value: workflowName,
+          label: t("label.workflow"),
+          defaultOption: {
+            icon: GalleryHorizontalEnd,
+            title: `${t("label.all")} ${t("label.types")}`,
+            background: "#f8f8f8",
+            defaultValue: "all",
+          },
+          typeInfo: BASE_TYPES,
+          onChange: (e, workflow) => {
+            updateQuery("workflow.name", workflow?.name);
+          },
+          format: Format.BASIC,
+          labelKey: "name",
+          searchFields: [],
+          idKey: "name",
+        },
+        {
+          type: "enumFilter",
+          field: "workflow.type",
+          value: workflowType,
+          label: t("label.type"),
+          defaultOption: {
+            icon: GalleryHorizontalEnd,
+            title: `${t("label.all")} ${t("label.types")}`,
+            background: "#f8f8f8",
+            defaultValue: "all",
+          },
+          typeInfo: BASE_TYPES,
+          onChange: ({ target }) => {
+            updateQuery("workflow.type", target.value);
+          },
+        },
+        {
+          type: "enumFilter",
+          field: "status",
+          value: workflowRunStatus,
+          label: t("label.status"),
+          defaultOption: {
+            icon: GalleryHorizontalEnd,
+            title: `${t("label.all")} ${t("label.status")}`,
+            background: "#f8f8f8",
+            defaultValue: "all",
+          },
+          typeInfo: BASE_STATUS,
+          onChange: ({ target }) => {
+            updateQuery("status", target.value);
+          },
+        },
+      ]}
+      headerI18nTitle="title.workflow_runs"
+    />
   );
 };

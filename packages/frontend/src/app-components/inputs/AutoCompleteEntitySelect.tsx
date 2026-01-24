@@ -19,7 +19,7 @@ import AutoCompleteSelect from "./AutoCompleteSelect";
 
 const PAGE_SIZE = 20;
 
-type AutoCompleteEntitySelectProps<
+export type AutoCompleteEntitySelectProps<
   Value,
   Label extends keyof Value = keyof Value,
   Multiple extends boolean | undefined = true,
