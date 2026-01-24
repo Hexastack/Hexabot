@@ -89,7 +89,7 @@ export interface IFormat<F = Format> {
 }
 
 export const POPULATE_BY_TYPE = {
-  [EntityType.WORKFLOW]: ["currentVersion"],
+  [EntityType.WORKFLOW]: ["currentVersion", "publishedVersion"],
   [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
   [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.WORKFLOW_RUN]: ["workflow", "triggeredBy"],

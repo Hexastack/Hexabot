@@ -44,17 +44,27 @@ export const useWorkflowDefinitionState = ({
     {
       invalidate: true,
       routeParams: { id: workflow?.id },
-      onSuccess(data) {
+      onSuccess(data, variables) {
+        const isPublish = variables?.action === WorkflowVersionAction.publish;
+
         queryClient.setQueryData(
           [QueryType.item, EntityType.WORKFLOW, workflow?.id],
           (cached?: IWorkflow) => {
             if (!cached) {
               return workflow
-                ? { ...workflow, currentVersion: data.id }
+                ? {
+                    ...workflow,
+                    currentVersion: data.id,
+                    ...(isPublish ? { publishedVersion: data.id } : {}),
+                  }
                 : cached;
             }
 
-            return { ...cached, currentVersion: data.id };
+            return {
+              ...cached,
+              currentVersion: data.id,
+              ...(isPublish ? { publishedVersion: data.id } : {}),
+            };
           },
         );
       },
@@ -137,26 +147,39 @@ export const useWorkflowDefinitionState = ({
     [debouncedDefinitionUpdate],
   );
   // Immediate commit of the definition version
-  const persistDefinition = useCallback(() => {
-    if (!workflow?.id || !definition || definitionError || !isDefinitionDirty) {
-      return;
-    }
+  const persistDefinition = useCallback(
+    (action: WorkflowVersionAction = WorkflowVersionAction.update) => {
+      if (!workflow?.id || !definition || definitionError) {
+        return;
+      }
 
-    definitionSignatureRef.current =
-      WorkflowHelper.stringifyDefinition(definition);
-    debouncedDefinitionUpdate.clear();
-    commitVersion({
-      action: WorkflowVersionAction.update,
-      definitionYml: definitionSignatureRef.current,
-    });
-  }, [
-    debouncedDefinitionUpdate,
-    definition,
-    definitionError,
-    workflow?.id,
-    isDefinitionDirty,
-    commitVersion,
-  ]);
+      const shouldPersist =
+        action === WorkflowVersionAction.publish || isDefinitionDirty;
+
+      if (!shouldPersist) {
+        return;
+      }
+
+      definitionSignatureRef.current =
+        WorkflowHelper.stringifyDefinition(definition);
+      debouncedDefinitionUpdate.clear();
+      commitVersion({
+        action,
+        definitionYml: definitionSignatureRef.current,
+        parentVersion:
+          action === WorkflowVersionAction.publish ? currentVersion?.id : null,
+      });
+    },
+    [
+      debouncedDefinitionUpdate,
+      definition,
+      definitionError,
+      workflow?.id,
+      isDefinitionDirty,
+      commitVersion,
+      currentVersion?.id,
+    ],
+  );
 
   useEffect(() => {
     const nextYaml = currentVersion?.definitionYml ?? "";

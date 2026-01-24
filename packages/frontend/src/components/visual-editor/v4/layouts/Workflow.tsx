@@ -5,8 +5,9 @@
  */
 
 import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
-import { Box, styled } from "@mui/material";
+import { Box, Button, styled } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
+import { CloudUpload } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -21,6 +22,7 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
+import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
@@ -60,6 +62,12 @@ const WorkflowTitleOverlay = styled(Box)(() => ({
   zIndex: 2,
   maxWidth: "calc(100% - 24px)",
 }));
+const WorkflowPublishOverlay = styled(Box)(() => ({
+  position: "absolute",
+  top: 12,
+  right: 12,
+  zIndex: 2,
+}));
 
 export const Workflow = () => {
   const { setViewport } = useReactFlow();
@@ -74,7 +82,7 @@ export const Workflow = () => {
     definition,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
-    saveDefinition,
+    persistDefinition,
     actions,
     addActionStep,
   } = useWorkflow();
@@ -101,6 +109,12 @@ export const Workflow = () => {
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
   const typeInfo = workflow ? BASE_TYPES[workflow.type] : undefined;
+  const publishLabel = t("button.publish");
+  const isCurrentVersionPublished =
+    Boolean(workflow?.currentVersion) &&
+    workflow?.currentVersion === workflow?.publishedVersion;
+  const isPublishDisabled =
+    !definition || isDefinitionSaving || isCurrentVersionPublished;
   const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
     setPendingInsertPath(insertPath);
     setActionsDrawerOpen(true);
@@ -264,7 +278,7 @@ export const Workflow = () => {
               typeBackground={typeInfo?.background}
               onEdit={handleEditWorkflow}
               onOpenMenu={handleOpenMenu}
-              onSave={saveDefinition}
+              onSave={() => persistDefinition()}
               saveDisabled={!definition || !isDefinitionDirty}
               saveLoading={isDefinitionSaving}
               saveLabel={t("button.save")}
@@ -272,6 +286,23 @@ export const Workflow = () => {
               moreLabel={t("button.more")}
             />
           </WorkflowTitleOverlay>
+        )}
+        {workflow && (
+          <WorkflowPublishOverlay>
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              aria-label={publishLabel}
+              startIcon={<CloudUpload />}
+              onClick={() => {
+                persistDefinition(WorkflowVersionAction.publish);
+              }}
+              disabled={isPublishDisabled}
+            >
+              {publishLabel}
+            </Button>
+          </WorkflowPublishOverlay>
         )}
         {isEmptyWorkflow && (
           <WorkflowEmptyState
