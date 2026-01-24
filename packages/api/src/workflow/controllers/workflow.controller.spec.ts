@@ -139,6 +139,7 @@ describe('WorkflowController (TypeORM)', () => {
               parentVersion: null,
               version: 1,
             },
+            publishedVersion: null,
           },
         ],
         [...IGNORED_TEST_FIELDS, 'createdBy', 'action', 'checksum', 'workflow'],
@@ -227,7 +228,7 @@ describe('WorkflowController (TypeORM)', () => {
           ...updates,
           createdBy: userFixtureIds.admin,
         },
-        [...IGNORED_TEST_FIELDS, 'currentVersion'],
+        [...IGNORED_TEST_FIELDS, 'currentVersion', 'publishedVersion'],
       );
     });
 

@@ -24,6 +24,7 @@ export interface IWorkflowVersionAttributes {
   checksum?: string;
   message?: string | null;
   action: WorkflowVersionAction;
+  parentVersion?: string | null;
 }
 
 export interface IWorkflowVersionStub

@@ -29,14 +29,6 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
 export class WorkflowVersionOrmEntity extends BaseOrmEntity {
-  private static readonly CURRENT_VERSION_ACTIONS =
-    new Set<WorkflowVersionAction>([
-      WorkflowVersionAction.create,
-      WorkflowVersionAction.update,
-      WorkflowVersionAction.restore,
-      WorkflowVersionAction.import,
-    ]);
-
   /** Workflow that owns this version snapshot. */
   @ManyToOne(() => WorkflowOrmEntity, {
     nullable: false,
@@ -113,11 +105,8 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity {
   }
 
   @AfterInsert()
-  protected async updateWorkflowCurrentVersion(): Promise<void> {
-    if (
-      !this.action ||
-      !WorkflowVersionOrmEntity.CURRENT_VERSION_ACTIONS.has(this.action)
-    ) {
+  protected async updateWorkflowVersions(): Promise<void> {
+    if (!this.action) {
       return;
     }
 
@@ -131,6 +120,9 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity {
     const workflow = manager.create(WorkflowOrmEntity, {
       id: workflowId,
       currentVersion: { id: this.id },
+      ...(this.action === WorkflowVersionAction.publish
+        ? { publishedVersion: { id: this.id } }
+        : {}),
     });
     await manager.save(WorkflowOrmEntity, workflow);
   }

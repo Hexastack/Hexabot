@@ -51,12 +51,14 @@ export const buildHighlightSegments = (text: string, matches: number[]) => {
   return segments;
 };
 
+// @todo: (error count is not part of the typing, maybe expose the info in the useWorkflowDefinitionState hook)
 export const getErrorCount = (workflow: IWorkflow) => {
   const value = (workflow as { errorCount?: number }).errorCount;
 
   return typeof value === "number" && value > 0 ? value : 0;
 };
 
+// @todo: revisit (move to useWorkflowDefinitionState hook ?)
 export const isDraftWorkflow = (workflow: IWorkflow) => {
-  return !workflow.currentVersion;
+  return !workflow.publishedVersion;
 };

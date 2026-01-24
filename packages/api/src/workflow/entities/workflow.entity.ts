@@ -102,6 +102,19 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @RelationId((workflow: WorkflowOrmEntity) => workflow.currentVersion)
   private readonly currentVersionId?: string | null;
 
+  /** Published workflow definition snapshot (null means draft). */
+  @ManyToOne(() => WorkflowVersionOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'published_version_id' })
+  @AsRelation()
+  publishedVersion?: WorkflowVersionOrmEntity | null;
+
+  /** Identifier of the published version (for lightweight DTO projection). */
+  @RelationId((workflow: WorkflowOrmEntity) => workflow.publishedVersion)
+  private readonly publishedVersionId?: string | null;
+
   @Column({
     type: 'decimal',
     default: 0,

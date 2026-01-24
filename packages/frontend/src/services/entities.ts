@@ -245,6 +245,7 @@ export const WorkflowEntity = new schema.Entity(
   EntityType.WORKFLOW,
   {
     currentVersion: WorkflowVersionEntity,
+    publishedVersion: WorkflowVersionEntity,
   },
   {
     idAttribute: ({ id }) => id,

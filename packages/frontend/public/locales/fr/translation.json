@@ -550,6 +550,7 @@
     "restore": "Restaurer",
     "edit": "Modifier",
     "save": "Sauvegarder",
+    "publish": "Publier",
     "submit": "Valider",
     "cancel": "Annuler",
     "add": "Ajouter",
@@ -734,6 +735,9 @@
         "publish": "Publiée",
         "unknown": "Mise à jour"
       }
+    },
+    "workflow_title_bar": {
+      "last_saved": "Dernière sauvegarde {{0}}"
     }
   }
 }

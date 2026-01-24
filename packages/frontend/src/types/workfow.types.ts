@@ -48,11 +48,13 @@ export interface IWorkflowStub
 
 export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {
   currentVersion: string | null;
+  publishedVersion: string | null;
   memoryDefinitions: string[];
 }
 
 export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {
   currentVersion: IWorkflowVersion | null;
+  publishedVersion: IWorkflowVersion | null;
   definitionYml: string;
   definition: WorkflowDefinition;
   memoryDefinitions: IMemoryDefinition[];
