@@ -69,6 +69,9 @@ export class Workflow extends WorkflowStub {
   @Expose({ name: 'currentVersionId' })
   currentVersion: string | null;
 
+  @Expose({ name: 'publishedVersionId' })
+  publishedVersion: string | null;
+
   @Expose({ name: 'createdById' })
   createdBy!: string;
 
@@ -81,6 +84,10 @@ export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => WorkflowVersion)
   currentVersion!: WorkflowVersion | null;
+
+  @Expose()
+  @Type(() => WorkflowVersion)
+  publishedVersion!: WorkflowVersion | null;
 
   @Expose()
   @Type(() => User)
@@ -222,6 +229,13 @@ export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
     message: 'Current version must be a valid UUID',
   })
   currentVersion?: string | null;
+
+  @ApiPropertyOptional({ description: 'Published version', type: String })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'Published version must be a valid UUID',
+  })
+  publishedVersion?: string | null;
 }
 
 export type WorkflowDtoConfig = DtoActionConfig<{

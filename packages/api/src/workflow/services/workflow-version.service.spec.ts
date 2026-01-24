@@ -128,4 +128,32 @@ describe('WorkflowVersionService (TypeORM)', () => {
       expect(created.message).toBe('Update workflow');
     });
   });
+
+  describe('published versions', () => {
+    it('treats new workflows as draft when no published version exists', async () => {
+      const workflow = await createWorkflow();
+      const stored = await workflowRepository.findOne({
+        where: { id: workflow.id },
+        relations: ['publishedVersion'],
+      });
+
+      expect(stored?.publishedVersion ?? null).toBeNull();
+    });
+
+    it('updates the workflow published version when publishing a snapshot', async () => {
+      const workflow = await createWorkflow();
+      const published = await workflowVersionService.createSnapshot({
+        workflow: workflow.id,
+        definitionYml: 'version: 1',
+        action: WorkflowVersionAction.publish,
+        createdBy: userFixtureIds.admin,
+      });
+      const stored = await workflowRepository.findOne({
+        where: { id: workflow.id },
+        relations: ['publishedVersion'],
+      });
+
+      expect(stored?.publishedVersion?.id).toBe(published.id);
+    });
+  });
 });
