@@ -26,10 +26,15 @@ export const useCount = <TE extends THook["entity"]>(
   >,
 ) => {
   const api = useEntityApiClient(entity);
+  const { routeParams, ...otherOptions } = options ?? {};
 
   return useTanstackQuery({
-    ...options,
-    queryFn: () => api.count({ where: params }),
-    queryKey: [QueryType.count, entity, JSON.stringify(params)],
+    ...otherOptions,
+    queryFn: () => api.count({ where: params }, routeParams),
+    queryKey: [
+      QueryType.count,
+      entity,
+      JSON.stringify({ params, routeParams }),
+    ],
   });
 };

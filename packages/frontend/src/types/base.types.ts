@@ -67,6 +67,11 @@ import {
   IWorkflowRunFull,
 } from "./workflow-run.types";
 import {
+  IWorkflowVersion,
+  IWorkflowVersionAttributes,
+  IWorkflowVersionFull,
+} from "./workfow-version.types";
+import {
   IWorkflow,
   IWorkflowAttributes,
   IWorkflowFilters,
@@ -84,7 +89,8 @@ export interface IFormat<F = Format> {
 }
 
 export const POPULATE_BY_TYPE = {
-  [EntityType.WORKFLOW]: [],
+  [EntityType.WORKFLOW]: ["currentVersion"],
+  [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
   [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.WORKFLOW_RUN]: ["workflow", "triggeredBy"],
   [EntityType.MEMORY_DEFINITION]: [],
@@ -142,6 +148,12 @@ export interface IEntityMapTypes {
     IWorkflowAttributes,
     IWorkflowFilters,
     IWorkflowFull
+  >;
+  [EntityType.WORKFLOW_VERSION]: IEntityTypes<
+    IWorkflowVersion,
+    IWorkflowVersionAttributes,
+    never,
+    IWorkflowVersionFull
   >;
   [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<IAction, IActionAttributes>;
   [EntityType.WORKFLOW_RUN]: IEntityTypes<

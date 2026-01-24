@@ -8,66 +8,67 @@ import {
   type WorkflowCompileOptions,
   type WorkflowDefinition,
   Workflow as WorkflowHelper,
+  validateWorkflow,
 } from "@hexabot-ai/agentic";
 import debounce from "@mui/utils/debounce";
-import {
-  type Dispatch,
-  type SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useCreate } from "@/hooks/crud/useCreate";
+import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
+import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
-import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
+import { EntityType, QueryType } from "@/services/types";
+import { WorkflowVersionAction } from "@/types/workfow-version.types";
+import type { IWorkflow } from "@/types/workfow.types";
 
 import { getDefinition } from "../utils/workflow-node.utils";
 
-type UpdateWorkflow = (payload: {
-  id: string;
-  params: Partial<IWorkflowAttributes>;
-}) => void;
-
 type UseWorkflowDefinitionStateArgs = {
-  flowId?: string;
   workflow?: IWorkflow;
   actionsByName: WorkflowCompileOptions["actions"];
   hasActions: boolean;
-  updateWorkflow: UpdateWorkflow;
-};
-
-type UseWorkflowDefinitionStateResult = {
-  yaml: string;
-  setYaml: Dispatch<SetStateAction<string>>;
-  definition?: WorkflowDefinition;
-  updateDefinition: (nextDefinition: WorkflowDefinition) => void;
-  saveDefinition: () => void;
-  isDefinitionDirty: boolean;
 };
 
 export const useWorkflowDefinitionState = ({
-  flowId,
   workflow,
   actionsByName,
   hasActions,
-  updateWorkflow,
-}: UseWorkflowDefinitionStateArgs): UseWorkflowDefinitionStateResult => {
-  const [yaml, setYaml] = useState("");
+}: UseWorkflowDefinitionStateArgs) => {
+  const queryClient = useTanstackQueryClient();
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
+    invalidate: false,
+  });
+  const { mutate: commitVersion, isPending: isSaving } = useCreate(
+    EntityType.WORKFLOW_VERSION,
+    {
+      invalidate: true,
+      routeParams: { id: workflow?.id },
+      onSuccess(data) {
+        queryClient.setQueryData(
+          [QueryType.item, EntityType.WORKFLOW, workflow?.id],
+          (cached?: IWorkflow) => {
+            if (!cached) {
+              return workflow
+                ? { ...workflow, currentVersion: data.id }
+                : cached;
+            }
+
+            return { ...cached, currentVersion: data.id };
+          },
+        );
+      },
+    },
+  );
+  const getVersionFromCache = useGetFromCache(EntityType.WORKFLOW_VERSION);
+  const currentVersion = workflow?.currentVersion
+    ? getVersionFromCache(workflow?.currentVersion)
+    : null;
+  const [yaml, setYaml] = useState(
+    currentVersion ? currentVersion.definitionYml : "",
+  );
   const definitionSignatureRef = useRef("");
-  const workflowDefinitionYaml = useMemo(() => {
-    if (workflow?.definitionYaml) {
-      return workflow.definitionYaml;
-    }
-
-    if (workflow?.definition) {
-      return WorkflowHelper.stringifyDefinition(workflow.definition);
-    }
-
-    return "";
-  }, [workflow?.definition, workflow?.definitionYaml]);
-  const definitionResult = useMemo(() => {
+  const { definition, error: definitionError } = useMemo(() => {
     if (!yaml || !hasActions) {
       return { definition: undefined, error: null };
     }
@@ -82,84 +83,88 @@ export const useWorkflowDefinitionState = ({
     } catch (error) {
       return { definition: undefined, error: error as Error };
     }
-  }, [actionsByName, hasActions, yaml]);
-  const definition = definitionResult.definition;
-  const definitionError = definitionResult.error;
+  }, [actionsByName, hasActions, yaml, workflow?.id]);
+  // New definition version not yet saved ?
   const isDefinitionDirty = useMemo(() => {
-    if (!flowId) {
+    if (workflow?.currentVersion && !currentVersion) {
       return false;
     }
 
-    return workflowDefinitionYaml !== yaml;
-  }, [flowId, workflowDefinitionYaml, yaml]);
-  const updateDefinition = (nextDefinition: WorkflowDefinition) => {
-    setYaml(WorkflowHelper.stringifyDefinition(nextDefinition));
-  };
+    const baseline = currentVersion?.definitionYml ?? "";
+
+    return baseline !== yaml;
+  }, [currentVersion?.definitionYml, workflow?.currentVersion, yaml]);
+  // Commit new definition version
   const debouncedDefinitionUpdate = useSafeCallback(
-    debounce((nextDefinition: WorkflowDefinition) => {
-      if (!flowId) {
+    debounce((nextDefinitionYml: string) => {
+      if (!workflow?.id) {
         return;
       }
 
-      updateWorkflow({
-        id: flowId,
-        params: {
-          definition: nextDefinition,
-        },
+      const validation = validateWorkflow(nextDefinitionYml);
+
+      if (!validation.success) {
+        return;
+      }
+
+      commitVersion({
+        action: WorkflowVersionAction.update,
+        definitionYml: nextDefinitionYml,
       });
     }, 4000),
-    [flowId, updateWorkflow],
+    [workflow?.id, commitVersion],
     (memoizedFn) => {
       memoizedFn.clear();
     },
   );
-  const saveDefinition = useCallback(() => {
-    if (!flowId || !definition || definitionError || !isDefinitionDirty) {
+  // Update local YML stae
+  const updateDefinitionState = useCallback(
+    (nextDefinition: string | WorkflowDefinition) => {
+      const nextSignature =
+        typeof nextDefinition === "string"
+          ? nextDefinition
+          : WorkflowHelper.stringifyDefinition(nextDefinition);
+
+      if (definitionSignatureRef.current === nextSignature) {
+        return;
+      }
+
+      definitionSignatureRef.current = nextSignature;
+
+      setYaml(nextSignature);
+      debouncedDefinitionUpdate(nextSignature);
+    },
+    [debouncedDefinitionUpdate],
+  );
+  // Immediate commit of the definition version
+  const persistDefinition = useCallback(() => {
+    if (!workflow?.id || !definition || definitionError || !isDefinitionDirty) {
       return;
     }
 
     definitionSignatureRef.current =
       WorkflowHelper.stringifyDefinition(definition);
     debouncedDefinitionUpdate.clear();
-    updateWorkflow({
-      id: flowId,
-      params: {
-        definition,
-      },
+    commitVersion({
+      action: WorkflowVersionAction.update,
+      definitionYml: definitionSignatureRef.current,
     });
   }, [
     debouncedDefinitionUpdate,
     definition,
     definitionError,
-    flowId,
+    workflow?.id,
     isDefinitionDirty,
-    updateWorkflow,
+    commitVersion,
   ]);
 
   useEffect(() => {
-    const nextYaml =
-      workflow?.definitionYaml ??
-      (workflow?.definition
-        ? WorkflowHelper.stringifyDefinition(workflow.definition)
-        : "");
+    const nextYaml = currentVersion?.definitionYml ?? "";
 
     definitionSignatureRef.current = nextYaml;
     setYaml(nextYaml);
-  }, [workflow?.definition, workflow?.definitionYaml, workflow?.id]);
-  useEffect(() => {
-    if (!flowId || !definition || definitionError) {
-      return;
-    }
+  }, [currentVersion, workflow?.id]);
 
-    const nextSignature = WorkflowHelper.stringifyDefinition(definition);
-
-    if (definitionSignatureRef.current === nextSignature) {
-      return;
-    }
-
-    definitionSignatureRef.current = nextSignature;
-    debouncedDefinitionUpdate(definition);
-  }, [debouncedDefinitionUpdate, definition, definitionError, flowId]);
   useEffect(() => {
     if (!definitionError) {
       return;
@@ -171,10 +176,11 @@ export const useWorkflowDefinitionState = ({
 
   return {
     yaml,
-    setYaml,
     definition,
-    updateDefinition,
-    saveDefinition,
+    updateDefinitionState,
+    persistDefinition,
     isDefinitionDirty,
+    updateWorkflow,
+    isSaving,
   };
 };

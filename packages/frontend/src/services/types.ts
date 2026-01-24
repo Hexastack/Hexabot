@@ -6,6 +6,8 @@
 
 import { UseMutationOptions } from "@/types/tanstack.types";
 
+import { RouteParams } from "./api.class";
+
 export enum EntityType {
   SUBSCRIBER = "Subscriber",
   LABEL = "Label",
@@ -31,6 +33,7 @@ export enum EntityType {
   FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
+  WORKFLOW_VERSION = "WorkflowVersion",
   WORKFLOW_ACTIONS = "WorkflowActions",
   WORKFLOW_RUN = "WorkflowRun",
   MEMORY_DEFINITION = "MemoryDefinition",
@@ -82,7 +85,9 @@ export type TMutationOptions<
     invalidate?: boolean;
   },
   "mutationFn" | "mutationKey"
->;
+> & {
+  routeParams?: RouteParams;
+};
 
 export type TSetCacheProps<TData> = {
   id: string;

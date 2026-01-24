@@ -27,7 +27,9 @@ export const useFind = <
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
     "queryFn" | "queryKey" | "onSuccess"
-  > & { onSuccess?: (result: TBasic[]) => void },
+  > & {
+    onSuccess?: (result: TBasic[]) => void;
+  },
 ) => {
   const {
     params,
@@ -35,12 +37,13 @@ export const useFind = <
     initialSortState,
     initialPaginationState,
   } = config || {};
-  const { onSuccess, ...otherOptions } = options || {};
+  const { onSuccess, routeParams, ...otherOptions } = options || {};
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
   const countQuery = useCount(entity, params?.where, {
     enabled: hasCount,
+    routeParams,
   });
   const { dataGridPaginationProps, pageQueryPayload } = usePagination(
     countQuery.data?.count,
@@ -57,13 +60,18 @@ export const useFind = <
           ? await api.find(
               normalizedParams,
               format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+              routeParams,
             )
           : [];
       const { result } = normalizeAndCache(data);
 
       return result;
     },
-    queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
+    queryKey: [
+      QueryType.collection,
+      entity,
+      JSON.stringify({ params: normalizedParams, routeParams }),
+    ],
     onSuccess: (ids) => {
       onSuccess?.(ids.map((id) => getFromCache(id) as TBasic));
     },

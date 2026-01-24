@@ -23,9 +23,8 @@ The package ships both ESM (`import`) and CommonJS (`require`) entrypoints plus 
 
 ## DSL essentials
 
-A workflow is a single YAML (or object) that declares metadata, inputs, tasks, control-flow, and outputs. The full annotated reference lives in `./DSL.md` and `example/workflow.yml`. The important pieces:
+A workflow is a single YAML (or object) that declares inputs, context, defaults, tasks, control-flow, and outputs. The full annotated reference lives in `./DSL.md` and `example/workflow.yml`. The important pieces:
 
-- `workflow`: name/version/description.
 - `inputs.schema`: JSON-schema-like fields validated at runtime.
 - `context`: read-only values injected by the host (including any long-term state) and exposed to expressions.
 - `defaults.settings`: inherited by every task (timeouts, retries, guardrails, audit flags).
@@ -104,9 +103,10 @@ Attach an event emitter to your workflow context (via the constructor or by sett
 ### Minimal YAML example
 
 ```yaml
-workflow:
-  name: "hello_world"
-  version: "1.0.0"
+inputs:
+  schema:
+    user_id:
+      type: string
 tasks:
   greet_user:
     action: call_api
@@ -118,10 +118,6 @@ flow:
   - do: greet_user
 outputs:
   reply: "=$output.greet_user.message"
-inputs:
-  schema:
-    user_id:
-      type: string
 ```
 
 ## Custom JSONata functions

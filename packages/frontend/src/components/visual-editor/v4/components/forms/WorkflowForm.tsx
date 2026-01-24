@@ -18,9 +18,9 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
+  IWorkflowSubmitAttributes,
   WorkflowType,
   type IWorkflow,
-  type IWorkflowAttributes,
 } from "@/types/workfow.types";
 
 const WORKFLOW_TYPES: WorkflowType[] = [
@@ -42,23 +42,6 @@ type WorkflowFormValues = {
   type: WorkflowType;
   schedule: string;
 };
-
-const buildDefinitionPayload = (
-  definition: WorkflowDefinition,
-  updates: {
-    name: string;
-    version: string;
-    description?: string | null;
-  },
-) => ({
-  ...definition,
-  workflow: {
-    ...(definition.workflow ?? {}),
-    name: updates.name,
-    version: updates.version,
-    description: updates.description ?? undefined,
-  },
-});
 
 export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>> =
   ({
@@ -99,8 +82,6 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
       defaultValues,
     });
     const typeValue = useWatch({ control, name: "type" });
-    const versionValue =
-      workflow?.version ?? definition?.workflow?.version ?? "";
     const nameRegister = register("name", {
       required: t("message.name_is_required"),
       setValueAs: (value: string) => value?.trim(),
@@ -171,25 +152,19 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         return;
       }
 
-      if (!definition || !definitionYaml || !versionValue) {
+      if (!definition || !definitionYaml) {
         rest.onError?.();
         toast.error(t("message.unable_to_save"));
 
         return;
       }
 
-      const payload: IWorkflowAttributes = {
+      const payload: IWorkflowSubmitAttributes = {
         name,
         description,
-        version: versionValue,
         type: params.type,
         schedule,
-        definitionYaml,
-        definition: buildDefinitionPayload(definition, {
-          name,
-          version: versionValue,
-          description,
-        }),
+        definitionYml: definitionYaml,
         memoryDefinitions: workflow?.memoryDefinitions ?? [],
       };
 
@@ -233,14 +208,6 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                 multiline
                 minRows={3}
                 {...register("description")}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("label.version", { defaultValue: "Version" })}
-                value={versionValue}
-                disabled
-                slotProps={{ input: { readOnly: true } }}
               />
             </ContentItem>
             <ContentItem>

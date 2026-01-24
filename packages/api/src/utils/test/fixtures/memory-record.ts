@@ -4,14 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import {
+  Workflow as AgenticWorkflow,
+  WorkflowDefinition,
+} from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
 import { MemoryRecordCreateDto } from '@/workflow/dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '@/workflow/entities/memory-record.entity';
 import { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
+import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
-import { WorkflowType } from '@/workflow/types';
+import { WorkflowType, WorkflowVersionAction } from '@/workflow/types';
 
 import {
   installMemoryDefinitionFixturesTypeOrm,
@@ -37,11 +41,6 @@ export const memoryRecordFixtureIds = {
 } as const;
 
 const memoryWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'memory_workflow_fixture',
-    version: '0.1.0',
-    description: 'Workflow used by memory record fixtures.',
-  },
   tasks: {
     noop: {
       action: 'noop_task',
@@ -95,6 +94,11 @@ export const memoryRecordOrmFixtures: MemoryRecordOrmFixture[] = [
 
 const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(WorkflowOrmEntity);
+  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+  WorkflowOrmEntity.registerEntityManagerProvider(() => repository.manager);
+  WorkflowVersionOrmEntity.registerEntityManagerProvider(
+    () => versionRepository.manager,
+  );
   const existing = await repository.findOne({
     where: { id: memoryWorkflowFixtureId },
   });
@@ -107,7 +111,6 @@ const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
   const entity = repository.create({
     id: memoryWorkflowFixtureId,
     name: 'memory_workflow_fixture',
-    version: '0.1.0',
     description: 'Workflow used by memory record fixtures.',
     type: WorkflowType.conversational,
     schedule: null,
@@ -116,10 +119,24 @@ const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
       { id: memoryDefinitionFixtureIds.workflow },
       { id: memoryDefinitionFixtureIds.run },
     ],
-    definition: memoryWorkflowDefinition,
   });
+  const workflow = await repository.save(entity);
+  const definitionYml = AgenticWorkflow.stringifyDefinition(
+    memoryWorkflowDefinition,
+  );
+  const version = await versionRepository.save(
+    versionRepository.create({
+      workflow,
+      version: 1,
+      definitionYml,
+      action: WorkflowVersionAction.create,
+      createdBy: user ? { id: user.id } : undefined,
+    }),
+  );
 
-  return await repository.save(entity);
+  workflow.currentVersion = version;
+
+  return await repository.save(workflow);
 };
 const installMemoryRunFixturesTypeOrm = async (
   dataSource: DataSource,

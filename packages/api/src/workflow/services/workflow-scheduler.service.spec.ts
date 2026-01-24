@@ -161,9 +161,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
 
     const created = await workflowService.create({
       name: `scheduled-workflow-${Date.now()}`,
-      version: '0.0.1',
       description: 'Created by workflow scheduler test',
-      definition: workflow.definition,
       type: WorkflowType.scheduled,
       schedule: workflow.schedule ?? '*/10 * * * * *',
       memoryDefinitions: [],

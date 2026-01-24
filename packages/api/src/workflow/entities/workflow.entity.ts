@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow, WorkflowDefinition } from '@hexabot-ai/agentic';
+import { Workflow } from '@hexabot-ai/agentic';
 import {
-  BeforeInsert,
+  AfterInsert,
   BeforeRemove,
-  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -20,25 +19,27 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import { DirectionType, WorkflowType } from '../types';
+import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
+import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 
 @Entity({ name: 'workflows' })
-@Index(['name', 'version'], { unique: true })
+@Index(['name'], { unique: true })
 export class WorkflowOrmEntity extends BaseOrmEntity {
+  private static readonly BLANK_DEFINITION_YML = Workflow.stringifyDefinition({
+    tasks: {},
+    flow: [],
+    outputs: {},
+  });
+
   /** Human-readable workflow name, unique per version. */
   @Column({ type: 'varchar', length: 255 })
   name!: string;
-
-  /** Version label for the workflow definition (e.g. semver or tag). */
-  @Column({ type: 'varchar', length: 50 })
-  version!: string;
 
   /** Optional description to explain the workflow's purpose. */
   @Column({ type: 'text', nullable: true })
@@ -88,13 +89,18 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @RelationId((workflow: WorkflowOrmEntity) => workflow.createdBy)
   private readonly createdById?: string | null;
 
-  /** Structured workflow definition consumed by the agent runtime. */
-  @JsonColumn({ name: 'definition', nullable: true })
-  definition?: WorkflowDefinition;
+  /** Active workflow definition snapshot. */
+  @ManyToOne(() => WorkflowVersionOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'current_version_id' })
+  @AsRelation()
+  currentVersion?: WorkflowVersionOrmEntity | null;
 
-  /** Serialized YAML workflow definition persisted for portability. */
-  @Column({ name: 'definition_yaml', type: 'text' })
-  definitionYaml!: string;
+  /** Identifier of the active version (for lightweight DTO projection). */
+  @RelationId((workflow: WorkflowOrmEntity) => workflow.currentVersion)
+  private readonly currentVersionId?: string | null;
 
   @Column({
     type: 'decimal',
@@ -117,20 +123,32 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
   @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
   direction!: DirectionType;
 
+  @AfterInsert()
+  protected async createBlankDefinitionVersion(): Promise<void> {
+    if (this.currentVersion || this.currentVersionId) {
+      return;
+    }
+
+    const manager = WorkflowOrmEntity.getEntityManager();
+    const createdById =
+      typeof this.createdBy === 'string' ? this.createdBy : this.createdBy?.id;
+    const version = manager.create(WorkflowVersionOrmEntity, {
+      workflow: { id: this.id },
+      version: 0,
+      definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
+      action: WorkflowVersionAction.create,
+      createdBy: createdById ? { id: createdById } : null,
+      parentVersion: null,
+      message: null,
+    });
+
+    await manager.save(WorkflowVersionOrmEntity, version);
+  }
+
   @BeforeRemove()
   protected preventBuiltinRemoval(): void {
     if (this.builtin) {
       throw new Error('Cannot delete builtin workflow');
     }
-  }
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  private syncDefinitionYaml(): void {
-    if (!this.definition) {
-      return;
-    }
-
-    this.definitionYaml = Workflow.stringifyDefinition(this.definition);
   }
 }

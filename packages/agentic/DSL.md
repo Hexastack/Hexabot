@@ -4,7 +4,6 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 
 ## File layout
 
-- `workflow`: metadata for the run (`name`, `version`, `description`).
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
 - `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
 - `defaults`: settings inherited by every task unless overridden (timeouts, retries, guardrails, audit flags).

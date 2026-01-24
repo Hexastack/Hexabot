@@ -5,8 +5,8 @@
  */
 
 import {
-  Workflow as AgenticWorkflow,
   WorkflowDefinition,
+  Workflow as WorkflowHelper,
 } from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 
@@ -18,63 +18,83 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Workflow } from '../dto/workflow.dto';
-import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
-import { WorkflowType } from '../types';
+import { WorkflowType, WorkflowVersionAction } from '../types';
 
+import { WorkflowVersionService } from './workflow-version.service';
 import { WorkflowService } from './workflow.service';
 
 describe('WorkflowService (TypeORM)', () => {
   let module: TestingModule;
   let workflowService: WorkflowService;
+  let workflowVersionService: WorkflowVersionService;
   let workflowRepository: WorkflowRepository;
   let workflow: Workflow;
+  let definitionYml: string;
   let counter = 0;
   let creatorId: string;
 
-  const buildWorkflowDefinition = (): WorkflowDefinition => ({
-    workflow: {
-      name: `Test workflow ${++counter}`,
-      version: `1.0.${counter}`,
-      description: 'Test workflow definition',
-    },
-    tasks: {
-      greet: { action: 'greet' },
-    },
-    flow: [{ do: 'greet' }],
-    outputs: { result: '=1' },
-  });
+  const buildWorkflowDefinition = (): {
+    metadata: { name: string; description: string };
+    definition: WorkflowDefinition;
+  } => {
+    return {
+      metadata: {
+        name: `Test workflow ${++counter}`,
+        description: 'Test workflow definition',
+      },
+      definition: {
+        tasks: {
+          greet: { action: 'greet' },
+        },
+        flow: [{ do: 'greet' }],
+        outputs: { result: '=1' },
+      },
+    };
+  };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [WorkflowService],
+      providers: [WorkflowService, WorkflowVersionService],
       typeorm: {
         fixtures: installUserFixturesTypeOrm,
       },
     });
 
     module = testing.module;
-    [workflowService, workflowRepository] = await testing.getMocks([
-      WorkflowService,
-      WorkflowRepository,
-    ]);
+    [workflowService, workflowVersionService, workflowRepository] =
+      await testing.getMocks([
+        WorkflowService,
+        WorkflowVersionService,
+        WorkflowRepository,
+      ]);
   });
 
   beforeEach(async () => {
     await workflowRepository.deleteMany();
     creatorId = userFixtureIds.admin;
 
-    const definition = buildWorkflowDefinition();
+    const { metadata, definition } = buildWorkflowDefinition();
     workflow = await workflowService.create({
-      name: definition.workflow.name,
-      version: definition.workflow.version,
-      description: definition.workflow.description,
-      definition,
+      name: metadata.name,
+      description: metadata.description,
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
       memoryDefinitions: [],
+    });
+
+    definitionYml = WorkflowHelper.stringifyDefinition(definition);
+    const version = await workflowVersionService.commit({
+      action: WorkflowVersionAction.create,
+      definitionYml,
+      workflow: workflow.id,
+      createdBy: creatorId,
+    });
+
+    await workflowService.updateOne(workflow.id, {
+      currentVersion: version.id,
     });
   });
 
@@ -97,33 +117,24 @@ describe('WorkflowService (TypeORM)', () => {
     expect(stored).toMatchObject({
       id: workflow.id,
       name: workflow.name,
-      version: workflow.version,
       description: workflow.description,
-      definition: workflow.definition,
       type: WorkflowType.conversational,
       schedule: null,
     });
   });
 
   it('serializes YAML from definitions before persistence', async () => {
-    const repository = workflowRepository
-      .getManager()
-      .getRepository(WorkflowOrmEntity);
-    const entity = await repository.findOne({
+    const entity = await workflowService.findOneAndPopulate({
       where: { id: workflow.id },
     });
 
-    expect(entity?.definitionYaml).toBe(
-      AgenticWorkflow.stringifyDefinition(workflow.definition),
-    );
+    expect(entity?.definitionYml).toBe(definitionYml);
   });
 
-  it('enforces unique name/version pairs', async () => {
+  it('enforces unique name', async () => {
     const duplicatePayload = {
       name: workflow.name,
-      version: workflow.version,
       description: workflow.description ?? undefined,
-      definition: workflow.definition,
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,

@@ -73,7 +73,7 @@ export const Workflow = () => {
     updateWorkflowURL,
     definition,
     isDefinitionDirty,
-    isDefinitionSaving,
+    isSaving: isDefinitionSaving,
     saveDefinition,
     actions,
     addActionStep,

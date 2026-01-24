@@ -31,9 +31,9 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 
 import {
   Workflow,
+  WorkflowCreateDto,
   WorkflowDtoConfig,
   WorkflowFull,
-  WorkflowNewDto,
   WorkflowTransformerDto,
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
@@ -59,15 +59,15 @@ export class WorkflowController extends BaseOrmController<
   }
 
   /**
-   * Creates a new workflow definition.
+   * Creates a new workflow.
    *
-   * @param workflowCreateDto - Workflow properties and definition object to persist.
+   * @param workflowCreateDto - Workflow properties object to persist.
    *
    * @returns The newly created workflow.
    */
   @Post()
   async create(
-    @Body() workflowCreateDto: WorkflowNewDto,
+    @Body() workflowCreateDto: WorkflowCreateDto,
     @Req() req: Request,
   ): Promise<Workflow> {
     const userId = req.session?.passport?.user?.id;
@@ -97,7 +97,6 @@ export class WorkflowController extends BaseOrmController<
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
         allowedFields: [
           'name',
-          'version',
           'description',
           'type',
           'schedule',

@@ -9,7 +9,6 @@ import { WorkflowDefinitionSchema } from '../dsl.types';
 describe('WorkflowDefinitionSchema', () => {
   it('parses a minimal valid workflow', () => {
     const minimal = {
-      workflow: { name: 'demo', version: '1.0.0' },
       tasks: {
         noop: { action: 'call' },
       },
@@ -22,7 +21,6 @@ describe('WorkflowDefinitionSchema', () => {
 
   it('rejects workflows with invalid JSONata expressions', () => {
     const invalid = {
-      workflow: { name: 'demo', version: '1.0.0' },
       tasks: {
         noop: { action: 'call' },
       },

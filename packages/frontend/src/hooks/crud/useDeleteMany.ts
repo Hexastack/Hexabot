@@ -21,11 +21,11 @@ export const useDeleteMany = <
 ) => {
   const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
-  const { invalidate = true, ...otherOptions } = options || {};
+  const { invalidate = true, routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async (ids) => {
-      const result = await api.deleteMany(ids);
+      const result = await api.deleteMany(ids, routeParams);
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {

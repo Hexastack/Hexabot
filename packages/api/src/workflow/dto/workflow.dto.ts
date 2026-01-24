@@ -6,14 +6,13 @@
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   ValidateIf,
@@ -28,19 +27,17 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { IsWorkflowDefinition } from '../decorators/is-workflow-definition.decorator';
+import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
 
 import { MemoryDefinition } from './memory-definition.dto';
+import { WorkflowVersion } from './workflow-version.dto';
 
 @Exclude()
 export class WorkflowStub extends BaseStub {
   @Expose()
   name!: string;
-
-  @Expose()
-  version!: string;
 
   @Expose()
   description?: string | null;
@@ -53,9 +50,6 @@ export class WorkflowStub extends BaseStub {
 
   @Expose()
   builtin!: boolean;
-
-  @Expose()
-  definition!: WorkflowDefinition;
 
   @Expose()
   x!: number;
@@ -72,6 +66,9 @@ export class WorkflowStub extends BaseStub {
 
 @Exclude()
 export class Workflow extends WorkflowStub {
+  @Expose({ name: 'currentVersionId' })
+  currentVersion: string | null;
+
   @Expose({ name: 'createdById' })
   createdBy!: string;
 
@@ -82,24 +79,45 @@ export class Workflow extends WorkflowStub {
 @Exclude()
 export class WorkflowFull extends WorkflowStub {
   @Expose()
+  @Type(() => WorkflowVersion)
+  currentVersion!: WorkflowVersion | null;
+
+  @Expose()
   @Type(() => User)
   createdBy!: User;
 
   @Expose()
   @Type(() => MemoryDefinition)
   memoryDefinitions!: MemoryDefinition[];
+
+  @Expose()
+  @Transform(({ obj }) => {
+    const definitionYml = obj?.currentVersion?.definitionYml;
+    if (typeof definitionYml !== 'string' || definitionYml.trim() === '') {
+      return undefined;
+    }
+
+    return definitionYml;
+  })
+  definitionYml?: string;
+
+  @Expose()
+  @Transform(({ obj }) => {
+    const definitionYml = obj?.currentVersion?.definitionYml;
+    if (typeof definitionYml !== 'string' || definitionYml.trim() === '') {
+      return undefined;
+    }
+
+    return parseWorkflowDefinition(definitionYml);
+  })
+  definition?: WorkflowDefinition;
 }
 
-export class WorkflowNewDto {
+export class WorkflowCreateDto {
   @ApiProperty({ description: 'Workflow name', type: String })
   @IsNotEmpty()
   @IsString()
   name!: string;
-
-  @ApiProperty({ description: 'Workflow version', type: String })
-  @IsNotEmpty()
-  @IsString()
-  version!: string;
 
   @ApiPropertyOptional({ description: 'Workflow description', type: String })
   @IsOptional()
@@ -143,12 +161,6 @@ export class WorkflowNewDto {
   @IsUUIDv4({ each: true, message: 'Memory definition must be a valid UUID' })
   memoryDefinitions: string[];
 
-  @ApiProperty({ description: 'Workflow definition object', type: Object })
-  @IsNotEmpty()
-  @IsObject()
-  @IsWorkflowDefinition()
-  definition!: WorkflowDefinition;
-
   @ApiPropertyOptional({
     description: 'Workflow x offset',
     type: Number,
@@ -180,10 +192,9 @@ export class WorkflowNewDto {
   @IsEnum(DirectionType)
   @IsOptional()
   direction?: DirectionType;
-}
 
-export class WorkflowCreateDto extends WorkflowNewDto {
   @ApiProperty({ description: 'Workflow creator', type: String })
+  @IsOptional()
   @IsUUIDv4({
     message: 'createdBy must be a valid UUID',
   })
@@ -204,6 +215,13 @@ export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
   @IsOptional()
   @IsEnum(WorkflowType)
   type?: WorkflowType;
+
+  @ApiProperty({ description: 'Current version', type: String })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'Current version must be a valid UUID',
+  })
+  currentVersion?: string | null;
 }
 
 export type WorkflowDtoConfig = DtoActionConfig<{

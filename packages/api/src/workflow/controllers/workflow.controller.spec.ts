@@ -6,6 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
+import { Workflow as WorkflowHelper } from '@hexabot-ai/agentic';
 import {
   BadRequestException,
   NotFoundException,
@@ -49,29 +50,11 @@ describe('WorkflowController (TypeORM)', () => {
   let counter = 0;
 
   const buildWorkflowPayload = () => {
-    const definition = {
-      workflow: {
-        name: `workflow_${++counter}`,
-        version: `1.0.${counter}`,
-        description: 'Workflow controller test definition',
-      },
-      tasks: {
-        send_greeting: {
-          action: 'send_text_message',
-          inputs: { text: '="Hi"' },
-        },
-      },
-      flow: [{ do: 'send_greeting' }],
-      outputs: { result: '=1' },
-    };
-
     return {
-      name: definition.workflow.name,
-      version: definition.workflow.version,
-      description: definition.workflow.description,
+      name: `workflow_${++counter}`,
+      description: 'Workflow controller test definition',
       type: WorkflowType.conversational,
       schedule: null,
-      definition,
       memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
@@ -134,10 +117,13 @@ describe('WorkflowController (TypeORM)', () => {
   describe('findMany', () => {
     it('returns workflows matching the provided filters', async () => {
       const options = {
-        where: { name: messagingWorkflowDefinition.workflow.name },
+        where: { name: 'messaging_workflow_fixture' },
       };
-      const findSpy = jest.spyOn(workflowService, 'find');
-      const result = await workflowController.findMany(options);
+      const findSpy = jest.spyOn(workflowService, 'findAndPopulate');
+      const result = await workflowController.findMany(options, [
+        'currentVersion',
+        'createdBy',
+      ]);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(
@@ -145,9 +131,17 @@ describe('WorkflowController (TypeORM)', () => {
           {
             ...messagingWorkflowFixtures[0],
             definition: messagingWorkflowDefinition,
+            currentVersion: {
+              definitionYml: WorkflowHelper.stringifyDefinition(
+                messagingWorkflowDefinition,
+              ),
+              message: null,
+              parentVersion: null,
+              version: 1,
+            },
           },
         ],
-        [...IGNORED_TEST_FIELDS],
+        [...IGNORED_TEST_FIELDS, 'createdBy', 'action', 'checksum', 'workflow'],
       );
     });
   });
@@ -165,7 +159,7 @@ describe('WorkflowController (TypeORM)', () => {
   });
 
   describe('create', () => {
-    it('creates a workflow definition', async () => {
+    it('creates a workflow', async () => {
       const payload = buildWorkflowPayload();
       const createSpy = jest.spyOn(workflowService, 'create');
       const userId = userFixtureIds.admin;
@@ -181,7 +175,6 @@ describe('WorkflowController (TypeORM)', () => {
       expect(created).toEqualPayload(
         {
           ...payload,
-          definition: payload.definition,
           createdBy: userId,
         },
         [...IGNORED_TEST_FIELDS],
@@ -229,8 +222,12 @@ describe('WorkflowController (TypeORM)', () => {
       expect(findOneSpy).toHaveBeenCalledWith(created.id);
       expect(updateSpy).toHaveBeenCalledWith(created.id, updates);
       expect(result).toEqualPayload(
-        { ...created, ...updates, createdBy: userFixtureIds.admin },
-        [...IGNORED_TEST_FIELDS],
+        {
+          ...created,
+          ...updates,
+          createdBy: userFixtureIds.admin,
+        },
+        [...IGNORED_TEST_FIELDS, 'currentVersion'],
       );
     });
 

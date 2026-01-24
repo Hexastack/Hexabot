@@ -8,7 +8,6 @@ import type { FlowStep, WorkflowDefinition } from '../dsl.types';
 import { Workflow, type FlowStepPath } from '../workflow';
 
 const createDefinition = (): WorkflowDefinition => ({
-  workflow: { name: 'Test Workflow', version: '1.0.0' },
   tasks: {
     task_one: { action: 'noop' },
     task_two: { action: 'noop' },
@@ -72,12 +71,12 @@ describe('workflow definition path helpers', () => {
       const definition = createDefinition();
       const updated = Workflow.setValueAtPath(
         definition,
-        ['workflow', 'name'],
-        'Updated Workflow',
+        ['tasks', 'task_one', 'action'],
+        'updated_action',
       );
 
       expect(updated).not.toBe(definition);
-      expect(updated.workflow.name).toBe('Updated Workflow');
+      expect(updated.tasks.task_one.action).toBe('updated_action');
       expect(updated.flow).toBe(definition.flow);
     });
 
@@ -140,7 +139,7 @@ describe('workflow definition path helpers', () => {
       expect(Workflow.removeStepAtPath(definition, [])).toBeNull();
       expect(Workflow.removeStepAtPath(definition, ['flow', '1'])).toBeNull();
       expect(
-        Workflow.removeStepAtPath(definition, ['workflow', 'name', 0]),
+        Workflow.removeStepAtPath(definition, ['tasks', 'task_one', 0]),
       ).toBeNull();
       expect(Workflow.removeStepAtPath(definition, ['flow', 99])).toBeNull();
     });
@@ -207,7 +206,7 @@ describe('workflow definition path helpers', () => {
         Workflow.insertStepAtPath(definition, ['flow', '1'], step),
       ).toBeNull();
       expect(
-        Workflow.insertStepAtPath(definition, ['workflow', 'name', 0], step),
+        Workflow.insertStepAtPath(definition, ['tasks', 'task_one', 0], step),
       ).toBeNull();
     });
   });

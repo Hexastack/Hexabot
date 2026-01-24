@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { RouteParams } from "@/services/api.class";
 import { EntityType, Format, QueryType } from "@/services/types";
 import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 import { UseInfiniteQueryOptions } from "@/types/tanstack.types";
@@ -32,7 +33,7 @@ export const useNormalizedInfiniteQuery = <
       [QueryType, EntityType, string]
     >,
     "queryFn" | "queryKey" | "onSuccess"
-  > & { onSuccess?: (result: TBasic[]) => void },
+  > & { routeParams?: RouteParams; onSuccess?: (result: TBasic[]) => void },
 ) => {
   const initialPaginationState = config?.initialPaginationState || {
     page: 0,
@@ -44,7 +45,7 @@ export const useNormalizedInfiniteQuery = <
       sort: "asc",
     },
   ];
-  const { onSuccess, ...otherOptions } = options || {};
+  const { onSuccess, routeParams, ...otherOptions } = options || {};
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
@@ -71,6 +72,7 @@ export const useNormalizedInfiniteQuery = <
           ...pageParam,
         },
         format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+        routeParams,
       );
       const { entities, result } = normalizeAndCache(data);
 

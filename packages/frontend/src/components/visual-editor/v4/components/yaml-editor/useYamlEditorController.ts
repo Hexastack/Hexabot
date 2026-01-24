@@ -15,8 +15,8 @@ import { useWorkflow } from "../../hooks/useWorkflow";
 
 import { registerYamlCompletionProvider } from "./completion";
 import {
-    YAML_VALIDATION_DEBOUNCE_MS,
-    YAML_WORKFLOW_VALIDATION_OWNER,
+  YAML_VALIDATION_DEBOUNCE_MS,
+  YAML_WORKFLOW_VALIDATION_OWNER,
 } from "./constants";
 import { ensureYamlLanguageService } from "./language";
 import { applyYamlMarkers } from "./markers";
@@ -30,16 +30,16 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     isLoading: actionsLoading,
     isError: actionsError,
   } = useFind({ entity: EntityType.WORKFLOW_ACTIONS }, { hasCount: false });
-  const { yaml, setYaml } = useWorkflow();
+  const { yaml, updateDefinitionState } = useWorkflow();
   const availableActions = actionsLoading || actionsError ? undefined : actions;
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const completionDisposableRef = useRef<IDisposable | null>(null);
   const onChange = useCallback(
     (nextValue?: string) => {
-      setYaml(nextValue || "");
+      updateDefinitionState(nextValue || "");
     },
-    [setYaml],
+    [updateDefinitionState],
   );
   // Consolidated marker + validation application
   const applyAllMarkers = useCallback(() => {

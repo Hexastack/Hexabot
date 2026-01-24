@@ -4,13 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import {
+  Workflow as AgenticWorkflow,
+  WorkflowDefinition,
+} from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
 import { WorkflowRunCreateDto } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
+import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
-import { DirectionType, WorkflowType } from '@/workflow/types';
+import {
+  DirectionType,
+  WorkflowType,
+  WorkflowVersionAction,
+} from '@/workflow/types';
 
 import { installUserFixturesTypeOrm, userFixtureIds } from './user';
 
@@ -32,11 +40,6 @@ export const workflowRunFixtureIds = {
 } as const;
 
 const workflowRunWorkflowDefinition: WorkflowDefinition = {
-  workflow: {
-    name: 'workflow_run_fixture',
-    version: '0.1.0',
-    description: 'Workflow used by workflow run fixtures.',
-  },
   tasks: {
     noop: {
       action: 'noop_task',
@@ -95,6 +98,13 @@ const findRunsWithRelations = async (dataSource: DataSource) =>
   });
 const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
+  const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
+  WorkflowOrmEntity.registerEntityManagerProvider(
+    () => workflowRepository.manager,
+  );
+  WorkflowVersionOrmEntity.registerEntityManagerProvider(
+    () => versionRepository.manager,
+  );
   const existing = await workflowRepository.findOne({
     where: { id: workflowRunWorkflowFixtureId },
   });
@@ -107,21 +117,34 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const entity = workflowRepository.create({
     id: workflowRunWorkflowFixtureId,
     name: 'workflow_run_fixture',
-    version: '0.1.0',
     description: 'Workflow used by workflow run fixtures.',
     type: WorkflowType.conversational,
     schedule: null,
     createdBy: user ? { id: user.id } : undefined,
     memoryDefinitions: [],
-    definition: workflowRunWorkflowDefinition,
     builtin: false,
     direction: DirectionType.HORIZONTAL,
     x: 0,
     y: 0,
     zoom: 1,
   });
+  const workflow = await workflowRepository.save(entity);
+  const definitionYml = AgenticWorkflow.stringifyDefinition(
+    workflowRunWorkflowDefinition,
+  );
+  const version = await versionRepository.save(
+    versionRepository.create({
+      workflow,
+      version: 1,
+      definitionYml,
+      action: WorkflowVersionAction.create,
+      createdBy: user ? { id: user.id } : undefined,
+    }),
+  );
 
-  return await workflowRepository.save(entity);
+  workflow.currentVersion = version;
+
+  return await workflowRepository.save(workflow);
 };
 
 export const installWorkflowRunFixturesTypeOrm = async (

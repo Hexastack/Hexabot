@@ -28,11 +28,11 @@ export const useUpload = <
   const api = useEntityApiClient(entity);
   const queryClient = useTanstackQueryClient();
   const normalizeAndCache = useNormalizeAndCache<string>(entity);
-  const { invalidate = true, ...otherOptions } = options || {};
+  const { invalidate = true, routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async ({ file, resourceRef }) => {
-      const data = await api.upload(file, resourceRef);
+      const data = await api.upload(file, resourceRef, routeParams);
       const { entities, result } = normalizeAndCache(data);
 
       // Invalidate all counts & collections
