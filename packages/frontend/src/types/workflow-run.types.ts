@@ -13,6 +13,13 @@ import type { ISubscriber } from "./subscriber.types";
 import type { IUser } from "./user.types";
 import type { IWorkflow } from "./workfow.types";
 
+export enum EWorkflowRunStatus {
+  IDLE = "idle",
+  RUNNING = "running",
+  SUSPENDED = "suspended",
+  FINISHED = "finished",
+  FAILED = "failed",
+}
 export interface IWorkflowRunAttributes {
   workflow: string;
   triggeredBy?: string | null;
@@ -33,7 +40,7 @@ export interface IWorkflowRunAttributes {
 }
 
 export interface IWorkflowRunFilters {
-  workflow: string;
+  workflow: { id: string; name: string; type: string };
   triggeredBy: string;
   status: WorkflowRunStatus;
   suspendedStep: string;
@@ -65,7 +72,9 @@ export interface IWorkflowRun extends IWorkflowRunStub, IFormat<Format.BASIC> {
   triggeredBy: string | null;
 }
 
-export interface IWorkflowRunFull extends IWorkflowRunStub, IFormat<Format.FULL> {
+export interface IWorkflowRunFull
+  extends IWorkflowRunStub,
+    IFormat<Format.FULL> {
   workflow: IWorkflow;
   triggeredBy: ISubscriber | IUser | null;
 }

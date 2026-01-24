@@ -262,6 +262,9 @@ export type THook<
 > = {
   full: TType<TE>["full"];
   basic: TType<TE>["basic"];
+  current: TP["format"] extends Format.FULL
+    ? TType<TE>["full"]
+    : TType<TE>["basic"];
   filters: Partial<TType<TE>["filters"] & SearchFilters<TE>>;
   params: TP;
   entity: TE;

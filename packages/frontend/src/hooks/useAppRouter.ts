@@ -100,6 +100,9 @@ export type TQuery = {
   subscriber?: string;
   flowId?: string;
   nodeIds?: string;
+  "workflow.name"?: string;
+  "workflow.type"?: string;
+  status?: string;
 };
 
 export const useAppRouter = <T extends TQuery>(): AppRouter<T> => {

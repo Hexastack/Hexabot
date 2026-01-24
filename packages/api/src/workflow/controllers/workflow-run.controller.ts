@@ -50,6 +50,8 @@ export class WorkflowRunController extends BaseOrmController<
       new TypeOrmSearchFilterPipe<WorkflowRunOrmEntity>({
         allowedFields: [
           'workflow.id',
+          'workflow.name',
+          'workflow.type',
           'triggeredBy.id',
           'status',
           'suspendedStep',
