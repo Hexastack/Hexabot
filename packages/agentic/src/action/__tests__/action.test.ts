@@ -71,7 +71,7 @@ class DoubleAction extends AbstractAction<
 }
 
 const DoubleSettingsSchema = SettingsSchema.extend({
-  multiplier: z.number().int().min(1),
+  multiplier: z.int().min(1),
 });
 
 class ConfigurableDoubleAction extends AbstractAction<

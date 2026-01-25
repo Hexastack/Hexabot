@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import z, { ZodType, ZodTypeDef } from 'zod';
+import { z, ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
@@ -14,9 +14,9 @@ import { AbstractAction } from './abstract-action';
 export interface ActionMetadata<I, O, S = undefined> {
   name: string;
   description: string;
-  inputSchema: ZodType<I, ZodTypeDef, unknown>;
-  outputSchema: ZodType<O, ZodTypeDef, unknown>;
-  settingsSchema?: ZodType<S, ZodTypeDef, unknown>;
+  inputSchema: ZodType<I>;
+  outputSchema: ZodType<O>;
+  settingsSchema?: ZodType<S>;
 }
 
 export interface ActionExecutionArgs<
@@ -37,9 +37,9 @@ export type DefineActionParams<
 > = {
   name: string;
   description?: string;
-  inputSchema?: ZodType<I, ZodTypeDef, unknown>;
-  outputSchema?: ZodType<O, ZodTypeDef, unknown>;
-  settingSchema?: ZodType<S, ZodTypeDef, unknown>;
+  inputSchema?: ZodType<I>;
+  outputSchema?: ZodType<O>;
+  settingSchema?: ZodType<S>;
   execute: (args: ActionExecutionArgs<I, Ctx, S>) => Promise<O> | O;
 };
 
@@ -67,20 +67,10 @@ export function defineAction<
         name: params.name,
         description: params.description ?? '',
         inputSchema: (params.inputSchema ??
-          (z.any() as ZodType<I, ZodTypeDef, unknown>)) as ZodType<
-          I,
-          ZodTypeDef,
-          unknown
-        >,
+          (z.any() as ZodType<I>)) as ZodType<I>,
         outputSchema: (params.outputSchema ??
-          (z.any() as ZodType<O, ZodTypeDef, unknown>)) as ZodType<
-          O,
-          ZodTypeDef,
-          unknown
-        >,
-        settingsSchema: params.settingSchema as
-          | ZodType<S, ZodTypeDef, unknown>
-          | undefined,
+          (z.any() as ZodType<O>)) as ZodType<O>,
+        settingsSchema: params.settingSchema as ZodType<S> | undefined,
       };
 
       super(metadata);

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z, type ZodTypeAny } from 'zod';
+import { z, ZodType } from 'zod';
 
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext } from './context';
@@ -42,8 +42,8 @@ const buildStepId = (path: Array<number | string>, label: string): string => {
   return `${pathPart}:${label}`;
 };
 /** Convert workflow input field metadata to a zod schema. */
-const inputFieldToZod = (field: InputField): ZodTypeAny => {
-  let schema: ZodTypeAny;
+const inputFieldToZod = (field: InputField): ZodType => {
+  let schema: ZodType;
 
   switch (field.type) {
     case 'string':
@@ -53,7 +53,7 @@ const inputFieldToZod = (field: InputField): ZodTypeAny => {
       schema = z.number();
       break;
     case 'integer':
-      schema = z.number().int();
+      schema = z.int();
       break;
     case 'boolean':
       schema = z.boolean();
@@ -62,7 +62,7 @@ const inputFieldToZod = (field: InputField): ZodTypeAny => {
       schema = z.array(field.items ? inputFieldToZod(field.items) : z.any());
       break;
     case 'object': {
-      const properties: Record<string, ZodTypeAny> = {};
+      const properties: Record<string, ZodType> = {};
       if (field.properties) {
         for (const [name, child] of Object.entries(field.properties)) {
           properties[name] = inputFieldToZod(child).optional();
@@ -70,8 +70,8 @@ const inputFieldToZod = (field: InputField): ZodTypeAny => {
       }
       schema =
         Object.keys(properties).length > 0
-          ? z.object(properties).strict().partial()
-          : z.record(z.any());
+          ? z.strictObject(properties).partial()
+          : z.record(z.string(), z.any());
       break;
     }
     default:
@@ -79,26 +79,31 @@ const inputFieldToZod = (field: InputField): ZodTypeAny => {
   }
 
   if (field.enum) {
-    schema = schema.refine((value) => field.enum?.includes(value), {
-      message: `Value must be one of: ${field.enum.join(', ')}`,
-    });
+    schema = schema.refine(
+      (value) => field.enum?.some((allowed) => allowed === value),
+      {
+        message: `Value must be one of: ${field.enum.join(', ')}`,
+      },
+    );
   }
 
   return schema;
 };
 /** Assemble a parser for the workflow top-level input payload. */
-const buildInputParser = (schema?: Record<string, InputField>): ZodTypeAny => {
+const buildInputParser = (
+  schema?: Record<string, InputField>,
+): ZodType<Record<string, unknown>> => {
   if (!schema || Object.keys(schema).length === 0) {
-    return z.object({}).passthrough();
+    return z.looseObject({});
   }
 
-  const shape: Record<string, ZodTypeAny> = {};
+  const shape: Record<string, ZodType> = {};
 
   for (const [name, field] of Object.entries(schema)) {
     shape[name] = inputFieldToZod(field).optional();
   }
 
-  return z.object(shape).strict().partial();
+  return z.strictObject(shape).partial();
 };
 /** Compile a raw mapping object into expression-aware value mappings. */
 const compileMapping = (

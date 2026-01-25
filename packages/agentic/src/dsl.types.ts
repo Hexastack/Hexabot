@@ -18,7 +18,7 @@ export const ExpressionStringSchema = z
       const message =
         error instanceof Error ? error.message : 'Unknown JSONata parse error';
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Invalid JSONata expression: ${message}`,
       });
     }
@@ -90,13 +90,13 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
     z.boolean(),
     z.null(),
     z.array(JsonValueSchema),
-    z.record(JsonValueSchema),
+    z.record(z.string(), JsonValueSchema),
   ]),
 );
 
 const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
   z
-    .object({
+    .strictObject({
       type: z.enum([
         'string',
         'number',
@@ -108,27 +108,26 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
       description: z.string().optional(),
       enum: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
       items: InputFieldSchema.optional(),
-      properties: z.record(InputFieldSchema).optional(),
+      properties: z.record(z.string(), InputFieldSchema).optional(),
     })
-    .strict()
     .superRefine((value, ctx) => {
       if (value.type === 'array' && !value.items) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'Array inputs must declare "items"',
           path: ['items'],
         });
       }
       if (value.type !== 'array' && value.items) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: '"items" is only valid when type is "array"',
           path: ['items'],
         });
       }
       if (value.type !== 'object' && value.properties) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: '"properties" is only valid when type is "object"',
           path: ['properties'],
         });
@@ -136,163 +135,115 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
     }),
 );
 // Retry policy: exponential backoff per attempt, capped by max_delay_ms, with optional jitter multiplier.
-const RetriesSchema = z
-  .object({
-    max_attempts: z
-      .number()
-      .int()
-      .min(1)
-      .default(DEFAULT_RETRY_SETTINGS.max_attempts),
-    backoff_ms: z
-      .number()
-      .int()
-      .min(0)
-      .default(DEFAULT_RETRY_SETTINGS.backoff_ms),
-    max_delay_ms: z
-      .number()
-      .int()
-      .min(0)
-      .default(DEFAULT_RETRY_SETTINGS.max_delay_ms),
-    jitter: z.number().min(0).default(DEFAULT_RETRY_SETTINGS.jitter),
-    multiplier: z.number().min(1).default(DEFAULT_RETRY_SETTINGS.multiplier),
-  })
-  .strict();
+const RetriesSchema = z.strictObject({
+  max_attempts: z.int().min(1).prefault(DEFAULT_RETRY_SETTINGS.max_attempts),
+  backoff_ms: z.int().min(0).prefault(DEFAULT_RETRY_SETTINGS.backoff_ms),
+  max_delay_ms: z.int().min(0).prefault(DEFAULT_RETRY_SETTINGS.max_delay_ms),
+  jitter: z.number().min(0).prefault(DEFAULT_RETRY_SETTINGS.jitter),
+  multiplier: z.number().min(1).prefault(DEFAULT_RETRY_SETTINGS.multiplier),
+});
 
 // Execution guardrails applied to every action invocation.
 export const SettingsSchema = z
-  .object({
-    timeout_ms: z.number().int().nonnegative().default(DEFAULT_TIMEOUT_MS),
-    retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })),
+  .strictObject({
+    timeout_ms: z.int().nonnegative().prefault(DEFAULT_TIMEOUT_MS),
+    retries: RetriesSchema.prefault(() => ({ ...DEFAULT_RETRY_SETTINGS })),
     audit: z.boolean().optional(),
-    guardrails: z.object({ mode: z.string() }).optional(),
+    guardrails: z.strictObject({ mode: z.string() }).optional(),
   })
-  .catchall(JsonValueSchema)
-  .strict();
+  .catchall(JsonValueSchema);
 
-export const TaskDefinitionSchema = z
-  .object({
-    description: z.string().optional(),
-    action: z.string(),
-    inputs: z.record(JsonValueSchema).optional(),
-    outputs: z.record(ExpressionStringSchema).optional(),
-    settings: SettingsSchema.optional(),
-  })
-  .strict();
+export const TaskDefinitionSchema = z.strictObject({
+  description: z.string().optional(),
+  action: z.string(),
+  inputs: z.record(z.string(), JsonValueSchema).optional(),
+  outputs: z.record(z.string(), ExpressionStringSchema).optional(),
+  settings: SettingsSchema.optional(),
+});
 
 const ConditionalWhenSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
-  z
-    .object({
-      condition: ExpressionStringSchema,
-      steps: z.array(FlowStepSchema),
-    })
-    .strict(),
+  z.strictObject({
+    condition: ExpressionStringSchema,
+    steps: z.array(FlowStepSchema),
+  }),
 );
 const ConditionalElseSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
-  z
-    .object({
-      else: z.unknown().optional(),
-      steps: z.array(FlowStepSchema),
-    })
-    .strict(),
+  z.strictObject({
+    else: z.unknown().optional(),
+    steps: z.array(FlowStepSchema),
+  }),
 );
 const ConditionalSchema: z.ZodType<{
   description?: string;
   when: ConditionalBranch[];
-}> = z
-  .object({
-    description: z.string().optional(),
-    when: z
-      .array(z.union([ConditionalWhenSchema, ConditionalElseSchema]))
-      .min(1),
-  })
-  .strict();
-const ParallelSchema: z.ZodType<ParallelBlock> = z
-  .object({
-    description: z.string().optional(),
-    strategy: z.enum(['wait_all', 'wait_any']).optional(),
-    steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
-  })
-  .strict();
+}> = z.strictObject({
+  description: z.string().optional(),
+  when: z.array(z.union([ConditionalWhenSchema, ConditionalElseSchema])).min(1),
+});
+const ParallelSchema: z.ZodType<ParallelBlock> = z.strictObject({
+  description: z.string().optional(),
+  strategy: z.enum(['wait_all', 'wait_any']).optional(),
+  steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
+});
 const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
-  z
-    .object({
-      name: z.string().optional(),
-      description: z.string().optional(),
-      for_each: z
-        .object({
-          item: z.string(),
-          in: ExpressionStringSchema,
-        })
-        .strict(),
-      max_concurrency: z.number().int().positive().optional(),
-      until: ExpressionStringSchema.optional(),
-      accumulate: z
-        .object({
-          as: z.string(),
-          initial: JsonValueSchema,
-          merge: ExpressionStringSchema,
-        })
-        .strict()
-        .optional(),
-      steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
-    })
-    .strict(),
+  z.strictObject({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    for_each: z.strictObject({
+      item: z.string(),
+      in: ExpressionStringSchema,
+    }),
+    max_concurrency: z.int().positive().optional(),
+    until: ExpressionStringSchema.optional(),
+    accumulate: z
+      .strictObject({
+        as: z.string(),
+        initial: JsonValueSchema,
+        merge: ExpressionStringSchema,
+      })
+      .optional(),
+    steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
+  }),
 );
 
 export const FlowStepSchema: z.ZodType<FlowStep> = z.lazy(() =>
   z.union([
-    z
-      .object({
-        do: z.string(),
-      })
-      .strict(),
-    z
-      .object({
-        parallel: ParallelSchema,
-      })
-      .strict(),
-    z
-      .object({
-        conditional: ConditionalSchema,
-      })
-      .strict(),
-    z
-      .object({
-        loop: LoopSchema,
-      })
-      .strict(),
+    z.strictObject({
+      do: z.string(),
+    }),
+    z.strictObject({
+      parallel: ParallelSchema,
+    }),
+    z.strictObject({
+      conditional: ConditionalSchema,
+    }),
+    z.strictObject({
+      loop: LoopSchema,
+    }),
   ]),
 );
 
-export const WorkflowMetadataSchema = z
-  .object({
-    name: z.string().min(1),
-    version: z.string().min(1),
-    description: z.string().optional(),
-  })
-  .strict();
+export const WorkflowMetadataSchema = z.strictObject({
+  name: z.string().min(1),
+  version: z.string().min(1),
+  description: z.string().optional(),
+});
 
-const InputsSchema = z
-  .object({
-    schema: z.record(InputFieldSchema).optional(),
-  })
-  .strict();
-const DefaultsSchema = z
-  .object({
-    settings: SettingsSchema.optional(),
-  })
-  .strict();
+const InputsSchema = z.strictObject({
+  schema: z.record(z.string(), InputFieldSchema).optional(),
+});
+const DefaultsSchema = z.strictObject({
+  settings: SettingsSchema.optional(),
+});
 
-export const WorkflowDefinitionSchema = z
-  .object({
-    inputs: InputsSchema.optional(),
-    context: z.record(JsonValueSchema).optional(),
-    defaults: DefaultsSchema.optional(),
-    tasks: z.record(TaskDefinitionSchema),
-    flow: z.array(FlowStepSchema),
-    outputs: z.record(ExpressionStringSchema),
-  })
-  .strict();
+export const WorkflowDefinitionSchema = z.strictObject({
+  inputs: InputsSchema.optional(),
+  context: z.record(z.string(), JsonValueSchema).optional(),
+  defaults: DefaultsSchema.optional(),
+  tasks: z.record(z.string(), TaskDefinitionSchema),
+  flow: z.array(FlowStepSchema),
+  outputs: z.record(z.string(), ExpressionStringSchema),
+});
 
 export type Settings = z.infer<typeof SettingsSchema>;
 

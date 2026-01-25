@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ZodType, ZodTypeDef } from 'zod';
+import { ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
@@ -14,9 +14,9 @@ import { Deferred } from '../utils/deferred';
 export interface ActionMetadata<I, O, S extends Settings = Settings> {
   name: string;
   description: string;
-  inputSchema: ZodType<I, ZodTypeDef, unknown>;
-  outputSchema: ZodType<O, ZodTypeDef, unknown>;
-  settingsSchema?: ZodType<S, ZodTypeDef, unknown>;
+  inputSchema: ZodType<I>;
+  outputSchema: ZodType<O>;
+  settingsSchema?: ZodType<S>;
 }
 
 export interface ActionExecutionArgs<
@@ -37,9 +37,9 @@ export interface Action<
 > {
   readonly name: string;
   readonly description: string;
-  readonly inputSchema: ZodType<I, ZodTypeDef, unknown>;
-  readonly outputSchema: ZodType<O, ZodTypeDef, unknown>;
-  readonly settingSchema?: ZodType<S, ZodTypeDef, unknown>;
+  readonly inputSchema: ZodType<I>;
+  readonly outputSchema: ZodType<O>;
+  readonly settingSchema?: ZodType<S>;
 
   execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
   parseInput(payload: unknown): I;
