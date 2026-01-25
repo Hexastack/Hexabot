@@ -310,6 +310,9 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
+      '@types/json-schema':
+        specifier: ^7.0.15
+        version: 7.0.15
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.20
