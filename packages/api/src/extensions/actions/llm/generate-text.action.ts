@@ -72,9 +72,15 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       settings,
       tools,
     );
-    const output = settings.output_schema
+    const outputSchema =
+      settings.output_schema &&
+      typeof settings.output_schema === 'object' &&
+      !Array.isArray(settings.output_schema)
+        ? settings.output_schema
+        : undefined;
+    const output = outputSchema
       ? Output.object({
-          schema: jsonSchema(settings.output_schema),
+          schema: jsonSchema(outputSchema as Parameters<typeof jsonSchema>[0]),
           name: settings.output_schema_name,
           description: settings.output_schema_description,
         })
@@ -95,7 +101,7 @@ export class LlmGenerateTextAction extends LlmBaseAction<
 
     const result = await generateText({
       ...promptPayload,
-      ...(settings.output_schema ? callSettingsWithoutStops : callSettings),
+      ...(outputSchema ? callSettingsWithoutStops : callSettings),
       model,
       ...(output ? { output } : {}),
       ...(tools ? { tools } : {}),

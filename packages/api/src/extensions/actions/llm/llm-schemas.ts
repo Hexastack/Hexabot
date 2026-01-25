@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Settings, SettingsSchema } from '@hexabot-ai/agentic';
-import { JSONSchema7 } from 'json-schema';
+import { JsonValueSchema, Settings, SettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 const llmPromptBaseSchema = z.object({
   prompt: z.string().min(1).optional(),
-  messages_limit: z.number().int().positive().optional(),
+  messages_limit: z.int().positive().optional(),
   system: z.string().optional(),
 });
 const validatePromptSource = (
@@ -22,7 +21,7 @@ const validatePromptSource = (
 
   if (promptCount !== 1) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'Provide exactly one of "prompt" or "messages_limit"',
       path: ['prompt'],
     });
@@ -33,25 +32,25 @@ export const llmPromptSchema =
   llmPromptBaseSchema.superRefine(validatePromptSource);
 
 export const llmUsageSchema = z.object({
-  input_tokens: z.number().int().nonnegative().optional(),
-  output_tokens: z.number().int().nonnegative().optional(),
-  total_tokens: z.number().int().nonnegative().optional(),
-  reasoning_tokens: z.number().int().nonnegative().optional(),
-  cached_input_tokens: z.number().int().nonnegative().optional(),
+  input_tokens: z.int().nonnegative().optional(),
+  output_tokens: z.int().nonnegative().optional(),
+  total_tokens: z.int().nonnegative().optional(),
+  reasoning_tokens: z.int().nonnegative().optional(),
+  cached_input_tokens: z.int().nonnegative().optional(),
   input_token_details: z
     .object({
-      no_cache_tokens: z.number().int().nonnegative().optional(),
-      cache_read_tokens: z.number().int().nonnegative().optional(),
-      cache_write_tokens: z.number().int().nonnegative().optional(),
+      no_cache_tokens: z.int().nonnegative().optional(),
+      cache_read_tokens: z.int().nonnegative().optional(),
+      cache_write_tokens: z.int().nonnegative().optional(),
     })
     .optional(),
   output_token_details: z
     .object({
-      text_tokens: z.number().int().nonnegative().optional(),
-      reasoning_tokens: z.number().int().nonnegative().optional(),
+      text_tokens: z.int().nonnegative().optional(),
+      reasoning_tokens: z.int().nonnegative().optional(),
     })
     .optional(),
-  raw: z.record(z.any()).optional(),
+  raw: z.record(z.string(), z.any()).optional(),
 });
 
 export const llmRawResponseSchema = z.object({
@@ -65,29 +64,23 @@ export const llmCommonSettingsSchema = SettingsSchema.extend({
   model: z.string().min(1).optional(),
   temperature: z.number().min(0).max(2).optional(),
   top_p: z.number().min(0).max(1).optional(),
-  top_k: z.number().int().positive().optional(),
-  max_output_tokens: z.number().int().positive().optional(),
+  top_k: z.int().positive().optional(),
+  max_output_tokens: z.int().positive().optional(),
   presence_penalty: z.number().min(-2).max(2).optional(),
   frequency_penalty: z.number().min(-2).max(2).optional(),
   stop_sequences: z.array(z.string().min(1)).min(1).optional(),
-  seed: z.number().int().optional(),
-  provider: z.string().default('openai'),
+  seed: z.int().optional(),
+  provider: z.string().prefault('openai'),
   api_key: z.string().optional(),
-  base_url: z.string().url().optional(),
+  base_url: z.url().optional(),
   organization: z.string().optional(),
   tools: z.array(z.string().min(1)).optional(),
   memory_enabled: z.boolean().optional(),
-  stop_step_count: z.number().int().positive().optional(),
+  stop_step_count: z.int().positive().optional(),
   stop_tool_call: z.string().trim().min(1).optional(),
 });
 
-export const jsonSchemaInput = z.custom<JSONSchema7>(
-  (value) =>
-    value !== undefined &&
-    value !== null &&
-    (typeof value === 'boolean' || typeof value === 'object'),
-  { message: 'schema must be a valid JSON Schema object or boolean' },
-);
+export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);
 
 export const llmGenerateTextInputSchema = llmPromptSchema;
 
@@ -113,7 +106,7 @@ export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
       !value.output_schema
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'Provide "output_schema" to use output schema metadata.',
         path: ['output_schema'],
       });

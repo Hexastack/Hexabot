@@ -40,7 +40,7 @@ export enum IncomingMessageType {
   unknown = '',
 }
 
-export const incomingMessageType = z.nativeEnum(IncomingMessageType);
+export const incomingMessageType = z.enum(IncomingMessageType);
 
 export type IncomingMessageTypeLiteral = z.infer<typeof incomingMessageType>;
 
@@ -54,13 +54,13 @@ export enum OutgoingMessageFormat {
   system = 'system',
 }
 
-export const outgoingMessageFormatSchema = z.nativeEnum(OutgoingMessageFormat);
+export const outgoingMessageFormatSchema = z.enum(OutgoingMessageFormat);
 
 export type OutgoingMessageFormatLiteral = z.infer<
   typeof outgoingMessageFormatSchema
 >;
 
-export const payloadTypeSchema = z.nativeEnum(PayloadType);
+export const payloadTypeSchema = z.enum(PayloadType);
 
 export type PayloadTypeLiteral = z.infer<typeof payloadTypeSchema>;
 

@@ -10,7 +10,7 @@
  *
  * @example:
  *
- *  const userSchema: JSONSchema = {
+ *  const userSchema: JsonSchema = {
  *    type: "object",
  *    properties: {
  *      id: { type: "string", title: "User ID", description: "Unique identifier." },
@@ -57,7 +57,10 @@
  *  // - extraKey => 123
  */
 
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import {
+  JSONSchema7 as JsonSchema,
+  JSONSchema7Definition as JsonSchemaDefinition,
+} from 'json-schema';
 
 export type FieldInfo = {
   /** Field name relative to its parent object */
@@ -73,7 +76,7 @@ export type FieldInfo = {
   required: boolean;
 
   /** The (best-effort) resolved schema for this field */
-  schema: JSONSchema7;
+  schema: JsonSchema;
 };
 
 export type IterateOptions = {
@@ -87,7 +90,7 @@ export class SchemaInstance<
   TData extends Record<string, unknown> = Record<string, unknown>,
 > {
   constructor(
-    public readonly rootSchema: JSONSchema7,
+    public readonly rootSchema: JsonSchema,
     public readonly data: TData,
   ) {}
 
@@ -125,7 +128,7 @@ export class SchemaInstance<
   // -----------------------
 
   private *iterateObject(
-    objSchema: JSONSchema7,
+    objSchema: JsonSchema,
     objValue: Record<string, unknown>,
     ctx: { includeAdditional: boolean; recursive: boolean; basePath: string },
   ): IterableIterator<FieldInfo> {
@@ -179,7 +182,7 @@ export class SchemaInstance<
     }
   }
 
-  private isObjectSchema(s: JSONSchema7): boolean {
+  private isObjectSchema(s: JsonSchema): boolean {
     const t = s.type;
     if (t === 'object') return true;
     if (Array.isArray(t) && t.includes('object')) return true;
@@ -194,9 +197,9 @@ export class SchemaInstance<
    * - shallow allOf merge (enough for annotations/properties/required)
    */
   private resolveSchema(
-    schema: JSONSchema7Definition | undefined | null,
-    seen = new Set<JSONSchema7>(),
-  ): JSONSchema7 {
+    schema: JsonSchemaDefinition | undefined | null,
+    seen = new Set<JsonSchema>(),
+  ): JsonSchema {
     const normalizedSchema = this.normalizeSchema(schema);
     if (seen.has(normalizedSchema)) return normalizedSchema;
     seen.add(normalizedSchema);
@@ -220,7 +223,7 @@ export class SchemaInstance<
     ) {
       const merged = normalizedSchema.allOf
         .map((s) => this.resolveSchema(s, seen))
-        .reduce((acc, cur) => this.shallowMerge(acc, cur), {} as JSONSchema7);
+        .reduce((acc, cur) => this.shallowMerge(acc, cur), {} as JsonSchema);
 
       return this.shallowMerge(merged, normalizedSchema);
     }
@@ -228,10 +231,10 @@ export class SchemaInstance<
     return normalizedSchema;
   }
 
-  private pickAnnotations(schema: JSONSchema7Definition): {
+  private pickAnnotations(schema: JsonSchemaDefinition): {
     title?: string;
     description?: string;
-    mergedSchema: JSONSchema7;
+    mergedSchema: JsonSchema;
   } {
     const mergedSchema = this.resolveSchema(schema);
     // Title/description might be on the property schema itself or inside $ref/allOf
@@ -242,8 +245,8 @@ export class SchemaInstance<
     return { title, description, mergedSchema };
   }
 
-  private shallowMerge(a: JSONSchema7, b: JSONSchema7): JSONSchema7 {
-    const out: JSONSchema7 = { ...a, ...b };
+  private shallowMerge(a: JsonSchema, b: JsonSchema): JsonSchema {
+    const out: JsonSchema = { ...a, ...b };
 
     // Merge properties shallowly
     if (a.properties || b.properties) {
@@ -267,7 +270,7 @@ export class SchemaInstance<
     return out;
   }
 
-  private resolveLocalRef(ref: string): JSONSchema7Definition | undefined {
+  private resolveLocalRef(ref: string): JsonSchemaDefinition | undefined {
     if (!ref.startsWith('#/')) return undefined;
 
     // JSON Pointer: #/a/b => ["a","b"]
@@ -281,7 +284,7 @@ export class SchemaInstance<
       cur = cur[key];
     }
 
-    return cur as JSONSchema7Definition | undefined;
+    return cur as JsonSchemaDefinition | undefined;
   }
 
   private unescapeJsonPointer(segment: string): string {
@@ -290,8 +293,8 @@ export class SchemaInstance<
   }
 
   private normalizeSchema(
-    schema: JSONSchema7Definition | undefined | null,
-  ): JSONSchema7 {
+    schema: JsonSchemaDefinition | undefined | null,
+  ): JsonSchema {
     if (schema === false) {
       return { not: {} };
     }

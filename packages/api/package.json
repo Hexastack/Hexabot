@@ -112,8 +112,7 @@
     "typeorm": "^0.3.27",
     "uuid": "^9.0.1",
     "yaml": "^2.5.0",
-    "zod": "^3.24.1",
-    "zod-to-json-schema": "^3.25.1"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.31",
@@ -138,6 +137,7 @@
     "@types/slug": "^5.0.9",
     "@types/supertest": "^6.0.3",
     "@types/uid-safe": "^2.1.5",
+    "@types/json-schema": "^7.0.15",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^9.37.0",

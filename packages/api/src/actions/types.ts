@@ -10,13 +10,10 @@ import {
   BaseWorkflowContext,
   Settings,
 } from '@hexabot-ai/agentic';
-import type { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 export type ActionName = `${string}_${string}`;
-
-export type JsonSchema = ReturnType<typeof zodToJsonSchema>;
 
 export const DEFAULT_ACTION_COLOR = '#98a7ba';
 
@@ -32,17 +29,6 @@ export type ActionMetadataWithColor<
   icon?: string;
   color?: string;
   group?: string;
-};
-
-export type ActionSchemaDefinition = {
-  name: ActionName;
-  description: string;
-  icon: string;
-  color: string;
-  group: string;
-  inputSchema: JsonSchema;
-  outputSchema: JsonSchema;
-  settingSchema: JsonSchema;
 };
 
 export type AnyAction = Action<

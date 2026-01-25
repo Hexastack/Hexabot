@@ -14,7 +14,7 @@ export enum FileType {
   unknown = 'unknown',
 }
 
-export const fileTypeSchema = z.nativeEnum(FileType);
+export const fileTypeSchema = z.enum(FileType);
 
 /**
  * The `AttachmentRef` type defines two possible ways to reference an attachment:

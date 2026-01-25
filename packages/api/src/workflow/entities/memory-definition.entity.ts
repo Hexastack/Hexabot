@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
@@ -31,7 +31,7 @@ export class MemoryDefinitionOrmEntity extends BaseOrmEntity {
 
   /** JSON Schema describing the expected structure of stored values. */
   @JsonColumn()
-  schema!: JSONSchema7;
+  schema!: JsonSchema;
 
   /** Optional TTL in seconds applied to records created from this definition. */
   @Column({ name: 'ttl_seconds', type: 'int', nullable: true })

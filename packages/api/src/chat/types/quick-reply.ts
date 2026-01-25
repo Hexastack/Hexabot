@@ -33,7 +33,7 @@ export const payloadSchema = z.discriminatedUnion('type', [
 ]);
 
 export const stdQuickReplySchema = z.object({
-  content_type: z.nativeEnum(QuickReplyType),
+  content_type: z.enum(QuickReplyType),
   title: z.string(),
   payload: z.string(),
 });

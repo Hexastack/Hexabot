@@ -4,8 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Output, generateText, hasToolCall, jsonSchema, stepCountIs } from 'ai';
-import { JSONSchema7 } from 'json-schema';
+import {
+  JSONSchema7,
+  Output,
+  generateText,
+  hasToolCall,
+  jsonSchema,
+  stepCountIs,
+} from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -239,13 +245,13 @@ describe('LlmGenerateTextAction', () => {
       warnings: ['warn'],
     } as any);
 
-    const schemaDefinition: JSONSchema7 = {
+    const schemaDefinition = {
       type: 'object',
       properties: {
         foo: { type: 'string' },
       },
       required: ['foo'],
-    };
+    } satisfies JSONSchema7;
     const settings = {
       provider: 'openai',
       timeout_ms: 0,

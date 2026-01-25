@@ -19,7 +19,10 @@ import {
 } from './message-action.base';
 
 const textMessageInputSchema = z.object({
-  text: z.union([z.string(), z.array(z.string())]),
+  text: z.string().min(1).prefault('Hello World!').meta({
+    title: 'Text',
+    description: 'The text message to be sent.',
+  }),
 });
 
 type TextMessageInput = z.infer<typeof textMessageInputSchema>;
