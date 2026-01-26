@@ -159,18 +159,50 @@ export const theme = createTheme({
         root: { paddingTop: "15px!important" },
       },
     },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          margin: 0,
+          "&:before": {
+            display: "none",
+          },
+          "&.Mui-expanded": {
+            margin: 0,
+          },
+        },
+      },
+    },
+    MuiAccordionSummary: {
+      styleOverrides: {
+        root: {
+          minHeight: "36px",
+          padding: "0 8px",
+          "&.Mui-expanded": {
+            minHeight: "36px",
+          },
+        },
+        content: {
+          margin: "6px 0",
+          "&.Mui-expanded": {
+            margin: "6px 0",
+          },
+        },
+      },
+    },
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          padding: "0 8px 8px",
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           "& .MuiOutlinedInput-root": {
-            borderRadius: "36px",
             backgroundColor: "#fff",
           },
-          "& .MuiInputBase-multiline ": {
-            borderRadius: "12px",
-          },
           "& .MuiInputBase-input.Mui-disabled": {
-            borderRadius: "36px",
             backgroundColor: COLOR_PALETTE.disabledGray,
           },
           "& .MuiInputLabel-root.Mui-required": {

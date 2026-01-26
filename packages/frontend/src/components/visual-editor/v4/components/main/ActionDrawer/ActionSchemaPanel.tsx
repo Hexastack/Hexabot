@@ -8,11 +8,14 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
+  createTheme,
+  Divider,
+  ThemeProvider,
   Typography,
 } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Form from "@rjsf/mui";
-import type { RJSFSchema } from "@rjsf/utils";
+import { Form } from "@rjsf/mui";
+import type { RJSFSchema, TitleFieldProps } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
@@ -42,6 +45,32 @@ const formUiSchema = {
     norender: true,
   },
 } as const;
+const NestedTitleField = ({
+  id,
+  title,
+  optionalDataControl,
+  registry,
+}: TitleFieldProps) => {
+  const baseId = id.split("__")[0];
+  const isNested = baseId !== registry.globalFormOptions.idPrefix;
+  const heading = (
+    <Typography variant={isNested ? "subtitle1" : "h5"}>{title}</Typography>
+  );
+
+  return (
+    <Box id={id} mb={1} mt={1}>
+      {optionalDataControl ? (
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          {heading}
+          {optionalDataControl}
+        </Box>
+      ) : (
+        heading
+      )}
+      <Divider />
+    </Box>
+  );
+};
 
 export type ActionSchemaPanelProps = {
   title: string;
@@ -60,9 +89,9 @@ export const ActionSchemaPanel = ({
   panelKey,
   emptyLabel,
 }: ActionSchemaPanelProps) => (
-  <Accordion variant="outlined" defaultExpanded>
+  <Accordion variant="elevation" defaultExpanded>
     <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-      <Typography variant="subtitle2">{title}</Typography>
+      <Typography variant="subtitle1">{title}</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
@@ -72,12 +101,15 @@ export const ActionSchemaPanel = ({
             validator={validator}
             formData={formData}
             onChange={(event) =>
-              onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
+              onFormDataChange(
+                (event.formData ?? {}) as Record<string, unknown>,
+              )
             }
             showErrorList={false}
             noHtml5Validate
             uiSchema={formUiSchema}
             idPrefix={`action-${panelKey}`}
+            templates={{ TitleFieldTemplate: NestedTitleField }}
           />
         </ThemeProvider>
       ) : (

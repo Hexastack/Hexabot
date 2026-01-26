@@ -136,20 +136,60 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
 );
 // Retry policy: exponential backoff per attempt, capped by max_delay_ms, with optional jitter multiplier.
 const RetriesSchema = z.strictObject({
-  max_attempts: z.int().min(1).prefault(DEFAULT_RETRY_SETTINGS.max_attempts),
-  backoff_ms: z.int().min(0).prefault(DEFAULT_RETRY_SETTINGS.backoff_ms),
-  max_delay_ms: z.int().min(0).prefault(DEFAULT_RETRY_SETTINGS.max_delay_ms),
-  jitter: z.number().min(0).prefault(DEFAULT_RETRY_SETTINGS.jitter),
-  multiplier: z.number().min(1).prefault(DEFAULT_RETRY_SETTINGS.multiplier),
+  max_attempts: z
+    .int()
+    .min(1)
+    .default(DEFAULT_RETRY_SETTINGS.max_attempts)
+    .meta({
+      title: 'Max Attempts',
+      description: 'Total number of attempts before giving up.',
+    }),
+  backoff_ms: z.int().min(0).default(DEFAULT_RETRY_SETTINGS.backoff_ms).meta({
+    title: 'Initial Backoff (ms)',
+    description: 'Delay in milliseconds before the first retry.',
+  }),
+  max_delay_ms: z
+    .int()
+    .min(0)
+    .default(DEFAULT_RETRY_SETTINGS.max_delay_ms)
+    .meta({
+      title: 'Max Delay (ms)',
+      description: 'Maximum delay cap in milliseconds between retries.',
+    }),
+  jitter: z.number().min(0).default(DEFAULT_RETRY_SETTINGS.jitter).meta({
+    title: 'Jitter',
+    description: 'Randomization factor applied to retry delays (0 = none).',
+  }),
+  multiplier: z
+    .number()
+    .min(1)
+    .default(DEFAULT_RETRY_SETTINGS.multiplier)
+    .meta({
+      title: 'Backoff Multiplier',
+      description: 'Multiplier applied to the delay after each retry.',
+    }),
 });
 
 // Execution guardrails applied to every action invocation.
 export const SettingsSchema = z
   .strictObject({
-    timeout_ms: z.int().nonnegative().prefault(DEFAULT_TIMEOUT_MS),
-    retries: RetriesSchema.prefault(() => ({ ...DEFAULT_RETRY_SETTINGS })),
-    audit: z.boolean().optional(),
-    guardrails: z.strictObject({ mode: z.string() }).optional(),
+    timeout_ms: z.int().nonnegative().default(DEFAULT_TIMEOUT_MS).meta({
+      title: 'Timeout (ms)',
+      description:
+        'Maximum runtime in milliseconds for a single action invocation (0 = disabled).',
+    }),
+    retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })).meta({
+      title: 'Retries',
+      description: 'Retry policy applied when an action fails.',
+    }),
+    audit: z.boolean().optional().meta({
+      title: 'Audit',
+      description: 'Enable auditing for the action invocation.',
+    }),
+    guardrails: z.strictObject({ mode: z.string() }).optional().meta({
+      title: 'Guardrails',
+      description: 'Optional guardrail mode configuration.',
+    }),
   })
   .catchall(JsonValueSchema);
 
