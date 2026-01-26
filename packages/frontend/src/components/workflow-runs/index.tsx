@@ -4,17 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowRunStatus } from "@hexabot-ai/agentic";
 import { GridColDef } from "@mui/x-data-grid";
 import { Activity, GalleryHorizontalEnd } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
 import { BadgeWithTitle } from "@/app-components/displays/Badge";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
+import { type Filter } from "@/app-components/tables/GenericFilters";
 import { useGetFromCache } from "@/hooks/crud/useGet";
-import { TQuery, useAppRouter } from "@/hooks/useAppRouter";
-import { useQueryChange } from "@/hooks/useQueryChange";
+import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IWorkflowRunFull } from "@/types/workflow-run.types";
@@ -94,18 +93,59 @@ export const WorkflowRuns = () => {
     ],
     [t],
   );
-  const router = useAppRouter();
-  const workflowName = useQueryChange("workflow.name");
-  const workflowType = useQueryChange("workflow.type");
-  const workflowRunStatus = useQueryChange("status");
-  const updateQuery = useCallback(
-    <F extends keyof TQuery>(field: F, value?: TQuery[F]) => {
-      router.push({
-        pathname: router.pathname,
-        query: { ...router.query, [field]: value || undefined },
-      });
-    },
-    [router],
+  const [name, setName] = useQueryState("name");
+  const [type, setType, defaultType] = useQueryState("type", "all");
+  const [workflowRunStatus, setWorkflowRunStatus, defaultWorkflowRunStatus] =
+    useQueryState("status", "all");
+  const filters = useMemo<Filter[]>(
+    () => [
+      {
+        entity: EntityType.WORKFLOW,
+        type: "entitySelectFilter",
+        field: "name",
+        idKey: "name",
+        value: name,
+        label: t("label.workflow"),
+        defaultOption: {
+          icon: GalleryHorizontalEnd,
+          title: `${t("label.all")} ${t("label.types")}`,
+          background: "#f8f8f8",
+        },
+        typeInfo: BASE_TYPES,
+        onChange: setName,
+      },
+      {
+        entity: EntityType.WORKFLOW,
+        type: "enumFilter",
+        field: "type",
+        value: type,
+        label: t("label.type"),
+        defaultOption: {
+          icon: GalleryHorizontalEnd,
+          title: `${t("label.all")} ${t("label.types")}`,
+          background: "#f8f8f8",
+          defaultValue: defaultType,
+        },
+        typeInfo: BASE_TYPES,
+        onChange: setType,
+      },
+      {
+        entity: EntityType.WORKFLOW_RUN,
+        type: "enumFilter",
+        field: "status",
+        value: workflowRunStatus,
+        label: t("label.status"),
+        defaultOption: {
+          icon: GalleryHorizontalEnd,
+          title: `${t("label.all")} ${t("label.status")}`,
+          background: "#f8f8f8",
+          defaultValue: defaultWorkflowRunStatus,
+        },
+        typeInfo: BASE_STATUS,
+        onChange: setWorkflowRunStatus,
+      },
+    ],
+    [setName, setType, setWorkflowRunStatus],
   );
 
   return (
@@ -113,76 +153,19 @@ export const WorkflowRuns = () => {
       entity={EntityType.WORKFLOW_RUN}
       format={Format.FULL}
       columns={columns}
+      filters={filters}
       headerIcon={Activity}
       searchParams={{
         $iLike: ["status", "error"],
         syncUrl: true,
         $eq: [
           {
-            status:
-              !workflowRunStatus || workflowRunStatus === "all"
-                ? undefined
-                : (workflowRunStatus as WorkflowRunStatus),
-            "workflow.name": workflowName,
-            "workflow.type": workflowType === "all" ? undefined : workflowType,
+            status: workflowRunStatus,
+            "workflow.name": name,
+            "workflow.type": type,
           },
         ],
       }}
-      filters={[
-        {
-          entity: EntityType.WORKFLOW,
-          type: "entitySelect",
-          field: "workflow.name",
-          value: workflowName,
-          label: t("label.workflow"),
-          defaultOption: {
-            icon: GalleryHorizontalEnd,
-            title: `${t("label.all")} ${t("label.types")}`,
-            background: "#f8f8f8",
-            defaultValue: "all",
-          },
-          typeInfo: BASE_TYPES,
-          onChange: (e, workflow) => {
-            updateQuery("workflow.name", workflow?.name);
-          },
-          format: Format.BASIC,
-          labelKey: "name",
-          searchFields: [],
-          idKey: "name",
-        },
-        {
-          type: "enumFilter",
-          field: "workflow.type",
-          value: workflowType,
-          label: t("label.type"),
-          defaultOption: {
-            icon: GalleryHorizontalEnd,
-            title: `${t("label.all")} ${t("label.types")}`,
-            background: "#f8f8f8",
-            defaultValue: "all",
-          },
-          typeInfo: BASE_TYPES,
-          onChange: ({ target }) => {
-            updateQuery("workflow.type", target.value);
-          },
-        },
-        {
-          type: "enumFilter",
-          field: "status",
-          value: workflowRunStatus,
-          label: t("label.status"),
-          defaultOption: {
-            icon: GalleryHorizontalEnd,
-            title: `${t("label.all")} ${t("label.status")}`,
-            background: "#f8f8f8",
-            defaultValue: "all",
-          },
-          typeInfo: BASE_STATUS,
-          onChange: ({ target }) => {
-            updateQuery("status", target.value);
-          },
-        },
-      ]}
       headerI18nTitle="title.workflow_runs"
     />
   );

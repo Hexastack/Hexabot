@@ -4,13 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IconButton, MenuItem } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { UserCircle, X } from "lucide-react";
-import { useState } from "react";
+import { UserCircle } from "lucide-react";
+import { useMemo } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import { Input } from "@/app-components/inputs/Input";
 import {
   ActionColumnLabel,
   useActionColumns,
@@ -18,8 +16,9 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useFind } from "@/hooks/crud/useFind";
+import { type Filter } from "@/app-components/tables/GenericFilters";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -31,13 +30,6 @@ import { SubscriberFormDialog } from "./SubscriberFormDialog";
 export const Subscribers = () => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
-  const { data: labels } = useFind(
-    {
-      entity: EntityType.LABEL,
-    },
-    { hasCount: false },
-  );
-  const [labelFilter, setLabelFilter] = useState<string>("");
   const actionColumns = useActionColumns<ISubscriber>(
     EntityType.SUBSCRIBER,
     [
@@ -149,6 +141,20 @@ export const Subscribers = () => {
     },
     actionColumns,
   ];
+  const [id, setId] = useQueryState("id");
+  const filters = useMemo<Filter[]>(
+    () => [
+      {
+        entity: EntityType.LABEL,
+        type: "entitySelectFilter",
+        field: "id",
+        value: id,
+        label: t("label.labels"),
+        onChange: setId,
+      },
+    ],
+    [setId],
+  );
 
   return (
     <GenericDataGrid
@@ -156,48 +162,12 @@ export const Subscribers = () => {
       columns={columns}
       headerIcon={UserCircle}
       searchParams={{
-        $eq: labelFilter ? [{ labels: [{ id: labelFilter }] }] : [],
+        $eq: id ? [{ labels: [{ id }] }] : [],
         $or: ["firstName", "lastName"],
         syncUrl: true,
       }}
       headerI18nTitle="title.subscribers"
-      headerFilterInputs={
-        <Input
-          sx={{ minWidth: "120px" }}
-          select
-          label={t("label.labels")}
-          value={labelFilter}
-          onChange={(e) => setLabelFilter(e.target.value)}
-          SelectProps={{
-            ...(labelFilter !== "" && {
-              IconComponent: () => (
-                <IconButton size="small" onClick={() => setLabelFilter("")}>
-                  <X size={16} />
-                </IconButton>
-              ),
-            }),
-            renderValue: (value) => (
-              <ChipEntity
-                id={String(value)}
-                key={String(value)}
-                variant="role"
-                field="name"
-                entity={EntityType.LABEL}
-              />
-            ),
-          }}
-        >
-          {!!labels.length ? (
-            labels.map((label) => (
-              <MenuItem key={label.id} value={label.id}>
-                {label.name}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled>{t("message.no_label_found")}</MenuItem>
-          )}
-        </Input>
-      }
+      filters={filters}
     />
   );
 };

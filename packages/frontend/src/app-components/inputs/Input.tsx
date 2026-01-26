@@ -7,7 +7,7 @@
 import { TextField, TextFieldProps } from "@mui/material";
 import { ForwardedRef, forwardRef } from "react";
 
-type InputProps = Omit<
+export type InputProps = Omit<
   TextFieldProps,
   "FormHelperTextProps" | "InputLabelProps" | "InputProps" | "inputProps"
 >;

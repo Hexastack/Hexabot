@@ -4,70 +4,89 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Box,
-  Grid,
-  type InputProps,
-  MenuItem,
-  type TextFieldProps,
-  type UseAutocompleteProps,
-} from "@mui/material";
-import type { Path } from "react-hook-form";
+import { Box, Grid, MenuItem } from "@mui/material";
+import type { Path, PathValue } from "react-hook-form";
 
 import type { FlowTypeInfo } from "@/components/visual-editor/v4/components/main/FlowsDrawer/types";
+import { Format } from "@/services/types";
 import type { IEntityMapTypes, THook } from "@/types/base.types";
 
 import { BadgeWithTitle, type BadgeWithTitleProps } from "../displays/Badge";
 import AutoCompleteEntitySelect, {
   type AutoCompleteEntitySelectProps,
 } from "../inputs/AutoCompleteEntitySelect";
-import { Input } from "../inputs/Input";
+import { Input, type InputProps } from "../inputs/Input";
 
-export type GenericFiltersProps<
-  TP extends THook["params"],
-  TE extends TP["entity"],
-  F extends TP["format"],
-> =
-  | ({
-      type: "enumFilter";
-      field: Path<THook<{ entity: TE; format: F }>["current"]>;
-      value?: string;
-      label?: string;
-      onChange?: InputProps["onChange"];
-      typeInfo: Record<any, Omit<FlowTypeInfo, "labelKey">>;
-      defaultOption?: BadgeWithTitleProps & { defaultValue: string };
-    } & TextFieldProps)
-  | ({
-      type: "entitySelect";
-      field: Path<THook<{ entity: TE; format: F }>["current"]>;
-      value?: string;
-      label?: string;
-      onChange?: UseAutocompleteProps<any, false, false, false>["onChange"];
-      typeInfo: Record<any, Omit<FlowTypeInfo, "labelKey">>;
-      defaultOption?: BadgeWithTitleProps & { defaultValue: string };
-      entity: keyof IEntityMapTypes;
-    } & Omit<
-      AutoCompleteEntitySelectProps<any, string, false>,
-      "ref" | "onChange"
-    >);
+type filterDynamicFields<
+  E extends keyof IEntityMapTypes,
+  F extends Format,
+  A extends { format?: Format } = { format?: F },
+  C = THook<{
+    entity: E;
+    format: F;
+  }>["current"],
+> = {
+  [Field in Path<C>]: {
+    field: Field;
+    value?: PathValue<C, Field>;
+    idKey?: keyof C;
+    sortKey?: keyof C;
+    labelKey?: keyof C;
+    onChange?: (value?: PathValue<C, Field>) => void;
+  };
+}[Path<C>] &
+  A;
 
-export const GenericFilters = <
-  TP extends THook["params"],
-  TE extends TP["entity"],
-  F extends TP["format"],
->({
-  filters,
-}: {
-  filters?: GenericFiltersProps<TP, TE, F>[];
-}) => {
-  return filters?.map(
-    ({ type, value, field, typeInfo, defaultOption, ...rest }) => {
-      if (!("entity" in rest) && type === "enumFilter") {
+type EntityField = {
+  [E in keyof IEntityMapTypes]: { entity: E } & (
+    | filterDynamicFields<E, Format.BASIC>
+    | filterDynamicFields<E, Format.BASIC, { format: Format.BASIC }>
+    | filterDynamicFields<E, Format.FULL, { format: Format.FULL }>
+  );
+};
+
+type EnumFilterType = Omit<InputProps, "onChange"> & {
+  type: "enumFilter";
+};
+
+type EntityFilterType = Omit<
+  AutoCompleteEntitySelectProps<any, string, false>,
+  "ref" | "format" | "onChange" | "labelKey" | "searchFields" | "value"
+> & {
+  type: "entitySelectFilter";
+  searchFields?: string[];
+};
+
+export type Filter = ({
+  typeInfo?: Record<any, Omit<FlowTypeInfo, "labelKey">>;
+  defaultOption?: BadgeWithTitleProps & { defaultValue?: string };
+} & EntityField[keyof EntityField]) &
+  (EnumFilterType | EntityFilterType);
+
+export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
+  filters?.map(
+    ({
+      value,
+      field,
+      idKey,
+      format = Format.BASIC,
+      entity,
+      sortKey,
+      labelKey,
+      typeInfo,
+      defaultOption,
+      onChange,
+      ...rest
+    }) => {
+      if (rest.type === "enumFilter") {
         return (
           <Grid key={field} flex={1} minWidth="180px">
             <Input
               select
               value={value || defaultOption?.defaultValue}
+              onChange={(e) => {
+                onChange?.(e.target.value as never);
+              }}
               {...rest}
             >
               {defaultOption?.defaultValue ? (
@@ -75,25 +94,33 @@ export const GenericFilters = <
                   <BadgeWithTitle {...defaultOption} />
                 </MenuItem>
               ) : null}
-              {Object.entries(typeInfo).map(([type, info]) => (
-                <MenuItem key={type} value={type}>
-                  <BadgeWithTitle {...info} title={type} />
-                </MenuItem>
-              ))}
+              {typeInfo
+                ? Object.entries(typeInfo).map(([type, info]) => (
+                    <MenuItem key={type} value={type}>
+                      <BadgeWithTitle {...info} title={type} />
+                    </MenuItem>
+                  ))
+                : null}
             </Input>
           </Grid>
         );
-      } else if ("entity" in rest && type === "entitySelect") {
+      } else if (rest.type === "entitySelectFilter") {
         return (
           <Grid key={field} flex={1} minWidth="180px">
             <AutoCompleteEntitySelect<any, string, false>
+              idKey={idKey?.toString()}
+              sortKey={sortKey?.toString()}
+              labelKey={labelKey?.toString() || ""}
+              entity={entity}
+              format={format}
               value={value}
+              searchFields={rest.searchFields || []}
               size="medium"
               multiple={false}
               renderValue={(workflow) => (
                 <Box p="2px 7px">
                   <BadgeWithTitle
-                    {...typeInfo[workflow.type]}
+                    {...typeInfo?.[workflow.type]}
                     title={workflow.name}
                   />
                 </Box>
@@ -101,11 +128,14 @@ export const GenericFilters = <
               renderOption={(props, workflow) => (
                 <li {...props}>
                   <BadgeWithTitle
-                    {...typeInfo[workflow.type]}
+                    {...typeInfo?.[workflow.type]}
                     title={workflow.name}
                   />
                 </li>
               )}
+              onChange={(e, value) => {
+                onChange?.(value?.[field]);
+              }}
               {...rest}
             />
           </Grid>
@@ -113,4 +143,3 @@ export const GenericFilters = <
       }
     },
   );
-};
