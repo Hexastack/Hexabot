@@ -293,7 +293,10 @@ export function walkSteps({
       }
 
       const task = tasks[taskName];
-      const tools: string[] = task.settings?.["tools"] || [];
+      const tools: string[] =
+        task.settings && "tools" in task.settings
+          ? (task.settings?.["tools"] as string[]) || []
+          : [];
 
       if (tools.length) {
         const action = getTaskAction(step["do"], tasks);
@@ -317,7 +320,10 @@ export function walkSteps({
           },
         });
 
-        const model: string = task.settings?.["model"] || "";
+        const model: string =
+          task.settings && "model" in task.settings
+            ? task.settings?.["model"]?.toString() || ""
+            : "";
 
         if (model) {
           ctx.nodes.push({

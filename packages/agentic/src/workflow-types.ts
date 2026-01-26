@@ -5,7 +5,7 @@
  */
 
 import type { Expression } from 'jsonata';
-import type { ZodTypeAny } from 'zod';
+import type { ZodType } from 'zod';
 
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
@@ -37,7 +37,7 @@ export type CompiledWorkflow = {
   tasks: Record<string, CompiledTask>;
   flow: CompiledStep[];
   outputMapping: CompiledMapping;
-  inputParser: ZodTypeAny;
+  inputParser: ZodType<Record<string, unknown>>;
   defaultSettings?: Settings;
 };
 

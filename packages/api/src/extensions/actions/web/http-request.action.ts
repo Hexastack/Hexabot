@@ -12,17 +12,17 @@ import { createAction } from '@/actions/create-action';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 const httpRequestInputSchema = z.object({
-  url: z.string().url(),
-  headers: z.record(z.string()).optional(),
+  url: z.url(),
+  headers: z.record(z.string(), z.string()).optional(),
   body: JsonValueSchema.optional(),
 });
 const httpRequestSettingsSchema = SettingsSchema.extend({
-  method: z.enum(['GET', 'POST']).default('GET'),
-  timeout_ms: z.number().int().positive().max(60000).default(10000),
+  method: z.enum(['GET', 'POST']).prefault('GET'),
+  timeout_ms: z.int().positive().max(60000).prefault(10000),
 });
 const httpRequestOutputSchema = z.object({
   ok: z.boolean(),
-  status: z.number().int(),
+  status: z.int(),
   status_text: z.string(),
   url: z.string(),
   final_url: z.string().optional(),

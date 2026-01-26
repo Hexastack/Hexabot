@@ -6,18 +6,13 @@
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ZodTypeAny } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { JSONSchema7 as JSONSchema } from 'json-schema';
+import { ZodType } from 'zod';
 
 import { LoggerService } from '@/logger/logger.service';
 
 import { BaseAction } from './base-action';
-import {
-  ActionName,
-  ActionRegistry,
-  ActionSchemaDefinition,
-  JsonSchema,
-} from './types';
+import { ActionName, ActionRegistry } from './types';
 
 @Injectable()
 export class ActionService {
@@ -54,20 +49,11 @@ export class ActionService {
     return Array.from(this.registry.values());
   }
 
-  private buildJsonSchema(schema: ZodTypeAny, name: string): JsonSchema {
-    // Avoid TS2589 by narrowing zod-to-json-schema's generic signature.
-    const converter = zodToJsonSchema as unknown as (
-      schema: ZodTypeAny,
-      options: { name: string; target: 'jsonSchema7' },
-    ) => JsonSchema;
-
-    return converter(schema, {
-      name,
-      target: 'jsonSchema7',
-    });
+  private buildJsonSchema(schema: ZodType) {
+    return schema.toJSONSchema({ target: 'draft-07' }) as JSONSchema;
   }
 
-  getAllSchemaDefinitions(): ActionSchemaDefinition[] {
+  getAllSchemaDefinitions() {
     return this.getAll().map((action) => {
       const name = action.getName();
 
@@ -77,15 +63,9 @@ export class ActionService {
         icon: action.icon,
         color: action.color,
         group: action.group,
-        inputSchema: this.buildJsonSchema(action.inputSchema, `${name}_input`),
-        outputSchema: this.buildJsonSchema(
-          action.outputSchema,
-          `${name}_output`,
-        ),
-        settingSchema: this.buildJsonSchema(
-          action.settingSchema,
-          `${name}_settings`,
-        ),
+        inputSchema: this.buildJsonSchema(action.inputSchema),
+        outputSchema: this.buildJsonSchema(action.outputSchema),
+        settingSchema: this.buildJsonSchema(action.settingSchema),
       };
     });
   }

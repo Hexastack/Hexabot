@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ZodType, ZodTypeDef } from 'zod';
+import { ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { Settings, SettingsSchema } from '../dsl.types';
@@ -29,11 +29,11 @@ export abstract class AbstractAction<
 
   public readonly description: string;
 
-  public readonly inputSchema: ZodType<I, ZodTypeDef, unknown>;
+  public readonly inputSchema: ZodType<I>;
 
-  public readonly outputSchema: ZodType<O, ZodTypeDef, unknown>;
+  public readonly outputSchema: ZodType<O>;
 
-  public readonly settingSchema: ZodType<S, ZodTypeDef, unknown>;
+  public readonly settingSchema: ZodType<S>;
 
   /**
    * Sets up core metadata and schemas for the action.
@@ -48,8 +48,7 @@ export abstract class AbstractAction<
     this.inputSchema = metadata.inputSchema;
     this.outputSchema = metadata.outputSchema;
     this.settingSchema =
-      metadata.settingsSchema ??
-      (SettingsSchema as ZodType<S, ZodTypeDef, unknown>);
+      metadata.settingsSchema ?? (SettingsSchema as unknown as ZodType<S>);
   }
 
   /**

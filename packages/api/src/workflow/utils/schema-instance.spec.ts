@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 
 import { FieldInfo, SchemaInstance } from './schema-instance';
 
@@ -18,7 +18,7 @@ const buildFieldMap = (fields: FieldInfo[]) =>
 describe('SchemaInstance', () => {
   describe('fields', () => {
     it('iterates schema properties with required flags and title fallback', () => {
-      const schema: JSONSchema7 = {
+      const schema = {
         type: 'object',
         properties: {
           id: {
@@ -34,7 +34,7 @@ describe('SchemaInstance', () => {
           optional: { type: 'number' },
         },
         required: ['id', 'email'],
-      };
+      } satisfies JsonSchema;
       const data = {
         id: 'u_123',
         email: 'a@b.com',
@@ -77,14 +77,14 @@ describe('SchemaInstance', () => {
     });
 
     it('includes additional data keys when includeAdditional is true', () => {
-      const schema: JSONSchema7 = {
+      const schema = {
         type: 'object',
         properties: {
           id: { type: 'string' },
           email: { type: 'string' },
           optional: { type: 'number' },
         },
-      };
+      } satisfies JsonSchema;
       const data = {
         id: 'u_123',
         email: 'a@b.com',
@@ -111,7 +111,7 @@ describe('SchemaInstance', () => {
     });
 
     it('recursively iterates nested object fields and resolves $ref/allOf', () => {
-      const schema: JSONSchema7 = {
+      const schema = {
         type: 'object',
         properties: {
           profile: { $ref: '#/$defs/profile' },
@@ -144,7 +144,7 @@ describe('SchemaInstance', () => {
             required: ['firstName'],
           },
         },
-      };
+      } satisfies JsonSchema;
       const data = {
         profile: { firstName: 'Ada', lastName: 'Lovelace' },
         meta: { active: true },
@@ -202,7 +202,7 @@ describe('SchemaInstance', () => {
     });
 
     it('resolves local $ref with escaped pointer segments', () => {
-      const schema: JSONSchema7 = {
+      const schema = {
         type: 'object',
         properties: {
           complex: { $ref: '#/$defs/foo~1bar~0baz' },
@@ -213,7 +213,7 @@ describe('SchemaInstance', () => {
             title: 'Complex',
           },
         },
-      };
+      } satisfies JsonSchema;
       const data = { complex: 'value' };
       const instance = new SchemaInstance(schema, data);
       const fields = Array.from(instance.fields());
@@ -230,7 +230,7 @@ describe('SchemaInstance', () => {
 
   describe('getValue', () => {
     it('returns nested values and undefined for missing paths', () => {
-      const schema: JSONSchema7 = { type: 'object' };
+      const schema = { type: 'object' } satisfies JsonSchema;
       const data = {
         id: 'u_1',
         profile: { firstName: 'Ada' },

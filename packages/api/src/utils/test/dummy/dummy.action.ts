@@ -21,7 +21,7 @@ const OutputSchema = z.object({
 type Output = z.infer<typeof OutputSchema>;
 
 const ActionSettingsSchema = BaseSettingsSchema.extend({
-  prefix: z.string().default('Echo: '),
+  prefix: z.string().prefault('Echo: '),
 });
 type ActionSettings = z.infer<typeof ActionSettingsSchema>;
 

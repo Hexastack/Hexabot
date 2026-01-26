@@ -7,7 +7,6 @@
 import { Controller, Get } from '@nestjs/common';
 
 import { ActionService } from './actions.service';
-import { ActionSchemaDefinition } from './types';
 
 @Controller('action')
 export class ActionsController {
@@ -19,7 +18,7 @@ export class ActionsController {
    * @returns Array of action metadata with JSON schemas.
    */
   @Get()
-  getActions(): ActionSchemaDefinition[] {
+  getActions() {
     return this.actionService.getAllSchemaDefinitions();
   }
 }

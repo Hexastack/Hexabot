@@ -21,10 +21,8 @@ export type SubscriberChannelData<C extends ChannelName = 'unknown-channel'> =
         };
       };
 
-export const channelDataSchema = z
-  .object({
-    name: z.string().regex(/-channel$/) as z.ZodType<ChannelName>,
-  })
-  .passthrough();
+export const channelDataSchema = z.looseObject({
+  name: z.string().regex(/-channel$/) as z.ZodType<ChannelName>,
+});
 
 export type Channel = z.infer<typeof channelDataSchema>;

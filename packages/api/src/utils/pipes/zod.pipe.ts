@@ -10,7 +10,7 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import { ZodError, ZodTypeAny } from 'zod';
+import { ZodError, ZodType } from 'zod';
 
 /**
  * Validates a single query-parameter with a given Zod schema.
@@ -27,7 +27,7 @@ import { ZodError, ZodTypeAny } from 'zod';
 @Injectable()
 export class ZodQueryParamPipe implements PipeTransform {
   constructor(
-    private readonly schema: ZodTypeAny,
+    private readonly schema: ZodType,
     private readonly accessor?: (query: any) => any,
   ) {}
 

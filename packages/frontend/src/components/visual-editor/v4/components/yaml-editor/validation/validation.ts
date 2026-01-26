@@ -25,6 +25,13 @@ type ApplyWorkflowValidationMarkersOptions = {
   actions?: IAction[];
 };
 
+// YAML paths only support string/number keys, so drop symbol segments.
+const toReferencePath = (path: readonly PropertyKey[]): ReferencePath =>
+  path.filter(
+    (segment): segment is string | number =>
+      typeof segment === "string" || typeof segment === "number",
+  );
+
 export const applyWorkflowValidationMarkers = ({
   editorInstance,
   monacoInstance,
@@ -65,7 +72,7 @@ export const applyWorkflowValidationMarkers = ({
       }
 
       markers.push({
-        ...getRangeForPath(doc, issue.path, lineCounter),
+        ...getRangeForPath(doc, toReferencePath(issue.path), lineCounter),
         message: issue.message,
         severity: monacoInstance.MarkerSeverity.Error,
       });

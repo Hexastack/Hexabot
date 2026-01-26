@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { In } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -36,13 +36,13 @@ describe('MemoryDefinitionController (TypeORM)', () => {
 
   const buildPayload = () => {
     counter += 1;
-    const schema: JSONSchema7 = {
+    const schema = {
       type: 'object',
       properties: {
         step: { type: 'string' },
       },
       additionalProperties: true,
-    };
+    } satisfies JsonSchema;
 
     return {
       name: `Session Context ${counter}`,

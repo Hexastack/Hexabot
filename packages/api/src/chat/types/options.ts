@@ -36,7 +36,7 @@ export const fallbackOptionsSchema = z.object({
 export type FallbackOptions = z.infer<typeof fallbackOptionsSchema>;
 
 export const ActionOptionsSchema = z.object({
-  typing: z.union([z.boolean(), z.number().int().nonnegative()]).optional(),
+  typing: z.union([z.boolean(), z.int().nonnegative()]).optional(),
   content: contentOptionsSchema.optional(),
   fallback: fallbackOptionsSchema.optional(),
   assignTo: z.string().optional(),

@@ -22,7 +22,7 @@ import {
 } from './message-action.base';
 
 const listActionInputSchema = z.object({
-  skip: z.number().int().nonnegative().default(0),
+  skip: z.int().nonnegative().prefault(0),
   query: z.any().optional(),
 });
 

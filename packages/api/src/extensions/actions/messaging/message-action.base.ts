@@ -66,7 +66,7 @@ interface PreparedMessageContext {
 }
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
-  typing: z.union([z.boolean(), z.number().int().nonnegative()]).optional(),
+  typing: z.union([z.boolean(), z.int().nonnegative()]).optional(),
 });
 
 export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;

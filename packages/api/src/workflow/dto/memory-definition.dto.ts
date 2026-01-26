@@ -15,7 +15,7 @@ import {
   Matches,
   Min,
 } from 'class-validator';
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { Validate } from '@/utils/decorators/validate.decorator';
@@ -39,7 +39,7 @@ export class MemoryDefinitionStub extends BaseStub {
   scope!: MemoryScope;
 
   @Expose()
-  schema!: JSONSchema7;
+  schema!: JsonSchema;
 
   @Expose()
   ttlSeconds?: number | null;
@@ -82,8 +82,8 @@ export class MemoryDefinitionCreateDto {
     description: 'JSON Schema describing the memory structure',
     type: Object,
   })
-  @Validate(z.object({}).passthrough())
-  schema!: JSONSchema7;
+  @Validate(z.looseObject({}))
+  schema!: JsonSchema;
 
   @ApiPropertyOptional({
     description: 'Default TTL in seconds applied to records of this memory',

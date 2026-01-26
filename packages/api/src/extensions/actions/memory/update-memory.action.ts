@@ -16,8 +16,7 @@ const slugSchema = z
   .string()
   .min(1)
   .regex(/^[a-z0-9_]+$/, {
-    message:
-      'slug must contain only lowercase letters, numbers, and underscores',
+    error: 'slug must contain only lowercase letters, numbers, and underscores',
   });
 const updateMemorySchema = z.object({
   memory: z.record(slugSchema, z.any()),

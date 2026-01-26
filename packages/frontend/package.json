@@ -62,8 +62,7 @@
     "react-router-dom": "^6.26.2",
     "react-window": "^1.8.5",
     "socket.io-client": "^4.7.5",
-    "yaml": "^2.5.0",
-    "zod-to-json-schema": "^3.25.1"
+    "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.90.2",

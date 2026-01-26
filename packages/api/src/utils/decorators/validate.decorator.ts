@@ -7,8 +7,6 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 import { ZodArray, ZodType } from 'zod';
 
-import { buildZodSchemaValidator } from '../helpers/zod-validation';
-
 export const Validate =
   (schema: ZodType | ZodArray<any>, validationOptions?: ValidationOptions) =>
   (object: object, propertyName: string) => {
@@ -19,13 +17,15 @@ export const Validate =
       constraints: [],
       validator: {
         validate(data, _validationArguments) {
-          return buildZodSchemaValidator(schema)(data);
+          const result = schema.safeParse(data);
+
+          return result.success;
         },
         defaultMessage(validationArguments) {
           const { value, property } = validationArguments || {};
           const { error, success } = schema.safeParse(value);
-          if (!success && error?.errors) {
-            return error.errors
+          if (!success && error) {
+            return error.issues
               .map((e) => `${[property, ...e.path].join('.')}: ${e.message}`)
               .join(', ');
           }

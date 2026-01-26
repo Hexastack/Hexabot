@@ -19,7 +19,7 @@ const postBackButtonSchema = z.object({
 const webUrlButtonSchema = z.object({
   type: z.literal(ButtonType.web_url),
   title: z.string(),
-  url: z.union([z.string().url(), z.literal('')]),
+  url: z.union([z.url(), z.literal('')]),
   messenger_extensions: z.boolean().optional(),
   webview_height_ratio: z.enum(['compact', 'tall', 'full']).optional(),
 });

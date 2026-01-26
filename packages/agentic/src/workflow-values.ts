@@ -8,7 +8,7 @@ import type { Expression, Focus } from 'jsonata';
 // eslint-disable-next-line no-duplicate-imports
 import jsonata from 'jsonata';
 
-import type { Settings } from './dsl.types';
+import type { JsonValue, Settings } from './dsl.types';
 import type {
   CompiledMapping,
   CompiledValue,
@@ -136,20 +136,21 @@ export const mergeSettings = (
   base?: Partial<Settings>,
   override?: Partial<Settings>,
 ): Partial<Settings> => {
-  const merged: Record<string, unknown> = { ...(base ?? {}) };
+  const merged: Partial<Settings> = { ...(base ?? {}) };
 
   if (!override) {
     return merged;
   }
 
-  for (const [key, value] of Object.entries(override)) {
+  for (const key of Object.keys(override)) {
+    const value = override[key];
     const previous = merged[key];
 
     if (isPlainObject(previous) && isPlainObject(value)) {
       merged[key] = mergeSettings(
         previous as Partial<Settings>,
         value as Partial<Settings>,
-      );
+      ) as JsonValue;
     } else if (value !== undefined) {
       merged[key] = value;
     }

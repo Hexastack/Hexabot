@@ -112,7 +112,7 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
 export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
   format: T['format'],
   template: Partial<T['message']> = {},
-  schema: z.ZodSchema,
+  schema: z.ZodType,
 ): IEnvelopeBuilder<T> {
   let built: { format: T['format']; message: Partial<T['message']> } = {
     format,
