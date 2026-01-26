@@ -4,12 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-    Activity,
-    Play,
-    Settings,
-    XCircle
-} from "lucide-react";
+import { Activity, Play, Settings, XCircle } from "lucide-react";
 
 export const mockStats = {
   workflows: {
@@ -27,7 +22,7 @@ export const mockStats = {
     total: 8540,
   },
   cost: {
-    amount: 14.20,
+    amount: 14.2,
     currency: "$",
   },
   alerts: {
@@ -36,10 +31,15 @@ export const mockStats = {
 };
 
 export const mockQuickActions = [
-  { id: "create", label: "Create Workflow", icon: Activity }, // icon will be handled in component
-  { id: "run", label: "Run Manual Workflow", icon: Play },
-  { id: "connect", label: "Connect Channel", icon: Settings },
-  { id: "failed", label: "View Failed Runs", icon: XCircle },
+  { id: "create", label: "Create Workflow", icon: Activity, url: "" }, // icon will be handled in component
+  { id: "run", label: "Run Manual Workflow", icon: Play, url: "" },
+  { id: "connect", label: "Connect Channel", icon: Settings, url: "" },
+  {
+    id: "failed",
+    label: "View Failed Runs",
+    icon: XCircle,
+    url: "/workflow/runs?status=failed",
+  },
 ];
 
 export const mockAttentionItems = [

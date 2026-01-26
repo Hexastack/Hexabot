@@ -495,7 +495,8 @@
     "password": "Password",
     "current_flow": "Current flow",
     "all_flows": "All flows",
-    "types": "Types"
+    "types": "Types",
+    "triggered_at": "Triggered At"
   },
   "placeholder": {
     "your_username": "Your username",

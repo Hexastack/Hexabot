@@ -28,7 +28,9 @@ export const PageHeader = (
         width: "100%",
       }}
     >
-      <Title title={props.title || ""} icon={props.icon} chip={props.chip} />
+      {props.title || props.icon ? (
+        <Title title={props.title || ""} icon={props.icon} chip={props.chip} />
+      ) : null}
       {props.children}
     </Box>
   );

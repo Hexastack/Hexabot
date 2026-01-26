@@ -495,7 +495,8 @@
     "password": "Mot de passe",
     "current_flow": "Flux actuel",
     "all_flows": "Tous les flux",
-    "types": "Types"
+    "types": "Types",
+    "triggered_at": "Déclenché à"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
