@@ -31,7 +31,7 @@ import { FilterTextfield } from "../inputs/FilterTextfield";
 import { TMenuItem } from "../menus/Sidebar";
 
 import { DataGrid } from "./DataGrid";
-import { GenericFilters, GenericFiltersProps } from "./GenericFilters";
+import { type Filter, GenericFilters } from "./GenericFilters";
 
 export const GenericDataGrid = <
   TP extends THook["params"],
@@ -47,7 +47,6 @@ export const GenericDataGrid = <
   headerI18nTitle,
   headerTitleChip,
   headerLeftButtons,
-  headerFilterInputs,
   selectionChangeHandler,
   filters,
   ...restDataGridProps
@@ -64,9 +63,8 @@ export const GenericDataGrid = <
   headerI18nTitle?: TTranslationKeys;
   headerTitleChip?: string;
   headerLeftButtons?: React.ReactElement;
-  headerFilterInputs?: React.ReactElement;
   selectionChangeHandler?: (selection: GridRowSelectionModel) => void;
-  filters?: GenericFiltersProps<TP, TE, F>[];
+  filters?: Filter[];
 } & DataGridProps) => {
   const { t } = useTranslate();
   const { dataGridProps, onSearch, searchText } = useDataGridProps(
@@ -104,7 +102,6 @@ export const GenericDataGrid = <
             </Grid>
             <GenericFilters filters={filters} />
             <Grid size="auto">
-              {headerFilterInputs}
               {buttons ? (
                 <ButtonActionsGroup entity={entity} buttons={buttons} />
               ) : null}

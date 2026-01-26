@@ -23,7 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { useQueryChange } from "@/hooks/useQueryChange";
+import { useQueryState } from "@/hooks/useQueryState";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, Format, RouterType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
@@ -54,7 +54,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     { entity: EntityType.WORKFLOW_ACTIONS },
     { hasCount: false },
   );
-  const flowId = useQueryChange("flowId");
+  const [flowId] = useQueryState("flowId");
   const { data: workflows } = useFind(
     {
       entity: EntityType.WORKFLOW,
