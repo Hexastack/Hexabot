@@ -8,15 +8,20 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  createTheme,
+  ThemeProvider,
   Typography,
 } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Form from "@rjsf/mui";
+import { Form } from "@rjsf/mui";
 import type { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
 import { theme } from "@/layout/themes/theme";
+
+import { FORM_TEMPLATES } from "./templates";
+import { FORM_WIDGETS } from "./widgets";
+import { labelTooltipSx } from "./widgets/shared";
 
 const compactFormTheme = createTheme(theme, {
   components: {
@@ -33,6 +38,11 @@ const compactFormTheme = createTheme(theme, {
     MuiRadio: {
       defaultProps: {
         size: "small",
+      },
+    },
+    MuiFormLabel: {
+      styleOverrides: {
+        root: labelTooltipSx,
       },
     },
   },
@@ -60,9 +70,9 @@ export const ActionSchemaPanel = ({
   panelKey,
   emptyLabel,
 }: ActionSchemaPanelProps) => (
-  <Accordion variant="outlined" defaultExpanded>
+  <Accordion variant="elevation" defaultExpanded>
     <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-      <Typography variant="subtitle2">{title}</Typography>
+      <Typography variant="subtitle1">{title}</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
@@ -72,12 +82,16 @@ export const ActionSchemaPanel = ({
             validator={validator}
             formData={formData}
             onChange={(event) =>
-              onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
+              onFormDataChange(
+                (event.formData ?? {}) as Record<string, unknown>,
+              )
             }
             showErrorList={false}
             noHtml5Validate
             uiSchema={formUiSchema}
             idPrefix={`action-${panelKey}`}
+            templates={FORM_TEMPLATES}
+            widgets={FORM_WIDGETS}
           />
         </ThemeProvider>
       ) : (

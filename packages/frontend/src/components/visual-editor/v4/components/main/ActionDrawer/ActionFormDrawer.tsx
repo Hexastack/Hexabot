@@ -56,12 +56,7 @@ const ActionFormDrawerContent = ({
   }
 
   return (
-    <Stack spacing={2}>
-      {actionSchema.description ? (
-        <Typography variant="body2" color="text.secondary">
-          {actionSchema.description}
-        </Typography>
-      ) : null}
+    <Stack spacing={1}>
       {actionSchema.inputSchema ? (
         <ActionSchemaPanel
           title={t("visual_editor.actions_drawer.form.section.input")}
@@ -91,7 +86,9 @@ const ActionFormDrawerContent = ({
           formData={outputData}
           onFormDataChange={onOutputDataChange}
           panelKey={`${panelKeyBase}-output`}
-          emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.output")}
+          emptyLabel={t(
+            "visual_editor.actions_drawer.form.empty_schema.output",
+          )}
         />
       ) : null}
     </Stack>
@@ -152,24 +149,22 @@ export const ActionFormDrawer = () => {
       updateWorkflowURL(selectedFlowId);
     }
   };
-  const nodeLabel =
-    selectedNode?.type === ENodeType.AGENT
-      ? t("visual_editor.actions_drawer.form.node_label.agent")
-      : t("visual_editor.actions_drawer.form.node_label.task");
-  const title = taskName ? humanizeTaskName(taskName) : nodeLabel;
   const actionLabel =
     actionName ?? t("visual_editor.actions_drawer.form.action_label.none");
   const headerContent = (
     <Box minWidth={0}>
-      <Typography variant="overline" color="text.secondary">
-        {nodeLabel}
-      </Typography>
       <Typography variant="subtitle1" noWrap>
-        {title}
+        {taskName ? humanizeTaskName(taskName) : actionLabel}&nbsp;
+        <Typography variant="caption" color="text.secondary" noWrap>
+          ({actionLabel})
+        </Typography>
       </Typography>
-      <Typography variant="caption" color="text.secondary" noWrap>
-        {actionLabel}
-      </Typography>
+
+      {actionSchema?.description ? (
+        <Typography variant="body2" color="text.secondary">
+          {actionSchema.description}
+        </Typography>
+      ) : null}
     </Box>
   );
 
