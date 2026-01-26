@@ -8,18 +8,20 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
   createTheme,
-  Divider,
   ThemeProvider,
   Typography,
 } from "@mui/material";
 import { Form } from "@rjsf/mui";
-import type { RJSFSchema, TitleFieldProps } from "@rjsf/utils";
+import type { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
 import { theme } from "@/layout/themes/theme";
+
+import { FORM_TEMPLATES } from "./templates";
+import { FORM_WIDGETS } from "./widgets";
+import { labelTooltipSx } from "./widgets/shared";
 
 const compactFormTheme = createTheme(theme, {
   components: {
@@ -38,6 +40,11 @@ const compactFormTheme = createTheme(theme, {
         size: "small",
       },
     },
+    MuiFormLabel: {
+      styleOverrides: {
+        root: labelTooltipSx,
+      },
+    },
   },
 });
 const formUiSchema = {
@@ -45,32 +52,6 @@ const formUiSchema = {
     norender: true,
   },
 } as const;
-const NestedTitleField = ({
-  id,
-  title,
-  optionalDataControl,
-  registry,
-}: TitleFieldProps) => {
-  const baseId = id.split("__")[0];
-  const isNested = baseId !== registry.globalFormOptions.idPrefix;
-  const heading = (
-    <Typography variant={isNested ? "subtitle1" : "h5"}>{title}</Typography>
-  );
-
-  return (
-    <Box id={id} mb={1} mt={1}>
-      {optionalDataControl ? (
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          {heading}
-          {optionalDataControl}
-        </Box>
-      ) : (
-        heading
-      )}
-      <Divider />
-    </Box>
-  );
-};
 
 export type ActionSchemaPanelProps = {
   title: string;
@@ -109,7 +90,8 @@ export const ActionSchemaPanel = ({
             noHtml5Validate
             uiSchema={formUiSchema}
             idPrefix={`action-${panelKey}`}
-            templates={{ TitleFieldTemplate: NestedTitleField }}
+            templates={FORM_TEMPLATES}
+            widgets={FORM_WIDGETS}
           />
         </ThemeProvider>
       ) : (

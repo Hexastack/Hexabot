@@ -149,20 +149,12 @@ export const ActionFormDrawer = () => {
       updateWorkflowURL(selectedFlowId);
     }
   };
-  const nodeLabel =
-    selectedNode?.type === ENodeType.AGENT
-      ? t("visual_editor.actions_drawer.form.node_label.agent")
-      : t("visual_editor.actions_drawer.form.node_label.task");
-  const title = taskName ? humanizeTaskName(taskName) : nodeLabel;
   const actionLabel =
     actionName ?? t("visual_editor.actions_drawer.form.action_label.none");
   const headerContent = (
     <Box minWidth={0}>
-      <Typography variant="overline" color="text.secondary">
-        {nodeLabel}
-      </Typography>
       <Typography variant="subtitle1" noWrap>
-        {title}&nbsp;
+        {taskName ? humanizeTaskName(taskName) : actionLabel}&nbsp;
         <Typography variant="caption" color="text.secondary" noWrap>
           ({actionLabel})
         </Typography>
