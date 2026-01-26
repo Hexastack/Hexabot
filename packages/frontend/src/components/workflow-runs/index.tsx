@@ -6,9 +6,10 @@
 
 import { GridColDef } from "@mui/x-data-grid";
 import { Activity, GalleryHorizontalEnd } from "lucide-react";
-import { useMemo } from "react";
+import { ComponentProps, useMemo } from "react";
 
 import { BadgeWithTitle } from "@/app-components/displays/Badge";
+import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
@@ -24,16 +25,21 @@ import {
   BASE_TYPES,
 } from "../visual-editor/v4/components/main/FlowsDrawer/constants";
 
-export const WorkflowRuns = () => {
+export const WorkflowRuns = ({
+  hidedColumns = [],
+  ...rest
+}: {
+  hidedColumns?: string[];
+} & Partial<ComponentProps<typeof GenericDataGrid>>) => {
   const { t } = useTranslate();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const columns: GridColDef<IWorkflowRunFull>[] = useMemo(
     () => [
       { field: "id", headerName: "ID", width: 100 },
       {
-        maxWidth: 160,
+        maxWidth: 140,
         field: "createdAt",
-        headerName: t("label.createdAt"),
+        headerName: t("label.triggered_at"),
         disableColumnMenu: true,
         renderHeader,
         resizable: false,
@@ -53,8 +59,32 @@ export const WorkflowRuns = () => {
         renderCell: ({ row }) => {
           const workflowId = String(row.workflow);
           const { type, name } = getWorkflowFromCache(workflowId)!;
+          const { key: _, ...badgeRest } = BASE_TYPES[type];
 
-          return <BadgeWithTitle {...BASE_TYPES[type]} title={name} />;
+          return <BadgeWithTitle {...badgeRest} title={name} />;
+        },
+      },
+      {
+        flex: 1,
+        minWidth: 150,
+        field: "triggeredBy",
+        resizable: true,
+        headerName: t("label.triggered_by"),
+        disableColumnMenu: true,
+        renderHeader,
+        headerAlign: "left",
+        renderCell: ({ row }) => {
+          const subscriberId = String(row.triggeredBy);
+
+          return (
+            <ChipEntity
+              id={subscriberId}
+              key={subscriberId}
+              variant="text"
+              field="fullName"
+              entity={EntityType.SUBSCRIBER}
+            />
+          );
         },
       },
       {
@@ -64,9 +94,11 @@ export const WorkflowRuns = () => {
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        renderCell: ({ value }) => (
-          <BadgeWithTitle {...BASE_STATUS[value]} title={value} />
-        ),
+        renderCell: ({ value }) => {
+          const { key: _, ...badgeRest } = BASE_STATUS[value];
+
+          return <BadgeWithTitle {...badgeRest} title={value} />;
+        },
       },
       {
         maxWidth: 100,
@@ -150,13 +182,17 @@ export const WorkflowRuns = () => {
 
   return (
     <GenericDataGrid
-      entity={EntityType.WORKFLOW_RUN}
-      format={Format.FULL}
-      columns={columns}
       filters={filters}
       headerIcon={Activity}
+      headerI18nTitle="title.workflow_runs"
+      {...rest}
+      entity={EntityType.WORKFLOW_RUN}
+      format={Format.FULL}
+      columns={columns
+        .filter(({ field }) => !hidedColumns.includes(field))
+        .map((c) => (hidedColumns.length ? { ...c, sortable: false } : c))}
       searchParams={{
-        $iLike: ["status", "error"],
+        $or: ["status", "error"],
         syncUrl: true,
         $eq: [
           {
@@ -166,7 +202,6 @@ export const WorkflowRuns = () => {
           },
         ],
       }}
-      headerI18nTitle="title.workflow_runs"
     />
   );
 };

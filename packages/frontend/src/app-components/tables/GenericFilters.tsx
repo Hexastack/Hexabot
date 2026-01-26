@@ -74,32 +74,36 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
       sortKey,
       labelKey,
       typeInfo,
-      defaultOption,
+      defaultOption = {},
       onChange,
       ...rest
     }) => {
       if (rest.type === "enumFilter") {
+        const { defaultValue, ...defaultOptionRest } = defaultOption;
+
         return (
           <Grid key={field} flex={1} minWidth="180px">
             <Input
               select
-              value={value || defaultOption?.defaultValue}
+              value={value || defaultValue}
               onChange={(e) => {
                 onChange?.(e.target.value as never);
               }}
               {...rest}
             >
-              {defaultOption?.defaultValue ? (
-                <MenuItem value={defaultOption.defaultValue}>
-                  <BadgeWithTitle {...defaultOption} />
+              {defaultValue ? (
+                <MenuItem value={defaultValue}>
+                  <BadgeWithTitle {...defaultOptionRest} />
                 </MenuItem>
               ) : null}
               {typeInfo
-                ? Object.entries(typeInfo).map(([type, info]) => (
-                    <MenuItem key={type} value={type}>
-                      <BadgeWithTitle {...info} title={type} />
-                    </MenuItem>
-                  ))
+                ? Object.entries(typeInfo).map(
+                    ([type, { key, ...infoRest }]) => (
+                      <MenuItem key={key} value={type}>
+                        <BadgeWithTitle {...infoRest} title={type} />
+                      </MenuItem>
+                    ),
+                  )
                 : null}
             </Input>
           </Grid>

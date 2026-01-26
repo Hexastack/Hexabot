@@ -16,7 +16,7 @@ import { useDataGridProps } from "@/hooks/useDataGridProps";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
-import { THook } from "@/types/base.types";
+import { IFindConfigProps, THook } from "@/types/base.types";
 import {
   SearchHookOptions,
   SearchPayload,
@@ -43,12 +43,15 @@ export const GenericDataGrid = <
   columns,
   headerIcon,
   searchParams,
+  initialSortState,
+  initialPaginationState,
   format,
   headerI18nTitle,
   headerTitleChip,
   headerLeftButtons,
   selectionChangeHandler,
   filters,
+  hasTextFilter = true,
   ...restDataGridProps
 }: {
   entity: TE;
@@ -65,7 +68,9 @@ export const GenericDataGrid = <
   headerLeftButtons?: React.ReactElement;
   selectionChangeHandler?: (selection: GridRowSelectionModel) => void;
   filters?: Filter[];
-} & DataGridProps) => {
+  hasTextFilter?: boolean;
+} & Pick<IFindConfigProps<TE>, "initialSortState" | "initialPaginationState"> &
+  DataGridProps) => {
   const { t } = useTranslate();
   const { dataGridProps, onSearch, searchText } = useDataGridProps(
     {
@@ -74,11 +79,13 @@ export const GenericDataGrid = <
     },
     {
       searchParams,
+      initialSortState,
+      initialPaginationState,
     },
   );
 
   return (
-    <Grid container gap={3} flexDirection="column">
+    <Grid container gap={3} flexDirection="column" width="100%">
       <Grid>
         {headerLeftButtons}
         <PageHeader
@@ -97,10 +104,10 @@ export const GenericDataGrid = <
             width="auto"
             justifyContent="end"
           >
-            <Grid size="auto" maxWidth="300px">
+            {hasTextFilter ? (
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-            </Grid>
-            <GenericFilters filters={filters} />
+            ) : null}
+            {filters?.length ? <GenericFilters filters={filters} /> : null}
             <Grid size="auto">
               {buttons ? (
                 <ButtonActionsGroup entity={entity} buttons={buttons} />

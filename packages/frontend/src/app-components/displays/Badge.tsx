@@ -8,7 +8,7 @@ import { Box, Typography } from "@mui/material";
 import { LucideIcon } from "lucide-react";
 
 export type BadgeWithTitleProps = {
-  title: string;
+  title?: string;
   icon?: LucideIcon;
   color?: string;
   background?: string;
