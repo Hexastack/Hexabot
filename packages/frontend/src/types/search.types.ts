@@ -68,7 +68,6 @@ export type SearchPayload<
   }>["filters"],
   N = TNestedPaths<TF>,
 > = EqParam<N> & {
-  limit?: number;
   where?: {
     or?: SearchItem<N>[];
   } & SearchItem<N>;
