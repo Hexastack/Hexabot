@@ -5,6 +5,7 @@
  */
 
 import {
+  CompiledStep,
   compileWorkflow,
   validateWorkflow,
   type WorkflowCompileOptions,
@@ -364,7 +365,7 @@ export const buildNodesAndEdges = async ({
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
-): WorkflowDefinition => {
+): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
   const validation = validateWorkflow(yaml);
 
   if (!validation.success) {
@@ -372,7 +373,7 @@ export const getDefinition = (
       `Workflow validation failed: ${validation.errors.join("; ")}`,
     );
   }
-  const { definition } = compileWorkflow(validation.data, options);
+  const { definition, flow } = compileWorkflow(validation.data, options);
 
-  return definition;
+  return { definition, flow };
 };

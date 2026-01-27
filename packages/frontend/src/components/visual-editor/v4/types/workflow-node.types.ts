@@ -80,7 +80,7 @@ export type TaskData = CommonNodeData<ENodeType.TASK> & {
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
-  taskName?: string;
+  indicator?: EIndicatorType;
 };
 
 export enum EIndicatorType {

@@ -216,6 +216,7 @@ const getIndicator = <T extends EIndicatorType>(
       ...ctx.config.nodes[ENodeType.INDICATOR][type],
       level,
       groupName,
+      indicator: type,
     },
   } satisfies NodeData<ENodeType.INDICATOR>;
 };
@@ -255,7 +256,6 @@ export function walkSteps({
     if (!ctx.config) {
       return;
     }
-
     const idBase = `${prefix}-${index}`;
     const stepIndex = stepIndexes?.[index] ?? index;
     const stepPath: FlowStepPath = [...path, stepIndex];
