@@ -126,7 +126,6 @@ export class TranslationService extends BaseOrmService<
   private collectTaskDefinitionTranslations(task: TaskDefinition): string[] {
     const translatableSections: Array<JsonValue | undefined> = [
       task.inputs as JsonValue | undefined,
-      task.outputs as JsonValue | undefined,
       task.settings as JsonValue | undefined,
     ];
 
