@@ -31,7 +31,7 @@ export const UpcomingSchedule = () => {
   const { data: scheduledWorkflows } = useFind(
     { entity: EntityType.WORKFLOW },
     {
-      params: { where: { type: "scheduled" as WorkflowType } },
+      params: { where: { type: WorkflowType.scheduled } },
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "desc" }],
       initialPaginationState: {
