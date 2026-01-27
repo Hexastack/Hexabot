@@ -131,3 +131,15 @@
 .react-flow__node.selectable.selected .node-title {
   border-radius: 9px 0 0 0 !important;
 }
+
+.react-flow__node > div[class]:first-child > div:first-child {
+  transition:
+    in 0.1s,
+    out 0.8s;
+}
+.react-flow__node > .loading:first-child > div:first-child,
+.react-flow__node > .suspended:first-child > div:first-child {
+  background-color: color-mix(in srgb, #4dc4e6, white 95%) !important;
+  border-color: #4dc4e6 !important;
+  box-shadow: 0 0 4px #4dc4e6 inset;
+}

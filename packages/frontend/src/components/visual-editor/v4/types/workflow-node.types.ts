@@ -25,13 +25,12 @@ import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { Agent } from "../components/workflow-nodes/Agent";
 import { Model } from "../components/workflow-nodes/Agent/Model";
 import { Tool } from "../components/workflow-nodes/Agent/Tool";
+import { NodeState } from "../components/workflow-nodes/GenericNodeContainer";
 import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 import type { FlowStepPath } from "../types/workflow-path.types";
-
-import { NodeExecutionState } from "./workflow.types";
 
 export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
@@ -52,7 +51,7 @@ export type CommonNodeDadaTypes = NodeDataTitle & {
   stepPath?: FlowStepPath;
   theme: WorkflowNodeTheme;
   level?: number;
-  executionState?: NodeExecutionState;
+  executionState?: NodeState;
 };
 
 type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
@@ -252,6 +251,7 @@ export type IWorkflowNodeContext<T extends ENodeType = ENodeType> = Omit<
 export interface IWorkflowNodeProps {
   id: string;
   children: ReactNode;
+  executionState?: NodeState;
 }
 
 export type WorkflowGraph = { nodes: NodeData[]; edges: Edge[] };

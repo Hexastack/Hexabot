@@ -118,6 +118,7 @@ export class WorkflowService extends BaseOrmService<
 
       return;
     }
+
     const { initiatorId, workflowId } = workflowRun?.context;
     const workflow = await this.findOne(workflowId);
     const canBroadcastEvents =
@@ -130,6 +131,7 @@ export class WorkflowService extends BaseOrmService<
         ...payload,
         t,
         initiatorId,
+        workflowId,
         workflowEvent: workflowEvent.replace('hook:', ''),
       });
     }

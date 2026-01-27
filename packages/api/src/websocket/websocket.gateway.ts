@@ -119,6 +119,7 @@ export class WebsocketGateway
   }: WorkflowEventMap[keyof WorkflowEventMap] &
     Partial<Pick<WorkflowContextState, 'initiatorId'>> & {
       workflowEvent: string;
+      workflowId: string;
       t: number;
     }): void {
     const roomName = initiatorId

@@ -18,8 +18,11 @@ import { GenericNodePorts } from "../../GenericNodePorts";
 import { GenericNodeRightContent } from "../../GenericNodeRightContent";
 import { GenericNodeTitle } from "../../GenericNodeTitle";
 
-export const Model: FC<NodeProps<NodeData<ENodeType.MODEL>>> = ({ id }) => (
-  <WorkflowNodeProvider id={id}>
+export const Model: FC<NodeProps<NodeData<ENodeType.MODEL>>> = ({
+  id,
+  data,
+}) => (
+  <WorkflowNodeProvider id={id} executionState={data.executionState}>
     <GenericNodeContainer>
       <GenericNodeRightContent>
         <GenericNodeTitle />

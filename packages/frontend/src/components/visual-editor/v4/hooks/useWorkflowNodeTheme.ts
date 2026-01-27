@@ -7,11 +7,11 @@
 import { CircularProgress, styled } from "@mui/material";
 import * as Icons from "lucide-react";
 
+import { NodeState } from "../components/workflow-nodes/GenericNodeContainer";
 import {
   ENodeType,
   type WorkflowNodeTheme,
 } from "../types/workflow-node.types";
-import { NodeExecutionState } from "../types/workflow.types";
 
 import { useWorkflowNode } from "./useWorkflowNode";
 
@@ -19,11 +19,11 @@ const ICON_STYLE = {
   width: "20px",
   height: "20px",
 } as const;
-const getStateConfig = (state?: NodeExecutionState) => {
+const getStateConfig = (state?: NodeState) => {
   switch (state) {
-    case "start":
+    case "loading":
       return { icon: CircularProgress, color: "#4dc4e6" };
-    case "finish":
+    case "success":
       return undefined;
     case "error":
       return { icon: Icons.TriangleAlert, color: "#FF0000" };
@@ -37,19 +37,19 @@ const getStateConfig = (state?: NodeExecutionState) => {
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const { theme, action, executionState } = useWorkflowNode<T>();
   const stateConfig = getStateConfig(executionState);
-  const uiColor = theme.borderColor;
+  const uiColor = theme?.borderColor;
   const apiColor = action?.color;
   const color = stateConfig?.color || uiColor || apiColor;
-  const uiIcon = theme.Icon;
+  const uiIcon = theme?.Icon;
   const apiIcon = Icons[action?.icon || ""];
   const Icon = stateConfig?.icon || uiIcon || apiIcon || Icons.Zap;
   const StyledIcon = styled(Icon)(() => ICON_STYLE);
 
   return {
     Icon: StyledIcon,
-    color: theme.color || "#4a5565",
-    bgColor: theme.bgColor || `color-mix(in srgb, ${color}, white 95%)`,
-    iconColor: color || theme.iconColor,
-    borderColor: color || theme.borderColor,
+    color: theme?.color || "#4a5565",
+    bgColor: theme?.bgColor || `color-mix(in srgb, ${color}, white 95%)`,
+    iconColor: color || theme?.iconColor,
+    borderColor: color || theme?.borderColor,
   } satisfies WorkflowNodeTheme;
 };

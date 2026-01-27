@@ -55,10 +55,6 @@ export interface IWorkflowContext {
   isSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
-  executionStates: Record<string, { state: NodeExecutionState; t: number }[]>;
-  setExecutionStates: Dispatch<
-    Record<string, { state: NodeExecutionState; t: number }[]>
-  >;
   actions: IAction[];
   definition?: WorkflowDefinition;
 }
@@ -77,6 +73,7 @@ export type NodeExecutionState = "start" | "finish" | "suspended" | "error";
 
 export type SubscribeWorkflowProps =
   WorkflowEventMap[keyof WorkflowEventMap] & {
+    workflowId: string;
     workflowEvent: WorkflowEvent;
     t: number;
   };
