@@ -4,13 +4,42 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator,
+} from "@mui/lab";
+import { Box, Paper, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
-import { mockUpcomingSchedule } from "../mockData";
+import { BadgeWithTitle } from "@/app-components/displays/Badge";
+import { BASE_TYPES } from "@/components/visual-editor/v4/components/main/FlowsDrawer/constants";
+import { useFind } from "@/hooks/crud/useFind";
+import { useAppRouter } from "@/hooks/useAppRouter";
+import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType } from "@/services/types";
+import { WorkflowType } from "@/types/workfow.types";
+import { getRemainingTime } from "@/utils/date";
 
 export const UpcomingSchedule = () => {
   const theme = useTheme();
+  const { t } = useTranslate();
+  const router = useAppRouter();
+  const { data: scheduledWorkflows } = useFind(
+    { entity: EntityType.WORKFLOW },
+    {
+      params: { where: { type: "scheduled" as WorkflowType }, limit: 5 },
+      hasCount: false,
+      initialSortState: [{ field: "createdAt", sort: "desc" }],
+      initialPaginationState: {
+        page: 0,
+        pageSize: 5,
+      },
+    },
+  );
 
   return (
     <Box sx={{ height: "100%" }}>
@@ -24,111 +53,119 @@ export const UpcomingSchedule = () => {
         <Typography variant="h6" fontWeight="bold">
           Upcoming
         </Typography>
-        <Button size="small" variant="text" sx={{ borderRadius: 2 }}>
-          Calendar
-        </Button>
       </Box>
-
-      <Box sx={{ position: "relative", px: 1 }}>
-        {/* Timeline Line */}
-        <Box
+      {scheduledWorkflows.length ? (
+        <Timeline
+          position="right"
           sx={{
-            position: "absolute",
-            left: 23,
-            top: 16,
-            bottom: 60,
-            width: 2,
-            bgcolor: theme.palette.divider,
+            width: "100%",
+            padding: "0 0 16px 16px",
+            margin: 0,
           }}
-        />
-
-        <Stack spacing={3}>
-          {mockUpcomingSchedule.map((item, index) => (
-            <Box
-              key={item.id}
-              sx={{ display: "flex", gap: 2, position: "relative" }}
-            >
-              {/* Timeline Dot Wrapper */}
-              <Box
-                sx={{
-                  width: 32,
-                  display: "flex",
-                  justifyContent: "center",
-                  flexShrink: 0, // Prevent shrinking
-                }}
-              >
-                <Box
+        >
+          {scheduledWorkflows
+            .sort((s1, s2) =>
+              (s1.runAfterMs || 0) > (s2.runAfterMs || 0) ? 1 : -1,
+            )
+            .map((scheduledWorkflow) => {
+              return (
+                <TimelineItem
+                  key={scheduledWorkflow.id}
+                  title={scheduledWorkflow.name}
                   sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                    bgcolor:
-                      index === 0
-                        ? theme.palette.primary.main
-                        : theme.palette.background.paper,
-                    border: `2px solid ${index === 0 ? theme.palette.primary.main : theme.palette.divider}`,
-                    zIndex: 1,
-                    mt: 0.8,
-                    // ml removed
-                  }}
-                />
-              </Box>
-
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography
-                  variant="caption"
-                  fontWeight="bold"
-                  color="primary.main"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    mb: 0.5,
-                  }}
-                >
-                  {item.nextRun}
-                </Typography>
-
-                <Box
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    bgcolor: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      borderColor: theme.palette.primary.main,
-                      transform: "translateX(4px)",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                    "&:before": {
+                      display: "none",
                     },
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {item.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Workflow: {item.workflow}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          ))}
+                  <TimelineSeparator>
+                    <TimelineDot color="primary" />
+                    <TimelineConnector />
+                  </TimelineSeparator>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="small"
-            sx={{
-              borderRadius: 3,
-              borderColor: theme.palette.divider,
-              color: theme.palette.text.secondary,
-              textTransform: "none",
-            }}
-          >
-            View Full Schedule
-          </Button>
-        </Stack>
-      </Box>
+                  <TimelineContent
+                    sx={{
+                      py: "10px 12px",
+                      px: 3,
+                      pr: 0,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      fontWeight="bold"
+                      color="primary.main"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        mb: 0.5,
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {scheduledWorkflow.runAfterMs
+                        ? getRemainingTime(scheduledWorkflow.runAfterMs)
+                        : null}
+                    </Typography>
+                    <Paper
+                      elevation={3}
+                      sx={{
+                        p: 2,
+                        bgcolor: "background.paper",
+                        border: "1px solid transparent",
+                        transition: ".2s",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          cursor: "pointer",
+                          marginLeft: "2px",
+                        },
+                      }}
+                      onClick={() => {
+                        router.push({
+                          pathname: `/workflow-editor/${scheduledWorkflow.id}`,
+                        });
+                      }}
+                    >
+                      <Typography variant="h6" component="span">
+                        <BadgeWithTitle
+                          {...BASE_TYPES[scheduledWorkflow.type]}
+                          title={scheduledWorkflow.name}
+                        />
+                      </Typography>
+                      <Typography color="text.secondary">
+                        {scheduledWorkflow.description}
+                      </Typography>
+                      <Box
+                        m="1px 0 0 1px"
+                        display="flex"
+                        flexDirection="row"
+                        gap="9px"
+                      >
+                        <Typography
+                          sx={{ display: "block", alignSelf: "end" }}
+                          color={theme.palette.grey[600]}
+                          variant="caption"
+                        >
+                          {scheduledWorkflow.schedule}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  </TimelineContent>
+                </TimelineItem>
+              );
+            })}
+        </Timeline>
+      ) : (
+        <Paper
+          elevation={3}
+          sx={{
+            m: 0,
+            p: 2,
+            bgcolor: "background.paper",
+          }}
+        >
+          <Typography>{t("label.no_scheduled_workflows")}</Typography>
+        </Paper>
+      )}
     </Box>
   );
 };

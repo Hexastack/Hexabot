@@ -496,7 +496,8 @@
     "current_flow": "Flux actuel",
     "all_flows": "Tous les flux",
     "types": "Types",
-    "triggered_at": "Déclenché à"
+    "triggered_at": "Déclenché à",
+    "no_scheduled_workflows": "Aucun Workflow planifié pour le moment"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

@@ -77,6 +77,9 @@ export class Workflow extends WorkflowStub {
 
   @Expose({ name: 'memoryDefinitionIds' })
   memoryDefinitions!: string[];
+
+  @Expose({ name: 'runAfterMs' })
+  runAfterMs!: number;
 }
 
 @Exclude()
