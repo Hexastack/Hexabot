@@ -128,6 +128,7 @@ export const UpcomingSchedule = () => {
                       <Typography variant="h6" component="span">
                         <BadgeWithTitle
                           {...BASE_TYPES[scheduledWorkflow.type]}
+                          key={scheduledWorkflow.id}
                           title={scheduledWorkflow.name}
                         />
                       </Typography>
