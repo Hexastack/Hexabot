@@ -10,13 +10,15 @@ import { FC, Fragment, useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
+import { IMemoryDefinition } from "@/types/memory-definition.types";
 import {
   IWorkflowSubmitAttributes,
   WorkflowType,
@@ -41,6 +43,7 @@ type WorkflowFormValues = {
   description: string;
   type: WorkflowType;
   schedule: string;
+  memoryDefinitions: string[];
 };
 
 export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>> =
@@ -54,23 +57,23 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
     const { toast } = useToast();
     const { definition, definitionYaml, onCreated, onUpdated } =
       presetValues ?? {};
-    const defaultValues = useMemo(
-      () =>
-        workflow
-          ? {
-              name: workflow.name ?? "",
-              description: workflow.description ?? "",
-              type: workflow.type ?? WORKFLOW_TYPES[0],
-              schedule: workflow.schedule ?? "",
-            }
-          : {
-              name: "",
-              description: "",
-              type: WORKFLOW_TYPES[0],
-              schedule: "",
-            },
-      [workflow],
-    );
+    const defaultValues = useMemo(() => {
+      return workflow
+        ? {
+            name: workflow.name ?? "",
+            description: workflow.description ?? "",
+            type: workflow.type ?? WORKFLOW_TYPES[0],
+            schedule: workflow.schedule ?? "",
+            memoryDefinitions: workflow?.memoryDefinitions ?? [],
+          }
+        : {
+            name: "",
+            description: "",
+            type: WORKFLOW_TYPES[0],
+            schedule: "",
+            memoryDefinitions: [],
+          };
+    }, [workflow]);
     const {
       control,
       register,
@@ -120,16 +123,16 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         },
       },
     );
-    const { mutate: updateWorkflow, isPending: isUpdating } = useUpdate(
+    const { mutate: updateWorkflow, isPending: isUpdating } = useUpdate<
       EntityType.WORKFLOW,
-      {
-        ...options,
-        onSuccess: (updated) => {
-          onUpdated?.(updated);
-          options.onSuccess();
-        },
+      IWorkflowSubmitAttributes
+    >(EntityType.WORKFLOW, {
+      ...options,
+      onSuccess: (updated) => {
+        onUpdated?.(updated);
+        options.onSuccess();
       },
-    );
+    });
     const onSubmitForm = (params: WorkflowFormValues) => {
       const name = params.name.trim();
       const description = params.description.trim() || null;
@@ -137,6 +140,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         params.type === WorkflowType.scheduled
           ? params.schedule.trim() || null
           : null;
+      const memoryDefinitions = params.memoryDefinitions ?? [];
 
       if (workflow?.id) {
         updateWorkflow({
@@ -146,6 +150,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
             description,
             type: params.type,
             schedule,
+            memoryDefinitions,
           },
         });
 
@@ -165,7 +170,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         type: params.type,
         schedule,
         definitionYml: definitionYaml,
-        memoryDefinitions: workflow?.memoryDefinitions ?? [],
+        memoryDefinitions,
       };
 
       createWorkflow(payload);
@@ -263,6 +268,33 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                 />
               </ContentItem>
             )}
+            <ContentItem>
+              <Controller
+                name="memoryDefinitions"
+                control={control}
+                render={({ field }) => {
+                  const { onChange, ...rest } = field;
+
+                  return (
+                    <AutoCompleteEntitySelect<IMemoryDefinition>
+                      fullWidth
+                      searchFields={["name", "slug"]}
+                      entity={EntityType.MEMORY_DEFINITION}
+                      format={Format.BASIC}
+                      labelKey="name"
+                      label={t("label.memory_definitions", {
+                        defaultValue: "Memory definitions",
+                      })}
+                      multiple={true}
+                      onChange={(_event, selected) =>
+                        onChange(selected.map(({ id }) => id))
+                      }
+                      {...rest}
+                    />
+                  );
+                }}
+              />
+            </ContentItem>
           </ContentContainer>
         </form>
       </Wrapper>

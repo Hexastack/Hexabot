@@ -232,6 +232,15 @@ export const StorageHelperEntity = new schema.Entity(
   },
 );
 
+export const MemoryDefinitionEntity = new schema.Entity(
+  EntityType.MEMORY_DEFINITION,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const WorkflowVersionEntity = new schema.Entity(
   EntityType.WORKFLOW_VERSION,
   undefined,
@@ -246,6 +255,7 @@ export const WorkflowEntity = new schema.Entity(
   {
     currentVersion: WorkflowVersionEntity,
     publishedVersion: WorkflowVersionEntity,
+    memoryDefinitions: [MemoryDefinitionEntity],
   },
   {
     idAttribute: ({ id }) => id,
@@ -300,15 +310,6 @@ export const WorkflowRunEntity = new schema.Entity(
 
       return processed;
     },
-  },
-);
-
-export const MemoryDefinitionEntity = new schema.Entity(
-  EntityType.MEMORY_DEFINITION,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
   },
 );
 
