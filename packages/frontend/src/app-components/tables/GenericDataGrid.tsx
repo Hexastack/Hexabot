@@ -44,7 +44,10 @@ export const GenericDataGrid = <
   headerIcon,
   searchParams,
   initialSortState,
-  initialPaginationState,
+  initialPaginationState = {
+    page: 0,
+    pageSize: 10,
+  },
   format,
   headerI18nTitle,
   headerTitleChip,

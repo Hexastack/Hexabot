@@ -49,7 +49,6 @@ export const useFind = <
     countQuery.data?.count,
     initialPaginationState,
     initialSortState,
-    hasCount,
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
   const { data: ids = [], ...normalizedQuery } = useTanstackQuery({

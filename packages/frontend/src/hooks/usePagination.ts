@@ -29,12 +29,8 @@ export const usePagination = (
   // if you don't know the total number of rows set it to -1
   // that way the DataGrid will try to fetch all the rows until the server returns an empty array
   rowCount: number = -1,
-  initialPaginationState: GridPaginationModel = {
-    page: 0,
-    pageSize: 10,
-  },
+  initialPaginationState?: GridPaginationModel,
   initialSortState?: GridSortModel,
-  hasCount: boolean = true,
 ): {
   dataGridPaginationProps: Pick<
     DataGridProps,
@@ -67,7 +63,7 @@ export const usePagination = (
       initialState: {
         columns: { columnVisibilityModel: { id: false } },
         pagination: {
-          paginationModel: initialPaginationState,
+          paginationModel,
           rowCount,
         },
         sorting: {
@@ -78,9 +74,6 @@ export const usePagination = (
       onSortModelChange: setSortModel,
       onPaginationModelChange: setPaginationModel,
     },
-    pageQueryPayload: toPageQueryPayload(
-      hasCount ? paginationModel : undefined,
-      sortModel,
-    ),
+    pageQueryPayload: toPageQueryPayload(paginationModel, sortModel),
   };
 };
