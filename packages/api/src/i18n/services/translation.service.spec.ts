@@ -63,9 +63,6 @@ describe('TranslationService', () => {
                 '="Join " & $t(\'First option\') & " and " & $t("Second option")',
               items: ['=$t("One")', 'Two'],
             },
-            outputs: {
-              choice_label: '=$t("Choice label")',
-            },
           },
         },
         flow: [{ do: 'ask_choice' }],
@@ -129,7 +126,6 @@ describe('TranslationService', () => {
         'First option',
         'Second option',
         'One',
-        'Choice label',
         'Settings prompt',
         'Nested settings fallback',
       ]),

@@ -23,12 +23,10 @@ type ActionFormDrawerContentProps = {
   actionSchema?: IAction;
   inputData: Record<string, unknown>;
   settingsData: Record<string, unknown>;
-  outputData: Record<string, unknown>;
   panelKeyBase: string;
   emptyStateLabel: string;
   onInputDataChange: (data: Record<string, unknown>) => void;
   onSettingsDataChange: (data: Record<string, unknown>) => void;
-  onOutputDataChange: (data: Record<string, unknown>) => void;
 };
 
 const ActionFormDrawerContent = ({
@@ -36,12 +34,10 @@ const ActionFormDrawerContent = ({
   actionSchema,
   inputData,
   settingsData,
-  outputData,
   panelKeyBase,
   emptyStateLabel,
   onInputDataChange,
   onSettingsDataChange,
-  onOutputDataChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
 
@@ -76,18 +72,6 @@ const ActionFormDrawerContent = ({
           panelKey={`${panelKeyBase}-settings`}
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
-          )}
-        />
-      ) : null}
-      {actionSchema.outputSchema ? (
-        <ActionSchemaPanel
-          title={t("visual_editor.actions_drawer.form.section.output")}
-          schema={actionSchema.outputSchema}
-          formData={outputData}
-          onFormDataChange={onOutputDataChange}
-          panelKey={`${panelKeyBase}-output`}
-          emptyLabel={t(
-            "visual_editor.actions_drawer.form.empty_schema.output",
           )}
         />
       ) : null}
@@ -129,7 +113,6 @@ export const ActionFormDrawer = () => {
   const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});
   const [settingsData, setSettingsData] = useState<Record<string, unknown>>({});
-  const [outputData, setOutputData] = useState<Record<string, unknown>>({});
   const open = Boolean(isActionNode && selectedNodeId);
   const panelKeyBase = selectedNodeId ?? actionName ?? "action";
   const emptyStateLabel = actionName
@@ -141,7 +124,6 @@ export const ActionFormDrawer = () => {
     setSettingsData(
       (taskDefinition?.settings as Record<string, unknown>) ?? {},
     );
-    setOutputData((taskDefinition?.outputs as Record<string, unknown>) ?? {});
   }, [taskDefinition, actionName]);
 
   const handleClose = () => {
@@ -174,12 +156,10 @@ export const ActionFormDrawer = () => {
       actionSchema={actionSchema}
       inputData={inputData}
       settingsData={settingsData}
-      outputData={outputData}
       panelKeyBase={panelKeyBase}
       emptyStateLabel={emptyStateLabel}
       onInputDataChange={setInputData}
       onSettingsDataChange={setSettingsData}
-      onOutputDataChange={setOutputData}
       open={open}
       onClose={handleClose}
       headerContent={headerContent}

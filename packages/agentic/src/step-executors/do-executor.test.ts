@@ -51,7 +51,6 @@ const createTask = (runImpl: jest.Mock): CompiledTask => ({
   actionName: 'mock_action',
   action: createAction(runImpl),
   inputs: { payload: { kind: 'literal', value: 123 } },
-  outputs: {},
   settings: {} as any,
 });
 const createCompiled = (task: CompiledTask): CompiledWorkflow =>

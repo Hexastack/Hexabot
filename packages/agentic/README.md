@@ -3,7 +3,7 @@
 Typed runtime and YAML DSL for orchestrating multi-step AI/automation workflows. The package combines JSONata-powered expressions, schema validation, and a resumable runner so you can wire LLMs, tools, and human-in-the-loop pauses with guardrails.
 
 ## Highlights
-- Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$output`, `$iteration`, `$accumulator`, `$result`).
+- Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$output`, `$iteration`, `$accumulator`).
 - Type-safe actions built with `defineAction`, Zod-validated IO, and merged settings (timeouts, retries, guardrails) inherited from workflow defaults.
 - Resumable execution via `WorkflowRunner` and `context.workflow.suspend`, plus snapshots for persistence and replay.
 - Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and `loop` with accumulators and early-exit conditions.
@@ -28,11 +28,13 @@ A workflow is a single YAML (or object) that declares inputs, context, defaults,
 - `inputs.schema`: JSON-schema-like fields validated at runtime.
 - `context`: read-only values injected by the host (including any long-term state) and exposed to expressions.
 - `defaults.settings`: inherited by every task (timeouts, retries, guardrails, audit flags).
-- `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs`, `outputs`, `settings`.
+- `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs` and `settings`.
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
-Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator, result }` as scope; `$context` resolves to your workflow context state.
+Task results are stored automatically under `$output.<task>` for downstream expressions.
+
+Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator }` as scope; `$context` resolves to your workflow context state.
 
 ## Defining actions
 
@@ -112,12 +114,10 @@ tasks:
     action: call_api
     inputs:
       id: "=$input.user_id"
-    outputs:
-      message: "='Hello ' & $result.body"
 flow:
   - do: greet_user
 outputs:
-  reply: "=$output.greet_user.message"
+  reply: "='Hello ' & $output.greet_user.body"
 ```
 
 ## Custom JSONata functions

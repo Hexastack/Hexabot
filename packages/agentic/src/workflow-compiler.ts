@@ -142,7 +142,7 @@ const assertActionsBound = (
     );
   }
 };
-/** Parse settings, compile inputs/outputs, and bind actions for each task. */
+/** Parse settings, compile inputs, and bind actions for each task. */
 const compileTasks = (
   definition: WorkflowDefinition,
   options: WorkflowCompileOptions,
@@ -165,7 +165,6 @@ const compileTasks = (
       definition: task,
       action,
       inputs: compileMapping(task.inputs, options) ?? {},
-      outputs: compileMapping(task.outputs, options) ?? {},
       settings: parsedSettings,
     };
   }

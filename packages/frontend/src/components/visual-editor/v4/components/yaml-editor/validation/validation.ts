@@ -125,7 +125,6 @@ export const applyWorkflowValidationMarkers = ({
       }
 
       const inputSchema = actionDefinition.inputSchema;
-      const outputSchema = actionDefinition.outputSchema;
       const settingSchema =
         actionDefinition.settingSchema ??
         (actionDefinition as IAction & { settingsSchema?: Schema })
@@ -154,20 +153,6 @@ export const applyWorkflowValidationMarkers = ({
           lineCounter,
           markers,
           monacoInstance,
-        });
-      }
-
-      if (task.outputs !== undefined && isSchemaLike(outputSchema)) {
-        appendSchemaMarkers({
-          section: "outputs",
-          schema: outputSchema,
-          instance: task.outputs,
-          basePath: [...taskPath, "outputs"],
-          doc,
-          lineCounter,
-          markers,
-          monacoInstance,
-          ignoreRequired: true,
         });
       }
     });

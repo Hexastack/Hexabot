@@ -32,4 +32,18 @@ describe('WorkflowDefinitionSchema', () => {
       /Invalid JSONata expression/,
     );
   });
+
+  it('rejects task output mappings', () => {
+    const invalid = {
+      tasks: {
+        noop: { action: 'call', outputs: { value: '=1' } },
+      },
+      flow: [{ do: 'noop' }],
+      outputs: { result: '=$output.noop' },
+    };
+
+    expect(() => WorkflowDefinitionSchema.parse(invalid)).toThrow(
+      /Unrecognized key/i,
+    );
+  });
 });
