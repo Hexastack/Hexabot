@@ -6,12 +6,19 @@
 
 import { CircularProgress, styled } from "@mui/material";
 import * as Icons from "lucide-react";
+import { useState } from "react";
+
+import { useSubscribe } from "@/websocket/socket-hooks";
 
 import {
+  EIndicatorType,
   ENodeType,
   type WorkflowNodeTheme,
 } from "../types/workflow-node.types";
-import { NodeExecutionState } from "../types/workflow.types";
+import {
+  NodeExecutionState,
+  SubscribeWorkflowProps,
+} from "../types/workflow.types";
 
 import { useWorkflowNode } from "./useWorkflowNode";
 
@@ -21,6 +28,7 @@ const ICON_STYLE = {
 } as const;
 const getStateConfig = (state?: NodeExecutionState) => {
   switch (state) {
+    case "running":
     case "start":
       return { icon: CircularProgress, color: "#4dc4e6" };
     case "finish":
@@ -35,8 +43,9 @@ const getStateConfig = (state?: NodeExecutionState) => {
 };
 
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
-  const { theme, action, executionState } = useWorkflowNode<T>();
-  const stateConfig = getStateConfig(executionState);
+  const { theme, action, type, ...node } = useWorkflowNode<T>();
+  const [currentState, setCurrentState] = useState<NodeExecutionState>("idle");
+  const stateConfig = getStateConfig(currentState);
   const uiColor = theme.borderColor;
   const apiColor = action?.color;
   const color = stateConfig?.color || uiColor || apiColor;
@@ -44,6 +53,32 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const apiIcon = Icons[action?.icon || ""];
   const Icon = stateConfig?.icon || uiIcon || apiIcon || Icons.Zap;
   const StyledIcon = styled(Icon)(() => ICON_STYLE);
+
+  useSubscribe(
+    "workflow",
+    ({ workflowEvent, ...event }: SubscribeWorkflowProps) => {
+      if (
+        workflowEvent === "workflow:start" &&
+        type === ENodeType.INDICATOR &&
+        "indicator" in node &&
+        node.indicator === EIndicatorType.WORKFLOW_START
+      ) {
+        setCurrentState("running");
+        setTimeout(() => {
+          setCurrentState("idle");
+        }, 2000);
+      } else if (
+        workflowEvent === "step:start" &&
+        "step" in event &&
+        event.step?.id === node.stepId
+      ) {
+        setCurrentState("running");
+        setTimeout(() => {
+          setCurrentState("idle");
+        }, 2000);
+      }
+    },
+  );
 
   return {
     Icon: StyledIcon,
