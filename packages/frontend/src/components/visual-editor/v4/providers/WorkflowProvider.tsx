@@ -39,6 +39,7 @@ import type {
   SubscribeWorkflowProps,
   WorkflowContextProps,
 } from "../types/workflow.types";
+import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
   createBaseDefinition,
   createTaskName,
@@ -46,6 +47,11 @@ import {
 
 const getStepId = (id: string) =>
   `^step-${id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
+
+type TaskInputs = NonNullable<WorkflowDefinition["tasks"][string]["inputs"]>;
+type TaskSettings = NonNullable<
+  WorkflowDefinition["tasks"][string]["settings"]
+>;
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
@@ -150,11 +156,17 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       baseDefinition.tasks ?? {},
     );
     const taskDescription = action.description?.trim();
+    const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
+    const settingDefaults = getSchemaDefaults<TaskSettings>(
+      action.settingSchema,
+    );
     const nextTasks = {
       ...baseDefinition.tasks,
       [nextTaskName]: {
         action: action.name,
         ...(taskDescription ? { description: taskDescription } : {}),
+        ...(inputDefaults !== undefined ? { inputs: inputDefaults } : {}),
+        ...(settingDefaults !== undefined ? { settings: settingDefaults } : {}),
       },
     };
     const nextOutputs =

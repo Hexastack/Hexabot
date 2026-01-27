@@ -6,7 +6,6 @@
 
 import { WorkflowDefinitionSchema } from "@hexabot-ai/agentic";
 import type { Monaco } from "@monaco-editor/react";
-import type { Schema } from "jsonschema";
 import type { editor } from "monaco-editor";
 import { LineCounter, parseDocument } from "yaml";
 
@@ -125,10 +124,7 @@ export const applyWorkflowValidationMarkers = ({
       }
 
       const inputSchema = actionDefinition.inputSchema;
-      const settingSchema =
-        actionDefinition.settingSchema ??
-        (actionDefinition as IAction & { settingsSchema?: Schema })
-          .settingsSchema;
+      const settingSchema = actionDefinition.settingSchema;
 
       if (isSchemaLike(inputSchema)) {
         appendSchemaMarkers({
