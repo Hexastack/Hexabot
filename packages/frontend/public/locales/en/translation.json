@@ -496,7 +496,8 @@
     "current_flow": "Current flow",
     "all_flows": "All flows",
     "types": "Types",
-    "triggered_at": "Triggered At"
+    "triggered_at": "Triggered At",
+    "no_scheduled_workflows": "No scheduled workflows yet"
   },
   "placeholder": {
     "your_username": "Your username",

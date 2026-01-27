@@ -40,6 +40,8 @@ export interface IWorkflowFilters {
   name: string;
   version: string;
   description: string;
+  type: WorkflowType;
+  runAfterMs: number;
 }
 
 export interface IWorkflowStub
@@ -50,6 +52,7 @@ export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {
   currentVersion: string | null;
   publishedVersion: string | null;
   memoryDefinitions: string[];
+  runAfterMs: number;
 }
 
 export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {

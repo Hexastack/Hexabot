@@ -62,6 +62,7 @@ describe('WorkflowController (TypeORM)', () => {
       y: 0,
       zoom: 1,
       builtin: false,
+      runAfterMs: 0,
     };
   };
 

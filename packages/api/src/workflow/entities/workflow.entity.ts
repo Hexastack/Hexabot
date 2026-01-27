@@ -5,6 +5,7 @@
  */
 
 import { Workflow } from '@hexabot-ai/agentic';
+import { CronJob } from 'cron';
 import {
   AfterInsert,
   BeforeRemove,
@@ -163,5 +164,20 @@ export class WorkflowOrmEntity extends BaseOrmEntity {
     if (this.builtin) {
       throw new Error('Cannot delete builtin workflow');
     }
+  }
+
+  get runAfterMs() {
+    if (this.type === 'scheduled' && this.schedule) {
+      try {
+        const job = new CronJob(this.schedule, () => {});
+        const nextDate = job.nextDate();
+
+        return nextDate.toMillis() - Date.now();
+      } catch {
+        return -1;
+      }
+    }
+
+    return 0;
   }
 }

@@ -97,3 +97,11 @@ export const calculateDuration = (
 
   return `${s}s`;
 };
+
+export const getRemainingTime = (ms: number): string => {
+  try {
+    return dayjs.duration(ms).humanize(true);
+  } catch {
+    return "Invalid";
+  }
+};
