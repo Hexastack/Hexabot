@@ -26,7 +26,6 @@ import type {
   CompiledStep,
   CompiledTask,
   CompiledWorkflow,
-  EvaluationScope,
   ExecutionState,
   ResumeResult,
   RunnerResumeArgs,
@@ -486,9 +485,9 @@ export class WorkflowRunner {
   }
 
   /**
-   * Map task outputs onto workflow output state and evaluate expressions as define in the YAML definition.
+   * Store the raw task result under the task name in the workflow output state.
    * @reviewed
-   * @param task The task whose outputs are being captured.
+   * @param task The task whose output is being captured.
    * @param state Current execution state to mutate.
    * @param result Raw result returned by the task action.
    */
@@ -497,17 +496,6 @@ export class WorkflowRunner {
     state: ExecutionState,
     result: unknown,
   ) {
-    const env = this.createExecutorEnv();
-    // Map task outputs through expressions; fall back to raw result when no mapping is provided.
-    const scope: EvaluationScope = {
-      input: state.input,
-      context: env.context.state,
-      output: state.output,
-      iteration: state.iteration,
-      accumulator: state.accumulator,
-      result,
-    };
-    const mapped = await evaluateMapping(task.outputs, scope);
-    state.output[task.name] = Object.keys(mapped).length > 0 ? mapped : result;
+    state.output[task.name] = result;
   }
 }

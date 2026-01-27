@@ -11,16 +11,12 @@ tasks:
     action: wait_for_user
     inputs:
       prompt: "=$input.question"
-    outputs:
-      reply: "=$result.reply"
 
   format_acknowledgement:
     description: "Formats a message using the reply captured after resuming the run."
     action: format_reply
     inputs:
       reply: "=$output.wait_for_confirmation.reply"
-    outputs:
-      message: "=$result.message"
 
 flow:
   - do: wait_for_confirmation

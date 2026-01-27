@@ -197,7 +197,6 @@ export const TaskDefinitionSchema = z.strictObject({
   description: z.string().optional(),
   action: z.string(),
   inputs: z.record(z.string(), JsonValueSchema).optional(),
-  outputs: z.record(z.string(), ExpressionStringSchema).optional(),
   settings: SettingsSchema.optional(),
 });
 

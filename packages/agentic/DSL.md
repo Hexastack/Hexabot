@@ -7,7 +7,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
 - `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
 - `defaults`: settings inherited by every task unless overridden (timeouts, retries, guardrails, audit flags).
-- `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs/outputs mapping, and per-task settings.
+- `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs, and per-task settings.
 - `flow`: ordered execution plan composed of `do`, `parallel`, `conditional`, and `loop` blocks.
 - `outputs`: expressions that expose final artifacts from the run back to the caller.
 
@@ -17,8 +17,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 - Available scopes inside expressions:
   - `$input`: validated caller inputs.
   - `$context`: runtime-provided metadata (including any long-term state you injected).
-  - `$output.<task>`: outputs produced by previously executed tasks.
-  - `$result`: the raw return value of the action currently running (only valid inside `tasks.*.outputs`).
+  - `$output.<task>`: raw results produced by previously executed tasks.
   - `$iteration`: loop locals (`item`, `index`) available inside `loop.steps`.
   - `$accumulator`: loop accumulator state when `accumulate` is used.
 - Expressions can declare locals (e.g., `=$route := ...; ...`) and use JSONata helpers like `$exists`, `$size`, `$join`, and `$append`.
@@ -31,10 +30,11 @@ Each entry under `tasks` has:
 - `description`: human-readable purpose.
 - `action`: engine-specific operation to call (`call_llm`, `search_web`, `await_user_input`, etc.). The DSL does not fix action semantics; the runtime must bind them.
 - `inputs`: map of parameters passed to the action. Values can be literals or expressions (prefixed with `=`).
-- `outputs`: map that projects fields from `$result` into named values available under `$output.<task>.*` for downstream steps.
 - `settings`: execution hints (timeout, retries, model choice, temperature, guardrails, audit flags). Settings merge with `defaults.settings`, with task-level keys taking precedence.
 
-Example: `tasks.understand_request` calls an LLM with a system prompt, user query, and context, then exposes `intent`, `confidence`, `summary`, and `missing_fields` via its `outputs` map.
+Task results are stored automatically under `$output.<task>` for downstream steps.
+
+Example: `tasks.understand_request` calls an LLM with a system prompt, user query, and context; its returned payload is available under `$output.understand_request`.
 
 ## Flow primitives
 
@@ -57,7 +57,7 @@ All branches and loop bodies can themselves contain nested `conditional` or `par
 ## Human-in-the-loop pauses
 
 - Use a task whose `action` supports waiting (e.g., `await_user_input`) and set `settings.await_user: true`.
-- The engine should checkpoint the workflow, wait for a reply or timeout, then resume with the captured response surfaced via the task’s `outputs`.
+- The engine should checkpoint the workflow, wait for a reply or timeout, then resume with the captured response stored under `$output.<task>`.
 
 ## Final outputs
 
@@ -83,7 +83,7 @@ The provided example is the authoritative reference of the DSL in action:
 Notable conventions enforced in the example:
 
 - All expression-bearing strings start with `=` to avoid ambiguity.
-- Every task declares outputs explicitly; downstream steps only see what was mapped.
+- Every task result is stored as-is; downstream steps read from `$output.<task>`.
 - The nested conditional in the support branch escalates only when `priority` is `high`; otherwise it continues without redundant fallback work.
 
 ## Authoring tips

@@ -123,23 +123,19 @@ describe('WorkflowRunner', () => {
       tasks: {
         first_task: {
           action: 'first_action',
-          outputs: { value: '=$result.value' },
         },
         second_task: {
           action: 'second_action',
-          outputs: { value: '=$result.value' },
         },
         branch_task: {
           action: 'echo_action',
           inputs: {
             message: '=$exists($iteration) ? $iteration.item : "conditional"',
           },
-          outputs: { message: '=$result.message' },
         },
         loop_task: {
           action: 'echo_action',
           inputs: { message: '=$iteration.item' },
-          outputs: { message: '=$result.message' },
         },
       },
       flow: [
@@ -249,7 +245,6 @@ describe('WorkflowRunner', () => {
         wait_step: {
           action: 'suspend_action',
           inputs: { prompt: '="Ping"' },
-          outputs: { reply: '=$result.reply' },
         },
       },
       flow: [{ do: 'wait_step' }],
@@ -296,7 +291,7 @@ describe('WorkflowRunner', () => {
     });
     const definition: WorkflowDefinition = {
       tasks: {
-        ping_step: { action: 'ping_action', outputs: { ok: '=$result.ok' } },
+        ping_step: { action: 'ping_action' },
       },
       flow: [{ do: 'ping_step' }],
       outputs: { ok: '=$output.ping_step.ok' },
@@ -377,7 +372,6 @@ describe('WorkflowRunner', () => {
         emit_step: {
           action: 'emit_action',
           inputs: { note: '=$input.note' },
-          outputs: { note: '=$result.note' },
         },
       },
       flow: [{ do: 'emit_step' }],
@@ -422,7 +416,6 @@ describe('WorkflowRunner', () => {
         fail_step: {
           action: 'failing_action',
           inputs: { value: 1 },
-          outputs: { value: '=$result' },
         },
       },
       flow: [{ do: 'fail_step' }],
@@ -486,12 +479,10 @@ describe('WorkflowRunner', () => {
         wait_step: {
           action: 'resume_suspend_action',
           inputs: { prompt: '="Ping?"' },
-          outputs: { reply: '=$result.reply' },
         },
         follow_step: {
           action: 'follow_action',
           inputs: { message: '=$output.wait_step.reply' },
-          outputs: { formatted: '=$result.formatted' },
         },
       },
       flow: [{ do: 'wait_step' }, { do: 'follow_step' }],
@@ -537,7 +528,7 @@ describe('WorkflowRunner', () => {
     }
   });
 
-  it('uses the raw task result when no outputs mapping is provided', async () => {
+  it('stores the raw task result under $output', async () => {
     const rawAction = defineAction<
       { value: string },
       string,
@@ -639,7 +630,6 @@ describe('WorkflowRunner', () => {
         wait_step: {
           action: 'loop_suspend_action',
           inputs: { prompt: '="Ping"' },
-          outputs: { reply: '=$result.reply' },
         },
       },
       flow: [
@@ -722,7 +712,6 @@ describe('WorkflowRunner', () => {
         send_goodbye: {
           action: 'send_action',
           inputs: { text: "=$i18n('Bye bye')" },
-          outputs: { delivered: '=$result.delivered' },
         },
       },
       flow: [{ do: 'send_goodbye' }],

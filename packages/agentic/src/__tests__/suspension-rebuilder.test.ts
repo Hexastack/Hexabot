@@ -139,7 +139,6 @@ const createTask = (name: string): CompiledTask =>
     actionName: name,
     action: dummyAction,
     inputs: {},
-    outputs: {},
     settings: {} as Settings,
   }) as CompiledTask;
 

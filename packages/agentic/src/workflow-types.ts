@@ -27,7 +27,6 @@ export type CompiledTask = {
   actionName: string;
   action: Action;
   inputs: CompiledMapping;
-  outputs: CompiledMapping;
   settings: Settings;
 };
 

@@ -70,7 +70,6 @@ describe('compileWorkflow', () => {
           action: 'worker_action',
           description: 'does work',
           inputs: { source: '=$input.source', literal: 1 },
-          outputs: { echoed: '=$result.echoed' },
           settings: {
             timeout_ms: 50,
             audit: true,
@@ -192,7 +191,6 @@ describe('compileWorkflow', () => {
         missing: {
           action: 'unknown_action',
           inputs: { value: 1 },
-          outputs: { value: '=$input.value' },
         },
       },
       flow: [{ do: 'missing' }],

@@ -60,12 +60,6 @@ describe('Workflow execution', () => {
           inputs: {
             name: '=$trim($input.name)',
           },
-          outputs: {
-            trimmed: '=$result.name',
-            timeout: '=$result.settings.timeout_ms',
-            attempts: '=$result.settings.retries.max_attempts',
-            audit: '=$result.settings.audit',
-          },
           settings: {
             timeout_ms: 20,
             audit: true,
@@ -81,10 +75,10 @@ describe('Workflow execution', () => {
       },
       flow: [{ do: 'greet_user' }],
       outputs: {
-        final: "='Hello ' & $output.greet_user.trimmed",
-        timeout_ms: '=$output.greet_user.timeout',
-        max_attempts: '=$output.greet_user.attempts',
-        audit_flag: '=$output.greet_user.audit',
+        final: "='Hello ' & $output.greet_user.name",
+        timeout_ms: '=$output.greet_user.settings.timeout_ms',
+        max_attempts: '=$output.greet_user.settings.retries.max_attempts',
+        audit_flag: '=$output.greet_user.settings.audit',
       },
       inputs: {
         schema: {
@@ -127,7 +121,6 @@ describe('Workflow execution', () => {
         ask_user: {
           action: 'await_reply',
           inputs: { prompt: '="Ping"' },
-          outputs: { reply: '=$result.reply' },
         },
       },
       flow: [{ do: 'ask_user' }],
@@ -176,7 +169,6 @@ describe('Workflow execution', () => {
         double_step: {
           action: 'double_value',
           inputs: { value: '=$input.value' },
-          outputs: { doubled: '=$result.doubled' },
         },
       },
       flow: [{ do: 'double_step' }],
@@ -234,11 +226,10 @@ describe('Workflow execution', () => {
         greet_user: {
           action: 'greet_action',
           inputs: { name: '=$input.name' },
-          outputs: { trimmed: '=$result.name' },
         },
       },
       flow: [{ do: 'greet_user' }],
-      outputs: { result: '=$output.greet_user.trimmed' },
+      outputs: { result: '=$output.greet_user.name' },
     };
     const yaml = Workflow.stringifyDefinition(definition);
     const validation = validateWorkflow(yaml);
@@ -265,11 +256,10 @@ describe('Workflow execution', () => {
         failing_task: {
           action: 'failing_action',
           inputs: {},
-          outputs: { result: '=$result' },
         },
       },
       flow: [{ do: 'failing_task' }],
-      outputs: { result: '=$output.failing_task.result' },
+      outputs: { result: '=$output.failing_task' },
     };
     const workflow = Workflow.fromDefinition(definition, {
       actions: { failing_action: failingAction },
@@ -308,7 +298,6 @@ describe('Workflow execution', () => {
         pause_step: {
           action: 'suspending_action',
           inputs: {},
-          outputs: { reply: '=$result.reply' },
         },
       },
       flow: [{ do: 'pause_step' }],
