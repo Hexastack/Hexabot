@@ -57,7 +57,8 @@ const COLOR_PALETTE = {
 };
 const COLORS = {
   primary: {
-    main: "#1AA089",
+    main: teal.A700,
+    contrastText: "#FFF",
   },
   secondary: {
     main: "#B23A49",
@@ -176,10 +177,14 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           minHeight: "36px",
-          padding: "0 8px",
+          padding: "0 1rem",
           "&.Mui-expanded": {
+            marginTop: "1rem",
             minHeight: "36px",
           },
+          background: `linear-gradient(135deg, ${teal[500]} 0%, ${defaultTheme.alpha(teal.A700, 0.95)} 100%)`,
+          borderRadius: "8px",
+          color: "#FFF",
         },
         content: {
           margin: "6px 0",
@@ -193,6 +198,10 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           padding: "0 8px 8px",
+          "& .MuiButtonBase-root": {
+            background: grey.A100,
+            color: "#000",
+          },
         },
       },
     },

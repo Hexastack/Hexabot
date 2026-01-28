@@ -8,16 +8,29 @@ import { JsonValueSchema, Settings, SettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 const llmPromptBaseSchema = z.object({
-  prompt: z.string().min(1).optional(),
-  messages_limit: z.int().positive().optional(),
-  system: z.string().optional(),
+  prompt: z.string().min(1).default('=$input.text').optional().meta({
+    title: 'Prompt',
+    description:
+      'Prompt text to send directly to the model instead of loading message history.',
+  }),
+  messages_limit: z.int().nonnegative().default(0).optional().meta({
+    title: 'Messages limit',
+    description:
+      'Number of most recent conversation messages to include instead of a prompt.',
+  }),
+  system: z.string().default('You are a helpful assistant.').optional().meta({
+    title: 'System',
+    description:
+      'Optional system instruction prepended to the prompt or message history.',
+  }),
 });
 const validatePromptSource = (
   value: z.infer<typeof llmPromptBaseSchema>,
   ctx: z.RefinementCtx,
 ) => {
   const promptCount =
-    (value.prompt ? 1 : 0) + (value.messages_limit !== undefined ? 1 : 0);
+    (value.prompt ? 1 : 0) +
+    (value.messages_limit !== undefined && value.messages_limit > 0 ? 1 : 0);
 
   if (promptCount !== 1) {
     ctx.addIssue({
@@ -61,23 +74,74 @@ export const llmRawResponseSchema = z.object({
 });
 
 export const llmCommonSettingsSchema = SettingsSchema.extend({
-  model: z.string().min(1).optional(),
-  temperature: z.number().min(0).max(2).optional(),
-  top_p: z.number().min(0).max(1).optional(),
-  top_k: z.int().positive().optional(),
-  max_output_tokens: z.int().positive().optional(),
-  presence_penalty: z.number().min(-2).max(2).optional(),
-  frequency_penalty: z.number().min(-2).max(2).optional(),
-  stop_sequences: z.array(z.string().min(1)).min(1).optional(),
-  seed: z.int().optional(),
-  provider: z.string().prefault('openai'),
-  api_key: z.string().optional(),
-  base_url: z.url().optional(),
-  organization: z.string().optional(),
-  tools: z.array(z.string().min(1)).optional(),
-  memory_enabled: z.boolean().optional(),
-  stop_step_count: z.int().positive().optional(),
-  stop_tool_call: z.string().trim().min(1).optional(),
+  provider: z.string().default('openai').meta({
+    title: 'Provider',
+    description: 'LLM provider identifier (e.g., openai).',
+  }),
+  model: z.string().min(1).default('gpt-5.2').meta({
+    title: 'Model',
+    description: 'Provider model identifier to use for generation.',
+  }),
+  api_key: z.string().optional().meta({
+    title: 'API key',
+    description: 'Provider API key override for this action.',
+  }),
+  base_url: z.url().optional().meta({
+    title: 'Base URL',
+    description: 'Custom provider base URL (self-hosted or proxy).',
+  }),
+  organization: z.string().optional().meta({
+    title: 'Organization',
+    description: 'Provider organization or account identifier.',
+  }),
+  tools: z.array(z.string().min(1)).optional().meta({
+    title: 'Tools',
+    description: 'Allowed tool names or tool IDs for the model.',
+  }),
+  memory_enabled: z.boolean().optional().meta({
+    title: 'Memory enabled',
+    description: 'Enable memory feature.',
+  }),
+  temperature: z.number().min(0).max(2).optional().meta({
+    title: 'Temperature',
+    description: 'Sampling temperature; higher values increase randomness.',
+  }),
+  top_p: z.number().min(0).max(1).optional().meta({
+    title: 'Top P',
+    description: 'Nucleus sampling probability mass to consider.',
+  }),
+  top_k: z.int().positive().optional().meta({
+    title: 'Top K',
+    description: 'Limit sampling to the top K most likely tokens.',
+  }),
+  max_output_tokens: z.int().positive().optional().meta({
+    title: 'Max output tokens',
+    description: 'Maximum number of tokens to generate in the output.',
+  }),
+  presence_penalty: z.number().min(-2).max(2).optional().meta({
+    title: 'Presence penalty',
+    description: 'Penalty for introducing new topics or tokens.',
+  }),
+  frequency_penalty: z.number().min(-2).max(2).optional().meta({
+    title: 'Frequency penalty',
+    description: 'Penalty for repeating tokens frequently.',
+  }),
+  stop_sequences: z.array(z.string().min(1)).optional().meta({
+    title: 'Stop sequences',
+    description: 'Sequences that will stop generation when encountered.',
+  }),
+  seed: z.int().optional().meta({
+    title: 'Seed',
+    description: 'Seed for deterministic sampling when supported.',
+  }),
+  stop_step_count: z.int().positive().optional().meta({
+    title: 'Stop step count',
+    description: 'Maximum number of agent steps before stopping.',
+  }),
+  stop_tool_call: z.string().trim().min(1).optional().meta({
+    title: 'Stop tool call',
+    description: 'Stop when the specified tool call is triggered.',
+  }),
 });
 
 export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);

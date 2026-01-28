@@ -31,7 +31,7 @@ export const NestedTitleField = ({
   );
 
   return (
-    <Box id={id} mb={1} mt={1}>
+    <Box id={id} my={1}>
       {optionalDataControl ? (
         <Box display="flex" alignItems="center" justifyContent="space-between">
           {heading}

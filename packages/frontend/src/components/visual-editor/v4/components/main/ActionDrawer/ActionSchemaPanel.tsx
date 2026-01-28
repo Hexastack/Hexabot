@@ -45,6 +45,15 @@ const compactFormTheme = createTheme(theme, {
         root: labelTooltipSx,
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          "> .MuiBox-root": {
+            padding: 0,
+          },
+        },
+      },
+    },
   },
 });
 const formUiSchema = {
@@ -74,7 +83,9 @@ export const ActionSchemaPanel = ({
 }: ActionSchemaPanelProps) => (
   <Accordion variant="elevation" defaultExpanded>
     <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-      <Typography variant="subtitle1">{title}</Typography>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+        {title}
+      </Typography>
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
