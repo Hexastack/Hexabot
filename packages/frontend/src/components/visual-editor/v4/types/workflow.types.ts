@@ -88,6 +88,7 @@ export type NodeExecutionState =
 
 export type SubscribeWorkflowProps =
   WorkflowEventMap[keyof WorkflowEventMap] & {
+    workflowId: string;
     workflowEvent: WorkflowEvent;
     t: number;
   };

@@ -313,7 +313,10 @@ export const buildNodesAndEdges = async ({
     id: endIndicatorId,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
-    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
+    data: {
+      ...ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
+      indicator: EIndicatorType.WORKFLOW_END,
+    },
   });
 
   endStepIds.forEach((endEdgesId) => {

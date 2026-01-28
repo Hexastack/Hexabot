@@ -129,6 +129,7 @@ export class WorkflowService extends BaseOrmService<
       this.gateway.broadcastWorkflowEvent({
         ...payload,
         t,
+        workflowId,
         initiatorId,
         workflowEvent: workflowEvent.replace('hook:', ''),
       });
