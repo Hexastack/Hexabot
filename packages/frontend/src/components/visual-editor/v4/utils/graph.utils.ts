@@ -329,6 +329,7 @@ const walkStep = ({
           data: {
             ...ctx.config?.nodes[ENodeType.TOOL],
             title: tool,
+            i18nTitle: undefined,
             level,
           },
         });

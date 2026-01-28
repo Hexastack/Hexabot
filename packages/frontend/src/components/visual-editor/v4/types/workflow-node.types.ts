@@ -35,7 +35,7 @@ import { NodeExecutionState } from "./workflow.types";
 
 export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
-  | { title: string; i18nTitle?: TTranslationKeys }
+  | { title: string; i18nTitle?: never }
   | { i18nTitle: TTranslationKeys; title?: never };
 
 export type WorkflowNodeTheme = {
