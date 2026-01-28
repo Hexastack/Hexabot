@@ -6,12 +6,14 @@
 
 import { ActionBaseInputTemplate } from "./ActionBaseInputTemplate";
 import { ActionFieldTemplate } from "./ActionFieldTemplate";
+import { ActionObjectFieldTemplate } from "./ActionObjectFieldTemplate";
 import { EmptyDescriptionFieldTemplate } from "./EmptyDescriptionFieldTemplate";
 import { NestedTitleField } from "./NestedTitleField";
 
 export const FORM_TEMPLATES = {
-    TitleFieldTemplate: NestedTitleField,
-    FieldTemplate: ActionFieldTemplate,
-    DescriptionFieldTemplate: EmptyDescriptionFieldTemplate,
-    BaseInputTemplate: ActionBaseInputTemplate,
-}
+  TitleFieldTemplate: NestedTitleField,
+  FieldTemplate: ActionFieldTemplate,
+  DescriptionFieldTemplate: EmptyDescriptionFieldTemplate,
+  BaseInputTemplate: ActionBaseInputTemplate,
+  ObjectFieldTemplate: ActionObjectFieldTemplate,
+};

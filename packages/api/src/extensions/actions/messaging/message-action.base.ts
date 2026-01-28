@@ -66,7 +66,12 @@ interface PreparedMessageContext {
 }
 
 export const messageActionSettingsSchema = SettingsSchema.extend({
-  typing: z.union([z.boolean(), z.int().nonnegative()]).optional(),
+  typing: z
+    .int()
+    .nonnegative()
+    .default(0)
+    .optional()
+    .meta({ title: 'Typing indicator (ms)' }),
 });
 
 export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;

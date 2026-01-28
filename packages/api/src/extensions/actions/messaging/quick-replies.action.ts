@@ -9,7 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
@@ -20,10 +20,21 @@ import {
 } from './message-action.base';
 
 const quickRepliesInputSchema = z.object({
-  text: z.union([z.string(), z.array(z.string())]),
+  text: z.string().min(1).default('Choose an option').meta({
+    title: 'Text',
+    description: 'The text message to be sent.',
+  }),
   quick_replies: z
     .array(stdQuickReplySchema)
-    .min(1, 'Provide at least one quick reply'),
+    .min(1, 'Provide at least one quick reply')
+    .default([
+      { content_type: QuickReplyType.text, payload: 'yes', title: 'Yes' },
+      { content_type: QuickReplyType.text, payload: 'no', title: 'No' },
+    ])
+    .meta({
+      title: 'Options',
+      description: 'Quick replies options.',
+    }),
 });
 
 type QuickRepliesInput = z.infer<typeof quickRepliesInputSchema>;

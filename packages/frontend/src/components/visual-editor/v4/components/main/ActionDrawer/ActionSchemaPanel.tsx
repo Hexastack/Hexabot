@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Form } from "@rjsf/mui";
-import type { RJSFSchema } from "@rjsf/utils";
+import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
@@ -60,6 +60,7 @@ export type ActionSchemaPanelProps = {
   onFormDataChange: (data: Record<string, unknown>) => void;
   panelKey: string;
   emptyLabel: string;
+  uiSchema?: UiSchema;
 };
 
 export const ActionSchemaPanel = ({
@@ -69,6 +70,7 @@ export const ActionSchemaPanel = ({
   onFormDataChange,
   panelKey,
   emptyLabel,
+  uiSchema,
 }: ActionSchemaPanelProps) => (
   <Accordion variant="elevation" defaultExpanded>
     <AccordionSummary expandIcon={<ChevronDown size={16} />}>
@@ -88,7 +90,7 @@ export const ActionSchemaPanel = ({
             }
             showErrorList={false}
             noHtml5Validate
-            uiSchema={formUiSchema}
+            uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
             idPrefix={`action-${panelKey}`}
             templates={FORM_TEMPLATES}
             widgets={FORM_WIDGETS}
