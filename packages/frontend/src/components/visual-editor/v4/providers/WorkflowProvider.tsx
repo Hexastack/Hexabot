@@ -30,7 +30,7 @@ import type { IWorkflowAttributes } from "@/types/workfow.types";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
-import { NodeData } from "../types/workflow-node.types";
+import { GraphNode } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
 import type {
   NodeExecutionState,
@@ -47,7 +47,9 @@ type TaskSettings = NonNullable<
   WorkflowDefinition["tasks"][string]["settings"]
 >;
 
-export const WorkflowProvider: React.FC<WorkflowContextProps> = ({ children }) => {
+export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
+  children,
+}) => {
   const [flowId] = useQueryState("flowId");
   const { data: workflows } = useFind(
     {
@@ -81,7 +83,8 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({ children }) =
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const { screenToFlowPosition, getNodes, setNodes } = useReactFlow<NodeData>();
+  const { screenToFlowPosition, getNodes, setNodes } =
+    useReactFlow<GraphNode>();
   const [executionStates, setExecutionStates] = useState<
     Record<string, { state: NodeExecutionState; t: number }[]>
   >({});
@@ -196,9 +199,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({ children }) =
       id,
       type: "select",
       selected: nodeIds.includes(id),
-    })) as NodeChange<NodeData>[];
+    })) as NodeChange<GraphNode>[];
 
-    setNodes((nodes) => applyNodeChanges<NodeData>(changes, nodes));
+    setNodes((nodes) => applyNodeChanges<GraphNode>(changes, nodes));
   };
   const getQuery = (key: string): string =>
     typeof router.query[key] === "string" ? router.query[key] : "";

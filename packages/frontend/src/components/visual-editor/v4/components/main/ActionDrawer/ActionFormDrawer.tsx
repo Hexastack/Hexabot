@@ -16,7 +16,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
+import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { humanizeTaskName } from "../../../utils/graph.utils";
 
 import { ActionSchemaPanel } from "./ActionSchemaPanel";
@@ -149,7 +149,7 @@ export const ActionFormDrawer = () => {
   const selectedNodeId =
     selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
   const selectedNode = selectedNodeId
-    ? (getNode(selectedNodeId) as NodeData | undefined)
+    ? (getNode(selectedNodeId) as GraphNode | undefined)
     : undefined;
   const isActionNode =
     selectedNode?.type === ENodeType.TASK ||

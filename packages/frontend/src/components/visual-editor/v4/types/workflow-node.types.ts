@@ -191,7 +191,7 @@ export type NodeType<V, T = NodeDataTypes> = {
   [K in keyof T]: T[K] extends V ? K : never;
 }[keyof T];
 
-export type NodeData<T extends keyof NodeDataTypes | null = null> =
+export type GraphNode<T extends keyof NodeDataTypes | null = null> =
   T extends keyof NodeDataTypes
     ? Node<NodeDataTypes[T], T>
     :
@@ -226,7 +226,7 @@ export const NODE_TYPES = {
   [ENodeType.TASK]: Task,
   [ENodeType.GROUP]: Group,
 } satisfies {
-  [NT in ENodeType]: FC<NodeProps<NodeData<NT>>>;
+  [NT in ENodeType]: FC<NodeProps<GraphNode<NT>>>;
 };
 
 export const EDGE_TYPES = {
@@ -236,10 +236,10 @@ export const EDGE_TYPES = {
 };
 
 type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
-  NodeData<T>,
+  GraphNode<T>,
   "data"
 > &
-  NodeData<T>["data"];
+  GraphNode<T>["data"];
 
 // Context types
 export type IWorkflowNodeContext<T extends ENodeType = ENodeType> = Omit<
@@ -256,4 +256,4 @@ export interface IWorkflowNodeProps {
   children: ReactNode;
 }
 
-export type WorkflowGraph = { nodes: NodeData[]; edges: Edge[] };
+export type WorkflowGraph = { nodes: GraphNode[]; edges: Edge[] };

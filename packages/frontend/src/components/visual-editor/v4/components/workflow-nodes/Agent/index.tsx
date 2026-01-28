@@ -8,14 +8,14 @@ import { type NodeProps } from "@xyflow/react";
 import { type FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
+import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Agent: FC<NodeProps<NodeData<ENodeType.AGENT>>> = ({ id }) => (
+export const Agent: FC<NodeProps<GraphNode<ENodeType.AGENT>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeRightContent>

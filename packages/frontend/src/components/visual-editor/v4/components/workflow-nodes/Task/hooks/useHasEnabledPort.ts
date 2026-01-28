@@ -9,7 +9,7 @@ import { useReactFlow } from "@xyflow/react";
 import { useWorkflowNode } from "@/components/visual-editor/v4/hooks/useWorkflowNode";
 import {
   ENodeType,
-  type NodeData,
+  type GraphNode,
 } from "@/components/visual-editor/v4/types/workflow-node.types";
 
 export const useHasEnabledPort = <T extends ENodeType>() => {
@@ -19,7 +19,7 @@ export const useHasEnabledPort = <T extends ENodeType>() => {
   return connections
     .filter((c) => c.target)
     .some((c) => {
-      const targetNode = getNode(c.target) as NodeData | undefined;
+      const targetNode = getNode(c.target) as GraphNode | undefined;
       const targetGroupName =
         targetNode?.data && "groupName" in targetNode.data
           ? targetNode.data.groupName
