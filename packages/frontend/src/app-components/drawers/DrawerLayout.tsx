@@ -24,6 +24,11 @@ const DrawerBody = styled(Box)(({ theme }) => ({
   overflowY: "auto",
   padding: theme.spacing(1.5),
 }));
+const DrawerFooter = styled(Box)(({ theme }) => ({
+  flexShrink: 0,
+  padding: theme.spacing(1.5),
+  borderTop: `1px solid ${theme.palette.divider}`,
+}));
 
 export type DrawerLayoutProps = {
   open: boolean;
@@ -31,6 +36,7 @@ export type DrawerLayoutProps = {
   drawerId?: string;
   title?: ReactNode;
   headerContent?: ReactNode;
+  footerContent?: ReactNode;
   closeLabel?: string;
   children: ReactNode;
 };
@@ -43,6 +49,7 @@ export const DrawerLayout = ({
   drawerId,
   title,
   headerContent,
+  footerContent,
   closeLabel = "Close",
   children,
 }: DrawerLayoutProps) => {
@@ -91,6 +98,7 @@ export const DrawerLayout = ({
         </DrawerHeader>
       ) : null}
       <DrawerBody>{children}</DrawerBody>
+      {footerContent ? <DrawerFooter>{footerContent}</DrawerFooter> : null}
     </Drawer>
   );
 };
@@ -105,6 +113,7 @@ export const withDrawerLayout = <P extends object>(
       drawerId,
       title,
       headerContent,
+      footerContent,
       closeLabel,
       ...rest
     } = props;
@@ -116,6 +125,7 @@ export const withDrawerLayout = <P extends object>(
         drawerId={drawerId}
         title={title}
         headerContent={headerContent}
+        footerContent={footerContent}
         closeLabel={closeLabel}
       >
         <Component {...(rest as P)} />

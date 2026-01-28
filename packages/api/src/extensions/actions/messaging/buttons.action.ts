@@ -9,19 +9,36 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { buttonSchema } from '@/chat/types/button';
+import { buttonSchema, ButtonType } from '@/chat/types/button';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
-  MessageActionSettings,
   messageActionOutputSchema,
+  MessageActionSettings,
   messageActionSettingsSchema,
 } from './message-action.base';
 
 const buttonsInputSchema = z.object({
-  text: z.union([z.string(), z.array(z.string())]),
-  buttons: z.array(buttonSchema).min(1, 'Provide at least one button'),
+  text: z
+    .string()
+    .min(1)
+    .default('Click on one of the following buttons')
+    .meta({
+      title: 'Text',
+      description: 'The text message to be sent.',
+    }),
+  buttons: z
+    .array(buttonSchema)
+    .min(1, 'Provide at least one button')
+    .default([
+      { type: ButtonType.postback, payload: 'about', title: 'About' },
+      { type: ButtonType.web_url, url: 'https://hexabot.ai', title: 'Website' },
+    ])
+    .meta({
+      title: 'Options',
+      description: 'Buttons options.',
+    }),
 });
 
 type ButtonsInput = z.infer<typeof buttonsInputSchema>;
