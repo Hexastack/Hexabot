@@ -131,3 +131,9 @@
 .react-flow__node.selectable.selected .node-title {
   border-radius: 9px 0 0 0 !important;
 }
+
+.react-flow__node > div:first-child > div:first-child {
+  transition:
+    in 0.4s,
+    out 0.5s;
+}

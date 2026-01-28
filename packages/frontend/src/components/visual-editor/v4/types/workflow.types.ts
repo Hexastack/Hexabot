@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowDefinition, WorkflowEventMap } from "@hexabot-ai/agentic";
+import type {
+  CompiledStep,
+  WorkflowDefinition,
+  WorkflowEventMap,
+} from "@hexabot-ai/agentic";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import type { XYPosition } from "@xyflow/react";
@@ -61,6 +65,7 @@ export interface IWorkflowContext {
   >;
   actions: IAction[];
   definition?: WorkflowDefinition;
+  flow?: CompiledStep[];
 }
 
 export interface WorkflowContextProps {
@@ -73,10 +78,17 @@ export type WorkflowEvent<
   T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
 > = T extends `${string}:${infer Rest}` ? Rest : T;
 
-export type NodeExecutionState = "start" | "finish" | "suspended" | "error";
+export type NodeExecutionState =
+  | "idle"
+  | "running"
+  | "start"
+  | "finish"
+  | "suspended"
+  | "error";
 
 export type SubscribeWorkflowProps =
   WorkflowEventMap[keyof WorkflowEventMap] & {
+    workflowId: string;
     workflowEvent: WorkflowEvent;
     t: number;
   };

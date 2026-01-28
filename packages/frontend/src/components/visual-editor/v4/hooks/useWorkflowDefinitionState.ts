@@ -78,20 +78,27 @@ export const useWorkflowDefinitionState = ({
     currentVersion ? currentVersion.definitionYml : "",
   );
   const definitionSignatureRef = useRef("");
-  const { definition, error: definitionError } = useMemo(() => {
+  const {
+    definition,
+    flow,
+    error: definitionError,
+  } = useMemo(() => {
     if (!yaml || !hasActions) {
       return { definition: undefined, error: null };
     }
 
     try {
+      const { flow, definition } = getDefinition(yaml, {
+        actions: actionsByName,
+      });
+
       return {
-        definition: getDefinition(yaml, {
-          actions: actionsByName,
-        }),
+        definition,
+        flow,
         error: null,
       };
     } catch (error) {
-      return { definition: undefined, error: error as Error };
+      return { definition: undefined, flow: undefined, error: error as Error };
     }
   }, [actionsByName, hasActions, yaml, workflow?.id]);
   // New definition version not yet saved ?
@@ -215,6 +222,7 @@ export const useWorkflowDefinitionState = ({
   return {
     yaml,
     definition,
+    flow,
     updateDefinitionState,
     persistDefinition,
     restoreVersion,

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { FlowStep, WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
   EdgeMarkerType,
@@ -47,6 +47,7 @@ export type WorkflowNodeTheme = {
 };
 
 export type CommonNodeDadaTypes = NodeDataTitle & {
+  stepId?: string;
   description?: string;
   groupName?: string;
   stepPath?: FlowStepPath;
@@ -80,7 +81,7 @@ export type TaskData = CommonNodeData<ENodeType.TASK> & {
 
 // Indicator types
 export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
-  taskName?: string;
+  indicator?: EIndicatorType;
 };
 
 export enum EIndicatorType {
@@ -163,8 +164,8 @@ export interface INodeConfig {
         : K extends ENodeType.TASK
           ? (
               stepId: string,
-              step: FlowStep,
-              tasks: WorkflowDefinition["tasks"],
+              taskName: string,
+              tasks?: TaskDefinitions,
             ) => TaskData
           : NodeDataTypes[K];
   };
@@ -172,7 +173,8 @@ export interface INodeConfig {
 
 export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
-  definition?: WorkflowDefinition;
+  flow?: CompiledStep[];
+  tasks?: TaskDefinitions;
 }
 
 export type NodeDataTypes = {

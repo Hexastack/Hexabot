@@ -118,6 +118,7 @@ export class WebsocketGateway
     ...rest
   }: WorkflowEventMap[keyof WorkflowEventMap] &
     Partial<Pick<WorkflowContextState, 'initiatorId'>> & {
+      workflowId: string;
       workflowEvent: string;
       t: number;
     }): void {

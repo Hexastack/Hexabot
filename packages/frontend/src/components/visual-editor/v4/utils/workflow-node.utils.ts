@@ -5,6 +5,7 @@
  */
 
 import {
+  CompiledStep,
   compileWorkflow,
   validateWorkflow,
   type WorkflowCompileOptions,
@@ -277,13 +278,14 @@ export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
 
 export const buildNodesAndEdges = async ({
   config,
-  definition,
+  flow,
+  tasks,
 }: IBuildNodesAndEdgesProps): Promise<
   { nodes: NodeData[]; edges: Edge[] } | undefined
 > => {
-  if (!definition) return;
+  if (!flow?.length) return;
   const ctx: TraversalContext = {
-    tasks: definition.tasks,
+    tasks,
     nodes: [],
     edges: [],
     edgeKeys: new Set(),
@@ -291,9 +293,7 @@ export const buildNodesAndEdges = async ({
     config,
   };
   const endStepIds = walkSteps({
-    index: 0,
-    steps: definition.flow,
-    tasks: definition.tasks,
+    steps: flow,
     level: 0,
     prefix: "step",
     incoming: [],
@@ -305,13 +305,18 @@ export const buildNodesAndEdges = async ({
     return { nodes: [], edges: [] };
   }
 
+  const endIndicatorId = `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`;
+
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
     ...DEFAULT_NODE_PROPS,
-    id: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
+    id: endIndicatorId,
     type: ENodeType.INDICATOR,
     position: { x: 0, y: 0 },
-    data: ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
+    data: {
+      ...ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
+      indicator: EIndicatorType.WORKFLOW_END,
+    },
   });
 
   endStepIds.forEach((endEdgesId) => {
@@ -326,17 +331,17 @@ export const buildNodesAndEdges = async ({
     ctx.edges.push({
       id: generateId(),
       source: endEdgesId,
-      target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
+      target: endIndicatorId,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       data: insertPath ? { insertPath } : undefined,
     });
 
-    if (ctx.edges.findIndex((n) => n.id === groupName) && groupName) {
+    if (groupName && !ctx.edges.some((edge) => edge.id === groupName)) {
       ctx.edges.push({
         id: generateId(),
         source: groupName,
-        target: `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`,
+        target: endIndicatorId,
         type: EEdgeType.EDGE_WITH_BUTTON,
         ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       });
@@ -364,7 +369,7 @@ export const buildNodesAndEdges = async ({
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
-): WorkflowDefinition => {
+): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
   const validation = validateWorkflow(yaml);
 
   if (!validation.success) {
@@ -372,7 +377,7 @@ export const getDefinition = (
       `Workflow validation failed: ${validation.errors.join("; ")}`,
     );
   }
-  const { definition } = compileWorkflow(validation.data, options);
+  const { definition, flow } = compileWorkflow(validation.data, options);
 
-  return definition;
+  return { definition, flow };
 };

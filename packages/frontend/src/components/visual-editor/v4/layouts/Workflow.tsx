@@ -80,6 +80,7 @@ export const Workflow = () => {
     debouncedWorkflowUpdate,
     updateWorkflowURL,
     definition,
+    flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
     persistDefinition,
@@ -115,6 +116,7 @@ export const Workflow = () => {
     workflow?.currentVersion === workflow?.publishedVersion;
   const isPublishDisabled =
     !definition || isDefinitionSaving || isCurrentVersionPublished;
+  const tasks = definition?.tasks;
   const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
     setPendingInsertPath(insertPath);
     setActionsDrawerOpen(true);
@@ -142,7 +144,7 @@ export const Workflow = () => {
     let isCancelled = false;
 
     const layoutGraph = async () => {
-      if (!definition) {
+      if (!flow?.length) {
         setGraph({ nodes: [], edges: [] });
 
         return;
@@ -152,7 +154,8 @@ export const Workflow = () => {
         const config = getWorkflowDefaultConfig(direction);
         const layoutedGraph = await buildNodesAndEdges({
           config,
-          definition,
+          flow,
+          tasks,
         });
 
         if (!isCancelled) {
@@ -172,7 +175,7 @@ export const Workflow = () => {
     return () => {
       isCancelled = true;
     };
-  }, [definition, direction]);
+  }, [flow, direction, tasks]);
 
   useEffect(() => {
     if (!isEmptyWorkflow) {

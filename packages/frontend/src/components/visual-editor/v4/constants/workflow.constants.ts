@@ -139,13 +139,13 @@ export const NODES = {
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
-  [ENodeType.TASK]: (id, step, tasks) => {
+  [ENodeType.TASK]: (id, taskName, tasks) => {
     const groupName = getGroupId(id, HIGHLIGHTS);
 
     return {
-      title: step["do"],
-      actionName: getTaskAction(step["do"], tasks),
-      description: getTaskDescription(step["do"], tasks),
+      title: taskName,
+      actionName: getTaskAction(taskName, tasks),
+      description: getTaskDescription(taskName, tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {},
       groupName,
