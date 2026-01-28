@@ -43,20 +43,17 @@ const getStateConfig = (state?: NodeExecutionState) => {
   }
 };
 
-type TExecutionStates = Record<
-  string,
-  {
-    state: NodeExecutionState;
-    t: number;
-  }
->;
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const { selectedFlowId } = useWorkflow();
   const { theme, action, type, ...node } = useWorkflowNode<T>();
-  const [executionStates, setExecutionStates] = useState<
-    TExecutionStates | undefined
+  const [nodeState, setNodeState] = useState<
+    | {
+        state: NodeExecutionState;
+        t: number;
+      }
+    | undefined
   >();
-  const stateConfig = getStateConfig(executionStates?.[node.id]?.state);
+  const stateConfig = getStateConfig(nodeState?.state);
   const uiColor = theme.borderColor;
   const apiColor = action?.color;
   const color = stateConfig?.color || uiColor || apiColor;
@@ -72,72 +69,46 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
         return;
       }
       if (workflowEvent === "workflow:failure") {
-        setExecutionStates((old) => ({
-          ...old,
-          [node.id]: { state: "idle", t: 0 },
-        }));
+        setNodeState({ state: "idle", t: 0 });
       } else if (type === ENodeType.INDICATOR && "indicator" in node) {
         if (
           workflowEvent === "workflow:start" &&
           node.indicator === EIndicatorType.WORKFLOW_START
         ) {
-          setExecutionStates((old) => ({
-            ...old,
-            [node.id]: { state: "running", t: event.t },
-          }));
+          setNodeState({ state: "running", t: event.t });
           setTimeout(() => {
-            setExecutionStates((old) => ({
-              ...old,
-              [node.id]: { state: "idle", t: 0 },
-            }));
+            setNodeState({ state: "idle", t: 0 });
           }, 400);
         } else if (
           workflowEvent === "workflow:finish" &&
           node.indicator === EIndicatorType.WORKFLOW_END
         ) {
-          setExecutionStates((old) => ({
-            ...old,
-            [node.id]: { state: "running", t: event.t },
-          }));
+          setNodeState({ state: "running", t: event.t });
+
           setTimeout(() => {
-            setExecutionStates((old) => ({
-              ...old,
-              [node.id]: { state: "idle", t: 0 },
-            }));
+            setNodeState({ state: "idle", t: 0 });
           }, 1200);
         }
       } else if ("step" in event && event.step?.id === node.stepId) {
         switch (workflowEvent) {
           case "step:suspended":
-            setExecutionStates((old) => ({
-              ...old,
-              [node.id]: { state: "suspended", t: event.t },
-            }));
+            setNodeState({ state: "suspended", t: event.t });
             break;
           case "step:start":
-            setExecutionStates((old) => ({
-              ...old,
-              [node.id]:
-                old?.[node.id]?.state === "suspended" ||
-                (old?.[node.id]?.t && old?.[node.id].t >= event.t)
-                  ? old?.[node.id]
-                  : { state: "running", t: event.t },
+            setNodeState((old) => ({
+              ...(old?.state === "suspended" || (old?.t && old?.t >= event.t)
+                ? old
+                : { state: "running", t: event.t }),
             }));
             break;
           case "step:success":
             setTimeout(() => {
-              setExecutionStates((old) => ({
-                ...old,
-                [node.id]: { state: "idle", t: 0 },
-              }));
+              setNodeState({ state: "idle", t: 0 });
             }, 800);
             break;
           case "step:error":
             setTimeout(() => {
-              setExecutionStates((old) => ({
-                ...old,
-                [node.id]: { state: "error", t: 0 },
-              }));
+              setNodeState({ state: "error", t: 0 });
             }, 800);
             break;
         }
