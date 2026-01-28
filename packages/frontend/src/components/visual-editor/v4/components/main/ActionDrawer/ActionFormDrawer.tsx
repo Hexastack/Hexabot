@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Stack, Typography } from "@mui/material";
+import { JsonValue, TaskDefinition } from "@hexabot-ai/agentic";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { useReactFlow } from "@xyflow/react";
+import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
@@ -29,6 +32,49 @@ type ActionFormDrawerContentProps = {
   onSettingsDataChange: (data: Record<string, unknown>) => void;
 };
 
+const COMMON_SETTING_KEYS = [
+  "timeout_ms",
+  "retries",
+  "guardrails",
+  "audit",
+] as const;
+const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
+  if (!schema || typeof schema !== "object") {
+    return undefined;
+  }
+
+  const properties =
+    schema.properties && typeof schema.properties === "object"
+      ? Object.keys(schema.properties)
+      : [];
+
+  if (properties.length === 0) {
+    return undefined;
+  }
+
+  const commonSet = new Set<string>(COMMON_SETTING_KEYS);
+  const actionSpecific = properties.filter((key) => !commonSet.has(key));
+  const commonOrdered = COMMON_SETTING_KEYS.filter((key) =>
+    properties.includes(key),
+  );
+  const uiSchema: UiSchema = {
+    "ui:order": [...actionSpecific, ...commonOrdered, "*"],
+  };
+
+  if (properties.includes("retries")) {
+    uiSchema.retries = {
+      "ui:options": { collapsible: true, defaultExpanded: false },
+    };
+  }
+
+  if (properties.includes("guardrails")) {
+    uiSchema.guardrails = {
+      "ui:options": { collapsible: true, defaultExpanded: false },
+    };
+  }
+
+  return uiSchema;
+};
 const ActionFormDrawerContent = ({
   isOpen,
   actionSchema,
@@ -40,6 +86,13 @@ const ActionFormDrawerContent = ({
   onSettingsDataChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
+  const settingsUiSchema = useMemo(
+    () =>
+      buildSettingsUiSchema(
+        actionSchema?.settingSchema as RJSFSchema | undefined,
+      ),
+    [actionSchema?.settingSchema],
+  );
 
   if (!isOpen) return null;
 
@@ -73,6 +126,7 @@ const ActionFormDrawerContent = ({
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
           )}
+          uiSchema={settingsUiSchema}
         />
       ) : null}
     </Stack>
@@ -82,7 +136,15 @@ const ActionFormDrawerLayout = withDrawerLayout(ActionFormDrawerContent);
 
 export const ActionFormDrawer = () => {
   const { t } = useTranslate();
-  const { selectedNodeIds, selectedFlowId, updateWorkflowURL, actions, definition } = useWorkflow();
+  const {
+    selectedNodeIds,
+    selectedFlowId,
+    updateWorkflowURL,
+    actions,
+    definition,
+    updateDefinitionState,
+    isSaving,
+  } = useWorkflow();
   const { getNode } = useReactFlow();
   const selectedNodeId =
     selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
@@ -131,6 +193,42 @@ export const ActionFormDrawer = () => {
       updateWorkflowURL(selectedFlowId);
     }
   };
+  const handleSave = () => {
+    if (!definition || !taskName) {
+      return;
+    }
+
+    const currentTask = definition.tasks?.[taskName];
+
+    if (!currentTask) {
+      return;
+    }
+
+    const hasInputValues = Object.keys(inputData).length > 0;
+    const hasSettingValues = Object.keys(settingsData).length > 0;
+    const shouldIncludeInputs =
+      hasInputValues || currentTask.inputs !== undefined;
+    const shouldIncludeSettings =
+      hasSettingValues || currentTask.settings !== undefined;
+    const nextTask: TaskDefinition = {
+      ...currentTask,
+      ...(shouldIncludeInputs
+        ? { inputs: inputData as Record<string, JsonValue> }
+        : {}),
+      ...(shouldIncludeSettings
+        ? { settings: settingsData as TaskDefinition["settings"] }
+        : {}),
+    };
+
+    updateDefinitionState({
+      ...definition,
+      tasks: {
+        ...(definition.tasks ?? {}),
+        [taskName]: nextTask,
+      },
+    });
+    handleClose();
+  };
   const actionLabel =
     actionName ?? t("visual_editor.actions_drawer.form.action_label.none");
   const headerContent = (
@@ -149,6 +247,9 @@ export const ActionFormDrawer = () => {
       ) : null}
     </Box>
   );
+  const saveLabel = t("button.save");
+  const saveDisabled =
+    !definition || !taskName || !isActionNode || !taskDefinition || isSaving;
 
   return (
     <ActionFormDrawerLayout
@@ -163,6 +264,21 @@ export const ActionFormDrawer = () => {
       open={open}
       onClose={handleClose}
       headerContent={headerContent}
+      footerContent={
+        <Box display="flex" justifyContent="center">
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSave}
+            disabled={saveDisabled}
+            aria-label={saveLabel}
+            startIcon={<Save size={18} />}
+            sx={{ minWidth: 200 }}
+          >
+            {saveLabel}
+          </Button>
+        </Box>
+      }
     />
   );
 };
