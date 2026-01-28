@@ -25,12 +25,19 @@ import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
 export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
+  const { yaml, updateDefinitionState, workflow } = useWorkflow();
   const {
     data: actions = [],
     isLoading: actionsLoading,
     isError: actionsError,
-  } = useFind({ entity: EntityType.WORKFLOW_ACTIONS }, { hasCount: false });
-  const { yaml, updateDefinitionState } = useWorkflow();
+  } = useFind(
+    { entity: EntityType.WORKFLOW_ACTIONS },
+    { hasCount: false },
+    {
+      routeParams: workflow?.type ? { type: workflow?.type } : undefined,
+      enabled: !!workflow?.type,
+    },
+  );
   const availableActions = actionsLoading || actionsError ? undefined : actions;
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);

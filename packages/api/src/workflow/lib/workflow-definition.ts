@@ -9,6 +9,8 @@ import { WorkflowDefinition, validateWorkflow } from '@hexabot-ai/agentic';
 export const parseWorkflowDefinition = (
   definitionYaml: string,
 ): WorkflowDefinition => {
+  // @todo: we should rather use compile in order to check if
+  // actions provided in the yml matches the workflow type (workflowTypes)
   const validation = validateWorkflow(definitionYaml);
 
   if (!validation.success) {

@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { ActionMetadataWithColor } from '@/actions/types';
+import { ActionMetadata } from '@/actions/types';
 import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -23,6 +23,7 @@ import {
   StdOutgoingMessageSchema,
 } from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowType } from '@/workflow/types';
 
 const sentFormats = [
   'text',
@@ -87,7 +88,7 @@ export abstract class MessageAction<
   private static readonly DEFAULT_GROUP = 'messaging';
 
   protected constructor(
-    metadata: ActionMetadataWithColor<I, MessageActionOutput, S>,
+    metadata: ActionMetadata<I, MessageActionOutput, S>,
     actionService: ActionService,
   ) {
     super(
@@ -96,6 +97,7 @@ export abstract class MessageAction<
         icon: metadata.icon ?? MessageAction.DEFAULT_ICON,
         color: metadata.color ?? MessageAction.DEFAULT_COLOR,
         group: metadata.group ?? MessageAction.DEFAULT_GROUP,
+        workflowTypes: [WorkflowType.conversational],
       },
       actionService,
     );

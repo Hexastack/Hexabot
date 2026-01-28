@@ -47,13 +47,7 @@ type TaskSettings = NonNullable<
   WorkflowDefinition["tasks"][string]["settings"]
 >;
 
-export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
-  children,
-}) => {
-  const { data: actions } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-  );
+export const WorkflowProvider: React.FC<WorkflowContextProps> = ({ children }) => {
   const [flowId] = useQueryState("flowId");
   const { data: workflows } = useFind(
     {
@@ -73,6 +67,14 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     },
     {
       enabled: !!flowId,
+    },
+  );
+  const { data: actions } = useFind(
+    { entity: EntityType.WORKFLOW_ACTIONS },
+    { hasCount: false },
+    {
+      routeParams: workflow?.type ? { type: workflow?.type } : undefined,
+      enabled: !!workflow?.type,
     },
   );
   const router = useAppRouter();

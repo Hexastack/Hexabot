@@ -6,12 +6,13 @@
 
 import {
   Action,
-  ActionMetadata,
+  ActionMetadata as BaseActionMetadata,
   BaseWorkflowContext,
   Settings,
 } from '@hexabot-ai/agentic';
 
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowType } from '@/workflow/types';
 
 export type ActionName = `${string}_${string}`;
 
@@ -21,14 +22,19 @@ export const DEFAULT_ACTION_ICON = 'Zap';
 
 export const DEFAULT_ACTION_GROUP = 'custom';
 
-export type ActionMetadataWithColor<
+export const ALL_WORKFLOW_TYPES = Object.values(WorkflowType);
+
+export type ActionWorkflowTypes = WorkflowType[];
+
+export type ActionMetadata<
   I,
   O,
   S extends Settings = Settings,
-> = ActionMetadata<I, O, S> & {
+> = BaseActionMetadata<I, O, S> & {
   icon?: string;
   color?: string;
   group?: string;
+  workflowTypes?: ActionWorkflowTypes;
 };
 
 export type AnyAction = Action<
