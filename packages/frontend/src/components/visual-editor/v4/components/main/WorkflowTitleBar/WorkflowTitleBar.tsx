@@ -14,12 +14,12 @@ import { EntityType } from "@/services/types";
 import type { IWorkflow } from "@/types/workfow.types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
+import { WorkflowTypeBadge } from "../../WorkflowTypeBadge";
 import { WorkflowActionButtons } from "../WorkflowActionButtons";
 
 import { TitleBarCard } from "./TitleBarCard";
 import { WorkflowMetaInfo } from "./WorkflowMetaInfo";
 import { WorkflowSaveButton } from "./WorkflowSaveButton";
-import { WorkflowTypeBadge } from "./WorkflowTypeBadge";
 
 type WorkflowTitleBarProps = {
   workflow: IWorkflow;

@@ -5,7 +5,14 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
-import { MenuItem } from "@mui/material";
+import {
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Radio,
+  RadioGroup,
+  Typography,
+} from "@mui/material";
 import { FC, Fragment, useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
@@ -24,6 +31,9 @@ import {
   WorkflowType,
   type IWorkflow,
 } from "@/types/workfow.types";
+
+import { BASE_TYPES } from "../main/FlowsDrawer/constants";
+import { WorkflowTypeBadge } from "../WorkflowTypeBadge";
 
 const WORKFLOW_TYPES: WorkflowType[] = [
   WorkflowType.conversational,
@@ -57,6 +67,7 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
     const { toast } = useToast();
     const { definition, definitionYaml, onCreated, onUpdated } =
       presetValues ?? {};
+    const isEditing = Boolean(workflow?.id);
     const defaultValues = useMemo(() => {
       return workflow
         ? {
@@ -197,6 +208,105 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
       >
         <form onSubmit={handleSubmit(onSubmitForm)}>
           <ContentContainer>
+            <ContentItem display="flex">
+              <Controller
+                name="type"
+                control={control}
+                rules={{
+                  required: t("message.type_is_required", {
+                    defaultValue: "Workflow type is required.",
+                  }),
+                }}
+                render={({ field }) => (
+                  <FormControl
+                    component="fieldset"
+                    required
+                    disabled={isEditing}
+                    error={!!errors.type}
+                    sx={{ alignItems: "flex-end" }}
+                  >
+                    {/* <FormLabel component="legend">{t("label.type")}</FormLabel> */}
+                    <RadioGroup
+                      row
+                      name={field.name}
+                      value={field.value}
+                      onBlur={field.onBlur}
+                      sx={{ gap: 1 }}
+                      onChange={(_event, value) =>
+                        field.onChange(value as WorkflowType)
+                      }
+                    >
+                      {WORKFLOW_TYPES.map((type) => {
+                        const typeKey = String(type);
+                        const typeInfo = BASE_TYPES[type];
+                        const typeLabel = typeInfo
+                          ? t(typeInfo.labelKey)
+                          : t(`label.${typeKey}`, {
+                              defaultValue:
+                                typeKey.charAt(0).toUpperCase() +
+                                typeKey.slice(1),
+                            });
+
+                        return (
+                          <FormControlLabel
+                            key={typeKey}
+                            value={type}
+                            control={
+                              <Radio
+                                disableRipple
+                                sx={{
+                                  p: 0,
+                                  "&.Mui-disabled": {
+                                    opacity: 1,
+                                  },
+                                }}
+                                icon={
+                                  <WorkflowTypeBadge
+                                    icon={typeInfo?.icon}
+                                    label={typeLabel}
+                                  />
+                                }
+                                checkedIcon={
+                                  <WorkflowTypeBadge
+                                    icon={typeInfo?.icon}
+                                    color={typeInfo?.color}
+                                    background={typeInfo?.background}
+                                    label={typeLabel}
+                                  />
+                                }
+                              />
+                            }
+                            label={
+                              <Typography variant="body2" component="span">
+                                {typeLabel}
+                              </Typography>
+                            }
+                            sx={{
+                              gap: 1,
+                              ml: 0,
+                              mr: 0,
+                              "&.Mui-disabled": {
+                                opacity: 0.8,
+                                cursor: "not-allowed",
+                              },
+                              "&.Mui-disabled .MuiTypography-root": {
+                                color: "text.disabled",
+                              },
+                              "&.Mui-disabled .MuiRadio-root": {
+                                cursor: "not-allowed",
+                              },
+                            }}
+                          />
+                        );
+                      })}
+                    </RadioGroup>
+                    {errors.type ? (
+                      <FormHelperText>{errors.type.message}</FormHelperText>
+                    ) : null}
+                  </FormControl>
+                )}
+              />
+            </ContentItem>
             <ContentItem>
               <Input
                 label={t("label.name")}
@@ -213,42 +323,6 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                 multiline
                 minRows={3}
                 {...register("description")}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Controller
-                name="type"
-                control={control}
-                rules={{
-                  required: t("message.type_is_required", {
-                    defaultValue: "Workflow type is required.",
-                  }),
-                }}
-                render={({ field }) => (
-                  <Input
-                    select
-                    label={t("label.type")}
-                    error={!!errors.type}
-                    required
-                    helperText={errors.type ? errors.type.message : null}
-                    inputRef={field.ref}
-                    {...field}
-                  >
-                    {WORKFLOW_TYPES.map((type) => {
-                      const typeLabel = String(type);
-
-                      return (
-                        <MenuItem key={typeLabel} value={type}>
-                          {t(`label.${typeLabel}`, {
-                            defaultValue:
-                              typeLabel.charAt(0).toUpperCase() +
-                              typeLabel.slice(1),
-                          })}
-                        </MenuItem>
-                      );
-                    })}
-                  </Input>
-                )}
               />
             </ContentItem>
             {typeValue === WorkflowType.scheduled && (

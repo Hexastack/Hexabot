@@ -16,7 +16,7 @@ import {
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { ActionMetadataWithColor, ActionName } from '@/actions/types';
+import { ActionMetadata, ActionName } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
@@ -70,7 +70,7 @@ export abstract class LlmBaseAction<
   private static readonly DEFAULT_GROUP = 'llm';
 
   protected constructor(
-    metadata: ActionMetadataWithColor<I, O, S>,
+    metadata: ActionMetadata<I, O, S>,
     actionService: ActionService,
   ) {
     super(
