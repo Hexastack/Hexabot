@@ -16,11 +16,13 @@ import { Observable } from 'rxjs';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowType } from '@/workflow/types';
 
 import { ActionService } from './actions.service';
 import {
-  ActionMetadataWithColor,
+  ActionMetadata,
   ActionName,
+  ALL_WORKFLOW_TYPES,
   DEFAULT_ACTION_COLOR,
   DEFAULT_ACTION_GROUP,
   DEFAULT_ACTION_ICON,
@@ -44,14 +46,17 @@ export abstract class BaseAction<
 
   public readonly group: string;
 
+  public readonly workflowTypes: WorkflowType[];
+
   protected constructor(
-    metadata: ActionMetadataWithColor<I, O, S>,
+    metadata: ActionMetadata<I, O, S>,
     private readonly actionService: ActionService,
   ) {
     super(metadata);
     this.icon = metadata.icon ?? DEFAULT_ACTION_ICON;
     this.color = metadata.color ?? DEFAULT_ACTION_COLOR;
     this.group = metadata.group ?? DEFAULT_ACTION_GROUP;
+    this.workflowTypes = metadata.workflowTypes ?? ALL_WORKFLOW_TYPES;
   }
 
   getIcon(): string {

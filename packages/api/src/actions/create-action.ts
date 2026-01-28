@@ -11,14 +11,14 @@ import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.con
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
-import { ActionMetadataWithColor } from './types';
+import { ActionMetadata } from './types';
 
 type CreateActionParams<
   I,
   O,
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
   S extends Settings = Settings,
-> = ActionMetadataWithColor<I, O, S> & {
+> = ActionMetadata<I, O, S> & {
   /**
    * Optional path to the action folder. If omitted, it is resolved automatically
    * from the caller's file location.
@@ -42,6 +42,7 @@ export function createAction<
           description: params.description,
           color: params.color,
           group: params.group,
+          workflowTypes: params.workflowTypes,
           inputSchema: params.inputSchema,
           outputSchema: params.outputSchema,
           settingsSchema: params.settingsSchema,

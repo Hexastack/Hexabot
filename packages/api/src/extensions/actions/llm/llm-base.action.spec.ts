@@ -10,6 +10,7 @@ import { LanguageModelUsage } from 'ai';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
+import { ALL_WORKFLOW_TYPES } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
@@ -55,6 +56,7 @@ class TestLlmBaseAction extends LlmBaseAction<
       {
         name: 'llm_test_action',
         description: 'Test action',
+        workflowTypes: ALL_WORKFLOW_TYPES,
         inputSchema: z.any(),
         outputSchema: z.any(),
         settingsSchema: z.any(),

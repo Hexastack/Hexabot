@@ -16,6 +16,7 @@ import {
   stdOutgoingMessageEnvelopeSchema,
 } from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { WorkflowType } from '@/workflow/types';
 
 export const awaitReplyInputSchema = z.object({
   action: z.string().optional(),
@@ -48,6 +49,7 @@ export class AwaitReplyAction extends BaseAction<
         name: 'await_reply',
         description:
           'Suspends the workflow until a subscriber reply is received, returning the incoming message on resume.',
+        workflowTypes: [WorkflowType.conversational],
         inputSchema: awaitReplyInputSchema,
         outputSchema: stdIncomingMessageSchema,
         icon: 'Hourglass',

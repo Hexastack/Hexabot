@@ -115,13 +115,20 @@ export class WorkflowController extends BaseOrmController<
   }
 
   /**
-   * Retrieves actions with JSON schemas for input, output, and settings.
+   * Retrieves actions with JSON schemas for input, output, and settings,
+   * optionally filtered by workflow type.
+   *
+   * @param type - Optional workflow type to filter actions.
    *
    * @returns Action metadata with JSON schemas.
    */
-  @Get('actions')
-  find() {
-    return this.actionService.getAllSchemaDefinitions();
+  @Get('actions{/:type}')
+  findActions(@Param('type') type?: WorkflowType) {
+    if (type && !Object.values(WorkflowType).includes(type)) {
+      throw new BadRequestException(`Invalid workflow type "${type}"`);
+    }
+
+    return this.actionService.getAllSchemaDefinitions(type);
   }
 
   /**

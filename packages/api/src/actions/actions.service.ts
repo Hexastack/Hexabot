@@ -10,6 +10,7 @@ import { JSONSchema7 as JSONSchema } from 'json-schema';
 import { ZodType } from 'zod';
 
 import { LoggerService } from '@/logger/logger.service';
+import { WorkflowType } from '@/workflow/types';
 
 import { BaseAction } from './base-action';
 import { ActionName, ActionRegistry } from './types';
@@ -53,8 +54,14 @@ export class ActionService {
     return schema.toJSONSchema({ target: 'draft-07' }) as JSONSchema;
   }
 
-  getAllSchemaDefinitions() {
-    return this.getAll().map((action) => {
+  getAllSchemaDefinitions(workflowType?: WorkflowType) {
+    const actions = workflowType
+      ? this.getAll().filter((action) =>
+          action.workflowTypes.includes(workflowType),
+        )
+      : this.getAll();
+
+    return actions.map((action) => {
       const name = action.getName();
 
       return {
@@ -63,6 +70,7 @@ export class ActionService {
         icon: action.icon,
         color: action.color,
         group: action.group,
+        workflowTypes: action.workflowTypes,
         inputSchema: this.buildJsonSchema(action.inputSchema),
         outputSchema: this.buildJsonSchema(action.outputSchema),
         settingSchema: this.buildJsonSchema(action.settingSchema),

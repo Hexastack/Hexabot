@@ -14,8 +14,10 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
+import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
+import { BaseAction } from '@/actions/base-action';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -38,6 +40,38 @@ import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
+
+class ManualOnlyAction extends BaseAction<
+  Record<string, never>,
+  Record<string, never>,
+  ManualWorkflowContext
+> {
+  constructor(actionService: ActionService) {
+    super(
+      {
+        name: 'manual_only_action',
+        description: 'Manual only action for tests',
+        inputSchema: z.object({}),
+        outputSchema: z.object({}),
+        settingsSchema: z.object({
+          retries: z.object({
+            max_attempts: z.number(),
+            backoff_ms: z.number(),
+            max_delay_ms: z.number(),
+            jitter: z.number(),
+            multiplier: z.number(),
+          }),
+        }),
+        workflowTypes: [WorkflowType.manual],
+      },
+      actionService,
+    );
+  }
+
+  async execute() {
+    return {};
+  }
+}
 
 describe('WorkflowController (TypeORM)', () => {
   let module: TestingModule;
@@ -96,6 +130,7 @@ describe('WorkflowController (TypeORM)', () => {
       ]);
     logger = workflowController.logger;
     actionService.register(new SendTextMessageAction(actionService));
+    actionService.register(new ManualOnlyAction(actionService));
   });
 
   afterEach(async () => {
@@ -148,15 +183,34 @@ describe('WorkflowController (TypeORM)', () => {
     });
   });
 
-  describe('find', () => {
+  describe('findActions', () => {
     it('returns action schema definitions', () => {
-      const actions = workflowController.find();
+      const actions = workflowController.findActions();
       const action = actions.find(({ name }) => name === 'send_text_message');
 
       expect(action).toBeDefined();
       expect(action?.inputSchema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
+    });
+
+    it('filters actions by workflow type when provided', () => {
+      const actions = workflowController.findActions(
+        WorkflowType.conversational,
+      );
+
+      expect(actions.some(({ name }) => name === 'manual_only_action')).toBe(
+        false,
+      );
+      expect(actions.some(({ name }) => name === 'send_text_message')).toBe(
+        true,
+      );
+    });
+
+    it('throws for invalid workflow type', () => {
+      expect(() =>
+        workflowController.findActions('invalid' as WorkflowType),
+      ).toThrow(new BadRequestException('Invalid workflow type "invalid"'));
     });
   });
 
