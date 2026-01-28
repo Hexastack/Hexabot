@@ -42,9 +42,6 @@ import {
   createTaskName,
 } from "../utils/workflow-definition.utils";
 
-// const getStepId = (id: string) =>
-//   `^step-${id.replace(":", "-").replaceAll("branch.", "[^-]+").replaceAll(".", "-")}`;
-
 type TaskInputs = NonNullable<WorkflowDefinition["tasks"][string]["inputs"]>;
 type TaskSettings = NonNullable<
   WorkflowDefinition["tasks"][string]["settings"]
