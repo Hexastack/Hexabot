@@ -98,7 +98,6 @@ export class LlmGenerateTextAction extends LlmBaseAction<
         },
       },
     );
-
     const result = await generateText({
       ...promptPayload,
       ...(outputSchema ? callSettingsWithoutStops : callSettings),

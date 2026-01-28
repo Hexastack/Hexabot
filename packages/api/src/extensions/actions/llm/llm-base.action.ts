@@ -387,7 +387,7 @@ export abstract class LlmBaseAction<
       };
     }
 
-    if (input.messages_limit !== undefined) {
+    if (input.messages_limit !== undefined && input.messages_limit > 0) {
       const subscriberId = context.initiatorId;
       if (!subscriberId) {
         throw new Error(

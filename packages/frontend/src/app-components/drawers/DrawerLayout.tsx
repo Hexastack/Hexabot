@@ -10,7 +10,7 @@ import { X } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 
 const headerOffset = 65;
-const drawerWidth = 420;
+const drawerWidth = 520;
 const DrawerHeader = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
