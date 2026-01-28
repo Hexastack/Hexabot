@@ -8,10 +8,10 @@ import { type NodeProps } from "@xyflow/react";
 import { type FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import { ENodeType, type NodeData } from "../../../types/workflow-node.types";
+import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { GenericNodePorts } from "../GenericNodePorts";
 
-export const Group: FC<NodeProps<NodeData<ENodeType.GROUP>>> = ({ id }) => (
+export const Group: FC<NodeProps<GraphNode<ENodeType.GROUP>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodePorts />
   </WorkflowNodeProvider>

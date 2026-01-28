@@ -10,8 +10,8 @@ import { type FC, useMemo } from "react";
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
 import { useWorkflow } from "../hooks/useWorkflow";
 import type {
+  GraphNode,
   IWorkflowNodeProps,
-  NodeData,
 } from "../types/workflow-node.types";
 
 export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
@@ -19,7 +19,7 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   children,
 }) => {
   const { getNode } = useReactFlow();
-  const { data, ...rest } = useMemo(() => getNode(id) as NodeData, [id]);
+  const { data, ...rest } = useMemo(() => getNode(id) as GraphNode, [id]);
   const connections = useNodeConnections({ id });
   const { executionStates, actions } = useWorkflow();
   const action = actions.find((a) => a.name === data["actionName"]);

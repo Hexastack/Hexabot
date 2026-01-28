@@ -23,8 +23,8 @@ import {
   EIndicatorType,
   ELinkType,
   ENodeType,
+  type GraphNode,
   type IBuildNodesAndEdgesProps,
-  type NodeData,
 } from "../types/workflow-node.types";
 
 import {
@@ -58,7 +58,7 @@ type ElkPort = {
   type: EHandleType;
 };
 
-const toElk = (nodes: NodeData[], edges: Edge[], ctx: TraversalContext) => {
+const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
   const isVertical = ctx.config?.direction === "vertical";
   const direction = ctx.config?.direction ?? "horizontal";
   const elkDirection = isVertical ? "DOWN" : "RIGHT";
@@ -150,7 +150,7 @@ const toElk = (nodes: NodeData[], edges: Edge[], ctx: TraversalContext) => {
 };
 
 export const layoutNodesWithElk = async (
-  nodes: NodeData[],
+  nodes: GraphNode[],
   edges: Edge[],
   ctx: TraversalContext,
 ) => {
@@ -166,7 +166,7 @@ export const layoutNodesWithElk = async (
 };
 
 const addExtraNodes = (
-  nodes: NodeData[],
+  nodes: GraphNode[],
   edges: Edge[],
   ctx: TraversalContext,
 ) => {
@@ -183,13 +183,13 @@ const addExtraNodes = (
     }
 
     return acc;
-  }, new Map<string, NodeData[]>());
+  }, new Map<string, GraphNode[]>());
 
   if (adjacencyMap.size === 0) return nodes;
 
   const overrides = new Map<
     string,
-    Pick<NodeData, "position" | "targetPosition" | "sourcePosition">
+    Pick<GraphNode, "position" | "targetPosition" | "sourcePosition">
   >();
 
   adjacencyMap.forEach((targets, sourceId) => {
@@ -228,10 +228,10 @@ const addExtraNodes = (
   return nodes.map((n) => ({ ...n, ...overrides.get(n.id) }));
 };
 
-export const getGroupNodes = (nodes: NodeData[], ctx: TraversalContext) => {
-  const groups: NodeData<ENodeType.GROUP>[] = [];
+export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
+  const groups: GraphNode<ENodeType.GROUP>[] = [];
 
-  (nodes as NodeData<ENodeType.OPERATOR>[])
+  (nodes as GraphNode<ENodeType.OPERATOR>[])
     .filter(
       ({ data }) =>
         data.operatorType &&
@@ -281,7 +281,7 @@ export const buildNodesAndEdges = async ({
   flow,
   tasks,
 }: IBuildNodesAndEdgesProps): Promise<
-  { nodes: NodeData[]; edges: Edge[] } | undefined
+  { nodes: GraphNode[]; edges: Edge[] } | undefined
 > => {
   if (!flow?.length) return;
   const ctx: TraversalContext = {

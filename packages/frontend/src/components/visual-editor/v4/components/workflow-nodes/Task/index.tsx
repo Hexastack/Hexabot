@@ -11,7 +11,7 @@ import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import {
   ELinkType,
   ENodeType,
-  NodeData,
+  GraphNode,
 } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
@@ -19,7 +19,7 @@ import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Task: FC<NodeProps<NodeData<ENodeType.TASK>>> = ({ id }) => (
+export const Task: FC<NodeProps<GraphNode<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeRightContent>

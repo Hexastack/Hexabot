@@ -23,8 +23,8 @@ import {
   ELinkType,
   ENodeType,
   EOperatorType,
+  type GraphNode,
   type INodeConfig,
-  type NodeData,
   type THighlightGroups,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
@@ -41,7 +41,7 @@ export function humanizeTaskName(name: string) {
 
 export type TraversalContext = {
   tasks?: TaskDefinitions;
-  nodes: NodeData[];
+  nodes: GraphNode[];
   edges: Edge[];
   edgeKeys: Set<string>;
   nodePaths: Map<string, FlowStepPath>;
@@ -185,7 +185,7 @@ const getIndicator = <T extends EIndicatorType>(
       groupName,
       indicator: type,
     },
-  } satisfies NodeData<ENodeType.INDICATOR>;
+  } satisfies GraphNode<ENodeType.INDICATOR>;
 };
 const getIndicatorEdge = <T extends EIndicatorType>(
   type: T,
