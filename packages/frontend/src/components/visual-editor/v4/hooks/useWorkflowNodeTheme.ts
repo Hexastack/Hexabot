@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ActionStatus } from "@hexabot-ai/agentic";
 import { CircularProgress, styled } from "@mui/material";
 import * as Icons from "lucide-react";
 import { useState } from "react";
@@ -15,10 +16,7 @@ import {
   ENodeType,
   type WorkflowNodeTheme,
 } from "../types/workflow-node.types";
-import {
-  NodeExecutionState,
-  SubscribeWorkflowProps,
-} from "../types/workflow.types";
+import { SubscribeWorkflowProps } from "../types/workflow.types";
 
 import { useWorkflow } from "./useWorkflow";
 import { useWorkflowNode } from "./useWorkflowNode";
@@ -27,14 +25,13 @@ const ICON_STYLE = {
   width: "20px",
   height: "20px",
 } as const;
-const getStateConfig = (state?: NodeExecutionState) => {
+const getStateConfig = (state?: ActionStatus) => {
   switch (state) {
     case "running":
-    case "start":
       return { icon: CircularProgress, color: "#4dc4e6" };
-    case "finish":
+    case "completed":
       return undefined;
-    case "error":
+    case "failed":
       return { icon: Icons.TriangleAlert, color: "#FF0000" };
     case "suspended":
       return { icon: Icons.SquarePause, color: "#4dc4e6" };
@@ -48,7 +45,7 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const { theme, action, type, ...node } = useWorkflowNode<T>();
   const [nodeState, setNodeState] = useState<
     | {
-        state: NodeExecutionState;
+        state: ActionStatus;
         t: number;
       }
     | undefined
@@ -69,7 +66,7 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
         return;
       }
       if (workflowEvent === "workflow:failure") {
-        setNodeState({ state: "idle", t: 0 });
+        setNodeState(undefined);
       } else if (type === ENodeType.INDICATOR && "indicator" in node) {
         if (
           workflowEvent === "workflow:start" &&
@@ -77,7 +74,7 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
         ) {
           setNodeState({ state: "running", t: event.t });
           setTimeout(() => {
-            setNodeState({ state: "idle", t: 0 });
+            setNodeState(undefined);
           }, 400);
         } else if (
           workflowEvent === "workflow:finish" &&
@@ -86,7 +83,7 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
           setNodeState({ state: "running", t: event.t });
 
           setTimeout(() => {
-            setNodeState({ state: "idle", t: 0 });
+            setNodeState(undefined);
           }, 1200);
         }
       } else if ("step" in event && event.step?.id === node.stepId) {
@@ -103,12 +100,12 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
             break;
           case "step:success":
             setTimeout(() => {
-              setNodeState({ state: "idle", t: 0 });
+              setNodeState(undefined);
             }, 800);
             break;
           case "step:error":
             setTimeout(() => {
-              setNodeState({ state: "error", t: 0 });
+              setNodeState({ state: "failed", t: 0 });
             }, 800);
             break;
         }
