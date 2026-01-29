@@ -51,6 +51,7 @@ const ChatWidgetColumn = styled(DrawerColumn)(({ theme }) => ({
   borderRadius: 12,
   border: `1px solid ${alpha(theme.palette.common.black, 0.08)}`,
   overflow: "hidden",
+  width: "100%",
   "& .sc-chat-window": {
     position: "relative",
     right: "auto !important",

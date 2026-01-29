@@ -18,7 +18,7 @@ import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IWorkflowRunFull } from "@/types/workflow-run.types";
-import { calculateDuration, getDateTimeFormatter } from "@/utils/date";
+import { formatDurationMs, getDateTimeFormatter } from "@/utils/date";
 
 import {
   BASE_STATUS,
@@ -108,8 +108,7 @@ export const WorkflowRuns = ({
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        valueGetter: (_value, row) =>
-          calculateDuration(row.createdAt, row.finishedAt || row.failedAt),
+        valueGetter: (_value, row) => formatDurationMs(row.duration),
       },
       {
         flex: 1,
