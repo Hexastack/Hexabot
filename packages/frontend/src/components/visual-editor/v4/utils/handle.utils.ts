@@ -31,14 +31,22 @@ const getHandleDimensions = (
     };
   } else if (isVerticalTopBottom) {
     return { width: "15px", height: "10px" };
-  } else if ([ELinkType.TOOL_IN, ELinkType.MODEL_IN].includes(id)) {
+  } else if (
+    [ELinkType.TOOL_IN, ELinkType.MODEL_IN, ELinkType.MEMORY_IN].includes(id)
+  ) {
     return direction === "horizontal"
       ? { width: "15px", height: "10px" }
       : {
           width: "10px",
           height: "15px",
         };
-  } else if ([ELinkType.AGENT_TOOL, ELinkType.AGENT_MODEL].includes(id)) {
+  } else if (
+    [
+      ELinkType.AGENT_TOOL,
+      ELinkType.AGENT_MODEL,
+      ELinkType.AGENT_MEMORY,
+    ].includes(id)
+  ) {
     return direction === "horizontal"
       ? { width: "15px", height: "10px" }
       : {
@@ -202,7 +210,16 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
-          ...(direction === "horizontal" ? { left: "10%" } : { top: "25%" }),
+          ...(direction === "horizontal" ? { left: "10%" } : { top: "30%" }),
+          ...getBorderRadiusConfig(Position.Bottom, direction),
+        },
+      };
+    case ELinkType.AGENT_MEMORY:
+      return {
+        type: EHandleType.SOURCE,
+        position: direction === "horizontal" ? Position.Bottom : Position.Left,
+        style: {
+          ...(direction === "horizontal" ? { left: "50%" } : { top: "50%" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -211,7 +228,7 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
-          ...(direction === "horizontal" ? { left: "90%" } : { top: "75%" }),
+          ...(direction === "horizontal" ? { left: "90%" } : { top: "70%" }),
           ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
@@ -229,6 +246,19 @@ const getConfig = (
         },
       };
     case ELinkType.MODEL_IN:
+      return {
+        type: EHandleType.TARGET,
+        position: direction === "horizontal" ? Position.Top : Position.Right,
+        style: {
+          ...(direction === "horizontal"
+            ? {
+                left: "50%",
+              }
+            : {}),
+          ...getBorderRadiusConfig(Position.Top, direction),
+        },
+      };
+    case ELinkType.MEMORY_IN:
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Top : Position.Right,
