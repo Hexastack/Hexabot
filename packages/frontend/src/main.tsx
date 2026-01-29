@@ -6,7 +6,7 @@
 
 import { loader } from "@monaco-editor/react";
 import { CssBaseline } from "@mui/material";
-import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { StyledEngineProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import * as monaco from "monaco-editor";
@@ -23,8 +23,9 @@ import { DialogsProvider } from "@/contexts/dialogs.context";
 import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";
 import { ToastProvider } from "@/hooks/useToast";
-import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
+
+import AppTheme from "./layout/theme/AppTheme";
 
 import "@/components/inbox/inbox.css";
 import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
@@ -59,7 +60,7 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
   <BrowserRouter>
     <ConfigProvider>
-      <ThemeProvider theme={theme}>
+      <AppTheme>
         <ToastProvider
           maxSnack={3}
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
@@ -94,7 +95,7 @@ ReactDOM.createRoot(rootElement).render(
             </QueryClientProvider>
           </StyledEngineProvider>
         </ToastProvider>
-      </ThemeProvider>
+      </AppTheme>
     </ConfigProvider>
   </BrowserRouter>,
 );
