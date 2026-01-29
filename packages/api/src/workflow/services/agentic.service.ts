@@ -24,6 +24,7 @@ import {
 import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
 import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
+import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { RunStrategy, RunWorkflowOptions, WorkflowResult } from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
@@ -119,17 +120,14 @@ export class AgenticService {
     const workflow = await this.workflowService.findOneAndPopulate(
       run.workflow.id,
     );
-
-    if (!workflow?.definition) {
+    const definition = this.resolveRunDefinition(run, workflow);
+    if (!definition) {
       throw new Error('Workflow definition is required to run the workflow');
     }
-    const workflowInstance = AgenticWorkflow.fromDefinition(
-      workflow.definition,
-      {
-        actions: this.actionService.getRegistry(),
-        jsonataFunctions: this.buildJsonataFunctions(event),
-      },
-    );
+    const workflowInstance = AgenticWorkflow.fromDefinition(definition, {
+      actions: this.actionService.getRegistry(),
+      jsonataFunctions: this.buildJsonataFunctions(event),
+    });
     const context = await this.workflowContextFactory.create(run, event);
 
     this.logger.debug('Preparing workflow runner', {
@@ -278,6 +276,7 @@ export class AgenticService {
     }
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
+      workflowVersion: workflow.currentVersion?.id ?? null,
       triggeredBy: initiator.id,
       input: event.buildInput(),
       context: workflow.definition.context ?? null,
@@ -290,6 +289,21 @@ export class AgenticService {
     }
 
     return populated;
+  }
+
+  /**
+   * Resolve the workflow definition used by the current run.
+   */
+  private resolveRunDefinition(
+    run: WorkflowRunFull,
+    workflow?: WorkflowFull | null,
+  ) {
+    const definitionYml = run.workflowVersion?.definitionYml;
+    if (typeof definitionYml === 'string' && definitionYml.trim() !== '') {
+      return parseWorkflowDefinition(definitionYml);
+    }
+
+    return workflow?.definition;
   }
 
   /**

@@ -98,6 +98,7 @@ describe('AgenticService (TypeORM)', () => {
   let workflowRunService: WorkflowRunService;
   let workflow: WorkflowFull;
   let initiator: User;
+  let workflowVersionId: string | null;
 
   const resolveWorkflow = async (): Promise<WorkflowFull> => {
     const [latest] = await workflowService.findAndPopulate({
@@ -154,6 +155,7 @@ describe('AgenticService (TypeORM)', () => {
     jest.clearAllMocks();
     await workflowRunService.deleteMany();
     workflow = await resolveWorkflow();
+    workflowVersionId = workflow.currentVersion?.id ?? null;
     initiator = workflow.createdBy as User;
     actionServiceMock.getRegistry.mockReturnValue({});
     workflowContextFactoryMock.create.mockResolvedValue({
@@ -236,6 +238,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(storedRun.output).toEqual({ result: 'ok' });
       expect(storedRun.input).toEqual(runnerState.input);
       expect(storedRun.context).toEqual(runtimeContext.state);
+      expect(storedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(storedRun.metadata).toEqual(
         expect.objectContaining({
           trigger: event.triggerType,
@@ -252,6 +255,7 @@ describe('AgenticService (TypeORM)', () => {
     it('resumes a suspended run and records suspension details', async () => {
       const baseRun = await workflowRunService.create({
         workflow: workflow.id,
+        workflowVersion: workflowVersionId,
         triggeredBy: initiator.id,
         status: 'suspended',
         input: { original: true },
@@ -338,6 +342,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(updatedRun.lastResumeData).toEqual(event.buildInput());
       expect(updatedRun.output).toEqual(runnerState.output);
       expect(updatedRun.context).toEqual(runtimeContext.state);
+      expect(updatedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(updatedRun.metadata).toEqual({
         state: {
           iteration: runnerState.iteration,
@@ -385,6 +390,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(failedRun.snapshot).toEqual(runnerSnapshot);
       expect(failedRun.output).toEqual(runnerState.output);
       expect(failedRun.context).toEqual(runtimeContext.state);
+      expect(failedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(failedRun.metadata).toEqual(
         expect.objectContaining({
           trigger: event.triggerType,

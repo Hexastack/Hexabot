@@ -34,6 +34,9 @@ type WorkflowRunOrmFixture = WorkflowRunCreateDto & {
 export const workflowRunWorkflowFixtureId =
   '99999999-9999-9999-9999-999999999999';
 
+export const workflowRunWorkflowVersionFixtureId =
+  '99999999-9999-9999-9999-999999999998';
+
 export const workflowRunFixtureIds = {
   running: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
   finished: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
@@ -55,6 +58,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
   {
     id: workflowRunFixtureIds.running,
     workflow: workflowRunWorkflowFixtureId,
+    workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: userFixtureIds.admin,
     status: 'running',
     input: { source: 'fixture' },
@@ -74,6 +78,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
   {
     id: workflowRunFixtureIds.finished,
     workflow: workflowRunWorkflowFixtureId,
+    workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: null,
     status: 'finished',
     input: null,
@@ -94,7 +99,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
 
 const findRunsWithRelations = async (dataSource: DataSource) =>
   await dataSource.getRepository(WorkflowRunOrmEntity).find({
-    relations: ['workflow', 'triggeredBy'],
+    relations: ['workflow', 'workflowVersion', 'triggeredBy'],
   });
 const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
@@ -107,10 +112,38 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
   );
   const existing = await workflowRepository.findOne({
     where: { id: workflowRunWorkflowFixtureId },
+    relations: ['currentVersion'],
   });
 
   if (existing) {
-    return existing;
+    const currentId = existing.currentVersion?.id;
+    if (currentId === workflowRunWorkflowVersionFixtureId) {
+      return existing;
+    }
+
+    const definitionYml = AgenticWorkflow.stringifyDefinition(
+      workflowRunWorkflowDefinition,
+    );
+    const latestVersion = await versionRepository.findOne({
+      where: { workflow: { id: existing.id } },
+      order: { version: 'DESC' },
+    });
+    const version = await versionRepository.save(
+      versionRepository.create({
+        id: workflowRunWorkflowVersionFixtureId,
+        workflow: existing,
+        version: (latestVersion?.version ?? 0) + 1,
+        definitionYml,
+        action: WorkflowVersionAction.create,
+        createdBy: existing.createdBy
+          ? { id: existing.createdBy.id }
+          : undefined,
+      }),
+    );
+
+    existing.currentVersion = version;
+
+    return await workflowRepository.save(existing);
   }
 
   const [user] = await installUserFixturesTypeOrm(dataSource);
@@ -134,6 +167,7 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
   );
   const version = await versionRepository.save(
     versionRepository.create({
+      id: workflowRunWorkflowVersionFixtureId,
       workflow,
       version: 1,
       definitionYml,
@@ -163,6 +197,9 @@ export const installWorkflowRunFixturesTypeOrm = async (
     repository.create({
       id: fixture.id,
       workflow: { id: fixture.workflow },
+      workflowVersion: fixture.workflowVersion
+        ? { id: fixture.workflowVersion }
+        : null,
       triggeredBy: fixture.triggeredBy ? { id: fixture.triggeredBy } : null,
       status: fixture.status ?? 'idle',
       input: fixture.input ?? null,

@@ -14,6 +14,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
+import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
 
 export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
@@ -38,6 +39,19 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   /** Identifier of the linked workflow (for internal relations). */
   @RelationId((run: WorkflowRunOrmEntity) => run.workflow)
   private readonly workflowId!: string;
+
+  /** Workflow definition version executed by this run. */
+  @ManyToOne(() => WorkflowVersionOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'workflow_version_id' })
+  @AsRelation()
+  workflowVersion?: WorkflowVersionOrmEntity | null;
+
+  /** Identifier of the linked workflow version (for internal relations). */
+  @RelationId((run: WorkflowRunOrmEntity) => run.workflowVersion)
+  private readonly workflowVersionId?: string | null;
 
   /** User that triggered the run, if applicable. */
   @ManyToOne(() => UserProfileOrmEntity, {
