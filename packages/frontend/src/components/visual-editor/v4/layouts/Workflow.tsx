@@ -32,6 +32,7 @@ import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDraw
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { BASE_TYPES } from "../components/main/FlowsDrawer/constants";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
+import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -327,6 +328,7 @@ export const Workflow = () => {
             setPendingInsertPath(null);
           }}
         />
+        <WorkflowBottomDrawer />
         <RotateButton />
       </StyledBox>
       <ActionFormDrawer />
