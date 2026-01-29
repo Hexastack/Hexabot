@@ -65,9 +65,11 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     const callSettings = this.buildCallSettings(settings);
     const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =
       callSettings;
-    const tools = this.buildTools(context, settings.tools) as
-      | ToolSet
-      | undefined;
+    const tools = this.buildTools(
+      context,
+      settings.tools,
+      settings.memory_enabled,
+    ) as ToolSet | undefined;
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
       settings,
       tools,

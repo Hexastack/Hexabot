@@ -137,7 +137,15 @@ describe('LlmGenerateTextAction', () => {
       seed: 7,
     };
     const input = { prompt: 'Hello there', system: 'system prompt' };
-    const context = createContext();
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo tool',
+        inputSchema: {},
+        outputSchema: {},
+        run: jest.fn(),
+      }),
+    };
+    const context = createContext({ actions: actionsService });
     const result = await action.execute({ input, settings, context });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
@@ -355,7 +363,15 @@ describe('LlmGenerateTextAction', () => {
         languageModel: jest.fn(),
       },
     );
-    const context = createContext();
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo tool',
+        inputSchema: {},
+        outputSchema: {},
+        run: jest.fn(),
+      }),
+    };
+    const context = createContext({ actions: actionsService });
     const definitionCache = new Map([
       [
         'user_profile',
@@ -372,7 +388,11 @@ describe('LlmGenerateTextAction', () => {
           .mockReturnValue([{ name: 'name', title: 'Name', value: 'Ada' }]),
       },
     };
-    (context as any).memoryStore = { definitionCache, instances };
+    (context as any).memoryStore = {
+      definitionCache,
+      instances,
+      buildUpdateMemorySchema: jest.fn().mockReturnValue({}),
+    };
 
     jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
     jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
@@ -403,6 +423,9 @@ describe('LlmGenerateTextAction', () => {
     expect(instances.user_profile.fields).toHaveBeenCalledWith({
       includeAdditional: true,
     });
+    expect(actionsService.get).toHaveBeenCalledWith('update_memory');
+    expect(callArgs.tools).toHaveProperty('update_memory');
+    expect(callArgs.tools.update_memory.description).toBe('demo tool');
     expect(callArgs.system).toContain('Base system');
     expect(callArgs.system).toContain('# Working Memory');
     expect(callArgs.system).toContain('## User Profile');

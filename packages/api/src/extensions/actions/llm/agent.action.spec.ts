@@ -283,7 +283,11 @@ describe('LlmAgentAction', () => {
           .mockReturnValue([{ name: 'name', title: 'Name', value: 'Ada' }]),
       },
     };
-    (context as any).memoryStore = { definitionCache, instances };
+    (context as any).memoryStore = {
+      definitionCache,
+      instances,
+      buildUpdateMemorySchema: jest.fn().mockReturnValue({}),
+    };
 
     jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
     jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
