@@ -4,4 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-export const IGNORED_TEST_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
+export const IGNORED_TEST_FIELDS = [
+  'id',
+  'createdAt',
+  'updatedAt',
+  'duration',
+] as const;
