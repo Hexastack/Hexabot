@@ -8,6 +8,7 @@ import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
 import { type Edge } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 
+import { IMemoryDefinition } from "@/types/memory-definition.types";
 import { generateId } from "@/utils/generateId";
 
 import {
@@ -40,6 +41,7 @@ export function humanizeTaskName(name: string) {
 }
 
 export type TraversalContext = {
+  memoryDefinitions: IMemoryDefinition[];
   tasks?: TaskDefinitions;
   nodes: GraphNode[];
   edges: Edge[];
@@ -312,6 +314,36 @@ const walkStep = ({
 
         addEdge(ctx, taskNodeId, `model-${taskNodeId}`, ELinkType.AGENT_MODEL);
       }
+
+      ctx.memoryDefinitions.map((memoryDefinition, index) => {
+        if (!ctx.config) {
+          return;
+        }
+        const memoryProperties = memoryDefinition.schema?.properties;
+
+        ctx.nodes.push({
+          ...getNodeDimensions(ENodeType.MEMORY, ctx.config),
+          ...DEFAULT_NODE_PROPS,
+          id: `memory-${index}-${taskNodeId}`,
+          type: ENodeType.MEMORY,
+          position: { x: 0, y: 0 },
+          data: {
+            ...ctx.config.nodes[ENodeType.MEMORY],
+            title: memoryDefinition.name,
+            i18nTitle: undefined,
+            description: memoryProperties
+              ? Object.keys(memoryProperties).join(", ")
+              : "",
+          },
+        });
+
+        addEdge(
+          ctx,
+          taskNodeId,
+          `memory-${index}-${taskNodeId}`,
+          ELinkType.AGENT_MEMORY,
+        );
+      });
 
       tools.forEach((tool) => {
         const toolId = `tool-${tool}`;

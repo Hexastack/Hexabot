@@ -280,12 +280,14 @@ export const buildNodesAndEdges = async ({
   config,
   flow,
   tasks,
+  memoryDefinitions,
 }: IBuildNodesAndEdgesProps): Promise<
   { nodes: GraphNode[]; edges: Edge[] } | undefined
 > => {
   if (!flow?.length) return;
   const ctx: TraversalContext = {
     tasks,
+    memoryDefinitions,
     nodes: [],
     edges: [],
     edgeKeys: new Set(),
@@ -351,9 +353,11 @@ export const buildNodesAndEdges = async ({
   const nodes = addExtraNodes(
     elkNodes,
     ctx.edges.filter((e) =>
-      [ELinkType.AGENT_TOOL, ELinkType.AGENT_MODEL].includes(
-        e.sourceHandle as ELinkType,
-      ),
+      [
+        ELinkType.AGENT_TOOL,
+        ELinkType.AGENT_MODEL,
+        ELinkType.AGENT_MEMORY,
+      ].includes(e.sourceHandle as ELinkType),
     ),
     ctx,
   );
