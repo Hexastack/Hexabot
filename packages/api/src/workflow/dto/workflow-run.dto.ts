@@ -27,6 +27,7 @@ import {
 
 import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
 import { WorkflowContextState } from '../types';
+import { resolveRunDurationMs } from '../utils/workflow-run-duration';
 
 import { WorkflowVersion } from './workflow-version.dto';
 import { Workflow } from './workflow.dto';
@@ -71,6 +72,10 @@ export class WorkflowRunStub extends BaseStub {
 
   @Expose()
   failedAt?: Date | null;
+
+  @Expose()
+  @Transform(({ obj }) => resolveRunDurationMs(obj))
+  duration?: number | null;
 
   @Expose()
   metadata?: Record<string, unknown> | null;

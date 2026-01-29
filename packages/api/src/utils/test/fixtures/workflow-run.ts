@@ -29,6 +29,7 @@ type WorkflowRunOrmFixture = WorkflowRunCreateDto & {
   suspendedAt?: Date | null;
   finishedAt?: Date | null;
   failedAt?: Date | null;
+  duration?: number | null;
 };
 
 export const workflowRunWorkflowFixtureId =
@@ -57,6 +58,8 @@ const workflowRunWorkflowDefinition: WorkflowDefinition = {
 export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
   {
     id: workflowRunFixtureIds.running,
+    createdAt: new Date('2024-06-02T08:00:00.000Z'),
+    updatedAt: new Date('2024-06-02T08:00:00.000Z'),
     workflow: workflowRunWorkflowFixtureId,
     workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: userFixtureIds.admin,
@@ -73,10 +76,13 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     suspendedAt: null,
     finishedAt: null,
     failedAt: null,
+    duration: null,
     metadata: { run: 'alpha' },
   },
   {
     id: workflowRunFixtureIds.finished,
+    createdAt: new Date('2024-06-02T09:00:00.000Z'),
+    updatedAt: new Date('2024-06-02T10:00:00.000Z'),
     workflow: workflowRunWorkflowFixtureId,
     workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: null,
@@ -93,6 +99,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     suspendedAt: null,
     finishedAt: new Date('2024-06-02T10:00:00.000Z'),
     failedAt: null,
+    duration: 60 * 60 * 1000,
     metadata: null,
   },
 ];

@@ -38,6 +38,7 @@ export interface IWorkflowRunAttributes {
   suspendedAt?: Date | null;
   finishedAt?: Date | null;
   failedAt?: Date | null;
+  duration?: number | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -67,6 +68,7 @@ export interface IWorkflowRunStub
   suspendedAt?: Date | null;
   finishedAt?: Date | null;
   failedAt?: Date | null;
+  duration?: number | null;
   metadata?: Record<string, unknown> | null;
 }
 
