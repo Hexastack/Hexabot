@@ -28,6 +28,7 @@ import {
 import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
 import { WorkflowContextState } from '../types';
 
+import { WorkflowVersion } from './workflow-version.dto';
 import { Workflow } from './workflow.dto';
 
 @Exclude()
@@ -80,6 +81,10 @@ export class WorkflowRun extends WorkflowRunStub {
   @Expose({ name: 'workflowId' })
   workflow!: string;
 
+  @Expose({ name: 'workflowVersionId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  workflowVersion?: string | null;
+
   @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
   triggeredBy: string;
@@ -90,6 +95,10 @@ export class WorkflowRunFull extends WorkflowRunStub {
   @Expose()
   @Type(() => Workflow)
   workflow!: Workflow;
+
+  @Expose()
+  @Type(() => WorkflowVersion)
+  workflowVersion?: WorkflowVersion | null;
 
   @Expose()
   @Type((options) =>
@@ -115,6 +124,16 @@ export class WorkflowRunCreateDto {
     message: 'Triggering user must be a valid UUID',
   })
   triggeredBy?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Workflow version executed by the run',
+    type: String,
+  })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'Workflow version must be a valid UUID',
+  })
+  workflowVersion?: string | null;
 
   @ApiPropertyOptional({
     description: 'Lifecycle status of the run',

@@ -101,6 +101,7 @@ const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
   );
   const existing = await repository.findOne({
     where: { id: memoryWorkflowFixtureId },
+    relations: ['currentVersion'],
   });
 
   if (existing) {
@@ -154,6 +155,9 @@ const installMemoryRunFixturesTypeOrm = async (
   const entity = repository.create({
     id: memoryRunFixtureId,
     workflow: { id: workflow.id },
+    workflowVersion: workflow.currentVersion
+      ? { id: workflow.currentVersion.id }
+      : null,
     status: 'idle',
   });
 

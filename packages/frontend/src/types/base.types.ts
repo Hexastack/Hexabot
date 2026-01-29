@@ -92,7 +92,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: ["currentVersion", "publishedVersion"],
   [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
   [EntityType.WORKFLOW_ACTIONS]: [],
-  [EntityType.WORKFLOW_RUN]: ["workflow", "triggeredBy"],
+  [EntityType.WORKFLOW_RUN]: ["workflow", "workflowVersion", "triggeredBy"],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
