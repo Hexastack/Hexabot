@@ -27,6 +27,7 @@ type UiChatWidgetProps = PropsWithChildren<{
   CustomAvatar?: () => JSX.Element;
   PreChat?: React.FC;
   PostChat?: React.FC;
+  defaultIsOpen?: boolean;
   config: Partial<Config>;
   socketErrorHandlers?: SocketErrorHandlers;
 }>;
@@ -34,7 +35,9 @@ type UiChatWidgetProps = PropsWithChildren<{
 function UiChatWidget({
   CustomHeader,
   CustomAvatar,
+  CustomLauncher,
   config,
+  defaultIsOpen,
   socketErrorHandlers,
 }: UiChatWidgetProps) {
   return (
@@ -44,11 +47,15 @@ function UiChatWidget({
           <SettingsProvider>
             <ColorProvider>
               <BroadcastChannelProvider channelName="main-channel">
-                <WidgetProvider defaultScreen={ChatScreen.CHAT}>
+                <WidgetProvider
+                  defaultScreen={ChatScreen.CHAT}
+                  defaultIsOpen={defaultIsOpen}
+                >
                   <ChatProvider
                     defaultConnectionState={ConnectionState.connected}
                   >
                     <Launcher
+                      CustomLauncher={CustomLauncher}
                       CustomHeader={CustomHeader}
                       CustomAvatar={CustomAvatar}
                       PreChat={UserSubscription}

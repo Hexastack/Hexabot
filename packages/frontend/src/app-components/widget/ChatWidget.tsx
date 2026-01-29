@@ -16,11 +16,16 @@ import { useSetting } from "@/hooks/useSetting";
 import i18n from "@/i18n/config";
 import { EntityType, RouterType } from "@/services/types";
 
-import { ChatWidgetHeader } from "./ChatWidgetHeader";
-
 const SETTING_TYPE = "console_channel" as const;
+const HiddenLauncher = () => <span style={{ display: "none" }} />;
 
-export const ChatWidget = () => {
+type ChatWidgetVariant = "launcher" | "embedded";
+
+interface ChatWidgetProps {
+  variant?: ChatWidgetVariant;
+}
+
+export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
   const { pathname, reload } = useAppRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
@@ -31,11 +36,16 @@ export const ChatWidget = () => {
     () => `${allowedDomainsSetting}_${themeColorSetting}`,
     [allowedDomainsSetting, themeColorSetting],
   );
+  const isEmbedded = variant === "embedded";
 
   return isAuthenticated ? (
     <Box
       sx={{
-        display: isVisualEditor ? "block" : "none",
+        display: isEmbedded ? "flex" : isVisualEditor ? "block" : "none",
+        width: isEmbedded ? "100%" : "auto",
+        height: isEmbedded ? "100%" : "auto",
+        minHeight: isEmbedded ? 0 : "auto",
+        flex: isEmbedded ? 1 : "none",
       }}
     >
       <UiChatWidget
@@ -45,7 +55,6 @@ export const ChatWidget = () => {
           channel: "console-channel",
           language: i18n.language,
         }}
-        CustomHeader={ChatWidgetHeader}
         CustomAvatar={() => (
           <Avatar
             sx={{ width: "32px", height: "32px" }}
@@ -54,6 +63,8 @@ export const ChatWidget = () => {
             }
           />
         )}
+        CustomLauncher={isEmbedded ? HiddenLauncher : undefined}
+        defaultIsOpen={isEmbedded}
         socketErrorHandlers={{
           "401": () => {
             reload();
