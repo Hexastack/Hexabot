@@ -24,6 +24,7 @@ interface WidgetProviderProps {
   onClose?: () => void;
   onScrollToTop?: () => void;
   defaultScreen?: ChatScreen;
+  defaultIsOpen?: boolean;
   children: ReactNode;
 }
 
@@ -33,10 +34,11 @@ const WidgetProvider: React.FC<WidgetProviderProps> = ({
   onClose,
   onScrollToTop,
   defaultScreen = ChatScreen.PRE_CHAT,
+  defaultIsOpen = false,
   children,
 }: WidgetProviderProps) => {
   const [syncState, setSyncState] = useState<boolean>(true);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(defaultIsOpen);
   const [screen, setScreen] = useState<ChatScreen>(defaultScreen);
   const [scroll, setScroll] = useState<number>(100);
   const handleSetSyncState = (newState: boolean) => {

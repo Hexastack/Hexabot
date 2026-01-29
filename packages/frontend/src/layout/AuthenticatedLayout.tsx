@@ -7,7 +7,6 @@
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
-import { ChatWidget } from "@/app-components/widget/ChatWidget";
 import { Forbidden } from "@/errors/403";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSocketGetQuery } from "@/websocket/socket-hooks";
@@ -53,7 +52,6 @@ export const AuthenticatedLayout: React.FC<LayoutProps> = ({
       <Content sx={sxContent} {...rest}>
         {hasPermissions ? children : <Forbidden />}
       </Content>
-      <ChatWidget />
     </Grid>
   );
 };

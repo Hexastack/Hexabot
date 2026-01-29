@@ -18,10 +18,12 @@ import {
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
+import { IMemoryDefinition } from "@/types/memory-definition.types";
 import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
@@ -32,6 +34,7 @@ import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDraw
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { BASE_TYPES } from "../components/main/FlowsDrawer/constants";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
+import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
@@ -139,6 +142,9 @@ export const Workflow = () => {
       }
     }
   });
+  const getMemoryDefinitionsFromCache = useGetFromCache(
+    EntityType.MEMORY_DEFINITION,
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -151,11 +157,15 @@ export const Workflow = () => {
       }
 
       try {
+        const memoryDefinitions = (workflow?.memoryDefinitions || []).map(
+          getMemoryDefinitionsFromCache,
+        ) as IMemoryDefinition[];
         const config = getWorkflowDefaultConfig(direction);
         const layoutedGraph = await buildNodesAndEdges({
           config,
           flow,
           tasks,
+          memoryDefinitions,
         });
 
         if (!isCancelled) {
@@ -232,8 +242,8 @@ export const Workflow = () => {
   };
   const handleDelete = async () => {
     const selectedMenuWorkflow = menuFlowId
-      ? workflows?.find((flow) => flow.id === menuFlowId) ??
-        (workflow?.id === menuFlowId ? workflow : undefined)
+      ? (workflows?.find((flow) => flow.id === menuFlowId) ??
+        (workflow?.id === menuFlowId ? workflow : undefined))
       : workflow;
 
     if (!selectedMenuWorkflow) {
@@ -327,6 +337,7 @@ export const Workflow = () => {
             setPendingInsertPath(null);
           }}
         />
+        <WorkflowBottomDrawer />
         <RotateButton />
       </StyledBox>
       <ActionFormDrawer />

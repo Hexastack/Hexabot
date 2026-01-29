@@ -290,6 +290,7 @@ export const WorkflowRunEntity = new schema.Entity(
   EntityType.WORKFLOW_RUN,
   {
     workflow: WorkflowEntity,
+    workflowVersion: WorkflowVersionEntity,
     triggeredBy: UserEntity,
   },
   {

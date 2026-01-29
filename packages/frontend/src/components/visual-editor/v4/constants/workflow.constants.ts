@@ -9,6 +9,7 @@ import {
   Bot,
   Brain,
   CircleStop,
+  Database,
   GitBranch,
   GripVertical,
   Play,
@@ -37,12 +38,13 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 210, height: 55 },
-  [ENodeType.TOOL]: { width: 210, height: 55 },
+  [ENodeType.MODEL]: { width: 180, height: 55 },
+  [ENodeType.TOOL]: { width: 180, height: 55 },
   [ENodeType.AGENT]: { width: 260, height: 75 },
   [ENodeType.INDICATOR]: { width: 100, height: 56 },
   [ENodeType.TASK]: { width: 260, height: 75 },
   [ENodeType.OPERATOR]: { width: 150, height: 55 },
+  [ENodeType.MEMORY]: { width: 250, height: 75 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
   // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
@@ -60,6 +62,14 @@ export const EDGES = {
   },
 } satisfies INodeConfig["edges"];
 export const NODES = {
+  [ENodeType.MEMORY]: {
+    theme: {
+      Icon: Database,
+      borderColor: "#7bb0ff",
+    },
+    ports: [ELinkType.MEMORY_IN],
+    title: "",
+  },
   [ENodeType.AGENT]: {
     memory: "",
     model: "",
@@ -69,6 +79,7 @@ export const NODES = {
       ELinkType.AGENT_OUT,
       ELinkType.AGENT_TOOL,
       ELinkType.AGENT_MODEL,
+      ELinkType.AGENT_MEMORY,
     ],
     theme: {
       Icon: Bot,

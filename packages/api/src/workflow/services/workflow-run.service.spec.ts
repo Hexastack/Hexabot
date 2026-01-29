@@ -40,6 +40,7 @@ describe('WorkflowRunService (TypeORM)', () => {
   let workflowVersionService: WorkflowVersionService;
   let workflow: Workflow;
   let workflowRun: WorkflowRun;
+  let workflowVersionId: string | null;
   let counter = 0;
   let creatorId: string;
 
@@ -120,9 +121,11 @@ describe('WorkflowRunService (TypeORM)', () => {
     });
 
     workflow = (await workflowService.findOne(workflow.id))!;
+    workflowVersionId = workflow.currentVersion ?? null;
 
     workflowRun = await workflowRunService.create({
       workflow: workflow.id,
+      workflowVersion: workflowVersionId,
       status: 'idle',
       input: { foo: 'bar' },
     });
@@ -280,6 +283,7 @@ describe('WorkflowRunService (TypeORM)', () => {
       expect(populated).not.toBeNull();
       expect(populated!.workflow.id).toBe(workflow.id);
       expect(populated!.workflow.name).toBe(workflow.name);
+      expect(populated!.workflowVersion?.id ?? null).toBe(workflowVersionId);
     });
 
     it('populates workflow relations for bulk queries', async () => {
@@ -287,6 +291,7 @@ describe('WorkflowRunService (TypeORM)', () => {
 
       expect(populated).toHaveLength(1);
       expect(populated[0]!.workflow.id).toBe(workflow.id);
+      expect(populated[0]!.workflowVersion?.id ?? null).toBe(workflowVersionId);
     });
   });
 

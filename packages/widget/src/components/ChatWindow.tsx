@@ -86,7 +86,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
-      <ChatHeader>{CustomHeader && <CustomHeader />}</ChatHeader>
+      {CustomHeader && (
+        <ChatHeader>
+          <CustomHeader />
+        </ChatHeader>
+      )}
       {getCurrentScreen()}
     </div>
   );

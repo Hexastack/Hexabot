@@ -11,6 +11,7 @@ import { EntityType, Format } from "@/services/types";
 import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import type { ISubscriber } from "./subscriber.types";
 import type { IUser } from "./user.types";
+import type { IWorkflowVersion } from "./workfow-version.types";
 import type { IWorkflow } from "./workfow.types";
 
 export enum EWorkflowRunStatus {
@@ -22,6 +23,7 @@ export enum EWorkflowRunStatus {
 }
 export interface IWorkflowRunAttributes {
   workflow: string;
+  workflowVersion?: string | null;
   triggeredBy?: string | null;
   status: WorkflowRunStatus;
   input?: Record<string, unknown> | null;
@@ -41,6 +43,7 @@ export interface IWorkflowRunAttributes {
 
 export interface IWorkflowRunFilters {
   workflow: { id: string; name: string; type: string };
+  workflowVersion?: { id: string; version: number };
   triggeredBy: string;
   status: WorkflowRunStatus;
   suspendedStep: string;
@@ -69,6 +72,7 @@ export interface IWorkflowRunStub
 
 export interface IWorkflowRun extends IWorkflowRunStub, IFormat<Format.BASIC> {
   workflow: string;
+  workflowVersion?: string | null;
   triggeredBy: string | null;
 }
 
@@ -76,5 +80,6 @@ export interface IWorkflowRunFull
   extends IWorkflowRunStub,
     IFormat<Format.FULL> {
   workflow: IWorkflow;
+  workflowVersion?: IWorkflowVersion | null;
   triggeredBy: ISubscriber | IUser | null;
 }

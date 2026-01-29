@@ -20,9 +20,11 @@ import type {
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 import type { IAction } from "@/types/action.types";
+import { IMemoryDefinition } from "@/types/memory-definition.types";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { Agent } from "../components/workflow-nodes/Agent";
+import { Memory } from "../components/workflow-nodes/Agent/Memory";
 import { Model } from "../components/workflow-nodes/Agent/Model";
 import { Tool } from "../components/workflow-nodes/Agent/Tool";
 import { Group } from "../components/workflow-nodes/Group";
@@ -35,8 +37,8 @@ import { NodeExecutionState } from "./workflow.types";
 
 export type WorkflowIcon = JSXElementConstructor<any>;
 type NodeDataTitle =
-  | { title: string; i18nTitle?: never }
-  | { i18nTitle: TTranslationKeys; title?: never };
+  | { title: string; i18nTitle?: undefined }
+  | { i18nTitle: TTranslationKeys; title?: undefined };
 
 export type WorkflowNodeTheme = {
   Icon?: WorkflowIcon;
@@ -109,6 +111,9 @@ export type GroupData = {
   groupName?: never;
 };
 
+// Memory types
+export type MemoryData = CommonNodeData<ENodeType.MEMORY> & {};
+
 // Link/Edge types
 export type EdgeLink = Edge & { id: string; source: string; target: string };
 
@@ -134,6 +139,7 @@ export enum ELinkType {
   OPERATOR_OUT = "operatorOut",
   GROUP_IN = "groupIn",
   GROUP_OUT = "groupOut",
+  MEMORY_IN = "memoryIn",
 }
 
 export type Port<P extends string> = Extract<ELinkType, `${P}${string}`>;
@@ -175,6 +181,7 @@ export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
   flow?: CompiledStep[];
   tasks?: TaskDefinitions;
+  memoryDefinitions: IMemoryDefinition[];
 }
 
 export type NodeDataTypes = {
@@ -185,6 +192,7 @@ export type NodeDataTypes = {
   [ENodeType.OPERATOR]: OperatorData;
   [ENodeType.TASK]: TaskData;
   [ENodeType.GROUP]: GroupData;
+  [ENodeType.MEMORY]: MemoryData;
 };
 
 export type NodeType<V, T = NodeDataTypes> = {
@@ -201,7 +209,8 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
         | Node<IndicatorData, ENodeType.INDICATOR>
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
-        | Node<GroupData, ENodeType.GROUP>;
+        | Node<GroupData, ENodeType.GROUP>
+        | Node<MemoryData, ENodeType.MEMORY>;
 
 export enum ENodeType {
   MODEL = "model",
@@ -211,6 +220,7 @@ export enum ENodeType {
   OPERATOR = "operator",
   TASK = "task",
   GROUP = "group",
+  MEMORY = "memory",
 }
 
 export enum EEdgeType {
@@ -225,6 +235,7 @@ export const NODE_TYPES = {
   [ENodeType.OPERATOR]: Operator,
   [ENodeType.TASK]: Task,
   [ENodeType.GROUP]: Group,
+  [ENodeType.MEMORY]: Memory,
 } satisfies {
   [NT in ENodeType]: FC<NodeProps<GraphNode<NT>>>;
 };
