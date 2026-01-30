@@ -14,7 +14,6 @@ export const HexabotLogo = () => {
       to={RouterType.HOME}
       style={{
         display: "flex",
-        justifyContent: "center",
         alignItems: "center",
       }}
     >

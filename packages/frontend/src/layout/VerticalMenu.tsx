@@ -92,6 +92,7 @@ const StyledDrawerHeader = styled(DrawerHeader)(() => ({
   position: "sticky",
   maxHeight: "60px",
   background: "#fffe",
+  gap: "8px",
 }));
 
 export type MenuItem = {
@@ -292,18 +293,15 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
       onClose={(_, reason) => {
         reason === "backdropClick" && onToggleOut();
       }}
-      PaperProps={{
-        sx: { borderRadius: "0px" },
-      }}
     >
       <StyledDrawerHeader>
-        <Grid size="grow" ml="10px">
-          <HexabotLogo />
-        </Grid>
-        <Grid size="auto">
+        <Grid maxWidth="40px" flex="1">
           <IconButton onClick={onToggleOut}>
             <ChevronLeft size={20} />
           </IconButton>
+        </Grid>
+        <Grid flex="auto">
+          <HexabotLogo />
         </Grid>
       </StyledDrawerHeader>
       <Sidebar
