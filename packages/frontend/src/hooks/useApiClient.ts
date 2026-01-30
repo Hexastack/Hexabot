@@ -10,11 +10,9 @@ import { useContext, useMemo } from "react";
 
 import { ApiClientContext } from "@/contexts/apiClient.context";
 import { useTranslate } from "@/hooks/useTranslate";
-import { ApiClient, EntityApiClient, ROUTES } from "@/services/api.class";
+import { ApiClient, EntityApiClient } from "@/services/api.class";
 import { THook } from "@/types/base.types";
-import { IUser } from "@/types/user.types";
 
-import { useAppRouter } from "./useAppRouter";
 import { useLogoutRedirection } from "./useAuth";
 import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
@@ -23,7 +21,6 @@ export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
-  const router = useAppRouter();
   const { t } = useTranslate();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
@@ -41,7 +38,6 @@ export const useAxiosInstance = () => {
         charset: "utf-8",
       });
     };
-    let timer;
 
     // Response Interceptor
     instance.interceptors.response.use(
@@ -52,21 +48,6 @@ export const useAxiosInstance = () => {
           toast.error(t("message.network_error"));
 
           return Promise.reject(new Error("Network error"));
-        }
-
-        if (
-          error.response.status === 500 &&
-          error.request.responseURL.endsWith(`/api${ROUTES.ME}`)
-        ) {
-          clearInterval(timer);
-
-          timer = setInterval(async () => {
-            const { status } = await axiosInstance.head<IUser>(ROUTES.ME);
-
-            if (status !== 500) {
-              router.reload();
-            }
-          }, 2000);
         }
 
         if (error.response.status === 401) {
