@@ -12,7 +12,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import weekday from "dayjs/plugin/weekday";
 
-import { DATE_TIME_FORMAT } from "../constants";
+import { DATE_TIME_FORMAT } from "../constants/date-time.constants";
 
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
@@ -72,16 +72,13 @@ export function formatSmartDate(date: Date, locale: string = "en"): string {
   }
 }
 
-export const calculateDuration = (
-  createdAt: string | Date,
-  finishedAt?: Date | null,
+export const formatDurationMs = (
+  durationMs?: number | null,
   separator: string = " ",
 ): string => {
-  if (!finishedAt) return "-";
+  if (durationMs == null) return "-";
 
-  const start = dayjs(createdAt);
-  const end = dayjs(finishedAt);
-  const diffMs = Math.max(0, end.diff(start));
+  const diffMs = Math.max(0, durationMs);
   const dur = dayjs.duration(diffMs);
   const h = Math.floor(dur.asHours());
   const m = dur.minutes();

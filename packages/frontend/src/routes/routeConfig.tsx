@@ -30,6 +30,7 @@ import { Subscribers } from "@/components/subscribers";
 import { Translations } from "@/components/translations";
 import { Users } from "@/components/users";
 import { WorkflowEditor } from "@/components/visual-editor/v4";
+import { WorkflowRunDebugger } from "@/components/workflow-run-debugger";
 import { WorkflowRuns } from "@/components/workflow-runs";
 import { LayoutProps } from "@/layout";
 import { EntityType } from "@/services/types";
@@ -83,6 +84,13 @@ export const routes: RouteObjectItem[] = [
   {
     path: "/workflow/runs",
     Component: WorkflowRuns,
+    handle: {
+      requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
+    },
+  },
+  {
+    path: "/workflow/:workflowId/runs/:InitiatorId",
+    Component: WorkflowRunDebugger,
     handle: {
       requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
     },

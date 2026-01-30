@@ -16,6 +16,10 @@ import {
 } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
+import {
+  WORKFLOW_TYPES,
+  WORKFLOW_TYPE_ORDER,
+} from "@/constants/workflow.constants";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
@@ -28,15 +32,6 @@ import { useWorkflow } from "../../../hooks/useWorkflow";
 import { YamlEditor } from "../../yaml-editor";
 import { WorkflowMenu } from "../WorkflowMenu";
 
-import {
-  BASE_TYPES,
-  TYPE_ORDER,
-  collapsedWidth,
-  drawerWidth as defaultDrawerWidth,
-  drawerWidthStorageKey,
-  maxDrawerWidth,
-  minDrawerWidth,
-} from "./constants";
 import { FlowsDrawerCollapsedActions } from "./FlowsDrawerCollapsedActions";
 import { FlowsDrawerHeader } from "./FlowsDrawerHeader";
 import { FlowsDrawerList } from "./FlowsDrawerList";
@@ -55,6 +50,12 @@ import {
   normalizeQuery,
 } from "./utils";
 import { WorkflowVersions } from "./WorkflowVersions";
+
+export const defaultDrawerWidth = 320;
+export const collapsedWidth = 64;
+export const minDrawerWidth = 260;
+export const maxDrawerWidth = 920;
+export const drawerWidthStorageKey = "hexabot.visual_editor.drawer_width";
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
@@ -242,7 +243,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         normalizedQuery && flow.description
           ? fuzzyMatchIndices(normalizedQuery, flow.description)
           : [];
-      const typeInfo = BASE_TYPES[flow.type];
+      const typeInfo = WORKFLOW_TYPES[flow.type];
       const isDraft = isDraftWorkflow(flow);
       const errorCount = getErrorCount(flow);
 
@@ -271,12 +272,12 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
 
     const selectedFlow = workflows.find((flow) => flow.id === selectedFlowId);
 
-    return selectedFlow ? BASE_TYPES[selectedFlow.type].key : null;
+    return selectedFlow ? WORKFLOW_TYPES[selectedFlow.type].key : null;
   }, [selectedFlowId, workflows]);
   const typeGroups = useMemo<FlowTypeGroup[]>(() => {
     const grouped = new Map<string, FlowTypeGroup>();
 
-    Object.values(BASE_TYPES).forEach((info) => {
+    Object.values(WORKFLOW_TYPES).forEach((info) => {
       grouped.set(info.key, { info, label: t(info.labelKey), items: [] });
     });
 
@@ -294,8 +295,8 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     });
 
     const sorted = Array.from(grouped.values()).sort((a, b) => {
-      const orderA = TYPE_ORDER[a.info.key as WorkflowType] ?? 99;
-      const orderB = TYPE_ORDER[b.info.key as WorkflowType] ?? 99;
+      const orderA = WORKFLOW_TYPE_ORDER[a.info.key as WorkflowType] ?? 99;
+      const orderB = WORKFLOW_TYPE_ORDER[b.info.key as WorkflowType] ?? 99;
 
       if (orderA !== orderB) return orderA - orderB;
 

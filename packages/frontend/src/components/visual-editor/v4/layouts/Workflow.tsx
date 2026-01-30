@@ -32,7 +32,6 @@ import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
-import { BASE_TYPES } from "../components/main/FlowsDrawer/constants";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
@@ -112,7 +111,6 @@ export const Workflow = () => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
-  const typeInfo = workflow ? BASE_TYPES[workflow.type] : undefined;
   const publishLabel = t("button.publish");
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
@@ -285,10 +283,6 @@ export const Workflow = () => {
           <WorkflowTitleOverlay>
             <WorkflowTitleBar
               workflow={workflow}
-              typeIcon={typeInfo?.icon}
-              typeLabel={typeInfo ? t(typeInfo.labelKey) : undefined}
-              typeColor={typeInfo?.color}
-              typeBackground={typeInfo?.background}
               onEdit={handleEditWorkflow}
               onOpenMenu={handleOpenMenu}
               onSave={() => persistDefinition()}

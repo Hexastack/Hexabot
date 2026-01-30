@@ -7,10 +7,13 @@
 import { Box, Chip, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 
+import { VersionChip } from "@/app-components/displays/VersionChip";
+import type { IWorkflowVersion } from "@/types/workfow-version.types";
+
 type WorkflowMetaInfoProps = {
   isDraft: boolean;
   statusLabel: string;
-  versionLabel?: string;
+  workflowVersion?: IWorkflowVersion | null;
   lastSavedLabel: string;
   lastSavedExact?: string;
 };
@@ -18,7 +21,7 @@ type WorkflowMetaInfoProps = {
 export const WorkflowMetaInfo = ({
   isDraft,
   statusLabel,
-  versionLabel,
+  workflowVersion,
   lastSavedLabel,
   lastSavedExact,
 }: WorkflowMetaInfoProps) => {
@@ -43,15 +46,6 @@ export const WorkflowMetaInfo = ({
       border: "1px solid",
       backgroundColor: "transparent",
     },
-    versionChip: {
-      height: 18,
-      fontSize: 10,
-      fontWeight: 600,
-      border: "1px solid",
-      borderColor: "divider",
-      backgroundColor: "background.default",
-      color: "text.secondary",
-    },
   };
 
   return (
@@ -59,11 +53,12 @@ export const WorkflowMetaInfo = ({
       <Chip
         size="small"
         label={statusLabel}
-        sx={[styles.statusChip, { color: statusColor, borderColor: statusBorder }]}
+        sx={[
+          styles.statusChip,
+          { color: statusColor, borderColor: statusBorder },
+        ]}
       />
-      {versionLabel && (
-        <Chip size="small" label={versionLabel} sx={styles.versionChip} />
-      )}
+      <VersionChip version={workflowVersion ?? null} />
       <Tooltip
         title={lastSavedExact ?? ""}
         arrow
