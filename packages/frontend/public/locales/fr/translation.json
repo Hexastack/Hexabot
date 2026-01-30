@@ -520,7 +520,14 @@
       "type_retry": "Réessai",
       "type_step": "Étape"
     },
-    "step_inspector": "Inspecteur d'étape",
+    "inspector_tabs": {
+      "overview": "Vue d'ensemble",
+      "input": "Entrée",
+      "context": "Contexte",
+      "output": "Sortie",
+      "logs_errors": "Journaux / Erreurs"
+    },
+    "inspector": "Inspecteur",
     "latest_run": "Dernière exécution",
     "run_at": "Exécution {{0}}",
     "unknown": "Inconnu"

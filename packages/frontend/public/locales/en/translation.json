@@ -519,7 +519,14 @@
       "type_retry": "Retry",
       "type_step": "Step"
     },
-    "step_inspector": "Step Inspector",
+    "inspector_tabs": {
+      "overview": "Overview",
+      "input": "Input",
+      "context": "Context",
+      "output": "Output",
+      "logs_errors": "Logs / Errors"
+    },
+    "inspector": "Inspector",
     "no_scheduled_workflows": "No scheduled workflows yet"
   },
   "placeholder": {
@@ -557,7 +564,7 @@
     "pattern": "Pattern",
     "full_name": "First and last name",
     "step_trace": "Step Trace",
-    "step_inspector": "Step Inspector",
+    "inspector": "Inspector",
     "latest_run": "Latest run",
     "run_at": "Run {{0}}",
     "unknown": "Unknown"

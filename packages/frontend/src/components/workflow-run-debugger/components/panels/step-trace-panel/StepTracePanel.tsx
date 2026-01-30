@@ -83,7 +83,7 @@ export const StepTracePanel = ({ snapshot }: StepTracePanelProps) => {
   }, [actions, includeSkipped, searchQuery, typeLabels]);
 
   return (
-    <Grid size={{ xs: 12, lg: 7 }}>
+    <Grid size={{ xs: 12, lg: 6 }}>
       <Paper
         sx={{
           p: 2,

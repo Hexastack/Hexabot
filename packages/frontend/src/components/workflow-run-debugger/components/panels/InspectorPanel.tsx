@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Paper, Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
+import { InspectorTabs } from "@/components/workflow-run-debugger/components/panels/InspectorTabs";
 import { useTranslate } from "@/hooks/useTranslate";
 
-export const StepInspectorPanel = () => {
+export const InspectorPanel = () => {
   const { t } = useTranslate();
 
   return (
-    <Grid size={{ xs: 12, lg: 5 }}>
+    <Grid size={{ xs: 12, lg: 6 }}>
       <Paper
         sx={{
           p: 2,
@@ -27,18 +28,9 @@ export const StepInspectorPanel = () => {
         }}
       >
         <Typography variant="subtitle2" fontWeight={600}>
-          {t("label.step_inspector")}
+          {t("label.inspector")}
         </Typography>
-        <Box
-          sx={{
-            flex: 1,
-            border: "1px dashed",
-            borderColor: "divider",
-            borderRadius: 2,
-            backgroundColor: "background.default",
-            p: 2,
-          }}
-        />
+        <InspectorTabs />
       </Paper>
     </Grid>
   );

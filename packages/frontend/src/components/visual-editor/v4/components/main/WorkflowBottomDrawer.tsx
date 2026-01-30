@@ -29,7 +29,7 @@ const drawerColumnGap = 16;
 const columnDividerWidth = 16;
 const minChatColumnWidth = 280;
 const minDetailsColumnWidth = 240;
-const defaultChatColumnRatio = 1 / 3;
+const defaultChatColumnRatio = 1 / 4;
 const DrawerBody = styled(Box)(({ theme }) => ({
   display: "grid",
   gap: 0,

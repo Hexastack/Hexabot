@@ -10,8 +10,13 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
 } from "@mui/material";
-import { Search as SearchIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  ListChecks,
+  Search as SearchIcon,
+} from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -31,7 +36,7 @@ export const StepTraceFilters = ({
   const { t } = useTranslate();
 
   return (
-    <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
+    <Box display="flex" gap={1} alignItems="center">
       <ToggleButtonGroup
         exclusive
         size="small"
@@ -41,11 +46,25 @@ export const StepTraceFilters = ({
           onIncludeSkippedChange(value === "all");
         }}
       >
-        <ToggleButton value="executed">
-          {t("label.step_trace.executed_only")}
+        <ToggleButton
+          value="executed"
+          aria-label={t("label.step_trace.executed_only")}
+        >
+          <Tooltip title={t("label.step_trace.executed_only")} arrow>
+            <Box component="span" display="inline-flex">
+              <CheckCircle2 size={16} />
+            </Box>
+          </Tooltip>
         </ToggleButton>
-        <ToggleButton value="all">
-          {t("label.step_trace.include_skipped")}
+        <ToggleButton
+          value="all"
+          aria-label={t("label.step_trace.include_skipped")}
+        >
+          <Tooltip title={t("label.step_trace.include_skipped")} arrow>
+            <Box component="span" display="inline-flex">
+              <ListChecks size={16} />
+            </Box>
+          </Tooltip>
         </ToggleButton>
       </ToggleButtonGroup>
       <TextField
