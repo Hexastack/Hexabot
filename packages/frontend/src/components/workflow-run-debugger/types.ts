@@ -4,16 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EWorkflowRunStatus } from "@/types/workflow-run.types";
-
-export type RunHistoryItem = {
-  id: string;
-  timestamp: string;
-  initiator: string;
-  status: EWorkflowRunStatus;
-  label: string;
-};
-
 export type InitiatorIdentity = {
   id?: string;
   fullName?: string;

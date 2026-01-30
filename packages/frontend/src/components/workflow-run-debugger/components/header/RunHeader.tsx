@@ -8,37 +8,38 @@ import { Box, Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
 import type { BadgeWithTitleProps } from "@/app-components/displays/Badge";
-
-import type { RunHistoryItem } from "../../types";
+import type {
+  IWorkflowRun,
+  IWorkflowRunFull,
+} from "@/types/workflow-run.types";
+import type { IWorkflowVersion } from "@/types/workfow-version.types";
 
 import { RunActions } from "./RunActions";
 import { RunMetaSummary } from "./RunMetaSummary";
 import { RunStatusSummary } from "./RunStatusSummary";
 
 type RunHeaderProps = {
-  runHistory: RunHistoryItem[];
+  workflowRuns: Array<IWorkflowRun | IWorkflowRunFull>;
   isFetching: boolean;
   statusBadge: BadgeWithTitleProps;
   statusLabel: string;
   durationLabel: string;
   workflowName: string;
-  workflowVersionLabel?: string;
-  initiatorName: string;
-  workflowId?: string;
-  initiatorId?: string;
+  workflowVersion?: IWorkflowVersion | null;
+  selectedRunId?: string;
+  onSelectRun: (runId: string) => void;
 };
 
 export const RunHeader = ({
-  runHistory,
+  workflowRuns,
   isFetching,
   statusBadge,
   statusLabel,
   durationLabel,
   workflowName,
-  workflowVersionLabel,
-  initiatorName,
-  workflowId,
-  initiatorId,
+  workflowVersion,
+  selectedRunId,
+  onSelectRun,
 }: RunHeaderProps) => {
   return (
     <Box
@@ -62,20 +63,19 @@ export const RunHeader = ({
         <Grid container spacing={2} alignItems="center">
           <Grid size={{ xs: 12, lg: 4 }}>
             <RunStatusSummary
-              runHistory={runHistory}
+              workflowRuns={workflowRuns}
               isFetching={isFetching}
               statusBadge={statusBadge}
               statusLabel={statusLabel}
               durationLabel={durationLabel}
+              selectedRunId={selectedRunId}
+              onSelectRun={onSelectRun}
             />
           </Grid>
           <Grid size={{ xs: 12, lg: 5 }}>
             <RunMetaSummary
               workflowName={workflowName}
-              workflowVersionLabel={workflowVersionLabel}
-              initiatorName={initiatorName}
-              workflowId={workflowId}
-              initiatorId={initiatorId}
+              workflowVersion={workflowVersion}
             />
           </Grid>
           <Grid size={{ xs: 12, lg: 3 }}>

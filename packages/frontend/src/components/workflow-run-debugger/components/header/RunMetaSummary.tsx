@@ -4,43 +4,27 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
+
+import { VersionChip } from "@/app-components/displays/VersionChip";
+import type { IWorkflowVersion } from "@/types/workfow-version.types";
 
 type RunMetaSummaryProps = {
   workflowName: string;
-  workflowVersionLabel?: string;
-  initiatorName: string;
-  workflowId?: string;
-  initiatorId?: string;
+  workflowVersion?: IWorkflowVersion | null;
 };
 
 export const RunMetaSummary = ({
   workflowName,
-  workflowVersionLabel,
-  initiatorName,
-  workflowId,
-  initiatorId,
+  workflowVersion,
 }: RunMetaSummaryProps) => {
   return (
     <Stack spacing={0.5}>
       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
         <Typography variant="subtitle1" fontWeight={600}>
-          Workflow: {workflowName}
+          {workflowName}
         </Typography>
-        {workflowVersionLabel ? (
-          <Chip label={workflowVersionLabel} size="small" variant="outlined" />
-        ) : null}
-      </Stack>
-      <Typography variant="body2" color="text.secondary">
-        Initiator: {initiatorName}
-      </Typography>
-      <Stack direction="row" spacing={2} flexWrap="wrap">
-        <Typography variant="caption" color="text.secondary">
-          Workflow ID: {workflowId ?? "-"}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Initiator ID: {initiatorId ?? "-"}
-        </Typography>
+        <VersionChip version={workflowVersion ?? null} />
       </Stack>
     </Stack>
   );

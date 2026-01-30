@@ -61,12 +61,6 @@ export const WorkflowTitleBar = ({
   const currentVersion = workflow.currentVersion
     ? getVersionFromCache(workflow.currentVersion)
     : undefined;
-  const versionLabel =
-    typeof currentVersion?.version === "number"
-      ? t("visual_editor.workflow_versions.version", {
-          0: currentVersion.version,
-        })
-      : undefined;
   const lastSavedAt =
     currentVersion?.updatedAt ??
     currentVersion?.createdAt ??
@@ -163,7 +157,7 @@ export const WorkflowTitleBar = ({
       <WorkflowMetaInfo
         isDraft={isDraft}
         statusLabel={statusLabel}
-        versionLabel={versionLabel}
+        workflowVersion={currentVersion ?? null}
         lastSavedLabel={lastSavedLabel}
         lastSavedExact={lastSavedExact}
       />

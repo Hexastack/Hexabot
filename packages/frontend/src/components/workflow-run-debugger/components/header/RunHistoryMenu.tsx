@@ -7,25 +7,46 @@
 import { Menu, MenuItem, Stack, Typography } from "@mui/material";
 
 import { BadgeWithTitle } from "@/app-components/displays/Badge";
+import { VersionChip } from "@/app-components/displays/VersionChip";
+import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType } from "@/services/types";
+import {
+  EWorkflowRunStatus,
+  type IWorkflowRun,
+  type IWorkflowRunFull,
+} from "@/types/workflow-run.types";
 
-import type { RunHistoryItem } from "../../types";
-import { getStatusBadge } from "../../utils";
+import {
+  formatRunTimestamp,
+  getStatusBadge,
+  resolveEntityId,
+} from "../../utils";
 
 type RunHistoryMenuProps = {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
-  runHistory: RunHistoryItem[];
+  onSelectRun: (runId: string) => void;
+  workflowRuns: Array<IWorkflowRun | IWorkflowRunFull>;
   isFetching: boolean;
+  selectedRunId?: string;
 };
 
 export const RunHistoryMenu = ({
   anchorEl,
   open,
   onClose,
-  runHistory,
+  onSelectRun,
+  workflowRuns,
   isFetching,
+  selectedRunId,
 }: RunHistoryMenuProps) => {
+  const { i18n } = useTranslate();
+  const getWorkflowVersionFromCache = useGetFromCache(
+    EntityType.WORKFLOW_VERSION,
+  );
+
   return (
     <Menu
       anchorEl={anchorEl}
@@ -39,18 +60,33 @@ export const RunHistoryMenu = ({
         },
       }}
     >
-      {isFetching && !runHistory.length ? (
+      {isFetching && !workflowRuns.length ? (
         <MenuItem disabled>
           <Typography variant="body2" color="text.secondary">
             Loading runs...
           </Typography>
         </MenuItem>
-      ) : runHistory.length ? (
-        runHistory.map((run) => {
-          const statusBadge = getStatusBadge(run.status);
+      ) : workflowRuns.length ? (
+        workflowRuns.map((run) => {
+          const status =
+            (run.status as EWorkflowRunStatus) ?? EWorkflowRunStatus.IDLE;
+          const workflowVersionId = resolveEntityId(run.workflowVersion);
+          const workflowVersion = workflowVersionId
+            ? getWorkflowVersionFromCache(workflowVersionId)
+            : undefined;
+          const statusBadge = getStatusBadge(status);
+          const statusLabel = run.status ?? status;
+          const timestamp = formatRunTimestamp(i18n.language, run.createdAt);
 
           return (
-            <MenuItem key={run.id} onClick={onClose}>
+            <MenuItem
+              key={run.id}
+              selected={run.id === selectedRunId}
+              onClick={() => {
+                onSelectRun(run.id);
+                onClose();
+              }}
+            >
               <Stack
                 direction="row"
                 spacing={2}
@@ -60,13 +96,17 @@ export const RunHistoryMenu = ({
               >
                 <Stack spacing={0.25}>
                   <Typography variant="body2" fontWeight={600}>
-                    {run.timestamp}
+                    {timestamp}{" "}
+                    <VersionChip version={workflowVersion ?? null} />
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Initiator: {run.initiator}
-                  </Typography>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    alignItems="center"
+                    flexWrap="wrap"
+                  />
                 </Stack>
-                <BadgeWithTitle {...statusBadge} title={run.label} />
+                <BadgeWithTitle {...statusBadge} title={statusLabel} />
               </Stack>
             </MenuItem>
           );
