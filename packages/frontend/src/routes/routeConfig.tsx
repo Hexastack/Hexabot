@@ -108,14 +108,14 @@ export const routes: RouteObjectItem[] = [
     },
   },
   {
-    path: "/content/types",
+    path: "/content-types",
     Component: ContentTypes,
     handle: {
       requiredPermissions: [[EntityType.CONTENT_TYPE, PermissionAction.READ]],
     },
   },
   {
-    path: "/content/:id/list",
+    path: "/content-types/content/:id",
     Component: Contents,
     handle: {
       requiredPermissions: [[EntityType.CONTENT, PermissionAction.READ]],

@@ -208,7 +208,7 @@ export const Contents = () => {
       headerLeftButtons={
         <Button
           component={RouterLink}
-          to="/content/types"
+          to="/content-types"
           variant="text"
           startIcon={<ArrowLeft size={18} />}
         >

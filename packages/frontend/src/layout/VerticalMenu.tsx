@@ -157,7 +157,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       },
       {
         text: "menu.cms",
-        href: "/content/types",
+        href: "/content-types",
         Icon: AlignLeft,
         requires: {
           [EntityType.CONTENT_TYPE]: [PermissionAction.READ],
