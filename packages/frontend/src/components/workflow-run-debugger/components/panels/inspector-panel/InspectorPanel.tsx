@@ -4,16 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Paper, Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
 import { useTranslate } from "@/hooks/useTranslate";
+import { IWorkflowRun } from "@/types/workflow-run.types";
 
-export const StepInspectorPanel = () => {
+import { InspectorTabs } from "./InspectorTabs";
+
+type InspectorPanelProps = {
+  run: IWorkflowRun | null;
+};
+
+export const InspectorPanel = ({ run }: InspectorPanelProps) => {
   const { t } = useTranslate();
 
   return (
-    <Grid size={{ xs: 12, lg: 5 }}>
+    <Grid size={{ xs: 12, lg: 6 }}>
       <Paper
         sx={{
           p: 2,
@@ -26,19 +33,10 @@ export const StepInspectorPanel = () => {
           gap: 2,
         }}
       >
-        <Typography variant="subtitle1" fontWeight={600}>
-          {t("label.step_inspector")}
+        <Typography variant="subtitle2" fontWeight={600}>
+          {t("label.inspector")}
         </Typography>
-        <Box
-          sx={{
-            flex: 1,
-            border: "1px dashed",
-            borderColor: "divider",
-            borderRadius: 2,
-            backgroundColor: "background.default",
-            p: 2,
-          }}
-        />
+        <InspectorTabs run={run} />
       </Paper>
     </Grid>
   );
