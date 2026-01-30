@@ -45,6 +45,7 @@ const StyledListItemButton = styled(ListItemButton, {
   shouldForwardProp: (prop) => prop !== "isHovered",
 })(({ isHovered, theme }: { isHovered?: boolean } & { theme: Theme }) =>
   SXStyleOptions({
+    justifyContent: "center",
     color: theme.palette.text.secondary,
     "&.Mui-selected": {
       color: theme.palette.primary.main,
@@ -164,7 +165,10 @@ const VerticalMenuItem = ({
         onClick,
       };
   const isMenuItemHead = typeof isSubmenuOpen === "boolean";
-  const isSelected = selected || (!isMenuItemHead && pathname === href);
+  const isSelected =
+    selected ||
+    (!isMenuItemHead &&
+      ((href !== "/" && pathname.startsWith(href)) || pathname === href));
   const color =
     isSelected && !(isToggled && !href && isSubmenuOpen)
       ? theme.palette.primary.main
