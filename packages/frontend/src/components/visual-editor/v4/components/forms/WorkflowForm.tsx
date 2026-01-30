@@ -19,6 +19,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
+import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -32,14 +33,22 @@ import {
   type IWorkflow,
 } from "@/types/workfow.types";
 
-import { BASE_TYPES } from "../main/FlowsDrawer/constants";
-import { WorkflowTypeBadge } from "../WorkflowTypeBadge";
+import { WorkflowTypeBadge } from "../../../../../app-components/workflow/WorkflowTypeBadge";
 
-const WORKFLOW_TYPES: WorkflowType[] = [
-  WorkflowType.conversational,
-  WorkflowType.scheduled,
-  WorkflowType.manual,
-];
+const createWorkflowBadgeStub = (type: WorkflowType): IWorkflow => ({
+  id: `workflow-type-${type}`,
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+  format: Format.BASIC,
+  name: "",
+  description: null,
+  schedule: null,
+  type,
+  memoryDefinitions: [],
+  runAfterMs: 0,
+  currentVersion: null,
+  publishedVersion: null,
+});
 
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
@@ -73,14 +82,14 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
         ? {
             name: workflow.name ?? "",
             description: workflow.description ?? "",
-            type: workflow.type ?? WORKFLOW_TYPES[0],
+            type: workflow.type ?? WorkflowType.conversational,
             schedule: workflow.schedule ?? "",
             memoryDefinitions: workflow?.memoryDefinitions ?? [],
           }
         : {
             name: "",
             description: "",
-            type: WORKFLOW_TYPES[0],
+            type: WorkflowType.conversational,
             schedule: "",
             memoryDefinitions: [],
           };
@@ -236,9 +245,12 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                         field.onChange(value as WorkflowType)
                       }
                     >
-                      {WORKFLOW_TYPES.map((type) => {
+                      {Object.values(WorkflowType).map((type) => {
                         const typeKey = String(type);
-                        const typeInfo = BASE_TYPES[type];
+                        const typeInfo = WORKFLOW_TYPES[type];
+                        const badgeWorkflow = workflow
+                          ? { ...workflow, type }
+                          : createWorkflowBadgeStub(type);
                         const typeLabel = typeInfo
                           ? t(typeInfo.labelKey)
                           : t(`label.${typeKey}`, {
@@ -261,17 +273,12 @@ export const WorkflowForm: FC<ComponentFormProps<IWorkflow, WorkflowFormPreset>>
                                   },
                                 }}
                                 icon={
-                                  <WorkflowTypeBadge
-                                    icon={typeInfo?.icon}
-                                    label={typeLabel}
-                                  />
+                                  <WorkflowTypeBadge workflow={badgeWorkflow} />
                                 }
                                 checkedIcon={
                                   <WorkflowTypeBadge
-                                    icon={typeInfo?.icon}
-                                    color={typeInfo?.color}
-                                    background={typeInfo?.background}
-                                    label={typeLabel}
+                                    workflow={badgeWorkflow}
+                                    selected
                                   />
                                 }
                               />

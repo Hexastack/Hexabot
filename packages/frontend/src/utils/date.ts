@@ -12,7 +12,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import weekday from "dayjs/plugin/weekday";
 
-import { DATE_TIME_FORMAT } from "../constants";
+import { DATE_TIME_FORMAT } from "../constants/date-time.constants";
 
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);

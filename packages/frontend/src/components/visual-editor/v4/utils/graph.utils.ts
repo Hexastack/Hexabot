@@ -8,16 +8,16 @@ import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
 import { type Edge } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 
-import { IMemoryDefinition } from "@/types/memory-definition.types";
-import { generateId } from "@/utils/generateId";
-
 import {
   DEFAULT_NODE_PROPS,
   DIMENSIONS,
   EDGES,
   HIGHLIGHTS,
   NODES,
-} from "../constants/workflow.constants";
+} from "@/constants/workflow.constants";
+import { IMemoryDefinition } from "@/types/memory-definition.types";
+import { generateId } from "@/utils/generateId";
+
 import {
   EEdgeType,
   EIndicatorType,

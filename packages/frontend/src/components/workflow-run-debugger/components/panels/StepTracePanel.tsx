@@ -7,13 +7,19 @@
 import { Box, Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
+import { useTranslate } from "@/hooks/useTranslate";
+
 export const StepTracePanel = () => {
+  const { t } = useTranslate();
+
   return (
     <Grid size={{ xs: 12, lg: 7 }}>
       <Paper
         sx={{
           p: 2,
-          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: (theme) => theme.shadows[1],
           minHeight: "60vh",
           display: "flex",
           flexDirection: "column",
@@ -21,7 +27,7 @@ export const StepTracePanel = () => {
         }}
       >
         <Typography variant="subtitle1" fontWeight={600}>
-          Step Trace
+          {t("label.step_trace")}
         </Typography>
         <Box
           sx={{

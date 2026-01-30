@@ -8,40 +8,30 @@ import { Button, Stack, Typography } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 import { MouseEvent, useMemo, useState } from "react";
 
-import type { BadgeWithTitleProps } from "@/app-components/displays/Badge";
-// eslint-disable-next-line no-duplicate-imports
-import { BadgeWithTitle } from "@/app-components/displays/Badge";
+import { WorkflowRunStatusBadge } from "@/app-components/workflow/WorkflowRunStatusBadge";
 import { useTranslate } from "@/hooks/useTranslate";
-import type {
-  IWorkflowRun,
-  IWorkflowRunFull,
-} from "@/types/workflow-run.types";
+import { type IWorkflowRun } from "@/types/workflow-run.types";
+import { formatDurationMs } from "@/utils/date";
 
 import { formatRunTimestamp } from "../../utils";
 
 import { RunHistoryMenu } from "./RunHistoryMenu";
 
 type RunStatusSummaryProps = {
-  workflowRuns: Array<IWorkflowRun | IWorkflowRunFull>;
+  workflowRuns: Array<IWorkflowRun>;
   isFetching: boolean;
-  statusBadge: BadgeWithTitleProps;
-  statusLabel: string;
-  durationLabel: string;
-  selectedRunId?: string;
+  selectedRun?: IWorkflowRun;
   onSelectRun: (runId: string) => void;
 };
 
 export const RunStatusSummary = ({
   workflowRuns,
   isFetching,
-  statusBadge,
-  statusLabel,
-  durationLabel,
-  selectedRunId,
+  selectedRun,
   onSelectRun,
 }: RunStatusSummaryProps) => {
   const [runAnchor, setRunAnchor] = useState<null | HTMLElement>(null);
-  const { i18n } = useTranslate();
+  const { i18n, t } = useTranslate();
   const isRunMenuOpen = Boolean(runAnchor);
   const handleOpenRunMenu = (event: MouseEvent<HTMLElement>) => {
     setRunAnchor(event.currentTarget);
@@ -50,15 +40,17 @@ export const RunStatusSummary = ({
     setRunAnchor(null);
   };
   const runLabel = useMemo(() => {
-    const selectedRun = workflowRuns.find((run) => run.id === selectedRunId);
     const latestRunId = workflowRuns[0]?.id;
 
-    if (!selectedRun || selectedRun.id === latestRunId) return "Latest run";
+    if (!selectedRun || selectedRun.id === latestRunId) {
+      return t("placeholder.latest_run");
+    }
 
     const timestamp = formatRunTimestamp(i18n.language, selectedRun.createdAt);
 
-    return `Run ${timestamp}`;
-  }, [i18n.language, selectedRunId, workflowRuns]);
+    return t("placeholder.run_at", { "0": timestamp });
+  }, [i18n.language, selectedRun, t, workflowRuns]);
+  const durationLabel = formatDurationMs(selectedRun?.duration);
 
   return (
     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
@@ -78,9 +70,9 @@ export const RunStatusSummary = ({
         onSelectRun={onSelectRun}
         workflowRuns={workflowRuns}
         isFetching={isFetching}
-        selectedRunId={selectedRunId}
+        selectedRunId={selectedRun?.id}
       />
-      <BadgeWithTitle {...statusBadge} title={statusLabel} />
+      <WorkflowRunStatusBadge workflowRun={selectedRun} />
       <Typography variant="caption" color="text.secondary">
         {durationLabel}
       </Typography>

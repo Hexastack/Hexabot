@@ -7,23 +7,29 @@
 import { Stack, Typography } from "@mui/material";
 
 import { VersionChip } from "@/app-components/displays/VersionChip";
+import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
+import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
+import type { IWorkflow } from "@/types/workfow.types";
 
 type RunMetaSummaryProps = {
-  workflowName: string;
+  workflow?: IWorkflow | null;
   workflowVersion?: IWorkflowVersion | null;
 };
 
-export const RunMetaSummary = ({
-  workflowName,
-  workflowVersion,
-}: RunMetaSummaryProps) => {
+export const RunMetaSummary = ({ workflow, workflowVersion }: RunMetaSummaryProps) => {
+  const { t } = useTranslate();
+
   return (
     <Stack spacing={0.5}>
       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-        <Typography variant="subtitle1" fontWeight={600}>
-          {workflowName}
-        </Typography>
+        {workflow ? (
+          <WorkflowBadgeWithTitle workflow={workflow} />
+        ) : (
+          <Typography variant="subtitle1" fontWeight={600}>
+            {t("label.unknown")}
+          </Typography>
+        )}
         <VersionChip version={workflowVersion ?? null} />
       </Stack>
     </Stack>

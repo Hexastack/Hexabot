@@ -14,9 +14,9 @@ import {
 import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
+import { DEFAULT_NODE_PROPS } from "@/constants/workflow.constants";
 import { generateId } from "@/utils/generateId";
 
-import { DEFAULT_NODE_PROPS } from "../constants/workflow.constants";
 import {
   EEdgeType,
   EHandleType,

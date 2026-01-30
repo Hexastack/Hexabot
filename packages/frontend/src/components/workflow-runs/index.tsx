@@ -8,22 +8,22 @@ import { GridColDef } from "@mui/x-data-grid";
 import { Activity, GalleryHorizontalEnd } from "lucide-react";
 import { ComponentProps, useMemo } from "react";
 
-import { BadgeWithTitle } from "@/app-components/displays/Badge";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
+import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
+import { WorkflowRunStatusBadge } from "@/app-components/workflow/WorkflowRunStatusBadge";
+import {
+  WORKFLOW_STATUS,
+  WORKFLOW_TYPES,
+} from "@/constants/workflow.constants";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IWorkflowRunFull } from "@/types/workflow-run.types";
 import { formatDurationMs, getDateTimeFormatter } from "@/utils/date";
-
-import {
-  BASE_STATUS,
-  BASE_TYPES,
-} from "../visual-editor/v4/components/main/FlowsDrawer/constants";
 
 export const WorkflowRuns = ({
   hidedColumns = [],
@@ -58,10 +58,13 @@ export const WorkflowRuns = ({
         headerAlign: "left",
         renderCell: ({ row }) => {
           const workflowId = String(row.workflow);
-          const { type, name } = getWorkflowFromCache(workflowId)!;
-          const { key: _, ...badgeRest } = BASE_TYPES[type];
+          const workflow = getWorkflowFromCache(workflowId);
 
-          return <BadgeWithTitle {...badgeRest} title={name} />;
+          if (!workflow) {
+            return "-";
+          }
+
+          return <WorkflowBadgeWithTitle workflow={workflow} />;
         },
       },
       {
@@ -94,11 +97,7 @@ export const WorkflowRuns = ({
         disableColumnMenu: true,
         renderHeader,
         headerAlign: "left",
-        renderCell: ({ value }) => {
-          const { key: _, ...badgeRest } = BASE_STATUS[value];
-
-          return <BadgeWithTitle {...badgeRest} title={value} />;
-        },
+        renderCell: ({ row }) => <WorkflowRunStatusBadge workflowRun={row} />,
       },
       {
         maxWidth: 100,
@@ -142,7 +141,7 @@ export const WorkflowRuns = ({
           title: `${t("label.all")} ${t("label.types")}`,
           background: "#f8f8f8",
         },
-        typeInfo: BASE_TYPES,
+        typeInfo: WORKFLOW_TYPES,
         onChange: setName,
       },
       {
@@ -157,7 +156,7 @@ export const WorkflowRuns = ({
           background: "#f8f8f8",
           defaultValue: defaultType,
         },
-        typeInfo: BASE_TYPES,
+        typeInfo: WORKFLOW_TYPES,
         onChange: setType,
       },
       {
@@ -172,7 +171,7 @@ export const WorkflowRuns = ({
           background: "#f8f8f8",
           defaultValue: defaultWorkflowRunStatus,
         },
-        typeInfo: BASE_STATUS,
+        typeInfo: WORKFLOW_STATUS,
         onChange: setWorkflowRunStatus,
       },
     ],

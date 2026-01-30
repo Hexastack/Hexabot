@@ -5,7 +5,7 @@
  */
 
 import type { BadgeWithTitleProps } from "@/app-components/displays/Badge";
-import { BASE_STATUS } from "@/components/visual-editor/v4/components/main/FlowsDrawer/constants";
+import { WORKFLOW_STATUS } from "@/constants/workflow.constants";
 import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 import { normalizeDate } from "@/utils/date";
 
@@ -73,7 +73,7 @@ export const getStatusBadge = (
   status: EWorkflowRunStatus,
 ): BadgeWithTitleProps => {
   const { key: _key, ...statusBadge } =
-    BASE_STATUS[status] ?? BASE_STATUS[EWorkflowRunStatus.IDLE];
+    WORKFLOW_STATUS[status] ?? WORKFLOW_STATUS[EWorkflowRunStatus.IDLE];
 
   return statusBadge;
 };

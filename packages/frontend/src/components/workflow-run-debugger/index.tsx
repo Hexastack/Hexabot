@@ -11,13 +11,10 @@ import { useParams } from "react-router-dom";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
-import { EWorkflowRunStatus } from "@/types/workflow-run.types";
-import { formatDurationMs } from "@/utils/date";
 
 import { RunHeader } from "./components/header/RunHeader";
 import { StepInspectorPanel } from "./components/panels/StepInspectorPanel";
 import { StepTracePanel } from "./components/panels/StepTracePanel";
-import { getStatusBadge } from "./utils";
 
 export const WorkflowRunDebugger = () => {
   const { workflowId, InitiatorId } = useParams<{
@@ -51,7 +48,7 @@ export const WorkflowRunDebugger = () => {
   );
   const latestRun = workflowRuns[0];
   const [selectedRunId, setSelectedRunId] = useState<string | undefined>(
-    latestRun?.id,
+    undefined,
   );
 
   useEffect(() => {
@@ -75,32 +72,25 @@ export const WorkflowRunDebugger = () => {
       workflowRuns.find((run) => run.id === selectedRunId) ?? latestRun,
     [latestRun, selectedRunId, workflowRuns],
   );
-  const selectedStatus =
-    (selectedRun?.status as EWorkflowRunStatus) ?? EWorkflowRunStatus.IDLE;
-  const currentStatusBadge = getStatusBadge(selectedStatus);
   const selectedWorkflow = getWorkflowFromCache(selectedRun?.workflow);
   const selectedWorkflowVersion = selectedRun?.workflowVersion
     ? getWorkflowVersionFromCache(selectedRun?.workflowVersion)
     : null;
-  const selectedDuration = formatDurationMs(selectedRun?.duration);
-  
-return (
-  <Grid container gap={3} flexDirection="column">
-    <RunHeader
-      workflowRuns={workflowRuns}
-      isFetching={isFetching}
-      statusBadge={currentStatusBadge}
-      statusLabel={selectedRun?.status ?? "No runs"}
-      durationLabel={selectedDuration}
-      workflowName={selectedWorkflow?.name ?? "Unknown"}
-      workflowVersion={selectedWorkflowVersion ?? null}
-      selectedRunId={selectedRunId}
-      onSelectRun={setSelectedRunId}
-    />
-    <Grid container spacing={3}>
-      <StepTracePanel />
-      <StepInspectorPanel />
+
+  return (
+    <Grid container gap={1} flexDirection="column">
+      <RunHeader
+        workflowRuns={workflowRuns}
+        isFetching={isFetching}
+        selectedRun={selectedRun}
+        workflow={selectedWorkflow ?? null}
+        workflowVersion={selectedWorkflowVersion ?? null}
+        onSelectRun={setSelectedRunId}
+      />
+      <Grid container spacing={3}>
+        <StepTracePanel />
+        <StepInspectorPanel />
+      </Grid>
     </Grid>
-  </Grid>
-);
+  );
 };

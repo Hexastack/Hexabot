@@ -15,8 +15,7 @@ import {
 import { Box, Paper, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
-import { BadgeWithTitle } from "@/app-components/displays/Badge";
-import { BASE_TYPES } from "@/components/visual-editor/v4/components/main/FlowsDrawer/constants";
+import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
 import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -126,10 +125,9 @@ export const UpcomingSchedule = () => {
                       }}
                     >
                       <Typography variant="h6" component="span">
-                        <BadgeWithTitle
-                          {...BASE_TYPES[scheduledWorkflow.type]}
+                        <WorkflowBadgeWithTitle
                           key={scheduledWorkflow.id}
-                          title={scheduledWorkflow.name}
+                          workflow={scheduledWorkflow}
                         />
                       </Typography>
                       <Typography color="text.secondary">

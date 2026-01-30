@@ -7,32 +7,39 @@
 // eslint-disable-next-line no-duplicate-imports
 import { Box, Tooltip } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
-import type { LucideIcon } from "lucide-react";
+
+import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
+import { useTranslate } from "@/hooks/useTranslate";
+import type { IWorkflow } from "@/types/workfow.types";
 
 type WorkflowTypeBadgeProps = {
-  icon?: LucideIcon;
-  label?: string;
-  color?: string;
-  background?: string;
+  workflow: IWorkflow;
+  selected?: boolean;
 };
 
 export const WorkflowTypeBadge = ({
-  icon: Icon,
-  label,
-  color,
-  background,
+  workflow,
+  selected = true,
 }: WorkflowTypeBadgeProps) => {
   const theme = useTheme();
+  const { t } = useTranslate();
+  const typeInfo = WORKFLOW_TYPES[workflow.type];
 
-  if (!Icon) {
+  if (!typeInfo) {
     return null;
   }
 
-  const resolvedColor = color ?? theme.palette.text.secondary;
-  const resolvedBackground = background ?? alpha(resolvedColor, 0.12);
+  const { icon: Icon, labelKey } = typeInfo;
+  const label = t(labelKey);
+  const resolvedColor = selected
+    ? typeInfo.color
+    : theme.palette.text.secondary;
+  const resolvedBackground = selected
+    ? typeInfo.background
+    : alpha(resolvedColor, 0.12);
 
   return (
-    <Tooltip title={label ?? ""} arrow disableHoverListener={!label}>
+    <Tooltip title={label} arrow disableHoverListener={!label}>
       <Box
         sx={{
           display: "flex",

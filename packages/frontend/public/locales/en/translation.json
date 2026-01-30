@@ -13,6 +13,7 @@
     "server_error": "500 SERVER ERROR",
     "internal_server_error": "Oops! Something went wrong ... the server may had encountered an internal error. Please contact our support team if needed.",
     "loading": "Loading...",
+    "loading_runs": "Loading runs...",
     "save_in_progress": "Save in progress",
     "full_name_is_required": "First and last name are required",
     "first_name_is_required": "First name is required",
@@ -71,6 +72,8 @@
     "url_is_invalid": "The provided URL is invalid",
     "payload_is_required": "Payload is required",
     "no_data_to_display": "No data to display",
+    "no_runs": "No runs",
+    "no_runs_found": "No runs found",
     "label_is_required": "Label is required",
     "roles_is_required": "Roles are required",
     "name_is_required": "Name is required",
@@ -532,7 +535,12 @@
     "type_message_here": "Type message here ....",
     "mark_as_default": "By Default",
     "pattern": "Pattern",
-    "full_name": "First and last name"
+    "full_name": "First and last name",
+    "step_trace": "Step Trace",
+    "step_inspector": "Step Inspector",
+    "latest_run": "Latest run",
+    "run_at": "Run {{0}}",
+    "unknown": "Unknown"
   },
   "button": {
     "login": "Sign In",
@@ -607,6 +615,12 @@
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle",
     "annotate": "Annotate Dataset"
+  },
+  "tooltip": {
+    "follow_live": "Follow live",
+    "export_trace": "Export trace (JSON)",
+    "copy_run_id": "Copy run ID",
+    "clear": "Clear"
   },
   "input": {
     "search": "Search"

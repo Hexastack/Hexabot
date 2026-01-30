@@ -7,38 +7,29 @@
 import { Box, Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
-import type { BadgeWithTitleProps } from "@/app-components/displays/Badge";
-import type {
-  IWorkflowRun,
-  IWorkflowRunFull,
-} from "@/types/workflow-run.types";
+import type { IWorkflowRun } from "@/types/workflow-run.types";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
+import type { IWorkflow } from "@/types/workfow.types";
 
 import { RunActions } from "./RunActions";
 import { RunMetaSummary } from "./RunMetaSummary";
 import { RunStatusSummary } from "./RunStatusSummary";
 
 type RunHeaderProps = {
-  workflowRuns: Array<IWorkflowRun | IWorkflowRunFull>;
+  workflowRuns: Array<IWorkflowRun>;
   isFetching: boolean;
-  statusBadge: BadgeWithTitleProps;
-  statusLabel: string;
-  durationLabel: string;
-  workflowName: string;
+  selectedRun?: IWorkflowRun;
+  workflow?: IWorkflow | null;
   workflowVersion?: IWorkflowVersion | null;
-  selectedRunId?: string;
   onSelectRun: (runId: string) => void;
 };
 
 export const RunHeader = ({
   workflowRuns,
   isFetching,
-  statusBadge,
-  statusLabel,
-  durationLabel,
-  workflowName,
+  selectedRun,
+  workflow,
   workflowVersion,
-  selectedRunId,
   onSelectRun,
 }: RunHeaderProps) => {
   return (
@@ -54,27 +45,26 @@ export const RunHeader = ({
       <Paper
         sx={{
           p: 2,
-          borderRadius: 3,
           border: "1px solid",
           borderColor: "divider",
           boxShadow: (theme) => theme.shadows[1],
         }}
       >
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            size={{ xs: 12, lg: 9 }}
+          >
             <RunStatusSummary
               workflowRuns={workflowRuns}
               isFetching={isFetching}
-              statusBadge={statusBadge}
-              statusLabel={statusLabel}
-              durationLabel={durationLabel}
-              selectedRunId={selectedRunId}
+              selectedRun={selectedRun}
               onSelectRun={onSelectRun}
             />
-          </Grid>
-          <Grid size={{ xs: 12, lg: 5 }}>
             <RunMetaSummary
-              workflowName={workflowName}
+              workflow={workflow}
               workflowVersion={workflowVersion}
             />
           </Grid>

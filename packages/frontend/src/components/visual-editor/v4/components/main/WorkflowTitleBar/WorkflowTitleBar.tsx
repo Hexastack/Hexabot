@@ -5,7 +5,6 @@
  */
 
 import { Box, Tooltip, Typography } from "@mui/material";
-import type { LucideIcon } from "lucide-react";
 import type { MouseEvent } from "react";
 
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -14,7 +13,7 @@ import { EntityType } from "@/services/types";
 import type { IWorkflow } from "@/types/workfow.types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
-import { WorkflowTypeBadge } from "../../WorkflowTypeBadge";
+import { WorkflowTypeBadge } from "../../../../../../app-components/workflow/WorkflowTypeBadge";
 import { WorkflowActionButtons } from "../WorkflowActionButtons";
 
 import { TitleBarCard } from "./TitleBarCard";
@@ -23,10 +22,6 @@ import { WorkflowSaveButton } from "./WorkflowSaveButton";
 
 type WorkflowTitleBarProps = {
   workflow: IWorkflow;
-  typeIcon?: LucideIcon;
-  typeLabel?: string;
-  typeColor?: string;
-  typeBackground?: string;
   onEdit?: (workflow: IWorkflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   onSave?: () => void;
@@ -39,10 +34,6 @@ type WorkflowTitleBarProps = {
 
 export const WorkflowTitleBar = ({
   workflow,
-  typeIcon,
-  typeLabel,
-  typeColor,
-  typeBackground,
   onEdit,
   onOpenMenu,
   onSave,
@@ -101,10 +92,8 @@ export const WorkflowTitleBar = ({
           }}
         >
           <WorkflowTypeBadge
-            icon={typeIcon}
-            label={typeLabel}
-            color={typeColor}
-            background={typeBackground}
+            workflow={workflow}
+            selected
           />
           <Box
             sx={{

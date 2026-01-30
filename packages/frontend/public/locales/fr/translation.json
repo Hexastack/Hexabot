@@ -13,6 +13,7 @@
     "server_error": "500 ERREUR SERVEUR",
     "internal_server_error": "Oops! Une erreur interne s'est produite ... le serveur a peut-être rencontré une erreur interne. Veuillez contacter notre équipe de support si nécessaire.",
     "loading": "Chargement...",
+    "loading_runs": "Chargement des exécutions...",
     "save_in_progress": "Sauvegarde en cours",
     "full_name_is_required": "Prénom et nom sont requis",
     "first_name_is_required": "Le prénom est requis",
@@ -74,6 +75,8 @@
     "url_is_invalid": "L'URL fournie est invalide",
     "payload_is_required": "Le payload est requis",
     "no_data_to_display": "Pas de données",
+    "no_runs": "Aucune exécution",
+    "no_runs_found": "Aucune exécution trouvée",
     "label_is_required": "Le libellé est obligatoire",
     "roles_is_required": "Les roles sont obligatoires",
     "name_is_required": "Le nom est obligatoire",
@@ -497,7 +500,12 @@
     "all_flows": "Tous les flux",
     "types": "Types",
     "triggered_at": "Déclenché à",
-    "no_scheduled_workflows": "Aucun Workflow planifié pour le moment"
+    "no_scheduled_workflows": "Aucun Workflow planifié pour le moment",
+    "step_trace": "Trace d'étape",
+    "step_inspector": "Inspecteur d'étape",
+    "latest_run": "Dernière exécution",
+    "run_at": "Exécution {{0}}",
+    "unknown": "Inconnu"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
@@ -607,6 +615,12 @@
     "mark_as_default": "Par Défaut",
     "toggle": "Basculer",
     "annotate": "Annoter les données"
+  },
+  "tooltip": {
+    "follow_live": "Suivre en direct",
+    "export_trace": "Exporter la trace (JSON)",
+    "copy_run_id": "Copier l'ID d'exécution",
+    "clear": "Effacer"
   },
   "input": {
     "search": "Recherche"

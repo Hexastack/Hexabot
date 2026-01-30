@@ -8,15 +8,29 @@ import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
   Brain,
+  ChartNoAxesGantt,
+  Check,
   CircleStop,
+  Clock,
   Database,
   GitBranch,
   GripVertical,
+  Hand,
+  MessageSquare,
+  Pause,
   Play,
   Repeat,
+  X,
   Zap,
+  type LucideIcon,
 } from "lucide-react";
 
+import type { TTranslationKeys } from "@/i18n/i18n.types";
+import { theme } from "@/layout/themes/theme";
+import { EWorkflowRunStatus } from "@/types/workflow-run.types";
+import { WorkflowType } from "@/types/workfow.types";
+
+import type { FlowTypeInfo } from "../components/visual-editor/v4/components/main/FlowsDrawer/types";
 import {
   EEdgeType,
   EIndicatorType,
@@ -24,12 +38,12 @@ import {
   ENodeType,
   EOperatorType,
   type INodeConfig,
-} from "../types/workflow-node.types";
+} from "../components/visual-editor/v4/types/workflow-node.types";
 import {
   getGroupId,
   getTaskAction,
   getTaskDescription,
-} from "../utils/graph.utils";
+} from "../components/visual-editor/v4/utils/graph.utils";
 
 export const DEFAULT_NODE_PROPS = {
   draggable: false,
@@ -169,3 +183,77 @@ export const NODES = {
     },
   },
 } satisfies INodeConfig["nodes"];
+
+export const WORKFLOW_STATUS: Record<
+  EWorkflowRunStatus,
+  Omit<FlowTypeInfo, "labelKey">
+> = {
+  [EWorkflowRunStatus.FAILED]: {
+    key: WorkflowType.conversational,
+    icon: X,
+    color: theme.palette.error.main,
+    background: "#f8f8f8",
+  },
+  [EWorkflowRunStatus.FINISHED]: {
+    key: WorkflowType.conversational,
+    icon: Check,
+    color: theme.palette.success.main,
+    background: "#f8f8f8",
+  },
+  [EWorkflowRunStatus.IDLE]: {
+    key: WorkflowType.conversational,
+    icon: ChartNoAxesGantt,
+    color: theme.palette.info.main,
+    background: "#f8f8f8",
+  },
+  [EWorkflowRunStatus.RUNNING]: {
+    key: WorkflowType.conversational,
+    icon: Play,
+    color: theme.palette.success.main,
+    background: "#f8f8f8",
+  },
+  [EWorkflowRunStatus.SUSPENDED]: {
+    key: WorkflowType.conversational,
+    icon: Pause,
+    color: theme.palette.warning.main,
+    background: "#f8f8f8",
+  },
+};
+
+type WorkflowTypeInfo = {
+  key: WorkflowType;
+  labelKey: TTranslationKeys;
+  icon: LucideIcon;
+  color: string;
+  background: string;
+};
+
+export const WORKFLOW_TYPES: Record<WorkflowType, WorkflowTypeInfo> = {
+  [WorkflowType.conversational]: {
+    key: WorkflowType.conversational,
+    labelKey: "label.conversational",
+    icon: MessageSquare,
+    color: "#1d4ed8",
+    background: "#e0ecff",
+  },
+  [WorkflowType.scheduled]: {
+    key: WorkflowType.scheduled,
+    labelKey: "label.scheduled",
+    icon: Clock,
+    color: "#b45309",
+    background: "#fef3c7",
+  },
+  [WorkflowType.manual]: {
+    key: WorkflowType.manual,
+    labelKey: "label.manual",
+    icon: Hand,
+    color: "#047857",
+    background: "#d1fae5",
+  },
+};
+
+export const WORKFLOW_TYPE_ORDER: Record<WorkflowType, number> = {
+  [WorkflowType.conversational]: 0,
+  [WorkflowType.scheduled]: 1,
+  [WorkflowType.manual]: 2,
+};

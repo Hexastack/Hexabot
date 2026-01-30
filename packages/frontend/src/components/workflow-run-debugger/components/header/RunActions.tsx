@@ -8,6 +8,11 @@ import { IconButton, Stack, Tooltip } from "@mui/material";
 import { Copy, Download, PlayCircle, Trash2 } from "lucide-react";
 
 export const RunActions = () => {
+  const followLiveLabel = "tooltip.follow_live";
+  const exportTraceLabel = "tooltip.export_trace";
+  const copyRunIdLabel = "tooltip.copy_run_id";
+  const clearLabel = "tooltip.clear";
+
   return (
     <Stack
       direction="row"
@@ -15,23 +20,23 @@ export const RunActions = () => {
       justifyContent={{ xs: "flex-start", lg: "flex-end" }}
       alignItems="center"
     >
-      <Tooltip title="Follow live">
-        <IconButton size="small" aria-label="Follow live">
+      <Tooltip title={followLiveLabel}>
+        <IconButton size="small" aria-label={followLiveLabel}>
           <PlayCircle size={18} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Export trace (JSON)">
-        <IconButton size="small" aria-label="Export trace">
+      <Tooltip title={exportTraceLabel}>
+        <IconButton size="small" aria-label={exportTraceLabel}>
           <Download size={18} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Copy run ID">
-        <IconButton size="small" aria-label="Copy run ID">
+      <Tooltip title={copyRunIdLabel}>
+        <IconButton size="small" aria-label={copyRunIdLabel}>
           <Copy size={18} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Clear">
-        <IconButton size="small" aria-label="Clear">
+      <Tooltip title={clearLabel}>
+        <IconButton size="small" aria-label={clearLabel}>
           <Trash2 size={18} />
         </IconButton>
       </Tooltip>

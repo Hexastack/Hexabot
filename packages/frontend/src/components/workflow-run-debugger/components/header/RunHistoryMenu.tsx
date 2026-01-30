@@ -42,7 +42,7 @@ export const RunHistoryMenu = ({
   isFetching,
   selectedRunId,
 }: RunHistoryMenuProps) => {
-  const { i18n } = useTranslate();
+  const { i18n, t } = useTranslate();
   const getWorkflowVersionFromCache = useGetFromCache(
     EntityType.WORKFLOW_VERSION,
   );
@@ -63,7 +63,7 @@ export const RunHistoryMenu = ({
       {isFetching && !workflowRuns.length ? (
         <MenuItem disabled>
           <Typography variant="body2" color="text.secondary">
-            Loading runs...
+            {t("message.loading_runs")}
           </Typography>
         </MenuItem>
       ) : workflowRuns.length ? (
@@ -96,15 +96,9 @@ export const RunHistoryMenu = ({
               >
                 <Stack spacing={0.25}>
                   <Typography variant="body2" fontWeight={600}>
-                    {timestamp}{" "}
-                    <VersionChip version={workflowVersion ?? null} />
+                    {timestamp}
                   </Typography>
-                  <Stack
-                    direction="row"
-                    spacing={0.5}
-                    alignItems="center"
-                    flexWrap="wrap"
-                  />
+                  <VersionChip version={workflowVersion ?? null} />
                 </Stack>
                 <BadgeWithTitle {...statusBadge} title={statusLabel} />
               </Stack>
@@ -114,7 +108,7 @@ export const RunHistoryMenu = ({
       ) : (
         <MenuItem disabled>
           <Typography variant="body2" color="text.secondary">
-            No runs found
+            {t("message.no_runs_found")}
           </Typography>
         </MenuItem>
       )}
