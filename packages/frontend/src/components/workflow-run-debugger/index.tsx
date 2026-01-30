@@ -13,8 +13,8 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 
 import { RunHeader } from "./components/header/RunHeader";
+import { StepTracePanel } from "./components/panels/step-trace-panel";
 import { StepInspectorPanel } from "./components/panels/StepInspectorPanel";
-import { StepTracePanel } from "./components/panels/StepTracePanel";
 
 export const WorkflowRunDebugger = () => {
   const { workflowId, InitiatorId } = useParams<{
@@ -88,7 +88,7 @@ export const WorkflowRunDebugger = () => {
         onSelectRun={setSelectedRunId}
       />
       <Grid container spacing={3}>
-        <StepTracePanel />
+        <StepTracePanel snapshot={selectedRun?.snapshot ?? null} />
         <StepInspectorPanel />
       </Grid>
     </Grid>

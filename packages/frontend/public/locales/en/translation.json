@@ -500,6 +500,26 @@
     "all_flows": "All flows",
     "types": "Types",
     "triggered_at": "Triggered At",
+    "step_trace": {
+      "title": "Step Trace",
+      "executed_only": "Executed only",
+      "include_skipped": "Include skipped",
+      "search_placeholder": "Search steps by name or type",
+      "empty": "No steps match your filters.",
+      "empty_no_snapshot": "No snapshot data yet.",
+      "status_completed": "Completed",
+      "status_running": "Running",
+      "status_failed": "Failed",
+      "status_skipped": "Skipped",
+      "status_suspended": "Suspended",
+      "status_pending": "Pending",
+      "type_llm": "LLM",
+      "type_http": "HTTP",
+      "type_message": "Message",
+      "type_retry": "Retry",
+      "type_step": "Step"
+    },
+    "step_inspector": "Step Inspector",
     "no_scheduled_workflows": "No scheduled workflows yet"
   },
   "placeholder": {
