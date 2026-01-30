@@ -28,17 +28,11 @@ export interface IConfig {
   maxUploadSize: number;
 }
 
-const DEFAULT_CONFIG = {
-  apiUrl: "/api",
-  ssoEnabled: false,
-  maxUploadSize: -1,
-} as const satisfies IConfig;
-
 let timer;
 
 export const ConfigProvider = ({ children }) => {
   const { t } = useTranslate();
-  const [config, setConfig] = useState<IConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<IConfig | null>(null);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
@@ -67,7 +61,7 @@ export const ConfigProvider = ({ children }) => {
     loadConfig();
   }, []);
 
-  if (error) {
+  if (error || !config) {
     return (
       <Grid
         container
