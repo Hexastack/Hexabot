@@ -96,7 +96,7 @@ export const StepTracePanel = ({ snapshot }: StepTracePanelProps) => {
           gap: 2,
         }}
       >
-        <StepTraceHeader status={snapshot?.status} />
+        <StepTraceHeader />
         <StepTraceFilters
           includeSkipped={includeSkipped}
           onIncludeSkippedChange={setIncludeSkipped}

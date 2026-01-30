@@ -31,7 +31,7 @@ export const StepTraceFilters = ({
   const { t } = useTranslate();
 
   return (
-    <Box display="flex" flexWrap="wrap" gap={1.5} alignItems="center">
+    <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
       <ToggleButtonGroup
         exclusive
         size="small"

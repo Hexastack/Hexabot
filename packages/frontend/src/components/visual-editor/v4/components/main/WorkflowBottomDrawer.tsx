@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Drawer, Typography, useMediaQuery } from "@mui/material";
+import { Box, Drawer, useMediaQuery } from "@mui/material";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import {
   useCallback,
@@ -15,7 +15,11 @@ import {
 } from "react";
 
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
+import { WorkflowRunDebugger } from "@/components/workflow-run-debugger/components/WorkflowRunDebugger";
+import { useAuth } from "@/hooks/useAuth";
 import { useTranslate } from "@/hooks/useTranslate";
+
+import { useWorkflow } from "../../hooks/useWorkflow";
 
 const headerOffset = 65;
 const defaultDrawerHeight = 380;
@@ -114,6 +118,8 @@ const DrawerResizer = styled(Box)(({ theme }) => ({
 export const WorkflowBottomDrawer = () => {
   const { t } = useTranslate();
   const theme = useTheme();
+  const { workflow } = useWorkflow();
+  const { user } = useAuth();
   const isStacked = useMediaQuery(theme.breakpoints.down("md"));
   const getMaxDrawerHeight = useCallback(() => {
     if (typeof window === "undefined") {
@@ -397,9 +403,10 @@ export const WorkflowBottomDrawer = () => {
             />
           )}
           <DrawerColumn>
-            <Typography variant="body2" color="text.secondary">
-              {t("message.no_data_to_display")}
-            </Typography>
+            <WorkflowRunDebugger
+              workflowId={workflow?.id}
+              initiatorId={user?.id}
+            />
           </DrawerColumn>
         </DrawerBody>
       </Drawer>
