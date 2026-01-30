@@ -55,53 +55,30 @@ const getHandleDimensions = (
         };
   }
 };
-const getBorderRadiusConfig = (
+const getBorderRadius = (
   position: Position,
   direction: ResizeControlDirection,
 ) => {
-  const isHorizontal = direction === "horizontal";
+  const radiusMap = {
+    [Position.Left]: {
+      horizontal: { borderTopRightRadius: "0", borderBottomRightRadius: "0" },
+      vertical: { borderBottomLeftRadius: "0", borderBottomRightRadius: "0" },
+    },
+    [Position.Right]: {
+      horizontal: { borderTopLeftRadius: "0", borderBottomLeftRadius: "0" },
+      vertical: { borderTopLeftRadius: "0", borderTopRightRadius: "0" },
+    },
+    [Position.Bottom]: {
+      horizontal: { borderTopLeftRadius: "0", borderTopRightRadius: "0" },
+      vertical: { borderBottomRightRadius: "0", borderTopRightRadius: "0" },
+    },
+    [Position.Top]: {
+      horizontal: { borderBottomLeftRadius: "0", borderBottomRightRadius: "0" },
+      vertical: { borderTopLeftRadius: "0", borderBottomLeftRadius: "0" },
+    },
+  };
 
-  if (position === Position.Left) {
-    return isHorizontal
-      ? {
-          borderTopRightRadius: "0",
-          borderBottomRightRadius: "0",
-        }
-      : {
-          borderBottomLeftRadius: "0",
-          borderBottomRightRadius: "0",
-        };
-  } else if (position === Position.Right) {
-    return isHorizontal
-      ? {
-          borderTopLeftRadius: "0",
-          borderBottomLeftRadius: "0",
-        }
-      : {
-          borderTopLeftRadius: "0",
-          borderTopRightRadius: "0",
-        };
-  } else if (position === Position.Bottom) {
-    return isHorizontal
-      ? {
-          borderTopLeftRadius: "0",
-          borderTopRightRadius: "0",
-        }
-      : {
-          borderBottomRightRadius: "0",
-          borderTopRightRadius: "0",
-        };
-  } else if (position === Position.Top) {
-    return isHorizontal
-      ? {
-          borderBottomLeftRadius: "0",
-          borderBottomRightRadius: "0",
-        }
-      : {
-          borderTopLeftRadius: "0",
-          borderBottomLeftRadius: "0",
-        };
-  }
+  return radiusMap[position][direction];
 };
 const getConfig = (
   id: ELinkType,
@@ -112,25 +89,16 @@ const getConfig = (
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
-        style: {
-          ...getBorderRadiusConfig(Position.Left, direction),
-        },
       };
     case ELinkType.GROUP_OUT:
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
-        style: {
-          ...getBorderRadiusConfig(Position.Right, direction),
-        },
       };
     case ELinkType.INDICATOR_IN:
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
-        style: {
-          ...getBorderRadiusConfig(Position.Left, direction),
-        },
       };
     case ELinkType.INDICATOR_OUT:
       return {
@@ -138,17 +106,11 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         isConnectable: false,
         isValidConnection: () => false,
-        style: {
-          ...getBorderRadiusConfig(Position.Right, direction),
-        },
       };
     case ELinkType.OPERATOR_IN:
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
-        style: {
-          ...getBorderRadiusConfig(Position.Left, direction),
-        },
       };
     case ELinkType.OPERATOR_OUT:
       return {
@@ -156,9 +118,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         isConnectable: false,
         isValidConnection: () => false,
-        style: {
-          ...getBorderRadiusConfig(Position.Right, direction),
-        },
       };
     case ELinkType.TASK_IN:
       return {
@@ -166,7 +125,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
           ...(direction === "horizontal" ? {} : {}),
-          ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
     case ELinkType.TASK_OUT:
@@ -175,16 +133,12 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: {
           ...(direction === "horizontal" ? {} : {}),
-          ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
     case ELinkType.TASK_TOOL:
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        style: {
-          ...getBorderRadiusConfig(Position.Bottom, direction),
-        },
       };
     case ELinkType.AGENT_IN:
       return {
@@ -192,7 +146,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Left : Position.Top,
         style: {
           ...(direction === "horizontal" ? { top: "50%" } : {}),
-          ...getBorderRadiusConfig(Position.Left, direction),
         },
       };
     case ELinkType.AGENT_OUT:
@@ -201,7 +154,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: {
           ...(direction === "horizontal" ? { top: "50%" } : {}),
-          ...getBorderRadiusConfig(Position.Right, direction),
         },
       };
 
@@ -211,7 +163,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
           ...(direction === "horizontal" ? { left: "10%" } : { top: "30%" }),
-          ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
     case ELinkType.AGENT_MEMORY:
@@ -220,7 +171,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
           ...(direction === "horizontal" ? { left: "50%" } : { top: "50%" }),
-          ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
     case ELinkType.AGENT_TOOL:
@@ -229,7 +179,6 @@ const getConfig = (
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
         style: {
           ...(direction === "horizontal" ? { left: "90%" } : { top: "70%" }),
-          ...getBorderRadiusConfig(Position.Bottom, direction),
         },
       };
     case ELinkType.TOOL_IN:
@@ -242,7 +191,6 @@ const getConfig = (
                 left: "50%",
               }
             : {}),
-          ...getBorderRadiusConfig(Position.Top, direction),
         },
       };
     case ELinkType.MODEL_IN:
@@ -255,7 +203,6 @@ const getConfig = (
                 left: "50%",
               }
             : {}),
-          ...getBorderRadiusConfig(Position.Top, direction),
         },
       };
     case ELinkType.MEMORY_IN:
@@ -268,16 +215,12 @@ const getConfig = (
                 left: "50%",
               }
             : {}),
-          ...getBorderRadiusConfig(Position.Top, direction),
         },
       };
     default:
       return {
         type: EHandleType.TARGET,
         position: direction === "horizontal" ? Position.Left : Position.Top,
-        style: {
-          ...getBorderRadiusConfig(Position.Left, direction),
-        },
       };
   }
 };
@@ -287,10 +230,12 @@ export const getHandleConfig = (
   direction: ResizeControlDirection = "horizontal",
 ): getHandleConfigProps => {
   const config = getConfig(id, direction);
+  const { position: initialPosition } = getConfig(id, "horizontal");
   const defaultConfig: Partial<HandleProps> = {
     id,
     style: {
       ...getHandleDimensions(id, config.position, direction),
+      ...getBorderRadius(initialPosition, direction),
       background: "#555",
     },
   };
