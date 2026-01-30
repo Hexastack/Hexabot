@@ -12,7 +12,7 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 
 import { RunHeader } from "./header/RunHeader";
-import { InspectorPanel } from "./panels/InspectorPanel";
+import { InspectorPanel } from "./panels/inspector-panel/InspectorPanel";
 import { StepTracePanel } from "./panels/step-trace-panel";
 
 type WorkflowRunDebuggerProps = {
@@ -89,7 +89,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
       />
       <Grid container spacing={3}>
         <StepTracePanel snapshot={selectedRun?.snapshot ?? null} />
-        <InspectorPanel />
+        <InspectorPanel run={selectedRun ?? null} />
       </Grid>
     </Grid>
   );

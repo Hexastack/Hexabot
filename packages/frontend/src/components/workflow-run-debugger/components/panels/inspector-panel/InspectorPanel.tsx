@@ -7,10 +7,16 @@
 import { Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
-import { InspectorTabs } from "@/components/workflow-run-debugger/components/panels/InspectorTabs";
 import { useTranslate } from "@/hooks/useTranslate";
+import { IWorkflowRun } from "@/types/workflow-run.types";
 
-export const InspectorPanel = () => {
+import { InspectorTabs } from "./InspectorTabs";
+
+type InspectorPanelProps = {
+  run: IWorkflowRun | null;
+};
+
+export const InspectorPanel = ({ run }: InspectorPanelProps) => {
   const { t } = useTranslate();
 
   return (
@@ -30,7 +36,7 @@ export const InspectorPanel = () => {
         <Typography variant="subtitle2" fontWeight={600}>
           {t("label.inspector")}
         </Typography>
-        <InspectorTabs />
+        <InspectorTabs run={run} />
       </Paper>
     </Grid>
   );
