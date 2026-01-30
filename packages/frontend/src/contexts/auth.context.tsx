@@ -19,11 +19,7 @@ import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
-import {
-  QueryObserverResult,
-  RefetchOptions,
-  UseMutateFunction,
-} from "@/types/tanstack.types";
+import { UseMutateFunction } from "@/types/tanstack.types";
 import { IUser } from "@/types/user.types";
 import { hasPublicPath, isLoginPath } from "@/utils/URL";
 
@@ -33,13 +29,17 @@ export interface AuthContextValue {
   setUser: (data: IUser | undefined) => void;
   authenticate: (user: IUser) => void;
   logout: UseMutateFunction;
-  refetchUser: (
-    options?: RefetchOptions | undefined,
-  ) => Promise<QueryObserverResult<IUser, Error>>;
   error: Error | null;
 }
 
-export const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue>({
+  user: undefined,
+  isAuthenticated: false,
+  setUser: () => {},
+  authenticate: () => {},
+  logout: () => {},
+  error: null,
+});
 
 AuthContext.displayName = "AuthContext";
 
@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     data: user,
     error,
     isLoading,
-    refetch,
   } = useTanstackQuery<IUser, Error>({
     queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
@@ -120,7 +119,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
         error,
         setUser,
         authenticate,
-        refetchUser: refetch,
         logout,
       }}
     >
