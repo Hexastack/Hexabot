@@ -25,10 +25,8 @@ function hasSameSender(
   m1: IMessage | IMessageFull,
   m2: IMessage | IMessageFull,
 ): boolean {
-  const sender1 =
-    m1.sender && typeof m1.sender === "object" ? m1.sender.id : m1.sender;
-  const sender2 =
-    m2.sender && typeof m2.sender === "object" ? m2.sender.id : m2.sender;
+  const sender1 = typeof m1.sender === "string" ? m1.sender : m1.sender?.id;
+  const sender2 = typeof m2.sender === "string" ? m2.sender : m2.sender?.id;
 
   return sender1 === sender2;
 }
@@ -38,9 +36,9 @@ function hasSameRecipient(
   m2: IMessage | IMessageFull,
 ): boolean {
   const recipient1 =
-    typeof m1.recipient === "object" ? m1.recipient.id : m1.recipient;
+    typeof m1.recipient === "string" ? m1.recipient : m1.recipient?.id;
   const recipient2 =
-    typeof m2.recipient === "object" ? m2.recipient.id : m2.recipient;
+    typeof m2.recipient === "string" ? m2.recipient : m2.recipient?.id;
 
   return recipient1 === recipient2;
 }
