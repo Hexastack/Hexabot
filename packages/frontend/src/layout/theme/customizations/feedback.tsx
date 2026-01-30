@@ -38,6 +38,18 @@ export const feedbackCustomizations: Components<Theme> = {
       }),
     },
   },
+  MuiDialogTitle: {
+    styleOverrides: {
+      root: {
+        "& .MuiIconButton-root": {
+          top: "10px",
+          right: "10px",
+          position: "absolute",
+          borderRadius: "50%",
+        },
+      },
+    },
+  },
   MuiLinearProgress: {
     styleOverrides: {
       root: ({ theme }) => ({
