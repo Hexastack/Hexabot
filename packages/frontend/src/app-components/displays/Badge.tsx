@@ -49,8 +49,8 @@ export const Badge = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 24,
-        height: 24,
+        width: 22,
+        height: 22,
         borderRadius: 10,
         backgroundColor: background,
         color,
@@ -58,7 +58,7 @@ export const Badge = ({
         boxShadow: "0 0 4px #0001 inset",
       }}
     >
-      <TypeIcon size={14} />
+      <TypeIcon size={13} />
     </Box>
   );
 };

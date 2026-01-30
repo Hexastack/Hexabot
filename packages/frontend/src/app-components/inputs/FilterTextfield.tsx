@@ -6,7 +6,7 @@
 
 import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
 import debounce from "@mui/utils/debounce";
-import { Search as SearchIcon, X as ClearIcon } from "lucide-react";
+import { X as ClearIcon, Search as SearchIcon } from "lucide-react";
 import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -77,10 +77,10 @@ export const FilterTextfield: FC<FilterTextFieldProps> = ({
       slotProps={{
         input: {
           startAdornment: <Adornment Icon={SearchIcon} />,
-          endAdornment: clearable && (
+          endAdornment: defaultValue && clearable && (
             <InputAdornment position="end" onClick={handleClear}>
-              <IconButton size="small" sx={{ marginRight: -1 }}>
-                <ClearIcon size={16} />
+              <IconButton>
+                <ClearIcon />
               </IconButton>
             </InputAdornment>
           ),
@@ -88,7 +88,6 @@ export const FilterTextfield: FC<FilterTextFieldProps> = ({
       }}
       placeholder={t("placeholder.keywords")}
       {...props}
-      // value={inputValue}
       defaultValue={defaultValue}
       onChange={handleChange}
     />

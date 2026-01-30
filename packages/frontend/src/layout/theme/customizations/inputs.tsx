@@ -15,8 +15,7 @@ import { toggleButtonGroupClasses } from "@mui/material/ToggleButtonGroup";
 
 import { brand, gray } from "../themePrimitives";
 
-/* eslint-disable import/prefer-default-export */
-export const inputsCustomizations: Components<Theme> = {
+const buttonsCustomizations: Components<Theme> = {
   MuiButtonBase: {
     defaultProps: {
       disableTouchRipple: true,
@@ -316,6 +315,8 @@ export const inputsCustomizations: Components<Theme> = {
       }),
     },
   },
+};
+const checkboxCustomizations: Components<Theme> = {
   MuiCheckbox: {
     defaultProps: {
       disableRipple: true,
@@ -371,6 +372,31 @@ export const inputsCustomizations: Components<Theme> = {
       }),
     },
   },
+};
+
+export const inputsCustomizations: Components<Theme> = {
+  ...buttonsCustomizations,
+  ...checkboxCustomizations,
+  MuiAutocomplete: {
+    styleOverrides: {
+      root: {
+        "& .MuiAutocomplete-endAdornment": {
+          display: "flex",
+          gap: "6px",
+        },
+        "& .MuiAutocomplete-endAdornment button": {
+          width: "calc(15px + 9px)",
+          height: "calc(15px + 9px)",
+        },
+        "& .MuiAutocomplete-endAdornment button svg": {
+          minWidth: "15px",
+          minHeight: "15px",
+          maxWidth: "15px",
+          maxHeight: "15px",
+        },
+      },
+    },
+  },
   MuiInputBase: {
     styleOverrides: {
       root: {
@@ -390,7 +416,7 @@ export const inputsCustomizations: Components<Theme> = {
         padding: 0,
       },
       root: ({ theme }) => ({
-        padding: "8px 12px",
+        padding: "9px 12px",
         color: (theme.vars || theme).palette.text.primary,
         borderRadius: (theme.vars || theme).shape.borderRadius,
         borderColor: (theme.vars || theme).palette.divider,
@@ -411,7 +437,8 @@ export const inputsCustomizations: Components<Theme> = {
         variants: [
           {
             props: {
-              size: "small",
+              type: "text",
+              multiline: false,
             },
             style: {
               height: "2.25rem",
@@ -419,7 +446,8 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              size: "medium",
+              type: "text",
+              multiline: false,
             },
             style: {
               height: "2.5rem",
@@ -433,6 +461,19 @@ export const inputsCustomizations: Components<Theme> = {
   MuiInputAdornment: {
     styleOverrides: {
       root: ({ theme }) => ({
+        "& button:last-child": {
+          marginRight: "-6px",
+        },
+        "& button": {
+          width: "calc(15px + 9px)",
+          height: "calc(15px + 9px)",
+        },
+        "& button svg": {
+          minWidth: "15px",
+          minHeight: "15px",
+          maxWidth: "15px",
+          maxHeight: "15px",
+        },
         color: (theme.vars || theme).palette.grey[500],
         ...theme.applyStyles("dark", {
           color: (theme.vars || theme).palette.grey[400],
@@ -447,5 +488,14 @@ export const inputsCustomizations: Components<Theme> = {
         marginBottom: 8,
       }),
     },
+  },
+  MuiCssBaseline: {
+    styleOverrides: `
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+      }`,
   },
 };
