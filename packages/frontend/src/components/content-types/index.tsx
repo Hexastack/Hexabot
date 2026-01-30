@@ -47,7 +47,7 @@ export const ContentTypes = () => {
     [
       {
         label: ActionColumnLabel.Content,
-        action: (row) => router.push(`/content/${row.id}/list`),
+        action: (row) => router.push(`/content-types/content/${row.id}`),
       },
       {
         label: ActionColumnLabel.Edit,
