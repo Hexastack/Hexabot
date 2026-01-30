@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { CircularProgress, Grid, Typography } from "@mui/material";
 import { createContext, useEffect, useState } from "react";
 
-import { Progress } from "@/app-components/displays/Progress";
+import { useTranslate } from "@/hooks/useTranslate";
 import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
 
 const MB = 1024 * 1024;
@@ -27,27 +28,62 @@ export interface IConfig {
   maxUploadSize: number;
 }
 
+const DEFAULT_CONFIG = {
+  apiUrl: "/api",
+  ssoEnabled: false,
+  maxUploadSize: -1,
+} as const satisfies IConfig;
+
+let timer;
+
 export const ConfigProvider = ({ children }) => {
-  const [config, setConfig] = useState<IConfig | null>(null);
+  const { t } = useTranslate();
+  const [config, setConfig] = useState<IConfig>(DEFAULT_CONFIG);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadConfig = async () => {
+    const loadConfig = async (reload: boolean = false) => {
       try {
+        clearInterval(timer);
         const res = await fetch(`${defaultConfig.apiUrl}/config`);
         const data = (await res.json()) as IConfig;
 
         setConfig(data);
+
+        if (reload) {
+          window.location.reload();
+        }
       } catch (error) {
+        setError(true);
         // eslint-disable-next-line no-console
         console.error("Failed to fetch configuration:", error);
+
+        timer = setInterval(async () => {
+          loadConfig(true);
+        }, 2000);
       }
     };
 
     loadConfig();
   }, []);
 
-  if (!config) {
-    return <Progress size={64} />;
+  if (error) {
+    return (
+      <Grid
+        container
+        gap="10px"
+        height="100%"
+        bgcolor="#F5F6FA"
+        position="fixed"
+        alignItems="center"
+        justifyContent="center"
+        flexDirection="column"
+        width="100%"
+      >
+        <CircularProgress />
+        <Typography display="block">{t("message.wait_message")} ...</Typography>
+      </Grid>
+    );
   }
 
   return (
