@@ -43,7 +43,7 @@ const Launcher: React.FC<LauncherProps> = ({
   useSocketLifecycle();
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div
         className={`sc-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
         onClick={handleToggle}
