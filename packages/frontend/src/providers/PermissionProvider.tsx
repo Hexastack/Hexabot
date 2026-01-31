@@ -1,0 +1,57 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { type ReactNode, useCallback, useMemo } from "react";
+
+import { Progress } from "@/app-components/displays/Progress";
+import { PermissionContext } from "@/contexts/permission.context";
+import { useUserPermissions } from "@/hooks/entities/auth-hooks";
+import { EntityType } from "@/services/types";
+import { PermissionAction } from "@/types/permission.types";
+
+interface PermissionProviderProps {
+  children: ReactNode;
+}
+
+export const PermissionProvider = ({
+  children,
+}: PermissionProviderProps): JSX.Element => {
+  const { data, isLoading, isFetching } = useUserPermissions();
+  const permissionMap = useMemo(
+    () =>
+      data?.permissions.reduce(
+        (acc, { model, action }) => {
+          if (!(model in acc)) {
+            acc[model] = [];
+          }
+
+          acc[model]?.push(action);
+
+          return acc;
+        },
+        {} as { [key in EntityType]?: PermissionAction[] },
+      ),
+    [data?.permissions],
+  );
+  const getAllowedActions = useCallback(
+    (type: EntityType) => {
+      return permissionMap && type in permissionMap ? permissionMap[type] : [];
+    },
+    [permissionMap],
+  );
+
+  if (isLoading || isFetching) return <Progress />;
+
+  return (
+    <PermissionContext.Provider
+      value={{
+        getAllowedActions,
+      }}
+    >
+      {children}
+    </PermissionContext.Provider>
+  );
+};
