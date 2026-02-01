@@ -5,15 +5,10 @@
  */
 
 import axios from "axios";
-import { createContext, FC, ReactNode } from "react";
+import { createContext } from "react";
 
-import { getApiClientByEntity, useAxiosInstance } from "@/hooks/useApiClient";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
-import { THook } from "@/types/base.types";
-
-interface ApiClientContextProps {
-  children: ReactNode;
-}
+import { type THook } from "@/types/base.types";
 
 export interface ApiClientContext {
   apiClient: ApiClient;
@@ -30,19 +25,3 @@ export const ApiClientContext = createContext<ApiClientContext>({
     );
   },
 });
-
-export const ApiClientProvider: FC<ApiClientContextProps> = ({ children }) => {
-  const axiosInstance = useAxiosInstance();
-  const apiClient = new ApiClient(axiosInstance);
-
-  return (
-    <ApiClientContext.Provider
-      value={{
-        apiClient,
-        getApiClientByEntity: (type) => getApiClientByEntity(type, apiClient),
-      }}
-    >
-      {children}
-    </ApiClientContext.Provider>
-  );
-};

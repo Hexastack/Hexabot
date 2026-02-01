@@ -15,17 +15,17 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "@/App";
 import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
-import { ApiClientProvider } from "@/contexts/apiClient.context";
-import { AuthProvider } from "@/contexts/auth.context";
 import BroadcastChannelProvider from "@/contexts/broadcast-channel.context";
 import { ConfigProvider } from "@/contexts/config.context";
-import { DialogsProvider } from "@/contexts/dialogs.context";
-import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";
 import { ToastProvider } from "@/hooks/useToast";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
+import { DialogsProvider } from "./contexts/dialogs.context";
 import AppTheme from "./layout/theme/AppTheme";
+import { ApiClientProvider } from "./providers/ApiClientProvider";
+import { AuthProvider } from "./providers/AuthProvider";
+import { PermissionProvider } from "./providers/PermissionProvider";
 
 import "@/components/inbox/inbox.css";
 import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
