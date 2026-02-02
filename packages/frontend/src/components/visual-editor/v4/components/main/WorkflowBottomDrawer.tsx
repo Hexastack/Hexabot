@@ -341,7 +341,7 @@ export const WorkflowBottomDrawer = () => {
         variant="permanent"
         id={drawerId}
         sx={{
-          position: "absolute",
+          position: "relative",
           left: 0,
           right: 0,
           bottom: 0,
@@ -355,7 +355,6 @@ export const WorkflowBottomDrawer = () => {
           paper: {
             sx: {
               height: drawerHeight,
-              maxHeight: `calc(100% - ${headerOffset}px)`,
               borderTopLeftRadius: 0,
               borderTopRightRadius: 0,
               display: "flex",

@@ -29,6 +29,7 @@ export const RotateButton = () => {
         borderRadius: 0,
         border: "1px solid #0001",
         padding: "2px 3px",
+        zIndex: 4,
       }}
       size="small"
       onClick={async () => {
