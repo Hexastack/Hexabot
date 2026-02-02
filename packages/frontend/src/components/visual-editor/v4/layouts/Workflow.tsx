@@ -27,7 +27,6 @@ import { IMemoryDefinition } from "@/types/memory-definition.types";
 import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
-import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
@@ -334,7 +333,6 @@ export const Workflow = () => {
           }}
         />
         <WorkflowBottomDrawer />
-        <RotateButton />
       </StyledBox>
       <ActionFormDrawer />
       <WorkflowMenu
