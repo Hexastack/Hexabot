@@ -91,7 +91,7 @@ const KPICard = ({
           </Typography>
         </Box>
 
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction="row" justifyContent="center" spacing={1}>
           <Typography
             variant="body2"
             color="text.secondary"
