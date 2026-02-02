@@ -56,6 +56,8 @@ const StyledBox = styled(Box)(() => ({
   flex: 1,
   minWidth: 0,
   overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
 }));
 const WorkflowTitleOverlay = styled(Box)(() => ({
   position: "absolute",
