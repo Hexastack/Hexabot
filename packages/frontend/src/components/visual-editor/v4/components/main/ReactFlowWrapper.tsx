@@ -23,6 +23,7 @@ import {
   EDGE_TYPES,
   NODE_TYPES,
 } from "../../types/workflow-node.types";
+import { RotateButton } from "../controls/RotateButton";
 
 export const ReactFlowWrapper = ({
   defaultEdges,
@@ -105,6 +106,7 @@ export const ReactFlowWrapper = ({
         fitViewOptions={{ duration: 200 }}
       />
       <Background size={2} />
+      <RotateButton />
     </ReactFlow>
   );
 };
