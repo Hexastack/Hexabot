@@ -12,11 +12,7 @@ import {
   ToggleButtonGroup,
   Tooltip,
 } from "@mui/material";
-import {
-  CheckCircle2,
-  ListChecks,
-  Search as SearchIcon,
-} from "lucide-react";
+import { CheckCircle2, ListChecks, Search as SearchIcon } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -69,17 +65,20 @@ export const StepTraceFilters = ({
       </ToggleButtonGroup>
       <TextField
         size="small"
+        fullWidth
+        title={t("label.step_trace.search_placeholder")}
         placeholder={t("label.step_trace.search_placeholder")}
         value={searchQuery}
         onChange={(event) => onSearchQueryChange(event.target.value)}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon size={16} />
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon size={16} />
+              </InputAdornment>
+            ),
+          },
         }}
-        sx={{ minWidth: { xs: "100%", sm: 240 }, flex: 1 }}
       />
     </Box>
   );

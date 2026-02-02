@@ -27,6 +27,7 @@ import { IMemoryDefinition } from "@/types/memory-definition.types";
 import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
+import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
@@ -279,7 +280,19 @@ export const Workflow = () => {
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}
-        />
+        >
+          <RotateButton />
+          {isEmptyWorkflow && (
+            <WorkflowEmptyState
+              drawerId={actionsDrawerId}
+              drawerOpen={actionsDrawerOpen}
+              onOpenActionsDrawer={() => {
+                setPendingInsertPath(null);
+                setActionsDrawerOpen(true);
+              }}
+            />
+          )}
+        </ReactFlowWrapper>
         {workflow && (
           <WorkflowTitleOverlay>
             <WorkflowTitleBar
@@ -311,16 +324,6 @@ export const Workflow = () => {
               {publishLabel}
             </Button>
           </WorkflowPublishOverlay>
-        )}
-        {isEmptyWorkflow && (
-          <WorkflowEmptyState
-            drawerId={actionsDrawerId}
-            drawerOpen={actionsDrawerOpen}
-            onOpenActionsDrawer={() => {
-              setPendingInsertPath(null);
-              setActionsDrawerOpen(true);
-            }}
-          />
         )}
         <ActionListDrawer
           actions={actions}

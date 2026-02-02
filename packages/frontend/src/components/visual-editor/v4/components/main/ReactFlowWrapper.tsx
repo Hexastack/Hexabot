@@ -13,7 +13,7 @@ import {
   ReactFlow,
   useOnViewportChange,
 } from "@xyflow/react";
-import { useCallback } from "react";
+import { PropsWithChildren, useCallback } from "react";
 
 import "@xyflow/react/dist/style.css";
 import { useFocusNode } from "../../hooks/useFocusNode";
@@ -23,13 +23,13 @@ import {
   EDGE_TYPES,
   NODE_TYPES,
 } from "../../types/workflow-node.types";
-import { RotateButton } from "../controls/RotateButton";
 
 export const ReactFlowWrapper = ({
   defaultEdges,
   defaultNodes,
   defaultViewport,
   onViewport,
+  children,
 }: {
   defaultNodes: Node[];
   defaultViewport: Viewport;
@@ -37,7 +37,7 @@ export const ReactFlowWrapper = ({
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedNodeId: string) => void;
-}) => {
+} & PropsWithChildren) => {
   useOnViewportChange({
     onEnd: ({ x, y, zoom }) => {
       if (
@@ -106,7 +106,7 @@ export const ReactFlowWrapper = ({
         fitViewOptions={{ duration: 200 }}
       />
       <Background size={2} />
-      <RotateButton />
+      {children}
     </ReactFlow>
   );
 };
