@@ -4,26 +4,38 @@
  * Full terms: see LICENSE.md.
  */
 
-import { alpha, Components, Theme } from "@mui/material/styles";
+import { Components, Theme } from "@mui/material/styles";
 
-import { gray, orange } from "../themePrimitives";
+import { theme } from "@/layout/themes/theme";
+
+import { gray } from "../themePrimitives";
 
 /* eslint-disable import/prefer-default-export */
 export const feedbackCustomizations: Components<Theme> = {
   MuiAlert: {
     styleOverrides: {
-      root: ({ theme }) => ({
-        borderRadius: 10,
-        backgroundColor: orange[100],
-        color: (theme.vars || theme).palette.text.primary,
-        border: `1px solid ${alpha(orange[300], 0.5)}`,
-        "& .MuiAlert-icon": {
-          color: orange[500],
+      standardError: {
+        "&.custom-alert": {
+          color: theme.palette.error.main,
+          svg: {
+            fill: "transparent",
+          },
         },
-        ...theme.applyStyles("dark", {
-          backgroundColor: `${alpha(orange[900], 0.5)}`,
-          border: `1px solid ${alpha(orange[800], 0.5)}`,
-        }),
+      },
+      root: ({ theme }) => ({
+        "&.custom-alert": {
+          textAlign: "center",
+          background: "transparent",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "300px",
+          position: "relative",
+          color: theme.palette.grey[500],
+          svg: {
+            fill: theme.palette.grey[500],
+          },
+        },
       }),
     },
   },
