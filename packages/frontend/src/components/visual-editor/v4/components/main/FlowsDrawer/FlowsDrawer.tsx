@@ -24,6 +24,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
@@ -56,10 +57,12 @@ export const collapsedWidth = 64;
 export const minDrawerWidth = 260;
 export const maxDrawerWidth = 920;
 export const drawerWidthStorageKey = "hexabot.visual_editor.drawer_width";
+export const drawerIsOpenStorage = "hexabot.visual_editor.drawer_is_open";
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
+  const { getLocalStorage, setLocalStorage } = useLocalStorage();
   const queryClient = useTanstackQueryClient();
   const {
     workflows,
@@ -71,23 +74,12 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
-  const [open, setOpen] = useState(!isCompact);
+  const [open, setOpen] = useState(false);
   const [showYaml, setShowYaml] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState(() => {
-    if (typeof window === "undefined") return defaultDrawerWidth;
-
-    try {
-      const storedWidth = window.localStorage.getItem(drawerWidthStorageKey);
-      const parsed = storedWidth ? Number(storedWidth) : Number.NaN;
-
-      if (!Number.isFinite(parsed)) return defaultDrawerWidth;
-
-      return Math.min(Math.max(parsed, minDrawerWidth), maxDrawerWidth);
-    } catch {
-      return defaultDrawerWidth;
-    }
-  });
+  const [drawerWidth, setDrawerWidth] = useState(() =>
+    Number(getLocalStorage(drawerWidthStorageKey, defaultDrawerWidth)),
+  );
   const [query, setQuery] = useState("");
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(defaultDrawerWidth);
@@ -139,7 +131,11 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     : t("visual_editor.workflow_versions.show");
 
   useEffect(() => {
-    setOpen(!isCompact);
+    if (isCompact) {
+      setOpen(false);
+    } else if (getLocalStorage(drawerIsOpenStorage)) {
+      setOpen(true);
+    }
   }, [isCompact]);
 
   useEffect(() => {
@@ -157,9 +153,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       if (!isResizingRef.current) return;
 
       const delta = event.clientX - resizeStartXRef.current;
-      const nextWidth = clampDrawerWidth(
-        resizeStartWidthRef.current + delta,
-      );
+      const nextWidth = clampDrawerWidth(resizeStartWidthRef.current + delta);
 
       latestDrawerWidthRef.current = nextWidth;
       setDrawerWidth(nextWidth);
@@ -170,16 +164,11 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       isResizingRef.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
-      if (typeof window !== "undefined") {
-        try {
-          window.localStorage.setItem(
-            drawerWidthStorageKey,
-            String(latestDrawerWidthRef.current),
-          );
-        } catch {
-          // Ignore storage failures.
-        }
-      }
+
+      setLocalStorage(
+        drawerWidthStorageKey,
+        String(latestDrawerWidthRef.current),
+      );
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -359,7 +348,13 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     });
   }, [isSearching, selectedFlowTypeKey, typeGroups]);
 
-  const handleToggleDrawer = () => setOpen((prev) => !prev);
+  const handleToggleDrawer = () => {
+    setOpen((prev) => {
+      setLocalStorage(drawerIsOpenStorage, !prev ? "true" : "");
+
+      return !prev;
+    });
+  };
   const handleResizeStart = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
       if (!open) return;
