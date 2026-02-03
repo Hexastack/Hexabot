@@ -35,6 +35,10 @@ export const feedbackCustomizations: Components<Theme> = {
           svg: {
             fill: theme.palette.grey[500],
           },
+          "& .MuiAlert-icon ": {
+            marginRight: 0,
+            padding: 0,
+          },
         },
       }),
     },
