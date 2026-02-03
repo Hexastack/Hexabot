@@ -26,7 +26,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
-import { borderLine, theme } from "./themes/theme";
+import { theme } from "./themes/theme";
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -43,8 +43,7 @@ const AppBar = styled(MuiAppBar, {
   }),
   backgroundColor: theme.palette.common.white,
   borderRadius: "0px",
-  boxShadow: "none",
-  borderBottom: borderLine,
+  boxShadow: theme.shadows[4],
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,

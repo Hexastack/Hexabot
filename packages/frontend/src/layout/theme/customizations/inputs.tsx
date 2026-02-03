@@ -420,6 +420,15 @@ export const inputsCustomizations: Components<Theme> = {
         padding: 0,
       },
       root: ({ theme }) => ({
+        "& input:-webkit-autofill": {
+          // This removes the background color by delaying the transition indefinitely
+          WebkitBoxShadow: `0 0 0 100px #fff inset!important`,
+          borderRadius: 0,
+        },
+        '[data-mui-color-scheme="dark"] & input:-webkit-autofill': {
+          WebkitBoxShadow: `0 0 0 100px #000 inset!important`,
+        },
+
         padding: "9px 12px",
         color: (theme.vars || theme).palette.text.primary,
         borderRadius: (theme.vars || theme).shape.borderRadius,
@@ -492,14 +501,5 @@ export const inputsCustomizations: Components<Theme> = {
         marginBottom: 8,
       }),
     },
-  },
-  MuiCssBaseline: {
-    styleOverrides: `
-      input:-webkit-autofill,
-      input:-webkit-autofill:hover,
-      input:-webkit-autofill:focus,
-      input:-webkit-autofill:active {
-        -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-      }`,
   },
 };
