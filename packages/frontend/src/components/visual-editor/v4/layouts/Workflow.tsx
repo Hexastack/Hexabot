@@ -6,7 +6,7 @@
 
 import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
+import { Background, Controls, useReactFlow } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
   useCallback,
@@ -281,6 +281,12 @@ export const Workflow = () => {
           defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}
         >
+          <Controls
+            className="rf-controls-v4"
+            onFitView={animateFocus}
+            fitViewOptions={{ duration: 200 }}
+          />
+          <Background size={2} />
           <RotateButton />
           {isEmptyWorkflow && (
             <WorkflowEmptyState

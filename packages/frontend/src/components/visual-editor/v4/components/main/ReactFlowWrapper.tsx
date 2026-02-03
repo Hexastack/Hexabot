@@ -7,8 +7,6 @@
 import {
   type Node,
   type Viewport,
-  Background,
-  Controls,
   OnNodesChange,
   ReactFlow,
   useOnViewportChange,
@@ -16,7 +14,6 @@ import {
 import { PropsWithChildren, useCallback } from "react";
 
 import "@xyflow/react/dist/style.css";
-import { useFocusNode } from "../../hooks/useFocusNode";
 import { useWorkflow } from "../../hooks/useWorkflow";
 import {
   type EdgeLink,
@@ -56,7 +53,6 @@ export const ReactFlowWrapper = ({
     setSelectedNodeIds,
     updateWorkflowURL,
   } = useWorkflow();
-  const { animateFocus } = useFocusNode();
   const handleNodesChange: OnNodesChange<Node> = useCallback(
     (changes) => {
       const selectionEvents = changes.filter((c) => c.type === "select");
@@ -100,12 +96,6 @@ export const ReactFlowWrapper = ({
       onNodesChange={handleNodesChange}
       onlyRenderVisibleElements
     >
-      <Controls
-        className="rf-controls-v4"
-        onFitView={animateFocus}
-        fitViewOptions={{ duration: 200 }}
-      />
-      <Background size={2} />
       {children}
     </ReactFlow>
   );
