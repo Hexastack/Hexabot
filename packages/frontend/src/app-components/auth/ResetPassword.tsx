@@ -6,7 +6,7 @@
 
 import { Button, Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { Key as KeyIcon } from "lucide-react";
+import { Key as KeyIcon, Repeat2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -58,16 +58,24 @@ export const ResetPassword = () => {
 
   return (
     <PublicContentWrapper>
-      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
+      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }} variant="outlined">
         <form
           onSubmit={handleSubmit((payload) => {
             resetPassword(payload);
           })}
         >
-          <ContentContainer gap={2}>
-            <Typography variant="h1" fontSize="19px" fontWeight={700}>
-              {t("title.reset_password")}
-            </Typography>
+          <ContentContainer gap={3}>
+            <Grid
+              gap={1}
+              display="flex"
+              alignItems="center"
+              flexDirection="row"
+            >
+              <Repeat2 />
+              <Typography variant="h4" fontWeight={700}>
+                {t("title.reset_password")}
+              </Typography>
+            </Grid>
             <PasswordInput
               autoFocus
               label={t("label.password")}
@@ -95,7 +103,9 @@ export const ResetPassword = () => {
               {...register("password2", validationRules.password2)}
             />
             <Grid container gap={1} justifyContent="flex-end">
-              <Button type="submit">{t("button.submit")}</Button>
+              <Button type="submit" color="primary" variant="contained">
+                {t("button.submit")}
+              </Button>
               <Button component={RouterLink} to="/login" variant="outlined">
                 {t("button.cancel")}
               </Button>
