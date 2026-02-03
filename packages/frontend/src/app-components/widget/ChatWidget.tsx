@@ -63,6 +63,7 @@ export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
             }
           />
         )}
+        CustomHeader={isEmbedded ? () => null : undefined}
         CustomLauncher={isEmbedded ? HiddenLauncher : undefined}
         defaultIsOpen={isEmbedded}
         socketErrorHandlers={{

@@ -19,7 +19,7 @@ import "./Launcher.scss";
 
 type LauncherProps = PropsWithChildren<{
   CustomLauncher?: (props: { widget: WidgetContextType }) => JSX.Element;
-  CustomHeader?: () => JSX.Element;
+  CustomHeader?: () => JSX.Element | null;
   CustomAvatar?: () => JSX.Element;
   PreChat?: React.FC;
   PostChat?: React.FC;

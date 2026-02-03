@@ -21,7 +21,7 @@ import Webview from "./Webview";
 import "./ChatWindow.scss";
 
 type ChatWindowProps = PropsWithChildren<{
-  CustomHeader?: () => JSX.Element;
+  CustomHeader?: () => JSX.Element | null;
   CustomAvatar?: () => JSX.Element;
   PreChat?: React.FC;
   PostChat?: React.FC;
@@ -86,10 +86,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
-      {CustomHeader && (
+      {CustomHeader?.() === null ? null : CustomHeader ? (
         <ChatHeader>
           <CustomHeader />
         </ChatHeader>
+      ) : (
+        <ChatHeader />
       )}
       {getCurrentScreen()}
     </div>
