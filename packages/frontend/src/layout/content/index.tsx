@@ -21,7 +21,6 @@ const StyledBox = styled(Box, {
     height: "auto",
     minHeight: "100vh",
     flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
     display: hasNoPadding ? "flex" : "block",
     flexDirection: hasNoPadding ? "column" : "row",
   })({ theme }),

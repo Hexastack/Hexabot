@@ -4,11 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import { useColorScheme } from "@mui/material";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { RouterType } from "@/services/types";
 
 export const HexabotLogo = () => {
+  const { mode } = useColorScheme();
+  const fill = useMemo(() => (mode === "dark" ? "#fff" : undefined), [mode]);
+
   return (
     <Link
       to={RouterType.HOME}
@@ -42,6 +47,7 @@ export const HexabotLogo = () => {
           </linearGradient>
         </defs>
         <path
+          fill={fill}
           stroke="#000"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -79,14 +85,17 @@ export const HexabotLogo = () => {
             strokeWidth={0.662}
           >
             <path
+              fill={fill}
               d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
               transform="translate(-62.42 -136.847) matrix(1.0295 0 0 1.0295 57.623 -4.973) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 1044.41 -860.854)"
             />
             <path
+              fill={fill}
               d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
               transform="translate(-62.42 -136.847) matrix(1.0295 0 0 1.0295 57.623 -4.973) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 992.8 -860.854)"
             />
             <path
+              fill={fill}
               d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
               transform="translate(-62.42 -136.847) matrix(1.0295 0 0 1.0295 57.623 -4.973) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 1018.605 -860.854)"
             />

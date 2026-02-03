@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Paper, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import { Button, Grid, Paper, Typography } from "@mui/material";
 import {
+  Mail as EmailIcon,
   ChevronRight as KeyboardArrowRightIcon,
   Key as KeyIcon,
-  Mail as EmailIcon,
+  LogIn,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -94,12 +94,20 @@ export const Login = () => {
 
   return (
     <PublicContentWrapper>
-      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
+      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }} variant="outlined">
         <form onSubmit={handleSubmit(onSubmitForm)}>
-          <ContentContainer gap={2}>
-            <Typography variant="h1" fontSize="19px" fontWeight={700}>
-              {t("title.login")}
-            </Typography>
+          <ContentContainer gap={3}>
+            <Grid
+              gap={1}
+              display="flex"
+              alignItems="center"
+              flexDirection="row"
+            >
+              <LogIn />
+              <Typography variant="h4" fontWeight={700}>
+                {t("title.login")}
+              </Typography>
+            </Grid>
             <Input
               label={t("placeholder.email")}
               error={!!errors.identifier}
@@ -113,7 +121,6 @@ export const Login = () => {
               helperText={errors.identifier ? errors.identifier.message : null}
               {...register("identifier", validationRules.email)}
             />
-
             <PasswordInput
               label={t("label.password")}
               error={!!errors.password}
@@ -126,8 +133,19 @@ export const Login = () => {
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}
             />
-            <Grid container gap={2} justifyContent="space-between">
-              <Grid alignContent="center">
+            <Grid>
+              <Button
+                fullWidth
+                color="primary"
+                variant="contained"
+                type="submit"
+                endIcon={<KeyboardArrowRightIcon size={14} />}
+                onClick={handleSubmit(onSubmitForm)}
+                disabled={isPending}
+              >
+                {t("button.login")}
+              </Button>
+              <Grid textAlign="center" pt={2}>
                 <Button
                   component={RouterLink}
                   to="/reset"
@@ -135,18 +153,6 @@ export const Login = () => {
                   sx={{ textDecoration: "underline" }}
                 >
                   {t("link.reset")}
-                </Button>
-              </Grid>
-              <Grid>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  type="submit"
-                  endIcon={<KeyboardArrowRightIcon />}
-                  onClick={handleSubmit(onSubmitForm)}
-                  disabled={isPending}
-                >
-                  {t("button.login")}
                 </Button>
               </Grid>
             </Grid>
