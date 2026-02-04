@@ -4,14 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CSSObject, IconButton, styled, Theme } from "@mui/material";
-import MuiDrawer from "@mui/material/Drawer";
-import Grid from "@mui/material/Grid";
-// eslint-disable-next-line no-duplicate-imports
 import {
   Activity,
   AlignLeft,
-  ChevronLeft,
   Database,
   Flag,
   FolderUp,
@@ -27,73 +22,12 @@ import {
   UserCircle,
   Users,
 } from "lucide-react";
-import { FC } from "react";
 
-import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
-import { Sidebar, TMenu } from "@/app-components/menus/Sidebar";
-import { useAppRouter } from "@/hooks/useAppRouter";
-import { useAuth } from "@/hooks/useAuth";
-import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
-import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
-import { getLayout } from "@/utils/laylout";
+import { TMenu } from "@/types/sidebar.types";
 
-const DRAWER_WIDTH = 280;
-const openedMixin = (theme: Theme): CSSObject => ({
-  width: DRAWER_WIDTH,
-  transition: theme.transitions.create("width", {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: "hidden",
-});
-const closedMixin = (theme: Theme, isFloated: boolean): CSSObject => ({
-  ...(isFloated && { position: "absolute" }),
-  transition: theme.transitions.create("width", {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: "hidden",
-  width: `calc(${theme.spacing(7)} )`,
-  [theme.breakpoints.up("sm")]: {
-    width: `calc(${theme.spacing(8)} )`,
-  },
-});
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== "isToggled",
-})(({ theme, open, ModalProps }) => ({
-  width: DRAWER_WIDTH,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-  boxSizing: "border-box",
-  borderRadius: 0,
-  ...(open && {
-    ...openedMixin(theme),
-    "& .MuiDrawer-paper": openedMixin(theme),
-  }),
-  ...(!open && {
-    ...closedMixin(theme, !!ModalProps?.open),
-    "& .MuiDrawer-paper": closedMixin(theme, !!ModalProps?.open),
-  }),
-}));
-const StickedVerticalMenuDrawerHeader = styled(DrawerHeader)(({ theme }) => ({
-  top: 0,
-  zIndex: 1,
-  position: "sticky",
-  maxHeight: "60px",
-  background: theme.palette.background.default,
-  gap: "11px",
-}));
-const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
+export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
   {
     text: "menu.dashboard",
     href: "/",
@@ -252,54 +186,3 @@ const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     },
   },
 ];
-
-export type VerticalMenuProps = {
-  isSideBarOpen: boolean;
-  onToggleIn: () => void;
-  onToggleOut: () => void;
-};
-
-export const VerticalMenu: FC<VerticalMenuProps> = ({
-  isSideBarOpen,
-  onToggleIn,
-  onToggleOut,
-}) => {
-  const { ssoEnabled } = useConfig();
-  const { isAuthenticated } = useAuth();
-  const router = useAppRouter();
-  const menuItems = getMenuItems(ssoEnabled);
-  const availableMenuItems = useAvailableMenuItems(menuItems);
-  const hasTemporaryDrawer =
-    getLayout(router.pathname.slice(1)) === "full_width";
-
-  return isAuthenticated ? (
-    <Drawer
-      open={isSideBarOpen}
-      ModalProps={{
-        open: isSideBarOpen && hasTemporaryDrawer,
-        keepMounted: true,
-      }}
-      variant={hasTemporaryDrawer ? "temporary" : "permanent"}
-      onClose={(_, reason) => {
-        reason === "backdropClick" && onToggleOut();
-      }}
-    >
-      <StickedVerticalMenuDrawerHeader>
-        <Grid maxWidth="40px" flex="1">
-          <IconButton onClick={onToggleOut}>
-            <ChevronLeft size={20} />
-          </IconButton>
-        </Grid>
-        <Grid flex="auto">
-          <HexabotLogo />
-        </Grid>
-      </StickedVerticalMenuDrawerHeader>
-      <Sidebar
-        menu={availableMenuItems}
-        pathname={router.pathname}
-        isToggled={isSideBarOpen}
-        toggleFunction={() => (isSideBarOpen ? onToggleOut() : onToggleIn())}
-      />
-    </Drawer>
-  ) : null;
-};

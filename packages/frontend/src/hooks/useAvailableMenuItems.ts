@@ -6,9 +6,9 @@
 
 import { useMemo } from "react";
 
-import { TMenu } from "@/app-components/menus/Sidebar";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
+import { TMenu } from "@/types/sidebar.types";
 
 import { useHasPermission } from "./useHasPermission";
 
