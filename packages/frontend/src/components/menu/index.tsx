@@ -70,76 +70,79 @@ export const Menu = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Paper
-        ref={ref}
-        onMouseMove={debounce((e) => {
-          if (!ref.current) return;
-          const padding = 16;
-          const boxHeight = 56;
-          const mousePositionInsideElement =
-            e.clientY - ref.current?.getBoundingClientRect().top - padding;
-          const currentItem = Math.floor(
-            mousePositionInsideElement / boxHeight,
-          );
-          const maxItem = Math.floor(
-            (ref.current.getBoundingClientRect().height - padding - 1) /
-              boxHeight,
-          );
-          const step = Math.max(0, Math.min(currentItem, maxItem - 1));
+      {menus?.length === 0 ? (
+        <NoDataOverlay />
+      ) : (
+        <Paper
+          ref={ref}
+          onMouseMove={debounce((e) => {
+            if (!ref.current) return;
+            const padding = 16;
+            const boxHeight = 56;
+            const mousePositionInsideElement =
+              e.clientY - ref.current?.getBoundingClientRect().top - padding;
+            const currentItem = Math.floor(
+              mousePositionInsideElement / boxHeight,
+            );
+            const maxItem = Math.floor(
+              (ref.current.getBoundingClientRect().height - padding - 1) /
+                boxHeight,
+            );
+            const step = Math.max(0, Math.min(currentItem, maxItem - 1));
 
-          if (maxItem <= 0) {
-            setShadowVisible(false);
+            if (maxItem <= 0) {
+              setShadowVisible(false);
 
-            return;
-          }
-          setPosition(step * boxHeight + padding);
-        }, 0)}
-        sx={{ padding: 2, position: "relative", overFlow: "hidden" }}
-        onMouseLeave={() => setShadowVisible(false)}
-        onMouseEnter={() => setShadowVisible(true)}
-      >
-        {menus?.length > 0 && (
-          <Box
-            sx={{
-              height: "56px",
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "calc(100% - 20px)",
-              borderRadius: "9px",
-              backgroundColor: "background.default",
-              zIndex: 0,
-              opacity: shadowVisible ? 1 : 0,
-              transition: "all 0.2s",
-              top: `${position}px`,
-            }}
-          />
-        )}
-        {menus?.length === 0 && <NoDataOverlay />}
-        {menus?.map((menu) => (
-          <MenuAccordion
-            key={menu.id}
-            menu={menu}
-            onAppend={(parentId) =>
-              dialogs.open(MenuFormDialog, {
-                defaultValues: { parentId },
-              })
+              return;
             }
-            onUpdate={(row) =>
-              dialogs.open(MenuFormDialog, {
-                defaultValues: { row },
-              })
-            }
-            onDelete={async (row) => {
-              const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-              if (isConfirmed) {
-                deleteMenu(row.id);
+            setPosition(step * boxHeight + padding);
+          }, 0)}
+          sx={{ padding: 2, position: "relative", overFlow: "hidden" }}
+          onMouseLeave={() => setShadowVisible(false)}
+          onMouseEnter={() => setShadowVisible(true)}
+        >
+          {menus?.length > 0 && (
+            <Box
+              sx={{
+                height: "60px",
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "calc(100% - 20px)",
+                borderRadius: "9px",
+                backgroundColor: "background.default",
+                zIndex: 0,
+                opacity: shadowVisible ? 1 : 0,
+                transition: "all 0.2s",
+                top: `${position}px`,
+              }}
+            />
+          )}
+          {menus?.map((menu) => (
+            <MenuAccordion
+              key={menu.id}
+              menu={menu}
+              onAppend={(parentId) =>
+                dialogs.open(MenuFormDialog, {
+                  defaultValues: { parentId },
+                })
               }
-            }}
-          />
-        ))}
-      </Paper>
+              onUpdate={(row) =>
+                dialogs.open(MenuFormDialog, {
+                  defaultValues: { row },
+                })
+              }
+              onDelete={async (row) => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+                if (isConfirmed) {
+                  deleteMenu(row.id);
+                }
+              }}
+            />
+          ))}
+        </Paper>
+      )}
     </Grid>
   );
 };

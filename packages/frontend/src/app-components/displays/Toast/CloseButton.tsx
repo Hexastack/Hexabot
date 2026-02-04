@@ -16,7 +16,7 @@ export const SnackbarCloseButton = ({
   const { closeSnackbar } = useSnackbar();
 
   return (
-    <IconButton onClick={() => closeSnackbar(snackbarKey)}>
+    <IconButton onClick={() => closeSnackbar(snackbarKey)} size="small">
       <CloseIcon />
     </IconButton>
   );

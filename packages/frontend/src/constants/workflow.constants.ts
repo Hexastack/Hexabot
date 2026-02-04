@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 import { WorkflowType } from "@/types/workfow.types";
 

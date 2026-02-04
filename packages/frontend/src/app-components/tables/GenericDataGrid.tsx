@@ -88,8 +88,8 @@ export const GenericDataGrid = <
   );
 
   return (
-    <Grid container gap={3} flexDirection="column" width="100%">
-      <Grid>
+    <Grid width="100%">
+      <Grid container={!!headerI18nTitle} flexDirection="column" gap={2}>
         {headerLeftButtons}
         <PageHeader
           icon={headerIcon}
@@ -118,14 +118,14 @@ export const GenericDataGrid = <
             </Grid>
           </Grid>
         </PageHeader>
+        <DataGrid
+          columns={columns}
+          {...dataGridProps}
+          checkboxSelection={!!selectionChangeHandler}
+          onRowSelectionModelChange={selectionChangeHandler}
+          {...restDataGridProps}
+        />
       </Grid>
-      <DataGrid
-        columns={columns}
-        {...dataGridProps}
-        checkboxSelection={!!selectionChangeHandler}
-        onRowSelectionModelChange={selectionChangeHandler}
-        {...restDataGridProps}
-      />
     </Grid>
   );
 };

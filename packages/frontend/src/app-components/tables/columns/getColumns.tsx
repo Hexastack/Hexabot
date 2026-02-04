@@ -28,7 +28,7 @@ import {
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
@@ -68,32 +68,33 @@ export interface ActionColumn<T extends GridValidRowModel> {
 }
 
 const BUTTON_WIDTH = 60;
+const ACTION_ICON_SIZE = 18;
 
 export const getActionsWidth = (itemsNumber: number) =>
   itemsNumber === 1 ? BUTTON_WIDTH + 60 : BUTTON_WIDTH * itemsNumber;
 
-function getIcon(label: ActionColumnLabel) {
+function ActionIcon(label: ActionColumnLabel) {
   switch (label) {
     case ActionColumnLabel.Edit:
-      return <Pencil />;
+      return <Pencil size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Delete:
-      return <Trash2 />;
+      return <Trash2 size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Values:
-      return <List />;
+      return <List size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Manage_Roles:
-      return <UserCog />;
+      return <UserCog size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Permissions:
-      return <Shield />;
+      return <Shield size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Content:
-      return <FileText />;
+      return <FileText size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Fields:
-      return <ListOrdered />;
+      return <ListOrdered size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Manage_Labels:
-      return <Tag />;
+      return <Tag size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Toggle:
-      return <CheckCircle2 />;
+      return <CheckCircle2 size={ACTION_ICON_SIZE} />;
     case ActionColumnLabel.Annotate:
-      return <RefreshCw />;
+      return <RefreshCw size={ACTION_ICON_SIZE} />;
     default:
       return <></>;
   }
@@ -137,7 +138,7 @@ function StackComponent<T extends GridValidRowModel>({
               <Tooltip
                 title={helperText || String(t(ACTION_COLUMN_LABEL_MAP[label]))}
               >
-                {getIcon(label)}
+                {ActionIcon(label)}
               </Tooltip>
             }
             label={helperText || t(ACTION_COLUMN_LABEL_MAP[label])}
@@ -155,8 +156,7 @@ function StackComponent<T extends GridValidRowModel>({
             }}
             disabled={
               (isDisabled && isDisabled(params.row)) ||
-              (params.row.builtin &&
-                  requires.includes(PermissionAction.DELETE))
+              (params.row.builtin && requires.includes(PermissionAction.DELETE))
             }
             onClick={() => {
               action && action(params.row);

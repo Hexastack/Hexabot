@@ -11,7 +11,7 @@ import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 
 import FileUploadButton from "./FileInput";

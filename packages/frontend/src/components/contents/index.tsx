@@ -15,7 +15,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
@@ -129,7 +128,6 @@ export const Contents = () => {
       field: "status",
       headerName: t("label.status"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       renderCell: (params) => (
         <Switch
@@ -153,7 +151,6 @@ export const Contents = () => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -164,7 +161,6 @@ export const Contents = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

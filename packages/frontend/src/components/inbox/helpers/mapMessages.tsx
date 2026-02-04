@@ -11,7 +11,7 @@ import Autolinker from "autolinker";
 import { Menu, Reply } from "lucide-react";
 import React, { ReactNode } from "react";
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";

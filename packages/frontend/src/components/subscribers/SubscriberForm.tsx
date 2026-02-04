@@ -106,7 +106,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                 />
               </Grid>
               <Grid size="auto" alignContent="center">
-                <Link href="/subscribers/labels">
+                <Link href="/labels">
                   <Button variant="contained">{t("button.manage")}</Button>
                 </Link>
               </Grid>

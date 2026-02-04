@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Grid, Paper, Typography } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Grid,
+  Typography,
+} from "@mui/material";
 import {
   Mail as EmailIcon,
   ChevronRight as KeyboardArrowRightIcon,
@@ -94,22 +100,16 @@ export const Login = () => {
 
   return (
     <PublicContentWrapper>
-      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }} variant="outlined">
-        <form onSubmit={handleSubmit(onSubmitForm)}>
-          <ContentContainer gap={3}>
-            <Grid
-              gap={1}
-              display="flex"
-              alignItems="center"
-              flexDirection="row"
-            >
-              <LogIn />
-              <Typography variant="h4" fontWeight={700}>
-                {t("title.login")}
-              </Typography>
-            </Grid>
+      <form onSubmit={handleSubmit(onSubmitForm)}>
+        <ContentContainer>
+          <Grid gap={1} mb={1} display="flex" alignItems="center">
+            <LogIn />
+            <Typography variant="h4">{t("title.login")}</Typography>
+          </Grid>
+          <FormControl error={!!errors.identifier}>
+            <FormLabel htmlFor="email">{t("placeholder.email")}</FormLabel>
             <Input
-              label={t("placeholder.email")}
+              id="email"
               error={!!errors.identifier}
               required
               autoFocus
@@ -121,8 +121,11 @@ export const Login = () => {
               helperText={errors.identifier ? errors.identifier.message : null}
               {...register("identifier", validationRules.email)}
             />
+          </FormControl>
+          <FormControl error={!!errors.password}>
+            <FormLabel htmlFor="password">{t("label.password")}</FormLabel>
             <PasswordInput
-              label={t("label.password")}
+              id="password"
               error={!!errors.password}
               required
               slotProps={{
@@ -133,6 +136,8 @@ export const Login = () => {
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}
             />
+          </FormControl>
+          <Grid container direction="column" gap={1} mt={2}>
             <Grid>
               <Button
                 fullWidth
@@ -145,20 +150,20 @@ export const Login = () => {
               >
                 {t("button.login")}
               </Button>
-              <Grid textAlign="center" pt={2}>
-                <Button
-                  component={RouterLink}
-                  to="/reset"
-                  variant="text"
-                  sx={{ textDecoration: "underline" }}
-                >
-                  {t("link.reset")}
-                </Button>
-              </Grid>
             </Grid>
-          </ContentContainer>
-        </form>
-      </Paper>
+            <Grid textAlign="center">
+              <Button
+                component={RouterLink}
+                to="/reset"
+                variant="text"
+                sx={{ textDecoration: "underline" }}
+              >
+                {t("link.reset")}
+              </Button>
+            </Grid>
+          </Grid>
+        </ContentContainer>
+      </form>
     </PublicContentWrapper>
   );
 };

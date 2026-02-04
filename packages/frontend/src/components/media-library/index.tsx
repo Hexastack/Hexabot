@@ -9,7 +9,6 @@ import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 import { FolderUp } from "lucide-react";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -60,14 +59,12 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       field: "name",
       headerName: t("label.name"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
       field: "type",
       headerName: t("label.type"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       width: 128,
     },
@@ -85,7 +82,6 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -96,7 +92,6 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

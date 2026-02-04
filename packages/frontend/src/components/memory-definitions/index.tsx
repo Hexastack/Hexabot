@@ -12,7 +12,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -75,7 +74,6 @@ export const MemoryDefinitions = () => {
       field: "name",
       headerName: t("label.name"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -83,7 +81,6 @@ export const MemoryDefinitions = () => {
       field: "slug",
       headerName: t("label.slug"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -91,7 +88,6 @@ export const MemoryDefinitions = () => {
       field: "scope",
       headerName: t("label.scope"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       valueGetter: (value) => (value ? t(`label.${value}` as any) : ""),
     },
@@ -100,7 +96,6 @@ export const MemoryDefinitions = () => {
       field: "ttlSeconds",
       headerName: t("label.ttl_seconds"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       valueGetter: (value) => value ?? t("label.permanent"),
     },
@@ -109,7 +104,6 @@ export const MemoryDefinitions = () => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -120,7 +114,6 @@ export const MemoryDefinitions = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

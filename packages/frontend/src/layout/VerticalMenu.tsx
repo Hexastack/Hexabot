@@ -188,7 +188,7 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       },
       {
         text: "menu.labels",
-        href: "/subscribers/labels",
+        href: "/labels",
         Icon: Tag,
         requires: {
           [EntityType.LABEL]: [PermissionAction.READ],

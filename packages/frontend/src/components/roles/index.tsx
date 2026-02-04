@@ -12,7 +12,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -81,14 +80,12 @@ export const Roles = () => {
       headerName: t("label.name"),
       sortable: false,
       disableColumnMenu: true,
-      renderHeader,
     },
     {
       maxWidth: 140,
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -99,7 +96,6 @@ export const Roles = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
