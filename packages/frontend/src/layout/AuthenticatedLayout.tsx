@@ -27,7 +27,6 @@ export const AuthenticatedLayout: React.FC<
   useSocketGetQuery("/subscriber/subscribe/");
 
   useSocketGetQuery("/workflow/subscribe/");
-  const { ssoEnabled } = useConfig();
   const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] =
     React.useState(false);
   const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));
@@ -37,21 +36,20 @@ export const AuthenticatedLayout: React.FC<
     },
     [isOverMdViewport, setIsDesktopNavigationExpanded],
   );
-  const layoutRef = React.useRef<HTMLDivElement>(null);
   const handleToggleHeaderMenu = React.useCallback(
     (isExpanded: boolean) => {
       setIsNavigationExpanded(isExpanded);
     },
     [setIsNavigationExpanded],
   );
+  const { ssoEnabled } = useConfig();
   const menuItems = getMenuItems(ssoEnabled);
   const availableMenuItems = useAvailableMenuItems(menuItems);
 
   return (
-    <Box ref={layoutRef}>
+    <Box display="flex">
       <DashboardHeader
         logo={<HexabotLogo />}
-        title=""
         menuOpen={isDesktopNavigationExpanded}
         onToggleMenu={handleToggleHeaderMenu}
       />
@@ -59,37 +57,23 @@ export const AuthenticatedLayout: React.FC<
         menu={availableMenuItems}
         expanded={isDesktopNavigationExpanded}
         setExpanded={setIsNavigationExpanded}
-        container={layoutRef?.current ?? undefined}
       />
 
-      <Box
+      <Grid
         sx={{
+          padding: hasNoPadding ? 0 : 3,
+          position: "relative",
+          marginTop: "64px",
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          minWidth: 0,
-          position: "absolute",
-          width: "100%",
+          overflow: "auto",
+          width: "calc(100% - 88px)",
+          zIndex: 5,
         }}
       >
-        <Grid
-          sx={{
-            padding: hasNoPadding ? 0 : 3,
-            position: "relative",
-            top: "64px",
-            height: "calc(100% - 64px)",
-            display: "flex",
-            left: "88px",
-            flexDirection: "column",
-            flex: 1,
-            overflow: "auto",
-            width: "calc(100% - 88px)",
-            zIndex: 5,
-          }}
-        >
-          {children}
-        </Grid>
-      </Box>
+        {children}
+      </Grid>
     </Box>
   );
 };

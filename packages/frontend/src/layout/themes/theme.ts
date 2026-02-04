@@ -76,7 +76,7 @@ export const borderLine = `1.5px solid ${COLOR_PALETTE.borderGray}`;
 export const theme = createTheme({
   typography: {
     fontFamily: ["Roboto", "sans-serif"].join(","),
-    fontSize: 14,
+    fontSize: 10,
   },
   palette: {
     ...COLORS,

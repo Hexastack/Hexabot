@@ -19,48 +19,11 @@ import { Link as RouterLink } from "react-router-dom";
 import { IUser } from "@/types/user.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
-const ArrowStyle = styled("span")(({ theme }) => ({
-  [theme.breakpoints.up("sm")]: {
-    top: -7,
-    zIndex: 1,
-    width: 12,
-    right: 20,
-    height: 12,
-    content: "''",
-    position: "absolute",
-    borderRadius: "0",
-    transform: "rotate(45deg)",
-    background: theme.palette.background.paper,
-    borderTop: "1px solid #0002",
-    borderLeft: "1px solid #0002",
-  },
-}));
-const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
-  ...theme.typography.body2,
-  borderRadius: 1,
-}));
 const StyledStack = styled(Stack)(
   SXStyleOptions({
     padding: 1,
   }),
 );
-const StyledDivider = styled(Divider)(() => ({
-  borderStyle: "solid",
-}));
-const ellipsisEffect = {
-  overflow: "hidden",
-  whiteSpace: "nowrap",
-  textOverflow: "ellipsis",
-} as const;
-const StyledSubtitleTypography = styled(Typography)(({ theme }) => ({
-  ...theme.typography.subtitle1,
-  ...ellipsisEffect,
-}));
-const StyledTypography = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body2,
-  color: theme.palette.text.secondary,
-  ...ellipsisEffect,
-}));
 
 type TPopoverMenuItem = { text: string; href: string };
 
@@ -91,21 +54,21 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
         vertical: "top",
         horizontal: "right",
       }}
-      PaperProps={{
-        sx: {
-          mt: 1.5,
-          ml: 0.8,
-          width: 220,
-          borderRadius: 1.5,
-          overflow: "inherit",
-          border: "1px solid #0002",
-          ...sx,
+      slotProps={{
+        paper: {
+          sx: {
+            mt: 1.5,
+            ml: 0.8,
+            width: 220,
+            borderRadius: 1.5,
+            overflow: "inherit",
+            border: "1px solid #0002",
+            ...sx,
+          },
         },
       }}
       {...other}
     >
-      <ArrowStyle />
-
       <StyledStack
         spacing={0.5}
         sx={{
@@ -115,24 +78,26 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
       >
         <StyledStack spacing={0.5}>
           {user?.firstName && user?.lastName ? (
-            <StyledSubtitleTypography>
+            <Typography>
               {user.firstName} {user.lastName}
-            </StyledSubtitleTypography>
+            </Typography>
           ) : null}
           {user?.email ? (
-            <StyledTypography>{user.email}</StyledTypography>
+            <Typography variant="caption" color="gray">
+              {user.email}
+            </Typography>
           ) : null}
         </StyledStack>
       </StyledStack>
 
       {links ? (
         <>
-          <StyledDivider />
+          <Divider />
 
           <StyledStack>
             {links.map(({ href, text }) => (
               <RouterLink key={text} to={href} onClick={handleClose}>
-                <StyledMenuItem>{text}</StyledMenuItem>
+                <MenuItem>{text}</MenuItem>
               </RouterLink>
             ))}
           </StyledStack>
@@ -141,11 +106,9 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
 
       {logout ? (
         <>
-          <StyledDivider />
+          <Divider />
           <StyledStack spacing={0.5}>
-            <StyledMenuItem onClick={logout.onClick}>
-              {logout.text}
-            </StyledMenuItem>
+            <MenuItem onClick={logout.onClick}>{logout.text}</MenuItem>
           </StyledStack>
         </>
       ) : null}
