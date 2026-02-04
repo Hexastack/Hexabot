@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Link as LinkIcon,
   ListPlus,
+  LucideIcon,
   Pencil,
   Reply,
   Trash2,
@@ -28,8 +29,6 @@ import {
 import React, { FC, useState } from "react";
 
 import { AnimatedComponent } from "@/app-components/AnimatedComponent";
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
-import { TMenuItem } from "@/app-components/menus/Sidebar";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -75,7 +74,7 @@ interface MenuAccordionProps {
   level?: number;
 }
 
-const getIcon = (menu: IMenuNode): TMenuItem["Icon"] | undefined => {
+const getIcon = (menu: IMenuNode): LucideIcon | undefined => {
   if (menu.type === MenuType.postback) {
     return Reply;
   }
@@ -94,6 +93,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
 }) => {
   const { t } = useTranslate();
   const hasPermission = useHasPermission();
+  const Icon = getIcon(menu);
 
   return (
     <Box
@@ -133,7 +133,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
                 : "flex",
           }}
         >
-          <UnifiedIcon size="20px" Icon={getIcon(menu)} color="#000" />
+          {Icon ? <Icon /> : null}
         </div>
         <Typography>
           {menu.title} :{" "}

@@ -21,6 +21,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
         display: "flex",
         flexDirection: "column",
         gap: 0,
+        paddingTop: 0,
       },
     },
   },

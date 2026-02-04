@@ -11,6 +11,7 @@ import {
   GridColDef,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
+import { LucideIcon } from "lucide-react";
 
 import { useDataGridProps } from "@/hooks/useDataGridProps";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -28,7 +29,6 @@ import {
   ButtonActionsGroupProps,
 } from "../buttons/ButtonActionsGroup";
 import { FilterTextfield } from "../inputs/FilterTextfield";
-import { TMenuItem } from "../menus/Sidebar";
 
 import { DataGrid } from "./DataGrid";
 import { type Filter, GenericFilters } from "./GenericFilters";
@@ -59,7 +59,7 @@ export const GenericDataGrid = <
 }: {
   entity: TE;
   buttons?: ButtonActionsGroupProps["buttons"];
-  headerIcon?: TMenuItem["Icon"];
+  headerIcon?: LucideIcon;
   searchParams: TParamItem<TE> &
     SearchHookOptions & {
       getFindParams?: (searchPayload: SearchPayload<TE>) => SearchPayload<TE>;

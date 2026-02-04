@@ -51,7 +51,7 @@ export const SubscribersList = (props: {
   return (
     <>
       <Grid padding={2}>
-        <Title title={t(props.assignedTo)} icon={Inbox} />
+        <Title title={t(props.assignedTo)} Icon={Inbox} />
       </Grid>
       {subscribers?.length > 0 ? (
         <ConversationList

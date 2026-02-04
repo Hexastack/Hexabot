@@ -8,204 +8,35 @@ import {
   Collapse,
   Divider,
   List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   ListSubheader,
-  Tooltip as MuiTooltip,
-  Theme,
   TooltipProps,
-  styled,
 } from "@mui/material";
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/theme";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { EntityType } from "@/services/types";
+import { PermissionAction } from "@/types/permission.types";
 
-import { AnimatedComponent } from "../AnimatedComponent";
+import { SidebarItem } from "./SidebarItem";
 
-export type TMenuItem = {
+type TMenuItem = {
   Icon?: LucideIcon;
-  text: string;
+  text: TTranslationKeys;
   href?: string;
   selected?: boolean;
   onClick?: () => void;
   tooltip?: Partial<TooltipProps>;
+  requires?: { [key in EntityType]?: PermissionAction[] };
 };
 
-export type TMenuWithSubmenuItems = TMenuItem & {
+export type TMenu = TMenuItem & {
   submenuItems?: TMenuItem[];
 };
 
-const StyledListItemButton = styled(ListItemButton)(
-  ({ theme }: { isHovered?: boolean } & { theme: Theme }) =>
-    SXStyleOptions({
-      justifyContent: "center",
-      color: theme.palette.text.secondary,
-      "&.Mui-selected": {
-        color: theme.palette.primary.main,
-        backgroundColor: `${theme.palette.primary.light}61 !important`,
-        "&::before": {
-          content: '""',
-          width: "4px",
-          position: "absolute",
-          height: "110%",
-          backgroundColor: theme.palette.primary.main,
-          left: 0,
-          borderRadius: "0 20px 20px 0",
-        },
-      },
-      minHeight: 56,
-      paddingRight: "20px",
-      paddingLeft: "20px",
-    })({ theme }),
-);
-const StyledDivider = styled(Divider)(({ theme }) =>
-  SXStyleOptions({
-    "&:before": {
-      borderColor: theme.palette.text.secondary,
-    },
-    "&:after": {
-      borderColor: theme.palette.text.secondary,
-    },
-  })({ theme }),
-);
-const StyledListSubheader = styled(ListSubheader)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  background: "transparent",
-}));
-const StyledListItemIcon = styled(ListItemIcon, {
-  shouldForwardProp: (prop) => prop !== "isNested" && prop !== "isToggled",
-})(
-  ({
-    theme,
-    isNested,
-    isToggled,
-  }: {
-    theme?: Theme;
-    isNested: boolean;
-    isToggled: boolean;
-  }) => ({
-    color: theme?.palette.text.secondary,
-    minWidth: 0,
-    marginRight: isToggled ? "20px" : "0",
-    paddingLeft: isNested ? theme?.spacing(3) : 0,
-  }),
-);
-const StyledListItemText = styled(ListItemText, {
-  shouldForwardProp: (prop) => prop !== "isNested" && prop !== "isSelected",
-})(
-  ({
-    isNested,
-    isSelected,
-    theme,
-  }: { isNested: boolean; isSelected: boolean } & { theme: Theme }) => ({
-    ...(isNested && {
-      color: isSelected
-        ? theme.palette.primary.main
-        : theme.palette.text.secondary,
-    }),
-  }),
-);
-const StyledList = styled(List)(() => ({ padding: 0, minWidth: "0" }));
-const Tooltip = ({ children, ...rest }: TooltipProps) => (
-  <MuiTooltip
-    arrow
-    placement="right"
-    slotProps={{
-      tooltip: {
-        sx: {
-          p: 1,
-          bgcolor: "common.black",
-          "& .MuiTooltip-arrow": {
-            color: "common.black",
-          },
-        },
-      },
-    }}
-    {...rest}
-  >
-    {children}
-  </MuiTooltip>
-);
-const VerticalMenuItem = ({
-  text,
-  href = "",
-  onClick,
-  pathname,
-  selected,
-  isSubmenuOpen,
-  isNested = false,
-  isToggled = false,
-  Icon,
-  tooltip,
-}: TMenuItem & {
-  pathname: string;
-  selected?: boolean;
-  isSubmenuOpen?: boolean;
-  isNested?: boolean;
-  isToggled?: boolean;
-}) => {
-  const { t } = useTranslate();
-  const linkProps = href
-    ? {
-        component: RouterLink,
-        to: href,
-        onClick,
-      }
-    : {
-        onClick,
-      };
-  const isMenuItemHead = typeof isSubmenuOpen === "boolean";
-  const isSelected =
-    selected ||
-    (!isMenuItemHead &&
-      ((href !== "/" && pathname.startsWith(href)) || pathname === href));
-  const color =
-    isSelected && !(isToggled && !href && isSubmenuOpen)
-      ? theme.palette.primary.main
-      : theme.palette.text.secondary;
-
-  return (
-    <Tooltip
-      title={String(t(text as TTranslationKeys))}
-      disableHoverListener={isToggled}
-      {...tooltip}
-    >
-      <StyledListItemButton
-        selected={!!(!(isToggled && !href && isSubmenuOpen) && isSelected)}
-        {...linkProps}
-      >
-        {Icon ? (
-          <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
-            <Icon color={color} size="1.1em" />
-          </StyledListItemIcon>
-        ) : null}
-        {isToggled ? (
-          <StyledListItemText
-            primary={String(t(text as TTranslationKeys))}
-            isNested={isNested}
-            isSelected={isSelected}
-          />
-        ) : null}
-        {isMenuItemHead && isToggled ? (
-          <AnimatedComponent
-            component={ChevronRight}
-            color={color}
-            canRotate={isSubmenuOpen}
-          />
-        ) : null}
-      </StyledListItemButton>
-    </Tooltip>
-  );
-};
-
 export type TSidebarProps = {
-  menu: TMenuWithSubmenuItems[];
+  menu: TMenu[];
   pathname: string;
   isToggled?: boolean;
   toggleFunction?: () => void;
@@ -221,7 +52,7 @@ export const Sidebar = ({
   const toggleCollapse = (menuItem: string) => () => {
     if (isToggled || !openItems.includes(menuItem))
       setOpenItems(openItems.includes(menuItem) ? [] : [menuItem]);
-    if (toggleFunction && !isToggled) toggleFunction();
+    if (!isToggled) toggleFunction?.();
   };
 
   useEffect(() => {
@@ -231,15 +62,14 @@ export const Sidebar = ({
         submenuItems?.find(({ href }) => pathname === href) &&
         toggleCollapse(text)(),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return (
-    <StyledList>
+    <List>
       {menu.map(({ text, onClick, submenuItems, ...rest }) => {
         if (rest.href || onClick) {
           return (
-            <VerticalMenuItem
+            <SidebarItem
               key={text}
               text={text}
               onClick={() => {
@@ -255,7 +85,7 @@ export const Sidebar = ({
         if (submenuItems) {
           return (
             <div key={text}>
-              <VerticalMenuItem
+              <SidebarItem
                 text={text}
                 onClick={toggleCollapse(text)}
                 isSubmenuOpen={openItems.includes(text)}
@@ -274,7 +104,7 @@ export const Sidebar = ({
                 {isToggled ? (
                   <List dense component="div" disablePadding>
                     {submenuItems.map(({ onClick, ...rest }) => (
-                      <VerticalMenuItem
+                      <SidebarItem
                         key={`collapse_${rest.text}`}
                         isNested
                         onClick={() => {
@@ -294,15 +124,11 @@ export const Sidebar = ({
         }
 
         return (
-          <StyledDivider key={`divider_${text}`}>
-            {isToggled && text ? (
-              <StyledListSubheader>
-                {String(t(text as TTranslationKeys))}
-              </StyledListSubheader>
-            ) : null}
-          </StyledDivider>
+          <Divider key={`divider_${text}`}>
+            {isToggled ? <ListSubheader>{t(text)}</ListSubheader> : null}
+          </Divider>
         );
       })}
-    </StyledList>
+    </List>
   );
 };
