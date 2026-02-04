@@ -4,9 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Paper, Typography } from "@mui/material";
+import { Button, FormControl, FormLabel, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { Key as KeyIcon, Repeat2 } from "lucide-react";
+import {
+  ChevronRight as KeyboardArrowRightIcon,
+  Key as KeyIcon,
+  Repeat2,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -58,27 +62,23 @@ export const ResetPassword = () => {
 
   return (
     <PublicContentWrapper>
-      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }} variant="outlined">
-        <form
-          onSubmit={handleSubmit((payload) => {
-            resetPassword(payload);
-          })}
-        >
-          <ContentContainer gap={3}>
-            <Grid
-              gap={1}
-              display="flex"
-              alignItems="center"
-              flexDirection="row"
-            >
-              <Repeat2 />
-              <Typography variant="h4" fontWeight={700}>
-                {t("title.reset_password")}
-              </Typography>
-            </Grid>
+      <form
+        onSubmit={handleSubmit((payload) => {
+          resetPassword(payload);
+        })}
+      >
+        <ContentContainer>
+          <Grid gap={1} mb={1} display="flex" alignItems="center">
+            <Repeat2 />
+            <Typography variant="h4" fontWeight={700}>
+              {t("title.reset_password")}
+            </Typography>
+          </Grid>
+          <FormControl error={!!errors.password}>
+            <FormLabel htmlFor="password">{t("label.password")}</FormLabel>
             <PasswordInput
+              id="password"
               autoFocus
-              label={t("label.password")}
               error={!!errors.password}
               required
               slotProps={{
@@ -89,9 +89,13 @@ export const ResetPassword = () => {
               helperText={errors.password ? errors.password.message : null}
               {...register("password", validationRules.password)}
             />
-
+          </FormControl>
+          <FormControl error={!!errors.password2}>
+            <FormLabel htmlFor="password2">
+              {t("placeholder.password2")}
+            </FormLabel>
             <PasswordInput
-              label={t("placeholder.password2")}
+              id="password2"
               error={!!errors.password2}
               required
               slotProps={{
@@ -102,17 +106,22 @@ export const ResetPassword = () => {
               helperText={errors.password2 ? errors.password2.message : null}
               {...register("password2", validationRules.password2)}
             />
-            <Grid container gap={1} justifyContent="flex-end">
-              <Button type="submit" color="primary" variant="contained">
-                {t("button.submit")}
-              </Button>
-              <Button component={RouterLink} to="/login" variant="outlined">
-                {t("button.cancel")}
-              </Button>
-            </Grid>
-          </ContentContainer>
-        </form>
-      </Paper>
+          </FormControl>
+          <Grid container direction="column" gap={1} mt={2}>
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              endIcon={<KeyboardArrowRightIcon size={14} />}
+            >
+              {t("button.submit")}
+            </Button>
+            <Button component={RouterLink} to="/login" variant="outlined">
+              {t("button.cancel")}
+            </Button>
+          </Grid>
+        </ContentContainer>
+      </form>
     </PublicContentWrapper>
   );
 };

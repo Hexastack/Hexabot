@@ -19,7 +19,7 @@ const EmptyStateOverlay = styled(Box)(() => ({
   alignItems: "center",
   justifyContent: "center",
   pointerEvents: "none",
-  zIndex: 1,
+  zIndex: 4,
 }));
 
 type WorkflowEmptyStateProps = {

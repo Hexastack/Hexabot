@@ -13,7 +13,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useFind } from "@/hooks/crud/useFind";
@@ -78,7 +77,6 @@ export const Users = () => {
       sortable: false,
       resizable: false,
       disableColumnMenu: true,
-      renderHeader,
       renderCell: buildRenderPicture(EntityType.USER),
     },
     {
@@ -89,7 +87,6 @@ export const Users = () => {
       disableColumnMenu: true,
       valueGetter: (_params, val) => `${val.firstName} ${val.lastName}`,
       headerAlign: "left",
-      renderHeader,
     },
     {
       flex: 1,
@@ -97,7 +94,6 @@ export const Users = () => {
       headerName: t("label.email"),
       disableColumnMenu: true,
       headerAlign: "left",
-      renderHeader,
     },
     {
       flex: 1,
@@ -116,14 +112,12 @@ export const Users = () => {
           />
         )),
       headerAlign: "left",
-      renderHeader,
     },
     {
       maxWidth: 120,
       field: "state",
       headerName: t("label.status"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       renderCell: (params) => (
         <Switch
@@ -152,7 +146,6 @@ export const Users = () => {
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
       headerAlign: "left",
-      renderHeader,
       resizable: false,
       valueGetter: (params) =>
         t("datetime.created_at", getDateTimeFormatter(params)),
@@ -163,7 +156,6 @@ export const Users = () => {
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
       headerAlign: "left",
-      renderHeader,
       resizable: false,
       valueGetter: (params) =>
         t("datetime.updated_at", getDateTimeFormatter(params)),

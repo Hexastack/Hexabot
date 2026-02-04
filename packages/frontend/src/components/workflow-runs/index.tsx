@@ -9,7 +9,6 @@ import { Activity, GalleryHorizontalEnd } from "lucide-react";
 import { ComponentProps, useMemo } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
 import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
@@ -37,11 +36,10 @@ export const WorkflowRuns = ({
     () => [
       { field: "id", headerName: "ID", width: 100 },
       {
-        maxWidth: 140,
+        minWidth: 140,
         field: "createdAt",
         headerName: t("label.triggered_at"),
         disableColumnMenu: true,
-        renderHeader,
         resizable: false,
         headerAlign: "left",
         valueGetter: (value) =>
@@ -54,7 +52,6 @@ export const WorkflowRuns = ({
         resizable: true,
         headerName: t("label.workflow"),
         disableColumnMenu: true,
-        renderHeader,
         headerAlign: "left",
         renderCell: ({ row }) => {
           const workflowId = String(row.workflow);
@@ -74,7 +71,6 @@ export const WorkflowRuns = ({
         resizable: true,
         headerName: t("label.triggered_by"),
         disableColumnMenu: true,
-        renderHeader,
         headerAlign: "left",
         renderCell: ({ row }) => {
           const subscriberId = String(row.triggeredBy);
@@ -95,7 +91,6 @@ export const WorkflowRuns = ({
         field: "status",
         headerName: t("label.status"),
         disableColumnMenu: true,
-        renderHeader,
         headerAlign: "left",
         renderCell: ({ row }) => <WorkflowRunStatusBadge workflowRun={row} />,
       },
@@ -105,7 +100,6 @@ export const WorkflowRuns = ({
         headerName: t("label.duration"),
         sortable: false,
         disableColumnMenu: true,
-        renderHeader,
         headerAlign: "left",
         valueGetter: (_value, row) => formatDurationMs(row.duration),
       },
@@ -116,7 +110,6 @@ export const WorkflowRuns = ({
         headerName: t("label.error"),
         sortable: false,
         disableColumnMenu: true,
-        renderHeader,
         headerAlign: "left",
         valueGetter: (_value, row) => row.error || "-",
       },

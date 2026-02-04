@@ -33,25 +33,13 @@ import { TMenuItem } from "@/app-components/menus/Sidebar";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import { IMenuNode } from "@/types/menu-tree.types";
 import { MenuType } from "@/types/menu.types";
 import { PermissionAction } from "@/types/permission.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: "8px",
-  color: "inherit",
-  fontWeight: 300,
-  textTransform: "capitalize",
-  backgroundColor: theme.palette.background.default,
-  borderColor: theme.palette.action.focus,
-  borderWidth: "1px",
-  "&:hover": {
-    borderColor: theme.palette.action.focus,
-  },
-}));
 const StyledAccordion = styled(Accordion)(
   SXStyleOptions({
     // remove shadow and edges
@@ -136,8 +124,6 @@ const MenuItem: FC<MenuAccordionProps> = ({
         */}
         <div
           style={{
-            height: "24px",
-            width: "24px",
             alignItems: "center",
             justifyContent: "center",
             display:
@@ -168,7 +154,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
             <>
               <Link
                 sx={{ ml: "0.75em", fontSize: "14px" }}
-                color={theme.palette.primary.light}
+                color={theme.palette.primary.main}
                 href={menu.url}
               >
                 ({menu.url})
@@ -177,19 +163,11 @@ const MenuItem: FC<MenuAccordionProps> = ({
           ) : null}
         </Typography>
       </Grid>
-      <ButtonGroup
-        variant="outlined"
-        size="small"
-        aria-label="editing actions"
-        sx={{
-          borderRadius: "2px",
-          overflow: "hidden",
-          height: "32px",
-        }}
-      >
+      <ButtonGroup size="small">
         {menu.type === "nested" &&
         hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
-          <StyledButton
+          <Button
+            size="small"
             startIcon={<ListPlus size={18} style={{ opacity: 0.6 }} />}
             onClick={(event) => {
               onAppend(menu.id);
@@ -197,10 +175,10 @@ const MenuItem: FC<MenuAccordionProps> = ({
             }}
           >
             {t("button.append")}
-          </StyledButton>
+          </Button>
         ) : null}
         {hasPermission(EntityType.MENU, PermissionAction.UPDATE) ? (
-          <StyledButton
+          <Button
             startIcon={<Pencil size={18} style={{ opacity: 0.6 }} />}
             onClick={(event) => {
               onUpdate(menu);
@@ -214,7 +192,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
           />
         ) : null}
         {hasPermission(EntityType.MENU, PermissionAction.DELETE) ? (
-          <StyledButton
+          <Button
             onClick={(event) => {
               onDelete(menu);
               event.stopPropagation();
@@ -308,7 +286,7 @@ const MenuAccordion: React.FC<MenuAccordionProps> = ({
           </AccordionDetails>
         </StyledAccordion>
       ) : (
-        <Grid height="56px" alignContent="center" sx={{ zIndex: 1 }}>
+        <Grid height="60px" alignContent="center" sx={{ zIndex: 1 }}>
           <MenuItem
             menu={menu}
             onAppend={onAppend}

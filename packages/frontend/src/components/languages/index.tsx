@@ -13,7 +13,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
@@ -96,7 +95,6 @@ export const Languages = () => {
       field: "title",
       headerName: t("label.title"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -104,7 +102,6 @@ export const Languages = () => {
       field: "code",
       headerName: t("label.code"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -112,7 +109,6 @@ export const Languages = () => {
       field: "isRTL",
       headerName: t("label.is_rtl"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       valueGetter: (value) => (value ? t("label.yes") : t("label.no")),
     },
@@ -121,12 +117,10 @@ export const Languages = () => {
       field: "isDefault",
       headerName: t("label.is_default"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       renderCell: (params) => (
         <Switch
           checked={params.value}
-          color="primary"
           slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={
             params.value ||
@@ -143,7 +137,6 @@ export const Languages = () => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -154,7 +147,6 @@ export const Languages = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

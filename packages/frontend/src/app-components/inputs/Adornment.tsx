@@ -7,7 +7,7 @@
 import { InputAdornment } from "@mui/material";
 import { type LucideIcon } from "lucide-react";
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 
 export const Adornment = ({
   Icon,

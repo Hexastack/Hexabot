@@ -8,7 +8,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  createTheme,
   ThemeProvider,
   Typography,
 } from "@mui/material";
@@ -17,45 +16,11 @@ import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 
 import { FORM_TEMPLATES } from "./templates";
 import { FORM_WIDGETS } from "./widgets";
-import { labelTooltipSx } from "./widgets/shared";
 
-const compactFormTheme = createTheme(theme, {
-  components: {
-    MuiTextField: {
-      defaultProps: {
-        size: "small",
-      },
-    },
-    MuiCheckbox: {
-      defaultProps: {
-        size: "small",
-      },
-    },
-    MuiRadio: {
-      defaultProps: {
-        size: "small",
-      },
-    },
-    MuiFormLabel: {
-      styleOverrides: {
-        root: labelTooltipSx,
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          "> .MuiBox-root": {
-            padding: 0,
-          },
-        },
-      },
-    },
-  },
-});
 const formUiSchema = {
   "ui:submitButtonOptions": {
     norender: true,
@@ -89,7 +54,7 @@ export const ActionSchemaPanel = ({
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
-        <ThemeProvider theme={compactFormTheme}>
+        <ThemeProvider theme={theme}>
           <Form
             schema={schema as RJSFSchema}
             validator={validator}

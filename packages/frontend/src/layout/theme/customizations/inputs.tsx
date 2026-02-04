@@ -9,7 +9,6 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import { outlinedInputClasses } from "@mui/material/OutlinedInput";
 import { alpha, Components, Theme } from "@mui/material/styles";
-import { svgIconClasses } from "@mui/material/SvgIcon";
 import { toggleButtonClasses } from "@mui/material/ToggleButton";
 import { toggleButtonGroupClasses } from "@mui/material/ToggleButtonGroup";
 
@@ -22,17 +21,13 @@ const buttonsCustomizations: Components<Theme> = {
       disableRipple: true,
     },
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: () => ({
         boxSizing: "border-box",
         transition: "all 100ms ease-in",
-        "&:focus-visible": {
-          outline: `3px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-          outlineOffset: "2px",
-        },
-        "&.Mui-disabled": {
-          background: `${gray[200]}!important`,
-          color: `${gray[500]}!important`,
-          borderColor: `${gray[300]}!important`,
+        "&.MuiSwitch-switchBase": {
+          span: {
+            boxShadow: "0 0 1px #0008 inset",
+          },
         },
       }),
     },
@@ -63,42 +58,6 @@ const buttonsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              color: "primary",
-              variant: "contained",
-            },
-            style: {
-              color: "white",
-              backgroundColor: gray[900],
-              backgroundImage: `linear-gradient(to bottom, ${gray[700]}, ${gray[800]})`,
-              boxShadow: `inset 0 1px 0 ${gray[600]}, inset 0 -1px 0 1px hsl(220, 0%, 0%)`,
-              border: `1px solid ${gray[700]}`,
-              "&:hover": {
-                backgroundImage: "none",
-                backgroundColor: gray[700],
-                boxShadow: "none",
-              },
-              "&:active": {
-                backgroundColor: gray[800],
-              },
-              ...theme.applyStyles("dark", {
-                color: "black",
-                backgroundColor: gray[50],
-                backgroundImage: `linear-gradient(to bottom, ${gray[100]}, ${gray[50]})`,
-                boxShadow: "inset 0 -1px 0  hsl(220, 30%, 80%)",
-                border: `1px solid ${gray[50]}`,
-                "&:hover": {
-                  backgroundImage: "none",
-                  backgroundColor: gray[300],
-                  boxShadow: "none",
-                },
-                "&:active": {
-                  backgroundColor: gray[400],
-                },
-              }),
-            },
-          },
-          {
-            props: {
               color: "secondary",
               variant: "contained",
             },
@@ -109,7 +68,7 @@ const buttonsCustomizations: Components<Theme> = {
               boxShadow: `inset 0 2px 0 ${alpha(brand[200], 0.2)}, inset 0 -2px 0 ${alpha(brand[700], 0.4)}`,
               border: `1px solid ${brand[500]}`,
               "&:hover": {
-                backgroundColor: brand[700],
+                // backgroundColor: brand[700],
                 boxShadow: "none",
               },
               "&:active": {
@@ -231,60 +190,60 @@ const buttonsCustomizations: Components<Theme> = {
       }),
     },
   },
-  MuiIconButton: {
-    styleOverrides: {
-      root: ({ theme }) => ({
-        boxShadow: "none",
-        borderRadius: (theme.vars || theme).shape.borderRadius,
-        textTransform: "none",
-        fontWeight: theme.typography.fontWeightMedium,
-        letterSpacing: 0,
-        border: "1px solid ",
-        borderColor: gray[200],
-        backgroundColor: alpha(gray[50], 0.3),
-        "&:hover": {
-          backgroundColor: gray[100],
-          borderColor: gray[300],
-        },
-        "&:active": {
-          backgroundColor: gray[200],
-        },
-        ...theme.applyStyles("dark", {
-          backgroundColor: gray[800],
-          borderColor: gray[700],
-          "&:hover": {
-            backgroundColor: gray[900],
-            borderColor: gray[600],
-          },
-          "&:active": {
-            backgroundColor: gray[900],
-          },
-        }),
-        variants: [
-          {
-            props: {
-              size: "small",
-            },
-            style: {
-              width: "2.25rem",
-              height: "2.25rem",
-              padding: "0.25rem",
-              [`& .${svgIconClasses.root}`]: { fontSize: "1rem" },
-            },
-          },
-          {
-            props: {
-              size: "medium",
-            },
-            style: {
-              width: "2.5rem",
-              height: "2.5rem",
-            },
-          },
-        ],
-      }),
-    },
-  },
+  // MuiIconButton: {
+  //   styleOverrides: {
+  //     root: ({ theme }) => ({
+  //       boxShadow: "none",
+  //       borderRadius: (theme.vars || theme).shape.borderRadius,
+  //       textTransform: "none",
+  //       fontWeight: theme.typography.fontWeightMedium,
+  //       letterSpacing: 0,
+  //       border: "1px solid ",
+  //       borderColor: gray[200],
+  //       backgroundColor: alpha(gray[50], 0.3),
+  //       "&:hover": {
+  //         backgroundColor: gray[100],
+  //         borderColor: gray[300],
+  //       },
+  //       "&:active": {
+  //         backgroundColor: gray[200],
+  //       },
+  //       ...theme.applyStyles("dark", {
+  //         backgroundColor: gray[800],
+  //         borderColor: gray[700],
+  //         "&:hover": {
+  //           backgroundColor: gray[900],
+  //           borderColor: gray[600],
+  //         },
+  //         "&:active": {
+  //           backgroundColor: gray[900],
+  //         },
+  //       }),
+  //       variants: [
+  //         {
+  //           props: {
+  //             size: "small",
+  //           },
+  //           style: {
+  //             width: "2.25rem",
+  //             height: "2.25rem",
+  //             padding: "0.25rem",
+  //             [`& .${svgIconClasses.root}`]: { fontSize: "1rem" },
+  //           },
+  //         },
+  //         {
+  //           props: {
+  //             size: "medium",
+  //           },
+  //           style: {
+  //             width: "2.5rem",
+  //             height: "2.5rem",
+  //           },
+  //         },
+  //       ],
+  //     }),
+  //   },
+  // },
   MuiToggleButtonGroup: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -331,6 +290,8 @@ const checkboxCustomizations: Components<Theme> = {
       ),
       checkedIcon: <CheckRoundedIcon sx={{ height: 14, width: 14 }} />,
       indeterminateIcon: <RemoveRoundedIcon sx={{ height: 14, width: 14 }} />,
+      // //Action schema
+      // size: "small",
     },
     styleOverrides: {
       root: ({ theme }) => ({
@@ -499,7 +460,28 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         typography: theme.typography.caption,
         marginBottom: 8,
+        // //Action schema
+        // display: "inline-flex",
+        // alignItems: "center",
+        // "& .MuiFormLabel-asterisk": {
+        //   order: 2,
+        // },
+        // "& .action-field-label-icon": {
+        //   order: 3,
+        // },
       }),
     },
   },
+  // //Action schema
+  // MuiRadio: {
+  //   defaultProps: {
+  //     size: "small",
+  //   },
+  // },
+  // //Action schema
+  // MuiTextField: {
+  //   defaultProps: {
+  //     size: "small",
+  //   },
+  // },
 };

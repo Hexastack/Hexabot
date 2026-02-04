@@ -8,21 +8,21 @@
 // https://mui.com/x/react-data-grid/components/#pagination
 
 import {
-  TablePaginationProps,
   Pagination as MuiPagination,
-  PaginationItemProps,
   PaginationItem,
+  PaginationItemProps,
+  TablePaginationProps,
 } from "@mui/material";
 import {
-  useGridApiContext,
-  useGridSelector,
-  gridPageCountSelector,
-  GridPagination,
   DataGridProps,
   GridFooter,
+  gridPageCountSelector,
+  GridPagination,
+  useGridApiContext,
+  useGridSelector,
 } from "@mui/x-data-grid";
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 
 function Pagination({
   page,

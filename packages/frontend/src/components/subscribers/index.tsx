@@ -13,7 +13,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
@@ -52,7 +51,6 @@ export const Subscribers = () => {
       headerName: "",
       sortable: false,
       disableColumnMenu: true,
-      renderHeader,
       renderCell: buildRenderPicture(EntityType.SUBSCRIBER),
     },
     {
@@ -60,7 +58,6 @@ export const Subscribers = () => {
       field: "firstName",
       headerName: t("label.first_name"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -68,7 +65,6 @@ export const Subscribers = () => {
       field: "lastName",
       headerName: t("label.last_name"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -76,7 +72,6 @@ export const Subscribers = () => {
       field: "locale",
       headerName: t("label.locale"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
     },
@@ -97,14 +92,12 @@ export const Subscribers = () => {
           />
         )),
       headerAlign: "left",
-      renderHeader,
     },
     {
       maxWidth: 80,
       field: "gender",
       headerName: t("label.gender"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
     },
@@ -113,7 +106,6 @@ export const Subscribers = () => {
       field: "channel",
       headerName: t("label.channel"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
       renderCell: ({ row }) => row.channel?.name,
     },
@@ -122,7 +114,6 @@ export const Subscribers = () => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -133,7 +124,6 @@ export const Subscribers = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

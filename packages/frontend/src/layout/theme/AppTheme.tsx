@@ -4,15 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeOptions, ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 
-import { dataDisplayCustomizations } from "./customizations/dataDisplay";
-import { feedbackCustomizations } from "./customizations/feedback";
-import { inputsCustomizations } from "./customizations/inputs";
-import { navigationCustomizations } from "./customizations/navigation";
-import { surfacesCustomizations } from "./customizations/surfaces";
-import { colorSchemes, shadows, shape, typography } from "./themePrimitives";
+import { theme } from ".";
 
 interface AppThemeProps {
   children: React.ReactNode;
@@ -25,27 +20,8 @@ interface AppThemeProps {
 
 export default function AppTheme(props: AppThemeProps) {
   const { children, disableCustomTheme, themeComponents } = props;
-  const theme = React.useMemo(() => {
-    return disableCustomTheme
-      ? {}
-      : createTheme({
-          cssVariables: {
-            colorSchemeSelector: "data-mui-color-scheme",
-            cssVarPrefix: "template",
-          },
-          colorSchemes,
-          typography,
-          shadows,
-          shape,
-          components: {
-            ...inputsCustomizations,
-            ...dataDisplayCustomizations,
-            ...feedbackCustomizations,
-            ...navigationCustomizations,
-            ...surfacesCustomizations,
-            ...themeComponents,
-          },
-        });
+  const memoizedTheme = React.useMemo(() => {
+    return disableCustomTheme ? {} : theme;
   }, [disableCustomTheme, themeComponents]);
 
   if (disableCustomTheme) {
@@ -53,7 +29,11 @@ export default function AppTheme(props: AppThemeProps) {
   }
 
   return (
-    <ThemeProvider theme={theme} disableTransitionOnChange defaultMode="light">
+    <ThemeProvider
+      theme={memoizedTheme}
+      disableTransitionOnChange
+      defaultMode="light"
+    >
       {children}
     </ThemeProvider>
   );

@@ -225,60 +225,20 @@ export const getDesignTokens = (mode: PaletteMode) => {
         }),
       },
     },
-    typography: {
-      fontFamily: "Inter, sans-serif",
-      h1: {
-        fontSize: defaultTheme.typography.pxToRem(48),
-        fontWeight: 600,
-        lineHeight: 1.2,
-        letterSpacing: -0.5,
-      },
-      h2: {
-        fontSize: defaultTheme.typography.pxToRem(36),
-        fontWeight: 600,
-        lineHeight: 1.2,
-      },
-      h3: {
-        fontSize: defaultTheme.typography.pxToRem(30),
-        lineHeight: 1.2,
-      },
-      h4: {
-        fontSize: defaultTheme.typography.pxToRem(24),
-        fontWeight: 600,
-        lineHeight: 1.5,
-      },
-      h5: {
-        fontSize: defaultTheme.typography.pxToRem(20),
-        fontWeight: 600,
-      },
-      h6: {
-        fontSize: defaultTheme.typography.pxToRem(18),
-        fontWeight: 600,
-      },
-      subtitle1: {
-        fontSize: defaultTheme.typography.pxToRem(18),
-      },
-      subtitle2: {
-        fontSize: defaultTheme.typography.pxToRem(14),
-        fontWeight: 500,
-      },
-      body1: {
-        fontSize: defaultTheme.typography.pxToRem(14),
-      },
-      body2: {
-        fontSize: defaultTheme.typography.pxToRem(14),
-        fontWeight: 400,
-      },
-      caption: {
-        fontSize: defaultTheme.typography.pxToRem(12),
-        fontWeight: 400,
-      },
-    },
+    typography,
     shape: {
       borderRadius: 8,
     },
     shadows: customShadows,
   };
+};
+
+const PRIMARY_COLOR = "#4eaa42";
+const PRIMARY = {
+  light: alpha(PRIMARY_COLOR, 0.05),
+  main: PRIMARY_COLOR,
+  dark: `color-mix(in srgb, ${PRIMARY_COLOR}, black 10%)`,
+  contrastText: brand[50],
 };
 
 export const colorSchemes = {
@@ -291,12 +251,7 @@ export const colorSchemes = {
         contrastText: "#fff",
       },
       teal,
-      primary: {
-        light: brand[200],
-        main: brand[400],
-        dark: brand[700],
-        contrastText: brand[50],
-      },
+      primary: PRIMARY,
       info: {
         light: brand[100],
         main: brand[300],
@@ -394,7 +349,7 @@ export const colorSchemes = {
 } satisfies CssVarsThemeOptions["colorSchemes"];
 
 export const typography = {
-  fontFamily: "Inter, sans-serif",
+  fontFamily: "Roboto, sans-serif",
   h1: {
     fontSize: defaultTheme.typography.pxToRem(48),
     fontWeight: 600,

@@ -20,43 +20,20 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, RouterType } from "@/services/types";
 import { ISetting } from "@/types/setting.types";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 import SettingInput from "./SettingInput";
 
-const StyledTab = styled(Tab)(
-  SXStyleOptions({
-    alignItems: "center",
-    textTransform: "none",
-    borderRadius: 1,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
-    paddingX: 2,
-    paddingY: 1,
-    borderRight: "1px solid",
-    borderColor: "grey[100]",
-    "& p": {
-      color: "grey[600]",
-    },
-    "&:hover": {
-      backgroundColor: "grey.100",
-    },
-    "&.Mui-selected": {
-      backgroundColor: "teal.50",
-      "& p": {
-        color: "primary.main",
-      },
-    },
-  }),
-);
 const StyledForm = styled("form")();
 
 function groupBy(array: ISetting[]) {
-  return array.reduce((acc, curr) => {
-    acc[curr.group] = acc[curr.group] ? acc[curr.group].concat(curr) : [curr];
+  return array.reduce(
+    (acc, curr) => {
+      acc[curr.group] = acc[curr.group] ? acc[curr.group].concat(curr) : [curr];
 
-    return acc;
-  }, {} as Record<string, ISetting[]>);
+      return acc;
+    },
+    {} as Record<string, ISetting[]>,
+  );
 }
 
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
@@ -142,20 +119,11 @@ export const Settings = () => {
               variant="scrollable"
               value={selectedTab}
               onChange={handleChange}
-              sx={{
-                "& .MuiTabs-flexContainer": {
-                  padding: 0,
-                  paddingRight: 0.2,
-                },
-                "& .MuiTabs-indicator": {
-                  width: "3px",
-                },
-              }}
             >
               {Object.keys(groups)
                 .sort((a, b) => a.localeCompare(b))
                 .map((group, index) => (
-                  <StyledTab
+                  <Tab
                     value={group}
                     key={group}
                     label={t(`title.${group}`, { ns: group })}

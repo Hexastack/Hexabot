@@ -23,7 +23,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/themes/theme";
+import { theme } from "@/layout/theme";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 import { AnimatedComponent } from "../AnimatedComponent";
@@ -41,32 +41,28 @@ export type TMenuWithSubmenuItems = TMenuItem & {
   submenuItems?: TMenuItem[];
 };
 
-const StyledListItemButton = styled(ListItemButton, {
-  shouldForwardProp: (prop) => prop !== "isHovered",
-})(({ isHovered, theme }: { isHovered?: boolean } & { theme: Theme }) =>
-  SXStyleOptions({
-    justifyContent: "center",
-    color: theme.palette.text.secondary,
-    "&.Mui-selected": {
-      color: theme.palette.primary.main,
-      backgroundColor: `${theme.palette.primary.light}61 !important`,
-      "&::before": {
-        content: '""',
-        width: "4px",
-        position: "absolute",
-        height: "110%",
-        backgroundColor: theme.palette.primary.main,
-        left: 0,
-        borderRadius: "0 20px 20px 0",
+const StyledListItemButton = styled(ListItemButton)(
+  ({ theme }: { isHovered?: boolean } & { theme: Theme }) =>
+    SXStyleOptions({
+      justifyContent: "center",
+      color: theme.palette.text.secondary,
+      "&.Mui-selected": {
+        color: theme.palette.primary.main,
+        backgroundColor: `${theme.palette.primary.light}61 !important`,
+        "&::before": {
+          content: '""',
+          width: "4px",
+          position: "absolute",
+          height: "110%",
+          backgroundColor: theme.palette.primary.main,
+          left: 0,
+          borderRadius: "0 20px 20px 0",
+        },
       },
-    },
-    ...(isHovered && {
-      backgroundColor: "rgba(0, 0, 0, 0.04)",
-    }),
-    minHeight: 56,
-    paddingRight: "20px",
-    paddingLeft: "20px",
-  })({ theme }),
+      minHeight: 56,
+      paddingRight: "20px",
+      paddingLeft: "20px",
+    })({ theme }),
 );
 const StyledDivider = styled(Divider)(({ theme }) =>
   SXStyleOptions({
@@ -183,7 +179,6 @@ const VerticalMenuItem = ({
       <StyledListItemButton
         selected={!!(!(isToggled && !href && isSubmenuOpen) && isSelected)}
         {...linkProps}
-        // isHovered={isSubmenuOpen}
       >
         {Icon ? (
           <StyledListItemIcon isNested={isNested} isToggled={isToggled}>

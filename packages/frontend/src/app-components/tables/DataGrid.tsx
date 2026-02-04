@@ -4,69 +4,31 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   DataGridProps,
-  gridClasses,
   GridColDef,
   GridSlotsComponent,
   GridValidRowModel,
   DataGrid as MuiDataGrid,
 } from "@mui/x-data-grid";
 
-import { borderLine } from "@/layout/themes/theme";
-
-import { renderHeader } from "./columns/renderHeader";
 import { styledPaginationSlots } from "./DataGridStyledPagination";
 import { ErrorOverlay } from "./ErrorOverlay";
 import { NoDataOverlay } from "./NoDataOverlay";
 
-export const StyledDataGrid = <T extends GridValidRowModel = any>(
-  props: DataGridProps<T>,
-) => {
-  const theme = useTheme();
-  const { sx, ...otherProps } = props;
-
-  return (
-    <MuiDataGrid
-      {...otherProps}
-      sx={{
-        "& .MuiDataGrid-overlayWrapper": {
-          height: "fit-content",
-        },
-        [`& .${gridClasses.row}`]: {
-          "&:hover": {
-            backgroundColor: theme.palette.background.default,
-            "@media (hover: none)": {
-              backgroundColor: theme.palette.background.default,
-            },
-          },
-        },
-        minHeight: 400,
-        backgroundColor: theme.palette.background.paper,
-        border: borderLine,
-        ...sx,
-      }}
-    />
-  );
-};
-
 export const DataGrid = <T extends GridValidRowModel = any>({
   columns,
   rows = [],
-  autoHeight = true,
   disableRowSelectionOnClick = true,
   slots,
   showCellVerticalBorder = false,
   showColumnVerticalBorder = false,
-  sx = {},
   error,
   ...rest
 }: DataGridProps<T> & { error?: boolean }) => {
   const styledColumns: GridColDef<T>[] = columns.map((col) => ({
     disableColumnMenu: true,
-    renderHeader,
     headerAlign: "left",
     flex: 1,
     ...col,
@@ -81,8 +43,7 @@ export const DataGrid = <T extends GridValidRowModel = any>({
 
   return (
     <Grid size={12}>
-      <StyledDataGrid<T>
-        autoHeight={autoHeight}
+      <MuiDataGrid<T>
         disableRowSelectionOnClick={disableRowSelectionOnClick}
         slots={normalizedSlots}
         slotProps={{
@@ -93,7 +54,6 @@ export const DataGrid = <T extends GridValidRowModel = any>({
         }}
         showCellVerticalBorder={showCellVerticalBorder}
         showColumnVerticalBorder={showColumnVerticalBorder}
-        sx={sx}
         columns={styledColumns}
         rows={rows}
         {...rest}

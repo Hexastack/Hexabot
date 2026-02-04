@@ -13,7 +13,6 @@ import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
@@ -77,7 +76,6 @@ export const Labels = () => {
       field: "title",
       headerName: t("label.title"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -85,7 +83,6 @@ export const Labels = () => {
       field: "group",
       headerName: t("title.group_label"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "center",
       valueGetter: (groupId) => {
         const group = getEntityFromCache(groupId);
@@ -98,7 +95,6 @@ export const Labels = () => {
       field: "name",
       headerName: t("label.name"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -106,7 +102,6 @@ export const Labels = () => {
       field: "description",
       headerName: t("label.description"),
       disableColumnMenu: true,
-      renderHeader,
       headerAlign: "left",
     },
     {
@@ -114,7 +109,6 @@ export const Labels = () => {
       field: "user_count",
       headerName: t("label.user_count"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
     },
@@ -123,7 +117,6 @@ export const Labels = () => {
       field: "label_id",
       headerName: t("label.label_id"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
     },
@@ -132,7 +125,6 @@ export const Labels = () => {
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>
@@ -143,7 +135,6 @@ export const Labels = () => {
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,
-      renderHeader,
       resizable: false,
       headerAlign: "left",
       valueGetter: (params) =>

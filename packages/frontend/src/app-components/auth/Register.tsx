@@ -4,19 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Button,
-  FormControlLabel,
-  Paper,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Button, FormControlLabel, Switch, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
+  Type as AbcIcon,
+  ClipboardPenLine,
   ChevronRight as KeyboardArrowRightIcon,
   Key as KeyIcon,
   Mail as MarkunreadIcon,
-  Type as AbcIcon,
   User as PersonIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -32,7 +27,6 @@ import { JWT } from "@/utils/Jwt";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs/layouts/ContentContainer";
-import { ContentItem } from "../dialogs/layouts/ContentItem";
 import { Adornment } from "../inputs/Adornment";
 import { Input } from "../inputs/Input";
 import { PasswordInput } from "../inputs/PasswordInput";
@@ -139,138 +133,117 @@ export const Register = () => {
 
   return (
     <PublicContentWrapper>
-      <Paper
-        sx={{
-          width: { xs: "100%", md: "33%" },
-          p: 2,
-        }}
-      >
-        <form onSubmit={handleSubmit(onSubmitForm)}>
-          <ContentContainer>
-            <ContentItem>
-              <Typography variant="h1" fontSize="19px" fontWeight={700}>
-                {t("title.register")}
+      <form onSubmit={handleSubmit(onSubmitForm)}>
+        <ContentContainer gap={3}>
+          <Grid gap={1} display="flex" alignItems="center" flexDirection="row">
+            <ClipboardPenLine />
+            <Typography variant="h4" fontWeight={700}>
+              {t("title.register")}
+            </Typography>
+          </Grid>
+          <Input
+            label={t("placeholder.first_name")}
+            error={!!errors.firstName}
+            required
+            autoFocus
+            {...register("firstName", validationRules.first_name)}
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={AbcIcon} />,
+              },
+            }}
+            helperText={errors.firstName ? errors.firstName.message : null}
+          />
+          <Input
+            label={t("placeholder.last_name")}
+            error={!!errors.lastName}
+            required
+            {...register("lastName", validationRules.last_name)}
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={AbcIcon} />,
+              },
+            }}
+            helperText={errors.lastName ? errors.lastName.message : null}
+          />
+          <Input
+            label={t("placeholder.username")}
+            error={!!errors.username}
+            required
+            {...register("username", validationRules.username)}
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={PersonIcon} />,
+              },
+            }}
+            helperText={errors.username ? errors.username.message : null}
+          />
+          <Input
+            label={t("placeholder.email")}
+            error={!!errors.email}
+            required
+            {...register("email", validationRules.email)}
+            helperText={errors.email ? errors.email.message : null}
+            slotProps={{
+              input: {
+                disabled: readonlyEmail,
+                readOnly: readonlyEmail,
+                startAdornment: <Adornment Icon={MarkunreadIcon} />,
+              },
+            }}
+          />
+          <PasswordInput
+            label={t("label.password")}
+            error={!!errors.password}
+            required
+            {...register("password", validationRules.password)}
+            helperText={errors.password ? errors.password.message : null}
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              },
+            }}
+          />
+          <PasswordInput
+            label={t("placeholder.password2")}
+            error={!!errors.password2}
+            required
+            {...register("password2", validationRules.password2)}
+            helperText={errors.password2 ? errors.password2.message : null}
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              },
+            }}
+          />
+          <FormControlLabel
+            control={
+              <Switch checked={isTermsAccepted} onChange={handleChange} />
+            }
+            label={
+              <Typography
+                color={isTermsAccepted ? "primary.main" : "text.primary"}
+                fontSize="14px"
+              >
+                {t("label.terms")}
               </Typography>
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("placeholder.first_name")}
-                error={!!errors.firstName}
-                required
-                autoFocus
-                {...register("firstName", validationRules.first_name)}
-                slotProps={{
-                  input: {
-                    startAdornment: <Adornment Icon={AbcIcon} />,
-                  },
-                }}
-                helperText={errors.firstName ? errors.firstName.message : null}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("placeholder.last_name")}
-                error={!!errors.lastName}
-                required
-                {...register("lastName", validationRules.last_name)}
-                slotProps={{
-                  input: {
-                    startAdornment: <Adornment Icon={AbcIcon} />,
-                  },
-                }}
-                helperText={errors.lastName ? errors.lastName.message : null}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("placeholder.username")}
-                error={!!errors.username}
-                required
-                {...register("username", validationRules.username)}
-                slotProps={{
-                  input: {
-                    startAdornment: <Adornment Icon={PersonIcon} />,
-                  },
-                }}
-                helperText={errors.username ? errors.username.message : null}
-              />
-            </ContentItem>
-            <ContentItem>
-              <Input
-                label={t("placeholder.email")}
-                error={!!errors.email}
-                required
-                {...register("email", validationRules.email)}
-                helperText={errors.email ? errors.email.message : null}
-                slotProps={{
-                  input: {
-                    disabled: readonlyEmail,
-                    readOnly: readonlyEmail,
-                    startAdornment: <Adornment Icon={MarkunreadIcon} />,
-                  },
-                }}
-              />
-            </ContentItem>
-            <ContentItem>
-              <PasswordInput
-                label={t("label.password")}
-                error={!!errors.password}
-                required
-                {...register("password", validationRules.password)}
-                helperText={errors.password ? errors.password.message : null}
-                slotProps={{
-                  input: {
-                    startAdornment: <Adornment Icon={KeyIcon} />,
-                  },
-                }}
-              />
-            </ContentItem>
-            <ContentItem>
-              <PasswordInput
-                label={t("placeholder.password2")}
-                error={!!errors.password2}
-                required
-                {...register("password2", validationRules.password2)}
-                helperText={errors.password2 ? errors.password2.message : null}
-                slotProps={{
-                  input: {
-                    startAdornment: <Adornment Icon={KeyIcon} />,
-                  },
-                }}
-              />
-            </ContentItem>
-            <ContentItem>
-              <FormControlLabel
-                control={
-                  <Switch checked={isTermsAccepted} onChange={handleChange} />
-                }
-                label={
-                  <Typography
-                    color={isTermsAccepted ? "primary.main" : "text.primary"}
-                    fontSize="14px"
-                  >
-                    {t("label.terms")}
-                  </Typography>
-                }
-              />
-            </ContentItem>
-            <ContentItem>
-              <Grid container gap={1} justifyContent="end">
-                <Grid>
-                  <Button
-                    type="submit"
-                    endIcon={<KeyboardArrowRightIcon />}
-                    onClick={handleSubmit(onSubmitForm)}
-                    disabled={isPending || !isTermsAccepted}
-                  >
-                    {t("button.register")}
-                  </Button>
-                </Grid>
-              </Grid>
-            </ContentItem>
-          </ContentContainer>
-        </form>
-      </Paper>
+            }
+          />
+          <Grid container gap={1} justifyContent="end">
+            <Grid>
+              <Button
+                type="submit"
+                variant="contained"
+                endIcon={<KeyboardArrowRightIcon size={14} />}
+                onClick={handleSubmit(onSubmitForm)}
+                disabled={isPending || !isTermsAccepted}
+              >
+                {t("button.register")}
+              </Button>
+            </Grid>
+          </Grid>
+        </ContentContainer>
+      </form>
     </PublicContentWrapper>
   );
 };

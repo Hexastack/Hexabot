@@ -11,7 +11,6 @@ import { menuItemClasses } from "@mui/material/MenuItem";
 import { selectClasses } from "@mui/material/Select";
 import { alpha, Components, Theme } from "@mui/material/styles";
 import { SvgIconProps } from "@mui/material/SvgIcon";
-import { tabClasses } from "@mui/material/Tab";
 import * as React from "react";
 
 import { brand, gray } from "../themePrimitives";
@@ -168,8 +167,11 @@ export const navigationCustomizations: Components<Theme> = {
     styleOverrides: {
       root: ({ theme }) => ({
         "&.Mui-selected": {
-          color: "white",
-          backgroundColor: (theme.vars || theme).palette.grey[900],
+          backgroundColor: alpha(theme.palette.primary.main, 0.15),
+          "&:hover": {
+            cursor: "inherit",
+            backgroundColor: alpha(theme.palette.primary.main, 0.15),
+          },
         },
         ...theme.applyStyles("dark", {
           "&.Mui-selected": {
@@ -184,7 +186,7 @@ export const navigationCustomizations: Components<Theme> = {
     styleOverrides: {
       root: { minHeight: "fit-content" },
       indicator: ({ theme }) => ({
-        backgroundColor: (theme.vars || theme).palette.grey[800],
+        backgroundColor: theme.palette.primary.main,
         ...theme.applyStyles("dark", {
           backgroundColor: (theme.vars || theme).palette.grey[200],
         }),
@@ -194,30 +196,32 @@ export const navigationCustomizations: Components<Theme> = {
   MuiTab: {
     styleOverrides: {
       root: ({ theme }) => ({
-        padding: "6px 8px",
-        marginBottom: "8px",
+        alignItems: "center",
         textTransform: "none",
-        minWidth: "fit-content",
-        minHeight: "fit-content",
-        color: (theme.vars || theme).palette.text.secondary,
-        borderRadius: (theme.vars || theme).shape.borderRadius,
-        border: "1px solid",
-        borderColor: "transparent",
-        ":hover": {
-          color: (theme.vars || theme).palette.text.primary,
-          backgroundColor: gray[100],
-          borderColor: gray[200],
+        ".MuiTabs-scrollableX &": {
+          borderBottom: "1px solid",
+          borderColor: theme.palette.grey[300],
         },
-        [`&.${tabClasses.selected}`]: {
-          color: gray[900],
+        ".MuiTabs-scrollableY &": {
+          borderRight: "1px solid",
+          borderColor: theme.palette.grey[300],
+        },
+        "&:hover": {
+          backgroundColor: theme.palette.primary.light,
+        },
+        "&.Mui-selected": {
+          backgroundColor: alpha(theme.palette.primary.main, 0.15),
+          "& p": {
+            color: "primary.main",
+          },
         },
         ...theme.applyStyles("dark", {
           ":hover": {
             color: (theme.vars || theme).palette.text.primary,
-            backgroundColor: gray[800],
+            // backgroundColor: gray[800],
             borderColor: gray[700],
           },
-          [`&.${tabClasses.selected}`]: {
+          [`&.Mui-selected`]: {
             color: "#fff",
           },
         }),
