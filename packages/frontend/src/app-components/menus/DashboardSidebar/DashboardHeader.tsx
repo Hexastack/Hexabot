@@ -11,7 +11,7 @@ import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -22,6 +22,7 @@ import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
+import ColorModeIconDropdown from "@/layout/ColorModeIconDropdown";
 import { EntityType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
@@ -38,7 +39,6 @@ export const DashboardHeader = ({
   menuOpen,
   onToggleMenu,
 }: DashboardHeaderProps) => {
-  const theme = useTheme();
   const { user, logout } = useAuth();
   const { apiUrl, ssoEnabled } = useConfig();
   const { t } = useTranslate();
@@ -53,12 +53,8 @@ export const DashboardHeader = ({
   const label = menuOpen ? "Collapse" : "Expand";
 
   return (
-    <MuiAppBar
-      color="inherit"
-      position="fixed"
-      sx={{ boxShadow: "none", zIndex: theme.zIndex.drawer + 1 }}
-    >
-      <Toolbar sx={{ marginLeft: "-12px" }}>
+    <MuiAppBar color="inherit" position="fixed">
+      <Toolbar>
         <Stack direction="row" alignItems="center" spacing={1} width="100%">
           <Tooltip title={`${label} menu`} enterDelay={1000}>
             <IconButton
@@ -113,6 +109,7 @@ export const DashboardHeader = ({
             </Box>
           </Box>
 
+          <ColorModeIconDropdown />
           {user && (
             <PopoverMenu
               open={isMenuPopoverOpen}

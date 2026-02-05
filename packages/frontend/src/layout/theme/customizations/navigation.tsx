@@ -160,6 +160,10 @@ export const navigationCustomizations: Components<Theme> = {
     styleOverrides: {
       paper: ({ theme }) => ({
         backgroundColor: (theme.vars || theme).palette.background.default,
+        padding: 0,
+        "& .MuiList-root": {
+          padding: theme.spacing(1),
+        },
       }),
     },
   },

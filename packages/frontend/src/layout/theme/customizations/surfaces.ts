@@ -58,32 +58,13 @@ export const surfacesCustomizations: Components<Theme> = {
     },
   },
   MuiPaper: {
-    defaultProps: {
-      elevation: 2,
-      square: false,
-      variant: "outlined",
-    },
     styleOverrides: {
       root: ({ theme }) => ({
-        boxShadow: `${alpha(theme.palette.grey[500], 0.05)} 0px 5px 15px 0px, ${alpha(theme.palette.grey[600], 0.05)} 0px 15px 35px -5px`,
-        variants: [
-          {
-            props: {
-              elevation: 3,
-            },
-            style: {
-              padding: theme.spacing(3),
-              ...theme.applyStyles("dark", {
-                boxShadow: `${alpha(theme.palette.grey[50], 0.05)} 0px 5px 15px 0px, ${alpha(theme.palette.grey[100], 0.05)} 0px 15px 35px -5px`,
-              }),
-            },
-          },
-        ],
-        // //Action schema
-        // "> .MuiBox-root": {
-        //   padding: 0,
-        // },
+        padding: theme.spacing(2),
       }),
+    },
+    defaultProps: {
+      elevation: 2,
     },
   },
   MuiCard: {
@@ -139,6 +120,20 @@ export const surfacesCustomizations: Components<Theme> = {
       root: {
         padding: 0,
       },
+    },
+  },
+  MuiAppBar: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        padding: `0 ${theme.spacing(1.5)}`,
+        zIndex: theme.zIndex.drawer + 1,
+        ".MuiToolbar-root": {
+          padding: theme.spacing(0),
+        },
+      }),
+    },
+    defaultProps: {
+      elevation: 2,
     },
   },
 };

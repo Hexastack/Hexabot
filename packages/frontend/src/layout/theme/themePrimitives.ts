@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { green, grey, orange, red, teal } from "@mui/material/colors";
-import {
-  alpha,
-  createTheme,
-  CssVarsThemeOptions,
-  PaletteMode,
-  Shadows,
-} from "@mui/material/styles";
+import { alpha, createTheme, Shadows } from "@mui/material/styles";
 
 declare module "@mui/material/Paper" {
   interface PaperPropsVariantOverrides {
@@ -40,32 +33,22 @@ declare module "@mui/material/styles" {
 }
 
 const defaultTheme = createTheme();
-const customShadows: Shadows = [...defaultTheme.shadows];
-
-export const neutral = {
-  50: "#fafafa",
-  100: "#f5f5f5",
-  200: "#eeeeee",
-  300: "#e0e0e0",
-  400: "#bdbdbd",
-  500: "#9e9e9e",
-  600: "#757575",
-  700: "#616161",
-  800: "#424242",
-  900: "#212121",
-};
 
 export const brand = {
-  50: "hsl(210, 100%, 95%)",
-  100: "hsl(210, 100%, 92%)",
-  200: "hsl(210, 100%, 80%)",
-  300: "hsl(210, 100%, 65%)",
-  400: "hsl(210, 98%, 48%)",
-  500: "hsl(210, 98%, 42%)",
-  600: "hsl(210, 98%, 55%)",
-  700: "hsl(210, 100%, 35%)",
-  800: "hsl(210, 100%, 16%)",
-  900: "hsl(210, 100%, 21%)",
+  50: "hsl(177, 41%, 91%)",
+  100: "hsl(175, 41%, 79%)",
+  200: "hsl(174, 42%, 65%)",
+  300: "hsl(174, 42%, 51%)",
+  400: "hsl(174, 63%, 40%)",
+  500: "hsl(174, 100%, 29%)",
+  600: "hsl(174, 100%, 27%)",
+  700: "hsl(173, 100%, 24%)",
+  800: "hsl(173, 100%, 21%)",
+  900: "hsl(170, 100%, 15%)",
+  A100: "hsl(166, 100%, 83%)",
+  A200: "hsl(166, 100%, 70%)",
+  A400: "hsl(165, 82%, 51%)",
+  A700: "hsl(172, 100%, 38%)",
 };
 
 export const gray = {
@@ -81,126 +64,54 @@ export const gray = {
   900: "hsl(220, 35%, 3%)",
 };
 
-export const getDesignTokens = (mode: PaletteMode) => {
-  customShadows[1] =
-    mode === "dark"
-      ? "hsla(220, 30%, 5%, 0.7) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.8) 0px 8px 16px -5px"
-      : "hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px";
-
-  return {
-    palette: {
-      mode,
-      primary: {
-        light: brand[200],
-        main: brand[400],
-        dark: brand[700],
-        contrastText: brand[50],
-        ...(mode === "dark" && {
-          contrastText: brand[50],
-          light: brand[300],
-          main: brand[400],
-          dark: brand[700],
-        }),
-      },
-      info: {
-        light: brand[100],
-        main: brand[300],
-        dark: brand[600],
-        contrastText: gray[50],
-        ...(mode === "dark" && {
-          contrastText: brand[300],
-          light: brand[500],
-          main: brand[700],
-          dark: brand[900],
-        }),
-      },
-      warning: {
-        light: orange[300],
-        main: orange[400],
-        dark: orange[800],
-        ...(mode === "dark" && {
-          light: orange[400],
-          main: orange[500],
-          dark: orange[700],
-        }),
-      },
-      error: {
-        light: red[300],
-        main: red[400],
-        dark: red[800],
-        ...(mode === "dark" && {
-          light: red[400],
-          main: red[500],
-          dark: red[700],
-        }),
-      },
-      success: {
-        light: green[300],
-        main: green[400],
-        dark: green[800],
-        ...(mode === "dark" && {
-          light: green[400],
-          main: green[500],
-          dark: green[700],
-        }),
-      },
-      grey: {
-        ...gray,
-      },
-      divider: mode === "dark" ? alpha(gray[700], 0.6) : alpha(gray[300], 0.4),
-      background: {
-        default: "hsl(0, 0%, 99%)",
-        paper: "hsl(220, 35%, 97%)",
-        ...(mode === "dark" && {
-          default: gray[900],
-          paper: "hsl(220, 30%, 7%)",
-        }),
-      },
-      text: {
-        primary: gray[800],
-        secondary: gray[600],
-        warning: orange[400],
-        ...(mode === "dark" && {
-          primary: "hsl(0, 0%, 100%)",
-          secondary: gray[400],
-        }),
-      },
-      action: {
-        hover: alpha(gray[200], 0.2),
-        selected: `${alpha(gray[200], 0.3)}`,
-        ...(mode === "dark" && {
-          hover: alpha(gray[600], 0.2),
-          selected: alpha(gray[600], 0.3),
-        }),
-      },
-    },
-    typography,
-    shape: {
-      borderRadius: 8,
-    },
-    shadows: customShadows,
-  };
+export const green = {
+  50: "hsl(120, 80%, 98%)",
+  100: "hsl(120, 75%, 94%)",
+  200: "hsl(120, 75%, 87%)",
+  300: "hsl(120, 61%, 77%)",
+  400: "hsl(120, 44%, 53%)",
+  500: "hsl(120, 59%, 30%)",
+  600: "hsl(120, 70%, 25%)",
+  700: "hsl(120, 75%, 16%)",
+  800: "hsl(120, 84%, 10%)",
+  900: "hsl(120, 87%, 6%)",
 };
 
-const PRIMARY_COLOR = "#4eaa42";
-const PRIMARY = {
-  light: alpha(PRIMARY_COLOR, 0.05),
-  main: PRIMARY_COLOR,
-  dark: `color-mix(in srgb, ${PRIMARY_COLOR}, black 10%)`,
-  contrastText: brand[50],
+export const orange = {
+  50: "hsl(45, 100%, 97%)",
+  100: "hsl(45, 92%, 90%)",
+  200: "hsl(45, 94%, 80%)",
+  300: "hsl(45, 90%, 65%)",
+  400: "hsl(45, 90%, 40%)",
+  500: "hsl(45, 90%, 35%)",
+  600: "hsl(45, 91%, 25%)",
+  700: "hsl(45, 94%, 20%)",
+  800: "hsl(45, 95%, 16%)",
+  900: "hsl(45, 93%, 12%)",
+};
+
+export const red = {
+  50: "hsl(0, 100%, 97%)",
+  100: "hsl(0, 92%, 90%)",
+  200: "hsl(0, 94%, 80%)",
+  300: "hsl(0, 90%, 65%)",
+  400: "hsl(0, 90%, 40%)",
+  500: "hsl(0, 90%, 30%)",
+  600: "hsl(0, 91%, 25%)",
+  700: "hsl(0, 94%, 18%)",
+  800: "hsl(0, 95%, 12%)",
+  900: "hsl(0, 93%, 6%)",
 };
 
 export const colorSchemes = {
   light: {
     palette: {
-      neutral: {
-        main: grey[500],
-        light: grey[100],
-        dark: grey[800],
-        contrastText: "#fff",
+      primary: {
+        light: brand[200],
+        main: brand[400],
+        dark: brand[700],
+        contrastText: brand[50],
       },
-      teal,
-      primary: PRIMARY,
       info: {
         light: brand[100],
         main: brand[300],
@@ -211,7 +122,6 @@ export const colorSchemes = {
         light: orange[300],
         main: orange[400],
         dark: orange[800],
-        contrastText: "#fff",
       },
       error: {
         light: red[300],
@@ -219,10 +129,9 @@ export const colorSchemes = {
         dark: red[800],
       },
       success: {
-        light: green[500],
-        main: green[800],
-        dark: green[900],
-        contrastText: "#fff",
+        light: green[300],
+        main: green[400],
+        dark: green[800],
       },
       grey: {
         ...gray,
@@ -230,27 +139,29 @@ export const colorSchemes = {
       divider: alpha(gray[300], 0.4),
       background: {
         default: "hsl(0, 0%, 99%)",
-        paper: "hsl(220, 35%, 97%)",
+        paper: "hsl(0, 0%, 99%)",
       },
       text: {
         primary: gray[800],
         secondary: gray[600],
-        // warning: orange[400],
+        warning: orange[400],
       },
       action: {
         hover: alpha(gray[200], 0.2),
         selected: `${alpha(gray[200], 0.3)}`,
       },
-      // baseShadow:
-      //   "hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px",
+      baseShadow:
+        "hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px",
     },
   },
   dark: {
     palette: {
-      // TODO
-      neutral: { main: "" },
-      teal: {},
-      primary: PRIMARY,
+      primary: {
+        contrastText: brand[50],
+        light: brand[300],
+        main: brand[400],
+        dark: brand[700],
+      },
       info: {
         contrastText: brand[300],
         light: brand[500],
@@ -261,7 +172,6 @@ export const colorSchemes = {
         light: orange[400],
         main: orange[500],
         dark: orange[700],
-        contrastText: "#000",
       },
       error: {
         light: red[400],
@@ -269,10 +179,9 @@ export const colorSchemes = {
         dark: red[700],
       },
       success: {
-        light: green[500],
-        main: green[800],
-        dark: green[900],
-        contrastText: "#000",
+        light: green[400],
+        main: green[500],
+        dark: green[700],
       },
       grey: {
         ...gray,
@@ -290,14 +199,14 @@ export const colorSchemes = {
         hover: alpha(gray[600], 0.2),
         selected: alpha(gray[600], 0.3),
       },
-      // baseShadow:
-      //   "hsla(220, 30%, 5%, 0.7) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.8) 0px 8px 16px -5px",
+      baseShadow:
+        "hsla(220, 30%, 5%, 0.7) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.8) 0px 8px 16px -5px",
     },
   },
-} satisfies CssVarsThemeOptions["colorSchemes"];
+};
 
 export const typography = {
-  fontFamily: "Roboto, sans-serif",
+  fontFamily: "Inter, sans-serif",
   h1: {
     fontSize: defaultTheme.typography.pxToRem(48),
     fontWeight: 600,
