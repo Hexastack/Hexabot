@@ -8,7 +8,6 @@ import type { LucideIcon } from "lucide-react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 import type { IWorkflow } from "@/types/workfow.types";
-// eslint-disable-next-line no-duplicate-imports
 import { WorkflowType } from "@/types/workfow.types";
 
 export type FlowsDrawerProps = {

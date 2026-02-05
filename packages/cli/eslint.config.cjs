@@ -33,7 +33,10 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
     {
       ignores: ['dist', 'eslint.config.cjs', 'eslint.config-staged.cjs'],
     },
-    ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
+    ...compat.extends(
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ),
     {
       files: ['**/*.ts'],
       languageOptions: {
@@ -77,12 +80,21 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
         ],
         'lines-between-class-members': ['warn', 'always'],
         'no-console': 'off',
-        'no-duplicate-imports': 2,
+        'no-duplicate-imports': 'off',
+        'import/no-duplicates': 'error',
         'object-shorthand': 1,
         'import/order': [
           'error',
           {
-            groups: ['builtin', 'external', 'unknown', 'parent', 'sibling', 'index', 'internal'],
+            groups: [
+              'builtin',
+              'external',
+              'unknown',
+              'parent',
+              'sibling',
+              'index',
+              'internal',
+            ],
             'newlines-between': 'always',
             alphabetize: {
               order: 'asc',

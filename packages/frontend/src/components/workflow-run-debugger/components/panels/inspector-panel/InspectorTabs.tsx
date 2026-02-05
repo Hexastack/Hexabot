@@ -6,7 +6,6 @@
 
 import { Box, Divider, Stack, Tab, Tabs, Typography } from "@mui/material";
 import type { ReactNode } from "react";
-// eslint-disable-next-line no-duplicate-imports
 import { useMemo, useState } from "react";
 
 import { JsonViewer } from "@/app-components/inputs/JsonViewer";

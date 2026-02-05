@@ -80,7 +80,8 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
         ],
         'lines-between-class-members': ['warn', 'always'],
         'no-console': 'off',
-        'no-duplicate-imports': 2,
+        'no-duplicate-imports': 'off',
+        'import/no-duplicates': 'error',
         'object-shorthand': 1,
         'import/order': [
           'error',
@@ -103,10 +104,6 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
         ],
         'header/header': [2, 'block', headerLines, 2],
         'no-multiple-empty-lines': ['error', { max: 1 }],
-        'import/no-duplicates': [
-          'error',
-          { considerQueryString: true, 'prefer-inline': true },
-        ],
       },
     },
   ];

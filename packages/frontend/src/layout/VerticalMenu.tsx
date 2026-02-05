@@ -8,7 +8,6 @@ import { CSSObject, IconButton, styled, Theme } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import Grid from "@mui/material/Grid";
 import type { LucideIcon } from "lucide-react";
-// eslint-disable-next-line no-duplicate-imports
 import {
   Activity,
   AlignLeft,

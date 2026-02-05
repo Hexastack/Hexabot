@@ -10,7 +10,6 @@ import type { editor } from "monaco-editor";
 import type { LineCounter, parseDocument } from "yaml";
 
 import type { ReferencePath } from "./validation.paths";
-// eslint-disable-next-line no-duplicate-imports
 import { getRangeForPath } from "./validation.paths";
 
 type JsonSchemaValue = Schema | boolean;
