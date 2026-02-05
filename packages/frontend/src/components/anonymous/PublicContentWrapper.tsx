@@ -15,18 +15,17 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     position: "absolute",
     zIndex: -1,
     inset: 0,
-    backgroundImage: `radial-gradient(ellipse at 50% 50%, color-mix(in srgb, ${theme.palette.primary.main}, white 95%), white)`,
+    backgroundImage: `radial-gradient(ellipse at 50% 50%, color-mix(in srgb, ${theme.palette.primary.main}, ${theme.palette.common.white} 90%), ${theme.palette.common.white})`,
     backgroundRepeat: "no-repeat",
     ...theme.applyStyles("dark", {
-      backgroundImage:
-        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
+      backgroundImage: `radial-gradient(ellipse at 50% 50%, color-mix(in srgb, ${theme.palette.primary.main}, ${theme.palette.common.black} 80%), ${theme.palette.common.black})`,
     }),
   },
 }));
 
 export const PublicContentWrapper: FC<PropsWithChildren> = ({ children }) => (
   <Grid container justifyContent="center">
-    <StyledPaper sx={{ width: { xs: "100%", md: "33%" } }} elevation={3}>
+    <StyledPaper sx={{ width: { xs: "100%", md: "33%" } }}>
       {children}
     </StyledPaper>
   </Grid>

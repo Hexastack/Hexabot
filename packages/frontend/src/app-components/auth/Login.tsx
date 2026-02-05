@@ -152,12 +152,7 @@ export const Login = () => {
               </Button>
             </Grid>
             <Grid textAlign="center">
-              <Button
-                component={RouterLink}
-                to="/reset"
-                variant="text"
-                sx={{ textDecoration: "underline" }}
-              >
+              <Button component={RouterLink} to="/reset" variant="text">
                 {t("link.reset")}
               </Button>
             </Grid>

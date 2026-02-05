@@ -6,7 +6,6 @@
 
 import { loader } from "@monaco-editor/react";
 import { CssBaseline } from "@mui/material";
-import { StyledEngineProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import * as monaco from "monaco-editor";
@@ -63,6 +62,7 @@ ReactDOM.createRoot(rootElement).render(
   >
     <ConfigProvider>
       <AppTheme>
+        <CssBaseline enableColorScheme />
         <ToastProvider
           maxSnack={3}
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
@@ -70,32 +70,29 @@ ReactDOM.createRoot(rootElement).render(
             <SnackbarCloseButton snackbarKey={snackbarKey} />
           )}
         >
-          <StyledEngineProvider injectFirst>
-            <QueryClientProvider client={queryClient}>
-              <CssBaseline />
-              <ApiClientProvider>
-                <BroadcastChannelProvider channelName="main-channel">
-                  <AuthProvider>
-                    <PermissionProvider>
-                      <SettingsProvider>
-                        <DialogsProvider>
-                          <SocketProvider>
-                            {/* <ErrorBoundary> */}
-                            <App />
-                            {/* </ErrorBoundary> */}
-                          </SocketProvider>
-                        </DialogsProvider>
-                      </SettingsProvider>
-                    </PermissionProvider>
-                  </AuthProvider>
-                </BroadcastChannelProvider>
-              </ApiClientProvider>
-              <ReactQueryDevtools
-                initialIsOpen={false}
-                buttonPosition="bottom-left"
-              />
-            </QueryClientProvider>
-          </StyledEngineProvider>
+          <QueryClientProvider client={queryClient}>
+            <ApiClientProvider>
+              <BroadcastChannelProvider channelName="main-channel">
+                <AuthProvider>
+                  <PermissionProvider>
+                    <SettingsProvider>
+                      <DialogsProvider>
+                        <SocketProvider>
+                          {/* <ErrorBoundary> */}
+                          <App />
+                          {/* </ErrorBoundary> */}
+                        </SocketProvider>
+                      </DialogsProvider>
+                    </SettingsProvider>
+                  </PermissionProvider>
+                </AuthProvider>
+              </BroadcastChannelProvider>
+            </ApiClientProvider>
+            <ReactQueryDevtools
+              initialIsOpen={false}
+              buttonPosition="bottom-left"
+            />
+          </QueryClientProvider>
         </ToastProvider>
       </AppTheme>
     </ConfigProvider>

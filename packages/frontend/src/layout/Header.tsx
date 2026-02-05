@@ -100,7 +100,6 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
             ) : null}
           </Toolbar>
         </Grid>
-
         {isSideBarOpen ? null : (
           <Grid ml={3} alignContent="center">
             <HexabotLogo />
