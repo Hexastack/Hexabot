@@ -23,9 +23,9 @@ import {
   Users,
 } from "lucide-react";
 
+import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
-import { TMenu } from "@/types/sidebar.types";
 
 export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
   {
@@ -112,7 +112,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
       },
       {
         text: "menu.labels",
-        href: "/labels",
+        href: "/subscribers/labels",
         Icon: Tag,
         requires: {
           [EntityType.LABEL]: [PermissionAction.READ],

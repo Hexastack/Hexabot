@@ -13,243 +13,198 @@ import type {} from "@mui/material/themeCssVarsAugmentation";
 import Toolbar from "@mui/material/Toolbar";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import * as React from "react";
-import { matchPath, useLocation } from "react-router";
+import { useLocation } from "react-router-dom";
 
 import { useTranslate } from "@/hooks/useTranslate";
-import { TMenu } from "@/types/sidebar.types";
 
-import DashboardSidebarContext from "./context/dashboard-sidebar.context";
-import DashboardSidebarHeaderItem from "./DashboardSidebarHeaderItem";
-import DashboardSidebarPageItem from "./DashboardSidebarPageItem";
+import { DashboardSidebarPageItem } from "./DashboardSidebarPageItem";
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from "./measurements.constansts";
 import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from "./mixins";
+import { DashboardSidebarProvider } from "./providers/DashboardSidebarProvider";
+import { DashboardSidebarProps } from "./types/sidebar.types";
 
-export const DRAWER_WIDTH = 240; // px
-export const MINI_DRAWER_WIDTH = 90; // px
-
-export interface DashboardSidebarProps {
-  expanded?: boolean;
-  setExpanded: (expanded: boolean) => void;
-  disableCollapsibleSidebar?: boolean;
-  container?: Element;
-  menu: TMenu[];
-}
-
-export default function DashboardSidebar({
+export const DashboardSidebar = ({
   expanded = true,
   setExpanded,
   disableCollapsibleSidebar = false,
   container,
   menu,
-}: DashboardSidebarProps) {
+}: DashboardSidebarProps) => {
   const theme = useTheme();
-  const { pathname } = useLocation();
+  const location = useLocation();
   const { t } = useTranslate();
   const [expandedItemIds, setExpandedItemIds] = React.useState<string[]>([]);
-  const isOverSmViewport = useMediaQuery(theme.breakpoints.up("sm"));
-  const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));
-  const [isFullyExpanded, setIsFullyExpanded] = React.useState(expanded);
-  const [isFullyCollapsed, setIsFullyCollapsed] = React.useState(!expanded);
+  const isSm = useMediaQuery(theme.breakpoints.up("sm"));
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+  const [transitionState, setTransitionState] = React.useState({
+    fullyExpanded: expanded,
+    fullyCollapsed: !expanded,
+  });
 
   React.useEffect(() => {
-    if (expanded) {
-      const drawerWidthTransitionTimeout = setTimeout(() => {
-        setIsFullyExpanded(true);
-      }, theme.transitions.duration.enteringScreen);
+    const duration = expanded
+      ? theme.transitions.duration.enteringScreen
+      : theme.transitions.duration.leavingScreen;
+    const timer = setTimeout(() => {
+      setTransitionState({
+        fullyExpanded: expanded,
+        fullyCollapsed: !expanded,
+      });
+    }, duration);
 
-      return () => clearTimeout(drawerWidthTransitionTimeout);
-    }
-
-    setIsFullyExpanded(false);
-
-    return () => {};
-  }, [expanded, theme.transitions.duration.enteringScreen]);
-
-  React.useEffect(() => {
-    if (!expanded) {
-      const drawerWidthTransitionTimeout = setTimeout(() => {
-        setIsFullyCollapsed(true);
-      }, theme.transitions.duration.leavingScreen);
-
-      return () => clearTimeout(drawerWidthTransitionTimeout);
-    }
-
-    setIsFullyCollapsed(false);
-
-    return () => {};
-  }, [expanded, theme.transitions.duration.leavingScreen]);
+    return () => clearTimeout(timer);
+  }, [expanded, theme.transitions.duration]);
 
   const mini = !disableCollapsibleSidebar && !expanded;
-  const handleSetSidebarExpanded = React.useCallback(
-    (newExpanded: boolean) => () => {
-      setExpanded(newExpanded);
-    },
-    [setExpanded],
-  );
+  const hasDrawerTransitions = isSm && (!disableCollapsibleSidebar || isMd);
   const handlePageItemClick = React.useCallback(
-    (itemId: string, hasNestedNavigation: boolean) => {
-      if (hasNestedNavigation && !mini) {
-        setExpandedItemIds((previousValue) =>
-          previousValue.includes(itemId)
-            ? previousValue.filter(
-                (previousValueItemId) => previousValueItemId !== itemId,
-              )
-            : [...previousValue, itemId],
+    (itemId: string, hasNested: boolean) => {
+      if (hasNested && !mini) {
+        setExpandedItemIds((prev) =>
+          prev.includes(itemId)
+            ? prev.filter((id) => id !== itemId)
+            : [...prev, itemId],
         );
-      } else if (!isOverSmViewport && !hasNestedNavigation) {
+      } else if (!isSm && !hasNested) {
         setExpanded(false);
       }
     },
-    [mini, setExpanded, isOverSmViewport],
+    [mini, isSm, setExpanded],
   );
-  const hasDrawerTransitions =
-    isOverSmViewport && (!disableCollapsibleSidebar || isOverMdViewport);
-  const getDrawerContent = React.useCallback(
-    (viewport: "phone" | "tablet" | "desktop") => (
-      <React.Fragment>
-        <Toolbar />
-        <Box
-          component="nav"
-          aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            overflow: "auto",
-            scrollbarGutter: mini ? "stable" : "auto",
-            overflowX: "hidden",
-            pt: !mini ? 0 : 2,
-            ...(hasDrawerTransitions
-              ? getDrawerSxTransitionMixin(isFullyExpanded, "padding")
-              : {}),
-          }}
-        >
-          <List
-            dense
-            sx={{
-              padding: mini ? 0 : 0.5,
-              mb: 4,
-              width: mini ? MINI_DRAWER_WIDTH : "auto",
-            }}
-          >
-            {menu.map((menuItem) => {
-              const nodes: JSX.Element[] = [];
-
-              if (
-                !menuItem.submenuItems?.length &&
-                menuItem.Icon &&
-                menuItem.href
-              ) {
-                nodes.push(
-                  <DashboardSidebarPageItem
-                    id="employees"
-                    title={t(menuItem.text)}
-                    icon={<menuItem.Icon />}
-                    href={menuItem.href}
-                    selected={
-                      menuItem.href && !!matchPath(menuItem.href, pathname)
-                        ? true
-                        : false
-                    }
-                  />,
-                );
-              }
-
-              if (!menuItem.href && !menuItem.submenuItems?.length) {
-                nodes.push(
-                  <Divider key={`divider_${menuItem.text}`}>
-                    <ListSubheader>{t(menuItem.text)}</ListSubheader>
-                  </Divider>,
-                );
-              }
-
-              if (menuItem.submenuItems?.length) {
-                nodes.push(
-                  <DashboardSidebarHeaderItem>
-                    {t(menuItem.text)}
-                  </DashboardSidebarHeaderItem>,
-                );
-
-                menuItem.submenuItems?.map((submenuItem) => {
-                  nodes.push(
-                    <div key={submenuItem.href}>
-                      {submenuItem.Icon && submenuItem.href ? (
-                        <DashboardSidebarPageItem
-                          id="employees"
-                          title={t(submenuItem.text)}
-                          icon={<submenuItem.Icon />}
-                          href={submenuItem.href}
-                          selected={
-                            submenuItem.href &&
-                            !!matchPath(submenuItem.href, pathname)
-                              ? true
-                              : false
-                          }
-                        />
-                      ) : null}
-                    </div>,
-                  );
-                });
-              }
-
-              return nodes;
-            })}
-          </List>
-        </Box>
-      </React.Fragment>
-    ),
-    [mini, hasDrawerTransitions, isFullyExpanded, expandedItemIds, pathname],
-  );
-  const getDrawerSharedSx = React.useCallback(
-    (isTemporary: boolean) => {
-      const drawerWidth = mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
-
-      return {
-        displayPrint: "none",
-        width: drawerWidth,
-        flexShrink: 0,
-        ...getDrawerWidthTransitionMixin(expanded),
-        ...(isTemporary ? { position: "absolute" } : {}),
-        [`& .MuiDrawer-paper`]: {
-          position: "fixed",
-          width: drawerWidth,
-          boxSizing: "border-box",
-          backgroundImage: "none",
-          ...getDrawerWidthTransitionMixin(expanded),
-        },
-      };
+  const getDrawerSharedSx = (isTemporary: boolean) => ({
+    displayPrint: "none",
+    width: mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH,
+    flexShrink: 0,
+    ...getDrawerWidthTransitionMixin(expanded),
+    ...(isTemporary && { position: "absolute" }),
+    "& .MuiDrawer-paper": {
+      position: "fixed",
+      width: mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH,
+      boxSizing: "border-box",
+      backgroundImage: "none",
+      ...getDrawerWidthTransitionMixin(expanded),
     },
-    [expanded, mini],
-  );
-  const sidebarContextValue = React.useMemo(() => {
-    return {
+  });
+  const sidebarContextValue = React.useMemo(
+    () => ({
       onPageItemClick: handlePageItemClick,
       mini,
-      fullyExpanded: isFullyExpanded,
-      fullyCollapsed: isFullyCollapsed,
+      ...transitionState,
       hasDrawerTransitions,
-    };
-  }, [
-    handlePageItemClick,
-    mini,
-    isFullyExpanded,
-    isFullyCollapsed,
-    hasDrawerTransitions,
-  ]);
+    }),
+    [handlePageItemClick, mini, transitionState, hasDrawerTransitions],
+  );
+  const links = React.useMemo(
+    () =>
+      menu
+        .flatMap((m) => m.submenuItems || m)
+        .filter((m) => m.href)
+        .map((m) => m.href),
+    [menu],
+  );
+  const isSelected = (href: string) => {
+    if (href === location.pathname) {
+      return true;
+    } else if (
+      !links.includes(location.pathname) &&
+      location.pathname.startsWith(href) &&
+      href !== "/"
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+  const renderMenuItems = menu.map((item) => {
+    if (item.submenuItems?.length && item.Icon) {
+      return (
+        <DashboardSidebarPageItem
+          key={item.text}
+          id={item.text}
+          title={expanded ? t(item.text) : ""}
+          icon={<item.Icon />}
+          expanded={expandedItemIds.includes(item.text)}
+          nestedNavigation={
+            <List
+              dense
+              sx={{
+                p: 0,
+                my: mini ? 1 : 0,
+                pl: mini ? 0 : 1,
+                gap: mini ? 1 : 1,
+                width: mini ? "auto" : "calc(100% - 8px)",
+              }}
+            >
+              {item.submenuItems?.map((sub) => (
+                <DashboardSidebarPageItem
+                  key={sub.text}
+                  id={sub.text}
+                  title={t(sub.text)}
+                  icon={sub.Icon && <sub.Icon />}
+                  href={sub.href}
+                  selected={sub.href ? isSelected(sub.href) : false}
+                />
+              ))}
+            </List>
+          }
+        />
+      );
+    } else if (item.Icon && item.href) {
+      return (
+        <DashboardSidebarPageItem
+          key={item.text}
+          id={item.text}
+          title={t(item.text)}
+          icon={<item.Icon />}
+          href={item.href}
+          selected={isSelected(item.href)}
+        />
+      );
+    } else if (!item.href) {
+      return (
+        <Divider key={item.text}>
+          {expanded ? <ListSubheader>{t(item.text)}</ListSubheader> : null}
+        </Divider>
+      );
+    } else return null;
+  });
+  const drawerContent = (
+    <>
+      <Toolbar />
+      <Box
+        component="nav"
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "auto",
+          overflowX: "hidden",
+          ...(hasDrawerTransitions
+            ? getDrawerSxTransitionMixin(
+                transitionState.fullyExpanded,
+                "padding",
+              )
+            : {}),
+        }}
+      >
+        <List dense sx={{ p: 0.5, gap: mini ? 0.5 : 1, py: mini ? 0.5 : 1.5 }}>
+          {renderMenuItems}
+        </List>
+      </Box>
+    </>
+  );
 
   return (
-    <DashboardSidebarContext.Provider value={sidebarContextValue}>
+    <DashboardSidebarProvider {...sidebarContextValue}>
       <Drawer
         container={container}
         variant="temporary"
         open={expanded}
-        onClose={handleSetSidebarExpanded(false)}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
+        onClose={() => setExpanded(false)}
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: {
             xs: "block",
@@ -259,7 +214,7 @@ export default function DashboardSidebar({
           ...getDrawerSharedSx(true),
         }}
       >
-        {getDrawerContent("phone")}
+        {drawerContent}
       </Drawer>
       <Drawer
         variant="permanent"
@@ -267,22 +222,13 @@ export default function DashboardSidebar({
           display: {
             xs: "none",
             sm: disableCollapsibleSidebar ? "none" : "block",
-            md: "none",
+            md: "block",
           },
           ...getDrawerSharedSx(false),
         }}
       >
-        {getDrawerContent("tablet")}
+        {drawerContent}
       </Drawer>
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: "none", md: "block" },
-          ...getDrawerSharedSx(false),
-        }}
-      >
-        {getDrawerContent("desktop")}
-      </Drawer>
-    </DashboardSidebarContext.Provider>
+    </DashboardSidebarProvider>
   );
-}
+};

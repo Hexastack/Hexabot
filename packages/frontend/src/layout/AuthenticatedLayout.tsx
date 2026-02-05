@@ -8,8 +8,8 @@ import { Box, Grid, useMediaQuery } from "@mui/material";
 import React from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
-import DashboardHeader from "@/app-components/menus/DashboardSidebar/DashboardHeader";
-import DashboardSidebar from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
+import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/DashboardHeader";
+import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
 import { getMenuItems } from "@/utils/menu.util";

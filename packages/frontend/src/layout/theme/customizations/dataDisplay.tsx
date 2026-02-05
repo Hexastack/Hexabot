@@ -42,9 +42,12 @@ export const dataDisplayCustomizations: Components<Theme> = {
           padding: "2px 8px",
           borderRadius: (theme.vars || theme).shape.borderRadius,
           opacity: 0.7,
+          "&:hover": {
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+          },
           "&.Mui-selected": {
             opacity: 1,
-            backgroundColor: alpha(theme.palette.action.selected, 0.3),
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
             [`& .${svgIconClasses.root}`]: {
               color: (theme.vars || theme).palette.text.primary,
             },
@@ -52,7 +55,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
               backgroundColor: alpha(theme.palette.action.selected, 0.3),
             },
             "&:hover": {
-              backgroundColor: alpha(theme.palette.action.selected, 0.5),
+              backgroundColor: alpha(theme.palette.primary.main, 0.2),
             },
           },
           "&:focus-visible": {
@@ -90,6 +93,7 @@ export const dataDisplayCustomizations: Components<Theme> = {
     styleOverrides: {
       root: {
         minWidth: 0,
+        color: "red",
       },
     },
   },

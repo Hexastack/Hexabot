@@ -5,7 +5,6 @@
  */
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Collapse from "@mui/material/Collapse";
 import Grow from "@mui/material/Grow";
@@ -20,23 +19,12 @@ import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import DashboardSidebarContext from "./context/dashboard-sidebar.context";
-import { MINI_DRAWER_WIDTH } from "./DashboardSidebar";
+import { useDashboardSidebar } from "./hooks/useDashboardSidebar";
+import { ICON_WIDTH, MINI_DRAWER_WIDTH } from "./measurements.constansts";
+import { DashboardSidebarProvider } from "./providers/DashboardSidebarProvider";
+import { DashboardSidebarPageItemProps } from "./types/sidebar.types";
 
-export interface DashboardSidebarPageItemProps {
-  id: string;
-  title: string;
-  icon?: React.ReactNode;
-  href: string;
-  action?: React.ReactNode;
-  defaultExpanded?: boolean;
-  expanded?: boolean;
-  selected?: boolean;
-  disabled?: boolean;
-  nestedNavigation?: React.ReactNode;
-}
-
-export default function DashboardSidebarPageItem({
+export const DashboardSidebarPageItem = ({
   id,
   title,
   icon,
@@ -47,145 +35,73 @@ export default function DashboardSidebarPageItem({
   selected = false,
   disabled = false,
   nestedNavigation,
-}: DashboardSidebarPageItemProps) {
-  const sidebarContext = React.useContext(DashboardSidebarContext);
-
-  if (!sidebarContext) {
-    throw new Error("Sidebar context was used without a provider.");
-  }
-  const {
-    onPageItemClick,
-    mini = false,
-    fullyExpanded = true,
-    fullyCollapsed = false,
-  } = sidebarContext;
+}: DashboardSidebarPageItemProps) => {
+  const { onPageItemClick, mini, fullyExpanded, fullyCollapsed } =
+    useDashboardSidebar();
   const [isHovered, setIsHovered] = React.useState(false);
-  const handleClick = React.useCallback(() => {
-    if (onPageItemClick) {
-      onPageItemClick(id, !!nestedNavigation);
-    }
-  }, [onPageItemClick, id, nestedNavigation]);
-
-  let nestedNavigationCollapseSx: SxProps<Theme> = { display: "none" };
-
-  if (mini && fullyCollapsed) {
-    nestedNavigationCollapseSx = {
-      fontSize: 18,
-      position: "absolute",
-      top: "41.5%",
-      right: "2px",
-      transform: "translateY(-50%) rotate(-90deg)",
-    };
-  } else if (!mini && fullyExpanded) {
-    nestedNavigationCollapseSx = {
-      ml: 0.5,
-      fontSize: 20,
-      transform: `rotate(${expanded ? 0 : -90}deg)`,
-      transition: (theme: Theme) =>
-        theme.transitions.create("transform", {
-          easing: theme.transitions.easing.sharp,
-          duration: 100,
-        }),
-    };
-  }
-
-  const hasExternalHref = href
-    ? href.startsWith("http://") || href.startsWith("https://")
-    : false;
-  const LinkComponent = hasExternalHref ? "a" : Link;
-  const miniNestedNavigationSidebarContextValue = React.useMemo(() => {
-    return {
-      onPageItemClick: onPageItemClick ?? (() => {}),
-      mini: false,
-      fullyExpanded: true,
-      fullyCollapsed: false,
-      hasDrawerTransitions: false,
-    };
-  }, [onPageItemClick]);
+  const hasSub = !!nestedNavigation;
+  const isExternal = href?.startsWith("http");
+  const LinkComp = isExternal ? "a" : Link;
+  const handleClick = () => onPageItemClick?.(id, hasSub);
+  const arrowSx: SxProps<Theme> =
+    mini && fullyCollapsed
+      ? {
+          position: "absolute",
+          top: "41.5%",
+          right: 0,
+          transform: "translateY(-25%) rotate(-90deg)",
+          fontSize: 18,
+        }
+      : !mini && fullyExpanded
+        ? {
+            ml: 0.5,
+            fontSize: 20,
+            transform: `rotate(${expanded ? 0 : -90}deg)`,
+            transition: "transform 0.1s",
+          }
+        : { display: "none" };
 
   return (
-    <React.Fragment>
+    <>
       <ListItem
-        disablePadding
-        {...(nestedNavigation && mini
-          ? {
-              onMouseEnter: () => {
-                setIsHovered(true);
-              },
-              onMouseLeave: () => {
-                setIsHovered(false);
-              },
-            }
-          : {})}
         sx={{
-          display: "block",
-          py: 0,
-          px: 1,
-          overflowX: "hidden",
+          px: mini ? 0 : 1,
         }}
+        disablePadding
+        onMouseEnter={() => hasSub && mini && setIsHovered(true)}
+        onMouseLeave={() => hasSub && mini && setIsHovered(false)}
       >
         <ListItemButton
           selected={selected}
           disabled={disabled}
+          onClick={handleClick}
+          {...(!hasSub && {
+            component: LinkComp,
+            to: href,
+            ...(isExternal && { target: "_blank", rel: "noopener" }),
+          })}
           sx={{
             height: mini ? 50 : "auto",
+            justifyContent: "center",
           }}
-          {...(nestedNavigation && !mini
-            ? {
-                onClick: handleClick,
-              }
-            : {})}
-          {...(!nestedNavigation
-            ? {
-                LinkComponent,
-                ...(hasExternalHref
-                  ? {
-                      target: "_blank",
-                      rel: "noopener noreferrer",
-                    }
-                  : {}),
-                to: href,
-                onClick: handleClick,
-              }
-            : {})}
         >
-          {icon || mini ? (
+          {(icon || mini) && (
             <Box
-              sx={
-                mini
-                  ? {
-                      position: "absolute",
-                      left: "50%",
-                      top: "calc(50% - 6px)",
-                      transform: "translate(-50%, -50%)",
-                    }
-                  : {}
-              }
+              sx={{
+                position: mini ? "relative" : "initial",
+              }}
             >
               <ListItemIcon
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: mini ? "center" : "auto",
+                  justifyContent: "center",
+                  width: ICON_WIDTH,
+                  color: selected ? "primary.main" : "currentColor",
                 }}
               >
-                {icon ?? null}
-                {!icon && mini ? (
-                  <Avatar
-                    sx={{
-                      fontSize: 10,
-                      height: 16,
-                      width: 16,
-                    }}
-                  >
-                    {title
-                      .split(" ")
-                      .slice(0, 2)
-                      .map((titleWord) => titleWord.charAt(0).toUpperCase())}
-                  </Avatar>
-                ) : null}
+                {icon}
               </ListItemIcon>
-              {mini ? (
+              {mini && expanded && (
                 <Typography
                   variant="caption"
                   sx={{
@@ -195,64 +111,55 @@ export default function DashboardSidebarPageItem({
                     transform: "translateX(-50%)",
                     fontSize: 10,
                     fontWeight: 500,
-                    textAlign: "center",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: MINI_DRAWER_WIDTH - 28,
                   }}
                 >
                   {title}
                 </Typography>
-              ) : null}
+              )}
             </Box>
-          ) : null}
-          {!mini ? (
+          )}
+
+          {!mini && (
             <ListItemText
               primary={title}
               sx={{
                 whiteSpace: "nowrap",
                 zIndex: 1,
+                color: selected ? "primary.main" : "currentColor",
               }}
             />
-          ) : null}
-          {action && !mini && fullyExpanded ? action : null}
-          {nestedNavigation ? (
-            <ExpandMoreIcon sx={nestedNavigationCollapseSx} />
-          ) : null}
+          )}
+
+          {action && !mini && fullyExpanded && action}
+          {hasSub && <ExpandMoreIcon sx={arrowSx} />}
         </ListItemButton>
-        {nestedNavigation && mini ? (
+
+        {hasSub && mini && (
           <Grow in={isHovered}>
-            <Box
-              sx={{
-                position: "fixed",
-                left: MINI_DRAWER_WIDTH - 2,
-                pl: "6px",
-              }}
-            >
-              <Paper
-                elevation={8}
-                sx={{
-                  pt: 0.2,
-                  pb: 0.2,
-                  transform: "translateY(-50px)",
-                }}
-              >
-                <DashboardSidebarContext.Provider
-                  value={miniNestedNavigationSidebarContextValue}
+            <Box sx={{ position: "fixed", left: MINI_DRAWER_WIDTH }}>
+              <Paper elevation={8}>
+                <DashboardSidebarProvider
+                  {...{
+                    onPageItemClick,
+                    mini: false,
+                    fullyExpanded: true,
+                    fullyCollapsed: false,
+                    hasDrawerTransitions: false,
+                  }}
                 >
                   {nestedNavigation}
-                </DashboardSidebarContext.Provider>
+                </DashboardSidebarProvider>
               </Paper>
             </Box>
           </Grow>
-        ) : null}
+        )}
       </ListItem>
-      {nestedNavigation && !mini ? (
+
+      {hasSub && !mini && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           {nestedNavigation}
         </Collapse>
-      ) : null}
-    </React.Fragment>
+      )}
+    </>
   );
-}
+};

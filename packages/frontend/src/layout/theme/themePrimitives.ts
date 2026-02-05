@@ -299,12 +299,7 @@ export const colorSchemes = {
       // TODO
       neutral: { main: "" },
       teal: {},
-      primary: {
-        contrastText: brand[50],
-        light: brand[300],
-        main: brand[400],
-        dark: brand[700],
-      },
+      primary: PRIMARY,
       info: {
         contrastText: brand[300],
         light: brand[500],

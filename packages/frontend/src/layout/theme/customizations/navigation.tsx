@@ -27,7 +27,7 @@ export const navigationCustomizations: Components<Theme> = {
         },
         [`&.${menuItemClasses.selected}`]: {
           [`&.${menuItemClasses.focusVisible}`]: {
-            backgroundColor: alpha(theme.palette.action.selected, 0.3),
+            backgroundColor: "alpha(theme.palette.action.selected, 0.3)",
           },
         },
       }),
