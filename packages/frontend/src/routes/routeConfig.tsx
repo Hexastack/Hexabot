@@ -68,7 +68,7 @@ export const routes: RouteObjectItem[] = [
     Component: Dashboard,
   },
   {
-    path: `/workflow-editor/:flowId?/:nodeIds?/*`,
+    path: `/workflow-editor/:flowId?/:nodeIds?`,
     Component: WorkflowEditor,
     handle: { hasNoPadding: true },
   },
