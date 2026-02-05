@@ -80,29 +80,10 @@ export const FlowListItem = ({
             <Chip
               size="small"
               label={match.statusLabel}
-              sx={{
-                height: 18,
-                fontSize: 10,
-                fontWeight: 600,
-                color: match.isDraft ? "#b45309" : "#047857",
-                border: "1px solid",
-                borderColor: match.isDraft ? "#f5c484" : "#8ddbb4",
-                backgroundColor: "transparent",
-              }}
+              color={match.isDraft ? "warning" : "success"}
             />
             {match.errorCount > 0 && (
-              <Chip
-                size="small"
-                label={match.errorLabel ?? ""}
-                sx={{
-                  height: 18,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: "#b42318",
-                  border: "1px solid #f4b4b0",
-                  backgroundColor: "transparent",
-                }}
-              />
+              <Chip size="small" label={match.errorLabel ?? ""} color="error" />
             )}
           </Box>
           <WorkflowActionButtons
@@ -138,9 +119,6 @@ export const FlowListItem = ({
               size="small"
               label={match.typeMeta.badge}
               sx={{
-                height: 18,
-                fontSize: 10,
-                fontWeight: 600,
                 color: "#475569",
                 border: "1px solid #d7dde4",
                 backgroundColor: "#f8fafc",

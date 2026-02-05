@@ -8,8 +8,6 @@ import { Color, SimplePaletteColorOptions } from "@mui/material";
 import { grey, teal } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
-import { ChipStyles } from "./Chip";
-
 declare module "@mui/material/styles" {
   interface PaletteOptions {
     teal: Partial<Color>;
@@ -19,20 +17,6 @@ declare module "@mui/material/styles" {
   interface Palette {
     teal: Color;
     neutral: Palette["primary"];
-  }
-}
-
-declare module "@mui/material/Chip" {
-  interface ChipPropsVariantOverrides {
-    disabled: true;
-    enabled: true;
-    title: true;
-    role: true;
-    inbox: true;
-    test: true;
-    available: true;
-    unavailable: true;
-    text: true;
   }
 }
 
@@ -248,28 +232,6 @@ export const theme = createTheme({
           boxShadow: "0px 4px 5.9px 0px rgba(0, 0, 0, 0.04)",
         },
       },
-    },
-    MuiChip: {
-      variants: [
-        ...Array.from(Object.entries(ChipStyles)).map(([key, value]) => ({
-          props: { variant: key as keyof typeof ChipStyles },
-          style: value,
-        })),
-        {
-          props: {
-            variant: "text",
-          },
-          style: {
-            padding: "0 !important",
-            color: "inherit",
-            background: "transparent",
-            "& .MuiChip-label": {
-              lineHeight: 1,
-              padding: "0 !important",
-            },
-          },
-        },
-      ],
     },
     MuiAlert: {
       styleOverrides: {

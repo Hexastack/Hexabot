@@ -15,17 +15,7 @@ export type VersionChipProps = Omit<
   version: IWorkflowVersion | null;
 };
 
-const versionChipStyles = {
-  height: 18,
-  fontSize: 10,
-  fontWeight: 600,
-  border: "1px solid",
-  borderColor: "divider",
-  backgroundColor: "background.default",
-  color: "text.secondary",
-} as const;
-
-export const VersionChip = ({ version, sx, ...rest }: VersionChipProps) => {
+export const VersionChip = ({ version, ...rest }: VersionChipProps) => {
   const resolvedLabel =
     typeof version?.version === "number"
       ? `Version ${version.version}`
@@ -34,12 +24,6 @@ export const VersionChip = ({ version, sx, ...rest }: VersionChipProps) => {
   if (!resolvedLabel) return null;
 
   return (
-    <Chip
-      size="small"
-      variant="outlined"
-      label={resolvedLabel}
-      sx={[versionChipStyles, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
-      {...rest}
-    />
+    <Chip size="small" variant="outlined" label={resolvedLabel} {...rest} />
   );
 };

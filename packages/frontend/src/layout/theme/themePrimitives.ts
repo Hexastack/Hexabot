@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { grey } from "@mui/material/colors";
+import { green, grey, orange, red, teal } from "@mui/material/colors";
 import {
   alpha,
   createTheme,
@@ -55,18 +55,6 @@ export const neutral = {
   900: "#212121",
 };
 
-export const teal = {
-  50: "	hsl(177, 41%, 91%)",
-  100: "hsl(175, 41%, 79%)",
-  200: "hsl(174, 42%, 65%)",
-  300: "hsl(174, 42%, 51%)",
-  400: "hsl(174, 63%, 40%)",
-  500: "hsl(174, 100%, 29%)",
-  600: "hsl(174, 100%, 27%)",
-  700: "hsl(173, 100%, 24%)",
-  800: "hsl(173, 100%, 21%)",
-  900: "hsl(170, 100%, 15%)",
-};
 export const brand = {
   50: "hsl(210, 100%, 95%)",
   100: "hsl(210, 100%, 92%)",
@@ -91,45 +79,6 @@ export const gray = {
   700: "hsl(220, 20%, 25%)",
   800: "hsl(220, 30%, 6%)",
   900: "hsl(220, 35%, 3%)",
-};
-
-export const green = {
-  50: "hsl(120, 80%, 98%)",
-  100: "hsl(120, 75%, 94%)",
-  200: "hsl(120, 75%, 87%)",
-  300: "hsl(120, 61%, 77%)",
-  400: "hsl(120, 44%, 53%)",
-  500: "hsl(120, 59%, 30%)",
-  600: "hsl(120, 70%, 25%)",
-  700: "hsl(120, 75%, 16%)",
-  800: "hsl(120, 84%, 10%)",
-  900: "hsl(120, 87%, 6%)",
-};
-
-export const orange = {
-  50: "hsl(45, 100%, 97%)",
-  100: "hsl(45, 92%, 90%)",
-  200: "hsl(45, 94%, 80%)",
-  300: "hsl(45, 90%, 65%)",
-  400: "hsl(45, 90%, 40%)",
-  500: "hsl(45, 90%, 35%)",
-  600: "hsl(45, 91%, 25%)",
-  700: "hsl(45, 94%, 20%)",
-  800: "hsl(45, 95%, 16%)",
-  900: "hsl(45, 93%, 12%)",
-};
-
-export const red = {
-  50: "hsl(0, 100%, 97%)",
-  100: "hsl(0, 92%, 90%)",
-  200: "hsl(0, 94%, 80%)",
-  300: "hsl(0, 90%, 65%)",
-  400: "hsl(0, 90%, 40%)",
-  500: "hsl(0, 90%, 30%)",
-  600: "hsl(0, 91%, 25%)",
-  700: "hsl(0, 94%, 18%)",
-  800: "hsl(0, 95%, 12%)",
-  900: "hsl(0, 93%, 6%)",
 };
 
 export const getDesignTokens = (mode: PaletteMode) => {
@@ -262,6 +211,7 @@ export const colorSchemes = {
         light: orange[300],
         main: orange[400],
         dark: orange[800],
+        contrastText: "#fff",
       },
       error: {
         light: red[300],
@@ -269,9 +219,10 @@ export const colorSchemes = {
         dark: red[800],
       },
       success: {
-        light: green[300],
-        main: green[400],
-        dark: green[800],
+        light: green[500],
+        main: green[800],
+        dark: green[900],
+        contrastText: "#fff",
       },
       grey: {
         ...gray,
@@ -310,6 +261,7 @@ export const colorSchemes = {
         light: orange[400],
         main: orange[500],
         dark: orange[700],
+        contrastText: "#000",
       },
       error: {
         light: red[400],
@@ -317,9 +269,10 @@ export const colorSchemes = {
         dark: red[700],
       },
       success: {
-        light: green[400],
-        main: green[500],
-        dark: green[700],
+        light: green[500],
+        main: green[800],
+        dark: green[900],
+        contrastText: "#000",
       },
       grey: {
         ...gray,

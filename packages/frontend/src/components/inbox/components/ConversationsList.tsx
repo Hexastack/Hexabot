@@ -92,7 +92,7 @@ export const SubscribersList = (props: {
                 </div>
               </Conversation.Content>
               <Conversation.Operations visible>
-                <Chip size="small" label={subscriber.channel.name} />
+                <Chip size="medium" label={subscriber.channel.name} />
               </Conversation.Operations>
             </Conversation>
           ))}

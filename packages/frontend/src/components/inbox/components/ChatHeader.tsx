@@ -28,7 +28,6 @@ export const ChatHeader = () => {
               <ChipEntity
                 id={label}
                 key={label}
-                variant="role"
                 field="title"
                 entity={EntityType.LABEL}
               />

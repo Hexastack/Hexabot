@@ -176,7 +176,7 @@ export function getMessageContent(
           </Grid>
           {chips.map((chip) => (
             <Grid key={chip.title} size="auto">
-              <Chip label={chip.title} variant="inbox" />
+              <Chip label={chip.title} />
             </Grid>
           ))}
         </Grid>

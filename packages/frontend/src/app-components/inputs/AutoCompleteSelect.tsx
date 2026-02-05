@@ -139,15 +139,10 @@ const AutoCompleteSelect = <
               ? getOptionLabel(option)
               : (option[labelKey] as string) || (option[idKey] as string);
 
-            return (
-              label && (
-                <Chip variant="role" key={key} label={label} {...tagProps} />
-              )
-            );
+            return label && <Chip key={key} label={label} {...tagProps} />;
           })}
           {limitTags && tags.length > limitTags && (
             <Chip
-              variant="role"
               sx={{ marginTop: "2px" }}
               label={`+${tags.length - limitTags}`}
             />

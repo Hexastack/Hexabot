@@ -83,8 +83,6 @@ export const StepTraceItem = ({
               label={badge}
               size="small"
               sx={{
-                height: 20,
-                fontSize: 11,
                 textTransform: "uppercase",
                 letterSpacing: 0.5,
               }}

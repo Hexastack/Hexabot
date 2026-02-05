@@ -79,7 +79,6 @@ export const WorkflowRuns = ({
             <ChipEntity
               id={subscriberId}
               key={subscriberId}
-              variant="text"
               field="fullName"
               entity={EntityType.SUBSCRIBER}
             />
