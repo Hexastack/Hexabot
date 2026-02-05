@@ -5,16 +5,15 @@
  */
 
 import { Box } from "@mui/material";
+import { LucideIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode } from "react";
-
-import { TMenuItem } from "@/app-components/menus/Sidebar";
 
 import { Title } from "./Title";
 
 export const PageHeader = (
   props: PropsWithChildren<{
     title?: string;
-    icon: TMenuItem["Icon"];
+    icon?: LucideIcon;
     chip?: ReactNode;
   }>,
 ) => {
@@ -29,7 +28,7 @@ export const PageHeader = (
       }}
     >
       {props.title || props.icon ? (
-        <Title title={props.title || ""} icon={props.icon} chip={props.chip} />
+        <Title title={props.title || ""} Icon={props.icon} chip={props.chip} />
       ) : null}
       {props.children}
     </Box>

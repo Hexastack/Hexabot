@@ -4,20 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Typography, useTheme } from "@mui/material";
+import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
-
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
-import { TMenuItem } from "@/app-components/menus/Sidebar";
 
 export const Title = (props: {
   title: string;
-  icon: TMenuItem["Icon"];
+  Icon?: LucideIcon;
   chip?: ReactNode;
 }) => {
-  const theme = useTheme();
-
   return (
     <Grid
       container
@@ -30,7 +26,7 @@ export const Title = (props: {
       }}
     >
       <Grid sx={{ height: "24px", alignSelf: "center" }}>
-        <UnifiedIcon Icon={props.icon} color={theme.palette.common.black} />
+        {props.Icon ? <props.Icon /> : null}
       </Grid>
       <Grid>
         <Typography fontSize="1.5em" fontWeight={700} height="fit-content">

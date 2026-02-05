@@ -65,7 +65,6 @@ export const surfacesCustomizations: Components<Theme> = {
     },
     styleOverrides: {
       root: ({ theme }) => ({
-        backgroundColor: theme.palette.common.white,
         boxShadow: `${alpha(theme.palette.grey[500], 0.05)} 0px 5px 15px 0px, ${alpha(theme.palette.grey[600], 0.05)} 0px 15px 35px -5px`,
         variants: [
           {
@@ -75,7 +74,6 @@ export const surfacesCustomizations: Components<Theme> = {
             style: {
               padding: theme.spacing(3),
               ...theme.applyStyles("dark", {
-                backgroundColor: theme.palette.common.black,
                 boxShadow: `${alpha(theme.palette.grey[50], 0.05)} 0px 5px 15px 0px, ${alpha(theme.palette.grey[100], 0.05)} 0px 15px 35px -5px`,
               }),
             },

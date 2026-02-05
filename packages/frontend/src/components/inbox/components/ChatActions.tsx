@@ -10,7 +10,6 @@ import Grid from "@mui/material/Grid";
 import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -85,7 +84,7 @@ export const ChatActions = () => {
           sx={{ outline: "#AAAAAA solid 1px" }}
           color="default"
         >
-          <UnifiedIcon Icon={Hand} color="black" />
+          <Hand />
         </IconButton>
       </Grid>
 

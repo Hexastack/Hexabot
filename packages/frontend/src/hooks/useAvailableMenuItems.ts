@@ -6,7 +6,7 @@
 
 import { useMemo } from "react";
 
-import { MenuItem } from "@/layout/VerticalMenu";
+import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
@@ -19,7 +19,7 @@ import { useHasPermission } from "./useHasPermission";
  * @returns True if hasPermission() is true for all required permissions.
  */
 const isMenuItemAllowed = (
-  menuItem: MenuItem,
+  menuItem: TMenu,
   hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,
 ): boolean => {
   const requiredPermissions = Object.entries(menuItem.requires || {});
@@ -39,9 +39,9 @@ const isMenuItemAllowed = (
  * @returns A filtered list of menu items that the user is allowed to access.
  */
 const filterMenuItems = (
-  menuItems: MenuItem[],
+  menuItems: TMenu[],
   hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,
-): MenuItem[] => {
+): TMenu[] => {
   return menuItems
     .map((menuItem) => {
       // Validate top-level menu item without submenu
@@ -67,9 +67,9 @@ const filterMenuItems = (
 
       return null; // Exclude invalid menu items
     })
-    .filter((menuItem): menuItem is MenuItem => !!menuItem);
+    .filter((menuItem): menuItem is TMenu => !!menuItem);
 };
-const useAvailableMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
+const useAvailableMenuItems = (menuItems: TMenu[]): TMenu[] => {
   const hasPermission = useHasPermission();
 
   return useMemo(() => {
