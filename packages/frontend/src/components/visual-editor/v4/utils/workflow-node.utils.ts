@@ -290,7 +290,6 @@ export const buildNodesAndEdges = async ({
     memoryDefinitions,
     nodes: [],
     edges: [],
-    edgeKeys: new Set(),
     nodePaths: new Map(),
     config,
   };

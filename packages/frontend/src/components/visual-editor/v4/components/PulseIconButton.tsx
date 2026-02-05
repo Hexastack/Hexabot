@@ -5,7 +5,6 @@
  */
 
 import type { IconButtonProps } from "@mui/material";
-// eslint-disable-next-line no-duplicate-imports
 import { IconButton } from "@mui/material";
 import { keyframes, styled } from "@mui/material/styles";
 

@@ -12,7 +12,11 @@ import {
 } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
 import type { StepExecutorEnv } from './step-executors/types';
-import type { StepInfo, WorkflowEventMap } from './workflow-event-emitter';
+import {
+  StepType,
+  type StepInfo,
+  type WorkflowEventMap,
+} from './workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
@@ -179,7 +183,7 @@ export function buildSuspensionForPath(
   }
 
   if (rest.length === 0) {
-    if (step.kind !== 'do') {
+    if (step.type !== StepType.Task) {
       return null;
     }
 
@@ -202,7 +206,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === 'parallel') {
+  if (step.type === StepType.Parallel) {
     if (rest[0] !== 'parallel') {
       return null;
     }
@@ -247,7 +251,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === 'conditional') {
+  if (step.type === StepType.Conditional) {
     if (rest[0] !== 'branch' || typeof rest[1] !== 'number') {
       return null;
     }
@@ -286,7 +290,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === 'loop') {
+  if (step.type === StepType.Loop) {
     if (rest.length < 1 || typeof rest[0] !== 'string') {
       return null;
     }

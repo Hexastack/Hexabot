@@ -13,15 +13,19 @@ import type {
 } from './context';
 import { RunnerRuntimeControl } from './runner-runtime-control';
 import { executeConditional as runConditionalExecutor } from './step-executors/conditional-executor';
-import { executeDoStep as runDoExecutor } from './step-executors/do-executor';
 import { executeLoop as runLoopExecutor } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
+import { executeTaskStep as runTaskExecutor } from './step-executors/task-executor';
 import type { StepExecutorEnv } from './step-executors/types';
 import {
   rebuildSuspension,
   type SuspensionRebuilderDeps,
 } from './suspension-rebuilder';
-import type { StepInfo, WorkflowEventMap } from './workflow-event-emitter';
+import {
+  StepType,
+  type StepInfo,
+  type WorkflowEventMap,
+} from './workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
@@ -346,7 +350,11 @@ export class WorkflowRunner {
     const suffix =
       iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : '';
 
-    return { ...step.stepInfo, id: `${step.stepInfo.id}${suffix}` };
+    return {
+      id: `${step.id}${suffix}`,
+      name: step.label,
+      type: step.type,
+    };
   }
 
   /**
@@ -472,14 +480,14 @@ export class WorkflowRunner {
     path: Array<number | string>,
   ): Promise<Suspension | void> {
     const env = this.createExecutorEnv();
-    switch (step.kind) {
-      case 'do':
-        return runDoExecutor(env, step, state, path);
-      case 'parallel':
+    switch (step.type) {
+      case StepType.Task:
+        return runTaskExecutor(env, step, state, path);
+      case StepType.Parallel:
         return runParallelExecutor(env, step, state, path);
-      case 'conditional':
+      case StepType.Conditional:
         return runConditionalExecutor(env, step, state, path);
-      case 'loop':
+      case StepType.Loop:
         return runLoopExecutor(env, step, state, path);
     }
   }

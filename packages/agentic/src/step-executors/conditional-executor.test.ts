@@ -5,7 +5,11 @@
  */
 
 import { BaseWorkflowContext } from '../context';
-import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
+import {
+  StepType,
+  type EventEmitterLike,
+  type StepInfo,
+} from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ConditionalStep,
@@ -29,11 +33,11 @@ const createState = (): ExecutionState => ({
   output: {},
   iterationStack: [],
 });
-const createDoStep = (id: string): CompiledStep => ({
+const createTaskStep = (id: string): CompiledStep => ({
   id,
-  kind: 'do',
+  type: StepType.Task,
+  label: id,
   taskName: `task_${id}`,
-  stepInfo: { id, name: id, type: 'task' },
 });
 const createEnv = (): StepExecutorEnv => {
   const compiled = {
@@ -64,23 +68,23 @@ describe('executeConditional', () => {
     const state = createState();
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: 'conditional',
-      stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
+      type: StepType.Conditional,
+      label: 'conditional',
       branches: [
         {
           id: 'branch-0',
           condition: { kind: 'literal', value: false },
-          steps: [createDoStep('a')],
+          steps: [createTaskStep('a')],
         },
         {
           id: 'branch-1',
           condition: { kind: 'literal', value: true },
-          steps: [createDoStep('b')],
+          steps: [createTaskStep('b')],
         },
         {
           id: 'branch-2',
           condition: { kind: 'literal', value: true },
-          steps: [createDoStep('c')],
+          steps: [createTaskStep('c')],
         },
       ],
     };
@@ -101,7 +105,7 @@ describe('executeConditional', () => {
     const env = createEnv();
     const state = createState();
     const innerSuspension: Suspension = {
-      step: { id: 'inner', name: 'inner', type: 'task' } as StepInfo,
+      step: { id: 'inner', name: 'inner', type: StepType.Task } as StepInfo,
       reason: 'pause',
       continue: jest.fn().mockResolvedValue(undefined),
     };
@@ -109,9 +113,9 @@ describe('executeConditional', () => {
 
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: 'conditional',
-      stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
-      branches: [{ id: 'branch-0', steps: [createDoStep('a')] }],
+      type: StepType.Conditional,
+      label: 'conditional',
+      branches: [{ id: 'branch-0', steps: [createTaskStep('a')] }],
     };
     const suspension = await executeConditional(env, step, state, []);
     expect(suspension).toEqual(
@@ -128,20 +132,20 @@ describe('executeConditional', () => {
     const env = createEnv();
     const state = createState();
     const nextSuspension: Suspension = {
-      step: { id: 'next', name: 'next', type: 'task' } as StepInfo,
+      step: { id: 'next', name: 'next', type: StepType.Task } as StepInfo,
       continue: jest.fn(),
     };
     const innerSuspension: Suspension = {
-      step: { id: 'inner', name: 'inner', type: 'task' } as StepInfo,
+      step: { id: 'inner', name: 'inner', type: StepType.Task } as StepInfo,
       continue: jest.fn().mockResolvedValue(nextSuspension),
     };
     env.executeFlow = jest.fn().mockResolvedValue(innerSuspension);
 
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: 'conditional',
-      stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
-      branches: [{ id: 'branch-0', steps: [createDoStep('a')] }],
+      type: StepType.Conditional,
+      label: 'conditional',
+      branches: [{ id: 'branch-0', steps: [createTaskStep('a')] }],
     };
     const suspension = await executeConditional(env, step, state, []);
     const result = await suspension?.continue('resume-data');
@@ -156,18 +160,18 @@ describe('executeConditional', () => {
     const state = createState();
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: 'conditional',
-      stepInfo: { id: 'conditional', name: 'conditional', type: 'conditional' },
+      type: StepType.Conditional,
+      label: 'conditional',
       branches: [
         {
           id: 'branch-0',
           condition: { kind: 'literal', value: false },
-          steps: [createDoStep('a')],
+          steps: [createTaskStep('a')],
         },
         {
           id: 'branch-1',
           condition: { kind: 'literal', value: false },
-          steps: [createDoStep('b')],
+          steps: [createTaskStep('b')],
         },
       ],
     };

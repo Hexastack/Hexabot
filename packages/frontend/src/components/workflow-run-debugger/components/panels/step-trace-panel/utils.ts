@@ -6,7 +6,6 @@
 
 import type { WorkflowSnapshot } from "@hexabot-ai/agentic";
 import type { LucideIcon } from "lucide-react";
-// eslint-disable-next-line no-duplicate-imports
 import { Bot, Globe, MessageSquare, RotateCcw, Zap } from "lucide-react";
 
 export type ActionSnapshot = WorkflowSnapshot["actions"][string];
