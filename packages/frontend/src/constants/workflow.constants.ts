@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StepType } from "@hexabot-ai/agentic";
 import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
@@ -36,7 +37,6 @@ import {
   EIndicatorType,
   ELinkType,
   ENodeType,
-  EOperatorType,
   type INodeConfig,
 } from "../components/visual-editor/v4/types/workflow-node.types";
 import {
@@ -136,8 +136,8 @@ export const NODES = {
     },
   },
   [ENodeType.OPERATOR]: {
-    [EOperatorType.PARALLEL]: {
-      operatorType: EOperatorType.PARALLEL,
+    [StepType.Parallel]: {
+      operatorType: StepType.Parallel,
       theme: {
         Icon: GripVertical,
         bgColor: "#0c9ba0",
@@ -145,8 +145,8 @@ export const NODES = {
       i18nTitle: "message.parallel_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
-    [EOperatorType.CONDITIONAL]: {
-      operatorType: EOperatorType.CONDITIONAL,
+    [StepType.Conditional]: {
+      operatorType: StepType.Conditional,
       theme: {
         Icon: GitBranch,
         borderColor: "#2162fb",
@@ -154,8 +154,8 @@ export const NODES = {
       i18nTitle: "message.conditional_indicator",
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
-    [EOperatorType.LOOP]: {
-      operatorType: EOperatorType.LOOP,
+    [StepType.Loop]: {
+      operatorType: StepType.Loop,
       theme: {
         Icon: Repeat,
         borderColor: "#0c9ba0",
