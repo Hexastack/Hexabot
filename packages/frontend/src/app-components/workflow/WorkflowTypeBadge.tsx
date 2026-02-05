@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-// eslint-disable-next-line no-duplicate-imports
 import { Box, Tooltip } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 

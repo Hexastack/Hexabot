@@ -5,7 +5,11 @@
  */
 
 import { BaseWorkflowContext } from '../context';
-import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
+import {
+  StepType,
+  type EventEmitterLike,
+  type StepInfo,
+} from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ExecutionState,
@@ -31,9 +35,9 @@ const createState = (): ExecutionState => ({
 });
 const createChild = (id: string): CompiledStep => ({
   id,
-  kind: 'do',
+  type: StepType.Task,
+  label: id,
   taskName: `task_${id}`,
-  stepInfo: { id, name: id, type: 'task' },
 });
 const createEnv = (): StepExecutorEnv => {
   const compiled = {
@@ -64,10 +68,10 @@ describe('executeParallel', () => {
     const state = createState();
     const step: ParallelStep = {
       id: 'parallel',
-      kind: 'parallel',
+      type: StepType.Parallel,
+      label: 'parallel',
       strategy: 'wait_all',
       steps: [createChild('a'), createChild('b')],
-      stepInfo: { id: 'parallel', name: 'parallel', type: 'parallel' },
     };
     env.executeStep = jest.fn().mockResolvedValue(undefined);
 
@@ -94,10 +98,10 @@ describe('executeParallel', () => {
     const state = createState();
     const step: ParallelStep = {
       id: 'parallel',
-      kind: 'parallel',
+      type: StepType.Parallel,
+      label: 'parallel',
       strategy: 'wait_any',
       steps: [createChild('a'), createChild('b')],
-      stepInfo: { id: 'parallel', name: 'parallel', type: 'parallel' },
     };
     env.executeStep = jest.fn().mockResolvedValue(undefined);
 
@@ -112,15 +116,15 @@ describe('executeParallel', () => {
     const env = createEnv();
     const state = createState();
     const innerSuspension: Suspension = {
-      step: { id: 'a', name: 'a', type: 'task' } as StepInfo,
+      step: { id: 'a', name: 'a', type: StepType.Task } as StepInfo,
       continue: jest.fn().mockResolvedValue(undefined),
     };
     const step: ParallelStep = {
       id: 'parallel',
-      kind: 'parallel',
+      type: StepType.Parallel,
+      label: 'parallel',
       strategy: 'wait_all',
       steps: [createChild('a'), createChild('b')],
-      stepInfo: { id: 'parallel', name: 'parallel', type: 'parallel' },
     };
     env.executeStep = jest
       .fn()
@@ -143,15 +147,15 @@ describe('executeParallel', () => {
     const env = createEnv();
     const state = createState();
     const innerSuspension: Suspension = {
-      step: { id: 'a', name: 'a', type: 'task' } as StepInfo,
+      step: { id: 'a', name: 'a', type: StepType.Task } as StepInfo,
       continue: jest.fn().mockResolvedValue(undefined),
     };
     const step: ParallelStep = {
       id: 'parallel',
-      kind: 'parallel',
+      type: StepType.Parallel,
+      label: 'parallel',
       strategy: 'wait_any',
       steps: [createChild('a'), createChild('b')],
-      stepInfo: { id: 'parallel', name: 'parallel', type: 'parallel' },
     };
     env.executeStep = jest.fn().mockResolvedValueOnce(innerSuspension);
 

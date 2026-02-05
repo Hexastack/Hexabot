@@ -5,7 +5,6 @@
  */
 
 import type { SxProps, Theme } from "@mui/material";
-// eslint-disable-next-line no-duplicate-imports
 import { Paper } from "@mui/material";
 import type { PropsWithChildren } from "react";
 

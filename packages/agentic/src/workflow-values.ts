@@ -5,7 +5,6 @@
  */
 
 import type { Expression, Focus } from 'jsonata';
-// eslint-disable-next-line no-duplicate-imports
 import jsonata from 'jsonata';
 
 import type { JsonValue, Settings } from './dsl.types';

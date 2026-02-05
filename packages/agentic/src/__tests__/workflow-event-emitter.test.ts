@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowEventEmitter } from '../workflow-event-emitter';
+import { StepType, WorkflowEventEmitter } from '../workflow-event-emitter';
 
-const step = { id: 'step-1', name: 'sample', type: 'task' as const };
+const step = { id: 'step-1', name: 'sample', type: StepType.Task };
 
 describe('WorkflowEventEmitter', () => {
   it('invokes listeners with strongly typed payloads', () => {

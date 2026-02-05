@@ -80,7 +80,8 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
         ],
         'lines-between-class-members': ['warn', 'always'],
         'no-console': 'off',
-        'no-duplicate-imports': 2,
+        'no-duplicate-imports': 'off',
+        'import/no-duplicates': 'error',
         'object-shorthand': 1,
         'import/order': [
           'error',

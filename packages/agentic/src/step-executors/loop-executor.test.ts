@@ -5,7 +5,11 @@
  */
 
 import { BaseWorkflowContext } from '../context';
-import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
+import {
+  StepType,
+  type EventEmitterLike,
+  type StepInfo,
+} from '../workflow-event-emitter';
 import type {
   CompiledStep,
   ExecutionState,
@@ -56,11 +60,11 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     executeStep: jest.fn(),
   };
 };
-const createDoStep = (id: string): CompiledStep => ({
+const createTaskStep = (id: string): CompiledStep => ({
   id,
-  kind: 'do',
+  type: StepType.Task,
+  label: id,
   taskName: `task_${id}`,
-  stepInfo: { id, name: id, type: 'task' },
 });
 
 describe('executeLoop', () => {
@@ -81,9 +85,9 @@ describe('executeLoop', () => {
     const state = createState();
     const step: LoopStep = {
       id: 'loop',
-      kind: 'loop',
+      type: StepType.Loop,
+      label: 'loop',
       name: 'collector',
-      stepInfo: { id: 'loop', name: 'loop', type: 'loop' },
       forEach: { item: 'entry', in: { kind: 'literal', value: [2, 4, 6] } },
       until: compileValue('=$accumulator >= 6'),
       accumulate: {
@@ -91,7 +95,7 @@ describe('executeLoop', () => {
         initial: 0,
         merge: compileValue('=$accumulator + $iteration.item'),
       },
-      steps: [createDoStep('child')],
+      steps: [createTaskStep('child')],
     };
     const result = await executeLoop(env, step, state, []);
 
@@ -108,7 +112,7 @@ describe('executeLoop', () => {
 
   it('resumes after suspension and continues remaining iterations', async () => {
     const innerSuspension: Suspension = {
-      step: { id: 'child', name: 'child', type: 'task' } as StepInfo,
+      step: { id: 'child', name: 'child', type: StepType.Task } as StepInfo,
       continue: jest.fn().mockResolvedValue(undefined),
     };
     const executeFlow = jest
@@ -126,9 +130,9 @@ describe('executeLoop', () => {
     const state = createState();
     const step: LoopStep = {
       id: 'loop',
-      kind: 'loop',
+      type: StepType.Loop,
+      label: 'loop',
       name: 'collector',
-      stepInfo: { id: 'loop', name: 'loop', type: 'loop' },
       forEach: { item: 'entry', in: { kind: 'literal', value: [1, 2] } },
       until: compileValue('=$iteration.index >= 1'),
       accumulate: {
@@ -136,7 +140,7 @@ describe('executeLoop', () => {
         initial: 0,
         merge: compileValue('=$accumulator + $iteration.item'),
       },
-      steps: [createDoStep('child')],
+      steps: [createTaskStep('child')],
     };
     const suspension = await executeLoop(env, step, state, []);
     expect(suspension).toEqual(
@@ -169,8 +173,8 @@ describe('loop helpers', () => {
   it('updates accumulator and stop conditions based on configuration', async () => {
     const step: LoopStep = {
       id: 'loop',
-      kind: 'loop',
-      stepInfo: { id: 'loop', name: 'loop', type: 'loop' },
+      type: StepType.Loop,
+      label: 'loop',
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },
       steps: [],
     };

@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
+import {
+  StepType,
+  type CompiledConditionalStep,
+  type CompiledLoopStep,
+  type CompiledParallelStep,
+  type CompiledStep,
+  type TaskDefinitions,
+} from "@hexabot-ai/agentic";
 import { type Edge } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 
@@ -23,7 +30,7 @@ import {
   EIndicatorType,
   ELinkType,
   ENodeType,
-  EOperatorType,
+  type EOperatorType,
   type GraphNode,
   type INodeConfig,
   type THighlightGroups,
@@ -45,7 +52,6 @@ export type TraversalContext = {
   tasks?: TaskDefinitions;
   nodes: GraphNode[];
   edges: Edge[];
-  edgeKeys: Set<string>;
   nodePaths: Map<string, FlowStepPath>;
   config?: INodeConfig;
 };
@@ -59,10 +65,57 @@ type WalkArgs = {
   path: FlowStepPath;
 };
 
+type TaskNodeArgs = {
+  taskNodeId: string;
+  taskName: string;
+  stepId: string;
+  level: number;
+  groupName?: string;
+  stepPath: FlowStepPath;
+};
+
+type OperatorNodeArgs = {
+  operatorNodeId: string;
+  operatorType: EOperatorType;
+  stepId: string;
+  level: number;
+  groupName?: string;
+  stepPath: FlowStepPath;
+};
+
 function uniqueIds(ids: string[]) {
   return Array.from(new Set(ids));
 }
 
+// Create a step path that keeps insert positions stable for nested flows.
+const buildStepPath = (
+  path: FlowStepPath,
+  index: number,
+  pathIndex?: number,
+): FlowStepPath => [...path, pathIndex ?? index];
+// Normalize task settings once to avoid repeated lookups.
+const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
+  const settings = tasks?.[taskName]?.settings as Record<string, unknown> | undefined;
+  const tools = Array.isArray(settings?.tools)
+    ? (settings.tools as string[])
+    : [];
+  const modelValue = settings?.model;
+  const model =
+    modelValue !== undefined && modelValue !== null ? String(modelValue) : "";
+
+  return { settings, tools, model };
+};
+// Connect incoming sources to a target and preserve insert path metadata.
+const connectIncomingEdges = (
+  ctx: TraversalContext,
+  incoming: string[],
+  target: string,
+  insertPath?: FlowStepPath,
+) => {
+  incoming.forEach((source) =>
+    addEdge(ctx, source, target, undefined, undefined, insertPath),
+  );
+};
 const addGroupEdge = (
   ctx: TraversalContext,
   source: string,
@@ -153,7 +206,7 @@ export const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
 };
 
 export const getGroupId = (id: string, groups?: THighlightGroups) => {
-  const groupId = id.match(/step-[\d]-(conditional|loop|parallel)/g)?.[0];
+  const groupId = id.match(/step-\d+-(conditional|loop|parallel)/)?.[0];
 
   if (groupId) {
     const [, , operator] = groupId.split("-");
@@ -204,6 +257,259 @@ const getIndicatorEdge = <T extends EIndicatorType>(
     data: insertPath ? { insertPath } : undefined,
   };
 };
+// Ensure the workflow start indicator exists for the first task node.
+const ensureWorkflowStartIndicator = (
+  ctx: TraversalContext,
+  taskNodeId: string,
+  level: number,
+  groupName?: string,
+) => {
+  if (!ctx.nodes.length) {
+    const startIndicator = getIndicator(
+      EIndicatorType.WORKFLOW_START,
+      taskNodeId,
+      ctx,
+      level,
+      groupName,
+    );
+
+    if (startIndicator) {
+      ctx.nodes.push(startIndicator);
+    }
+  }
+};
+// Add the start indicator edge when the current step has no incoming edges.
+const ensureWorkflowStartEdge = (
+  ctx: TraversalContext,
+  incoming: string[],
+  taskNodeId: string,
+  stepPath: FlowStepPath,
+) => {
+  if (!incoming.length) {
+    const startIndicatorEdge = getIndicatorEdge(
+      EIndicatorType.WORKFLOW_START,
+      ctx,
+      taskNodeId,
+      stepPath,
+    );
+
+    ctx.edges.push(startIndicatorEdge);
+  }
+};
+// Push a regular task node into the graph.
+const addTaskNode = (
+  ctx: TraversalContext,
+  config: INodeConfig,
+  { taskNodeId, taskName, stepId, level, groupName, stepPath }: TaskNodeArgs,
+) => {
+  ctx.nodes.push({
+    ...getNodeDimensions(ENodeType.TASK, config),
+    ...DEFAULT_NODE_PROPS,
+    selectable: true,
+    id: taskNodeId,
+    type: ENodeType.TASK,
+    position: { x: 0, y: 0 },
+    data: {
+      ...config.nodes[ENodeType.TASK](taskNodeId, taskName, ctx.tasks),
+      stepId,
+      level,
+      groupName,
+      stepPath,
+    },
+  });
+};
+// Push the base agent node and all of its related child nodes.
+const addAgentGraph = (
+  ctx: TraversalContext,
+  config: INodeConfig,
+  taskNodeArgs: TaskNodeArgs,
+  tools: string[],
+  model: string,
+) => {
+  const { taskNodeId, taskName, stepId, level, groupName, stepPath } =
+    taskNodeArgs;
+  const action = getTaskAction(taskName, ctx.tasks);
+
+  ctx.nodes.push({
+    ...getNodeDimensions(ENodeType.AGENT, config),
+    ...DEFAULT_NODE_PROPS,
+    selectable: true,
+    id: taskNodeId,
+    type: ENodeType.AGENT,
+    position: { x: 0, y: 0 },
+    data: {
+      description: getTaskDescription(taskName, ctx.tasks),
+      ...config.nodes[ENodeType.AGENT],
+      stepId,
+      action,
+      level,
+      groupName,
+      stepPath,
+      title: taskName,
+      i18nTitle: undefined,
+    },
+  });
+
+  if (model) {
+    const modelNodeId = `model-${taskNodeId}`;
+
+    ctx.nodes.push({
+      ...getNodeDimensions(ENodeType.MODEL, config),
+      ...DEFAULT_NODE_PROPS,
+      id: modelNodeId,
+      type: ENodeType.MODEL,
+      position: { x: 0, y: 0 },
+      data: {
+        ...config.nodes[ENodeType.MODEL],
+        title: model,
+        i18nTitle: undefined,
+        level,
+      },
+    });
+
+    addEdge(ctx, taskNodeId, modelNodeId, ELinkType.AGENT_MODEL);
+  }
+
+  ctx.memoryDefinitions.forEach((memoryDefinition, index) => {
+    const memoryProperties = memoryDefinition.schema?.properties;
+    const memoryNodeId = `memory-${index}-${taskNodeId}`;
+
+    ctx.nodes.push({
+      ...getNodeDimensions(ENodeType.MEMORY, config),
+      ...DEFAULT_NODE_PROPS,
+      id: memoryNodeId,
+      type: ENodeType.MEMORY,
+      position: { x: 0, y: 0 },
+      data: {
+        ...config.nodes[ENodeType.MEMORY],
+        title: memoryDefinition.name,
+        i18nTitle: undefined,
+        description: memoryProperties
+          ? Object.keys(memoryProperties).join(", ")
+          : "",
+      },
+    });
+
+    addEdge(ctx, taskNodeId, memoryNodeId, ELinkType.AGENT_MEMORY);
+  });
+
+  tools.forEach((tool) => {
+    const toolId = `tool-${tool}`;
+
+    ctx.nodes.push({
+      ...getNodeDimensions(ENodeType.TOOL, config),
+      ...DEFAULT_NODE_PROPS,
+      id: toolId,
+      type: ENodeType.TOOL,
+      position: { x: 0, y: 0 },
+      data: {
+        ...config.nodes[ENodeType.TOOL],
+        title: tool,
+        i18nTitle: undefined,
+        level,
+      },
+    });
+
+    addEdge(ctx, taskNodeId, toolId, ELinkType.AGENT_TOOL);
+  });
+};
+// Push the operator node that will own nested steps.
+const addOperatorNode = (
+  ctx: TraversalContext,
+  config: INodeConfig,
+  {
+    operatorNodeId,
+    operatorType,
+    stepId,
+    level,
+    groupName,
+    stepPath,
+  }: OperatorNodeArgs,
+) => {
+  ctx.nodes.push({
+    ...getNodeDimensions(ENodeType.OPERATOR, config),
+    ...DEFAULT_NODE_PROPS,
+    id: operatorNodeId,
+    type: ENodeType.OPERATOR,
+    position: { x: 0, y: 0 },
+    data: {
+      ...config.nodes[ENodeType.OPERATOR][operatorType],
+      stepId,
+      level,
+      groupName,
+      stepPath,
+    },
+  });
+};
+// Traverse parallel steps as separate branches from the operator node.
+const walkParallelSteps = (
+  step: CompiledParallelStep,
+  operatorNodeId: string,
+  level: number,
+  ctx: TraversalContext,
+  stepPath: FlowStepPath,
+) => {
+  const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
+
+  return step.steps.flatMap((branchStep, branchIndex) =>
+    walkStep({
+      step: branchStep,
+      index: 0,
+      pathIndex: branchIndex,
+      level: level + 1,
+      prefix: `${operatorNodeId}${branchIndex}`,
+      incoming: [operatorNodeId],
+      ctx,
+      path: parallelStepsPath,
+    }),
+  );
+};
+// Traverse conditional branches with their own nested step lists.
+const walkConditionalBranches = (
+  step: CompiledConditionalStep,
+  operatorNodeId: string,
+  level: number,
+  ctx: TraversalContext,
+  stepPath: FlowStepPath,
+) => {
+  return step.branches.flatMap((branch, branchIndex) => {
+    const conditionalStepsPath: FlowStepPath = [
+      ...stepPath,
+      "conditional",
+      "when",
+      branchIndex,
+      "steps",
+    ];
+
+    return walkSteps({
+      steps: branch.steps,
+      level: level + 1,
+      prefix: `${operatorNodeId}${branchIndex}`,
+      incoming: [operatorNodeId],
+      ctx,
+      path: conditionalStepsPath,
+    });
+  });
+};
+// Traverse loop steps in sequence under the operator node.
+const walkLoopSteps = (
+  step: CompiledLoopStep,
+  operatorNodeId: string,
+  level: number,
+  ctx: TraversalContext,
+  stepPath: FlowStepPath,
+) => {
+  const loopStepsPath: FlowStepPath = [...stepPath, "loop", "steps"];
+
+  return walkSteps({
+    steps: step.steps,
+    level: level + 1,
+    prefix: operatorNodeId,
+    incoming: [operatorNodeId],
+    ctx,
+    path: loopStepsPath,
+  });
+};
 
 type WalkStepArgs = Omit<WalkArgs, "steps"> & {
   step: CompiledStep;
@@ -225,253 +531,89 @@ const walkStep = ({
     return incoming;
   }
 
-  const tasks = ctx.tasks;
+  const config = ctx.config;
   const idBase = `${prefix}-${index}`;
-  const stepPath: FlowStepPath = [...path, pathIndex ?? index];
-  const stepId = step.stepInfo.id;
+  const stepPath = buildStepPath(path, index, pathIndex);
+  const stepId = step.id;
 
-  if (step.kind === "do") {
+  if (step.type === StepType.Task) {
     const taskName = step.taskName;
     const taskNodeId = `${idBase}-${taskName}`;
-    const groupName = getGroupId(taskNodeId, ctx.config.highlights);
+    const groupName = getGroupId(taskNodeId, config.highlights);
 
     ctx.nodePaths.set(taskNodeId, stepPath);
 
-    if (!ctx.nodes.length) {
-      const startIndicator = getIndicator(
-        EIndicatorType.WORKFLOW_START,
-        taskNodeId,
-        ctx,
-        level,
-        groupName,
-      );
+    ensureWorkflowStartIndicator(ctx, taskNodeId, level, groupName);
+    ensureWorkflowStartEdge(ctx, incoming, taskNodeId, stepPath);
 
-      if (startIndicator) {
-        ctx.nodes.push(startIndicator);
-      }
-    }
-
-    if (!incoming.length) {
-      const startIndicatorEdge = getIndicatorEdge(
-        EIndicatorType.WORKFLOW_START,
-        ctx,
-        taskNodeId,
-        stepPath,
-      );
-
-      ctx.edges.push(startIndicatorEdge);
-    }
-
-    const task = tasks?.[taskName];
-    const taskSettings = task?.settings as Record<string, unknown> | undefined;
-    const tools = Array.isArray(taskSettings?.tools)
-      ? (taskSettings.tools as string[])
-      : [];
+    const { tools, model } = getTaskMeta(taskName, ctx.tasks);
 
     if (tools.length) {
-      const action = getTaskAction(taskName, tasks);
-
-      ctx.nodes.push({
-        ...getNodeDimensions(ENodeType.AGENT, ctx.config),
-        ...DEFAULT_NODE_PROPS,
-        selectable: true,
-        id: taskNodeId,
-        type: ENodeType.AGENT,
-        position: { x: 0, y: 0 },
-        data: {
-          description: getTaskDescription(taskName, tasks),
-          ...ctx.config.nodes[ENodeType.AGENT],
-          stepId,
-          action,
-          level,
-          groupName,
-          stepPath,
-          title: taskName,
-          i18nTitle: undefined,
-        },
-      });
-
-      const modelValue = taskSettings?.model;
-      const model =
-        modelValue !== undefined && modelValue !== null
-          ? String(modelValue)
-          : "";
-
-      if (model) {
-        ctx.nodes.push({
-          ...getNodeDimensions(ENodeType.MODEL, ctx.config),
-          ...DEFAULT_NODE_PROPS,
-          id: `model-${taskNodeId}`,
-          type: ENodeType.MODEL,
-          position: { x: 0, y: 0 },
-          data: {
-            ...ctx.config.nodes[ENodeType.MODEL],
-            title: model,
-            i18nTitle: undefined,
-            level,
-          },
-        });
-
-        addEdge(ctx, taskNodeId, `model-${taskNodeId}`, ELinkType.AGENT_MODEL);
-      }
-
-      ctx.memoryDefinitions.map((memoryDefinition, index) => {
-        if (!ctx.config) {
-          return;
-        }
-        const memoryProperties = memoryDefinition.schema?.properties;
-
-        ctx.nodes.push({
-          ...getNodeDimensions(ENodeType.MEMORY, ctx.config),
-          ...DEFAULT_NODE_PROPS,
-          id: `memory-${index}-${taskNodeId}`,
-          type: ENodeType.MEMORY,
-          position: { x: 0, y: 0 },
-          data: {
-            ...ctx.config.nodes[ENodeType.MEMORY],
-            title: memoryDefinition.name,
-            i18nTitle: undefined,
-            description: memoryProperties
-              ? Object.keys(memoryProperties).join(", ")
-              : "",
-          },
-        });
-
-        addEdge(
-          ctx,
+      addAgentGraph(
+        ctx,
+        config,
+        {
           taskNodeId,
-          `memory-${index}-${taskNodeId}`,
-          ELinkType.AGENT_MEMORY,
-        );
-      });
-
-      tools.forEach((tool) => {
-        const toolId = `tool-${tool}`;
-
-        if (!ctx.config) {
-          return;
-        }
-
-        ctx.nodes.push({
-          ...getNodeDimensions(ENodeType.TOOL, ctx.config),
-          ...DEFAULT_NODE_PROPS,
-          id: toolId,
-          type: ENodeType.TOOL,
-          position: { x: 0, y: 0 },
-          data: {
-            ...ctx.config?.nodes[ENodeType.TOOL],
-            title: tool,
-            i18nTitle: undefined,
-            level,
-          },
-        });
-
-        addEdge(ctx, taskNodeId, toolId, ELinkType.AGENT_TOOL);
-      });
-    } else {
-      ctx.nodes.push({
-        ...getNodeDimensions(ENodeType.TASK, ctx.config),
-        ...DEFAULT_NODE_PROPS,
-        selectable: true,
-        id: taskNodeId,
-        type: ENodeType.TASK,
-        position: { x: 0, y: 0 },
-        data: {
-          ...ctx.config.nodes[ENodeType.TASK](taskNodeId, taskName, tasks),
+          taskName,
           stepId,
           level,
           groupName,
           stepPath,
         },
+        tools,
+        model,
+      );
+    } else {
+      addTaskNode(ctx, config, {
+        taskNodeId,
+        taskName,
+        stepId,
+        level,
+        groupName,
+        stepPath,
       });
     }
 
-    incoming.forEach((source) =>
-      addEdge(ctx, source, taskNodeId, undefined, undefined, stepPath),
-    );
+    connectIncomingEdges(ctx, incoming, taskNodeId, stepPath);
 
     return [taskNodeId];
   }
 
-  const operatorType =
-    step.kind === "parallel"
-      ? EOperatorType.PARALLEL
-      : step.kind === "conditional"
-        ? EOperatorType.CONDITIONAL
-        : EOperatorType.LOOP;
+  const operatorType = step.type;
   const operatorNodeId = `${idBase}-${operatorType}`;
-  const groupName = getGroupId(operatorNodeId, ctx.config.highlights);
+  const groupName = getGroupId(operatorNodeId, config.highlights);
 
   ctx.nodePaths.set(operatorNodeId, stepPath);
-  ctx.nodes.push({
-    ...getNodeDimensions(ENodeType.OPERATOR, ctx.config),
-    ...DEFAULT_NODE_PROPS,
-    id: operatorNodeId,
-    type: ENodeType.OPERATOR,
-    position: { x: 0, y: 0 },
-    data: {
-      ...ctx.config.nodes[ENodeType.OPERATOR][operatorType],
-      stepId,
-      level,
-      groupName,
-      stepPath,
-    },
+  addOperatorNode(ctx, config, {
+    operatorNodeId,
+    operatorType,
+    stepId,
+    level,
+    groupName,
+    stepPath,
   });
 
-  incoming.forEach((source) =>
-    addEdge(ctx, source, operatorNodeId, undefined, undefined, stepPath),
-  );
+  connectIncomingEdges(ctx, incoming, operatorNodeId, stepPath);
 
-  if (step.kind === "parallel") {
-    const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
-    const exits = step.steps.flatMap((branchStep, branchIndex) =>
-      walkStep({
-        step: branchStep,
-        index: 0,
-        pathIndex: branchIndex,
-        level: level + 1,
-        prefix: `${operatorNodeId}${branchIndex}`,
-        incoming: [operatorNodeId],
-        ctx,
-        path: parallelStepsPath,
-      }),
+  if (step.type === StepType.Parallel) {
+    const exits = walkParallelSteps(step, operatorNodeId, level, ctx, stepPath);
+
+    return uniqueIds(exits.length ? exits : incoming);
+  }
+
+  if (step.type === StepType.Conditional) {
+    const exits = walkConditionalBranches(
+      step,
+      operatorNodeId,
+      level,
+      ctx,
+      stepPath,
     );
 
     return uniqueIds(exits.length ? exits : incoming);
   }
 
-  if (step.kind === "conditional") {
-    const exits = step.branches.flatMap((branch, branchIndex) => {
-      const conditionalStepsPath: FlowStepPath = [
-        ...stepPath,
-        "conditional",
-        "when",
-        branchIndex,
-        "steps",
-      ];
-
-      return walkSteps({
-        steps: branch.steps,
-        level: level + 1,
-        prefix: `${operatorNodeId}${branchIndex}`,
-        incoming: [operatorNodeId],
-        ctx,
-        path: conditionalStepsPath,
-      });
-    });
-
-    return uniqueIds(exits.length ? exits : incoming);
-  }
-
-  const loopStepsPath: FlowStepPath = [...stepPath, "loop", "steps"];
-  const exits = walkSteps({
-    steps: step.steps,
-    level: level + 1,
-    prefix: operatorNodeId,
-    incoming: [operatorNodeId],
-    ctx,
-    path: loopStepsPath,
-  });
+  const exits = walkLoopSteps(step, operatorNodeId, level, ctx, stepPath);
 
   return uniqueIds(exits.length ? exits : incoming);
 };

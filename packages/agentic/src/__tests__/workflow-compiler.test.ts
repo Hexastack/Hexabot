@@ -10,7 +10,7 @@ import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
-import { EventEmitterLike } from '../workflow-event-emitter';
+import { StepType, type EventEmitterLike } from '../workflow-event-emitter';
 
 class TestContext extends BaseWorkflowContext {
   public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
@@ -143,13 +143,13 @@ describe('compileWorkflow', () => {
     });
 
     expect(compiled.flow[0]).toMatchObject({
-      kind: 'do',
-      id: '0:do:worker_task',
-      stepInfo: { id: '0:worker_task', name: 'worker_task', type: 'task' },
+      type: StepType.Task,
+      id: '0:worker_task',
+      label: 'worker_task',
     });
 
     const conditional = compiled.flow[1];
-    if (conditional.kind === 'conditional') {
+    if (conditional.type === 'conditional') {
       expect(conditional.branches).toHaveLength(2);
       expect(conditional.branches[0].condition).toMatchObject({
         kind: 'expression',
@@ -160,7 +160,7 @@ describe('compileWorkflow', () => {
     }
 
     const loop = compiled.flow[2];
-    if (loop.kind === 'loop') {
+    if (loop.type === 'loop') {
       expect(loop.forEach.in).toMatchObject({
         kind: 'expression',
         source: '=$input.items',

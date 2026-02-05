@@ -7,6 +7,7 @@
 import {
   Workflow as AgenticWorkflow,
   ExecutionState,
+  StepType,
   WorkflowRunner,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
@@ -292,7 +293,7 @@ describe('AgenticService (TypeORM)', () => {
       };
       const resumeResult = {
         status: 'suspended' as const,
-        step: { id: 'prompt_user', name: 'prompt_user', type: 'task' as const },
+        step: { id: 'prompt_user', name: 'prompt_user', type: StepType.Task },
         reason: 'needs input',
         data: { prompt: true },
         snapshot: runnerSnapshot,

@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
+import type {
+  CompiledStep,
+  StepType,
+  TaskDefinitions,
+} from "@hexabot-ai/agentic";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
   EdgeMarkerType,
@@ -91,12 +95,10 @@ export enum EIndicatorType {
   WORKFLOW_END = "workflowEnd",
 }
 
-// Operator types
-export enum EOperatorType {
-  LOOP = "loop",
-  PARALLEL = "parallel",
-  CONDITIONAL = "conditional",
-}
+export type EOperatorType = Extract<
+  StepType,
+  StepType.Conditional | StepType.Loop | StepType.Parallel
+>;
 
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;

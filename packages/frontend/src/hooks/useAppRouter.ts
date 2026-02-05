@@ -13,12 +13,9 @@ import {
   useLocation,
   useNavigate,
   useParams,
-  useRoutes,
   useSearchParams,
 } from "react-router-dom";
 
-import { routes } from "@/routes";
-import { RouteObjectItem } from "@/routes/routeConfig";
 import { WorkflowType } from "@/types/workfow.types";
 
 export type QueryValue = string | string[] | undefined;
@@ -44,8 +41,6 @@ export interface AppRouter<T extends TQuery = TQuery> {
   ) => Promise<boolean>;
   reload: () => void;
   params: Readonly<Params<string>>;
-  routeObject: RouteObjectItem;
-  element: React.ReactElement | null;
 }
 
 const buildSearchString = (query?: Record<string, QueryValue>) => {
@@ -111,8 +106,6 @@ export const useAppRouter = <T extends TQuery>(): AppRouter<T> => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
-  const element = useRoutes(routes);
-  const { match } = element?.props;
   const [searchParams] = useSearchParams();
   const query = useMemo<T>(() => {
     const queryEntries = {} as T;
@@ -169,7 +162,5 @@ export const useAppRouter = <T extends TQuery>(): AppRouter<T> => {
     replace,
     reload,
     params,
-    element,
-    routeObject: match.route,
   };
 };

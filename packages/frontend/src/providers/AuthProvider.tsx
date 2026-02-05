@@ -5,6 +5,7 @@
  */
 
 import { type ReactNode } from "react";
+import { useRoutes } from "react-router-dom";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
@@ -19,6 +20,7 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
+import { routes } from "@/routes";
 import { RouterType } from "@/services/types";
 import { type IUser } from "@/types/user.types";
 import { hasPublicPath, isLoginPath } from "@/utils/URL";
@@ -29,6 +31,9 @@ export interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useAppRouter();
+  const element = useRoutes(routes);
+  const { match } = element?.props;
+  const { handle } = match.route;
   const { i18n } = useTranslate();
   const queryClient = useTanstackQueryClient();
   const updateLanguage = (lang: string) => {
@@ -40,7 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     logoutSession();
   };
   const authRedirection = async (isAuthenticated: boolean) => {
-    if (isAuthenticated && router.routeObject.handle?.isPublicRoute) {
+    if (isAuthenticated && handle?.isPublicRoute) {
       await router.push(RouterType.HOME);
     }
 

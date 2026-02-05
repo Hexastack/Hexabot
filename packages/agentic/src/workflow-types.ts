@@ -10,7 +10,7 @@ import type { ZodType } from 'zod';
 import type { Action } from './action/action.types';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import type { Settings, TaskDefinition, WorkflowDefinition } from './dsl.types';
-import type { StepInfo } from './workflow-event-emitter';
+import { StepType, type StepInfo } from './workflow-event-emitter';
 
 /** Value representation used by the runtime after compilation. */
 export type CompiledValue =
@@ -41,19 +41,23 @@ export type CompiledWorkflow = {
 };
 
 /** Any executable step inside the compiled flow. */
-export type CompiledStep = DoStep | ParallelStep | ConditionalStep | LoopStep;
+export type CompiledStep = TaskStep | ParallelStep | ConditionalStep | LoopStep;
 
-export type BaseStep = { id: string; stepInfo: StepInfo };
+export type BaseStep = {
+  id: string;
+  label: string;
+  type: StepType;
+};
 
-/** Single action execution. */
-export type DoStep = BaseStep & {
-  kind: 'do';
+/** Single task execution. */
+export type TaskStep = BaseStep & {
+  type: StepType.Task;
   taskName: string;
 };
 
 /** Runs nested steps with either wait-all or wait-any semantics. */
 export type ParallelStep = BaseStep & {
-  kind: 'parallel';
+  type: StepType.Parallel;
   description?: string;
   strategy: 'wait_all' | 'wait_any';
   steps: CompiledStep[];
@@ -68,14 +72,14 @@ export type ConditionalBranch = {
 
 /** Conditional step with multiple branches. */
 export type ConditionalStep = BaseStep & {
-  kind: 'conditional';
+  type: StepType.Conditional;
   description?: string;
   branches: ConditionalBranch[];
 };
 
 /** Loop over items with optional accumulator and break condition. */
 export type LoopStep = BaseStep & {
-  kind: 'loop';
+  type: StepType.Loop;
   name?: string;
   description?: string;
   forEach: { item: string; in: CompiledValue };
