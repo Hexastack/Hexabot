@@ -35,7 +35,7 @@ const createState = (): ExecutionState => ({
 });
 const createChild = (id: string): CompiledStep => ({
   id,
-  kind: StepType.Task,
+  type: StepType.Task,
   label: id,
   taskName: `task_${id}`,
 });
@@ -68,7 +68,7 @@ describe('executeParallel', () => {
     const state = createState();
     const step: ParallelStep = {
       id: 'parallel',
-      kind: StepType.Parallel,
+      type: StepType.Parallel,
       label: 'parallel',
       strategy: 'wait_all',
       steps: [createChild('a'), createChild('b')],
@@ -98,7 +98,7 @@ describe('executeParallel', () => {
     const state = createState();
     const step: ParallelStep = {
       id: 'parallel',
-      kind: StepType.Parallel,
+      type: StepType.Parallel,
       label: 'parallel',
       strategy: 'wait_any',
       steps: [createChild('a'), createChild('b')],
@@ -121,7 +121,7 @@ describe('executeParallel', () => {
     };
     const step: ParallelStep = {
       id: 'parallel',
-      kind: StepType.Parallel,
+      type: StepType.Parallel,
       label: 'parallel',
       strategy: 'wait_all',
       steps: [createChild('a'), createChild('b')],
@@ -152,7 +152,7 @@ describe('executeParallel', () => {
     };
     const step: ParallelStep = {
       id: 'parallel',
-      kind: StepType.Parallel,
+      type: StepType.Parallel,
       label: 'parallel',
       strategy: 'wait_any',
       steps: [createChild('a'), createChild('b')],

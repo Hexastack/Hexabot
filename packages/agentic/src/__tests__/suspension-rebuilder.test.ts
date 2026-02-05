@@ -82,7 +82,7 @@ const buildStepInfo = (step: CompiledStep, iterationStack: number[]) => ({
     iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : ''
   }`,
   name: step.label,
-  type: step.kind,
+  type: step.type,
 });
 const createCompiledWorkflow = (
   flow: CompiledStep[],
@@ -178,7 +178,7 @@ describe('rebuildSuspension', () => {
   it('rebuilds a task suspension and resumes the flow', async () => {
     const task = createTask('first_task');
     const taskStep: CompiledStep = {
-      kind: StepType.Task,
+      type: StepType.Task,
       id: '0:first_task',
       label: 'first_task',
       taskName: 'first_task',
@@ -223,19 +223,19 @@ describe('rebuildSuspension', () => {
     const firstTask = createTask('child_a');
     const secondTask = createTask('child_b');
     const childA: CompiledStep = {
-      kind: StepType.Task,
+      type: StepType.Task,
       id: '0.parallel.0:child_a',
       label: 'child_a',
       taskName: 'child_a',
     };
     const childB: CompiledStep = {
-      kind: StepType.Task,
+      type: StepType.Task,
       id: '0.parallel.1:child_b',
       label: 'child_b',
       taskName: 'child_b',
     };
     const parallelStep: CompiledStep = {
-      kind: StepType.Parallel,
+      type: StepType.Parallel,
       id: '0:parallel',
       label: 'parallel',
       strategy: 'wait_all',
@@ -282,13 +282,13 @@ describe('rebuildSuspension', () => {
   it('resumes a loop suspension, updating accumulators and continuing execution', async () => {
     const loopTask = createTask('loop_task');
     const childTask: CompiledStep = {
-      kind: StepType.Task,
+      type: StepType.Task,
       id: '0.collector.0:loop_task',
       label: 'loop_task',
       taskName: 'loop_task',
     };
     const loopStep: CompiledStep = {
-      kind: StepType.Loop,
+      type: StepType.Loop,
       id: '0:collector',
       label: 'collector',
       name: 'collector',

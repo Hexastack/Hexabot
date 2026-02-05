@@ -185,7 +185,7 @@ const compileFlowSteps = (
       const label = step.do;
 
       return {
-        kind: StepType.Task,
+        type: StepType.Task,
         id: buildStepId(stepPath, step.do),
         label,
         taskName: step.do,
@@ -196,7 +196,7 @@ const compileFlowSteps = (
       const label = step.parallel.description ?? 'parallel';
 
       return {
-        kind: StepType.Parallel,
+        type: StepType.Parallel,
         id: buildStepId(stepPath, 'parallel'),
         label,
         description: step.parallel.description,
@@ -227,7 +227,7 @@ const compileFlowSteps = (
       );
 
       return {
-        kind: StepType.Conditional,
+        type: StepType.Conditional,
         id: buildStepId(stepPath, 'conditional'),
         label,
         description: step.conditional.description,
@@ -239,7 +239,7 @@ const compileFlowSteps = (
     const label = loop.name ?? 'loop';
 
     return {
-      kind: StepType.Loop,
+      type: StepType.Loop,
       id: buildStepId(stepPath, label),
       label,
       name: loop.name,

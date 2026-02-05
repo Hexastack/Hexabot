@@ -46,18 +46,18 @@ export type CompiledStep = TaskStep | ParallelStep | ConditionalStep | LoopStep;
 export type BaseStep = {
   id: string;
   label: string;
-  kind: StepType;
+  type: StepType;
 };
 
 /** Single task execution. */
 export type TaskStep = BaseStep & {
-  kind: StepType.Task;
+  type: StepType.Task;
   taskName: string;
 };
 
 /** Runs nested steps with either wait-all or wait-any semantics. */
 export type ParallelStep = BaseStep & {
-  kind: StepType.Parallel;
+  type: StepType.Parallel;
   description?: string;
   strategy: 'wait_all' | 'wait_any';
   steps: CompiledStep[];
@@ -72,14 +72,14 @@ export type ConditionalBranch = {
 
 /** Conditional step with multiple branches. */
 export type ConditionalStep = BaseStep & {
-  kind: StepType.Conditional;
+  type: StepType.Conditional;
   description?: string;
   branches: ConditionalBranch[];
 };
 
 /** Loop over items with optional accumulator and break condition. */
 export type LoopStep = BaseStep & {
-  kind: StepType.Loop;
+  type: StepType.Loop;
   name?: string;
   description?: string;
   forEach: { item: string; in: CompiledValue };

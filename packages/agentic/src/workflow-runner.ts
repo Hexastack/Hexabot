@@ -353,7 +353,7 @@ export class WorkflowRunner {
     return {
       id: `${step.id}${suffix}`,
       name: step.label,
-      type: step.kind,
+      type: step.type,
     };
   }
 
@@ -480,7 +480,7 @@ export class WorkflowRunner {
     path: Array<number | string>,
   ): Promise<Suspension | void> {
     const env = this.createExecutorEnv();
-    switch (step.kind) {
+    switch (step.type) {
       case StepType.Task:
         return runTaskExecutor(env, step, state, path);
       case StepType.Parallel:

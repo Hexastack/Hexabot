@@ -183,7 +183,7 @@ export function buildSuspensionForPath(
   }
 
   if (rest.length === 0) {
-    if (step.kind !== StepType.Task) {
+    if (step.type !== StepType.Task) {
       return null;
     }
 
@@ -206,7 +206,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === StepType.Parallel) {
+  if (step.type === StepType.Parallel) {
     if (rest[0] !== 'parallel') {
       return null;
     }
@@ -251,7 +251,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === StepType.Conditional) {
+  if (step.type === StepType.Conditional) {
     if (rest[0] !== 'branch' || typeof rest[1] !== 'number') {
       return null;
     }
@@ -290,7 +290,7 @@ export function buildSuspensionForPath(
     };
   }
 
-  if (step.kind === StepType.Loop) {
+  if (step.type === StepType.Loop) {
     if (rest.length < 1 || typeof rest[0] !== 'string') {
       return null;
     }

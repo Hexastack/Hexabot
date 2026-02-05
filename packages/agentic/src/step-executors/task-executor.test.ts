@@ -82,7 +82,7 @@ const createEnv = (
 });
 const step: TaskStep = {
   id: '0:test_task',
-  kind: StepType.Task,
+  type: StepType.Task,
   label: 'test_task',
   taskName: 'test_task',
 };

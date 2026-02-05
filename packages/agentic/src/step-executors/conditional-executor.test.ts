@@ -35,7 +35,7 @@ const createState = (): ExecutionState => ({
 });
 const createTaskStep = (id: string): CompiledStep => ({
   id,
-  kind: StepType.Task,
+  type: StepType.Task,
   label: id,
   taskName: `task_${id}`,
 });
@@ -68,7 +68,7 @@ describe('executeConditional', () => {
     const state = createState();
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: StepType.Conditional,
+      type: StepType.Conditional,
       label: 'conditional',
       branches: [
         {
@@ -113,7 +113,7 @@ describe('executeConditional', () => {
 
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: StepType.Conditional,
+      type: StepType.Conditional,
       label: 'conditional',
       branches: [{ id: 'branch-0', steps: [createTaskStep('a')] }],
     };
@@ -143,7 +143,7 @@ describe('executeConditional', () => {
 
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: StepType.Conditional,
+      type: StepType.Conditional,
       label: 'conditional',
       branches: [{ id: 'branch-0', steps: [createTaskStep('a')] }],
     };
@@ -160,7 +160,7 @@ describe('executeConditional', () => {
     const state = createState();
     const step: ConditionalStep = {
       id: 'conditional',
-      kind: StepType.Conditional,
+      type: StepType.Conditional,
       label: 'conditional',
       branches: [
         {

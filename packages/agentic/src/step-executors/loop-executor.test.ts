@@ -62,7 +62,7 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
 };
 const createTaskStep = (id: string): CompiledStep => ({
   id,
-  kind: StepType.Task,
+  type: StepType.Task,
   label: id,
   taskName: `task_${id}`,
 });
@@ -85,7 +85,7 @@ describe('executeLoop', () => {
     const state = createState();
     const step: LoopStep = {
       id: 'loop',
-      kind: StepType.Loop,
+      type: StepType.Loop,
       label: 'loop',
       name: 'collector',
       forEach: { item: 'entry', in: { kind: 'literal', value: [2, 4, 6] } },
@@ -130,7 +130,7 @@ describe('executeLoop', () => {
     const state = createState();
     const step: LoopStep = {
       id: 'loop',
-      kind: StepType.Loop,
+      type: StepType.Loop,
       label: 'loop',
       name: 'collector',
       forEach: { item: 'entry', in: { kind: 'literal', value: [1, 2] } },
@@ -173,7 +173,7 @@ describe('loop helpers', () => {
   it('updates accumulator and stop conditions based on configuration', async () => {
     const step: LoopStep = {
       id: 'loop',
-      kind: StepType.Loop,
+      type: StepType.Loop,
       label: 'loop',
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },
       steps: [],
