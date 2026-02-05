@@ -6,27 +6,27 @@
 
 import { WorkflowSuspendedError } from '../runtime-error';
 import type {
-  DoStep,
   EvaluationScope,
   ExecutionState,
   Suspension,
+  TaskStep,
 } from '../workflow-types';
 import { evaluateMapping } from '../workflow-values';
 
 import type { StepExecutorEnv } from './types';
 
 /**
- * Execute a `do` step by running its task and handling suspension or output mapping.
+ * Execute a task step by running its task and handling suspension or output mapping.
  *
  * @param env Executor environment with compiled workflow and helpers.
- * @param step The compiled do step to execute.
+ * @param step The compiled task step to execute.
  * @param state Mutable workflow execution state.
  * @param _path Location of the step within the workflow (unused in this executor).
  * @returns A suspension if the task pauses execution, otherwise void.
  */
-export async function executeDoStep(
+export async function executeTaskStep(
   env: StepExecutorEnv,
-  step: DoStep,
+  step: TaskStep,
   state: ExecutionState,
   _path: Array<number | string>,
 ): Promise<Suspension | void> {

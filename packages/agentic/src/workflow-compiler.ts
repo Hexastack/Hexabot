@@ -16,6 +16,7 @@ import type {
   WorkflowDefinition,
 } from './dsl.types';
 import { assertSnakeCaseName } from './utils/naming';
+import { StepType } from './workflow-event-emitter';
 import type {
   CompiledMapping,
   CompiledStep,
@@ -181,27 +182,23 @@ const compileFlowSteps = (
     const stepPath = [...path, index];
 
     if ('do' in step) {
+      const label = step.do;
+
       return {
-        kind: 'do',
-        id: buildStepId(stepPath, `do:${step.do}`),
-        stepInfo: {
-          id: buildStepId(stepPath, step.do),
-          name: step.do,
-          type: 'task',
-        },
+        kind: StepType.Task,
+        id: buildStepId(stepPath, step.do),
+        label,
         taskName: step.do,
       };
     }
 
     if ('parallel' in step) {
+      const label = step.parallel.description ?? 'parallel';
+
       return {
-        kind: 'parallel',
+        kind: StepType.Parallel,
         id: buildStepId(stepPath, 'parallel'),
-        stepInfo: {
-          id: buildStepId(stepPath, 'parallel'),
-          name: step.parallel.description ?? 'parallel',
-          type: 'parallel',
-        },
+        label,
         description: step.parallel.description,
         strategy: step.parallel.strategy ?? 'wait_all',
         steps: compileFlowSteps(
@@ -213,6 +210,7 @@ const compileFlowSteps = (
     }
 
     if ('conditional' in step) {
+      const label = step.conditional.description ?? 'conditional';
       const branches: ConditionalBranch[] = step.conditional.when.map(
         (branch, branchIdx) => ({
           id: buildStepId([...stepPath, 'branch', branchIdx], 'conditional'),
@@ -229,28 +227,21 @@ const compileFlowSteps = (
       );
 
       return {
-        kind: 'conditional',
+        kind: StepType.Conditional,
         id: buildStepId(stepPath, 'conditional'),
-        stepInfo: {
-          id: buildStepId(stepPath, 'conditional'),
-          name: step.conditional.description ?? 'conditional',
-          type: 'conditional',
-        },
+        label,
         description: step.conditional.description,
         branches,
       };
     }
 
     const loop = step.loop;
+    const label = loop.name ?? 'loop';
 
     return {
-      kind: 'loop',
-      id: buildStepId(stepPath, loop.name ?? 'loop'),
-      stepInfo: {
-        id: buildStepId(stepPath, loop.name ?? 'loop'),
-        name: loop.name ?? 'loop',
-        type: 'loop',
-      },
+      kind: StepType.Loop,
+      id: buildStepId(stepPath, label),
+      label,
       name: loop.name,
       description: loop.description,
       forEach: {

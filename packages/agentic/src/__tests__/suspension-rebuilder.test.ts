@@ -25,7 +25,7 @@ import {
   rebuildSuspension,
   type SuspensionRebuilderDeps,
 } from '../suspension-rebuilder';
-import { EventEmitterLike } from '../workflow-event-emitter';
+import { type EventEmitterLike, StepType } from '../workflow-event-emitter';
 import type {
   CompiledStep,
   CompiledTask,
@@ -78,10 +78,11 @@ const dummyAction: Action<unknown, unknown, BaseWorkflowContext, Settings> = {
   run: jest.fn(),
 };
 const buildStepInfo = (step: CompiledStep, iterationStack: number[]) => ({
-  ...step.stepInfo,
-  id: `${step.stepInfo.id}${
+  id: `${step.id}${
     iterationStack.length > 0 ? `[${iterationStack.join('.')}]` : ''
   }`,
+  name: step.label,
+  type: step.kind,
 });
 const createCompiledWorkflow = (
   flow: CompiledStep[],
@@ -174,15 +175,15 @@ describe('rebuildSuspension', () => {
     expect(suspension).toBeNull();
   });
 
-  it('rebuilds a do-step suspension and resumes the flow', async () => {
+  it('rebuilds a task suspension and resumes the flow', async () => {
     const task = createTask('first_task');
-    const doStep: CompiledStep = {
-      kind: 'do',
-      id: '0:do:first_task',
-      stepInfo: { id: '0:first_task', name: 'first_task', type: 'task' },
+    const taskStep: CompiledStep = {
+      kind: StepType.Task,
+      id: '0:first_task',
+      label: 'first_task',
       taskName: 'first_task',
     };
-    const compiled = createCompiledWorkflow([doStep], {
+    const compiled = createCompiledWorkflow([taskStep], {
       first_task: task,
     });
     const state: ExecutionState = {
@@ -222,21 +223,21 @@ describe('rebuildSuspension', () => {
     const firstTask = createTask('child_a');
     const secondTask = createTask('child_b');
     const childA: CompiledStep = {
-      kind: 'do',
+      kind: StepType.Task,
       id: '0.parallel.0:child_a',
-      stepInfo: { id: '0.parallel.0:child_a', name: 'child_a', type: 'task' },
+      label: 'child_a',
       taskName: 'child_a',
     };
     const childB: CompiledStep = {
-      kind: 'do',
+      kind: StepType.Task,
       id: '0.parallel.1:child_b',
-      stepInfo: { id: '0.parallel.1:child_b', name: 'child_b', type: 'task' },
+      label: 'child_b',
       taskName: 'child_b',
     };
     const parallelStep: CompiledStep = {
-      kind: 'parallel',
+      kind: StepType.Parallel,
       id: '0:parallel',
-      stepInfo: { id: '0:parallel', name: 'parallel', type: 'parallel' },
+      label: 'parallel',
       strategy: 'wait_all',
       steps: [childA, childB],
     };
@@ -280,23 +281,19 @@ describe('rebuildSuspension', () => {
 
   it('resumes a loop suspension, updating accumulators and continuing execution', async () => {
     const loopTask = createTask('loop_task');
-    const childDo: CompiledStep = {
-      kind: 'do',
+    const childTask: CompiledStep = {
+      kind: StepType.Task,
       id: '0.collector.0:loop_task',
-      stepInfo: {
-        id: '0.collector.0:loop_task',
-        name: 'loop_task',
-        type: 'task',
-      },
+      label: 'loop_task',
       taskName: 'loop_task',
     };
     const loopStep: CompiledStep = {
-      kind: 'loop',
+      kind: StepType.Loop,
       id: '0:collector',
-      stepInfo: { id: '0:collector', name: 'collector', type: 'loop' },
+      label: 'collector',
       name: 'collector',
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },
-      steps: [childDo],
+      steps: [childTask],
       accumulate: {
         as: 'sum',
         initial: 0,

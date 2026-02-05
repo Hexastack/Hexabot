@@ -11,6 +11,7 @@ import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
 import {
+  StepType,
   WorkflowEventEmitter,
   type WorkflowEventEmitterLike,
   type WorkflowEventMap,
@@ -360,7 +361,7 @@ describe('WorkflowRunner', () => {
         observedEmitter = context.eventEmitter;
         context.eventEmitter?.emit('hook:step:skipped', {
           runId: 'ctx-run',
-          step: { id: 'manual', name: 'emit_action', type: 'task' },
+          step: { id: 'manual', name: 'emit_action', type: StepType.Task },
           reason: input.note,
         });
 

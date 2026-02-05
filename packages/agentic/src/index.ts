@@ -50,9 +50,10 @@ export {
   type WorkflowStartResult,
 } from './workflow';
 
+export { StepType } from './workflow-event-emitter';
+
 export type {
   StepInfo,
-  StepType,
   WorkflowEventEmitterLike,
   WorkflowEventMap,
 } from './workflow-event-emitter';
@@ -61,12 +62,12 @@ export type {
   BaseStep as CompiledBaseStep,
   ConditionalBranch as CompiledConditionalBranch,
   ConditionalStep as CompiledConditionalStep,
-  DoStep as CompiledDoStep,
   LoopStep as CompiledLoopStep,
   CompiledMapping,
   ParallelStep as CompiledParallelStep,
   CompiledStep,
   CompiledTask,
+  TaskStep as CompiledTaskStep,
   CompiledValue,
   CompiledWorkflow,
   EvaluationScope,

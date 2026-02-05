@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-export type StepType = 'task' | 'parallel' | 'conditional' | 'loop';
+export enum StepType {
+  Task = 'task',
+  Parallel = 'parallel',
+  Conditional = 'conditional',
+  Loop = 'loop',
+}
 
 export type StepInfo = {
   id: string;

@@ -10,7 +10,7 @@ import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
-import { EventEmitterLike } from '../workflow-event-emitter';
+import { StepType, type EventEmitterLike } from '../workflow-event-emitter';
 
 class TestContext extends BaseWorkflowContext {
   public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
@@ -143,9 +143,9 @@ describe('compileWorkflow', () => {
     });
 
     expect(compiled.flow[0]).toMatchObject({
-      kind: 'do',
-      id: '0:do:worker_task',
-      stepInfo: { id: '0:worker_task', name: 'worker_task', type: 'task' },
+      kind: StepType.Task,
+      id: '0:worker_task',
+      label: 'worker_task',
     });
 
     const conditional = compiled.flow[1];

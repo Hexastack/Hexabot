@@ -7,15 +7,19 @@
 import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
 import { WorkflowSuspendedError } from '../runtime-error';
-import type { EventEmitterLike, StepInfo } from '../workflow-event-emitter';
+import {
+  type EventEmitterLike,
+  type StepInfo,
+  StepType,
+} from '../workflow-event-emitter';
 import type {
   CompiledTask,
   CompiledWorkflow,
-  DoStep,
   ExecutionState,
+  TaskStep,
 } from '../workflow-types';
 
-import { executeDoStep } from './do-executor';
+import { executeTaskStep } from './task-executor';
 import type { StepExecutorEnv } from './types';
 
 class TestContext extends BaseWorkflowContext {
@@ -76,25 +80,25 @@ const createEnv = (
   executeFlow: jest.fn(),
   executeStep: jest.fn(),
 });
-const step: DoStep = {
+const step: TaskStep = {
   id: '0:test_task',
-  kind: 'do',
+  kind: StepType.Task,
+  label: 'test_task',
   taskName: 'test_task',
-  stepInfo: { id: '0:test_task', name: 'test_task', type: 'task' },
+};
+const stepInfo: StepInfo = {
+  id: step.id,
+  name: step.label,
+  type: StepType.Task,
 };
 
-describe('executeDoStep', () => {
+describe('executeTaskStep', () => {
   it('runs the task, records snapshots, and emits success events', async () => {
     const task = createTask(jest.fn().mockResolvedValue({ result: 'ok' }));
     const compiled = createCompiled(task);
-    const stepInfo: StepInfo = {
-      id: '0:test_task',
-      name: 'test_task',
-      type: 'task',
-    };
     const env = createEnv(compiled, stepInfo);
     const state = createState();
-    const result = await executeDoStep(env, step, state, []);
+    const result = await executeTaskStep(env, step, state, []);
 
     expect(result).toBeUndefined();
     expect(env.buildInstanceStepInfo).toHaveBeenCalledWith(
@@ -126,10 +130,10 @@ describe('executeDoStep', () => {
   it('throws when the task is missing', async () => {
     const compiled = createCompiled(createTask(jest.fn()));
     compiled.tasks = {};
-    const env = createEnv(compiled, step.stepInfo);
+    const env = createEnv(compiled, stepInfo);
     const state = createState();
 
-    await expect(executeDoStep(env, step, state, [])).rejects.toThrow(
+    await expect(executeTaskStep(env, step, state, [])).rejects.toThrow(
       'Task "test_task" is not defined.',
     );
     expect(env.buildInstanceStepInfo).not.toHaveBeenCalled();
@@ -142,14 +146,9 @@ describe('executeDoStep', () => {
     });
     const task = createTask(jest.fn().mockRejectedValue(suspensionError));
     const compiled = createCompiled(task);
-    const stepInfo: StepInfo = {
-      id: '0:test_task',
-      name: 'test_task',
-      type: 'task',
-    };
     const env = createEnv(compiled, stepInfo);
     const state = createState();
-    const suspension = await executeDoStep(env, step, state, []);
+    const suspension = await executeTaskStep(env, step, state, []);
 
     expect(suspension).toEqual(
       expect.objectContaining({
@@ -189,18 +188,14 @@ describe('executeDoStep', () => {
   it('marks failure and rethrows errors from the task', async () => {
     const task = createTask(jest.fn().mockRejectedValue(new Error('boom')));
     const compiled = createCompiled(task);
-    const env = createEnv(compiled, step.stepInfo);
+    const env = createEnv(compiled, stepInfo);
     const state = createState();
 
-    await expect(executeDoStep(env, step, state, [])).rejects.toThrow('boom');
-    expect(env.markSnapshot).toHaveBeenCalledWith(
-      step.stepInfo,
-      'failed',
-      'boom',
-    );
+    await expect(executeTaskStep(env, step, state, [])).rejects.toThrow('boom');
+    expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'failed', 'boom');
     expect(env.emit).toHaveBeenCalledWith('hook:step:error', {
       runId: 'run-123',
-      step: step.stepInfo,
+      step: stepInfo,
       error: expect.any(Error),
     });
     expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);
