@@ -86,7 +86,6 @@ export const Subscribers = () => {
           <ChipEntity
             id={label}
             key={label}
-            variant="role"
             field="name"
             entity={EntityType.LABEL}
           />

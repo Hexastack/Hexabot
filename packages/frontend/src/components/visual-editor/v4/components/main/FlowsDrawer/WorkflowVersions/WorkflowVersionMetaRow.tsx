@@ -5,7 +5,6 @@
  */
 
 import { Box, Button, Chip, Typography, useTheme } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import { RotateCcw } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -48,9 +47,6 @@ export const WorkflowVersionMetaRow = ({
         size="small"
         label={actionMeta.label}
         sx={{
-          height: 18,
-          fontSize: 10,
-          fontWeight: 600,
           color: actionMeta.color,
           backgroundColor: actionMeta.background,
         }}
@@ -59,13 +55,7 @@ export const WorkflowVersionMetaRow = ({
         <Chip
           size="small"
           label={t("visual_editor.workflow_versions.current")}
-          sx={{
-            height: 18,
-            fontSize: 10,
-            fontWeight: 600,
-            color: theme.palette.primary.main,
-            backgroundColor: alpha(theme.palette.primary.main, 0.12),
-          }}
+          color="primary"
         />
       )}
       {canRestore && (

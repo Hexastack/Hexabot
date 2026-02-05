@@ -7,9 +7,13 @@
 import { Chip, ChipProps } from "@mui/material";
 
 import { useGet } from "@/hooks/crud/useGet";
-import { IDynamicProps, TType } from "@/types/base.types";
+import { THook, TType } from "@/types/base.types";
 
-export const ChipEntity = <TEntity extends IDynamicProps["entity"]>({
+export const ChipEntity = <
+  TE extends THook["entity"],
+  K extends keyof T["basic"],
+  T extends TType<TE> = TType<TE>,
+>({
   id,
   field,
   entity,
@@ -17,24 +21,16 @@ export const ChipEntity = <TEntity extends IDynamicProps["entity"]>({
   ...rest
 }: {
   id: string;
-  variant: ChipProps["variant"];
-  field: keyof TType<TEntity>["basic"];
-  entity: TEntity;
-  render?: (
-    value: string | TType<TEntity>["basic"][keyof TType<TEntity>["basic"]],
-    data?: TType<TEntity>["basic"],
-  ) => string | JSX.Element | JSX.Element[];
-}) => {
+  field: K;
+  entity: TE;
+  render?: (value?: T["basic"][K], data?: T["basic"]) => JSX.Element[] | string;
+} & ChipProps) => {
   const { data } = useGet(id, { entity });
-  const fieldValue = data?.[field] ? data[field] : "";
-  const renderOutput = render?.(fieldValue, data);
+  const renderOutput = render?.(data?.[field], data);
 
   return data ? (
     typeof renderOutput === "string" ? (
-      <Chip
-        label={render?.(fieldValue, data) || String(fieldValue)}
-        {...rest}
-      />
+      <Chip label={renderOutput} {...rest} />
     ) : (
       renderOutput
     )

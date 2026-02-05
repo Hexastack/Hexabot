@@ -106,7 +106,6 @@ export const Users = () => {
           <ChipEntity
             id={role}
             key={role}
-            variant="role"
             field="name"
             entity={EntityType.ROLE}
           />

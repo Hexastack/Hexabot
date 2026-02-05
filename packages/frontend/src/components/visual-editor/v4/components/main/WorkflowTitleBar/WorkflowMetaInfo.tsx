@@ -5,7 +5,6 @@
  */
 
 import { Box, Chip, Tooltip, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
 
 import { VersionChip } from "@/app-components/displays/VersionChip";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
@@ -25,38 +24,21 @@ export const WorkflowMetaInfo = ({
   lastSavedLabel,
   lastSavedExact,
 }: WorkflowMetaInfoProps) => {
-  const theme = useTheme();
-  const statusColor = isDraft
-    ? theme.palette.warning.main
-    : theme.palette.success.main;
-  const statusBorder = alpha(statusColor, 0.4);
-  const styles = {
-    metaContainer: {
-      display: "flex",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: 0.75,
-      rowGap: 0.25,
-      minWidth: 0,
-    },
-    statusChip: {
-      height: 18,
-      fontSize: 10,
-      fontWeight: 600,
-      border: "1px solid",
-      backgroundColor: "transparent",
-    },
-  };
-
   return (
-    <Box sx={styles.metaContainer}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 0.75,
+        rowGap: 0.25,
+        minWidth: 0,
+      }}
+    >
       <Chip
         size="small"
         label={statusLabel}
-        sx={[
-          styles.statusChip,
-          { color: statusColor, borderColor: statusBorder },
-        ]}
+        color={isDraft ? "warning" : "success"}
       />
       <VersionChip version={workflowVersion ?? null} />
       <Tooltip

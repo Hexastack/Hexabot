@@ -98,10 +98,8 @@ export const Translations = () => {
             .map((language: ILanguage) => (
               <Chip
                 key={language.code}
-                variant={
-                  params.row.translations[language.code]
-                    ? "available"
-                    : "unavailable"
+                color={
+                  params.row.translations[language.code] ? "success" : "error"
                 }
                 label={language.title}
               />
