@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormControlLabel, MenuItem, Switch } from "@mui/material";
+import { FormControlLabel, MenuItem, Switch, TextField } from "@mui/material";
 import { Key as KeyIcon } from "lucide-react";
 import { ControllerRenderProps } from "react-hook-form";
 
@@ -12,7 +12,6 @@ import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import MultipleAttachmentInput from "@/app-components/attachment/MultipleAttachmentInput";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -52,17 +51,17 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
 
   switch (setting.type) {
     case SettingType.text:
-    case "textarea":
+    case SettingType.textarea:
       return (
-        <Input
+        <TextField
           label={label}
           helperText={helperText}
-          multiline={setting.type === "textarea"}
+          multiline={setting.type === SettingType.textarea}
           {...field}
           disabled={isDisabled(setting)}
         />
       );
-    case "secret":
+    case SettingType.secret:
       return (
         <PasswordInput
           label={label}
@@ -75,7 +74,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           {...field}
         />
       );
-    case "multiple_text":
+    case SettingType.multiple_text:
       return (
         <MultipleInput
           multiline={true}
@@ -86,9 +85,9 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           disabled={isDisabled(setting)}
         />
       );
-    case "number":
+    case SettingType.number:
       return (
-        <Input
+        <TextField
           type="number"
           slotProps={{
             htmlInput: setting.config
@@ -106,7 +105,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           disabled={isDisabled(setting)}
         />
       );
-    case "checkbox":
+    case SettingType.checkbox:
       return (
         <FormControlLabel
           label={label}
@@ -114,7 +113,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           control={<Switch checked={field.value} />}
         />
       );
-    case "select": {
+    case SettingType.select: {
       const isMultiple = Boolean(setting.config?.multiple);
 
       if (
@@ -142,7 +141,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
       }
 
       return (
-        <Input
+        <TextField
           select
           slotProps={{ select: { multiple: isMultiple } }}
           helperText={helperText}
@@ -154,10 +153,10 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
               {option}
             </MenuItem>
           ))}
-        </Input>
+        </TextField>
       );
     }
-    case "attachment":
+    case SettingType.attachment:
       return (
         <AttachmentInput
           label={label}
@@ -183,7 +182,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
         />
       );
     default:
-      return <Input {...field} />;
+      return <TextField {...field} />;
   }
 };
 

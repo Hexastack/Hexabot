@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -72,7 +72,7 @@ export const RoleForm: FC<ComponentFormProps<IRole>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               label={t("placeholder.name")}
               error={!!errors.name}
               required

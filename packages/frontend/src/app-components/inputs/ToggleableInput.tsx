@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Switch, TextFieldProps } from "@mui/material";
-import { forwardRef, LegacyRef, useEffect, useState } from "react";
-
-import { Input } from "./Input";
+import { Box, Switch, TextField, TextFieldProps } from "@mui/material";
+import { forwardRef, useEffect, useState } from "react";
 
 export const ToggleableInput = forwardRef(
   (
@@ -21,7 +19,7 @@ export const ToggleableInput = forwardRef(
       onChange: (value: string) => void;
       readOnlyValue: string;
     },
-    ref: LegacyRef<HTMLDivElement>,
+    ref: React.Ref<HTMLDivElement>,
   ) => {
     const [isDisabled, setIsDisabled] = useState(
       defaultValue === readOnlyValue,
@@ -52,7 +50,7 @@ export const ToggleableInput = forwardRef(
           checked={!isDisabled}
           disabled={disabled}
         />
-        <Input
+        <TextField
           ref={ref}
           {...props}
           onChange={(e) => {

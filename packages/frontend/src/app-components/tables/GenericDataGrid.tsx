@@ -89,7 +89,7 @@ export const GenericDataGrid = <
 
   return (
     <Grid width="100%">
-      <Grid container={!!headerI18nTitle} flexDirection="column" gap={2}>
+      <Grid container={!!headerI18nTitle} flexDirection="column" gap={3}>
         {headerLeftButtons}
         <PageHeader
           icon={headerIcon}
@@ -111,7 +111,7 @@ export const GenericDataGrid = <
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             ) : null}
             {filters?.length ? <GenericFilters filters={filters} /> : null}
-            <Grid size="auto">
+            <Grid size="auto" alignContent="end">
               {buttons ? (
                 <ButtonActionsGroup entity={entity} buttons={buttons} />
               ) : null}

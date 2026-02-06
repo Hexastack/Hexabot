@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TextField } from "@mui/material";
 import { FC, Fragment } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
 import { useSendInvitation } from "@/hooks/entities/invitation-hooks";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -71,7 +71,7 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               label={t("placeholder.email")}
               error={!!errors.email}
               required

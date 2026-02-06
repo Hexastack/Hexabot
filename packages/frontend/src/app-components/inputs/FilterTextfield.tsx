@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
+import {
+  IconButton,
+  InputAdornment,
+  TextField,
+  TextFieldProps,
+} from "@mui/material";
 import debounce from "@mui/utils/debounce";
 import { X as ClearIcon, Search as SearchIcon } from "lucide-react";
 import { FC, useCallback, useEffect, useMemo, useRef } from "react";
@@ -12,7 +17,6 @@ import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { Adornment } from "./Adornment";
-import { Input } from "./Input";
 
 export interface FilterTextFieldProps
   extends Omit<Partial<TextFieldProps>, "value" | "onChange"> {
@@ -72,8 +76,9 @@ export const FilterTextfield: FC<FilterTextFieldProps> = ({
   }, [defaultValue]);
 
   return (
-    <Input
+    <TextField
       inputRef={ref}
+      label={t("input.search")}
       slotProps={{
         input: {
           startAdornment: <Adornment Icon={SearchIcon} />,

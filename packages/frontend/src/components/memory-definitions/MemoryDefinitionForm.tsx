@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormHelperText, MenuItem } from "@mui/material";
+import { FormHelperText, MenuItem, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import {
   JsonSchemaObjectBuilder,
   SchemaNodeForm,
@@ -183,7 +182,7 @@ export const MemoryDefinitionForm: FC<
             <Grid size={{ xs: 12, md: 5 }}>
               <ContentContainer>
                 <ContentItem>
-                  <Input
+                  <TextField
                     label={t("label.name")}
                     error={!!errors.name}
                     required
@@ -202,7 +201,7 @@ export const MemoryDefinitionForm: FC<
                   />
                 </ContentItem>
                 <ContentItem>
-                  <Input
+                  <TextField
                     label={t("label.slug")}
                     error={!!errors.slug}
                     required
@@ -216,7 +215,7 @@ export const MemoryDefinitionForm: FC<
                     name="scope"
                     rules={{ required: t("message.scope_is_required") }}
                     render={({ field }) => (
-                      <Input
+                      <TextField
                         select
                         label={t("label.scope")}
                         error={!!errors.scope}
@@ -229,7 +228,7 @@ export const MemoryDefinitionForm: FC<
                             {t(`label.${scope}`)}
                           </MenuItem>
                         ))}
-                      </Input>
+                      </TextField>
                     )}
                   />
                 </ContentItem>
@@ -251,7 +250,7 @@ export const MemoryDefinitionForm: FC<
                       },
                     }}
                     render={({ field }) => (
-                      <Input
+                      <TextField
                         label={t("label.ttl_seconds")}
                         error={!!errors.ttlSeconds}
                         type="number"

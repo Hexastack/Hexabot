@@ -10,6 +10,7 @@ import {
   FormHelperText,
   FormLabel,
   IconButton,
+  TextField,
   TextFieldProps,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
@@ -23,8 +24,6 @@ import {
 } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
-
-import { Input } from "./Input";
 
 type MultipleInputProps = TextFieldProps & {
   value: string[];
@@ -125,7 +124,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
               gap={1}
               mb={1}
             >
-              <Input
+              <TextField
                 {...(getInputProps ? getInputProps(idx) : null)}
                 {...rest}
                 disabled={disabled}
@@ -133,7 +132,6 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
                 onChange={(e) => {
                   handleInputChange(input.id, e);
                 }}
-                fullWidth
               />
               <IconButton
                 color="error"

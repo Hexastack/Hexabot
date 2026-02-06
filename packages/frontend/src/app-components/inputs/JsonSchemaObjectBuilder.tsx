@@ -20,9 +20,9 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  ChevronDown as ExpandMoreIcon,
   Plus as AddIcon,
   Trash2 as DeleteIcon,
+  ChevronDown as ExpandMoreIcon,
 } from "lucide-react";
 import * as React from "react";
 import {
@@ -336,7 +336,6 @@ function SchemaNodeEditor({
                 render={() => (
                   <TextField
                     select
-                    fullWidth
                     size="small"
                     label={t("label.type")}
                     value={effectiveType}

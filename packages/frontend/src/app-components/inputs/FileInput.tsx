@@ -4,15 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress, TextField } from "@mui/material";
 import { Upload as UploadIcon } from "lucide-react";
 import { ChangeEvent, forwardRef } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-
-import { Input } from "./Input";
 
 export type FileUploadButtonProps = {
   label: string;
@@ -63,7 +61,7 @@ const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
         >
           {label}
         </Button>
-        <Input
+        <TextField
           id="importFile"
           type="file"
           value="" // to trigger an automatic reset to allow the same file to be selected multiple times

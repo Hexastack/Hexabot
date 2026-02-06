@@ -10,6 +10,7 @@ import {
   InputAdornment,
   ListItem,
   ListItemText,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import { Trash2 } from "lucide-react";
@@ -22,7 +23,6 @@ import {
   ContentItem,
 } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -125,7 +125,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               label={t("placeholder.title")}
               error={!!errors.title}
               required
@@ -187,9 +187,8 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
                   <InputAdornment
                     position="end"
                     onClick={async () => {
-                      const isConfirmed = await dialogs.confirm(
-                        ConfirmDialogBody,
-                      );
+                      const isConfirmed =
+                        await dialogs.confirm(ConfirmDialogBody);
 
                       if (isConfirmed) {
                         deleteGroupLabel(id);
@@ -208,7 +207,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             isDisabledWhenEmpty={false}
           />
           <ContentItem>
-            <Input
+            <TextField
               placeholder={t("placeholder.name")}
               error={!!errors.name}
               {...register("name", validationRules.name)}
@@ -217,7 +216,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             />
           </ContentItem>
           <ContentItem>
-            <Input
+            <TextField
               label={t("label.description")}
               error={!!errors.description}
               {...register("description", validationRules.description)}

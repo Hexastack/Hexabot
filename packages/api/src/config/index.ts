@@ -76,6 +76,7 @@ export const config: Config = {
       /^\/auth\/local$/, // login
       /^\/auth\/logout$/, // logout
       /^\/webhook\//, // Any webhook channel
+      /^\/reset(\/[^\/]+)?$/, // Reset request / Change password
     ],
   },
   sockets: {

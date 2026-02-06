@@ -4,11 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
+import {
+  IconButton,
+  InputAdornment,
+  TextField,
+  TextFieldProps,
+} from "@mui/material";
 import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState } from "react";
-
-import { Input } from "./Input";
 
 type PasswordInputProps = Omit<
   TextFieldProps,
@@ -44,7 +47,7 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
     };
 
     return (
-      <Input
+      <TextField
         ref={ref}
         type={showPassword ? "text" : "password"}
         {...rest}

@@ -49,10 +49,8 @@ export const SubscribersList = (props: {
   }, [subscriber]);
 
   return (
-    <>
-      <Grid padding={2}>
-        <Title title={t(props.assignedTo)} Icon={Inbox} />
-      </Grid>
+    <Grid mt={2}>
+      <Title title={t(props.assignedTo)} Icon={Inbox} />
       {subscribers?.length > 0 ? (
         <ConversationList
           scrollable={false}
@@ -81,6 +79,7 @@ export const SubscribersList = (props: {
               className="changeColor"
               key={subscriber.id}
               active={chat.subscriber?.id === subscriber.id}
+              style={{ paddingLeft: 0 }}
             >
               {Avatars({ subscriber })}
               <Conversation.Content>
@@ -102,6 +101,6 @@ export const SubscribersList = (props: {
           {t("message.no_result_found")}
         </Grid>
       )}
-    </>
+    </Grid>
   );
 };

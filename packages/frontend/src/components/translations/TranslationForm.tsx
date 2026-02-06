@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormLabel, Typography } from "@mui/material";
+import { FormLabel, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment } from "react";
 import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -33,7 +32,7 @@ const TranslationInput: React.FC<TranslationInputProps> = ({
   field,
   language: { isRTL, title },
 }) => (
-  <Input
+  <TextField
     dir={isRTL ? "rtl" : "ltr"}
     label={
       <Grid container dir="ltr">

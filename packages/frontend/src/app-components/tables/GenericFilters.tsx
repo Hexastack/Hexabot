@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Grid, MenuItem } from "@mui/material";
+import { Box, Grid, MenuItem, TextField, TextFieldProps } from "@mui/material";
 import type { Path, PathValue } from "react-hook-form";
 
 import type { FlowTypeInfo } from "@/components/visual-editor/v4/components/main/FlowsDrawer/types";
@@ -15,7 +15,6 @@ import { BadgeWithTitle, type BadgeWithTitleProps } from "../displays/Badge";
 import AutoCompleteEntitySelect, {
   type AutoCompleteEntitySelectProps,
 } from "../inputs/AutoCompleteEntitySelect";
-import { Input, type InputProps } from "../inputs/Input";
 
 type filterDynamicFields<
   E extends keyof IEntityMapTypes,
@@ -45,7 +44,7 @@ type EntityField = {
   );
 };
 
-type EnumFilterType = Omit<InputProps, "onChange"> & {
+type EnumFilterType = Omit<TextFieldProps, "onChange"> & {
   type: "enumFilter";
 };
 
@@ -83,7 +82,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
 
         return (
           <Grid key={field} flex={1} minWidth="180px">
-            <Input
+            <TextField
               select
               value={value || defaultValue}
               onChange={(e) => {
@@ -105,7 +104,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
                     ),
                   )
                 : null}
-            </Input>
+            </TextField>
           </Grid>
         );
       } else if (rest.type === "entitySelectFilter") {
@@ -122,7 +121,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
               size="medium"
               multiple={false}
               renderValue={(workflow) => (
-                <Box p="2px 7px">
+                <Box p="2px">
                   <BadgeWithTitle
                     {...typeInfo?.[workflow.type]}
                     title={workflow.name}

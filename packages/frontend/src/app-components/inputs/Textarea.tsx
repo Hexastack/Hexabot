@@ -4,13 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { TextFieldProps } from "@mui/material";
+import { TextField, TextFieldProps } from "@mui/material";
 import { forwardRef } from "react";
 
-import { Input } from "./Input";
-
 export const Textarea = forwardRef<any, TextFieldProps>((props, ref) => (
-  <Input ref={ref} multiline minRows="2" {...props} />
+  <TextField ref={ref} multiline minRows="2" {...props} />
 ));
 
 Textarea.displayName = "Textarea";

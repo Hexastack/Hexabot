@@ -4,15 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Chip, ChipTypeMap, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Chip,
+  ChipTypeMap,
+  CircularProgress,
+  TextField,
+} from "@mui/material";
 import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
 } from "@mui/material/Autocomplete";
 import stringify from "fast-json-stable-stringify";
 import { forwardRef, useCallback, useMemo } from "react";
-
-import { Input } from "@/app-components/inputs/Input";
 
 import { AlertAdornment } from "./AlertAdornment";
 
@@ -153,7 +157,7 @@ const AutoCompleteSelect = <
         const { InputProps, InputLabelProps, inputProps, ...rest } = params;
 
         return (
-          <Input
+          <TextField
             {...rest}
             label={label}
             onChange={(e) => handleSearch(e.target.value)}

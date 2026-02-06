@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormControl, FormControlLabel, Switch } from "@mui/material";
+import {
+  FormControl,
+  FormControlLabel,
+  Switch,
+  TextField,
+} from "@mui/material";
 import { Link as LinkIcon } from "lucide-react";
 import { FC, Fragment, useEffect } from "react";
 import {
@@ -17,7 +22,6 @@ import {
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -57,7 +61,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.TEXTAREA:
     case ContentFieldType.URL:
       return (
-        <Input
+        <TextField
           autoFocus={idx === 0}
           multiline={contentField.type === ContentFieldType.TEXTAREA}
           rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
@@ -110,7 +114,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
         />
       );
     default:
-      return <Input {...field} error={!!errors[contentField.name]} />;
+      return <TextField {...field} error={!!errors[contentField.name]} />;
   }
 };
 const INITIAL_FIELDS = ["title", "status"];
@@ -217,7 +221,7 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
                       : undefined
                 }
                 render={({ field }) => (
-                  <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
+                  <FormControl>
                     <ContentFieldInput
                       contentField={contentField}
                       field={field}

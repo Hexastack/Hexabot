@@ -146,7 +146,7 @@ export const Settings = () => {
                       control={control}
                       defaultValue={setting.value}
                       render={({ field }) => (
-                        <FormControl fullWidth>
+                        <FormControl>
                           <SettingInput
                             setting={setting}
                             field={field}

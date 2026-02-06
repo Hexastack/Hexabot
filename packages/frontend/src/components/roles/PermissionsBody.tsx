@@ -11,6 +11,7 @@ import {
   Divider,
   MenuItem,
   Paper,
+  TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
@@ -18,7 +19,6 @@ import { ChevronUp, Plus, Trash2 } from "lucide-react";
 import { FC, Fragment, useEffect, useState } from "react";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
@@ -198,7 +198,12 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                 padding="1rem 0"
                 borderTop="1px solid #0002"
               >
-                <Grid size="auto" width="6rem" alignContent="center" pl="0.6rem">
+                <Grid
+                  size="auto"
+                  width="6rem"
+                  alignContent="center"
+                  pl="0.6rem"
+                >
                   <IconButton
                     size="small"
                     color="primary"
@@ -218,7 +223,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                   </IconButton>
                 </Grid>
                 <Grid size="grow" alignContent="center">
-                  <Input
+                  <TextField
                     select
                     sx={{ width: "6.875rem" }}
                     label="Action"
@@ -235,10 +240,10 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     <MenuItem value="read">{t("label.read")}</MenuItem>
                     <MenuItem value="update">{t("label.update")}</MenuItem>
                     <MenuItem value="delete">{t("label.delete")}</MenuItem>
-                  </Input>
+                  </TextField>
                 </Grid>
                 <Grid size="grow" alignContent="center">
-                  <Input
+                  <TextField
                     select
                     sx={{ width: "6.875rem" }}
                     label={t("label.relation")}
@@ -252,7 +257,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     }}
                   >
                     <MenuItem value="role">{t("label.role")}</MenuItem>
-                  </Input>
+                  </TextField>
                 </Grid>
               </Grid>
             </Paper>

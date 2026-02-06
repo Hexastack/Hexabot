@@ -64,7 +64,9 @@ export const ButtonActionsGroup = ({
           if (React.isValidElement(rest.children)) {
             return rest.children;
           } else {
-            return <Button key={`button_${index}`} {...extendedProps} />;
+            return (
+              <Button key={`button_${index}`} size="small" {...extendedProps} />
+            );
           }
         }
 

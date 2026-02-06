@@ -5,12 +5,17 @@
  */
 
 import { Avatar } from "@chatscope/chat-ui-kit-react";
-import { Button, IconButton, MenuItem, Typography } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,7 +47,7 @@ export const ChatActions = () => {
     <Grid gap="6px" container alignItems="center">
       <Grid flexGrow={0} flexShrink={1} minWidth="150px">
         {users.length > 0 && (
-          <Input
+          <TextField
             onChange={(e) => setTakeoverBy(e.target.value)}
             value={takeoverBy}
             disabled={!activeChat}
@@ -67,7 +72,7 @@ export const ChatActions = () => {
                 </Grid>
               </MenuItem>
             ))}
-          </Input>
+          </TextField>
         )}
       </Grid>
       <Grid flexShrink={0}>

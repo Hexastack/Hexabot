@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, FormControl, FormLabel, Typography } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   Mail as EmailIcon,
@@ -17,12 +17,15 @@ import { Link as RouterLink } from "react-router-dom";
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
+import { Title } from "@/layout/content/Title";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs";
 import { Adornment } from "../inputs/Adornment";
-import { Input } from "../inputs/Input";
 
+interface ResetPasswordRequestAttributes {
+  email: string;
+}
 export const ResetPasswordRequest = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
@@ -30,7 +33,7 @@ export const ResetPasswordRequest = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ email: string }>({
+  } = useForm<ResetPasswordRequestAttributes>({
     defaultValues: { email: "" },
   });
   const { mutate: requestReset } = useRequestResetPassword({
@@ -41,44 +44,36 @@ export const ResetPasswordRequest = () => {
       toast.error(t("message.server_error"));
     },
   });
+  const onSubmitForm = (data: ResetPasswordRequestAttributes) => {
+    requestReset(data);
+  };
 
   return (
     <PublicContentWrapper>
-      <form
-        id="resetPasswordForm"
-        onSubmit={handleSubmit((payload) => {
-          requestReset(payload);
-        })}
-      >
+      <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer gap={2}>
-          <Grid gap={1} mb={1} display="flex" alignItems="center">
-            <SendHorizontal />
-            <Typography variant="h4">{t("title.reset_password")}</Typography>
-          </Grid>
-          <FormControl error={!!errors.email}>
-            <FormLabel htmlFor="email">{t("label.email")}</FormLabel>
-            <Input
-              id="email"
-              error={!!errors.email}
-              required
-              autoFocus
-              slotProps={{
-                input: {
-                  startAdornment: <Adornment Icon={EmailIcon} />,
-                },
-              }}
-              helperText={errors.email ? errors.email.message : null}
-              {...register("email", {
-                required: t("message.email_is_required"),
-              })}
-            />
-          </FormControl>
+          <Title title={t("title.reset_password")} Icon={SendHorizontal} />
+          <TextField
+            label={t("label.email")}
+            error={!!errors.email}
+            required
+            autoFocus
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={EmailIcon} />,
+              },
+            }}
+            helperText={errors.email ? errors.email.message : null}
+            {...register("email", {
+              required: t("message.email_is_required"),
+            })}
+          />
           <Grid container direction="column" gap={1} mt={2}>
             <Button
               variant="contained"
-              form="resetPasswordForm"
               type="submit"
               endIcon={<KeyboardArrowRightIcon size={14} />}
+              onClick={handleSubmit(onSubmitForm)}
             >
               {t("button.submit")}
             </Button>
