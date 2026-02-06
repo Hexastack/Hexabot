@@ -9,7 +9,7 @@ import { AlignLeft } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
@@ -46,19 +46,19 @@ export const ContentTypes = () => {
     EntityType.CONTENT_TYPE,
     [
       {
-        label: ActionColumnLabel.Content,
-        action: (row) => router.push(`/content-types/content/${row.id}`),
+        action: ColumnActionType.Content,
+        onClick: (row) => router.push(`/content-types/content/${row.id}`),
       },
       {
-        label: ActionColumnLabel.Edit,
-        action: (row) => {
+        action: ColumnActionType.Edit,
+        onClick: (row) => {
           dialogs.open(ContentTypeFormDialog, { defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
-        label: ActionColumnLabel.Delete,
-        action: async ({ id }) => {
+        action: ColumnActionType.Delete,
+        onClick: async ({ id }) => {
           const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {
@@ -73,7 +73,6 @@ export const ContentTypes = () => {
   const columns: GridColDef<IContentType>[] = [
     { flex: 1, field: "name", headerName: t("label.name") },
     {
-      maxWidth: 140,
       field: "createdAt",
       headerName: t("label.createdAt"),
       disableColumnMenu: true,
@@ -83,7 +82,6 @@ export const ContentTypes = () => {
         t("datetime.created_at", getDateTimeFormatter(params)),
     },
     {
-      maxWidth: 140,
       field: "updatedAt",
       headerName: t("label.updatedAt"),
       disableColumnMenu: true,

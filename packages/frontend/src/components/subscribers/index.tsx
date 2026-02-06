@@ -10,7 +10,7 @@ import { useMemo } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
@@ -33,8 +33,8 @@ export const Subscribers = () => {
     EntityType.SUBSCRIBER,
     [
       {
-        label: ActionColumnLabel.Manage_Labels,
-        action: (row) => {
+        action: ColumnActionType.Manage_Labels,
+        onClick: (row) => {
           dialogs.open(SubscriberFormDialog, { defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],

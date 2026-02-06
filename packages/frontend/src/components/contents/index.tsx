@@ -12,7 +12,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
@@ -59,8 +59,8 @@ export const Contents = () => {
     EntityType.CONTENT,
     [
       {
-        label: ActionColumnLabel.Edit,
-        action: (row) => {
+        action: ColumnActionType.Edit,
+        onClick: (row) => {
           dialogs.open(ContentFormDialog, {
             defaultValues: row,
             presetValues: contentType,
@@ -69,8 +69,8 @@ export const Contents = () => {
         requires: [PermissionAction.UPDATE],
       },
       {
-        label: ActionColumnLabel.Delete,
-        action: async ({ id }) => {
+        action: ColumnActionType.Delete,
+        onClick: async ({ id }) => {
           const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {

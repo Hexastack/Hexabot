@@ -48,6 +48,41 @@ export const datagridCustomizations: Components<Theme> = {
             },
           },
         },
+        "& .MuiDataGrid-cell[data-field='actions']": {
+          alignContent: "center",
+          "& button": {
+            ":not(:hover)": {
+              color: theme.palette.common.black,
+            },
+            ":hover": {
+              stroke: "currenColor",
+              backgroundColor: gray[200],
+            },
+            ":active": {
+              backgroundColor: gray[200],
+            },
+            ...theme.applyStyles("dark", {
+              ":not(:hover)": {
+                color: theme.palette.common.white,
+              },
+              ":hover": {
+                backgroundColor: gray[700],
+              },
+            }),
+          },
+          "& .MuiIconButton-root": {
+            boxShadow: "none",
+            borderRadius: (theme.vars || theme).shape.borderRadius,
+            textTransform: "none",
+            letterSpacing: 0,
+            border: `1px solid ${gray[500]}`,
+          },
+          "& .MuiStack-root": {
+            flexDirection: "row",
+            display: "flex",
+            gap: theme.spacing(0.5),
+          },
+        },
       }),
       cell: ({ theme }) => ({
         borderTopColor: (theme.vars || theme).palette.divider,

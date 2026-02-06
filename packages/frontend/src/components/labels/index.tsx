@@ -10,7 +10,7 @@ import { useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
@@ -45,8 +45,8 @@ export const Labels = () => {
     EntityType.LABEL,
     [
       {
-        label: ActionColumnLabel.Edit,
-        action: (row) => {
+        action: ColumnActionType.Edit,
+        onClick: (row) => {
           dialogs.open(LabelFormDialog, {
             defaultValues: row,
           });
@@ -54,8 +54,8 @@ export const Labels = () => {
         requires: [PermissionAction.UPDATE],
       },
       {
-        label: ActionColumnLabel.Delete,
-        action: async ({ id }) => {
+        action: ColumnActionType.Delete,
+        onClick: async ({ id }) => {
           const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {
