@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { MenuItem } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -109,7 +108,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
                   const { onChange, ...rest } = field;
 
                   return (
-                    <Input
+                    <TextField
                       select
                       label={t("placeholder.type")}
                       error={!!errors.type}
@@ -127,13 +126,13 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
                           {t(`label.${value}`)}
                         </MenuItem>
                       ))}
-                    </Input>
+                    </TextField>
                   );
                 }}
               />
             </ContentItem>
             <ContentItem flex={1}>
-              <Input
+              <TextField
                 label={t("placeholder.title")}
                 error={!!errors.title}
                 required
@@ -145,7 +144,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
           </ContentContainer>
           <ContentItem>
             {typeValue === MenuType.web_url ? (
-              <Input
+              <TextField
                 label={t("label.web_url")}
                 error={!!errors.url}
                 required

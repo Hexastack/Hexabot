@@ -4,13 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  Grid,
-  Typography,
-} from "@mui/material";
+import { Button, Grid, TextField } from "@mui/material";
 import {
   Mail as EmailIcon,
   ChevronRight as KeyboardArrowRightIcon,
@@ -27,12 +21,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
+import { Title } from "@/layout/content/Title";
 import { ILoginAttributes } from "@/types/auth/login.types";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs/layouts/ContentContainer";
 import { Adornment } from "../inputs/Adornment";
-import { Input } from "../inputs/Input";
 import { PasswordInput } from "../inputs/PasswordInput";
 
 const DEFAULT_VALUES: ILoginAttributes = {
@@ -102,41 +96,32 @@ export const Login = () => {
     <PublicContentWrapper>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          <Grid gap={1} mb={1} display="flex" alignItems="center">
-            <LogIn />
-            <Typography variant="h4">{t("title.login")}</Typography>
-          </Grid>
-          <FormControl error={!!errors.identifier}>
-            <FormLabel htmlFor="email">{t("placeholder.email")}</FormLabel>
-            <Input
-              id="email"
-              error={!!errors.identifier}
-              required
-              autoFocus
-              slotProps={{
-                input: {
-                  startAdornment: <Adornment Icon={EmailIcon} />,
-                },
-              }}
-              helperText={errors.identifier ? errors.identifier.message : null}
-              {...register("identifier", validationRules.email)}
-            />
-          </FormControl>
-          <FormControl error={!!errors.password}>
-            <FormLabel htmlFor="password">{t("label.password")}</FormLabel>
-            <PasswordInput
-              id="password"
-              error={!!errors.password}
-              required
-              slotProps={{
-                input: {
-                  startAdornment: <Adornment Icon={KeyIcon} />,
-                },
-              }}
-              helperText={errors.password ? errors.password.message : null}
-              {...register("password", validationRules.password)}
-            />
-          </FormControl>
+          <Title title={t("title.login")} Icon={LogIn} />
+          <TextField
+            label={t("placeholder.email")}
+            error={!!errors.identifier}
+            required
+            autoFocus
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={EmailIcon} />,
+              },
+            }}
+            helperText={errors.identifier ? errors.identifier.message : null}
+            {...register("identifier", validationRules.email)}
+          />
+          <PasswordInput
+            label={t("label.password")}
+            error={!!errors.password}
+            required
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              },
+            }}
+            helperText={errors.password ? errors.password.message : null}
+            {...register("password", validationRules.password)}
+          />
           <Grid container direction="column" gap={1} mt={2}>
             <Grid>
               <Button

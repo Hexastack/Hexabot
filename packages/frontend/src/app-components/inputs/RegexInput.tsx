@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { InputAdornment, TextFieldProps } from "@mui/material";
+import { InputAdornment, TextField, TextFieldProps } from "@mui/material";
 import { ForwardedRef, forwardRef } from "react";
-
-import { Input } from "./Input";
 
 export const RegexInput = forwardRef(
   (
@@ -20,7 +18,7 @@ export const RegexInput = forwardRef(
     ref: ForwardedRef<HTMLDivElement>,
   ) => {
     return (
-      <Input
+      <TextField
         ref={ref}
         {...props}
         slotProps={{

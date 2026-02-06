@@ -14,6 +14,7 @@ import {
 import { Login } from "@/app-components/auth/Login";
 import { Register } from "@/app-components/auth/Register";
 import { ResetPassword } from "@/app-components/auth/ResetPassword";
+import { ResetPasswordRequest } from "@/app-components/auth/resetPasswordRequest";
 import { ContentTypes } from "@/components/content-types";
 import { Contents } from "@/components/contents";
 import { Dashboard } from "@/components/dashboard";
@@ -56,6 +57,11 @@ export const routes: RouteObjectItem[] = [
   {
     path: "/register/:token",
     Component: Register,
+    handle: { isPublicRoute: true, sxContent: { alignContent: "center" } },
+  },
+  {
+    path: "/reset",
+    Component: ResetPasswordRequest,
     handle: { isPublicRoute: true, sxContent: { alignContent: "center" } },
   },
   {

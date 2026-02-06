@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { MenuItem } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import { Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { Control, Controller, UseFormSetValue } from "react-hook-form";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
-import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
 import { slugify } from "@/utils/string";
@@ -49,7 +48,7 @@ export const FieldInput = ({
         name={`fields.${idx}.label`}
         rules={{ required: t("message.label_is_required") }}
         render={({ field, fieldState }) => (
-          <Input
+          <TextField
             disabled={isDisabled}
             {...field}
             label={t("label.label")}
@@ -69,7 +68,7 @@ export const FieldInput = ({
       <Controller
         name={`fields.${idx}.name`}
         render={({ field }) => (
-          <Input disabled {...field} label={t("label.name")} />
+          <TextField disabled {...field} label={t("label.name")} />
         )}
         control={control}
       />
@@ -77,7 +76,7 @@ export const FieldInput = ({
         name={`fields.${idx}.type`}
         control={control}
         render={({ field }) => (
-          <Input
+          <TextField
             disabled={isDisabled}
             label={t("label.type")}
             {...field}
@@ -88,7 +87,7 @@ export const FieldInput = ({
                 {t(`label.${type}`)}
               </MenuItem>
             ))}
-          </Input>
+          </TextField>
         )}
       />
     </>

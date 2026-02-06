@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, MenuItem, Typography } from "@mui/material";
+import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { Check, Key, Languages, Mail } from "lucide-react";
 import { FC } from "react";
@@ -13,7 +13,6 @@ import { Controller, useForm } from "react-hook-form";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
-import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
@@ -116,9 +115,9 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
           />
         </Grid>
         <Grid container flexDirection="column" size={6} gap={2}>
-          <ContentContainer gap={2}>
+          <ContentContainer gap={0}>
             <ContentItem>
-              <Input
+              <TextField
                 label={t("label.user_first_name")}
                 {...register("firstName", validationRules.first_name)}
                 autoFocus
@@ -127,7 +126,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
               />
             </ContentItem>
             <ContentItem>
-              <Input
+              <TextField
                 label={t("label.last_name")}
                 {...register("lastName", validationRules.last_name)}
                 error={!!errors.lastName}
@@ -139,7 +138,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 name="language"
                 control={control}
                 render={({ field }) => (
-                  <Input
+                  <TextField
                     label={t("label.language")}
                     error={!!errors.language}
                     helperText={
@@ -155,12 +154,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                   >
                     <MenuItem value="fr">Français</MenuItem>
                     <MenuItem value="en">English</MenuItem>
-                  </Input>
+                  </TextField>
                 )}
               />
             </ContentItem>
             <ContentItem>
-              <Input
+              <TextField
                 label={t("label.email")}
                 {...register("email", validationRules.email)}
                 required

@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { Plus as AddIcon } from "lucide-react";
 import { FC, Fragment } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -98,7 +97,7 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               label={t("label.name")}
               error={!!errors.name}
               {...register("name", {

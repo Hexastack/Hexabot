@@ -6,13 +6,12 @@
 
 import { MainContainer, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { MenuItem } from "@mui/material";
+import { MenuItem, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
-import { Input } from "@/app-components/inputs/Input";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -49,19 +48,11 @@ export const Inbox = () => {
         <Grid size="grow" width="100%" height="100%" overflow="hidden">
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left" style={{ flexBasis: "100%" }}>
-              <Grid paddingX={1} paddingTop={2} paddingBottom={1} mx={1}>
+              <Grid mt={2} mx={2} gap={1} flexDirection="column" display="flex">
                 <FilterTextfield
                   onChange={onSearch}
                   defaultValue={searchText}
                 />
-              </Grid>
-              <Grid
-                display="flex"
-                flexDirection="column"
-                paddingX={2}
-                marginY={1}
-                gap={1}
-              >
                 <AutoCompleteEntitySelect<IChannel, "name">
                   searchFields={["name"]}
                   entity={EntityType.CHANNEL}
@@ -76,23 +67,22 @@ export const Inbox = () => {
                   value={channels}
                   limitTags={2}
                 />
-                <Input
+                <TextField
                   onChange={(e) => setAssignment(e.target.value as AssignedTo)}
                   label={t("label.assigned_to")}
                   select
                   defaultValue={AssignedTo.ALL}
-                  sx={{ marginTop: 1 }}
                 >
                   <MenuItem value={AssignedTo.ALL}>All</MenuItem>
                   <MenuItem value={AssignedTo.ME}>To Me</MenuItem>
                   <MenuItem value={AssignedTo.OTHERS}>To Others</MenuItem>
-                </Input>
+                </TextField>
+                <SubscribersList
+                  channels={channels}
+                  searchPayload={searchPayload}
+                  assignedTo={assignment}
+                />
               </Grid>
-              <SubscribersList
-                channels={channels}
-                searchPayload={searchPayload}
-                assignedTo={assignment}
-              />
             </Sidebar>
             <Chat />
           </MainContainer>

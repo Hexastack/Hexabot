@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Link } from "@mui/material";
+import { Button, Link, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -73,7 +72,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               disabled
               label={t("label.full_name")}
               value={user ? getFullName(user) : undefined}

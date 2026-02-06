@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, FormControl, FormLabel, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   ChevronRight as KeyboardArrowRightIcon,
@@ -19,11 +19,17 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
+import { Title } from "@/layout/content/Title";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs";
 import { Adornment } from "../inputs/Adornment";
 import { PasswordInput } from "../inputs/PasswordInput";
+
+interface ResetPasswordAttributes {
+  password: string;
+  password2: string;
+}
 
 export const ResetPassword = () => {
   const { t } = useTranslate();
@@ -43,7 +49,7 @@ export const ResetPassword = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ password: string; password2: string }>({
+  } = useForm<ResetPasswordAttributes>({
     defaultValues: { password: "", password2: "" },
   });
   const { query, replace } = useAppRouter();
@@ -59,60 +65,46 @@ export const ResetPassword = () => {
       toast.error(t("message.server_error"));
     },
   });
+  const onSubmitForm = (data: ResetPasswordAttributes) => {
+    resetPassword(data);
+  };
 
   return (
     <PublicContentWrapper>
-      <form
-        onSubmit={handleSubmit((payload) => {
-          resetPassword(payload);
-        })}
-      >
+      <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          <Grid gap={1} mb={1} display="flex" alignItems="center">
-            <Repeat2 />
-            <Typography variant="h4" fontWeight={700}>
-              {t("title.reset_password")}
-            </Typography>
-          </Grid>
-          <FormControl error={!!errors.password}>
-            <FormLabel htmlFor="password">{t("label.password")}</FormLabel>
-            <PasswordInput
-              id="password"
-              autoFocus
-              error={!!errors.password}
-              required
-              slotProps={{
-                input: {
-                  startAdornment: <Adornment Icon={KeyIcon} />,
-                },
-              }}
-              helperText={errors.password ? errors.password.message : null}
-              {...register("password", validationRules.password)}
-            />
-          </FormControl>
-          <FormControl error={!!errors.password2}>
-            <FormLabel htmlFor="password2">
-              {t("placeholder.password2")}
-            </FormLabel>
-            <PasswordInput
-              id="password2"
-              error={!!errors.password2}
-              required
-              slotProps={{
-                input: {
-                  startAdornment: <Adornment Icon={KeyIcon} />,
-                },
-              }}
-              helperText={errors.password2 ? errors.password2.message : null}
-              {...register("password2", validationRules.password2)}
-            />
-          </FormControl>
+          <Title title={t("title.reset_password")} Icon={Repeat2} />
+          <PasswordInput
+            label={t("label.password")}
+            error={!!errors.password}
+            required
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              },
+            }}
+            helperText={errors.password ? errors.password.message : null}
+            {...register("password", validationRules.password)}
+          />
+          <PasswordInput
+            label={t("placeholder.password2")}
+            error={!!errors.password2}
+            required
+            slotProps={{
+              input: {
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              },
+            }}
+            helperText={errors.password2 ? errors.password2.message : null}
+            {...register("password2", validationRules.password2)}
+          />
           <Grid container direction="column" gap={1} mt={2}>
             <Button
               type="submit"
               color="primary"
               variant="contained"
               endIcon={<KeyboardArrowRightIcon size={14} />}
+              onClick={handleSubmit(onSubmitForm)}
             >
               {t("button.submit")}
             </Button>

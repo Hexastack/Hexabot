@@ -15,21 +15,12 @@ export const Title = (props: {
   chip?: ReactNode;
 }) => {
   return (
-    <Grid
-      container
-      gap={1}
-      sx={{
-        padding: 1,
-        flexShrink: "0",
-        width: "max-content",
-        height: "fit-content",
-      }}
-    >
+    <Grid container gap={1} alignContent="center">
       <Grid sx={{ height: "24px", alignSelf: "center" }}>
         {props.Icon ? <props.Icon /> : null}
       </Grid>
       <Grid>
-        <Typography fontSize="1.5em" fontWeight={700} height="fit-content">
+        <Typography variant="h4" fontWeight={700} height="fit-content">
           {props.title}
           {props.chip ? ":" : ""}
         </Typography>

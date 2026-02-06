@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, FormControlLabel, Switch, Typography } from "@mui/material";
+import {
+  Button,
+  FormControlLabel,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   Type as AbcIcon,
@@ -22,13 +28,13 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
+import { Title } from "@/layout/content/Title";
 import { IRegisterAttributes } from "@/types/auth/register.types";
 import { JWT } from "@/utils/Jwt";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs/layouts/ContentContainer";
 import { Adornment } from "../inputs/Adornment";
-import { Input } from "../inputs/Input";
 import { PasswordInput } from "../inputs/PasswordInput";
 
 const DEFAULT_VALUES: IRegisterAttributes = {
@@ -134,14 +140,9 @@ export const Register = () => {
   return (
     <PublicContentWrapper>
       <form onSubmit={handleSubmit(onSubmitForm)}>
-        <ContentContainer gap={3}>
-          <Grid gap={1} display="flex" alignItems="center" flexDirection="row">
-            <ClipboardPenLine />
-            <Typography variant="h4" fontWeight={700}>
-              {t("title.register")}
-            </Typography>
-          </Grid>
-          <Input
+        <ContentContainer>
+          <Title title={t("title.register")} Icon={ClipboardPenLine} />
+          <TextField
             label={t("placeholder.first_name")}
             error={!!errors.firstName}
             required
@@ -154,7 +155,7 @@ export const Register = () => {
             }}
             helperText={errors.firstName ? errors.firstName.message : null}
           />
-          <Input
+          <TextField
             label={t("placeholder.last_name")}
             error={!!errors.lastName}
             required
@@ -166,7 +167,7 @@ export const Register = () => {
             }}
             helperText={errors.lastName ? errors.lastName.message : null}
           />
-          <Input
+          <TextField
             label={t("placeholder.username")}
             error={!!errors.username}
             required
@@ -178,7 +179,7 @@ export const Register = () => {
             }}
             helperText={errors.username ? errors.username.message : null}
           />
-          <Input
+          <TextField
             label={t("placeholder.email")}
             error={!!errors.email}
             required

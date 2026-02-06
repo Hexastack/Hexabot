@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FormControlLabel, Switch } from "@mui/material";
+import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -84,7 +83,7 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
-            <Input
+            <TextField
               label={t("label.title")}
               error={!!errors.title}
               {...register("title", validationRules.title)}
@@ -94,7 +93,7 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
             />
           </ContentItem>
           <ContentItem>
-            <Input
+            <TextField
               label={t("label.code")}
               error={!!errors.code}
               {...register("code", validationRules.code)}

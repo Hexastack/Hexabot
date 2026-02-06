@@ -22,9 +22,9 @@ export const PageHeader = (
       sx={{
         display: "flex",
         justifyContent: "space-between",
-        alignContent: "center",
         flexWrap: "nowrap",
         width: "100%",
+        alignItems: "flex-end",
       }}
     >
       {props.title || props.icon ? (

@@ -45,7 +45,7 @@ const buttonsCustomizations: Components<Theme> = {
             },
             style: {
               height: "2.25rem",
-              padding: "8px 12px",
+              padding: "3px 9px",
             },
           },
           {
@@ -198,60 +198,6 @@ const buttonsCustomizations: Components<Theme> = {
       }),
     },
   },
-  // MuiIconButton: {
-  //   styleOverrides: {
-  //     root: ({ theme }) => ({
-  //       boxShadow: "none",
-  //       borderRadius: (theme.vars || theme).shape.borderRadius,
-  //       textTransform: "none",
-  //       fontWeight: theme.typography.fontWeightMedium,
-  //       letterSpacing: 0,
-  //       border: "1px solid ",
-  //       borderColor: gray[200],
-  //       backgroundColor: alpha(gray[50], 0.3),
-  //       "&:hover": {
-  //         backgroundColor: gray[100],
-  //         borderColor: gray[300],
-  //       },
-  //       "&:active": {
-  //         backgroundColor: gray[200],
-  //       },
-  //       ...theme.applyStyles("dark", {
-  //         backgroundColor: gray[800],
-  //         borderColor: gray[700],
-  //         "&:hover": {
-  //           backgroundColor: gray[900],
-  //           borderColor: gray[600],
-  //         },
-  //         "&:active": {
-  //           backgroundColor: gray[900],
-  //         },
-  //       }),
-  //       variants: [
-  //         {
-  //           props: {
-  //             size: "small",
-  //           },
-  //           style: {
-  //             width: "2.25rem",
-  //             height: "2.25rem",
-  //             padding: "0.25rem",
-  //             [`& .${svgIconClasses.root}`]: { fontSize: "1rem" },
-  //           },
-  //         },
-  //         {
-  //           props: {
-  //             size: "medium",
-  //           },
-  //           style: {
-  //             width: "2.5rem",
-  //             height: "2.5rem",
-  //           },
-  //         },
-  //       ],
-  //     }),
-  //   },
-  // },
   MuiToggleButtonGroup: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -357,16 +303,6 @@ export const inputsCustomizations: Components<Theme> = {
           display: "flex",
           gap: "6px",
         },
-        "& .MuiAutocomplete-endAdornment button": {
-          width: "calc(15px + 9px)",
-          height: "calc(15px + 9px)",
-        },
-        "& .MuiAutocomplete-endAdornment button svg": {
-          minWidth: "15px",
-          minHeight: "15px",
-          maxWidth: "15px",
-          maxHeight: "15px",
-        },
       },
     },
   },
@@ -383,6 +319,34 @@ export const inputsCustomizations: Components<Theme> = {
       },
     },
   },
+  MuiFormControl: {
+    defaultProps: {
+      sx: {},
+    },
+    styleOverrides: {
+      root: ({ theme }) => ({
+        width: "100%",
+        "& .MuiInputLabel-root": {
+          position: "relative",
+          transform: "none",
+          marginBottom: theme.spacing(0.5),
+        },
+        "& .MuiOutlinedInput-notchedOutline": {
+          top: 0,
+          "& legend": {
+            display: "none",
+          },
+        },
+      }),
+    },
+  },
+  MuiFormHelperText: {
+    styleOverrides: {
+      root: {
+        marginLeft: 0,
+      },
+    },
+  },
   MuiOutlinedInput: {
     styleOverrides: {
       input: {
@@ -391,14 +355,13 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         "& input:-webkit-autofill": {
           // This removes the background color by delaying the transition indefinitely
-          WebkitBoxShadow: `0 0 0 100px #fff inset!important`,
+          WebkitBoxShadow: `0 0 0 100px ${theme.palette.common.white} inset!important`,
           borderRadius: 0,
         },
         '[data-mui-color-scheme="dark"] & input:-webkit-autofill': {
-          WebkitBoxShadow: `0 0 0 100px #000 inset!important`,
+          WebkitBoxShadow: `0 0 0 100px ${theme.palette.common.black} inset!important`,
         },
-
-        padding: "9px 12px",
+        padding: "7px 8px",
         color: (theme.vars || theme).palette.text.primary,
         borderRadius: (theme.vars || theme).shape.borderRadius,
         borderColor: (theme.vars || theme).palette.divider,
@@ -424,15 +387,6 @@ export const inputsCustomizations: Components<Theme> = {
             },
             style: {
               height: "2.25rem",
-            },
-          },
-          {
-            props: {
-              type: "text",
-              multiline: false,
-            },
-            style: {
-              height: "2.5rem",
             },
           },
         ],
