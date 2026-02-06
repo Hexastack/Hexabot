@@ -27,7 +27,7 @@ export const WorkflowBadgeWithTitle = ({ workflow }: WorkflowBadgeWithTitleProps
   }
 
   return (
-    <Box gap={1} display="flex" height="100%" alignItems="stretch">
+    <Box gap={1} display="flex" alignItems="stretch">
       <Box display="flex" alignItems="center" justifyContent="center">
         <WorkflowTypeBadge workflow={workflow} />
       </Box>

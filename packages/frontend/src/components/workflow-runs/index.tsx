@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Box } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Activity, GalleryHorizontalEnd } from "lucide-react";
 import { ComponentProps, useMemo } from "react";
@@ -61,7 +62,11 @@ export const WorkflowRuns = ({
             return "-";
           }
 
-          return <WorkflowBadgeWithTitle workflow={workflow} />;
+          return (
+            <Box height="100%" display="flex" alignItems="center">
+              <WorkflowBadgeWithTitle workflow={workflow} />
+            </Box>
+          );
         },
       },
       {
@@ -91,7 +96,11 @@ export const WorkflowRuns = ({
         headerName: t("label.status"),
         disableColumnMenu: true,
         headerAlign: "left",
-        renderCell: ({ row }) => <WorkflowRunStatusBadge workflowRun={row} />,
+        renderCell: ({ row }) => (
+          <Box height="100%" display="flex" alignItems="center">
+            <WorkflowRunStatusBadge workflowRun={row} />
+          </Box>
+        ),
       },
       {
         maxWidth: 100,

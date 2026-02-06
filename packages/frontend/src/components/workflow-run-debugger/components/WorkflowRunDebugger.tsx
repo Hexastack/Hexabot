@@ -5,8 +5,10 @@
  */
 
 import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { WorkflowActionsProvider } from "@/components/workflow-run-debugger/contexts/workflow-actions.context";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
@@ -78,7 +80,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
     : null;
 
   return (
-    <Grid container gap={1} flexDirection="column">
+    <Stack direction="column" spacing={1}>
       <RunHeader
         workflowRuns={workflowRuns}
         isFetching={isFetching}
@@ -87,10 +89,12 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
         workflowVersion={selectedWorkflowVersion ?? null}
         onSelectRun={setSelectedRunId}
       />
-      <Grid container spacing={3}>
-        <StepTracePanel snapshot={selectedRun?.snapshot ?? null} />
-        <InspectorPanel run={selectedRun ?? null} />
-      </Grid>
-    </Grid>
+      <WorkflowActionsProvider workflowType={selectedWorkflow?.type}>
+        <Grid container spacing={3}>
+          <StepTracePanel snapshot={selectedRun?.snapshot ?? null} />
+          <InspectorPanel run={selectedRun ?? null} />
+        </Grid>
+      </WorkflowActionsProvider>
+    </Stack>
   );
 };

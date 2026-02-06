@@ -53,7 +53,7 @@ export const RunStatusSummary = ({
   const durationLabel = formatDurationMs(selectedRun?.duration);
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+    <Stack direction="row" spacing={1} alignItems="center">
       <Button
         variant="outlined"
         size="small"

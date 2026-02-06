@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
 import type { IWorkflowRun } from "@/types/workflow-run.types";
@@ -33,46 +33,35 @@ export const RunHeader = ({
   onSelectRun,
 }: RunHeaderProps) => {
   return (
-    <Box
+    <Paper
       sx={{
         position: "sticky",
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar - 1,
-        backgroundColor: "background.default",
-        pb: 1,
       }}
     >
-      <Paper
-        sx={{
-          p: 2,
-          border: "1px solid",
-          borderColor: "divider",
-          boxShadow: (theme) => theme.shadows[1],
-        }}
-      >
-        <Grid container spacing={2} alignItems="center">
-          <Grid
-            container
-            spacing={2}
-            alignItems="center"
-            size={{ xs: 12, lg: 9 }}
-          >
-            <RunStatusSummary
-              workflowRuns={workflowRuns}
-              isFetching={isFetching}
-              selectedRun={selectedRun}
-              onSelectRun={onSelectRun}
-            />
-            <RunMetaSummary
-              workflow={workflow}
-              workflowVersion={workflowVersion}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, lg: 3 }}>
-            <RunActions />
-          </Grid>
+      <Grid container spacing={2} alignItems="center">
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          size={{ xs: 12, lg: 9 }}
+        >
+          <RunStatusSummary
+            workflowRuns={workflowRuns}
+            isFetching={isFetching}
+            selectedRun={selectedRun}
+            onSelectRun={onSelectRun}
+          />
+          <RunMetaSummary
+            workflow={workflow}
+            workflowVersion={workflowVersion}
+          />
         </Grid>
-      </Paper>
-    </Box>
+        <Grid size={{ xs: 12, lg: 3 }}>
+          <RunActions />
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
