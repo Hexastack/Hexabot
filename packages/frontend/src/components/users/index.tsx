@@ -10,7 +10,7 @@ import { UserPlus, Users as UsersIcon } from "lucide-react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
@@ -56,8 +56,8 @@ export const Users = () => {
     EntityType.USER,
     [
       {
-        label: ActionColumnLabel.Manage_Roles,
-        action: (row) => {
+        action: ColumnActionType.Manage_Roles,
+        onClick: (row) => {
           dialogs.open(EditUserFormDialog, {
             defaultValues: row,
             presetValues: roles,

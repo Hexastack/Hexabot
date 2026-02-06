@@ -9,7 +9,7 @@ import { MemoryStick, Plus } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
-  ActionColumnLabel,
+  ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
@@ -43,8 +43,8 @@ export const MemoryDefinitions = () => {
     EntityType.MEMORY_DEFINITION,
     [
       {
-        label: ActionColumnLabel.Edit,
-        action: (row) => {
+        action: ColumnActionType.Edit,
+        onClick: (row) => {
           dialogs.open(
             MemoryDefinitionFormDialog,
             { defaultValues: row },
@@ -54,8 +54,8 @@ export const MemoryDefinitions = () => {
         requires: [PermissionAction.UPDATE],
       },
       {
-        label: ActionColumnLabel.Delete,
-        action: async ({ id }) => {
+        action: ColumnActionType.Delete,
+        onClick: async ({ id }) => {
           const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {
