@@ -16,20 +16,13 @@ export type BadgeWithTitleProps = {
 
 export const BadgeWithTitle = ({ title, ...rest }: BadgeWithTitleProps) => {
   return (
-    <Box gap={1} display="flex" height="100%" alignItems="stretch">
+    <Box gap={1} display="flex" alignItems="stretch">
       <Box display="flex" alignItems="center" justifyContent="center">
         <Badge {...rest} />
       </Box>
-      <Box display="flex" alignItems="center" justifyContent="center">
-        <Typography
-          variant="subtitle2"
-          fontWeight={500}
-          textTransform="capitalize"
-          noWrap
-        >
-          {title}
-        </Typography>
-      </Box>
+      <Typography variant="subtitle2" textTransform="capitalize">
+        {title}
+      </Typography>
     </Box>
   );
 };
