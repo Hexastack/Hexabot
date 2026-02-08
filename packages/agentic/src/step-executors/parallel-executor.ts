@@ -10,6 +10,7 @@ import type {
   Suspension,
 } from '../workflow-types';
 
+import { markStepsSkipped } from './skip-helpers';
 import type { StepExecutorEnv } from './types';
 
 /**
@@ -42,6 +43,14 @@ export async function executeParallel(
           }
 
           if (step.strategy === 'wait_any') {
+            if (index + 1 < step.steps.length) {
+              markStepsSkipped(
+                env,
+                step.steps.slice(index + 1),
+                state.iterationStack,
+              );
+            }
+
             return undefined;
           }
 
@@ -51,6 +60,14 @@ export async function executeParallel(
     }
 
     if (step.strategy === 'wait_any') {
+      if (index + 1 < step.steps.length) {
+        markStepsSkipped(
+          env,
+          step.steps.slice(index + 1),
+          state.iterationStack,
+        );
+      }
+
       return undefined;
     }
   }

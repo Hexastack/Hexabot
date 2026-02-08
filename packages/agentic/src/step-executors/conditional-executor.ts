@@ -11,6 +11,7 @@ import type {
 } from '../workflow-types';
 import { evaluateValue } from '../workflow-values';
 
+import { markStepsSkipped } from './skip-helpers';
 import type { StepExecutorEnv } from './types';
 
 /**
@@ -43,6 +44,11 @@ export async function executeConditional(
         : true;
 
     if (conditionResult) {
+      step.branches.forEach((candidate, candidateIndex) => {
+        if (candidateIndex !== index) {
+          markStepsSkipped(env, candidate.steps, state.iterationStack);
+        }
+      });
       const suspension = await env.executeFlow(branch.steps, state, [
         ...path,
         'branch',
@@ -65,6 +71,12 @@ export async function executeConditional(
 
       return undefined;
     }
+  }
+
+  if (step.branches.length > 0) {
+    step.branches.forEach((branch) =>
+      markStepsSkipped(env, branch.steps, state.iterationStack),
+    );
   }
 
   return undefined;

@@ -11,6 +11,7 @@ import {
   updateAccumulator,
 } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
+import { markStepsSkipped } from './step-executors/skip-helpers';
 import type { StepExecutorEnv } from './step-executors/types';
 import {
   StepType,
@@ -237,6 +238,14 @@ export function buildSuspensionForPath(
         }
 
         if (step.strategy === 'wait_any') {
+          if (childIndex + 1 < step.steps.length) {
+            markStepsSkipped(
+              env,
+              step.steps.slice(childIndex + 1),
+              state.iterationStack ?? [],
+            );
+          }
+
           return undefined;
         }
 

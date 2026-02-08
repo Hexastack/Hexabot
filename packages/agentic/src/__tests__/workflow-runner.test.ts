@@ -220,6 +220,11 @@ describe('WorkflowRunner', () => {
       eventLog.filter((entry) => entry.includes('second_task')),
     ).toHaveLength(0);
     expect(runner.getSnapshot().status).toBe('finished');
+    const snapshots = runner.getSnapshot().actions;
+    expect(snapshots['0.parallel.0:first_task']?.status).toBe('completed');
+    expect(snapshots['0.parallel.1:second_task']?.status).toBe('skipped');
+    expect(snapshots['1.branch.0.0:branch_task']?.status).toBe('completed');
+    expect(snapshots['1.branch.1.0:second_task']?.status).toBe('skipped');
   });
 
   it('handles suspension and resumes with provided data', async () => {
