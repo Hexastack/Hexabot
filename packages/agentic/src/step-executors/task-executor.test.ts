@@ -74,6 +74,7 @@ const createEnv = (
   runId: 'run-123',
   buildInstanceStepInfo: jest.fn().mockReturnValue(stepInfo),
   markSnapshot: jest.fn(),
+  recordStepExecution: jest.fn(),
   emit: jest.fn(),
   setCurrentStep: jest.fn(),
   captureTaskOutput: jest.fn().mockResolvedValue(undefined),
@@ -113,6 +114,26 @@ describe('executeTaskStep', () => {
     expect(env.setCurrentStep).toHaveBeenNthCalledWith(1, stepInfo);
     expect(env.markSnapshot).toHaveBeenNthCalledWith(1, stepInfo, 'running');
     expect(env.markSnapshot).toHaveBeenNthCalledWith(2, stepInfo, 'completed');
+    expect(env.recordStepExecution).toHaveBeenNthCalledWith(
+      1,
+      stepInfo,
+      expect.objectContaining({
+        status: 'running',
+        startedAt: expect.any(Number),
+        input: { payload: 123 },
+        context: { before: {} },
+      }),
+    );
+    expect(env.recordStepExecution).toHaveBeenNthCalledWith(
+      2,
+      stepInfo,
+      expect.objectContaining({
+        status: 'completed',
+        endedAt: expect.any(Number),
+        output: { result: 'ok' },
+        context: { after: {} },
+      }),
+    );
     expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, {
       result: 'ok',
     });
@@ -162,6 +183,15 @@ describe('executeTaskStep', () => {
       'suspended',
       'awaiting_user',
     );
+    expect(env.recordStepExecution).toHaveBeenCalledWith(
+      stepInfo,
+      expect.objectContaining({
+        status: 'suspended',
+        endedAt: expect.any(Number),
+        reason: 'awaiting_user',
+        context: { after: {} },
+      }),
+    );
     expect(env.emit).toHaveBeenCalledWith('hook:step:suspended', {
       runId: 'run-123',
       step: stepInfo,
@@ -178,6 +208,15 @@ describe('executeTaskStep', () => {
     expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, {
       reply: 'Sure',
     });
+    expect(env.recordStepExecution).toHaveBeenCalledWith(
+      stepInfo,
+      expect.objectContaining({
+        status: 'completed',
+        endedAt: expect.any(Number),
+        output: { reply: 'Sure' },
+        context: { after: {} },
+      }),
+    );
     expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'completed');
     expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
       runId: 'run-123',
@@ -192,6 +231,15 @@ describe('executeTaskStep', () => {
     const state = createState();
 
     await expect(executeTaskStep(env, step, state, [])).rejects.toThrow('boom');
+    expect(env.recordStepExecution).toHaveBeenCalledWith(
+      stepInfo,
+      expect.objectContaining({
+        status: 'failed',
+        endedAt: expect.any(Number),
+        error: { message: 'boom', stack: expect.any(String) },
+        context: { after: {} },
+      }),
+    );
     expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'failed', 'boom');
     expect(env.emit).toHaveBeenCalledWith('hook:step:error', {
       runId: 'run-123',

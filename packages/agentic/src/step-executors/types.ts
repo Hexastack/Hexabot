@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { ActionSnapshot, BaseWorkflowContext } from '../context';
+import type {
+  ActionSnapshot,
+  BaseWorkflowContext,
+  StepExecutionRecord,
+} from '../context';
 import type { StepInfo, WorkflowEventMap } from '../workflow-event-emitter';
 import type {
   CompiledStep,
@@ -26,6 +30,10 @@ export type StepExecutorEnv = {
     step: StepInfo,
     status: ActionSnapshot['status'],
     reason?: string,
+  ) => void;
+  recordStepExecution: (
+    step: StepInfo,
+    update: Partial<StepExecutionRecord>,
   ) => void;
   emit: <K extends keyof WorkflowEventMap>(
     event: K,

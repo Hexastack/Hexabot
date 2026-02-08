@@ -53,6 +53,7 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     runId: 'run-loop',
     buildInstanceStepInfo: jest.fn(),
     markSnapshot: jest.fn(),
+    recordStepExecution: jest.fn(),
     emit: jest.fn(),
     setCurrentStep: jest.fn(),
     captureTaskOutput: jest.fn(),

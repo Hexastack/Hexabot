@@ -737,4 +737,112 @@ describe('WorkflowRunner', () => {
     }
     expect(translate).toHaveBeenCalledWith('Bye bye');
   });
+
+  it('records step execution details with context snapshots', async () => {
+    const countAction = defineAction<
+      { amount: number },
+      { total: number },
+      TestContext,
+      Settings
+    >({
+      name: 'count_action',
+      inputSchema: z.object({ amount: z.number() }),
+      outputSchema: z.object({ total: z.number() }),
+      execute: async ({ input, context }) => {
+        const current = Number(context.state.count ?? 0);
+        const total = current + input.amount;
+        context.state.count = total;
+
+        return { total };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      tasks: {
+        count_step: {
+          action: 'count_action',
+          inputs: { amount: '=$input.amount' },
+        },
+      },
+      flow: [{ do: 'count_step' }],
+      outputs: { total: '=$output.count_step.total' },
+      inputs: {
+        schema: {
+          amount: { type: 'number' },
+        },
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { count_action: countAction },
+    });
+    const runner = new WorkflowRunner(compiled);
+    const context = new TestContext({ count: 1 });
+    const result = await runner.start({ inputData: { amount: 2 }, context });
+
+    expect(result.status).toBe('finished');
+    const record = runner.getStepLog()['0:count_step'];
+    expect(record).toMatchObject({
+      id: '0:count_step',
+      name: 'count_step',
+      status: 'completed',
+      input: { amount: 2 },
+      output: { total: 3 },
+      context: { before: { count: 1 }, after: { count: 3 } },
+    });
+    expect(record?.startedAt).toEqual(expect.any(Number));
+    expect(record?.endedAt).toEqual(expect.any(Number));
+    expect(record.endedAt as number).toBeGreaterThanOrEqual(
+      record.startedAt as number,
+    );
+  });
+
+  it('uses the context snapshot hook when capturing step context', async () => {
+    class FilteredContext extends BaseWorkflowContext<
+      Record<string, unknown>,
+      WorkflowEventEmitter
+    > {
+      public eventEmitter: WorkflowEventEmitterLike<WorkflowEventEmitter> =
+        new WorkflowEventEmitter();
+
+      snapshot(): Record<string, unknown> {
+        return { safe: this.state.safe };
+      }
+    }
+
+    const mutateAction = defineAction<
+      unknown,
+      { ok: boolean },
+      FilteredContext,
+      Settings
+    >({
+      name: 'mutate_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ ok: z.boolean() }),
+      execute: async ({ context }) => {
+        context.state.safe = 'after';
+        context.state.secret = 'should-not-leak';
+
+        return { ok: true };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      tasks: {
+        mutate_step: { action: 'mutate_action' },
+      },
+      flow: [{ do: 'mutate_step' }],
+      outputs: { ok: '=$output.mutate_step.ok' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { mutate_action: mutateAction },
+    });
+    const runner = new WorkflowRunner(compiled);
+    const context = new FilteredContext({ safe: 'before', secret: 'hidden' });
+    const result = await runner.start({ inputData: {}, context });
+
+    expect(result.status).toBe('finished');
+    const record = runner.getStepLog()['0:mutate_step'];
+    expect(record?.context?.before).toEqual({ safe: 'before' });
+    expect(record?.context?.after).toEqual({ safe: 'after' });
+    expect(record?.context?.before).not.toHaveProperty('secret');
+    expect(record?.context?.after).not.toHaveProperty('secret');
+  });
 });

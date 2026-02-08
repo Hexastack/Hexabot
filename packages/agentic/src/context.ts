@@ -53,6 +53,22 @@ export interface ActionSnapshot {
   reason?: string;
 }
 
+export type StepExecutionRecord = {
+  id: string;
+  name: string;
+  status: ActionStatus;
+  startedAt?: number;
+  endedAt?: number;
+  input?: unknown;
+  output?: unknown;
+  context?: {
+    before?: Record<string, unknown>;
+    after?: Record<string, unknown>;
+  };
+  error?: { message: string; stack?: string };
+  reason?: string;
+};
+
 export interface WorkflowSnapshot {
   status: WorkflowRunStatus;
   actions: Record<string, ActionSnapshot>;
@@ -99,6 +115,14 @@ export abstract class BaseWorkflowContext<
   }
 
   /**
+   * Snapshot the context state for telemetry or UI rendering.
+   * Override to filter or reshape the exposed state.
+   */
+  snapshot(): Record<string, unknown> {
+    return safeCloneRecord(this.state);
+  }
+
+  /**
    * Provides access to the workflow runtime API for the current execution.
    *
    * @returns Runtime control methods that allow suspension and inspection.
@@ -122,3 +146,32 @@ export abstract class BaseWorkflowContext<
     this._workflowControl = control;
   }
 }
+
+const safeCloneRecord = (
+  value: Record<string, unknown>,
+): Record<string, unknown> => {
+  if (!value) {
+    return {};
+  }
+
+  if (typeof structuredClone === 'function') {
+    try {
+      return structuredClone(value) as Record<string, unknown>;
+    } catch {
+      // Fall through to JSON clone below.
+    }
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+  } catch {
+    const shallow: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      if (typeof entry !== 'function') {
+        shallow[key] = entry;
+      }
+    }
+
+    return shallow;
+  }
+};
