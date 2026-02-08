@@ -203,6 +203,7 @@ describe('AgenticService (TypeORM)', () => {
         greet_user: {
           id: 'greet_user',
           name: 'greet_user',
+          action: 'greet_action',
           status: 'completed',
           startedAt: 1700,
           endedAt: 1750,
@@ -294,6 +295,7 @@ describe('AgenticService (TypeORM)', () => {
           wait_input: {
             id: 'wait_input',
             name: 'wait_input',
+            action: 'wait_input_action',
             status: 'suspended',
             reason: 'waiting',
           },
@@ -320,6 +322,7 @@ describe('AgenticService (TypeORM)', () => {
         prompt_user: {
           id: 'prompt_user',
           name: 'prompt_user',
+          action: 'prompt_action',
           status: 'suspended',
           startedAt: 1800,
           reason: 'needs input',
@@ -383,12 +386,14 @@ describe('AgenticService (TypeORM)', () => {
           wait_input: {
             id: 'wait_input',
             name: 'wait_input',
+            action: 'wait_input_action',
             status: 'suspended',
             reason: 'waiting',
           },
           prompt_user: {
             id: 'prompt_user',
             name: 'prompt_user',
+            action: 'prompt_action',
             status: 'suspended',
             startedAt: 1800,
             reason: 'needs input',
@@ -422,6 +427,7 @@ describe('AgenticService (TypeORM)', () => {
         do_work: {
           id: 'do_work',
           name: 'do_work',
+          action: 'do_work_action',
           status: 'failed',
           startedAt: 2100,
           endedAt: 2150,

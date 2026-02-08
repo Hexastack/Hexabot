@@ -118,6 +118,7 @@ describe('executeTaskStep', () => {
       1,
       stepInfo,
       expect.objectContaining({
+        action: 'mock_action',
         status: 'running',
         startedAt: expect.any(Number),
         input: { payload: 123 },

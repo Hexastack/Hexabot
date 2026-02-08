@@ -783,6 +783,7 @@ describe('WorkflowRunner', () => {
     expect(record).toMatchObject({
       id: '0:count_step',
       name: 'count_step',
+      action: 'count_action',
       status: 'completed',
       input: { amount: 2 },
       output: { total: 3 },
@@ -840,6 +841,7 @@ describe('WorkflowRunner', () => {
 
     expect(result.status).toBe('finished');
     const record = runner.getStepLog()['0:mutate_step'];
+    expect(record?.action).toBe('mutate_action');
     expect(record?.context?.before).toEqual({ safe: 'before' });
     expect(record?.context?.after).toEqual({ safe: 'after' });
     expect(record?.context?.before).not.toHaveProperty('secret');

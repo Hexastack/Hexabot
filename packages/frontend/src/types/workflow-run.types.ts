@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowRunStatus, WorkflowSnapshot } from "@hexabot-ai/agentic";
+import type {
+  StepExecutionRecord,
+  WorkflowRunStatus,
+  WorkflowSnapshot,
+} from "@hexabot-ai/agentic";
 
 import { EntityType, Format } from "@/services/types";
 
@@ -30,6 +34,7 @@ export interface IWorkflowRunAttributes {
   output?: Record<string, unknown> | null;
   context?: Record<string, unknown> | null;
   snapshot?: WorkflowSnapshot | null;
+  stepLog?: Record<string, StepExecutionRecord> | null;
   suspendedStep?: string | null;
   suspensionReason?: string | null;
   suspensionData?: unknown;

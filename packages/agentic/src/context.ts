@@ -56,6 +56,7 @@ export interface ActionSnapshot {
 export type StepExecutionRecord = {
   id: string;
   name: string;
+  action?: string;
   status: ActionStatus;
   startedAt?: number;
   endedAt?: number;

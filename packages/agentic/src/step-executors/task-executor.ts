@@ -46,6 +46,7 @@ export async function executeTaskStep(
   };
   const inputs = await evaluateMapping(task.inputs, scope);
   env.recordStepExecution(stepInfo, {
+    action: task.actionName,
     status: 'running',
     startedAt: Date.now(),
     input: inputs,
