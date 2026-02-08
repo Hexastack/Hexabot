@@ -7,6 +7,7 @@
 import {
   Workflow as AgenticWorkflow,
   ExecutionState,
+  StepExecutionRecord,
   StepType,
   WorkflowRunner,
   WorkflowSnapshot,
@@ -54,6 +55,7 @@ const buildRunnerMock = ({
   resumeResult,
   state,
   snapshot,
+  stepLog,
   startError,
   resumeError,
 }: {
@@ -65,6 +67,7 @@ const buildRunnerMock = ({
     : Awaited<ReturnType<WorkflowRunner['resume']>>;
   state: ExecutionState;
   snapshot: WorkflowSnapshot;
+  stepLog?: Record<string, StepExecutionRecord>;
   startError?: Error;
   resumeError?: Error;
 }): jest.Mocked<WorkflowRunner> =>
@@ -85,6 +88,7 @@ const buildRunnerMock = ({
     }),
     getState: jest.fn(() => state),
     getSnapshot: jest.fn(() => snapshot),
+    getStepLog: jest.fn(() => stepLog ?? {}),
   }) as unknown as jest.Mocked<WorkflowRunner>;
 const buildWorkflowInstance = (runner: jest.Mocked<WorkflowRunner>) =>
   ({
@@ -195,6 +199,17 @@ describe('AgenticService (TypeORM)', () => {
         status: 'finished',
         actions: {},
       };
+      const stepLog: Record<string, StepExecutionRecord> = {
+        greet_user: {
+          id: 'greet_user',
+          name: 'greet_user',
+          status: 'completed',
+          startedAt: 1700,
+          endedAt: 1750,
+          input: { text: 'hello' },
+          output: { message: 'hi' },
+        },
+      };
       const runner = buildRunnerMock({
         startResult: {
           status: 'finished',
@@ -203,6 +218,7 @@ describe('AgenticService (TypeORM)', () => {
         },
         state: runnerState,
         snapshot: runnerSnapshot,
+        stepLog,
       });
       const workflowInstance = buildWorkflowInstance(runner);
       const fromDefinitionSpy = jest
@@ -239,6 +255,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(storedRun.output).toEqual({ result: 'ok' });
       expect(storedRun.input).toEqual(runnerState.input);
       expect(storedRun.context).toEqual(runtimeContext.state);
+      expect(storedRun.stepLog).toEqual(stepLog);
       expect(storedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(storedRun.metadata).toEqual(
         expect.objectContaining({
@@ -273,6 +290,14 @@ describe('AgenticService (TypeORM)', () => {
         suspendedStep: 'wait_input',
         suspensionReason: 'waiting',
         suspensionData: { previous: true },
+        stepLog: {
+          wait_input: {
+            id: 'wait_input',
+            name: 'wait_input',
+            status: 'suspended',
+            reason: 'waiting',
+          },
+        },
       });
       const event = createEvent({ latest: 'payload' });
       const runtimeContext = {
@@ -291,6 +316,15 @@ describe('AgenticService (TypeORM)', () => {
         status: 'suspended',
         actions: {},
       };
+      const stepLog: Record<string, StepExecutionRecord> = {
+        prompt_user: {
+          id: 'prompt_user',
+          name: 'prompt_user',
+          status: 'suspended',
+          startedAt: 1800,
+          reason: 'needs input',
+        },
+      };
       const resumeResult = {
         status: 'suspended' as const,
         step: { id: 'prompt_user', name: 'prompt_user', type: StepType.Task },
@@ -302,6 +336,7 @@ describe('AgenticService (TypeORM)', () => {
         resumeResult,
         state: runnerState,
         snapshot: runnerSnapshot,
+        stepLog,
       });
       const workflowInstance = buildWorkflowInstance(runner);
       const fromDefinitionSpy = jest
@@ -343,6 +378,23 @@ describe('AgenticService (TypeORM)', () => {
       expect(updatedRun.lastResumeData).toEqual(event.buildInput());
       expect(updatedRun.output).toEqual(runnerState.output);
       expect(updatedRun.context).toEqual(runtimeContext.state);
+      expect(updatedRun.stepLog).toEqual(
+        expect.objectContaining({
+          wait_input: {
+            id: 'wait_input',
+            name: 'wait_input',
+            status: 'suspended',
+            reason: 'waiting',
+          },
+          prompt_user: {
+            id: 'prompt_user',
+            name: 'prompt_user',
+            status: 'suspended',
+            startedAt: 1800,
+            reason: 'needs input',
+          },
+        }),
+      );
       expect(updatedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(updatedRun.metadata).toEqual({
         state: {
@@ -366,11 +418,22 @@ describe('AgenticService (TypeORM)', () => {
         status: 'running',
         actions: {},
       };
+      const stepLog: Record<string, StepExecutionRecord> = {
+        do_work: {
+          id: 'do_work',
+          name: 'do_work',
+          status: 'failed',
+          startedAt: 2100,
+          endedAt: 2150,
+          error: { message: 'runner-crash' },
+        },
+      };
       const failure = new Error('runner-crash');
       const runner = buildRunnerMock({
         startError: failure,
         state: runnerState,
         snapshot: runnerSnapshot,
+        stepLog,
       });
       const workflowInstance = buildWorkflowInstance(runner);
       const fromDefinitionSpy = jest
@@ -391,6 +454,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(failedRun.snapshot).toEqual(runnerSnapshot);
       expect(failedRun.output).toEqual(runnerState.output);
       expect(failedRun.context).toEqual(runtimeContext.state);
+      expect(failedRun.stepLog).toEqual(stepLog);
       expect(failedRun.workflowVersion?.id ?? null).toBe(workflowVersionId);
       expect(failedRun.metadata).toEqual(
         expect.objectContaining({

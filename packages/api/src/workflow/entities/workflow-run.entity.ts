@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowRunStatus, WorkflowSnapshot } from '@hexabot-ai/agentic';
+import {
+  StepExecutionRecord,
+  WorkflowRunStatus,
+  WorkflowSnapshot,
+} from '@hexabot-ai/agentic';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
@@ -85,6 +89,10 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   /** Engine snapshot capturing the runner state. */
   @JsonColumn({ nullable: true })
   snapshot?: WorkflowSnapshot | null;
+
+  /** Detailed execution log per step for UI/telemetry. */
+  @JsonColumn({ name: 'step_log', nullable: true })
+  stepLog?: Record<string, StepExecutionRecord> | null;
 
   /** Step identifier where the run was suspended. */
   @Column({

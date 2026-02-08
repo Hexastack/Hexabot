@@ -78,6 +78,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     failedAt: null,
     duration: null,
     metadata: { run: 'alpha' },
+    stepLog: null,
   },
   {
     id: workflowRunFixtureIds.finished,
@@ -101,6 +102,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     failedAt: null,
     duration: 60 * 60 * 1000,
     metadata: null,
+    stepLog: null,
   },
 ];
 
