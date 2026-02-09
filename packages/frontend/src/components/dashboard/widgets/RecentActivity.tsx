@@ -32,7 +32,7 @@ export const RecentActivity = () => {
         }
       />
 
-      <Box sx={{ position: "relative", px: 1 }}>
+      <Box sx={{ position: "relative", px: 1, mt: 1 }}>
         <Box
           sx={{
             position: "absolute",

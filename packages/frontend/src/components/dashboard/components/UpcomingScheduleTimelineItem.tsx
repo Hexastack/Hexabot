@@ -40,34 +40,15 @@ export const UpcomingScheduleTimelineItem = ({
         <TimelineConnector />
       </TimelineSeparator>
 
-      <TimelineContent
-        sx={{
-          py: "10px 12px",
-          px: 3,
-          pr: 0,
-        }}
-      >
-        <Typography
-          variant="caption"
-          fontWeight="bold"
-          color="primary.main"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            mb: 0.5,
-            textTransform: "capitalize",
-          }}
-        >
+      <TimelineContent>
+        <Typography variant="caption" fontWeight="bold" color="primary.main">
           {scheduledWorkflow.runAfterMs
             ? getRemainingTime(scheduledWorkflow.runAfterMs)
             : null}
         </Typography>
         <Paper
-          elevation={3}
           sx={{
             p: 2,
-            bgcolor: "background.paper",
             border: "1px solid transparent",
             transition: ".2s",
             "&:hover": {

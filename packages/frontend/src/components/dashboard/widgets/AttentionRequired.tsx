@@ -52,17 +52,11 @@ export const AttentionRequired = () => {
                 borderRadius="16px"
                 size={20}
               />
-
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="subtitle2" fontWeight="bold">
                   {item.title}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ opacity: 0.7, fontWeight: "medium" }}
-                >
-                  {item.time}
-                </Typography>
+                <Typography color="textDisabled">{item.time}</Typography>
               </Box>
 
               <Button
@@ -72,7 +66,6 @@ export const AttentionRequired = () => {
                   // TODO: Implement action
                 }}
                 sx={{
-                  minWidth: "auto",
                   borderColor: alpha(styles.icon, 0.3),
                   color: styles.icon,
                   "&:hover": {

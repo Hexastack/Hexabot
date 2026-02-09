@@ -33,12 +33,8 @@ export const IntegrationCard = ({ integration }: { integration: any }) => {
     <Card
       variant="outlined"
       sx={{
-        p: 2,
         borderRadius: 3,
         border: `1px solid ${isConn ? theme.palette.divider : alpha(theme.palette.warning.main, 0.5)}`,
-        bgcolor: isConn
-          ? "transparent"
-          : alpha(theme.palette.warning.main, 0.02),
       }}
     >
       <Stack spacing={1.5}>
@@ -73,8 +69,6 @@ export const IntegrationCard = ({ integration }: { integration: any }) => {
             label={integration.status}
             size="small"
             color={isConn ? "success" : "warning"}
-            variant={isConn ? "outlined" : "filled"}
-            sx={{ fontSize: "0.65rem", height: 20, fontWeight: "bold" }}
           />
         </Stack>
       </Stack>
