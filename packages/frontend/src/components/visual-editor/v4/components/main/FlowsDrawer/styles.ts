@@ -4,13 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Box,
-  Drawer,
-  InputBase,
-  ListItemButton,
-  styled,
-} from "@mui/material";
+import { Box, Drawer, ListItemButton, styled } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 
 type StyledDrawerProps = {
@@ -98,26 +92,6 @@ export const DrawerResizer = styled(Box, {
   "&:hover::after": {
     opacity: 1,
   },
-}));
-
-export const SearchBox = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: "1px solid #d5d8dc",
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "&:focus-within": {
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.12)}`,
-  },
-}));
-
-export const SearchInput = styled(InputBase)(() => ({
-  fontSize: 13,
-  flex: 1,
 }));
 
 export const ListContainer = styled(Box)(() => ({
