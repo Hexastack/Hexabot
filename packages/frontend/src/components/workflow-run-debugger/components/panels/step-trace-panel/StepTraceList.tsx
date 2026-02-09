@@ -11,9 +11,15 @@ import { StepTraceItem } from "./StepTraceItem";
 
 type StepTraceListProps = {
   stepLog?: Record<string, StepExecutionRecord> | null;
+  selectedStepId?: string | null;
+  onSelectStep?: (stepId: string) => void;
 };
 
-export const StepTraceList = ({ stepLog }: StepTraceListProps) => {
+export const StepTraceList = ({
+  stepLog,
+  selectedStepId,
+  onSelectStep,
+}: StepTraceListProps) => {
   const steps = Object.values(stepLog ?? {});
 
   return (
@@ -22,7 +28,12 @@ export const StepTraceList = ({ stepLog }: StepTraceListProps) => {
         <StepTraceEmpty hasTrace={Boolean(stepLog)} />
       ) : (
         steps.map((step) => (
-          <StepTraceItem key={step.id} step={step} />
+          <StepTraceItem
+            key={step.id}
+            step={step}
+            isSelected={step.id === selectedStepId}
+            onSelect={onSelectStep}
+          />
         ))
       )}
     </>

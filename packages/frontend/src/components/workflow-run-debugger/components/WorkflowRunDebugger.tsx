@@ -52,6 +52,9 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
   const [selectedRunId, setSelectedRunId] = useState<string | undefined>(
     undefined,
   );
+  const [selectedStepId, setSelectedStepId] = useState<string | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (!workflowRuns.length) {
@@ -74,6 +77,26 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
       workflowRuns.find((run) => run.id === selectedRunId) ?? latestRun,
     [latestRun, selectedRunId, workflowRuns],
   );
+  const selectedStep = useMemo(() => {
+    if (!selectedStepId) return null;
+
+    return selectedRun?.stepLog?.[selectedStepId] ?? null;
+  }, [selectedRun?.stepLog, selectedStepId]);
+
+  useEffect(() => {
+    setSelectedStepId(undefined);
+  }, [selectedRun?.id]);
+
+  useEffect(() => {
+    if (!selectedStepId) return;
+    if (!selectedRun?.stepLog?.[selectedStepId]) {
+      setSelectedStepId(undefined);
+    }
+  }, [selectedRun?.stepLog, selectedStepId]);
+
+  const handleSelectStep = (stepId: string) => {
+    setSelectedStepId((current) => (current === stepId ? undefined : stepId));
+  };
   const selectedWorkflow = getWorkflowFromCache(selectedRun?.workflow);
   const selectedWorkflowVersion = selectedRun?.workflowVersion
     ? getWorkflowVersionFromCache(selectedRun?.workflowVersion)
@@ -91,8 +114,12 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
       />
       <WorkflowActionsProvider workflowType={selectedWorkflow?.type}>
         <Grid container spacing={3}>
-          <StepTracePanel stepLog={selectedRun?.stepLog ?? null} />
-          <InspectorPanel run={selectedRun ?? null} />
+          <StepTracePanel
+            stepLog={selectedRun?.stepLog ?? null}
+            selectedStepId={selectedStepId}
+            onSelectStep={handleSelectStep}
+          />
+          <InspectorPanel run={selectedRun ?? null} step={selectedStep} />
         </Grid>
       </WorkflowActionsProvider>
     </Stack>

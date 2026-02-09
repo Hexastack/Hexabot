@@ -15,9 +15,15 @@ import { StepTraceList } from "./StepTraceList";
 
 type StepTracePanelProps = {
   stepLog?: Record<string, StepExecutionRecord> | null;
+  selectedStepId?: string | null;
+  onSelectStep?: (stepId: string) => void;
 };
 
-export const StepTracePanel = ({ stepLog }: StepTracePanelProps) => {
+export const StepTracePanel = ({
+  stepLog,
+  selectedStepId,
+  onSelectStep,
+}: StepTracePanelProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [includeSkipped, setIncludeSkipped] = useState(true);
 
@@ -42,7 +48,11 @@ export const StepTracePanel = ({ stepLog }: StepTracePanelProps) => {
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
         />
-        <StepTraceList stepLog={stepLog} />
+        <StepTraceList
+          stepLog={stepLog}
+          selectedStepId={selectedStepId}
+          onSelectStep={onSelectStep}
+        />
       </Paper>
     </Grid>
   );
