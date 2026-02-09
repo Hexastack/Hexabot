@@ -6,12 +6,16 @@
 
 import Editor, { OnMount } from "@monaco-editor/react";
 import { Box, FormControl, FormHelperText, FormLabel } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useColorScheme, useTheme } from "@mui/material/styles";
 import jsonata from "jsonata";
 import * as React from "react";
 
 import { indexToLineCol, toLineHeightPx, toPxValue } from "./jsonataUtils";
-import { createCompletionProvider, registerJsonataLanguage } from "./monaco";
+import {
+  createCompletionProvider,
+  handleEditorWillMount,
+  registerJsonataLanguage,
+} from "./monaco";
 import { extractGlobals } from "./schema";
 import type { JsonataFormulaFieldProps } from "./types";
 
@@ -32,13 +36,16 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
   const theme = useTheme();
   const { root, input, output, context } = React.useMemo(
     () => extractGlobals(globalsSchema),
-    [globalsSchema]
+    [globalsSchema],
   );
   const isJsonataMode = value.startsWith("=");
   const monacoRef = React.useRef<typeof import("monaco-editor") | null>(null);
-  const editorRef =
-    React.useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
-  const completionDisposableRef = React.useRef<import("monaco-editor").IDisposable | null>(null);
+  const editorRef = React.useRef<
+    import("monaco-editor").editor.IStandaloneCodeEditor | null
+  >(null);
+  const completionDisposableRef = React.useRef<
+    import("monaco-editor").IDisposable | null
+  >(null);
   const [internalError, setInternalError] = React.useState<string | null>(null);
   const [height, setHeight] = React.useState<number>(minHeightPx);
   const prevIsJsonataMode = React.useRef<boolean>(isJsonataMode);
@@ -85,19 +92,25 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
         output,
         context,
       },
-      editor.getModel()
+      editor.getModel(),
     );
 
     // Set initial language based on current value
     const model = editor.getModel();
 
     if (model) {
-      monaco.editor.setModelLanguage(model, isJsonataMode ? "jsonata" : "plaintext");
+      monaco.editor.setModelLanguage(
+        model,
+        isJsonataMode ? "jsonata" : "plaintext",
+      );
     }
 
     // Auto-size editor height
     const updateHeight = () => {
-      const content = Math.min(maxHeightPx, Math.max(minHeightPx, editor.getContentHeight()));
+      const content = Math.min(
+        maxHeightPx,
+        Math.max(minHeightPx, editor.getContentHeight()),
+      );
 
       setHeight(content);
       editor.layout({ width: editor.getLayoutInfo().width, height: content });
@@ -129,7 +142,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
         output,
         context,
       },
-      model
+      model,
     );
 
     return () => {
@@ -148,7 +161,10 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
 
     if (!model) return;
 
-    monaco.editor.setModelLanguage(model, isJsonataMode ? "jsonata" : "plaintext");
+    monaco.editor.setModelLanguage(
+      model,
+      isJsonataMode ? "jsonata" : "plaintext",
+    );
 
     // nice UX: when entering jsonata mode, pop suggestions
     const was = prevIsJsonataMode.current;
@@ -195,12 +211,18 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
         monaco.editor.setModelMarkers(model, "jsonata", []);
         setInternalError(null);
       } catch (e: any) {
-        const message = e?.message ? String(e.message) : "Invalid JSONata expression";
+        const message = e?.message
+          ? String(e.message)
+          : "Invalid JSONata expression";
 
         setInternalError(message);
 
         const posIndex: number =
-          typeof e?.position === "number" ? e.position : typeof e?.offset === "number" ? e.offset : 0;
+          typeof e?.position === "number"
+            ? e.position
+            : typeof e?.offset === "number"
+              ? e.offset
+              : 0;
         const { line, col } = indexToLineCol(expr, Math.max(0, posIndex));
         // +1 column shift on first line due to the leading '=' in the editor content
         const lineNumber = line + 1;
@@ -224,6 +246,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
   }, [value, isJsonataMode]);
 
   const showError = Boolean(internalError);
+  const { mode } = useColorScheme();
 
   return (
     <FormControl
@@ -281,6 +304,8 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
           value={value}
           onChange={(v) => onChange(v ?? "")}
           onMount={onMount}
+          theme={mode}
+          beforeMount={handleEditorWillMount}
           language={isJsonataMode ? "jsonata" : "plaintext"}
           height={`${height}px`}
           options={{
