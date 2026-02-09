@@ -4,11 +4,25 @@
  * Full terms: see LICENSE.md.
  */
 
-import { alpha, Components, Theme } from "@mui/material/styles";
+import { PaperOwnProps } from "@mui/material";
+import { alpha, Components, Interpolation, Theme } from "@mui/material/styles";
 
 import { gray } from "../themePrimitives";
 
-/* eslint-disable import/prefer-default-export */
+const getPaperDefaultValues = (
+  theme: Theme,
+  elevation: PaperOwnProps["elevation"] = 2,
+) => {
+  return {
+    padding: theme.spacing(2),
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[elevation],
+  } satisfies Interpolation<{
+    theme: Theme;
+  }>;
+};
+
 export const surfacesCustomizations: Components<Theme> = {
   MuiAccordion: {
     defaultProps: {
@@ -58,14 +72,17 @@ export const surfacesCustomizations: Components<Theme> = {
     },
   },
   MuiPaper: {
-    styleOverrides: {
-      root: ({ theme }) => ({
-        padding: theme.spacing(2),
-      }),
-    },
     defaultProps: {
       elevation: 2,
     },
+    variants: [
+      {
+        props: {
+          variant: "spaced",
+        },
+        style: ({ theme }) => getPaperDefaultValues(theme),
+      },
+    ],
   },
   MuiCard: {
     styleOverrides: {
@@ -125,7 +142,7 @@ export const surfacesCustomizations: Components<Theme> = {
   MuiAppBar: {
     styleOverrides: {
       root: ({ theme }) => ({
-        padding: `0 ${theme.spacing(1.5)}`,
+        padding: theme.spacing(0, 1.5),
         zIndex: theme.zIndex.drawer + 1,
         ".MuiToolbar-root": {
           padding: theme.spacing(0),
