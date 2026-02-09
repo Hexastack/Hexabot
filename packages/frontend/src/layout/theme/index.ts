@@ -16,6 +16,10 @@ import { surfacesCustomizations } from "./customizations/surfaces";
 import { colorSchemes, shadows, shape, typography } from "./themePrimitives";
 
 export const theme = createTheme({
+  cssVariables: {
+    colorSchemeSelector: "data-mui-color-scheme",
+    cssVarPrefix: "template",
+  },
   colorSchemes,
   typography,
   shadows,
