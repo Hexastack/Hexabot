@@ -20,7 +20,14 @@ export const QuickActions = () => {
       <Typography variant="h6" mb={2}>
         Quick Actions
       </Typography>
-      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
         {mockQuickActions.map(({ icon: Icon, ...rest }) => {
           return (
             <Button

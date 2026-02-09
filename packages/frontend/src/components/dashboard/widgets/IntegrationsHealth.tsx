@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Card, CardContent, Grid } from "@mui/material";
+import { CardContent, Grid } from "@mui/material";
 
 import { IntegrationCard } from "../components/IntegrationCard";
 import { TitleWithActions } from "../components/TitleWithActions";
@@ -12,10 +12,10 @@ import { mockIntegrations } from "../mockData";
 
 export const IntegrationsHealth = () => {
   return (
-    <Card>
+    <>
       <TitleWithActions title="Integrations Health" />
       <CardContent>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} justifyContent="center">
           {mockIntegrations.map((int) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={int.id}>
               <IntegrationCard integration={int} />
@@ -23,6 +23,6 @@ export const IntegrationsHealth = () => {
           ))}
         </Grid>
       </CardContent>
-    </Card>
+    </>
   );
 };

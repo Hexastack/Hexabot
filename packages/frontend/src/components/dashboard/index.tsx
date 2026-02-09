@@ -32,7 +32,7 @@ export const Dashboard = () => {
       </Grid>
 
       {/* 2. Main Dashboard Layout */}
-      <Grid container spacing={3}>
+      <Grid size={12} container spacing={3}>
         {/* Left Column: Activity & Actions */}
         <Grid
           size={{ md: 8, xs: 12 }}

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Card, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 import { WorkflowRuns } from "@/components/workflow-runs";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -13,7 +13,7 @@ export const RecentRuns = () => {
   const { t } = useTranslate();
 
   return (
-    <Card>
+    <>
       <Typography variant="h6" mb={2}>
         {t("title.recent_runs")}
       </Typography>
@@ -30,6 +30,6 @@ export const RecentRuns = () => {
           pageSize: 5,
         }}
       />
-    </Card>
+    </>
   );
 };

@@ -5,17 +5,22 @@
  */
 
 import { Timeline } from "@mui/lab";
-import { Box, Paper, Typography } from "@mui/material";
+import { Box, Grid, Paper, Typography } from "@mui/material";
 
+import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useFind } from "@/hooks/crud/useFind";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { WorkflowType } from "@/types/workfow.types";
+import { getRemainingTime } from "@/utils/date";
 
-import { UpcomingScheduleTimelineItem } from "../components/UpcomingScheduleTimelineItem";
+import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
+import { IconContainer } from "../components/IconContainer";
 
 export const UpcomingScheduleTimeline = () => {
   const { t } = useTranslate();
+  const router = useAppRouter();
   const { data: scheduledWorkflows } = useFind(
     { entity: EntityType.WORKFLOW },
     {
@@ -39,9 +44,35 @@ export const UpcomingScheduleTimeline = () => {
               (s1.runAfterMs || 0) > (s2.runAfterMs || 0) ? 1 : -1,
             )
             .map((scheduledWorkflow) => (
-              <UpcomingScheduleTimelineItem
+              <DashboardTimelineItem
                 key={scheduledWorkflow.id}
-                scheduledWorkflow={scheduledWorkflow}
+                author={scheduledWorkflow.schedule || ""}
+                description={scheduledWorkflow.description || ""}
+                time={getRemainingTime(scheduledWorkflow.runAfterMs)}
+                getTitle={() => {
+                  const { key: _, ...rest } =
+                    WORKFLOW_TYPES[scheduledWorkflow.type];
+
+                  return (
+                    <>
+                      <Grid display="flex" gap={1} alignItems="center">
+                        <IconContainer
+                          borderRadius="50%"
+                          padding="2px"
+                          {...rest}
+                        />
+                        <Typography variant="h6">
+                          {scheduledWorkflow.name}
+                        </Typography>
+                      </Grid>
+                    </>
+                  );
+                }}
+                onClick={() => {
+                  router.push({
+                    pathname: `/workflow-editor/${scheduledWorkflow.id}`,
+                  });
+                }}
               />
             ))}
         </Timeline>
