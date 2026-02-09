@@ -4,7 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, List, ListItemButton, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  InputAdornment,
+  List,
+  ListItemButton,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import * as Icons from "lucide-react";
 import { useMemo, useState } from "react";
@@ -12,8 +20,6 @@ import { useMemo, useState } from "react";
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IAction } from "@/types/action.types";
-
-import { SearchBox, SearchInput } from "../FlowsDrawer/styles";
 
 type ActionListDrawerContentProps = {
   actions: IAction[];
@@ -131,19 +137,27 @@ const ActionListDrawerContent = ({
   return (
     <>
       <ActionSearchContainer>
-        <SearchBox>
-          <Icons.Search size={16} />
-          <SearchInput
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("visual_editor.actions_drawer.search_placeholder")}
-            slotProps={{
-              input: {
-                "aria-label": t("visual_editor.actions_drawer.search_label"),
-              },
-            }}
-          />
-        </SearchBox>
+        <TextField
+          fullWidth
+          variant="outlined"
+          size="small"
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t("visual_editor.actions_drawer.search_placeholder")}
+          slotProps={{
+            htmlInput: {
+              "aria-label": t("visual_editor.actions_drawer.search_label"),
+            },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Icons.Search size={16} />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
       </ActionSearchContainer>
       {groupedActions.length ? (
         <ActionGroups>
