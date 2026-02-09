@@ -31,24 +31,9 @@ export const UpcomingScheduleTimeline = () => {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-        px={1}
-      >
-        <Typography variant="h6">Upcoming</Typography>
-      </Box>
+      <Typography variant="h6">Upcoming</Typography>
       {scheduledWorkflows.length ? (
-        <Timeline
-          position="right"
-          sx={{
-            width: "100%",
-            padding: "0 0 16px 16px",
-            margin: 0,
-          }}
-        >
+        <Timeline position="right">
           {scheduledWorkflows
             .sort((s1, s2) =>
               (s1.runAfterMs || 0) > (s2.runAfterMs || 0) ? 1 : -1,
@@ -61,14 +46,7 @@ export const UpcomingScheduleTimeline = () => {
             ))}
         </Timeline>
       ) : (
-        <Paper
-          elevation={3}
-          sx={{
-            m: 0,
-            p: 2,
-            bgcolor: "background.paper",
-          }}
-        >
+        <Paper elevation={3} variant="spaced" sx={{ mt: 1 }}>
           <Typography>{t("label.no_scheduled_workflows")}</Typography>
         </Paper>
       )}

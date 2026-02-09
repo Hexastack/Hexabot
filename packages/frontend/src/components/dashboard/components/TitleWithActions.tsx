@@ -15,13 +15,7 @@ export const TitleWithActions = ({
   actions?: ReactNode;
 }) => {
   return (
-    <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      mb={2}
-      px={1}
-    >
+    <Box display="flex" justifyContent="space-between" alignItems="center">
       <Typography variant="h6" fontWeight={700}>
         {title}
       </Typography>

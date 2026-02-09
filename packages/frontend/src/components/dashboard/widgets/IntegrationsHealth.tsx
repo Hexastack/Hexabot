@@ -4,19 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Card, CardContent, CardHeader, Grid } from "@mui/material";
+import { Card, CardContent, Grid } from "@mui/material";
 
 import { IntegrationCard } from "../components/IntegrationCard";
+import { TitleWithActions } from "../components/TitleWithActions";
 import { mockIntegrations } from "../mockData";
 
 export const IntegrationsHealth = () => {
   return (
     <Card>
-      <CardHeader
-        title="Integrations Health"
-        slotProps={{ title: { variant: "h6", fontWeight: "bold" } }}
-      />
-      <CardContent sx={{ pt: 1 }}>
+      <TitleWithActions title="Integrations Health" />
+      <CardContent sx={{ mt: 1 }}>
         <Grid container spacing={2}>
           {mockIntegrations.map((int) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={int.id}>

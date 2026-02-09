@@ -16,6 +16,7 @@ export const RecentRuns = () => {
     <Card>
       <Typography variant="h6">{t("title.recent_runs")}</Typography>
       <WorkflowRuns
+        sx={{ mt: 1 }}
         filters={[]}
         hasTextFilter={false}
         hidedColumns={["error"]}

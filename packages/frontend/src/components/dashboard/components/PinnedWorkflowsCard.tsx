@@ -31,15 +31,15 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
     <Card
       elevation={0}
       sx={{
-        height: "100%",
         borderRadius: 3,
         bgcolor: alpha(theme.palette.background.default, 0.5),
-        border: `1px solid transparent`,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
         transition: "all 0.2s ease-in-out",
         cursor: "pointer",
         overflow: "visible",
         "&:hover": {
           bgcolor: "background.paper",
+          border: `1px solid ${alpha(theme.palette.primary.main, 1)}`,
           boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           transform: "translateY(-2px)",
           "& .play-button": { opacity: 1, transform: "scale(1)" },
@@ -48,7 +48,7 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
     >
       <CardContent
         sx={{
-          p: 2,
+          px: 2,
           display: "flex",
           alignItems: "center",
           gap: 2,

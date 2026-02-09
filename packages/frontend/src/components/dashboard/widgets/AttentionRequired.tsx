@@ -22,7 +22,7 @@ export const AttentionRequired = () => {
         title="Attention Required"
         actions={<Chip label={mockAttentionItems.length} color="error" />}
       />
-      <Stack spacing={1.5}>
+      <Stack gap={1.5} mt={1}>
         {mockAttentionItems.map((item) => {
           const styles = getSeverityStyles(item.severity);
           const Icon = styles.Icon;
