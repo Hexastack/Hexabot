@@ -39,6 +39,7 @@ export const RunHeader = ({
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar - 1,
       }}
+      variant="spaced"
     >
       <Grid container spacing={2} alignItems="center">
         <Grid
