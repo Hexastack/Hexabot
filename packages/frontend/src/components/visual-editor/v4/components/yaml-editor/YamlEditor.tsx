@@ -4,15 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
-import Editor from "@monaco-editor/react";
+import Editor, { Monaco } from "@monaco-editor/react";
+import { useColorScheme } from "@mui/material";
+
+import { handleEditorWillMount } from "@/app-components/inputs/JsonataFormulaField/monaco";
 
 import { DEFAULT_YAML_STATUS_MESSAGE, YAML_EDITOR_OPTIONS } from "./constants";
 import type { YamlEditorProps } from "./types";
 import { useYamlEditorController } from "./useYamlEditorController";
+
 import "./yaml.worker";
 
 export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
-  const { value, onChange, beforeMount, onMount } = useYamlEditorController({ errorLine, errorMessage });
+  const { value, onChange, beforeMount, onMount } = useYamlEditorController({
+    errorLine,
+    errorMessage,
+  });
+  const { mode } = useColorScheme();
 
   return (
     <div className="yaml-editor nokey">
@@ -21,8 +29,11 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
           value={value}
           onChange={onChange}
           defaultLanguage="yaml"
-          beforeMount={beforeMount}
-          theme="light"
+          beforeMount={(monaco: Monaco) => {
+            beforeMount(monaco);
+            handleEditorWillMount(monaco);
+          }}
+          theme={mode}
           height="100%"
           width="100%"
           onMount={onMount}

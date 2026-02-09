@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Monaco } from "@monaco-editor/react";
+
 import { formatSegmentForJsonata } from "./jsonataUtils";
 import {
   deref,
@@ -16,7 +18,9 @@ import type { JsonSchemaLike } from "./types";
 
 let JSONATA_LANG_REGISTERED = false;
 
-export function registerJsonataLanguage(monaco: typeof import("monaco-editor")) {
+export function registerJsonataLanguage(
+  monaco: typeof import("monaco-editor"),
+) {
   if (JSONATA_LANG_REGISTERED) return;
   JSONATA_LANG_REGISTERED = true;
 
@@ -97,8 +101,12 @@ export function registerJsonataLanguage(monaco: typeof import("monaco-editor")) 
 export function createCompletionProvider(
   monaco: typeof import("monaco-editor"),
   rootSchema: JsonSchemaLike,
-  globals: { input?: JsonSchemaLike; output?: JsonSchemaLike; context?: JsonSchemaLike },
-  targetModel?: import("monaco-editor").editor.ITextModel | null
+  globals: {
+    input?: JsonSchemaLike;
+    output?: JsonSchemaLike;
+    context?: JsonSchemaLike;
+  },
+  targetModel?: import("monaco-editor").editor.ITextModel | null,
 ) {
   const varItems: import("monaco-editor").languages.CompletionItem[] = [
     {
@@ -147,12 +155,13 @@ export function createCompletionProvider(
       // Replacement range (include `$` if needed)
       const word = model.getWordUntilPosition(position);
       let startColumn = word.startColumn;
-      const charBeforeWord = startColumn > 1 ? line.charAt(startColumn - 2) : "";
+      const charBeforeWord =
+        startColumn > 1 ? line.charAt(startColumn - 2) : "";
       const baseRange = new monaco.Range(
         position.lineNumber,
         startColumn,
         position.lineNumber,
-        word.endColumn
+        word.endColumn,
       );
       const rangeIncludingDollar =
         charBeforeWord === "$"
@@ -160,20 +169,28 @@ export function createCompletionProvider(
               position.lineNumber,
               startColumn - 1,
               position.lineNumber,
-              word.endColumn
+              word.endColumn,
             )
           : baseRange;
-      const suggestions: import("monaco-editor").languages.CompletionItem[] = [];
+      const suggestions: import("monaco-editor").languages.CompletionItem[] =
+        [];
 
       // Always allow vars when user is typing `$...`
-      if (textUntilCursor.endsWith("$") || charBeforeWord === "$" || word.word.startsWith("$")) {
-        suggestions.push(...varItems.map((i) => ({ ...i, range: rangeIncludingDollar })));
+      if (
+        textUntilCursor.endsWith("$") ||
+        charBeforeWord === "$" ||
+        word.word.startsWith("$")
+      ) {
+        suggestions.push(
+          ...varItems.map((i) => ({ ...i, range: rangeIncludingDollar })),
+        );
       }
 
       // Context-aware completion: $input.foo.bar.<here>
-      const m = /(\$input|\$output|\$context)((?:\.[A-Za-z_$][A-Za-z0-9_$"]*)*)\.?([A-Za-z_$][A-Za-z0-9_$"]*)?$/.exec(
-        textUntilCursor
-      );
+      const m =
+        /(\$input|\$output|\$context)((?:\.[A-Za-z_$][A-Za-z0-9_$"]*)*)\.?([A-Za-z_$][A-Za-z0-9_$"]*)?$/.exec(
+          textUntilCursor,
+        );
 
       if (!m) return { suggestions };
 
@@ -183,7 +200,10 @@ export function createCompletionProvider(
 
       if (!schemaRoot) return { suggestions };
 
-      const segments = dotted.split(".").filter(Boolean).map((s) => s.replace(/^"|"$/g, ""));
+      const segments = dotted
+        .split(".")
+        .filter(Boolean)
+        .map((s) => s.replace(/^"|"$/g, ""));
       // Traverse to the node for these segments
       let node: JsonSchemaLike | undefined = schemaRoot;
 
@@ -215,7 +235,10 @@ export function createCompletionProvider(
       // If user is right after `$input` with no dot yet, insert a dot automatically
       const needsDot = /(\$input|\$output|\$context)$/.test(textUntilCursor);
       const propertyItems = keys.map((k) => {
-        const propSchema = deref(rootSchema, getPropertySchema(rootSchema, node!, k));
+        const propSchema = deref(
+          rootSchema,
+          getPropertySchema(rootSchema, node!, k),
+        );
         const insert = formatSegmentForJsonata(k);
         const insertText = needsDot ? `.${insert}` : insert;
 
@@ -237,3 +260,14 @@ export function createCompletionProvider(
     },
   });
 }
+
+export const handleEditorWillMount = (monaco: Monaco) => {
+  monaco.editor.defineTheme("dark", {
+    base: "vs-dark",
+    inherit: true,
+    rules: [],
+    colors: {
+      "editor.background": "#000000",
+    },
+  });
+};

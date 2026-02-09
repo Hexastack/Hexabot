@@ -8,15 +8,12 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  ThemeProvider,
   Typography,
 } from "@mui/material";
 import { Form } from "@rjsf/mui";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
-
-import { theme } from "@/layout/theme";
 
 import { FORM_TEMPLATES } from "./templates";
 import { FORM_WIDGETS } from "./widgets";
@@ -54,24 +51,20 @@ export const ActionSchemaPanel = ({
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
-        <ThemeProvider theme={theme}>
-          <Form
-            schema={schema as RJSFSchema}
-            validator={validator}
-            formData={formData}
-            onChange={(event) =>
-              onFormDataChange(
-                (event.formData ?? {}) as Record<string, unknown>,
-              )
-            }
-            showErrorList={false}
-            noHtml5Validate
-            uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
-            idPrefix={`action-${panelKey}`}
-            templates={FORM_TEMPLATES}
-            widgets={FORM_WIDGETS}
-          />
-        </ThemeProvider>
+        <Form
+          schema={schema as RJSFSchema}
+          validator={validator}
+          formData={formData}
+          onChange={(event) =>
+            onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
+          }
+          showErrorList={false}
+          noHtml5Validate
+          uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
+          idPrefix={`action-${panelKey}`}
+          templates={FORM_TEMPLATES}
+          widgets={FORM_WIDGETS}
+        />
       ) : (
         <Typography variant="body2" color="text.secondary">
           {emptyLabel}
