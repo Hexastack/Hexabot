@@ -8,6 +8,7 @@ import {
   Workflow as AgenticWorkflow,
   ExecutionState,
   JsonataFunctionRegistry,
+  StepExecutionRecord,
   WorkflowRunner,
 } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
@@ -320,6 +321,7 @@ export class AgenticService {
     const state = runner.getState();
     const metadata = this.buildMetadata(state, run.metadata);
     const output = this.pickOutput(result, state, run.output);
+    const stepLog = this.buildStepLog(runner, run.stepLog);
     this.logger.debug('Persisting workflow result', {
       runId: run.id,
       status: result.status,
@@ -370,6 +372,7 @@ export class AgenticService {
       output,
       metadata,
       context: contextState,
+      stepLog,
     });
   }
 
@@ -424,6 +427,18 @@ export class AgenticService {
   }
 
   /**
+   * Merge persisted step log entries with the latest runner log.
+   */
+  private buildStepLog(
+    runner: WorkflowRunner,
+    existing?: Record<string, StepExecutionRecord> | null,
+  ): Record<string, StepExecutionRecord> | null {
+    const merged = { ...(existing ?? {}), ...runner.getStepLog() };
+
+    return Object.keys(merged).length > 0 ? merged : null;
+  }
+
+  /**
    * Decide which output payload to persist based on result and runner state.
    */
   private pickOutput(
@@ -453,6 +468,7 @@ export class AgenticService {
   ): Promise<void> {
     const state = runner.getState();
     const metadata = this.buildMetadata(state, run.metadata);
+    const stepLog = this.buildStepLog(runner, run.stepLog);
 
     this.logger.error(
       'Persisting failed workflow run after runner crash',
@@ -474,6 +490,7 @@ export class AgenticService {
       output: state?.output ?? run.output ?? null,
       metadata,
       context: contextState,
+      stepLog,
     });
   }
 

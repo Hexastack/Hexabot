@@ -8,6 +8,7 @@ import type {
   ActionSnapshot,
   ActionStatus,
   BaseWorkflowContext,
+  StepExecutionRecord,
   WorkflowRunStatus,
   WorkflowSnapshot,
 } from './context';
@@ -56,6 +57,9 @@ export class WorkflowRunner {
 
   // Snapshots of action execution keyed by step id for inspection/resume.
   private snapshots: Record<string, ActionSnapshot> = {};
+
+  // Detailed execution records for each task step, used by UI/telemetry.
+  private stepLog: Record<string, StepExecutionRecord> = {};
 
   // Suspension state when execution is paused awaiting external input.
   private suspension?: Suspension;
@@ -117,6 +121,24 @@ export class WorkflowRunner {
   }
 
   /**
+   * Read the per-step execution records captured for UI/telemetry.
+   *
+   * @returns A shallow copy of the step execution log.
+   */
+  getStepLog(): Record<string, StepExecutionRecord> {
+    return Object.fromEntries(
+      Object.entries(this.stepLog).map(([id, record]) => [
+        id,
+        {
+          ...record,
+          context: record.context ? { ...record.context } : undefined,
+          error: record.error ? { ...record.error } : undefined,
+        },
+      ]),
+    );
+  }
+
+  /**
    * Read the step currently being executed.
    *
    * @returns Metadata for the in-flight step, if any.
@@ -144,6 +166,7 @@ export class WorkflowRunner {
   async start(args: RunnerStartArgs): Promise<StartResult> {
     this.status = 'running';
     this.snapshots = {};
+    this.stepLog = {};
     this.suspension = undefined;
     this.lastResumeData = undefined;
     this.currentStep = undefined;
@@ -275,6 +298,7 @@ export class WorkflowRunner {
     };
     runner.context = options.context;
     runner.snapshots = options.snapshot.actions ?? {};
+    runner.stepLog = {};
     runner.status = options.snapshot.status ?? 'idle';
     runner.lastResumeData = options.lastResumeData;
     runner.runtimeControl = new RunnerRuntimeControl(runner);
@@ -374,6 +398,39 @@ export class WorkflowRunner {
   }
 
   /**
+   * Record a detailed execution entry for the given step.
+   *
+   * @param step The step being updated.
+   * @param update Partial record fields to merge into the log.
+   */
+  private recordStepExecution(
+    step: StepInfo,
+    update: Partial<StepExecutionRecord>,
+  ) {
+    const existing = this.stepLog[step.id];
+    const base: StepExecutionRecord =
+      existing ??
+      ({
+        id: step.id,
+        name: step.name,
+        status: 'pending',
+      } satisfies StepExecutionRecord);
+    const mergedContext =
+      existing?.context || update.context
+        ? { ...existing?.context, ...update.context }
+        : undefined;
+
+    this.stepLog[step.id] = {
+      ...base,
+      ...update,
+      id: step.id,
+      name: step.name,
+      status: update.status ?? base.status,
+      context: mergedContext,
+    };
+  }
+
+  /**
    * Construct the environment object passed to step executors.
    *
    * @returns A step executor environment bound to this runner.
@@ -392,6 +449,8 @@ export class WorkflowRunner {
         this.buildInstanceStepInfo(step, iterationStack),
       markSnapshot: (step, status, reason) =>
         this.markSnapshot(step, status, reason),
+      recordStepExecution: (step, update) =>
+        this.recordStepExecution(step, update),
       emit: (event, payload) => this.emit(event, payload),
       setCurrentStep: (step?: StepInfo) => {
         this.currentStep = step;

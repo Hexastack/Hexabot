@@ -54,6 +54,7 @@ const createEnv = (): StepExecutorEnv => {
     runId: 'run-1',
     buildInstanceStepInfo: jest.fn(),
     markSnapshot: jest.fn(),
+    recordStepExecution: jest.fn(),
     emit: jest.fn(),
     setCurrentStep: jest.fn(),
     captureTaskOutput: jest.fn(),

@@ -45,6 +45,13 @@ export async function executeTaskStep(
     accumulator: state.accumulator,
   };
   const inputs = await evaluateMapping(task.inputs, scope);
+  env.recordStepExecution(stepInfo, {
+    action: task.actionName,
+    status: 'running',
+    startedAt: Date.now(),
+    input: inputs,
+    context: { before: env.context.snapshot() },
+  });
   env.setCurrentStep(stepInfo);
   env.markSnapshot(stepInfo, 'running');
   env.emit('hook:step:start', { runId: env.runId, step: stepInfo });
@@ -52,12 +59,24 @@ export async function executeTaskStep(
   try {
     const result = await task.action.run(inputs, env.context, task.settings);
     await env.captureTaskOutput(task, state, result);
+    env.recordStepExecution(stepInfo, {
+      status: 'completed',
+      endedAt: Date.now(),
+      output: result,
+      context: { after: env.context.snapshot() },
+    });
     env.markSnapshot(stepInfo, 'completed');
     env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
 
     return undefined;
   } catch (error) {
     if (error instanceof WorkflowSuspendedError) {
+      env.recordStepExecution(stepInfo, {
+        status: 'suspended',
+        endedAt: Date.now(),
+        reason: error.reason,
+        context: { after: env.context.snapshot() },
+      });
       env.markSnapshot(stepInfo, 'suspended', error.reason);
       env.emit('hook:step:suspended', {
         runId: env.runId,
@@ -72,6 +91,12 @@ export async function executeTaskStep(
         data: error.data,
         continue: async (resumeData: unknown) => {
           await env.captureTaskOutput(task, state, resumeData);
+          env.recordStepExecution(stepInfo, {
+            status: 'completed',
+            endedAt: Date.now(),
+            output: resumeData,
+            context: { after: env.context.snapshot() },
+          });
           env.markSnapshot(stepInfo, 'completed');
           env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
 
@@ -80,14 +105,23 @@ export async function executeTaskStep(
       };
     }
 
-    env.markSnapshot(
-      stepInfo,
-      'failed',
-      error instanceof Error ? error.message : String(error),
-    );
+    env.recordStepExecution(stepInfo, {
+      status: 'failed',
+      endedAt: Date.now(),
+      error: normalizeError(error),
+      context: { after: env.context.snapshot() },
+    });
+    env.markSnapshot(stepInfo, 'failed', normalizeErrorMessage(error));
     env.emit('hook:step:error', { runId: env.runId, step: stepInfo, error });
     throw error;
   } finally {
     env.setCurrentStep(undefined);
   }
 }
+
+const normalizeError = (error: unknown): { message: string; stack?: string } =>
+  error instanceof Error
+    ? { message: error.message, stack: error.stack }
+    : { message: String(error) };
+const normalizeErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);

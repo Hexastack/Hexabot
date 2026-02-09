@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowSnapshot } from "@hexabot-ai/agentic";
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
@@ -14,10 +14,10 @@ import { StepTraceHeader } from "./StepTraceHeader";
 import { StepTraceList } from "./StepTraceList";
 
 type StepTracePanelProps = {
-  snapshot?: WorkflowSnapshot | null;
+  stepLog?: Record<string, StepExecutionRecord> | null;
 };
 
-export const StepTracePanel = ({ snapshot }: StepTracePanelProps) => {
+export const StepTracePanel = ({ stepLog }: StepTracePanelProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [includeSkipped, setIncludeSkipped] = useState(true);
 
@@ -42,7 +42,7 @@ export const StepTracePanel = ({ snapshot }: StepTracePanelProps) => {
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
         />
-        <StepTraceList snapshot={snapshot} />
+        <StepTraceList stepLog={stepLog} />
       </Paper>
     </Grid>
   );

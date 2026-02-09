@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionSnapshot } from "@hexabot-ai/agentic";
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 
 export const getStepOrder = (id: string): number => {
   const [prefix] = id.split(":");
@@ -13,11 +13,20 @@ export const getStepOrder = (id: string): number => {
   return Number.isFinite(order) ? order : Number.MAX_SAFE_INTEGER;
 };
 
-export const getDurationLabel = (action: ActionSnapshot): string => {
-  const candidate = (action as ActionSnapshot & { duration?: number }).duration;
+export const getDurationLabel = (step: StepExecutionRecord): string => {
+  const candidate = (step as StepExecutionRecord & { duration?: number }).duration;
 
   if (typeof candidate === "number" && Number.isFinite(candidate)) {
     return `${Math.round(candidate)}ms`;
+  }
+
+  if (
+    typeof step.startedAt === "number" &&
+    Number.isFinite(step.startedAt) &&
+    typeof step.endedAt === "number" &&
+    Number.isFinite(step.endedAt)
+  ) {
+    return `${Math.round(Math.max(0, step.endedAt - step.startedAt))}ms`;
   }
 
   return "—";

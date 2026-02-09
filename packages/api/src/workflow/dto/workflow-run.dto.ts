@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowRunStatus, WorkflowSnapshot } from '@hexabot-ai/agentic';
+import {
+  StepExecutionRecord,
+  WorkflowRunStatus,
+  WorkflowSnapshot,
+} from '@hexabot-ai/agentic';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
@@ -48,6 +52,9 @@ export class WorkflowRunStub extends BaseStub {
 
   @Expose()
   snapshot?: WorkflowSnapshot | null;
+
+  @Expose()
+  stepLog?: Record<string, StepExecutionRecord> | null;
 
   @Expose()
   suspendedStep?: string | null;
@@ -167,6 +174,11 @@ export class WorkflowRunCreateDto {
   @IsOptional()
   @IsObject()
   snapshot?: WorkflowSnapshot | null;
+
+  @ApiPropertyOptional({ description: 'Step execution log', type: Object })
+  @IsOptional()
+  @IsObject()
+  stepLog?: Record<string, StepExecutionRecord> | null;
 
   @ApiPropertyOptional({
     description: 'Step id where the run is suspended',

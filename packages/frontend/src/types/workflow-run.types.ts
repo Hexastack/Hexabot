@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowRunStatus, WorkflowSnapshot } from "@hexabot-ai/agentic";
+import type {
+  StepExecutionRecord,
+  WorkflowRunStatus,
+  WorkflowSnapshot,
+} from "@hexabot-ai/agentic";
 
 import { EntityType, Format } from "@/services/types";
 
@@ -30,6 +34,7 @@ export interface IWorkflowRunAttributes {
   output?: Record<string, unknown> | null;
   context?: Record<string, unknown> | null;
   snapshot?: WorkflowSnapshot | null;
+  stepLog?: Record<string, StepExecutionRecord> | null;
   suspendedStep?: string | null;
   suspensionReason?: string | null;
   suspensionData?: unknown;
@@ -54,23 +59,7 @@ export interface IWorkflowRunFilters {
 
 export interface IWorkflowRunStub
   extends IBaseSchema,
-    OmitPopulate<IWorkflowRunAttributes, EntityType.WORKFLOW_RUN> {
-  status: WorkflowRunStatus;
-  input?: Record<string, unknown> | null;
-  output?: Record<string, unknown> | null;
-  context?: Record<string, unknown> | null;
-  snapshot?: WorkflowSnapshot | null;
-  suspendedStep?: string | null;
-  suspensionReason?: string | null;
-  suspensionData?: unknown;
-  lastResumeData?: unknown;
-  error?: string | null;
-  suspendedAt?: Date | null;
-  finishedAt?: Date | null;
-  failedAt?: Date | null;
-  duration?: number | null;
-  metadata?: Record<string, unknown> | null;
-}
+    OmitPopulate<IWorkflowRunAttributes, EntityType.WORKFLOW_RUN> {}
 
 export interface IWorkflowRun extends IWorkflowRunStub, IFormat<Format.BASIC> {
   workflow: string;

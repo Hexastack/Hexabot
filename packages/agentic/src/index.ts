@@ -28,6 +28,7 @@ export {
   BaseWorkflowContext,
   type ActionSnapshot,
   type ActionStatus,
+  type StepExecutionRecord,
   type SuspensionOptions,
   type WorkflowRunStatus,
   type WorkflowRuntimeControl,
