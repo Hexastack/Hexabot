@@ -6,30 +6,6 @@
 
 import { Activity, Play, Settings, XCircle } from "lucide-react";
 
-export const mockStats = {
-  workflows: {
-    total: 42,
-    conversational: 15,
-    scheduled: 12,
-    manual: 15,
-  },
-  runs: {
-    total: 1250,
-    successRate: 98.5,
-    trend: 2.1,
-  },
-  messages: {
-    total: 8540,
-  },
-  cost: {
-    amount: 14.2,
-    currency: "$",
-  },
-  alerts: {
-    count: 2,
-  },
-};
-
 export const mockQuickActions = [
   { id: "create", label: "Create Workflow", icon: Activity, url: "" }, // icon will be handled in component
   { id: "run", label: "Run Manual Workflow", icon: Play, url: "" },
@@ -120,69 +96,6 @@ export const mockRecentActivity = [
     text: "WhatsApp Integration reconnected",
     user: "Admin",
     time: "6h ago",
-  },
-];
-
-export const mockRecentRuns = [
-  {
-    id: "run-1",
-    time: "10:42 AM",
-    workflow: "Support Bot",
-    type: "Conversational",
-    trigger: "Event",
-    status: "Success",
-    duration: "45s",
-  },
-  {
-    id: "run-2",
-    time: "10:30 AM",
-    workflow: "Data Sync",
-    type: "Scheduled",
-    trigger: "Schedule",
-    status: "Success",
-    duration: "2m 10s",
-  },
-  {
-    id: "run-3",
-    time: "09:15 AM",
-    workflow: "Onboarding",
-    type: "Conversational",
-    trigger: "Event",
-    status: "Failed",
-    duration: "10s",
-  },
-  {
-    id: "run-4",
-    time: "Yesterday",
-    workflow: "User Export",
-    type: "Manual",
-    trigger: "Manual",
-    status: "Warning",
-    duration: "5m",
-  },
-];
-
-export const mockUpcomingSchedule = [
-  {
-    id: "sch-1",
-    name: "Daily Report",
-    workflow: "Report Gen",
-    nextRun: "In 2 hours",
-    enabled: true,
-  },
-  {
-    id: "sch-2",
-    name: "Weekly Backup",
-    workflow: "Backup System",
-    nextRun: "Tomorrow",
-    enabled: true,
-  },
-  {
-    id: "sch-3",
-    name: "Reminder Emails",
-    workflow: "Email Seq",
-    nextRun: "Mon, 9:00 AM",
-    enabled: false,
   },
 ];
 
