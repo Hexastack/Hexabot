@@ -14,7 +14,7 @@ export const IntegrationsHealth = () => {
   return (
     <Card>
       <TitleWithActions title="Integrations Health" />
-      <CardContent sx={{ mt: 1 }}>
+      <CardContent>
         <Grid container spacing={2}>
           {mockIntegrations.map((int) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={int.id}>

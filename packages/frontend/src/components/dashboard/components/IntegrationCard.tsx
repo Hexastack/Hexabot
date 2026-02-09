@@ -4,15 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  alpha,
-  Box,
-  Card,
-  Chip,
-  Stack,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, Card, Chip, Stack, Typography, useTheme } from "@mui/material";
 import { Link2, LucideIcon, Mail, MessageCircle } from "lucide-react";
 
 import { IconContainer } from "./IconContainer";
@@ -30,13 +22,7 @@ export const IntegrationCard = ({ integration }: { integration: any }) => {
   const icon = getIcon();
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: 3,
-        border: `1px solid ${isConn ? theme.palette.divider : alpha(theme.palette.warning.main, 0.5)}`,
-      }}
-    >
+    <Card variant="outlined">
       <Stack spacing={1.5}>
         <Stack
           direction="row"

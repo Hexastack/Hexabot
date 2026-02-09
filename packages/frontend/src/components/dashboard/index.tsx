@@ -46,6 +46,7 @@ export const Dashboard = () => {
           </Grid>
 
           <Grid size={12}>
+            {/* TODO replace mock data by an API integration */}
             <PinnedWorkflows />
           </Grid>
 
@@ -55,9 +56,11 @@ export const Dashboard = () => {
 
           <Grid container spacing={3}>
             <Grid size={{ md: 6, xs: 12 }}>
+              {/* TODO replace mock data by an API integration */}
               <ConversationSnapshot />
             </Grid>
             <Grid size={{ md: 6, xs: 12 }}>
+              {/* TODO replace mock data by an API integration */}
               <RecentActivity />
             </Grid>
           </Grid>
@@ -71,6 +74,7 @@ export const Dashboard = () => {
           flexDirection="column"
         >
           <Grid size={12}>
+            {/* TODO replace mock data by an API integration */}
             <AttentionRequired />
           </Grid>
 
@@ -79,6 +83,7 @@ export const Dashboard = () => {
           </Grid>
 
           <Grid size={12}>
+            {/* TODO replace mock data by an API integration */}
             <IntegrationsHealth />
           </Grid>
         </Grid>

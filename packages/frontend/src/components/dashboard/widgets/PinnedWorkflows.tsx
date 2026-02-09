@@ -21,7 +21,7 @@ export const PinnedWorkflows = () => {
           </Button>
         }
       />
-      <Grid container spacing={2} mt={1}>
+      <Grid container spacing={2}>
         {mockPinnedWorkflows.map((wf) => (
           <Grid size={{ xs: 12, sm: 6, md: 4 }} key={wf.id}>
             <PinnedWorkflowsCard workflow={wf} />

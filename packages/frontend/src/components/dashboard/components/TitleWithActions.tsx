@@ -16,7 +16,7 @@ export const TitleWithActions = ({
 }) => {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center">
-      <Typography variant="h6" fontWeight={700}>
+      <Typography variant="h6" fontWeight={700} mb={2}>
         {title}
       </Typography>
       {actions}

@@ -21,12 +21,7 @@ export const RecentActivity = () => {
       <TitleWithActions
         title="Activity"
         actions={
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<Filter size={14} />}
-            sx={{ borderRadius: 2 }}
-          >
+          <Button size="small" variant="text" startIcon={<Filter size={14} />}>
             Filter
           </Button>
         }
@@ -88,7 +83,7 @@ export const RecentActivity = () => {
                   </Box>
                 </Box>
 
-                <Box sx={{ flexGrow: 1 }}>
+                <Box>
                   <Box
                     sx={{
                       display: "flex",
