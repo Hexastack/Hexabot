@@ -22,7 +22,7 @@ export const IntegrationCard = ({ integration }: { integration: any }) => {
   const icon = getIcon();
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{ height: "100%" }}>
       <Stack spacing={1.5}>
         <Stack
           direction="row"
