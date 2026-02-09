@@ -17,15 +17,11 @@ type DrawerResizerProps = {
   disabled?: boolean;
 };
 
-export const StyledDrawer = styled(Drawer, {
+export const LeftSideFlowDrawer = styled(Drawer, {
   shouldForwardProp: (prop) =>
     prop !== "open" && prop !== "drawerWidth" && prop !== "collapsedWidth",
 })<StyledDrawerProps>(({ theme, open, drawerWidth, collapsedWidth }) => ({
   width: open ? drawerWidth : collapsedWidth,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-  boxSizing: "border-box",
-  height: "100%",
   "& .MuiDrawer-paper": {
     width: open ? drawerWidth : collapsedWidth,
     transition: theme.transitions.create("width", {
@@ -34,22 +30,16 @@ export const StyledDrawer = styled(Drawer, {
         ? theme.transitions.duration.enteringScreen
         : theme.transitions.duration.leavingScreen,
     }),
-    display: "flex",
-    flexDirection: "column",
     position: "relative",
-    height: "100%",
-    overflow: "hidden",
-    borderRight: "1px solid #e3e5e8",
-    backgroundColor: "#f7f8fa",
   },
 }));
 
-export const DrawerHeader = styled(Box)(() => ({
+export const FlowDrawerHeader = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "12px 12px 8px 12px",
-  minHeight: 48,
+  padding: theme.spacing(1.5, 1.5, 1, 1.5),
+  minHeight: theme.spacing(6),
 }));
 
 export const DrawerBody = styled(Box)(() => ({
@@ -59,22 +49,22 @@ export const DrawerBody = styled(Box)(() => ({
   minHeight: 0,
 }));
 
-export const YamlEditorContainer = styled(Box)(() => ({
+export const YamlEditorContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
   minHeight: 0,
-  padding: "12px",
+  padding: theme.spacing(1.5),
 }));
 
-export const DrawerResizer = styled(Box, {
+export const FlowDrawerResizer = styled(Box, {
   shouldForwardProp: (prop) => prop !== "disabled",
 })<DrawerResizerProps>(({ theme, disabled }) => ({
   position: "absolute",
   top: 0,
   right: 0,
   height: "100%",
-  width: 6,
+  width: theme.spacing(0.75),
   cursor: disabled ? "default" : "col-resize",
   zIndex: 2,
   pointerEvents: disabled ? "none" : "auto",
@@ -82,39 +72,49 @@ export const DrawerResizer = styled(Box, {
     content: '""',
     position: "absolute",
     top: 0,
-    right: 2,
-    width: 2,
+    right: theme.spacing(0.25),
+    width: theme.spacing(0.25),
     height: "100%",
     backgroundColor: alpha(theme.palette.primary.main, 0.2),
     opacity: 0,
-    transition: "opacity 0.15s ease",
+    transition: theme.transitions.create("opacity", {
+      duration: theme.transitions.duration.shortest,
+    }),
   },
   "&:hover::after": {
     opacity: 1,
   },
 }));
 
-export const ListContainer = styled(Box)(() => ({
+export const FlowListContainer = styled(Box)(({ theme }) => ({
   flex: 1,
   overflowY: "auto",
-  padding: "0 8px 12px",
+  padding: theme.spacing(0, 1, 1.5),
 }));
 
-export const FlowItem = styled(ListItemButton)(() => ({
-  borderRadius: 10,
-  padding: "10px 12px",
+export const FlowItem = styled(ListItemButton)(({ theme }) => ({
+  borderRadius: theme.spacing(1.25),
+  padding: theme.spacing(1.25, 1.5),
   alignItems: "flex-start",
-  gap: 8,
+  gap: theme.spacing(1),
   "&.Mui-selected": {
-    backgroundColor: "#eaf1f1",
+    backgroundColor: alpha(
+      theme.palette.primary.main,
+      theme.palette.action.selectedOpacity,
+    ),
   },
   "&.Mui-selected:hover": {
-    backgroundColor: "#e3eded",
+    backgroundColor: alpha(
+      theme.palette.primary.main,
+      theme.palette.action.selectedOpacity + theme.palette.action.hoverOpacity,
+    ),
   },
   "& .flow-row-actions": {
     opacity: 0,
     pointerEvents: "none",
-    transition: "opacity 0.15s ease",
+    transition: theme.transitions.create("opacity", {
+      duration: theme.transitions.duration.shortest,
+    }),
   },
   "&:hover .flow-row-actions": {
     opacity: 1,
@@ -126,8 +126,8 @@ export const FlowItem = styled(ListItemButton)(() => ({
   },
 }));
 
-export const HighlightMark = styled("mark")(() => ({
-  backgroundColor: "#ffe7a8",
-  borderRadius: 2,
-  padding: "0 1px",
+export const FlowSeachResultHighlightMark = styled("mark")(({ theme }) => ({
+  backgroundColor: alpha(theme.palette.warning.light, 0.4),
+  borderRadius: theme.spacing(0.25),
+  padding: theme.spacing(0, 0.125),
 }));

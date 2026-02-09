@@ -90,14 +90,14 @@ export const WorkflowVersionItem = ({
               ? actionMeta.color
               : theme.palette.background.paper,
             color: isCurrent ? theme.palette.common.white : actionMeta.color,
-            boxShadow: "none",
+            boxShadow: isCurrent ? "none" : undefined,
           }}
         />
         {index < total - 1 && (
           <TimelineConnector sx={{ backgroundColor: theme.palette.divider }} />
         )}
       </TimelineSeparator>
-      <TimelineContent sx={{ py: 0, pb: 2, pr: 1 }}>
+      <TimelineContent sx={{ pt: 0, pb: 2, pr: 1 }}>
         <Box
           sx={{
             p: 1.25,

@@ -39,8 +39,8 @@ import { FlowsDrawerList } from "./FlowsDrawerList";
 import { FlowsDrawerSearchActions } from "./FlowsDrawerSearchActions";
 import {
   DrawerBody,
-  DrawerResizer,
-  StyledDrawer,
+  FlowDrawerResizer,
+  LeftSideFlowDrawer,
   YamlEditorContainer,
 } from "./styles";
 import type { FlowMatch, FlowTypeGroup, FlowsDrawerProps } from "./types";
@@ -444,7 +444,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   };
 
   return (
-    <StyledDrawer
+    <LeftSideFlowDrawer
       variant="permanent"
       open={open}
       anchor="left"
@@ -534,7 +534,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         />
       )}
       {open && (
-        <DrawerResizer
+        <FlowDrawerResizer
           onMouseDown={handleResizeStart}
           role="separator"
           aria-orientation="vertical"
@@ -549,6 +549,6 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         deleteDisabled={Boolean(selectedMenuFlow?.builtin)}
         deleteLabel={t("button.delete")}
       />
-    </StyledDrawer>
+    </LeftSideFlowDrawer>
   );
 };
