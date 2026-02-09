@@ -112,7 +112,7 @@ export const Settings = () => {
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={SettingsIcon} title={t("title.settings")} />
       <Grid size={12}>
-        <Paper sx={{ padding: 3 }}>
+        <Paper variant="spaced">
           <Grid sx={{ display: "flex", maxWidth: "md" }}>
             <Tabs
               orientation="vertical"

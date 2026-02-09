@@ -7,7 +7,6 @@
 import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { User } from "lucide-react";
-import React from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslate } from "@/hooks/useTranslate";

@@ -8,7 +8,11 @@ import { Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, PropsWithChildren } from "react";
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
+const PublicContentPaper = styled(Paper)(({ theme }) => ({
+  width: "100%",
+  [theme.breakpoints.up("md")]: {
+    width: "33%",
+  },
   "&::before": {
     content: '""',
     display: "block",
@@ -25,8 +29,6 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 export const PublicContentWrapper: FC<PropsWithChildren> = ({ children }) => (
   <Grid container justifyContent="center">
-    <StyledPaper sx={{ width: { xs: "100%", md: "33%" } }}>
-      {children}
-    </StyledPaper>
+    <PublicContentPaper variant="spaced">{children}</PublicContentPaper>
   </Grid>
 );
