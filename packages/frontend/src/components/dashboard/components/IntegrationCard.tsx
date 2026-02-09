@@ -13,19 +13,21 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Link2, Mail, MessageCircle } from "lucide-react";
+import { Link2, LucideIcon, Mail, MessageCircle } from "lucide-react";
+
+import { IconContainer } from "./IconContainer";
 
 export const IntegrationCard = ({ integration }: { integration: any }) => {
   const theme = useTheme();
   const isConn = integration.status === "Connected";
   // Mock logo or icon based on name
-  const getIcon = () => {
-    if (integration.name.includes("WhatsApp"))
-      return <MessageCircle size={20} />;
-    if (integration.name.includes("Email")) return <Mail size={20} />;
+  const getIcon = (): LucideIcon => {
+    if (integration.name.includes("WhatsApp")) return MessageCircle;
+    if (integration.name.includes("Email")) return Mail;
 
-    return <Link2 size={20} />;
+    return Link2;
   };
+  const icon = getIcon();
 
   return (
     <Card
@@ -46,20 +48,14 @@ export const IntegrationCard = ({ integration }: { integration: any }) => {
           alignItems="center"
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                p: 1,
-                borderRadius: "50%",
-                bgcolor: isConn
-                  ? alpha(theme.palette.success.main, 0.1)
-                  : alpha(theme.palette.warning.main, 0.1),
-                color: isConn
-                  ? theme.palette.success.main
-                  : theme.palette.warning.main,
-              }}
-            >
-              {getIcon()}
-            </Box>
+            <IconContainer
+              icon={icon}
+              color={
+                isConn ? theme.palette.success.main : theme.palette.warning.main
+              }
+              borderRadius="50%"
+              size={20}
+            />
             <Typography variant="body2" fontWeight="bold">
               {integration.name}
             </Typography>

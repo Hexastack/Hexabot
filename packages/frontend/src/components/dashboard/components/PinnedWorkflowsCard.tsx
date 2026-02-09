@@ -17,6 +17,8 @@ import { Play } from "lucide-react";
 
 import { getTypeIcon } from "../utils/transform.util";
 
+import { IconContainer } from "./IconContainer";
+
 export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
   const theme = useTheme();
   const isEnabled = workflow.status === "Enabled";
@@ -54,21 +56,11 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
           margin: "auto",
         }}
       >
-        {/* Icon Box */}
-        <Box
-          sx={{
-            minWidth: 48,
-            height: 48,
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.1),
-            color: theme.palette.primary.main,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon size={20} />
-        </Box>
+        <IconContainer
+          icon={Icon}
+          color={theme.palette.primary.main}
+          borderRadius="16px"
+        />
 
         {/* Content */}
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>

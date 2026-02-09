@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Calendar,
   FileText,
+  LucideIcon,
   MousePointer2,
   PlayIcon,
   RefreshCcw,
@@ -59,7 +60,7 @@ export const getColor = (c: string) => {
   return colors[c] || theme.palette.primary.main;
 };
 
-export const getTypeIcon = (type: string) => {
+export const getTypeIcon = (type: string): LucideIcon => {
   if (type === "Conversational") return FileText;
   if (type === "Scheduled") return Calendar;
 

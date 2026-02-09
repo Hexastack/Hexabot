@@ -15,7 +15,9 @@ export type WorkflowBadgeWithTitleProps = {
   workflow?: IWorkflow | null;
 };
 
-export const WorkflowBadgeWithTitle = ({ workflow }: WorkflowBadgeWithTitleProps) => {
+export const WorkflowBadgeWithTitle = ({
+  workflow,
+}: WorkflowBadgeWithTitleProps) => {
   if (!workflow) {
     return null;
   }

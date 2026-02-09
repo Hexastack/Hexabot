@@ -15,6 +15,8 @@ import {
 
 import { getColor } from "../utils/transform.util";
 
+import { IconContainer } from "./IconContainer";
+
 export const KPICard = ({
   title,
   value,
@@ -27,7 +29,7 @@ export const KPICard = ({
   return (
     <Card
       sx={{
-        height: "100%",
+        py: 6,
         borderRadius: 3,
         boxShadow: "0px 2px 10px rgba(0,0,0,0.03)",
         background: `linear-gradient(135deg, ${alpha(mainColor, 0.05)} 0%, ${alpha(mainColor, 0.2)} 100%)`,
@@ -39,16 +41,7 @@ export const KPICard = ({
         },
       }}
     >
-      <CardContent
-        sx={{
-          p: 2.5,
-          "&:last-child": { pb: 2.5 },
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          justifyContent: "space-between",
-        }}
-      >
+      <CardContent>
         <Box>
           <Stack
             direction="row"
@@ -56,19 +49,7 @@ export const KPICard = ({
             alignItems="center"
             mb={1}
           >
-            <Box
-              sx={{
-                p: 1.25,
-                borderRadius: 2,
-                background: `linear-gradient(135deg, ${alpha(mainColor, 0.2)} 0%, ${alpha(mainColor, 0.05)} 100%)`,
-                color: mainColor,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {Icon && <Icon size={22} />}
-            </Box>
+            <IconContainer icon={Icon} color={mainColor} borderRadius="16px" />
           </Stack>
 
           <Typography

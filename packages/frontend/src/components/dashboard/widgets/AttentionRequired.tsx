@@ -8,6 +8,7 @@ import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { CheckCircle } from "lucide-react";
 
+import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 import { mockAttentionItems } from "../mockData";
 import { getSeverityStyles } from "../utils/transform.util";
@@ -45,18 +46,12 @@ export const AttentionRequired = () => {
                 },
               }}
             >
-              <Box
-                sx={{
-                  color: styles.icon,
-                  display: "flex",
-                  p: 1,
-                  bgcolor: theme.palette.background.paper,
-                  borderRadius: "50%",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                }}
-              >
-                <Icon size={20} />
-              </Box>
+              <IconContainer
+                icon={Icon}
+                color={styles.icon}
+                borderRadius="16px"
+                size={20}
+              />
 
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="subtitle2" fontWeight="bold">

@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { Filter } from "lucide-react";
 
+import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 import { mockRecentActivity } from "../mockData";
 import { getIcon } from "../utils/transform.util";
@@ -45,7 +46,7 @@ export const RecentActivity = () => {
 
         <Stack spacing={3}>
           {mockRecentActivity.map((event, index) => {
-            const Icon = getIcon(event.text);
+            const IconType = getIcon(event.text);
 
             return (
               <Box
@@ -119,17 +120,12 @@ export const RecentActivity = () => {
                       },
                     }}
                   >
-                    <Avatar
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      }}
-                    >
-                      <Icon size={14} />
-                    </Avatar>
+                    <IconContainer
+                      icon={IconType}
+                      color={theme.palette.primary.main}
+                      borderRadius="16px"
+                      size={14}
+                    />
                     <Box>
                       <Typography variant="caption">
                         <Box
