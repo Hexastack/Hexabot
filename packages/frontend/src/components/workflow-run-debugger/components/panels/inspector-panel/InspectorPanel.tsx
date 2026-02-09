@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 import { Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
@@ -14,9 +15,10 @@ import { InspectorTabs } from "./InspectorTabs";
 
 type InspectorPanelProps = {
   run: IWorkflowRun | null;
+  step?: StepExecutionRecord | null;
 };
 
-export const InspectorPanel = ({ run }: InspectorPanelProps) => {
+export const InspectorPanel = ({ run, step }: InspectorPanelProps) => {
   const { t } = useTranslate();
 
   return (
@@ -36,7 +38,7 @@ export const InspectorPanel = ({ run }: InspectorPanelProps) => {
         <Typography variant="subtitle2" fontWeight={600}>
           {t("label.inspector")}
         </Typography>
-        <InspectorTabs run={run} />
+        <InspectorTabs run={run} step={step ?? null} />
       </Paper>
     </Grid>
   );

@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Divider, Stack, Tab, Tabs, Typography } from "@mui/material";
-import type { ReactNode } from "react";
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
+import { Box, Tab, Tabs } from "@mui/material";
 import { useMemo, useState } from "react";
 
 import { JsonViewer } from "@/app-components/inputs/JsonViewer";
-import { WorkflowRunStatusBadge } from "@/app-components/workflow/WorkflowRunStatusBadge";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -17,17 +16,23 @@ import { IWorkflowRun } from "@/types/workflow-run.types";
 import { formatDurationMs } from "@/utils/date";
 
 import { formatRunTimestamp, getInitiatorName } from "../../../utils";
+import { getDurationLabel } from "../step-trace-panel/utils";
+
+import type { OverviewLabels } from "./overview.types";
+import { OverviewContainer } from "./OverviewContainer";
+import { OverviewContent } from "./OverviewContent";
 
 const tabId = (index: number) => `inspector-tab-${index}`;
 const panelId = (index: number) => `inspector-tabpanel-${index}`;
 
 type InspectorTabsProps = {
   run: IWorkflowRun | null;
+  step?: StepExecutionRecord | null;
 };
 
 const formatDataSummary = (
   t: (key: string) => string,
-  value?: Record<string, unknown> | unknown[] | null,
+  value?: unknown | null,
 ): string => {
   if (!value) return t("label.none");
 
@@ -42,27 +47,7 @@ const formatDataSummary = (
   return t("label.yes");
 };
 
-type SummaryItemProps = {
-  label: string;
-  value: ReactNode;
-};
-
-const SummaryItem = ({ label, value }: SummaryItemProps) => (
-  <Stack spacing={0.5}>
-    <Typography variant="caption" color="text.secondary">
-      {label}
-    </Typography>
-    {typeof value === "string" ? (
-      <Typography variant="body2" fontWeight={500}>
-        {value}
-      </Typography>
-    ) : (
-      value
-    )}
-  </Stack>
-);
-
-export const InspectorTabs = ({ run }: InspectorTabsProps) => {
+export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
   const { i18n, t } = useTranslate();
   const [value, setValue] = useState(0);
   const tabs = useMemo(
@@ -75,35 +60,60 @@ export const InspectorTabs = ({ run }: InspectorTabsProps) => {
     ],
     [t],
   );
+  const isStepSelected = Boolean(step);
+  const inspectedInput = isStepSelected ? step?.input ?? null : run?.input ?? null;
+  const inspectedContext = isStepSelected
+    ? step?.context ?? null
+    : run?.context ?? null;
+  const inspectedOutput = isStepSelected
+    ? step?.output ?? null
+    : run?.output ?? null;
+  const inspectedError = isStepSelected ? step?.error ?? null : run?.error ?? null;
   const panelData = useMemo(
     () => ({
       overview: {
         title: t("label.inspector_tabs.overview"),
         value: {
-          input: run?.input ?? null,
-          context: run?.context ?? null,
-          output: run?.output ?? null,
-          error: run?.error ?? null,
+          input: inspectedInput,
+          context: inspectedContext,
+          output: inspectedOutput,
+          error: inspectedError,
         },
       },
       input: {
         title: t("label.inspector_tabs.input"),
-        value: run?.input ?? null,
+        value: inspectedInput,
       },
       context: {
         title: t("label.inspector_tabs.context"),
-        value: run?.context ?? null,
+        value: inspectedContext,
       },
       output: {
         title: t("label.inspector_tabs.output"),
-        value: run?.output ?? null,
+        value: inspectedOutput,
       },
       logs_errors: {
         title: t("label.inspector_tabs.logs_errors"),
-        value: run?.error ?? null,
+        value: inspectedError,
       },
     }),
-    [run, t],
+    [inspectedContext, inspectedError, inspectedInput, inspectedOutput, t],
+  );
+  const labels = useMemo<OverviewLabels>(
+    () => ({
+      none: t("label.none"),
+      noData: t("label.no_data"),
+      name: t("label.name"),
+      status: t("label.status"),
+      triggeredAt: t("label.triggered_at"),
+      triggeredBy: t("label.triggered_by"),
+      duration: t("label.duration"),
+      error: t("label.error"),
+      input: t("label.inspector_tabs.input"),
+      context: t("label.inspector_tabs.context"),
+      output: t("label.inspector_tabs.output"),
+    }),
+    [t],
   );
   const activeKey = tabs[value]?.key ?? "overview";
   const activePanel = panelData[activeKey as keyof typeof panelData];
@@ -114,10 +124,34 @@ export const InspectorTabs = ({ run }: InspectorTabsProps) => {
   const triggeredByLabel = getInitiatorName(triggeredBy);
   const triggeredAtLabel = formatRunTimestamp(i18n.language, run?.createdAt);
   const durationLabel = formatDurationMs(run?.duration);
-  const inputSummary = formatDataSummary(t, run?.input);
-  const contextSummary = formatDataSummary(t, run?.context);
-  const outputSummary = formatDataSummary(t, run?.output);
-  const errorSummary = run?.error ?? t("label.none");
+  const inputSummary = formatDataSummary(t, inspectedInput);
+  const contextSummary = formatDataSummary(t, inspectedContext);
+  const outputSummary = formatDataSummary(t, inspectedOutput);
+  const errorSummary = useMemo(() => {
+    if (!inspectedError) return t("label.none");
+    if (typeof inspectedError === "string") return inspectedError;
+    if (typeof inspectedError === "object" && "message" in inspectedError) {
+      const message = (inspectedError as { message?: string }).message;
+
+      if (message) return message;
+    }
+
+    return t("label.yes");
+  }, [inspectedError, t]);
+  const hasError = Boolean(inspectedError);
+  const stepDurationLabel = step ? getDurationLabel(step) : "-";
+  const statusLabels = useMemo(
+    () => ({
+      completed: t("label.step_trace.status_completed"),
+      running: t("label.step_trace.status_running"),
+      failed: t("label.step_trace.status_failed"),
+      skipped: t("label.step_trace.status_skipped"),
+      suspended: t("label.step_trace.status_suspended"),
+      pending: t("label.step_trace.status_pending"),
+    }),
+    [t],
+  );
+  const stepStatusLabel = step ? statusLabels[step.status] : t("label.none");
 
   return (
     <Box
@@ -149,87 +183,23 @@ export const InspectorTabs = ({ run }: InspectorTabsProps) => {
         }}
       >
         {activeKey === "overview" ? (
-          <Box sx={{ p: 2, height: "100%", overflow: "auto" }}>
-            {!run ? (
-              <Typography variant="body2" color="text.secondary">
-                {t("label.no_data")}
-              </Typography>
-            ) : (
-              <Stack spacing={2}>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      sm: "repeat(2, minmax(0, 1fr))",
-                    },
-                    gap: 2,
-                  }}
-                >
-                  <SummaryItem
-                    label={t("label.status")}
-                    value={<WorkflowRunStatusBadge workflowRun={run} />}
-                  />
-                  <SummaryItem
-                    label={t("label.triggered_at")}
-                    value={triggeredAtLabel}
-                  />
-                  <SummaryItem
-                    label={t("label.triggered_by")}
-                    value={triggeredByLabel}
-                  />
-                  <SummaryItem
-                    label={t("label.duration")}
-                    value={durationLabel}
-                  />
-                </Box>
-                <Divider />
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      sm: "repeat(3, minmax(0, 1fr))",
-                    },
-                    gap: 2,
-                  }}
-                >
-                  <SummaryItem
-                    label={t("label.inspector_tabs.input")}
-                    value={inputSummary}
-                  />
-                  <SummaryItem
-                    label={t("label.inspector_tabs.context")}
-                    value={contextSummary}
-                  />
-                  <SummaryItem
-                    label={t("label.inspector_tabs.output")}
-                    value={outputSummary}
-                  />
-                </Box>
-                <Divider />
-                <SummaryItem
-                  label={t("label.error")}
-                  value={
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: run?.error ? "error.main" : "text.secondary",
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 20,
-                        overflow: "hidden",
-                        wordBreak: "break-word",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {errorSummary}
-                    </Typography>
-                  }
-                />
-              </Stack>
-            )}
-          </Box>
+          <OverviewContainer>
+            <OverviewContent
+              run={run}
+              step={step ?? null}
+              labels={labels}
+              triggeredAtLabel={triggeredAtLabel}
+              triggeredByLabel={triggeredByLabel}
+              durationLabel={durationLabel}
+              stepStatusLabel={stepStatusLabel}
+              stepDurationLabel={stepDurationLabel}
+              inputSummary={inputSummary}
+              contextSummary={contextSummary}
+              outputSummary={outputSummary}
+              errorSummary={errorSummary}
+              hasError={hasError}
+            />
+          </OverviewContainer>
         ) : (
           <JsonViewer value={activePanel.value} />
         )}
