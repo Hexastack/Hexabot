@@ -91,7 +91,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
       />
       <WorkflowActionsProvider workflowType={selectedWorkflow?.type}>
         <Grid container spacing={3}>
-          <StepTracePanel snapshot={selectedRun?.snapshot ?? null} />
+          <StepTracePanel stepLog={selectedRun?.stepLog ?? null} />
           <InspectorPanel run={selectedRun ?? null} />
         </Grid>
       </WorkflowActionsProvider>

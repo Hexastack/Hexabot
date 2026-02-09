@@ -9,10 +9,10 @@ import { Box, Typography } from "@mui/material";
 import { useTranslate } from "@/hooks/useTranslate";
 
 type StepTraceEmptyProps = {
-  hasSnapshot: boolean;
+  hasTrace: boolean;
 };
 
-export const StepTraceEmpty = ({ hasSnapshot }: StepTraceEmptyProps) => {
+export const StepTraceEmpty = ({ hasTrace }: StepTraceEmptyProps) => {
   const { t } = useTranslate();
 
   return (
@@ -25,7 +25,7 @@ export const StepTraceEmpty = ({ hasSnapshot }: StepTraceEmptyProps) => {
       color="text.secondary"
     >
       <Typography variant="body2">
-        {hasSnapshot
+        {hasTrace
           ? t("label.step_trace.empty")
           : t("label.step_trace.empty_no_snapshot")}
       </Typography>

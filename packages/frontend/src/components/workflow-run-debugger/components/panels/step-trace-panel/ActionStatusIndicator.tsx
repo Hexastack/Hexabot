@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionSnapshot, ActionStatus } from "@hexabot-ai/agentic";
+import type { ActionStatus } from "@hexabot-ai/agentic";
 import { Box, Tooltip } from "@mui/material";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -26,7 +26,7 @@ type StatusIndicator = {
 };
 
 type ActionStatusIndicatorProps = {
-  action: ActionSnapshot;
+  status: ActionStatus;
   size?: number;
 };
 
@@ -53,7 +53,7 @@ const getStatusIndicator = (
 };
 
 export const ActionStatusIndicator = ({
-  action,
+  status,
   size = 16,
 }: ActionStatusIndicatorProps) => {
   const { t } = useTranslate();
@@ -68,12 +68,16 @@ export const ActionStatusIndicator = ({
     }),
     [t],
   );
-  const status = getStatusIndicator(action.status, statusLabels);
+  const statusConfig = getStatusIndicator(status, statusLabels);
 
   return (
-    <Tooltip title={status.label}>
-      <Box component="span" display="inline-flex" sx={{ color: status.color }}>
-        <status.Icon size={size} />
+    <Tooltip title={statusConfig.label}>
+      <Box
+        component="span"
+        display="inline-flex"
+        sx={{ color: statusConfig.color }}
+      >
+        <statusConfig.Icon size={size} />
       </Box>
     </Tooltip>
   );

@@ -4,23 +4,25 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowSnapshot } from "@hexabot-ai/agentic";
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 
 import { StepTraceEmpty } from "./StepTraceEmpty";
 import { StepTraceItem } from "./StepTraceItem";
 
 type StepTraceListProps = {
-  snapshot?: WorkflowSnapshot | null;
+  stepLog?: Record<string, StepExecutionRecord> | null;
 };
 
-export const StepTraceList = ({ snapshot }: StepTraceListProps) => {
+export const StepTraceList = ({ stepLog }: StepTraceListProps) => {
+  const steps = Object.values(stepLog ?? {});
+
   return (
     <>
-      {Object.keys(snapshot?.actions || {}).length === 0 ? (
-        <StepTraceEmpty hasSnapshot={Boolean(snapshot)} />
+      {steps.length === 0 ? (
+        <StepTraceEmpty hasTrace={Boolean(stepLog)} />
       ) : (
-        Object.values(snapshot?.actions || {}).map((action) => (
-          <StepTraceItem key={action.id} action={action} />
+        steps.map((step) => (
+          <StepTraceItem key={step.id} step={step} />
         ))
       )}
     </>

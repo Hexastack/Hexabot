@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionSnapshot } from "@hexabot-ai/agentic";
+import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 import { Box, Chip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 
@@ -15,16 +15,18 @@ import { ActionStatusIndicator } from "./ActionStatusIndicator";
 import { getDurationLabel } from "./utils";
 
 type StepTraceItemProps = {
-  action: ActionSnapshot;
+  step: StepExecutionRecord;
 };
 
-export const StepTraceItem = ({ action }: StepTraceItemProps) => {
+export const StepTraceItem = ({ step }: StepTraceItemProps) => {
   const theme = useTheme();
   const { actionsByName } = useWorkflowActionsCatalog();
-  const actionDefinition = actionsByName.get(action.name);
+  const actionDefinition = step.action
+    ? actionsByName.get(step.action)
+    : undefined;
   const resolvedTheme = resolveWorkflowStepTheme({
     action: actionDefinition,
-    status: action.status,
+    status: step.status,
   });
   const groupLabel = actionDefinition?.group?.trim();
   const accentColor =
@@ -69,7 +71,7 @@ export const StepTraceItem = ({ action }: StepTraceItemProps) => {
       <Box minWidth={0}>
         <Box display="flex" alignItems="center" gap={1}>
           <Typography variant="subtitle2" fontWeight={600} noWrap>
-            {action.name}
+            {step.name}
           </Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
@@ -83,17 +85,17 @@ export const StepTraceItem = ({ action }: StepTraceItemProps) => {
               }}
             />
           ) : null}
-          {action.reason && (
+          {step.reason && (
             <Typography variant="caption" color="text.secondary" noWrap>
-              {action.reason}
+              {step.reason}
             </Typography>
           )}
         </Box>
       </Box>
       <Box display="flex" alignItems="center" gap={1.5} justifySelf="end">
-        <ActionStatusIndicator action={action} />
+        <ActionStatusIndicator status={step.status} />
         <Typography variant="caption" color="text.secondary">
-          {getDurationLabel(action)}
+          {getDurationLabel(step)}
         </Typography>
       </Box>
     </Box>
