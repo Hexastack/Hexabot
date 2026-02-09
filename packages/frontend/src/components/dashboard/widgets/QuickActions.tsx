@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Paper, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { Box, Button, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
 
@@ -17,64 +17,23 @@ export const QuickActions = () => {
 
   return (
     <Box>
-      <Typography
-        variant="subtitle2"
-        fontWeight="bold"
-        sx={{
-          mb: 1.5,
-          ml: 1,
-          textTransform: "uppercase",
-          fontSize: "0.75rem",
-          color: "text.secondary",
-          letterSpacing: "0.5px",
-        }}
-      >
-        Quick Actions
-      </Typography>
+      <Typography variant="h6">Quick Actions</Typography>
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-        {mockQuickActions.map((action) => {
-          const Icon = action.icon;
-
+        {mockQuickActions.map(({ icon: Icon, ...rest }) => {
           return (
-            <Paper
-              key={action.id}
-              elevation={0}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                py: 1.25,
-                px: 2,
-                cursor: "pointer",
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 3,
-                bgcolor: theme.palette.background.paper,
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  borderColor: theme.palette.primary.main,
-                  bgcolor: alpha(theme.palette.primary.main, 0.04),
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                },
-              }}
+            <Button
+              key={rest.id}
+              color="primary"
+              variant="outlined"
+              startIcon={<Icon size={18} color={theme.palette.primary.main} />}
               onClick={() => {
-                if (action.url) {
-                  router.push(action.url);
+                if (rest.url) {
+                  router.push(rest.url);
                 }
               }}
             >
-              <Box
-                sx={{
-                  color: theme.palette.primary.main,
-                  display: "flex",
-                }}
-              >
-                <Icon size={18} />
-              </Box>
-              <Typography variant="body2" fontWeight="medium">
-                {action.label}
-              </Typography>
-            </Paper>
+              <Typography color="textPrimary">{rest.label}</Typography>
+            </Button>
           );
         })}
       </Box>

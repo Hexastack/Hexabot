@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Card, CardHeader } from "@mui/material";
+import { Card, Typography } from "@mui/material";
 
 import { WorkflowRuns } from "@/components/workflow-runs";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -13,22 +13,9 @@ export const RecentRuns = () => {
   const { t } = useTranslate();
 
   return (
-    <Card
-      sx={{
-        height: "100%",
-        borderRadius: 3,
-        boxShadow: "0px 2px 10px rgba(0,0,0,0.03)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <CardHeader
-        title={t("title.recent_runs")}
-        titleTypographyProps={{ variant: "h6", fontWeight: "bold" }}
-      />
-
+    <Card>
+      <Typography variant="h6">{t("title.recent_runs")}</Typography>
       <WorkflowRuns
-        sx={{ minHeight: "auto" }}
         filters={[]}
         hasTextFilter={false}
         hidedColumns={["error"]}
