@@ -83,22 +83,13 @@ export const AttentionRequired = () => {
         {mockAttentionItems.length === 0 && (
           <Paper
             elevation={0}
+            variant="spaced"
             sx={{
-              p: 3,
-              borderRadius: 3,
-              bgcolor: alpha(theme.palette.success.main, 0.05),
               border: `1px dashed ${alpha(theme.palette.success.main, 0.3)}`,
               textAlign: "center",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                mb: 1.5,
-                color: theme.palette.success.main,
-              }}
-            >
+            <Box color="success.main">
               <CheckCircle size={32} />
             </Box>
             <Typography variant="subtitle1" fontWeight="bold">
