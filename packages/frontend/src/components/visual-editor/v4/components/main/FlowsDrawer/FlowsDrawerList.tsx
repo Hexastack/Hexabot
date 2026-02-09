@@ -10,7 +10,7 @@ import type { MouseEvent } from "react";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { FlowTypeGroupSection } from "./FlowTypeGroupSection";
-import { ListContainer } from "./styles";
+import { FlowListContainer } from "./styles";
 import type { FlowTypeGroup } from "./types";
 
 type FlowsDrawerListProps = {
@@ -42,7 +42,7 @@ export const FlowsDrawerList = ({
   renameLabel,
   moreLabel,
 }: FlowsDrawerListProps) => (
-  <ListContainer>
+  <FlowListContainer>
     <List disablePadding>
       {typeGroups.map((group) => (
         <FlowTypeGroupSection
@@ -69,5 +69,5 @@ export const FlowsDrawerList = ({
         {emptyState}
       </Typography>
     )}
-  </ListContainer>
+  </FlowListContainer>
 );

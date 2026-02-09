@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { HighlightMark } from "./styles";
+import { FlowSeachResultHighlightMark } from "./styles";
 import { buildHighlightSegments } from "./utils";
 
 type HighlightedTextProps = {
@@ -22,9 +22,9 @@ export const HighlightedText = ({
     <>
       {segments.map((segment, index) =>
         segment.highlight ? (
-          <HighlightMark key={`highlight-${index}`}>
+          <FlowSeachResultHighlightMark key={`highlight-${index}`}>
             {segment.text}
-          </HighlightMark>
+          </FlowSeachResultHighlightMark>
         ) : (
           <span key={`text-${index}`}>{segment.text}</span>
         ),

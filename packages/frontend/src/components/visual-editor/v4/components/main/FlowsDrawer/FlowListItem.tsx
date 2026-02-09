@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Chip, Tooltip, Typography, useTheme } from "@mui/material";
+import { Box, Chip, Stack, Tooltip, Typography } from "@mui/material";
 import type { MouseEvent } from "react";
 
 import type { IWorkflow } from "@/types/workfow.types";
@@ -34,30 +34,25 @@ export const FlowListItem = ({
   renameLabel,
   moreLabel,
 }: FlowListItemProps) => {
-  const theme = useTheme();
-
   return (
     <FlowItem
       selected={match.isSelected}
       onClick={() => onSelect(match.workflow.id)}
     >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 1,
-          }}
+      <Stack spacing={0.5} flex={1} minWidth={0}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+          minWidth={0}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              minWidth: 0,
-              flex: 1,
-            }}
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            flex={1}
+            minWidth={0}
           >
             <Tooltip title={match.workflow.name} arrow>
               <Typography variant="subtitle2" noWrap flex={1}>
@@ -69,11 +64,12 @@ export const FlowListItem = ({
             </Tooltip>
             {match.hasUnsaved && (
               <Box
+                component="span"
                 sx={{
-                  width: 6,
-                  height: 6,
+                  width: (theme) => theme.spacing(0.75),
+                  height: (theme) => theme.spacing(0.75),
                   borderRadius: "50%",
-                  backgroundColor: theme.palette.warning.main,
+                  bgcolor: "warning.main",
                 }}
               />
             )}
@@ -85,7 +81,7 @@ export const FlowListItem = ({
             {match.errorCount > 0 && (
               <Chip size="small" label={match.errorLabel ?? ""} color="error" />
             )}
-          </Box>
+          </Stack>
           <WorkflowActionButtons
             className="flow-row-actions"
             workflow={match.workflow}
@@ -94,23 +90,15 @@ export const FlowListItem = ({
             renameLabel={renameLabel}
             moreLabel={moreLabel}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "nowrap",
-            gap: 1,
-            mt: 0.5,
-            minWidth: 0,
-          }}
-        >
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
           <Typography
             variant="caption"
             color="text.secondary"
             noWrap
             component="div"
-            sx={{ flex: 1, minWidth: 0 }}
+            flex={1}
+            minWidth={0}
           >
             {match.typeMeta.secondaryText}
           </Typography>
@@ -119,14 +107,15 @@ export const FlowListItem = ({
               size="small"
               label={match.typeMeta.badge}
               sx={{
-                color: "#475569",
-                border: "1px solid #d7dde4",
-                backgroundColor: "#f8fafc",
+                color: "text.secondary",
+                borderColor: "divider",
+                bgcolor: "background.paper",
                 flexShrink: 0,
               }}
+              variant="outlined"
             />
           )}
-        </Box>
+        </Stack>
         {normalizedQuery &&
           !match.nameMatch.length &&
           match.descriptionMatch.length &&
@@ -136,7 +125,6 @@ export const FlowListItem = ({
               color="text.secondary"
               noWrap
               component="div"
-              sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
             >
               <HighlightedText
                 text={match.workflow.description}
@@ -144,7 +132,7 @@ export const FlowListItem = ({
               />
             </Typography>
           )}
-      </Box>
+      </Stack>
     </FlowItem>
   );
 };
