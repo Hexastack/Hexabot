@@ -285,9 +285,11 @@ export const Workflow = () => {
             className="rf-controls-v4"
             onFitView={animateFocus}
             fitViewOptions={{ duration: 200 }}
-          />
+          >
+            <RotateButton />
+          </Controls>
+
           <Background size={2} />
-          <RotateButton />
           {isEmptyWorkflow && (
             <WorkflowEmptyState
               drawerId={actionsDrawerId}
