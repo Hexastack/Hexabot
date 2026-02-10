@@ -4,14 +4,6 @@
   "input_disabled": "Désactiver la saisie",
   "persistent_menu": "Afficher le menu persistent",
   "greeting_message": "Message de bienvenue",
-  "theme_color": "Thème du widget",
-  "theme_color_options": {
-    "orange": "Orange",
-    "red": "Rouge",
-    "green": "Vert",
-    "blue": "Bleu",
-    "dark": "Sombre"
-  },
   "window_title": "Titre de la fenêtre de chat",
   "avatar_url": "Avatar du chatbot (URL)",
   "show_emoji": "Activer le sélecteur d'Emojis",

@@ -6,17 +6,14 @@
 
 import UiChatWidget from "@hexabot-ai/widget/src/UiChatWidget";
 import { Avatar, Box, useColorScheme, useTheme } from "@mui/material";
-import { useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
-import { useSetting } from "@/hooks/useSetting";
 import i18n from "@/i18n/config";
 import { EntityType, RouterType } from "@/services/types";
 
-const SETTING_TYPE = "console_channel" as const;
 const HiddenLauncher = () => <span style={{ display: "none" }} />;
 
 type ChatWidgetVariant = "launcher" | "embedded";
@@ -32,12 +29,6 @@ export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.WORKFLOW_EDITOR}`);
-  const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
-  const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
-  const key = useMemo(
-    () => `${allowedDomainsSetting}_${themeColorSetting}`,
-    [allowedDomainsSetting, themeColorSetting],
-  );
   const isEmbedded = variant === "embedded";
 
   return isAuthenticated ? (
@@ -62,7 +53,6 @@ export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
       }}
     >
       <UiChatWidget
-        key={key}
         config={{
           apiUrl,
           channel: "console-channel",

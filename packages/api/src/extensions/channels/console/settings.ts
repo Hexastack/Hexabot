@@ -45,13 +45,6 @@ export default [
   },
   {
     group: CONSOLE_CHANNEL_NAMESPACE,
-    label: 'theme_color',
-    value: 'teal',
-    type: SettingType.select,
-    options: ['teal', 'orange', 'red', 'green', 'blue', 'dark'],
-  },
-  {
-    group: CONSOLE_CHANNEL_NAMESPACE,
     label: 'show_emoji',
     value: true,
     type: SettingType.checkbox,

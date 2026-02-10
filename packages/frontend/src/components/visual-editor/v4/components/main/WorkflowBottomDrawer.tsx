@@ -5,7 +5,7 @@
  */
 
 import { Divider, Drawer, Paper, Stack, useMediaQuery } from "@mui/material";
-import { alpha, styled, useTheme, type Theme } from "@mui/material/styles";
+import { alpha, styled, useTheme } from "@mui/material/styles";
 import {
   useCallback,
   useEffect,
@@ -39,23 +39,6 @@ interface DrawerBodyProps {
   isStacked: boolean;
 }
 
-const getResizerStyles = (theme: Theme) => ({
-  border: 0,
-  position: "relative" as const,
-  "&::before": {
-    content: '""',
-    position: "absolute" as const,
-    borderRadius: theme.spacing(0.5),
-    backgroundColor: alpha(theme.palette.primary.main, 0.25),
-    opacity: 0,
-    transition: theme.transitions.create("opacity", {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  "&:hover::before": {
-    opacity: 1,
-  },
-});
 const BottomDrawer = styled(Drawer, {
   shouldForwardProp: (prop) => prop !== "drawerHeight",
 })<BottomDrawerProps>(({ theme, drawerHeight }) => ({
@@ -118,45 +101,54 @@ const ChatWidgetColumn = styled(Paper)(({ theme }) => ({
     zIndex: "auto !important",
   },
 }));
-const ColumnResizer = styled(Divider)(({ theme }) => {
-  const baseStyles = getResizerStyles(theme);
-
-  return {
-    ...baseStyles,
-    width: "100%",
-    height: "100%",
-    cursor: "col-resize",
-    display: "flex",
-    justifyContent: "center",
-    "&::before": {
-      ...baseStyles["&::before"],
-      width: theme.spacing(0.5),
-      top: 0,
-      bottom: 0,
-    },
-  };
-});
-const DrawerResizer = styled(Divider)(({ theme }) => {
-  const baseStyles = getResizerStyles(theme);
-
-  return {
-    ...baseStyles,
+const ColumnResizer = styled(Divider)(({ theme }) => ({
+  width: "100%",
+  height: "100%",
+  cursor: "col-resize",
+  display: "flex",
+  justifyContent: "center",
+  border: 0,
+  position: "relative",
+  "&::before": {
+    content: '""',
+    width: theme.spacing(0.5),
+    borderRadius: theme.spacing(0.5),
+    backgroundColor: alpha(theme.palette.primary.main, 0.25),
+    opacity: 0,
+    transition: theme.transitions.create("opacity", {
+      duration: theme.transitions.duration.shortest,
+    }),
+  },
+  "&:hover::before": {
+    opacity: 1,
+  },
+}));
+const DrawerResizer = styled(Divider)(({ theme }) => ({
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: theme.spacing(0.75),
+  cursor: "row-resize",
+  zIndex: 1,
+  border: 0,
+  "&::after": {
+    content: '""',
     position: "absolute",
-    top: 0,
+    top: theme.spacing(0.25),
     left: 0,
     right: 0,
-    height: theme.spacing(0.75),
-    cursor: "row-resize",
-    zIndex: 1,
-    "&::before": {
-      ...baseStyles["&::before"],
-      top: theme.spacing(0.25),
-      left: 0,
-      right: 0,
-      height: theme.spacing(0.25),
-    },
-  };
-});
+    height: theme.spacing(0.25),
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+    opacity: 0,
+    transition: theme.transitions.create("opacity", {
+      duration: theme.transitions.duration.shortest,
+    }),
+  },
+  "&:hover::after": {
+    opacity: 1,
+  },
+}));
 
 export const WorkflowBottomDrawer = () => {
   const { t } = useTranslate();

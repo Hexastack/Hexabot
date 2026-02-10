@@ -3,6 +3,7 @@
   position: absolute;
   box-shadow: var(--hb-shadow-widget);
   width: 60%;
+  left: 0;
   bottom: 55px;
   z-index: 3;
   color: var(--hb-color-text-on-primary);
@@ -18,8 +19,9 @@
     text-align: center;
 
     .hb-title-submenu-title {
-      font-weight: 600;
-      font-size: 1.125rem;
+      font-weight: 700;
+      font-size: 1rem;
+      margin: 0.75rem 0;
     }
   }
 

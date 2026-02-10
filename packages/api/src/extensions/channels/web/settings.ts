@@ -46,13 +46,6 @@ export default [
   },
   {
     group: WEB_CHANNEL_NAMESPACE,
-    label: 'theme_color',
-    value: 'teal',
-    type: SettingType.select,
-    options: ['teal', 'orange', 'red', 'green', 'blue', 'dark'],
-  },
-  {
-    group: WEB_CHANNEL_NAMESPACE,
     label: 'window_title',
     value: 'Widget Title',
     type: SettingType.text,
