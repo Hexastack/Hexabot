@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { useColorScheme } from "@mui/material";
 import {
   type Node,
   type Viewport,
@@ -35,6 +36,8 @@ export const ReactFlowWrapper = ({
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedNodeId: string) => void;
 } & PropsWithChildren) => {
+  const { mode } = useColorScheme();
+
   useOnViewportChange({
     onEnd: ({ x, y, zoom }) => {
       if (
@@ -95,6 +98,7 @@ export const ReactFlowWrapper = ({
       edgeTypes={EDGE_TYPES}
       onNodesChange={handleNodesChange}
       onlyRenderVisibleElements
+      colorMode={mode}
     >
       {children}
     </ReactFlow>

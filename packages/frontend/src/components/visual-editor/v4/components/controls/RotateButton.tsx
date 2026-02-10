@@ -4,11 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IconButton } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
-import { RotateCw } from "lucide-react";
-
-import { AnimatedComponent } from "@/app-components/AnimatedComponent";
+import { Typography } from "@mui/material";
+import { ControlButton, useReactFlow } from "@xyflow/react";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 
@@ -18,20 +15,7 @@ export const RotateButton = () => {
     useWorkflow();
 
   return (
-    <IconButton
-      style={{
-        position: "absolute",
-        bottom: 119,
-        left: 14,
-        height: "26px",
-        width: "28px",
-        backgroundColor: "#fff",
-        borderRadius: 0,
-        border: "1px solid #0001",
-        padding: "2px 3px",
-        zIndex: 4,
-      }}
-      size="small"
+    <ControlButton
       onClick={async () => {
         if (selectedFlowId) {
           const toggledDirection =
@@ -58,13 +42,15 @@ export const RotateButton = () => {
         }
       }}
     >
-      <AnimatedComponent
-        component={RotateCw}
-        canRotate={direction === "vertical"}
-        from="-45"
-        to="45"
-        htmlColor="#000000de"
-      />
-    </IconButton>
+      <Typography
+        fontWeight={600}
+        sx={{
+          transition: "0.2s",
+          transform: `rotate(${direction === "horizontal" ? "50deg" : "140deg"})`,
+        }}
+      >
+        ↻
+      </Typography>
+    </ControlButton>
   );
 };
