@@ -403,7 +403,6 @@ export const WorkflowBottomDrawer = () => {
                 }
           }
         >
-          <ChatWidget />
           <ChatWidgetColumn
             onWheelCapture={(event) => {
               event.stopPropagation();
@@ -412,7 +411,7 @@ export const WorkflowBottomDrawer = () => {
               event.stopPropagation();
             }}
           >
-            {/* <ChatWidget variant="embedded" /> */}
+            <ChatWidget variant="embedded" />
           </ChatWidgetColumn>
           {!isStacked && (
             <ColumnResizer

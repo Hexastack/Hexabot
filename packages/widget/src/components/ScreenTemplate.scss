@@ -1,10 +1,5 @@
-.loading-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-}
-.hb-chat--disconnected-icon-wrapper {
+.hb-chat--disconnected-icon-wrapper,
+.hb-chat--error-icon-wrapper {
   position: relative;
   height: 100%;
   width: 100%;
@@ -13,14 +8,20 @@
   overflow: auto;
   padding: 0.875rem 0;
 }
-.hb-chat--disconnected-icon {
+
+.hb-chat--disconnected-icon,
+.hb-chat--error-icon {
   position: relative;
   text-align: center;
 }
-.hb-chat--disconnected-text {
+
+.hb-chat--disconnected-text,
+.hb-chat--error-text {
   width: 100%;
 }
-.hb-chat--disconnected-button {
+
+.hb-chat--disconnected-button,
+.hb-chat--error-button {
   border: 0.0625rem solid;
   border-radius: 2rem;
   padding: 0.3125rem 0.625rem;
@@ -28,16 +29,16 @@
   margin: 0.125rem;
   cursor: pointer;
   outline: 0;
-}
-.hb-chat--disconnected-button:active {
-  content: "";
-  opacity: 0;
-  transition: all 0.5s;
-}
 
-.hb-chat--disconnected-button:active:after {
-  opacity: 1;
-  transition: 0s;
+  &:active {
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  &:active::after {
+    opacity: 1;
+    transition: 0s;
+  }
 }
 
 .hb-chat--attempt-reconnect {

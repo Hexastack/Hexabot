@@ -7,7 +7,6 @@
 import { AlertTriangle } from "lucide-react";
 import React from "react";
 
-import "./ErrorScreen.scss";
 import Template from "./ScreenTemplate";
 
 const ErrorScreen: React.FC = () => {

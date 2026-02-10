@@ -8,56 +8,56 @@
   background: var(--hb-color-surface-elevated);
   border-radius: 0.625rem;
   outline: none;
-}
 
-.hb-emoji-picker:after {
-  content: "";
-  width: 14px;
-  height: 14px;
-  background: var(--hb-color-surface-elevated);
-  position: absolute;
-  bottom: -6px;
-  right: 55px;
-  transform: rotate(45deg);
-  border-radius: 0.125rem;
-}
+  &::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: var(--hb-color-surface-elevated);
+    position: absolute;
+    bottom: -6px;
+    right: 55px;
+    transform: rotate(45deg);
+    border-radius: 0.125rem;
+  }
 
-.hb-emoji-picker--content {
-  padding: 0.5rem;
-  overflow: auto;
-  width: 100%;
-  max-height: 195px;
-  margin-top: 0.3125rem;
-  box-sizing: border-box;
-}
+  &--content {
+    padding: 0.5rem;
+    overflow: auto;
+    width: 100%;
+    max-height: 195px;
+    margin-top: 0.3125rem;
+    box-sizing: border-box;
+  }
 
-.hb-emoji-picker--category {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
+  &--category {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 
-.hb-emoji-picker--category-title {
-  min-width: 100%;
-  color: var(--hb-color-interactive-icon-muted);
-  font-weight: 200;
-  font-size: 1rem;
-  margin: 0.3125rem;
-  letter-spacing: 0.0625rem;
-}
+    &-title {
+      min-width: 100%;
+      color: var(--hb-color-interactive-icon-muted);
+      font-weight: 200;
+      font-size: 1rem;
+      margin: 0.3125rem;
+      letter-spacing: 0.0625rem;
+    }
+  }
 
-.hb-emoji-picker--emoji {
-  margin: 0.3125rem;
-  width: 18px;
-  text-align: center;
-  cursor: pointer;
-  vertical-align: middle;
-  font-size: 1.5rem;
-  transition:
-    transform 60ms ease-out,
-    -webkit-transform 60ms ease-out;
-}
+  &--emoji {
+    margin: 0.3125rem;
+    width: 18px;
+    text-align: center;
+    cursor: pointer;
+    vertical-align: middle;
+    font-size: 1.5rem;
+    transition:
+      transform 60ms ease-out,
+      -webkit-transform 60ms ease-out;
 
-.hb-emoji-picker--emoji:hover {
-  transform: scale(1.4);
+    &:hover {
+      transform: scale(1.4);
+    }
+  }
 }

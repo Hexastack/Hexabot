@@ -1,8 +1,10 @@
+.hb-launcher-wrapper.opened .hb-launcher::before {
+  box-shadow: var(--hb-shadow-overlay);
+}
+
 .hb-launcher {
   width: 60px;
   height: 60px;
-  background-position: center;
-  background-repeat: no-repeat;
   position: fixed;
   right: 20px;
   bottom: 20px;
@@ -12,26 +14,17 @@
   cursor: pointer;
   color: var(--hb-color-interactive-launcher-icon);
 
-  &:before {
+  &::before {
     content: "";
     position: relative;
     display: block;
-    width: 60px;
-    height: 60px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     transition: box-shadow 0.2s ease-in-out;
   }
-  .hb-open-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 32px;
-    height: 32px;
-    color: currentColor;
-    fill: currentColor;
-  }
 
+  .hb-open-icon,
   .hb-closed-icon {
     position: absolute;
     top: 50%;
@@ -59,15 +52,10 @@
     margin: auto;
     font-size: 0.75rem;
     font-weight: 500;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--hb-font-family);
   }
-}
 
-.hb-launcher.opened:before {
-  box-shadow: var(--hb-shadow-overlay);
-}
-
-.hb-launcher:hover {
-  box-shadow: var(--hb-shadow-elevated);
+  &:hover {
+    box-shadow: var(--hb-shadow-elevated);
+  }
 }

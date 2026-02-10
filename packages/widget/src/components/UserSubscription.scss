@@ -1,10 +1,3 @@
-.loading-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-}
-
 .user-subscription-wrapper {
   height: 100%;
   width: 100%;
@@ -14,13 +7,12 @@
   overflow: auto;
 
   .user-subscription {
-    .user-subscription-title {
+    &-title {
       margin: 2rem;
     }
 
-    .user-subscription-form {
-      .user-subscription-form-input {
-        border: 0;
+    &-form {
+      &-input {
         border: 0.0625rem solid var(--hb-color-border-subtle);
         outline: 0;
         padding: 1rem;
@@ -29,7 +21,7 @@
         width: 70%;
       }
 
-      .user-subscription-form-button-submit {
+      &-button-submit {
         display: block;
         border-radius: 2rem;
         border: 0;

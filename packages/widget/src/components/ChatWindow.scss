@@ -15,27 +15,22 @@
   justify-content: flex-start;
   border-radius: 0.625rem;
   font-family: var(--hb-font-family);
-  animation: fadeIn;
-  animation-duration: 0.3s;
-  animation-timing-function: ease-in-out;
+  animation: hb-fade-in 0.3s ease-in-out;
   z-index: 10000;
   overflow: hidden;
-}
 
-.hb-chat-window.closed {
-  opacity: 0;
-  display: none;
-  bottom: 90px;
-}
-
-@keyframes fadeIn {
-  0% {
+  &.closed {
+    opacity: 0;
     display: none;
+    bottom: 90px;
+  }
+}
+
+@keyframes hb-fade-in {
+  from {
     opacity: 0;
   }
-
-  100% {
-    display: flex;
+  to {
     opacity: 1;
   }
 }
@@ -50,13 +45,6 @@
   }
 }
 
-.hb-message--me {
-  text-align: right;
-}
-.hb-message--them {
-  text-align: left;
-}
-
 @media (max-width: 450px) {
   .hb-chat-window {
     width: 100%;
@@ -65,11 +53,10 @@
     right: 0;
     bottom: 0;
     border-radius: 0;
-  }
-  .hb-chat-window {
-    transition: 0.1s ease-in-out;
-  }
-  .hb-chat-window.closed {
-    bottom: 0;
+    transition: bottom 0.1s ease-in-out;
+
+    &.closed {
+      bottom: 0;
+    }
   }
 }

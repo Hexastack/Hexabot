@@ -10,8 +10,6 @@ import React, { ChangeEvent, useMemo, useRef } from "react";
 import { useChat } from "../../providers/ChatProvider";
 import { MIME_TYPES } from "../../utils/attachment";
 
-import "./FileButton.scss";
-
 const FileButton: React.FC = () => {
   const { setFile } = useChat();
   const fileInputRef = useRef<HTMLInputElement>(null);

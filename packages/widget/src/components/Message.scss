@@ -24,7 +24,7 @@
         .hb-message--text {
           color: var(--hb-color-text-on-primary);
           background-color: var(--hb-color-surface-message-sent);
-          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
 
         .hb-message--meta {
@@ -44,7 +44,6 @@
     .hb-message--avatar {
       width: 32px;
       height: 32px;
-      margin-right: 0.25rem;
       margin: 0.125rem 0.25rem;
       background-position: 0 0;
       flex-shrink: 0;
@@ -68,12 +67,6 @@
         -webkit-font-smoothing: subpixel-antialiased;
         color: var(--hb-color-text-primary);
         background-color: var(--hb-color-surface-message-received);
-
-        .hb-message--text-body {
-          .hb-message--text-content {
-            white-space: pre-wrap;
-          }
-        }
       }
 
       .hb-message--meta {

@@ -45,6 +45,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    width: 24px;
+    height: 32px;
     display: grid;
     place-items: center;
     background-color: var(--hb-color-surface-overlay);
@@ -61,16 +63,10 @@
 
     &.prev {
       left: 0;
-      top: calc(50% - 14px);
-      width: 24px;
-      height: 32px;
     }
 
     &.next {
-      top: calc(50% - 14px);
       right: 0;
-      width: 24px;
-      height: 32px;
     }
   }
 }

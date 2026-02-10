@@ -81,7 +81,7 @@ const MenuButton: React.FC = () => {
   };
 
   return (
-    <div className="hb-user-input--menu hb-user-menu">
+    <div className="hb-user-input--menu">
       <button
         onClick={toggleMenu}
         type="button"
@@ -93,7 +93,6 @@ const MenuButton: React.FC = () => {
           height="32"
           x="0"
           y="0"
-          className="hb-user-input--menu-img"
         />
       </button>
       {displayMenu && (

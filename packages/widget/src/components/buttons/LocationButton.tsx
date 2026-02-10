@@ -11,8 +11,6 @@ import { useChat } from "../../providers/ChatProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../../types/message.types";
 
-import "./LocationButton.scss";
-
 const LocationButton: React.FC = () => {
   const { setPayload, send } = useChat();
   const settings = useSettings();

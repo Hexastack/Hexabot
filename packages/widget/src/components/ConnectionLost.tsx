@@ -7,7 +7,6 @@
 import { WifiOff } from "lucide-react";
 import React from "react";
 
-import "./ConnectionLost.scss";
 import Template from "./ScreenTemplate";
 
 const ConnectionLost: React.FC = () => {

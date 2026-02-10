@@ -14,6 +14,7 @@ import { useSocket } from "../providers/SocketProvider";
 import { ConnectionState } from "../types/state.types";
 
 import { LoadingComponent } from "./LoadingComponent";
+import "./ScreenTemplate.scss";
 
 const Template: React.FC<{ name: string; Icon: LucideIcon }> = ({
   name,

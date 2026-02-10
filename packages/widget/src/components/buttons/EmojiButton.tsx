@@ -8,7 +8,6 @@ import { Smile } from "lucide-react";
 import React, { RefObject, useRef, useState } from "react";
 
 import EmojiPicker from "../EmojiPicker";
-import "./EmojiButton.scss";
 
 const EmojiButton: React.FC<{
   inputRef: RefObject<HTMLDivElement>;

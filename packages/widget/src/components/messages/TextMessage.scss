@@ -1,12 +1,13 @@
-.hb-message--text-content a.chatLink {
-  text-decoration: underline;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: var(--launcher-color);
-  }
-}
-p.hb-message--text-content {
-  margin: 0 !important;
+.hb-message--text-content {
+  margin: 0;
   white-space: pre-line;
+
+  a.chatLink {
+    text-decoration: underline;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--launcher-color);
+    }
+  }
 }

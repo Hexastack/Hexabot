@@ -12,8 +12,6 @@
       display: block;
 
       &.large {
-        width: 100%;
-        display: block;
         margin: 0;
 
         .hb-message--list-element-image {
@@ -33,7 +31,7 @@
         padding: 0.5rem 0;
       }
 
-      .hb-message--list-element-title {
+      .hb-message--title {
         font-size: 1.125rem;
         font-weight: 600;
         margin: 0;
