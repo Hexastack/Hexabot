@@ -1,9 +1,9 @@
 .hb-emoji-picker {
   position: absolute;
-  bottom: 1.875rem;
+  bottom: 30px;
   right: 0;
-  min-width: 12.5rem;
-  max-height: 13.4375rem;
+  min-width: 200px;
+  max-height: 215px;
   box-shadow: var(--hb-shadow-widget);
   background: var(--hb-color-surface-elevated);
   border-radius: 0.625rem;
@@ -12,12 +12,12 @@
 
 .hb-emoji-picker:after {
   content: "";
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 14px;
+  height: 14px;
   background: var(--hb-color-surface-elevated);
   position: absolute;
-  bottom: -0.375rem;
-  right: 3.4375rem;
+  bottom: -6px;
+  right: 55px;
   transform: rotate(45deg);
   border-radius: 0.125rem;
 }
@@ -26,7 +26,7 @@
   padding: 0.5rem;
   overflow: auto;
   width: 100%;
-  max-height: 12.1875rem;
+  max-height: 195px;
   margin-top: 0.3125rem;
   box-sizing: border-box;
 }
@@ -48,7 +48,7 @@
 
 .hb-emoji-picker--emoji {
   margin: 0.3125rem;
-  width: 1.125rem;
+  width: 18px;
   text-align: center;
   cursor: pointer;
   vertical-align: middle;

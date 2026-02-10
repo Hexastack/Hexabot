@@ -2,15 +2,15 @@
   text-align: center;
   padding: 0.5rem;
   border-radius: 2rem;
-  width: 3.125rem;
+  width: 50px;
   margin-left: 2rem;
 }
 
 .hb-typing-indicator span {
   display: inline-block;
   background-color: var(--hb-color-state-typing);
-  width: 0.3125rem;
-  height: 0.3125rem;
+  width: 5px;
+  height: 5px;
   border-radius: 100%;
   margin-right: 0.1875rem;
   animation: bob 2s infinite;

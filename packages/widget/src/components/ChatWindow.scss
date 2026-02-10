@@ -1,10 +1,10 @@
 .hb-chat-window {
-  width: 23.125rem;
-  height: calc(100% - 7.5rem);
-  max-height: 36.875rem;
+  width: 370px;
+  height: calc(100% - 120px);
+  max-height: 590px;
   position: fixed;
-  right: 1.5625rem;
-  bottom: 6.25rem;
+  right: 25px;
+  bottom: 100px;
   box-sizing: border-box;
   box-shadow: var(--hb-shadow-widget);
   background: var(--hb-color-surface-panel);
@@ -22,7 +22,7 @@
 .hb-chat-window.closed {
   opacity: 0;
   display: none;
-  bottom: 5.625rem;
+  bottom: 90px;
 }
 
 @keyframes fadeIn {
@@ -44,7 +44,7 @@
   text-align: left;
 }
 
-@media (max-width: 28.125rem) {
+@media (max-width: 450px) {
   .hb-chat-window {
     width: 100%;
     height: 100%;

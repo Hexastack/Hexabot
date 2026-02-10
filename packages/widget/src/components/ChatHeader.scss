@@ -1,5 +1,5 @@
 .hb-header {
-  min-height: 4rem;
+  min-height: 64px;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   padding: 0.625rem;
@@ -13,8 +13,8 @@
   border-radius: 50%;
   align-self: center;
   padding: 0.625rem;
-  max-width: 2rem;
-  max-height: 2rem;
+  max-width: 32px;
+  max-height: 32px;
   box-sizing: content-box;
 }
 
@@ -35,8 +35,8 @@
 }
 
 .hb-header--close-button {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 36px;
+  height: 36px;
   align-self: center;
   margin-right: 0.625rem;
   box-sizing: border-box;
@@ -58,7 +58,7 @@
   fill: currentColor;
 }
 
-@media (max-width: 28.125rem) {
+@media (max-width: 450px) {
   .hb-header {
     border-radius: 0;
   }

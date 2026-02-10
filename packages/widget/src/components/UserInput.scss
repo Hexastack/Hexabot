@@ -1,5 +1,5 @@
 .hb-user-input {
-  min-height: 3.4375rem;
+  min-height: 55px;
   margin: 0;
   position: relative;
   bottom: 0;
@@ -28,7 +28,7 @@
   word-wrap: break-word;
   color: var(--hb-color-text-secondary);
   -webkit-font-smoothing: antialiased;
-  max-height: 12.5rem;
+  max-height: 200px;
   overflow: scroll;
   bottom: 0;
   overflow-x: hidden;
@@ -76,7 +76,7 @@
 
 .hb-user-input--button label {
   position: relative;
-  height: 1.5rem;
+  height: 24px;
   padding-left: 0.1875rem;
   cursor: pointer;
 }
@@ -105,8 +105,8 @@
 
 .hb-user-input--file-icon {
   vertical-align: bottom;
-  width: 1rem;
-  height: 1rem;
+  width: 16px;
+  height: 16px;
 }
 
 .delete-file-message {

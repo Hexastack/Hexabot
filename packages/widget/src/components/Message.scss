@@ -38,12 +38,12 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: calc(100% - 2.5rem); // same as avatar spacing
+    max-width: calc(100% - 40px); // same as avatar spacing
     width: auto;
 
     .hb-message--avatar {
-      width: 2rem;
-      height: 2rem;
+      width: 32px;
+      height: 32px;
       margin-right: 0.25rem;
       margin: 0.125rem 0.25rem;
       background-position: 0 0;
@@ -84,14 +84,14 @@
         margin-top: 0.25rem;
         padding: 0 0.25rem;
         width: 100%;
-        height: 1.125rem;
+        height: 18px;
         box-sizing: border-box;
       }
     }
   }
 }
 
-@media (max-width: 28.125rem) {
+@media (max-width: 450px) {
   .hb-message {
     width: 80%;
   }

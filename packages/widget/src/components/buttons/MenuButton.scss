@@ -12,14 +12,14 @@
   }
 }
 .hb-user-input--menu-img {
-  max-width: 1.5rem;
+  max-width: 24px;
 }
 .hb-menu-content {
   display: block;
   position: absolute;
   box-shadow: var(--hb-shadow-widget);
   width: 60%;
-  bottom: 3.4375rem;
+  bottom: 55px;
   z-index: 3;
 
   &:active,
