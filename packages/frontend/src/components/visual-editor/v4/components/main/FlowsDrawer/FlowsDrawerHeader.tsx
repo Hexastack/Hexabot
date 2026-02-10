@@ -7,7 +7,7 @@
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { ChevronLeft, ChevronRight, Code, History } from "lucide-react";
 
-import { DrawerHeader } from "./styles";
+import { FlowDrawerHeader } from "./styles";
 
 type FlowsDrawerHeaderProps = {
   open: boolean;
@@ -32,7 +32,7 @@ export const FlowsDrawerHeader = ({
   onToggleVersions,
   isVersionsOpen,
 }: FlowsDrawerHeaderProps) => (
-  <DrawerHeader>
+  <FlowDrawerHeader>
     {open ? (
       <>
         <Box display="flex" alignItems="center" flex={1} minWidth={0}>
@@ -67,11 +67,16 @@ export const FlowsDrawerHeader = ({
         </Box>
       </>
     ) : (
-      <Box display="flex" alignItems="center" justifyContent="center" width="100%">
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        width="100%"
+      >
         <IconButton size="small" onClick={onToggle} aria-label="toggle-drawer">
           <ChevronRight size={16} />
         </IconButton>
       </Box>
     )}
-  </DrawerHeader>
+  </FlowDrawerHeader>
 );

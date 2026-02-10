@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Collapse, Typography } from "@mui/material";
+import {
+  Collapse,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { MouseEvent } from "react";
 
@@ -41,36 +48,35 @@ export const FlowTypeGroupSection = ({
   const GroupIcon = group.info.icon;
 
   return (
-    <Box>
-      <Box
+    <>
+      <ListItemButton
         onClick={() => onToggle(group.info.key)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            onToggle(group.info.key);
-          }
-        }}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "8px 12px 4px",
-          fontSize: 12,
-          fontWeight: 600,
-          color: "text.secondary",
-          cursor: "pointer",
-        }}
+        dense
+        disableGutters
+        sx={{ px: 1.5, pt: 1, pb: 0.5 }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <ListItemIcon sx={{ minWidth: 0, mr: 1, color: "text.secondary" }}>
           <GroupIcon size={14} />
-          <span>{group.label}</span>
-          <Typography variant="caption" color="text.disabled">
-            {group.items.length}
-          </Typography>
-        </Box>
+        </ListItemIcon>
+        <ListItemText
+          disableTypography
+          primary={
+            <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                color="text.secondary"
+              >
+                {group.label}
+              </Typography>
+              <Typography variant="caption" color="text.disabled">
+                {group.items.length}
+              </Typography>
+            </Stack>
+          }
+        />
         {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-      </Box>
+      </ListItemButton>
       <Collapse in={isOpen} timeout="auto">
         {group.items.map((match) => (
           <FlowListItem
@@ -94,6 +100,6 @@ export const FlowTypeGroupSection = ({
           </Typography>
         )}
       </Collapse>
-    </Box>
+    </>
   );
 };
