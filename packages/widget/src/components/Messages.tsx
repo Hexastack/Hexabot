@@ -77,9 +77,15 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
 
   return (
     <div
-      className="hb-message-list"
+      className="hb-message-list nowheel"
       ref={scrollListRef}
       style={{ backgroundColor: colors.messageList.bg }}
+      onWheelCapture={(event) => {
+        event.stopPropagation();
+      }}
+      onTouchMoveCapture={(event) => {
+        event.stopPropagation();
+      }}
     >
       {messages.map((message) => (
         <Message key={message.mid} message={message} Avatar={Avatar} />

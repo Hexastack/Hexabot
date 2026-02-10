@@ -46,6 +46,17 @@ export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
         height: isEmbedded ? "100%" : "auto",
         minHeight: isEmbedded ? 0 : "auto",
         flex: isEmbedded ? 1 : "none",
+        ...(isEmbedded
+          ? {
+              "& > *": {
+                width: "100%",
+                height: "100%",
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+              },
+            }
+          : {}),
       }}
     >
       <UiChatWidget

@@ -37,6 +37,7 @@ const DrawerBody = styled(Box)(({ theme }) => ({
   minHeight: 0,
   overflow: "hidden",
   padding: "12px",
+  gridTemplateRows: "minmax(0, 1fr)",
   [theme.breakpoints.down("md")]: {
     gridTemplateColumns: "1fr",
     gridTemplateRows: "minmax(0, 1fr) minmax(0, 1fr)",
@@ -56,6 +57,9 @@ const ChatWidgetColumn = styled(DrawerColumn)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.common.black, 0.08)}`,
   overflow: "hidden",
   width: "100%",
+  "& > *": {
+    minHeight: 0,
+  },
   "& .hb-chat-window": {
     position: "relative",
     right: "auto !important",
@@ -63,9 +67,18 @@ const ChatWidgetColumn = styled(DrawerColumn)(({ theme }) => ({
     width: "100%",
     height: "100%",
     maxHeight: "100%",
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
     borderRadius: 0,
     boxShadow: "none !important",
     zIndex: "auto !important",
+  },
+  "& .hb-chat-window > *": {
+    minHeight: 0,
+  },
+  "& .hb-message-list": {
+    minHeight: 0,
   },
   "& .hb-header--close-button": {
     display: "none",
@@ -390,8 +403,16 @@ export const WorkflowBottomDrawer = () => {
                 }
           }
         >
-          <ChatWidgetColumn>
-            <ChatWidget variant="embedded" />
+          <ChatWidget />
+          <ChatWidgetColumn
+            onWheelCapture={(event) => {
+              event.stopPropagation();
+            }}
+            onTouchMoveCapture={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            {/* <ChatWidget variant="embedded" /> */}
           </ChatWidgetColumn>
           {!isStacked && (
             <ColumnResizer

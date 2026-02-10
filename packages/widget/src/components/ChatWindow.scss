@@ -2,21 +2,24 @@
   width: 370px;
   height: calc(100% - 120px);
   max-height: 590px;
+  min-height: 0;
   position: fixed;
   right: 25px;
   bottom: 100px;
   box-sizing: border-box;
   box-shadow: var(--hb-shadow-widget);
   background: var(--hb-color-surface-panel);
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   border-radius: 0.625rem;
   font-family: var(--hb-font-family);
   animation: fadeIn;
   animation-duration: 0.3s;
   animation-timing-function: ease-in-out;
   z-index: 10000;
+  overflow: hidden;
 }
 
 .hb-chat-window.closed {

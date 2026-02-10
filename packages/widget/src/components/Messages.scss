@@ -1,6 +1,10 @@
 .hb-message-list {
-  height: 80%;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background-size: 100%;
   padding: 2.5rem 0;
 }
