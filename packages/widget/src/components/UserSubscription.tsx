@@ -8,7 +8,6 @@ import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
 import { preprocessMessages, useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
 import { ConnectionState } from "../types/state.types";
@@ -18,7 +17,6 @@ import "./UserSubscription.scss";
 const UserSubscription: React.FC = () => {
   const { t } = useTranslation();
   const { socketErrorHandlers } = useSocket();
-  const { colors } = useColors();
   const { socket } = useSocket();
   const settings = useSettings();
   const {
@@ -114,11 +112,6 @@ const UserSubscription: React.FC = () => {
           <button
             type="submit"
             disabled={connectionState === ConnectionState.tryingToConnect}
-            style={
-              connectionState === ConnectionState.tryingToConnect
-                ? {}
-                : { background: colors.header.bg, color: colors.header.text }
-            }
             className="user-subscription-form-button-submit"
           >
             {t("user_subscription.get_started")}

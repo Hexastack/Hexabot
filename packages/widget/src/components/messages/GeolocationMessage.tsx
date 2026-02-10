@@ -6,9 +6,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-import { useColors } from "../../providers/ColorProvider";
 import { useWidget } from "../../providers/WidgetProvider";
-import { Direction, TMessage } from "../../types/message.types";
+import { TMessage } from "../../types/message.types";
 
 import "./GeolocationMessage.scss";
 
@@ -17,7 +16,6 @@ interface GeolocationMessageProps {
 }
 
 const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
-  const { colors: allColors } = useColors();
   const widget = useWidget();
   const [isSeen, setIsSeen] = useState(false);
   const iframeRef = useRef<HTMLDivElement>(null);
@@ -56,15 +54,10 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   },${coordinates.lat - 0.1},${coordinates.lng + 0.1},${
     coordinates.lat + 0.1
   }&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`;
-  const colors = allColors[message.direction || Direction.received];
 
   return (
     <div
-      className="hb-message--location"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
+      className={`hb-message--location ${message.direction || "received"}`}
       ref={iframeRef}
     >
       {isSeen && (

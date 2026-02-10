@@ -6,13 +6,10 @@
 
 import React from "react";
 
-import { ColorState } from "../types/colors.types";
-
 import {
   DeepPartial,
   ThemeMode,
   ThemePalette,
-  ThemePaletteKey,
   ThemeResolutionInput,
   ThemeResolvedMode,
   ThemeSemanticTokens,
@@ -21,75 +18,10 @@ import {
 } from "./theme.types";
 
 const DEFAULT_THEME_MODE: ThemeMode = "system";
-const DEFAULT_PALETTE_KEY: ThemePaletteKey = "blue";
-const PALETTE_MAP: Record<ThemePaletteKey, Omit<ThemePalette, "key">> = {
-  orange: {
-    primary: "#FF851B",
-    onPrimary: "#FFFFFF",
-    primaryHover: "#DD6B00",
-    accent: "#FFB066",
-    onAccent: "#1C1C1C",
-    success: "#2ECC40",
-    warning: "#F39C12",
-    danger: "#FF4136",
-    info: "#3498DB",
-  },
-  red: {
-    primary: "#FF4136",
-    onPrimary: "#FFFFFF",
-    primaryHover: "#E53328",
-    accent: "#FF7B73",
-    onAccent: "#1C1C1C",
-    success: "#2ECC40",
-    warning: "#F39C12",
-    danger: "#FF4136",
-    info: "#3498DB",
-  },
-  green: {
-    primary: "#2ECC40",
-    onPrimary: "#FFFFFF",
-    primaryHover: "#25B537",
-    accent: "#77E286",
-    onAccent: "#1C1C1C",
-    success: "#2ECC40",
-    warning: "#F39C12",
-    danger: "#FF4136",
-    info: "#3498DB",
-  },
-  blue: {
-    primary: "#0074D9",
-    onPrimary: "#FFFFFF",
-    primaryHover: "#005FB3",
-    accent: "#53A8F2",
-    onAccent: "#0F2236",
-    success: "#2ECC40",
-    warning: "#F39C12",
-    danger: "#FF4136",
-    info: "#3498DB",
-  },
-  teal: {
-    primary: "#1BA089",
-    onPrimary: "#FFFFFF",
-    primaryHover: "#178A75",
-    accent: "#6FD6C4",
-    onAccent: "#0F2D29",
-    success: "#2ECC40",
-    warning: "#F39C12",
-    danger: "#FF4136",
-    info: "#3498DB",
-  },
-  dark: {
-    primary: "#111827",
-    onPrimary: "#ECF0F1",
-    primaryHover: "#1F2937",
-    accent: "#334155",
-    onAccent: "#F8FAFC",
-    success: "#22C55E",
-    warning: "#F59E0B",
-    danger: "#EF4444",
-    info: "#38BDF8",
-  },
-};
+const DEFAULT_LIGHT_PRIMARY_COLOR = "#0074D9";
+const DEFAULT_DARK_PRIMARY_COLOR = "#111827";
+const WHITE_TEXT_COLOR = "#FFFFFF";
+const DARK_TEXT_COLOR = "#111827";
 const DEFAULT_TYPOGRAPHY: ThemeTypography = {
   fontFamily:
     "\"IBM Plex Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
@@ -100,16 +32,131 @@ const DEFAULT_TYPOGRAPHY: ThemeTypography = {
   fontWeightMedium: 500,
   lineHeight: 1.4,
 };
+
+type RGBColor = {
+  red: number;
+  green: number;
+  blue: number;
+};
+
+const clampColorChannel = (value: number) => {
+  return Math.min(255, Math.max(0, Math.round(value)));
+};
+const normalizePrimaryColor = (value: unknown): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const match = value.trim().match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const [, rawHex] = match;
+  const expandedHex =
+    rawHex.length === 3
+      ? rawHex
+          .split("")
+          .map((part) => `${part}${part}`)
+          .join("")
+      : rawHex;
+
+  return `#${expandedHex.toUpperCase()}`;
+};
+const hexToRgb = (value: string): RGBColor => {
+  return {
+    red: parseInt(value.slice(1, 3), 16),
+    green: parseInt(value.slice(3, 5), 16),
+    blue: parseInt(value.slice(5, 7), 16),
+  };
+};
+const rgbToHex = ({ red, green, blue }: RGBColor): string => {
+  const toHex = (channel: number) => clampColorChannel(channel).toString(16).padStart(2, "0");
+
+  return `#${toHex(red)}${toHex(green)}${toHex(blue)}`.toUpperCase();
+};
+const mixHexColors = (source: string, target: string, weight: number): string => {
+  const from = hexToRgb(source);
+  const to = hexToRgb(target);
+  const clampedWeight = Math.min(1, Math.max(0, weight));
+
+  return rgbToHex({
+    red: from.red + (to.red - from.red) * clampedWeight,
+    green: from.green + (to.green - from.green) * clampedWeight,
+    blue: from.blue + (to.blue - from.blue) * clampedWeight,
+  });
+};
+const toLinear = (channel: number): number => {
+  const normalized = channel / 255;
+
+  return normalized <= 0.03928
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+};
+const luminance = (color: string): number => {
+  const { red, green, blue } = hexToRgb(color);
+
+  return (
+    0.2126 * toLinear(red) +
+    0.7152 * toLinear(green) +
+    0.0722 * toLinear(blue)
+  );
+};
+const contrastRatio = (first: string, second: string): number => {
+  const firstLuminance = luminance(first);
+  const secondLuminance = luminance(second);
+  const lighter = Math.max(firstLuminance, secondLuminance);
+  const darker = Math.min(firstLuminance, secondLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+const getReadableTextColor = (backgroundColor: string): string => {
+  return contrastRatio(backgroundColor, WHITE_TEXT_COLOR) >=
+    contrastRatio(backgroundColor, DARK_TEXT_COLOR)
+    ? WHITE_TEXT_COLOR
+    : DARK_TEXT_COLOR;
+};
+const toRgbaColor = (value: string, alpha: number): string => {
+  const { red, green, blue } = hexToRgb(value);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+};
+const buildThemePalette = (
+  primary: string,
+  resolvedMode: ThemeResolvedMode,
+): ThemePalette => {
+  const primaryHover =
+    resolvedMode === "dark"
+      ? mixHexColors(primary, WHITE_TEXT_COLOR, 0.14)
+      : mixHexColors(primary, "#000000", 0.15);
+  const accent =
+    resolvedMode === "dark"
+      ? mixHexColors(primary, WHITE_TEXT_COLOR, 0.22)
+      : mixHexColors(primary, WHITE_TEXT_COLOR, 0.30);
+
+  return {
+    primary,
+    onPrimary: getReadableTextColor(primary),
+    primaryHover,
+    accent,
+    onAccent: getReadableTextColor(accent),
+    success: resolvedMode === "dark" ? "#22C55E" : "#2ECC40",
+    warning: resolvedMode === "dark" ? "#F59E0B" : "#F39C12",
+    danger: resolvedMode === "dark" ? "#EF4444" : "#FF4136",
+    info: resolvedMode === "dark" ? "#38BDF8" : "#3498DB",
+  };
+};
 const LIGHT_THEME_BASE_TOKENS = (
   palette: ThemePalette,
 ): ThemeSemanticTokens => ({
   surface: {
-    root: "#F4F7F9",
+    root: "#fcfcfc",
     panel: "#FFFFFF",
     header: palette.primary,
     input: "#FFFFFF",
     sentMessage: palette.primary,
-    receivedMessage: "#F4F7F9",
+    receivedMessage: "#ececed",
     menu: palette.primary,
     overlay: "rgba(148, 149, 150, 0.2)",
     elevated: "#FFFFFF",
@@ -152,7 +199,7 @@ const LIGHT_THEME_BASE_TOKENS = (
     icon: "#5D5E6D",
     iconMuted: "#B8C3CA",
     iconStrong: "#23262A",
-    focusRing: "rgba(0, 116, 217, 0.35)",
+    focusRing: toRgbaColor(palette.primary, 0.35),
   },
   shadow: {
     widget: "0 0.4375rem 2.5rem 0.125rem rgba(148, 149, 150, 0.1)",
@@ -212,7 +259,7 @@ const DARK_THEME_BASE_TOKENS = (
     icon: "#CBD5E1",
     iconMuted: "#94A3B8",
     iconStrong: "#F8FAFC",
-    focusRing: "rgba(56, 189, 248, 0.4)",
+    focusRing: toRgbaColor(palette.primary, 0.4),
   },
   shadow: {
     widget: "0 0.4375rem 2.5rem 0.125rem rgba(0, 0, 0, 0.45)",
@@ -259,12 +306,6 @@ const deepMerge = <T>(base: T, override?: DeepPartial<T>): T => {
 const isThemeMode = (mode: unknown): mode is ThemeMode => {
   return mode === "light" || mode === "dark" || mode === "system";
 };
-const isThemePaletteKey = (key: unknown): key is ThemePaletteKey => {
-  return (
-    typeof key === "string" &&
-    Object.prototype.hasOwnProperty.call(PALETTE_MAP, key)
-  );
-};
 
 export const resolveThemeMode = (
   mode: unknown,
@@ -278,62 +319,16 @@ export const resolveThemeMode = (
 };
 
 export const resolveThemePalette = (
-  palette: unknown,
+  primaryColor: unknown,
   resolvedMode: ThemeResolvedMode,
 ): ThemePalette => {
-  const fallbackPaletteKey =
-    resolvedMode === "dark" ? ("dark" as ThemePaletteKey) : DEFAULT_PALETTE_KEY;
-  const paletteKey = isThemePaletteKey(palette) ? palette : fallbackPaletteKey;
+  const fallbackPrimaryColor =
+    resolvedMode === "dark" ? DEFAULT_DARK_PRIMARY_COLOR : DEFAULT_LIGHT_PRIMARY_COLOR;
+  const selectedPrimaryColor = normalizePrimaryColor(primaryColor) ?? fallbackPrimaryColor;
 
-  return {
-    key: paletteKey,
-    ...PALETTE_MAP[paletteKey],
-  };
+  return buildThemePalette(selectedPrimaryColor, resolvedMode);
 };
 
-const toLegacyColorState = (
-  tokens: ThemeSemanticTokens,
-  palette: ThemePalette,
-): ColorState => {
-  return {
-    header: {
-      bg: tokens.surface.header,
-      text: tokens.text.onPrimary,
-    },
-    launcher: {
-      bg: tokens.interactive.launcher,
-    },
-    messageList: {
-      bg: tokens.surface.panel,
-    },
-    sent: {
-      bg: tokens.surface.sentMessage,
-      text: tokens.text.onPrimary,
-      hover: tokens.interactive.buttonPrimaryHover,
-    },
-    received: {
-      bg: tokens.surface.receivedMessage,
-      text: tokens.text.primary,
-      hover: tokens.text.link,
-    },
-    userInput: {
-      bg: tokens.surface.input,
-      text: tokens.text.secondary,
-    },
-    button: {
-      bg: tokens.interactive.buttonSecondaryBg,
-      text: tokens.interactive.buttonSecondaryText,
-      border: tokens.border.interactive,
-    },
-    messageStatus: {
-      bg: tokens.state.info || palette.primary,
-      text: tokens.state.info || palette.primary,
-    },
-    messageTime: {
-      text: tokens.text.muted,
-    },
-  };
-};
 const buildBaseTokens = (
   resolvedMode: ThemeResolvedMode,
   palette: ThemePalette,
@@ -345,22 +340,15 @@ const buildBaseTokens = (
 
 export const resolveWidgetTheme = ({
   configTheme,
-  configThemeColor,
+  primaryColor,
   settingsTheme,
-  settingsThemeColor,
   prefersDarkMode = false,
 }: ThemeResolutionInput): WidgetTheme => {
   const modeResult = resolveThemeMode(
     configTheme?.mode ?? settingsTheme?.mode,
     prefersDarkMode,
   );
-  const selectedPalette = resolveThemePalette(
-    configTheme?.palette ??
-      configThemeColor ??
-      settingsTheme?.palette ??
-      settingsThemeColor,
-    modeResult.resolvedMode,
-  );
+  const selectedPalette = resolveThemePalette(primaryColor, modeResult.resolvedMode);
   const baseTokens = buildBaseTokens(modeResult.resolvedMode, selectedPalette);
   const tokens = deepMerge(
     deepMerge(baseTokens, settingsTheme?.tokens),
@@ -370,7 +358,6 @@ export const resolveWidgetTheme = ({
     deepMerge(DEFAULT_TYPOGRAPHY, settingsTheme?.typography),
     configTheme?.typography,
   );
-  const colors = toLegacyColorState(tokens, selectedPalette);
 
   return {
     mode: modeResult.mode,
@@ -378,7 +365,6 @@ export const resolveWidgetTheme = ({
     palette: selectedPalette,
     typography,
     tokens,
-    colors,
   };
 };
 

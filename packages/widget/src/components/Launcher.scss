@@ -12,6 +12,7 @@
   box-shadow: none;
   transition: box-shadow 0.2s ease-in-out;
   cursor: pointer;
+  background-color: var(--hb-color-interactive-launcher);
   color: var(--hb-color-interactive-launcher-icon);
 
   &::before {

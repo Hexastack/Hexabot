@@ -29,6 +29,13 @@
         margin: 2rem auto;
         padding: 1rem;
         cursor: pointer;
+        background: var(--hb-color-surface-header);
+        color: var(--hb-color-text-on-primary);
+
+        &:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
       }
     }
   }

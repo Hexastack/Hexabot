@@ -7,7 +7,6 @@
 import { ChevronRight } from "lucide-react";
 import React from "react";
 
-import { useColors } from "../providers/ColorProvider";
 import { IMenuNode } from "../types/menu.type";
 import { IPayload } from "../types/message.types";
 
@@ -26,7 +25,6 @@ const MenuItem: React.FC<MenuItemProps> = ({
   onOpenSubItems,
   onPostback,
 }) => {
-  const { colors } = useColors();
   const handleClick = () => {
     switch (item.type) {
       case "web_url":
@@ -43,12 +41,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <div className="hb-menu-element">
-      <a
-        className="hb-menu-item"
-        style={{ color: colors.header.text }}
-        role="button"
-        onClick={handleClick}
-      >
+      <a className="hb-menu-item" role="button" onClick={handleClick}>
         {item.title}
         {item.type === "nested" && (
           <span className="hb-menu-item-button" aria-hidden="true">

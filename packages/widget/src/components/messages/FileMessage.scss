@@ -1,27 +1,43 @@
 .hb-message--file {
-  background-color: transparent !important;
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
   border-radius: 0.5rem;
   font-weight: 300;
   font-size: 0.875rem;
   line-height: 1.4;
   -webkit-font-smoothing: subpixel-antialiased;
 
+  &.sent {
+    color: var(--hb-color-text-on-primary);
+    background-color: var(--hb-color-surface-message-sent);
+  }
+
   audio,
   video {
     max-width: 100%;
   }
+
   .error-message {
     margin: 0;
     padding: 0.625rem;
     border-radius: 0.3125rem;
     color: var(--hb-color-text-muted);
+    background-color: inherit;
     width: 100%;
     display: block;
+
+    &.no-padding {
+      padding: 0;
+    }
   }
 }
 
 .hb-message--content.sent .hb-message--file {
   overflow-wrap: break-word;
+}
+
+.hb-message--content.received .hb-message--file {
+  margin-right: 2.5rem;
 }
 
 .hb-message--file-icon {
@@ -39,12 +55,13 @@
 .hb-message--file-download {
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
-  color: var(--hb-color-text-inverse);
+  color: inherit;
+  background-color: inherit;
   text-align: center;
 
   a {
     text-decoration: none;
-    color: var(--hb-color-text-inverse);
+    color: inherit;
 
     img {
       vertical-align: middle;
@@ -54,20 +71,14 @@
   }
 }
 
-.hb-message--content.received .hb-message--file {
-  color: var(--hb-color-text-primary);
-  background-color: var(--hb-color-surface-message-received);
-  margin-right: 2.5rem;
-}
-
-.hb-message--content.received .hb-message--file-download {
-  color: var(--hb-color-text-primary);
-}
-
-.hb-message--content.received .hb-message--file a {
+.hb-message--file.received .hb-message--file-download a {
   color: var(--hb-color-text-secondary);
 }
 
-.hb-message--content.received .hb-message--file a:hover {
+.hb-message--file.received .hb-message--file-download a:hover {
   color: var(--hb-color-interactive-icon-strong);
+}
+
+.hb-message--file.sent .hb-message--file-download a:hover {
+  color: var(--hb-color-interactive-button-primary-hover);
 }

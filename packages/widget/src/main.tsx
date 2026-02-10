@@ -18,6 +18,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         apiUrl: "http://localhost:3000/api",
         channel: "web-channel",
         language: "en",
+        primaryColor: "#1BA089",
       }}
     />
   </React.StrictMode>,

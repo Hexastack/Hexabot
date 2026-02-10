@@ -7,7 +7,6 @@
 import { Check } from "lucide-react";
 import React from "react";
 
-import { useColors } from "../providers/ColorProvider";
 import { TMessage } from "../types/message.types";
 
 import "./MessageStatus.scss";
@@ -17,21 +16,18 @@ interface MessageStatusProps {
 }
 
 const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
-  const { colors } = useColors();
-
   if (!("delivery" in message && "read" in message)) {
     throw new Error("Unable to find delivery/read attributes");
   }
 
   return (
-    <div className="hb--status" style={{ color: colors.messageStatus.bg }}>
+    <div className="hb--status">
       {message.read && (
         <div className="hb--status-wrapper hb--status-read" title="Read">
           <Check
             width="16px"
             height="16px"
             className="read check"
-            style={{ stroke: colors.messageStatus.bg }}
           />
         </div>
       )}
@@ -44,7 +40,6 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
             width="16px"
             height="16px"
             className="delivery check"
-            style={{ stroke: colors.messageStatus.bg }}
           />
         </div>
       )}

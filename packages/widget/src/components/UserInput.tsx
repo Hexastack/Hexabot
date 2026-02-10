@@ -9,7 +9,6 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../types/message.types";
@@ -27,7 +26,6 @@ import "./UserInput.scss";
 const UserInput: React.FC = () => {
   const { maxUploadSize } = useConfig();
   const { t } = useTranslation();
-  const { colors } = useColors();
   const {
     suggestions,
     message,
@@ -140,13 +138,7 @@ const UserInput: React.FC = () => {
       {suggestions.length > 0 && <Suggestions />}
 
       {(file || uploading) && (
-        <div
-          className="hb-file-container"
-          style={{
-            backgroundColor: colors.userInput.text,
-            color: colors.userInput.bg,
-          }}
-        >
+        <div className="hb-file-container">
           <Paperclip
             width="16px"
             height="16px"
@@ -169,7 +161,6 @@ const UserInput: React.FC = () => {
 
       <form
         className={`hb-user-input ${inputActive ? "active" : ""}`}
-        style={{ background: colors.userInput.bg }}
       >
         {menu.length > 0 && <MenuButton />}
         <div
@@ -203,7 +194,6 @@ const UserInput: React.FC = () => {
           placeholder={placeholder} // Adjust for localization
           className="hb-user-input--text"
           ref={userInputRef}
-          style={{ color: colors.userInput.text }}
         />
         <div className="hb-user-input--buttons">
           {showEmoji && (

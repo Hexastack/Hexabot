@@ -7,6 +7,8 @@
   display: flex;
   box-shadow: var(--hb-shadow-elevated);
   align-items: center;
+  background: var(--hb-color-surface-header);
+  color: var(--hb-color-text-on-primary);
 
   &--img {
     border-radius: 50%;
@@ -14,6 +16,7 @@
     max-width: 32px;
     max-height: 32px;
     box-sizing: content-box;
+    color: inherit;
   }
 
   &--title {

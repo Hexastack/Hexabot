@@ -5,6 +5,8 @@
   width: 60%;
   bottom: 55px;
   z-index: 3;
+  color: var(--hb-color-text-on-primary);
+  background-color: var(--hb-color-surface-menu);
 
   &:active,
   &:focus {
@@ -32,6 +34,7 @@
     padding: 1rem;
     text-decoration: none;
     cursor: pointer;
+    color: inherit;
   }
 
   .hb-return-submenu-content-icon {

@@ -4,4 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export { ThemeProvider as ColorProvider, useColors } from "./ThemeProvider";
+export { ThemeProvider as ColorProvider } from "./ThemeProvider";

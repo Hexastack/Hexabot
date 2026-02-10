@@ -6,8 +6,7 @@
 
 import React from "react";
 
-import { useColors } from "../../providers/ColorProvider";
-import { Direction, TMessage } from "../../types/message.types";
+import { TMessage } from "../../types/message.types";
 
 import ButtonsMessage from "./ButtonMessage";
 
@@ -18,7 +17,6 @@ interface ListMessageProps {
 }
 
 const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
-  const { colors: allColors } = useColors();
   const processContent = (string: string) => {
     let result = truncate(string, 50);
 
@@ -37,16 +35,8 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
     throw new Error("Unable to find elements");
   }
 
-  const colors = allColors[messageList.direction || Direction.received];
-
   return (
-    <div
-      className="hb-message--list"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
-    >
+    <div className={`hb-message--list ${messageList.direction || "received"}`}>
       {messageList.data.elements.map((message, idx) => {
         const mode =
           idx === 0 &&
@@ -56,11 +46,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
             : "compact";
 
         return (
-          <div
-            key={idx}
-            className="hb-message--list-element"
-            style={{ borderColor: allColors.messageList.bg }}
-          >
+          <div key={idx} className="hb-message--list-element">
             <div className={`hb-message--list-element-content ${mode}`}>
               {message.image_url && (
                 <div

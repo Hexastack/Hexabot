@@ -8,7 +8,6 @@ import { ChevronLeft, Menu } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import { useColors } from "../../providers/ColorProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { IMenuNode, MenuType } from "../../types/menu.type";
 import { IPayload, TOutgoingMessageType } from "../../types/message.types";
@@ -17,7 +16,6 @@ import MenuItem from "../MenuItem";
 import "./MenuButton.scss";
 
 const MenuButton: React.FC = () => {
-  const { colors } = useColors();
   const settings = useSettings();
   const { send, setPayload } = useChat();
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -101,15 +99,10 @@ const MenuButton: React.FC = () => {
           onBlur={blur}
           ref={menuRef}
           className="hb-menu-content"
-          style={{
-            color: colors.header.text,
-            backgroundColor: colors.header.bg,
-          }}
         >
           <div className="hb-header-submenu-content">
             {current._parent && (
               <a
-                style={{ color: colors.header.text }}
                 className="hb-return-submenu-content"
                 onClick={() => previous(current)}
               >
@@ -119,10 +112,7 @@ const MenuButton: React.FC = () => {
             <h4 className="hb-title-submenu-title">{current.title}</h4>
           </div>
           {current.call_to_actions && (
-            <div
-              className="hb-menu-elements"
-              style={{ color: colors.header.text }}
-            >
+            <div className="hb-menu-elements">
               {current.call_to_actions.map((subitem, index) => (
                 <MenuItem
                   key={index}

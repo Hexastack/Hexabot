@@ -13,6 +13,5 @@ export type Config = {
   maxUploadSize: number;
   instanceId?: string;
   theme?: ThemeOverrides;
-  theme_color?: string;
-  themeColor?: string;
+  primaryColor?: string;
 };

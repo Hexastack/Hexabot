@@ -185,6 +185,8 @@
   display: flex;
   align-items: center;
   gap: 0.3125rem;
+  background-color: var(--hb-color-text-secondary);
+  color: var(--hb-color-surface-input);
 }
 
 .hb-user-input--file-icon,

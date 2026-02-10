@@ -19,6 +19,14 @@
     cursor: pointer;
     outline: 0;
     font-size: 0.75rem;
+    border-color: var(--hb-color-border-interactive);
+    color: var(--hb-color-interactive-button-secondary-text);
+    background-color: var(--hb-color-interactive-button-secondary-bg);
+
+    &:hover {
+      color: var(--hb-color-text-on-primary);
+      background-color: var(--hb-color-interactive-button-secondary-hover);
+    }
   }
 }
 

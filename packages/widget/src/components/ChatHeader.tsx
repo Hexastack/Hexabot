@@ -7,7 +7,6 @@
 import { MessageCircle, X } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 
-import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useWidget } from "../providers/WidgetProvider";
 
@@ -17,14 +16,10 @@ type ChatHeaderProps = PropsWithChildren;
 
 const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
   const settings = useSettings();
-  const { colors } = useColors();
   const widget = useWidget();
 
   return (
-    <div
-      className="hb-header"
-      style={{ background: colors.header.bg, color: colors.header.text }}
-    >
+    <div className="hb-header">
       {children ? (
         children
       ) : (

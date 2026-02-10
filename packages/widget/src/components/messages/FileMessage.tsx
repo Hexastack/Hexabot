@@ -8,8 +8,7 @@ import { File } from "lucide-react";
 import React, { useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
-import { useColors } from "../../providers/ColorProvider";
-import { Direction, TMessage } from "../../types/message.types";
+import { TMessage } from "../../types/message.types";
 import "./FileMessage.scss";
 
 const getFileMessageType = (
@@ -51,8 +50,7 @@ interface FileMessageProps {
 
 const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   const { t } = useTranslation();
-  const { colors: allColors } = useColors();
-  const colors = allColors[message.direction || Direction.received];
+  const directionClass = message.direction || "received";
   const [videoErrored, setVideoErrored] = useState(false);
   const [audioErrored, setAudioErrored] = useState(false);
   const [imageErrored, setImageErrored] = useState(false);
@@ -60,13 +58,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
 
   if (type === "unknown") {
     return (
-      <div
-        className="hb-message--file"
-        style={{
-          color: colors.text,
-          backgroundColor: colors.bg,
-        }}
-      >
+      <div className={`hb-message--file ${directionClass}`}>
         <p className="error-message">
           {t("messages.file_message.unsupported_file_type")}
         </p>
@@ -75,22 +67,11 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   }
 
   return (
-    <div
-      className="hb-message--file"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
-    >
+    <div className={`hb-message--file ${directionClass}`}>
       {type === "image" && (
         <div className="hb-message--file-icon">
           {imageErrored ? (
-            <p
-              className="error-message"
-              style={{
-                backgroundColor: colors.bg,
-              }}
-            >
+            <p className="error-message">
               {t("messages.file_message.image_error")}
             </p>
           ) : (
@@ -106,12 +87,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
       {type === "audio" && (
         <div className="hb-message--file-audio">
           {audioErrored ? (
-            <p
-              className="error-message"
-              style={{
-                backgroundColor: colors.bg,
-              }}
-            >
+            <p className="error-message">
               {t("messages.file_message.audio_error")}
             </p>
           ) : (
@@ -124,12 +100,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
       {type === "video" && (
         <div className="hb-message--file-video">
           {videoErrored ? (
-            <p
-              className="error-message"
-              style={{
-                backgroundColor: colors.bg,
-              }}
-            >
+            <p className="error-message">
               {t("messages.file_message.video_error")}
             </p>
           ) : (
@@ -141,15 +112,9 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
         </div>
       )}
       {type === "file" && (
-        <div
-          className="hb-message--file-download"
-          style={{
-            color: colors.text,
-            backgroundColor: colors.bg,
-          }}
-        >
+        <div className="hb-message--file-download">
           {!hasUrl(message) ? (
-            <p className="error-message" style={{ padding: 0 }}>
+            <p className="error-message no-padding">
               {t("messages.file_message.file_error")}
             </p>
           ) : (

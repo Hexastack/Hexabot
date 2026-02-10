@@ -4,14 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ColorState } from "../types/colors.types";
-
 export type ThemeMode = "light" | "dark" | "system";
 export type ThemeResolvedMode = "light" | "dark";
-export type ThemePaletteKey = "orange" | "red" | "green" | "blue" | "teal" | "dark";
 
 export type ThemePalette = {
-  key: ThemePaletteKey;
   primary: string;
   onPrimary: string;
   primaryHover: string;
@@ -98,7 +94,6 @@ export type WidgetTheme = {
   palette: ThemePalette;
   typography: ThemeTypography;
   tokens: ThemeSemanticTokens;
-  colors: ColorState;
 };
 
 export type DeepPartial<T> = {
@@ -109,15 +104,13 @@ export type DeepPartial<T> = {
 
 export type ThemeOverrides = {
   mode?: ThemeMode;
-  palette?: string;
   typography?: DeepPartial<ThemeTypography>;
   tokens?: DeepPartial<ThemeSemanticTokens>;
 };
 
 export type ThemeResolutionInput = {
   configTheme?: ThemeOverrides;
-  configThemeColor?: string;
+  primaryColor?: string;
   settingsTheme?: ThemeOverrides;
-  settingsThemeColor?: string;
   prefersDarkMode?: boolean;
 };

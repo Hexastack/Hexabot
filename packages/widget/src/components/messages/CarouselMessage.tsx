@@ -7,7 +7,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-import { useColors } from "../../providers/ColorProvider";
 import { Direction, TButton, TMessage } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
@@ -68,7 +67,6 @@ interface CarouselMessageProps {
 const CarouselMessage: React.FC<CarouselMessageProps> = ({
   messageCarousel,
 }) => {
-  const { colors: allColors } = useColors();
   const [activeIndex, setActiveIndex] = useState(0);
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
@@ -79,16 +77,11 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
   const goToNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
-  const colors = allColors[messageCarousel.direction || "received"];
   const shouldDisplayNavigationButtons = items.length > 1;
 
   return (
     <div
-      className="hb-message--carousel"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
+      className={`hb-message--carousel ${messageCarousel.direction || "received"}`}
     >
       <div
         className="hb-message--carousel-inner"

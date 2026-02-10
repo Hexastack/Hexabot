@@ -7,7 +7,6 @@
 import React from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { ISuggestion, TOutgoingMessageType } from "../types/message.types";
 
@@ -16,7 +15,6 @@ import "./Suggestions.scss";
 const Suggestions: React.FC = () => {
   const { setPayload, send, suggestions } = useChat();
   const settings = useSettings();
-  const { colors } = useColors();
   const sendSuggestion = (
     event: React.MouseEvent<HTMLButtonElement>,
     suggestion: ISuggestion,
@@ -36,16 +34,12 @@ const Suggestions: React.FC = () => {
   };
 
   return (
-    <div
-      className="hb-suggestions-row"
-      style={{ background: colors.button.bg }}
-    >
+    <div className="hb-suggestions-row">
       {suggestions.map((suggestion, idx) => (
         <button
           key={idx}
           className="hb-suggestions-element"
           onClick={(event) => sendSuggestion(event, suggestion)}
-          style={{ borderColor: colors.button.text, color: colors.button.text }}
         >
           {suggestion.text}
         </button>

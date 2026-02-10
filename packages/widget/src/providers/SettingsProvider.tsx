@@ -45,7 +45,6 @@ export type ChannelSettings = {
   start_button: boolean;
   input_disabled: boolean;
   persistent_menu: boolean;
-  theme_color?: string;
   theme?: ThemeOverrides;
   window_title: string;
   avatar_url: string;
@@ -72,7 +71,6 @@ export type ChatSettings = {
   menu: IMenuNode[];
   autoFlush: boolean;
   allowedUploadTypes: string[];
-  color: string;
   theme?: ThemeOverrides;
   greetingMessage: string;
   avatarUrl: string;
@@ -92,7 +90,6 @@ const defaultSettings: ChatSettings = {
   menu: [],
   autoFlush: true,
   allowedUploadTypes: ["image/gif", "image/png", "image/jpeg"],
-  color: "blue",
   theme: undefined,
   greetingMessage: "Welcome !",
   avatarUrl: "",
@@ -150,7 +147,6 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
         ? settings.allowed_upload_types.split(",")
         : defaultSettings.allowedUploadTypes,
       inputDisabled: settings.input_disabled,
-      color: settings.theme_color || defaultSettings.color,
       theme: settings.theme,
       greetingMessage: settings.greeting_message,
       placeholder: t("settings.placeholder"),

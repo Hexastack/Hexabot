@@ -7,8 +7,7 @@
 import Autolinker from "autolinker";
 import React, { useEffect, useRef } from "react";
 
-import { useColors } from "../../providers/ColorProvider";
-import { Direction, TMessage } from "../../types/message.types";
+import { TMessage } from "../../types/message.types";
 
 import "./TextMessage.scss";
 
@@ -17,7 +16,6 @@ interface TextMessageProps {
 }
 
 const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
-  const { colors: allColors } = useColors();
   const messageTextRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -40,17 +38,8 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
     throw new Error("Unable to find text.");
   }
 
-  const colors = allColors[message.direction || Direction.received];
-
   return (
-    <div
-      className="hb-message--text"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-        ["--launcher-color" as string]: colors.hover,
-      }}
-    >
+    <div className="hb-message--text">
       <p className="hb-message--text-content" ref={messageTextRef}>
         {message.data.text}
       </p>

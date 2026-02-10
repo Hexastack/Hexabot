@@ -10,6 +10,7 @@
   padding: 1rem;
   text-decoration: none;
   width: 100%;
+  color: var(--hb-color-text-on-primary);
 }
 
 .hb-menu-item-button {
@@ -21,6 +22,7 @@
   top: 50%;
   transform: translateY(-50%);
   padding: 1rem;
+  color: inherit;
 
   svg {
     width: 1.125rem;

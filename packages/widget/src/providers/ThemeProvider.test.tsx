@@ -38,7 +38,6 @@ const createMockSettings = (): ChatSettings => ({
   menu: [],
   autoFlush: true,
   allowedUploadTypes: ["image/png"],
-  color: "blue",
   theme: undefined,
   greetingMessage: "Welcome !",
   avatarUrl: "",
@@ -62,7 +61,7 @@ const ThemeProbe = () => {
     <div
       data-theme-probe="1"
       data-mode={theme.resolvedMode}
-      data-palette={theme.palette.key}
+      data-primary={theme.palette.primary}
     />
   );
 };
@@ -117,5 +116,6 @@ describe("ThemeProvider", () => {
       "#141A20",
     );
     expect(probeNode?.getAttribute("data-mode")).toBe("dark");
+    expect(probeNode?.getAttribute("data-primary")).toBe("#111827");
   });
 });

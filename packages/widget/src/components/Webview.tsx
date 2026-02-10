@@ -9,13 +9,11 @@ import React, { useEffect, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 
 import "./Webview.scss";
 
 const Webview: React.FC = () => {
   const { t } = useTranslation();
-  const { colors } = useColors();
   const { setWebviewUrl, webviewUrl } = useChat();
   const [loaded, setLoaded] = useState(false);
 
@@ -32,10 +30,7 @@ const Webview: React.FC = () => {
       {loaded && webviewUrl && (
         <iframe src={webviewUrl} title="webview" frameBorder="0" />
       )}
-      <div
-        className="hb-webview--footer"
-        style={{ background: colors.header.bg, color: colors.header.text }}
-      >
+      <div className="hb-webview--footer">
         <h3 className="hb-webview--button" onClick={close}>
           <ChevronLeft width="16px" height="16px" />
           {t("settings.back")}

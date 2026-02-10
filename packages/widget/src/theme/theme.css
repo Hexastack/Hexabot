@@ -1,10 +1,10 @@
 .hb-theme-root {
-  --hb-color-surface-root: #f4f7f9;
+  --hb-color-surface-root: #fcfcfc;
   --hb-color-surface-panel: #ffffff;
   --hb-color-surface-header: #0074d9;
   --hb-color-surface-input: #ffffff;
   --hb-color-surface-message-sent: #0074d9;
-  --hb-color-surface-message-received: #f4f7f9;
+  --hb-color-surface-message-received: #ececed;
   --hb-color-surface-menu: #0074d9;
   --hb-color-surface-elevated: #ffffff;
   --hb-color-surface-suggestion: #ffffff;

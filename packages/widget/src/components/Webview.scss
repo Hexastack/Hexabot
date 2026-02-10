@@ -19,6 +19,8 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    background: var(--hb-color-surface-header);
+    color: var(--hb-color-text-on-primary);
   }
 
   &--button {
@@ -28,6 +30,7 @@
     gap: 0.25rem;
     margin: 0;
     padding: 0;
+    color: inherit;
 
     img {
       vertical-align: middle;

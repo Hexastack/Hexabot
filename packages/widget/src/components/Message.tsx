@@ -12,7 +12,6 @@ import { MessageCircle } from "lucide-react";
 import React, { PropsWithChildren, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { TMessage } from "../types/message.types";
 
 import "./Message.scss";
@@ -33,7 +32,6 @@ type MessageProps = PropsWithChildren<{
 
 const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   const { participants } = useChat();
-  const { colors } = useColors();
   const [isTimeVisible, setIsTimeVisible] = useState(false);
   const user = participants.find(
     (participant) => participant.id === message.author,
@@ -57,9 +55,7 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           style={
             user.imageUrl
               ? {
-                  backgroundImage: `url(${
-                    user.imageUrl
-                  }?color=${encodeURIComponent(colors.header.bg)})`,
+                  backgroundImage: `url(${user.imageUrl})`,
                 }
               : undefined
           }
@@ -88,10 +84,7 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
             {message.direction === "sent" && (
               <MessageStatus message={message} />
             )}
-            <div
-              style={{ color: colors.messageTime.text }}
-              className="hb-message--time"
-            >
+            <div className="hb-message--time">
               {isTimeVisible && fromNow(message.createdAt)}
             </div>
           </div>

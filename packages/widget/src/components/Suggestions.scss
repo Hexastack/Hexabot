@@ -1,6 +1,7 @@
 .hb-suggestions-row {
   text-align: center;
   padding: 0.5rem 0;
+  background: var(--hb-color-interactive-button-secondary-bg);
 }
 
 .hb-suggestions-element {
@@ -12,4 +13,11 @@
   background: inherit;
   cursor: pointer;
   outline: 0;
+  border-color: var(--hb-color-interactive-button-secondary-text);
+  color: var(--hb-color-interactive-button-secondary-text);
+
+  &:hover {
+    background: var(--hb-color-interactive-button-secondary-hover);
+    color: var(--hb-color-text-on-primary);
+  }
 }

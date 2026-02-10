@@ -1,8 +1,14 @@
 .hb--status {
   display: flex;
   flex-direction: row;
+  color: var(--hb-color-text-muted);
 
   .hb--status-read {
     margin-right: -0.375rem;
+  }
+
+  .check {
+    stroke: currentColor;
+    color: currentColor;
   }
 }

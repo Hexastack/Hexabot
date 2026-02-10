@@ -8,7 +8,6 @@ import { MessageCircle, X } from "lucide-react";
 import React, { PropsWithChildren } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useSocketLifecycle } from "../providers/SocketProvider";
 import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
 
@@ -33,7 +32,6 @@ const Launcher: React.FC<LauncherProps> = ({
 }) => {
   const chat = useChat();
   const widget = useWidget();
-  const { colors } = useColors();
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     widget.setIsOpen(!widget.isOpen);
@@ -58,10 +56,7 @@ const Launcher: React.FC<LauncherProps> = ({
         {CustomLauncher ? (
           <CustomLauncher widget={widget} />
         ) : (
-          <div
-            className="hb-launcher"
-            style={{ backgroundColor: colors.launcher.bg }}
-          >
+          <div className="hb-launcher">
             {chat.newMessagesCount > 0 && !widget.isOpen && (
               <div className="hb-new-messages-count">
                 {chat.newMessagesCount}

@@ -3,6 +3,13 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
+
+  &.sent {
+    color: var(--hb-color-text-on-primary);
+    background-color: var(--hb-color-surface-message-sent);
+  }
 
   .hb-message--carousel-inner {
     display: flex;

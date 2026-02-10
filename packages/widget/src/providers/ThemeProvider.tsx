@@ -5,19 +5,16 @@
  */
 
 import React, {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import { WidgetTheme } from "../theme/theme.types";
-import {
-    resolveWidgetTheme,
-    themeToCssVariables,
-} from "../theme/theme.utils";
+import { resolveWidgetTheme, themeToCssVariables } from "../theme/theme.utils";
 
 import "../theme/theme.css";
 import { useConfig } from "./ConfigProvider";
@@ -69,17 +66,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   const theme = useMemo(() => {
     return resolveWidgetTheme({
       configTheme: config.theme,
-      configThemeColor: config.themeColor || config.theme_color,
+      primaryColor: config.primaryColor,
       settingsTheme: settings.theme,
-      settingsThemeColor: settings.color,
       prefersDarkMode,
     });
   }, [
     config.theme,
-    config.themeColor,
-    config.theme_color,
+    config.primaryColor,
     settings.theme,
-    settings.color,
     prefersDarkMode,
   ]);
   const cssVariables = useMemo(() => themeToCssVariables(theme), [theme]);
@@ -89,7 +83,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
       <div
         className="hb-theme-root"
         data-theme-mode={theme.resolvedMode}
-        data-theme-palette={theme.palette.key}
+        data-theme-primary={theme.palette.primary}
         style={cssVariables}
       >
         {children}
@@ -106,10 +100,4 @@ export const useTheme = () => {
   }
 
   return context;
-};
-
-export const useColors = () => {
-  const { colors } = useTheme();
-
-  return { colors };
 };
