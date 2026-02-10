@@ -5,9 +5,11 @@
  */
 
 import { CircularProgress, Grid, Typography } from "@mui/material";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
+import { theme } from "@/layout/theme";
 import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
 
 const MB = 1024 * 1024;
@@ -60,6 +62,11 @@ export const ConfigProvider = ({ children }) => {
 
     loadConfig();
   }, []);
+  const { getLocalStorage } = useLocalStorage();
+  const currentMode = useMemo(
+    () => getLocalStorage("mui-mode"),
+    [getLocalStorage],
+  );
 
   if (error || !config) {
     return (
@@ -67,7 +74,11 @@ export const ConfigProvider = ({ children }) => {
         container
         gap="10px"
         height="100%"
-        bgcolor="#F5F6FA"
+        bgcolor={
+          currentMode === "dark"
+            ? theme.palette.common.black
+            : theme.palette.common.white
+        }
         position="fixed"
         alignItems="center"
         justifyContent="center"
@@ -75,7 +86,16 @@ export const ConfigProvider = ({ children }) => {
         width="100%"
       >
         <CircularProgress />
-        <Typography display="block">{t("message.wait_message")} ...</Typography>
+        <Typography
+          display="block"
+          color={
+            currentMode === "dark"
+              ? theme.palette.common.white
+              : theme.palette.common.black
+          }
+        >
+          {t("message.wait_message")} ...
+        </Typography>
       </Grid>
     );
   }
