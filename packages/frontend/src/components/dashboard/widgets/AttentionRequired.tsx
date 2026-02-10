@@ -6,139 +6,99 @@
 
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
-import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
+import { IconContainer } from "../components/IconContainer";
+import { TitleWithActions } from "../components/TitleWithActions";
 import { mockAttentionItems } from "../mockData";
+import { getSeverityStyles } from "../utils/transform.util";
 
 export const AttentionRequired = () => {
-    const theme = useTheme();
-    const getSeverityStyles = (severity: string) => {
-        if (severity === 'critical') {
-            return {
-                bg: alpha(theme.palette.error.main, 0.1),
-                border: alpha(theme.palette.error.main, 0.2),
-                icon: theme.palette.error.main,
-                Icon: XCircle
-            };
-        }
-        if (severity === 'error') {
-            return {
-                bg: alpha(theme.palette.error.main, 0.05),
-                border: alpha(theme.palette.error.main, 0.1),
-                icon: theme.palette.error.main,
-                Icon: AlertCircle
-            };
-        }
-        
-return {
-            bg: alpha(theme.palette.warning.main, 0.1),
-            border: alpha(theme.palette.warning.main, 0.2),
-            icon: theme.palette.warning.main,
-            Icon: AlertTriangle
-        };
-    };
+  const theme = useTheme();
 
   return (
-    <Box sx={{ height: '100%' }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} px={1}>
-         <Typography variant="h6" fontWeight="bold">
-           Attention Required
-         </Typography>
-         <Chip 
-            label={mockAttentionItems.length} 
-            size="small" 
-            color="error" 
-            sx={{ fontWeight: 'bold', borderRadius: 1.5, height: 24 }} 
-         />
-      </Box>
-      
-      <Stack spacing={1.5}>
+    <Box>
+      <TitleWithActions
+        title="Attention Required"
+        actions={<Chip label={mockAttentionItems.length} color="error" />}
+      />
+      <Stack gap={1.5} mt={1}>
         {mockAttentionItems.map((item) => {
-            const styles = getSeverityStyles(item.severity);
-            const Icon = styles.Icon;
-            
-            return (
-                <Paper
-                    key={item.id}
-                    elevation={0}
-                    sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        bgcolor: styles.bg,
-                        border: `1px solid ${styles.border}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 2,
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                            transform: 'translateX(4px)',
-                            bgcolor: alpha(styles.bg, 0.15) // slightly darker on hover
-                        }
-                    }}
-                >
-                    <Box sx={{ 
-                        color: styles.icon, 
-                        display: 'flex', 
-                        p: 1, 
-                        bgcolor: theme.palette.background.paper, 
-                        borderRadius: '50%',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-                    }}>
-                        <Icon size={20} />
-                    </Box>
-                    
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                            {item.title}
-                        </Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 'medium' }}>
-                            {item.time}
-                        </Typography>
-                    </Box>
+          const styles = getSeverityStyles(item.severity);
+          const Icon = styles.Icon;
 
-                    <Button 
-                        size="small" 
-                        variant="outlined"
-                        onClick={() => {
-                            // TODO: Implement action
-                        }}
-                        sx={{ 
-                            minWidth: 'auto',
-                            borderColor: alpha(styles.icon, 0.3),
-                            color: styles.icon,
-                            '&:hover': {
-                                borderColor: styles.icon,
-                                bgcolor: alpha(styles.icon, 0.05)
-                            }
-                         }}
-                    >
-                        {item.action}
-                    </Button>
-                </Paper>
-            );
+          return (
+            <Paper
+              key={item.id}
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                bgcolor: styles.bg,
+                border: `1px solid ${styles.border}`,
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "translateX(4px)",
+                  bgcolor: alpha(styles.bg, 0.15), // slightly darker on hover
+                },
+              }}
+            >
+              <IconContainer
+                icon={Icon}
+                color={styles.icon}
+                borderRadius="16px"
+                size={20}
+              />
+              <Box>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  {item.title}
+                </Typography>
+                <Typography color="textDisabled">{item.time}</Typography>
+              </Box>
+
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  // TODO: Implement action
+                }}
+                sx={{
+                  borderColor: alpha(styles.icon, 0.3),
+                  color: styles.icon,
+                  "&:hover": {
+                    borderColor: styles.icon,
+                    bgcolor: alpha(styles.icon, 0.05),
+                  },
+                }}
+              >
+                {item.action}
+              </Button>
+            </Paper>
+          );
         })}
 
         {mockAttentionItems.length === 0 && (
-             <Paper
-                elevation={0}
-                sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    bgcolor: alpha(theme.palette.success.main, 0.05),
-                    border: `1px dashed ${alpha(theme.palette.success.main, 0.3)}`,
-                    textAlign: 'center'
-                }}
-            >
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5, color: theme.palette.success.main }}>
-                    <CheckCircle size={32} />
-                </Box>
-                <Typography variant="subtitle1" fontWeight="bold">
-                    All Systems Operational
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    No items require attention at this time.
-                </Typography>
-            </Paper>
+          <Paper
+            elevation={0}
+            variant="spaced"
+            sx={{
+              border: `1px dashed ${alpha(theme.palette.success.main, 0.3)}`,
+              textAlign: "center",
+            }}
+          >
+            <Box color="success.main">
+              <CheckCircle size={32} />
+            </Box>
+            <Typography variant="subtitle1" fontWeight="bold">
+              All Systems Operational
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              No items require attention at this time.
+            </Typography>
+          </Paper>
         )}
       </Stack>
     </Box>

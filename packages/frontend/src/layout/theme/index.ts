@@ -6,11 +6,13 @@
 
 import { createTheme } from "@mui/material";
 
+import type {} from "@mui/lab/themeAugmentation";
 import type {} from "@mui/x-data-grid/themeAugmentation";
 import { dataDisplayCustomizations } from "./customizations/dataDisplay";
 import { datagridCustomizations } from "./customizations/dataGrid";
 import { feedbackCustomizations } from "./customizations/feedback";
 import { inputsCustomizations } from "./customizations/inputs";
+import { labCustomizations } from "./customizations/lab";
 import { navigationCustomizations } from "./customizations/navigation";
 import { surfacesCustomizations } from "./customizations/surfaces";
 import { colorSchemes, shadows, shape, typography } from "./themePrimitives";
@@ -31,5 +33,6 @@ export const theme = createTheme({
     ...navigationCustomizations,
     ...surfacesCustomizations,
     ...datagridCustomizations,
+    ...labCustomizations,
   },
 });
