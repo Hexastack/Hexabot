@@ -10,7 +10,10 @@ import {
   AlertTriangle,
   Calendar,
   FileText,
+  Link2,
   LucideIcon,
+  Mail,
+  MessageCircle,
   MousePointer2,
   PlayIcon,
   RefreshCcw,
@@ -60,18 +63,25 @@ export const getColor = (c: string) => {
   return colors[c] || theme.palette.primary.main;
 };
 
-export const getTypeIcon = (type: string): LucideIcon => {
+export const getWorkflowIcon = (type: string): LucideIcon => {
   if (type === "Conversational") return FileText;
   if (type === "Scheduled") return Calendar;
 
   return MousePointer2;
 };
 
-export const getIcon = (text: string) => {
+export const getActivityIcon = (text: string) => {
   if (text.includes("edited")) return User;
   if (text.includes("Manual run")) return PlayIcon;
   if (text.includes("System")) return Settings;
   if (text.includes("missed")) return AlertTriangle;
 
   return RefreshCcw;
+};
+
+export const getIntegrationIcon = (name: string): LucideIcon => {
+  if (name.includes("WhatsApp")) return MessageCircle;
+  if (name.includes("Email")) return Mail;
+
+  return Link2;
 };

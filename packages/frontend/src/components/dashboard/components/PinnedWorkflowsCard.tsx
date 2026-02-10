@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Play } from "lucide-react";
 
-import { getTypeIcon } from "../utils/transform.util";
+import { getWorkflowIcon } from "../utils/transform.util";
 
 import { IconContainer } from "./IconContainer";
 
@@ -25,7 +25,7 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
   const statusColor = isEnabled
     ? theme.palette.success.main
     : theme.palette.text.disabled;
-  const Icon = getTypeIcon(workflow.type);
+  const Icon = getWorkflowIcon(workflow.type);
 
   return (
     <Card
@@ -48,7 +48,6 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
     >
       <CardContent
         sx={{
-          px: 2,
           display: "flex",
           alignItems: "center",
           gap: 2,

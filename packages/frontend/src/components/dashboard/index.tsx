@@ -16,7 +16,7 @@ import { IntegrationsHealth } from "./widgets/IntegrationsHealth";
 import { KPICards } from "./widgets/KPICards";
 import { PinnedWorkflows } from "./widgets/PinnedWorkflows";
 import { QuickActions } from "./widgets/QuickActions";
-import { RecentActivity } from "./widgets/RecentActivity";
+import { RecentActivityTimeline } from "./widgets/RecentActivityTimeline";
 import { RecentRuns } from "./widgets/RecentRuns";
 import { UpcomingScheduleTimeline } from "./widgets/UpcomingScheduleTimeline";
 
@@ -26,11 +26,9 @@ export const Dashboard = () => {
   return (
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={Home} title={t("title.dashboard")} />
-
       <Grid size={12}>
         <KPICards />
       </Grid>
-
       {/* 2. Main Dashboard Layout */}
       <Grid size={12} container spacing={3}>
         {/* Left Column: Activity & Actions */}
@@ -44,16 +42,13 @@ export const Dashboard = () => {
           <Grid size={12}>
             <QuickActions />
           </Grid>
-
           <Grid size={12}>
             {/* TODO replace mock data by an API integration */}
             <PinnedWorkflows />
           </Grid>
-
           <Grid size={12}>
             <RecentRuns />
           </Grid>
-
           <Grid container spacing={3}>
             <Grid size={{ md: 6, xs: 12 }}>
               {/* TODO replace mock data by an API integration */}
@@ -61,11 +56,10 @@ export const Dashboard = () => {
             </Grid>
             <Grid size={{ md: 6, xs: 12 }}>
               {/* TODO replace mock data by an API integration */}
-              <RecentActivity />
+              <RecentActivityTimeline />
             </Grid>
           </Grid>
         </Grid>
-
         {/* Right Column: Status & Schedule */}
         <Grid
           size={{ md: 4, xs: 12 }}
@@ -77,11 +71,9 @@ export const Dashboard = () => {
             {/* TODO replace mock data by an API integration */}
             <AttentionRequired />
           </Grid>
-
           <Grid size={12}>
             <UpcomingScheduleTimeline />
           </Grid>
-
           <Grid size={12}>
             {/* TODO replace mock data by an API integration */}
             <IntegrationsHealth />

@@ -29,12 +29,9 @@ export const KPICard = ({
   return (
     <Card
       sx={{
-        py: 6,
         borderRadius: 3,
-        boxShadow: "0px 2px 10px rgba(0,0,0,0.03)",
         background: `linear-gradient(135deg, ${alpha(mainColor, 0.05)} 0%, ${alpha(mainColor, 0.2)} 100%)`,
-        border: `1px solid ${alpha(mainColor, 0.1)}`,
-        transition: "transform 0.2s ease-in-out, box-shadow 0.2s",
+        border: `1px solid ${alpha(mainColor, 0.33)}`,
         "&:hover": {
           transform: "translateY(-2px)",
           boxShadow: `0 8px 20px ${alpha(mainColor, 0.1)}`,

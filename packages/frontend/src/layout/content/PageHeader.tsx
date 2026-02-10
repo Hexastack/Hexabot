@@ -10,27 +10,26 @@ import { PropsWithChildren, ReactNode } from "react";
 
 import { Title } from "./Title";
 
-export const PageHeader = (
-  props: PropsWithChildren<{
-    title?: string;
-    icon?: LucideIcon;
-    chip?: ReactNode;
-  }>,
-) => {
+export const PageHeader = ({
+  title,
+  icon,
+  chip,
+  children,
+}: PropsWithChildren<{
+  title?: string;
+  icon?: LucideIcon;
+  chip?: ReactNode;
+}>) => {
   return (
     <Box
       sx={{
         display: "flex",
         justifyContent: "space-between",
-        flexWrap: "nowrap",
-        width: "100%",
         alignItems: "flex-end",
       }}
     >
-      {props.title || props.icon ? (
-        <Title title={props.title || ""} Icon={props.icon} chip={props.chip} />
-      ) : null}
-      {props.children}
+      {(title || icon) && <Title title={title ?? ""} Icon={icon} chip={chip} />}
+      {children}
     </Box>
   );
 };

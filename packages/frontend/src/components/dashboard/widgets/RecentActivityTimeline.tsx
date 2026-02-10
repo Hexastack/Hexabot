@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Timeline } from "@mui/lab";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Filter } from "lucide-react";
@@ -12,13 +13,13 @@ import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
 import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 import { mockRecentActivity } from "../mockData";
-import { getIcon } from "../utils/transform.util";
+import { getActivityIcon } from "../utils/transform.util";
 
-export const RecentActivity = () => {
+export const RecentActivityTimeline = () => {
   const theme = useTheme();
 
   return (
-    <Box>
+    <Timeline>
       <TitleWithActions
         title="Activity"
         actions={
@@ -27,17 +28,15 @@ export const RecentActivity = () => {
           </Button>
         }
       />
-
-      <Box sx={{ position: "relative", px: 1, mt: 1 }}>
+      <Box>
         {mockRecentActivity.map((event) => {
-          const IconType = getIcon(event.text);
+          const IconType = getActivityIcon(event.text);
 
           return (
             <DashboardTimelineItem
               key={event.id}
-              description=""
               time={event.time}
-              getTitle={() => (
+              renderTitle={() => (
                 <Grid display="flex" gap={1} alignItems="center">
                   <IconContainer
                     icon={IconType}
@@ -61,6 +60,6 @@ export const RecentActivity = () => {
           );
         })}
       </Box>
-    </Box>
+    </Timeline>
   );
 };

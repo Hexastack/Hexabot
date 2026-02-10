@@ -17,6 +17,7 @@ import { getRemainingTime } from "@/utils/date";
 
 import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
 import { IconContainer } from "../components/IconContainer";
+import { TitleWithActions } from "../components/TitleWithActions";
 
 export const UpcomingScheduleTimeline = () => {
   const { t } = useTranslate();
@@ -35,52 +36,49 @@ export const UpcomingScheduleTimeline = () => {
   );
 
   return (
-    <Box>
-      <Typography variant="h6">Upcoming</Typography>
+    <Timeline>
+      <TitleWithActions title="Upcoming" />
       {scheduledWorkflows.length ? (
-        <Timeline position="right">
+        <Box>
           {scheduledWorkflows
             .sort((s1, s2) =>
               (s1.runAfterMs || 0) > (s2.runAfterMs || 0) ? 1 : -1,
             )
-            .map((scheduledWorkflow) => (
+            .map(({ id, name, type, schedule, runAfterMs, description }) => (
               <DashboardTimelineItem
-                key={scheduledWorkflow.id}
-                author={scheduledWorkflow.schedule || ""}
-                description={scheduledWorkflow.description || ""}
-                time={getRemainingTime(scheduledWorkflow.runAfterMs)}
-                getTitle={() => {
-                  const { key: _, ...rest } =
-                    WORKFLOW_TYPES[scheduledWorkflow.type];
+                key={id}
+                text={description || ""}
+                time={getRemainingTime(runAfterMs)}
+                onClick={() => {
+                  router.push({
+                    pathname: `/workflow-editor/${id}`,
+                  });
+                }}
+                renderTitle={() => {
+                  const { key: _, ...rest } = WORKFLOW_TYPES[type];
 
                   return (
                     <>
                       <Grid display="flex" gap={1} alignItems="center">
                         <IconContainer
-                          borderRadius="50%"
                           padding="2px"
+                          borderRadius="50%"
                           {...rest}
                         />
-                        <Typography variant="h6">
-                          {scheduledWorkflow.name}
-                        </Typography>
+                        <Typography variant="h6">{name}</Typography>
                       </Grid>
                     </>
                   );
                 }}
-                onClick={() => {
-                  router.push({
-                    pathname: `/workflow-editor/${scheduledWorkflow.id}`,
-                  });
-                }}
+                secondaryText={schedule || ""}
               />
             ))}
-        </Timeline>
+        </Box>
       ) : (
-        <Paper elevation={3} variant="spaced" sx={{ mt: 1 }}>
+        <Paper elevation={3} variant="spaced" sx={{ mt: 2 }}>
           <Typography>{t("label.no_scheduled_workflows")}</Typography>
         </Paper>
       )}
-    </Box>
+    </Timeline>
   );
 };
