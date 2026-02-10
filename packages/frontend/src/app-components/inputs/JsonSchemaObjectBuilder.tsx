@@ -13,6 +13,7 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  MenuItem,
   Paper,
   Stack,
   Switch,
@@ -344,9 +345,9 @@ function SchemaNodeEditor({
                     }
                   >
                     {TYPE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
+                      <MenuItem key={opt.value} value={opt.value}>
                         {opt.label}
-                      </option>
+                      </MenuItem>
                     ))}
                   </TextField>
                 )}
