@@ -16,6 +16,7 @@ export const RotateButton = () => {
 
   return (
     <ControlButton
+      title="Rotate"
       onClick={async () => {
         if (selectedFlowId) {
           const toggledDirection =

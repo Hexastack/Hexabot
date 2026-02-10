@@ -5,9 +5,10 @@
  */
 
 import { ActionStatus } from "@hexabot-ai/agentic";
-import { styled } from "@mui/material";
+import { styled, useColorScheme } from "@mui/material";
 import { useState } from "react";
 
+import { theme } from "@/layout/theme";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import {
@@ -28,7 +29,7 @@ const ICON_STYLE = {
 
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
   const { selectedFlowId } = useWorkflow();
-  const { theme, action, type, ...node } = useWorkflowNode<T>();
+  const { theme: baseTheme, action, type, ...node } = useWorkflowNode<T>();
   const [nodeState, setNodeState] = useState<
     | {
         state: ActionStatus;
@@ -36,10 +37,13 @@ export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
       }
     | undefined
   >();
+  const { mode } = useColorScheme();
   const resolvedTheme = resolveWorkflowStepTheme({
-    baseTheme: theme,
+    baseTheme,
     action,
     status: nodeState?.state,
+    mode,
+    theme,
   });
   const StyledIcon = styled(resolvedTheme.Icon)(() => ICON_STYLE);
 

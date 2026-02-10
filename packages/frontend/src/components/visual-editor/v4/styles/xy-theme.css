@@ -68,6 +68,7 @@
   --xy-controls-box-shadow-default: 0 0 2px 1px rgba(0, 0, 0, 0.08);
   --xy-edge-label-background-color-default: #141414;
   --xy-edge-label-color-default: #f8f8f8;
+  --xy-background-color-props: #000000;
 }
 
 .visual-editor-v4 {

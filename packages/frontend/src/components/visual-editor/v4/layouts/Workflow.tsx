@@ -21,6 +21,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
+import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import { IMemoryDefinition } from "@/types/memory-definition.types";
@@ -282,9 +283,12 @@ export const Workflow = () => {
           defaultViewport={defaultViewport}
         >
           <Controls
-            className="rf-controls-v4"
             onFitView={animateFocus}
             fitViewOptions={{ duration: 200 }}
+            style={{
+              overflow: "hidden",
+              borderRadius: theme.shape.borderRadius,
+            }}
           >
             <RotateButton />
           </Controls>
