@@ -118,4 +118,31 @@ describe("ThemeProvider", () => {
     expect(probeNode?.getAttribute("data-mode")).toBe("dark");
     expect(probeNode?.getAttribute("data-primary")).toBe("#111827");
   });
+
+  it("uses the top-level config mode over nested theme mode", async () => {
+    mockUseConfig.mockReturnValue({
+      apiUrl: "https://example.com/api",
+      channel: "console-channel",
+      language: "en",
+      maxUploadSize: 10,
+      mode: "light",
+      theme: { mode: "dark" },
+    });
+
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        <ThemeProvider>
+          <ThemeProbe />
+        </ThemeProvider>,
+      );
+    });
+
+    const rootNode = container.querySelector(".hb-theme-root");
+    const probeNode = container.querySelector("[data-theme-probe='1']");
+
+    expect(rootNode?.getAttribute("data-theme-mode")).toBe("light");
+    expect(probeNode?.getAttribute("data-mode")).toBe("light");
+    expect(probeNode?.getAttribute("data-primary")).toBe("#0074D9");
+  });
 });

@@ -109,6 +109,7 @@ export type ThemeOverrides = {
 };
 
 export type ThemeResolutionInput = {
+  configMode?: ThemeMode;
   configTheme?: ThemeOverrides;
   primaryColor?: string;
   settingsTheme?: ThemeOverrides;

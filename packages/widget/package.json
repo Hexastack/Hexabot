@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "autolinker": "^4.1.5",
+    "chroma-js": "^3.2.0",
     "dayjs": "^1.11.12",
     "emoji-js": "^3.8.0",
     "lucide-react": "^0.562.0",
@@ -33,6 +34,7 @@
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@types/chroma-js": "^3.1.2",
     "@types/emoji-js": "^3.5.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

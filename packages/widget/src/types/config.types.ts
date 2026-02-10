@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ThemeOverrides } from "../theme/theme.types";
+import { ThemeMode, ThemeOverrides } from "../theme/theme.types";
 
 export type Config = {
   apiUrl: string;
@@ -12,6 +12,7 @@ export type Config = {
   language: string;
   maxUploadSize: number;
   instanceId?: string;
+  mode?: ThemeMode;
   theme?: ThemeOverrides;
   primaryColor?: string;
 };

@@ -702,6 +702,9 @@ importers:
       autolinker:
         specifier: ^4.1.5
         version: 4.1.5
+      chroma-js:
+        specifier: ^3.2.0
+        version: 3.2.0
       dayjs:
         specifier: ^1.11.12
         version: 1.11.18
@@ -731,6 +734,9 @@ importers:
         specifier: ^4.24.0
         version: 4.52.4
     devDependencies:
+      '@types/chroma-js':
+        specifier: ^3.1.2
+        version: 3.1.2
       '@types/emoji-js':
         specifier: ^3.5.2
         version: 3.5.2
@@ -3434,6 +3440,9 @@ packages:
     resolution: {integrity: sha512-pb/QoGqtCpH2famSp72qEsXkNzcErlVmiXlQ/ww+5AddD8TmmYS7EWg5T20YiNCAiTgs8pMf2G8SJG5h/ER1ZQ==}
     deprecated: This is a stub types definition. chalk provides its own type definitions, so you do not need this installed.
 
+  '@types/chroma-js@3.1.2':
+    resolution: {integrity: sha512-YBTQqArPN8A0niHXCwrO1z5x++a+6l0mLBykncUpr23oIPW7L4h39s6gokdK/bDrPmSh8+TjMmrhBPnyiaWPmQ==}
+
   '@types/commander@2.12.5':
     resolution: {integrity: sha512-YXGZ/rz+s57VbzcvEV9fUoXeJlBt5HaKu5iUheiIWNsJs23bz6AnRuRiZBRVBLYyPnixNvVnuzM5pSaxr8Yp/g==}
     deprecated: This is a stub types definition. commander provides its own type definitions, so you do not need this installed.
@@ -4512,6 +4521,9 @@ packages:
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+
+  chroma-js@3.2.0:
+    resolution: {integrity: sha512-os/OippSlX1RlWWr+QDPcGUZs0uoqr32urfxESG9U93lhUfbnlyckte84Q8P1UQY/qth983AS1JONKmLS4T0nw==}
 
   chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
@@ -12484,6 +12496,8 @@ snapshots:
     dependencies:
       chalk: 5.6.2
 
+  '@types/chroma-js@3.1.2': {}
+
   '@types/commander@2.12.5':
     dependencies:
       commander: 12.1.0
@@ -13807,6 +13821,8 @@ snapshots:
   chownr@1.1.4: {}
 
   chownr@2.0.0: {}
+
+  chroma-js@3.2.0: {}
 
   chrome-trace-event@1.0.4: {}
 

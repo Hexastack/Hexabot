@@ -65,12 +65,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   const prefersDarkMode = usePrefersDarkMode();
   const theme = useMemo(() => {
     return resolveWidgetTheme({
+      configMode: config.mode,
       configTheme: config.theme,
       primaryColor: config.primaryColor,
       settingsTheme: settings.theme,
       prefersDarkMode,
     });
   }, [
+    config.mode,
     config.theme,
     config.primaryColor,
     settings.theme,

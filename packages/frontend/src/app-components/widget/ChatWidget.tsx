@@ -5,7 +5,7 @@
  */
 
 import UiChatWidget from "@hexabot-ai/widget/src/UiChatWidget";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, useColorScheme, useTheme } from "@mui/material";
 import { useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
@@ -26,6 +26,8 @@ interface ChatWidgetProps {
 }
 
 export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
+  const { mode } = useColorScheme();
+  const theme = useTheme();
   const { pathname, reload } = useAppRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
@@ -65,13 +67,17 @@ export const ChatWidget = ({ variant = "launcher" }: ChatWidgetProps) => {
           apiUrl,
           channel: "console-channel",
           language: i18n.language,
+          primaryColor: theme.palette.primary.main,
+          mode: mode ?? theme.palette.mode,
         }}
         CustomAvatar={() => (
           <Avatar
             sx={{ width: "32px", height: "32px" }}
-            src={
-              getAvatarSrc(apiUrl, EntityType.USER, "bot") + "?color=%231ba089"
-            }
+            src={`${getAvatarSrc(
+              apiUrl,
+              EntityType.USER,
+              "bot",
+            )}?color=${encodeURIComponent(theme.palette.primary.main)}`}
           />
         )}
         CustomHeader={isEmbedded ? () => null : undefined}

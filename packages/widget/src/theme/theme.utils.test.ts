@@ -9,6 +9,23 @@ import { describe, expect, it } from "vitest";
 import { resolveWidgetTheme } from "./theme.utils";
 
 describe("resolveWidgetTheme", () => {
+  it("uses the top-level mode prop over nested and server theme modes", () => {
+    const theme = resolveWidgetTheme({
+      configMode: "dark",
+      configTheme: {
+        mode: "light",
+      },
+      settingsTheme: {
+        mode: "light",
+      },
+      prefersDarkMode: false,
+    });
+
+    expect(theme.mode).toBe("dark");
+    expect(theme.resolvedMode).toBe("dark");
+    expect(theme.palette.primary).toBe("#111827");
+  });
+
   it("uses explicit widget primaryColor over server settings and system preference", () => {
     const theme = resolveWidgetTheme({
       configTheme: {
@@ -43,6 +60,20 @@ describe("resolveWidgetTheme", () => {
 
     expect(theme.palette.primary).toBe("#1BA089");
     expect(theme.tokens.surface.header).toBe("#1BA089");
+  });
+
+  it("accepts rgb and hsl primaryColor values", () => {
+    const rgbTheme = resolveWidgetTheme({
+      primaryColor: "rgb(27, 160, 137)",
+      prefersDarkMode: false,
+    });
+    const hslTheme = resolveWidgetTheme({
+      primaryColor: "hsl(174, 63%, 40%)",
+      prefersDarkMode: false,
+    });
+
+    expect(rgbTheme.palette.primary).toBe("#1BA089");
+    expect(hslTheme.palette.primary).toBe("#26A699");
   });
 
   it("defaults to system mode and resolves to dark when system prefers dark", () => {

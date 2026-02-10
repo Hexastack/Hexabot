@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import chroma from "chroma-js";
 import React from "react";
 
 import {
@@ -20,8 +21,10 @@ import {
 const DEFAULT_THEME_MODE: ThemeMode = "system";
 const DEFAULT_LIGHT_PRIMARY_COLOR = "#0074D9";
 const DEFAULT_DARK_PRIMARY_COLOR = "#111827";
-const WHITE_TEXT_COLOR = "#FFFFFF";
-const DARK_TEXT_COLOR = "#111827";
+const WHITE_TEXT_COLOR = "#FCFCFC";
+const DARK_TEXT_COLOR = "#343842";
+const HEX_COLOR_PATTERN = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const COLOR_FUNCTION_PATTERN = /^(rgba?|hsla?)\(/i;
 const DEFAULT_TYPOGRAPHY: ThemeTypography = {
   fontFamily:
     "\"IBM Plex Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
@@ -32,84 +35,49 @@ const DEFAULT_TYPOGRAPHY: ThemeTypography = {
   fontWeightMedium: 500,
   lineHeight: 1.4,
 };
+const normalizeColorInput = (value: string): string => {
+  if (HEX_COLOR_PATTERN.test(value) && !value.startsWith("#")) {
+    return `#${value}`;
+  }
 
-type RGBColor = {
-  red: number;
-  green: number;
-  blue: number;
-};
-
-const clampColorChannel = (value: number) => {
-  return Math.min(255, Math.max(0, Math.round(value)));
+  return value;
 };
 const normalizePrimaryColor = (value: unknown): string | undefined => {
   if (typeof value !== "string") {
     return undefined;
   }
 
-  const match = value.trim().match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+  const normalizedValue = value.trim();
 
-  if (!match) {
+  if (
+    !HEX_COLOR_PATTERN.test(normalizedValue) &&
+    !COLOR_FUNCTION_PATTERN.test(normalizedValue)
+  ) {
     return undefined;
   }
 
-  const [, rawHex] = match;
-  const expandedHex =
-    rawHex.length === 3
-      ? rawHex
-          .split("")
-          .map((part) => `${part}${part}`)
-          .join("")
-      : rawHex;
+  const normalizedInput = normalizeColorInput(normalizedValue);
 
-  return `#${expandedHex.toUpperCase()}`;
-};
-const hexToRgb = (value: string): RGBColor => {
-  return {
-    red: parseInt(value.slice(1, 3), 16),
-    green: parseInt(value.slice(3, 5), 16),
-    blue: parseInt(value.slice(5, 7), 16),
-  };
-};
-const rgbToHex = ({ red, green, blue }: RGBColor): string => {
-  const toHex = (channel: number) => clampColorChannel(channel).toString(16).padStart(2, "0");
+  if (chroma.valid(normalizedInput)) {
+    return chroma(normalizedInput).hex("rgb").toUpperCase();
+  }
 
-  return `#${toHex(red)}${toHex(green)}${toHex(blue)}`.toUpperCase();
+  return undefined;
 };
-const mixHexColors = (source: string, target: string, weight: number): string => {
-  const from = hexToRgb(source);
-  const to = hexToRgb(target);
+const mixHexColors = (
+  source: string,
+  target: string,
+  weight: number,
+): string => {
   const clampedWeight = Math.min(1, Math.max(0, weight));
 
-  return rgbToHex({
-    red: from.red + (to.red - from.red) * clampedWeight,
-    green: from.green + (to.green - from.green) * clampedWeight,
-    blue: from.blue + (to.blue - from.blue) * clampedWeight,
-  });
-};
-const toLinear = (channel: number): number => {
-  const normalized = channel / 255;
-
-  return normalized <= 0.03928
-    ? normalized / 12.92
-    : ((normalized + 0.055) / 1.055) ** 2.4;
-};
-const luminance = (color: string): number => {
-  const { red, green, blue } = hexToRgb(color);
-
-  return (
-    0.2126 * toLinear(red) +
-    0.7152 * toLinear(green) +
-    0.0722 * toLinear(blue)
-  );
+  return chroma
+    .mix(source, target, clampedWeight, "rgb")
+    .hex("rgb")
+    .toUpperCase();
 };
 const contrastRatio = (first: string, second: string): number => {
-  const firstLuminance = luminance(first);
-  const secondLuminance = luminance(second);
-  const lighter = Math.max(firstLuminance, secondLuminance);
-  const darker = Math.min(firstLuminance, secondLuminance);
-
-  return (lighter + 0.05) / (darker + 0.05);
+  return chroma.contrast(first, second);
 };
 const getReadableTextColor = (backgroundColor: string): string => {
   return contrastRatio(backgroundColor, WHITE_TEXT_COLOR) >=
@@ -118,7 +86,9 @@ const getReadableTextColor = (backgroundColor: string): string => {
     : DARK_TEXT_COLOR;
 };
 const toRgbaColor = (value: string, alpha: number): string => {
-  const { red, green, blue } = hexToRgb(value);
+  const [red, green, blue] = chroma(value)
+    .rgb()
+    .map((channel: number) => Math.round(channel));
 
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
@@ -325,8 +295,8 @@ export const resolveThemePalette = (
   const fallbackPrimaryColor =
     resolvedMode === "dark" ? DEFAULT_DARK_PRIMARY_COLOR : DEFAULT_LIGHT_PRIMARY_COLOR;
   const selectedPrimaryColor = normalizePrimaryColor(primaryColor) ?? fallbackPrimaryColor;
-
-  return buildThemePalette(selectedPrimaryColor, resolvedMode);
+  
+return buildThemePalette(selectedPrimaryColor, resolvedMode);
 };
 
 const buildBaseTokens = (
@@ -339,13 +309,14 @@ const buildBaseTokens = (
 };
 
 export const resolveWidgetTheme = ({
+  configMode,
   configTheme,
   primaryColor,
   settingsTheme,
   prefersDarkMode = false,
 }: ThemeResolutionInput): WidgetTheme => {
   const modeResult = resolveThemeMode(
-    configTheme?.mode ?? settingsTheme?.mode,
+    configMode ?? configTheme?.mode ?? settingsTheme?.mode,
     prefersDarkMode,
   );
   const selectedPalette = resolveThemePalette(primaryColor, modeResult.resolvedMode);
