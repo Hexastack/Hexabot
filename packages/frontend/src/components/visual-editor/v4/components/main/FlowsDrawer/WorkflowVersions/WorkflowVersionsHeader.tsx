@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -12,10 +12,10 @@ export const WorkflowVersionsHeader = () => {
   const { t } = useTranslate();
 
   return (
-    <Box px={2} pt={2} pb={1}>
-      <Typography variant="subtitle2" fontWeight={600}>
+    <Stack px={2} pt={2} pb={1}>
+      <Typography variant="subtitle2">
         {t("visual_editor.workflow_versions.title")}
       </Typography>
-    </Box>
+    </Stack>
   );
 };

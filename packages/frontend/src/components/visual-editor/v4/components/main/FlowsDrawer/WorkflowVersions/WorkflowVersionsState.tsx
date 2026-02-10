@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -20,33 +20,31 @@ export const WorkflowVersionsState = ({
   const { t } = useTranslate();
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        px: 2,
-        py: 3,
-        height: "100%",
-      textAlign: "center",
-    }}
-  >
-    {state === "loading" && (
-      <CircularProgress
-        size={20}
-        thickness={5}
-        sx={{ mb: 1 }}
-        aria-label={t("message.loading")}
-      />
-    )}
-    <Typography variant="body2" color="text.secondary">
-      {state === "emptySelection"
-        ? t("visual_editor.workflow_versions.empty_selection")
-        : state === "empty"
-          ? t("visual_editor.workflow_versions.empty")
-          : t("message.loading")}
-    </Typography>
-  </Box>
+    <Stack
+      alignItems="center"
+      justifyContent="center"
+      spacing={1}
+      px={2}
+      py={3}
+      height="100%"
+      textAlign="center"
+    >
+      {state === "loading" && (
+        <CircularProgress
+          aria-label={t("message.loading")}
+          sx={{
+            width: (theme) => theme.spacing(2.5),
+            height: (theme) => theme.spacing(2.5),
+          }}
+        />
+      )}
+      <Typography variant="body2" color="text.secondary">
+        {state === "emptySelection"
+          ? t("visual_editor.workflow_versions.empty_selection")
+          : state === "empty"
+            ? t("visual_editor.workflow_versions.empty")
+            : t("message.loading")}
+      </Typography>
+    </Stack>
   );
 };
