@@ -62,7 +62,7 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
         />
 
         {/* Content */}
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Box>
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
             <Typography variant="subtitle2" fontWeight="bold" noWrap>
               {workflow.name}

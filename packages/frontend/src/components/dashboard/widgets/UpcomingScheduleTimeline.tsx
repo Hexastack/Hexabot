@@ -75,7 +75,7 @@ export const UpcomingScheduleTimeline = () => {
             ))}
         </Box>
       ) : (
-        <Paper elevation={3} variant="spaced" sx={{ mt: 2 }}>
+        <Paper elevation={3} variant="spaced">
           <Typography>{t("label.no_scheduled_workflows")}</Typography>
         </Paper>
       )}

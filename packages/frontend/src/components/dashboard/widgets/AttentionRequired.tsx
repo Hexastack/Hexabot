@@ -52,7 +52,7 @@ export const AttentionRequired = () => {
                 borderRadius="16px"
                 size={20}
               />
-              <Box sx={{ flexGrow: 1 }}>
+              <Box>
                 <Typography variant="subtitle2" fontWeight="bold">
                   {item.title}
                 </Typography>
