@@ -12,7 +12,7 @@ import {
   TimelineOppositeContent,
   TimelineSeparator,
 } from "@mui/lab";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
@@ -43,7 +43,6 @@ export const WorkflowVersionItem = ({
   language,
 }: WorkflowVersionItemProps) => {
   const { t } = useTranslate();
-  const theme = useTheme();
   const getActionMeta = useWorkflowVersionActionMeta();
   const actionMeta = getActionMeta(version.action);
   const isCurrent = currentVersionId === version.id;
@@ -70,12 +69,7 @@ export const WorkflowVersionItem = ({
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{
-            display: "block",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
+          noWrap
           title={exactDate ?? timeLabel}
         >
           {timeLabel}
@@ -86,27 +80,19 @@ export const WorkflowVersionItem = ({
           variant={isCurrent ? "filled" : "outlined"}
           sx={{
             borderColor: actionMeta.color,
-            bgcolor: isCurrent
-              ? actionMeta.color
-              : theme.palette.background.paper,
-            color: isCurrent ? theme.palette.common.white : actionMeta.color,
+            bgcolor: isCurrent ? actionMeta.color : "background.paper",
+            color: isCurrent ? "common.white" : actionMeta.color,
             boxShadow: isCurrent ? "none" : undefined,
           }}
         />
-        {index < total - 1 && (
-          <TimelineConnector sx={{ backgroundColor: theme.palette.divider }} />
-        )}
+        {index < total - 1 && <TimelineConnector sx={{ bgcolor: "divider" }} />}
       </TimelineSeparator>
-      <TimelineContent sx={{ pt: 0, pb: 2, pr: 1 }}>
-        <Box
+      <TimelineContent sx={{ pt: 0, pb: 1, pr: 1 }}>
+        <Paper
+          variant="outlined"
           sx={{
             p: 1.25,
-            borderRadius: 2,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            display: "flex",
-            flexDirection: "column",
-            gap: 0.5,
+            borderRadius: 1,
             minWidth: 0,
             "&:hover .workflow-version-actions": {
               opacity: 1,
@@ -114,31 +100,33 @@ export const WorkflowVersionItem = ({
             },
           }}
         >
-          <WorkflowVersionMetaRow
-            versionNumber={version.version}
-            actionMeta={actionMeta}
-            isCurrent={isCurrent}
-            canRestore={canRestore}
-            isSaving={isSaving}
-            onRestore={() => {
-              if (version.definitionYml) {
-                onRestore(version.id, version.definitionYml);
-              }
-            }}
-          />
-          <Typography
-            variant="body2"
-            color={message ? "text.primary" : "text.secondary"}
-            sx={{ wordBreak: "break-word" }}
-          >
-            {message || t("visual_editor.workflow_versions.message_fallback")}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {t("visual_editor.workflow_versions.by", {
-              0: createdByLabel,
-            })}
-          </Typography>
-        </Box>
+          <Stack spacing={0.5}>
+            <WorkflowVersionMetaRow
+              versionNumber={version.version}
+              actionMeta={actionMeta}
+              isCurrent={isCurrent}
+              canRestore={canRestore}
+              isSaving={isSaving}
+              onRestore={() => {
+                if (version.definitionYml) {
+                  onRestore(version.id, version.definitionYml);
+                }
+              }}
+            />
+            <Typography
+              variant="body2"
+              color={message ? "text.primary" : "text.secondary"}
+              sx={{ wordBreak: "break-word" }}
+            >
+              {message || t("visual_editor.workflow_versions.message_fallback")}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t("visual_editor.workflow_versions.by", {
+                0: createdByLabel,
+              })}
+            </Typography>
+          </Stack>
+        </Paper>
       </TimelineContent>
     </TimelineItem>
   );

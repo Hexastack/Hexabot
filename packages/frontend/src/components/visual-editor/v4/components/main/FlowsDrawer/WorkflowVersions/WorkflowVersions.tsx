@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box } from "@mui/material";
+import { Stack } from "@mui/material";
 import { useCallback } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
@@ -60,9 +60,9 @@ export const WorkflowVersions = () => {
   );
 
   return (
-    <Box display="flex" flexDirection="column" flex={1} minHeight={0}>
+    <Stack flex={1} minHeight={0}>
       <WorkflowVersionsHeader />
-      <Box flex={1} minHeight={0} overflow="auto" px={1} pb={2}>
+      <Stack flex={1} minHeight={0} overflow="auto" px={1} pb={2}>
         {!workflow ? (
           <WorkflowVersionsState state="emptySelection" />
         ) : isBusy ? (
@@ -79,7 +79,7 @@ export const WorkflowVersions = () => {
             language={i18n.language}
           />
         )}
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 };

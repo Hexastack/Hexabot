@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Chip, Typography, useTheme } from "@mui/material";
+import { Button, Chip, Stack, Typography, useTheme } from "@mui/material";
 import { RotateCcw } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -28,17 +28,17 @@ export const WorkflowVersionMetaRow = ({
 }: WorkflowVersionMetaRowProps) => {
   const { t } = useTranslate();
   const theme = useTheme();
+  const iconSize = theme.typography.pxToRem(14);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        flexWrap: "wrap",
-        gap: 0.5,
-      }}
+    <Stack
+      direction="row"
+      alignItems="center"
+      flexWrap="wrap"
+      spacing={0.5}
+      useFlexGap
     >
-      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+      <Typography variant="subtitle2">
         {t("visual_editor.workflow_versions.version", {
           0: versionNumber,
         })}
@@ -59,12 +59,12 @@ export const WorkflowVersionMetaRow = ({
         />
       )}
       {canRestore && (
-        <Box
+        <Stack
           className="workflow-version-actions"
+          direction="row"
+          alignItems="center"
+          ml="auto"
           sx={{
-            display: "flex",
-            alignItems: "center",
-            ml: "auto",
             opacity: 0,
             pointerEvents: "none",
             transition: theme.transitions.create("opacity", {
@@ -78,18 +78,18 @@ export const WorkflowVersionMetaRow = ({
             color="warning"
             disabled={isSaving}
             onClick={onRestore}
-            startIcon={<RotateCcw size={14} />}
+            startIcon={<RotateCcw size={iconSize} />}
             sx={{
               minWidth: 0,
               px: 1,
-              fontSize: 12,
+              fontSize: theme.typography.caption.fontSize,
               textTransform: "none",
             }}
           >
             {t("button.restore")}
           </Button>
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 };

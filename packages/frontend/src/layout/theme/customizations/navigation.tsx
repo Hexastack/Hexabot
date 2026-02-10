@@ -11,6 +11,7 @@ import { menuItemClasses } from "@mui/material/MenuItem";
 import { selectClasses } from "@mui/material/Select";
 import { alpha, Components, Theme } from "@mui/material/styles";
 import { SvgIconProps } from "@mui/material/SvgIcon";
+import { tabClasses } from "@mui/material/Tab";
 import * as React from "react";
 
 import { brand, gray } from "../themePrimitives";
@@ -200,32 +201,30 @@ export const navigationCustomizations: Components<Theme> = {
   MuiTab: {
     styleOverrides: {
       root: ({ theme }) => ({
-        alignItems: "center",
+        padding: "6px 8px",
+        marginBottom: "8px",
         textTransform: "none",
-        ".MuiTabs-scrollableX &": {
-          borderBottom: "1px solid",
-          borderColor: theme.palette.grey[300],
+        minWidth: "fit-content",
+        minHeight: "fit-content",
+        color: (theme.vars || theme).palette.text.secondary,
+        borderRadius: (theme.vars || theme).shape.borderRadius,
+        border: "1px solid",
+        borderColor: "transparent",
+        ":hover": {
+          color: (theme.vars || theme).palette.text.primary,
+          backgroundColor: gray[100],
+          borderColor: gray[200],
         },
-        ".MuiTabs-scrollableY &": {
-          borderRight: "1px solid",
-          borderColor: theme.palette.grey[300],
-        },
-        "&:hover": {
-          backgroundColor: theme.palette.primary.light,
-        },
-        "&.Mui-selected": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.15),
-          "& p": {
-            color: "primary.main",
-          },
+        [`&.${tabClasses.selected}`]: {
+          color: gray[900],
         },
         ...theme.applyStyles("dark", {
           ":hover": {
             color: (theme.vars || theme).palette.text.primary,
-            // backgroundColor: gray[800],
+            backgroundColor: gray[800],
             borderColor: gray[700],
           },
-          [`&.Mui-selected`]: {
+          [`&.${tabClasses.selected}`]: {
             color: "#fff",
           },
         }),
