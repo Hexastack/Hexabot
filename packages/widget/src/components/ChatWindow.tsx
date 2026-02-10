@@ -85,7 +85,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   return (
-    <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
+    <div className={`hb-chat-window ${isOpen ? "opened" : "closed"}`}>
       {CustomHeader?.() === null ? null : CustomHeader ? (
         <ChatHeader>
           <CustomHeader />

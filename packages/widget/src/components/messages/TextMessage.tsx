@@ -44,14 +44,14 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
 
   return (
     <div
-      className="sc-message--text"
+      className="hb-message--text"
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
         ["--launcher-color" as string]: colors.hover,
       }}
     >
-      <p className="sc-message--text-content" ref={messageTextRef}>
+      <p className="hb-message--text-content" ref={messageTextRef}>
         {message.data.text}
       </p>
     </div>

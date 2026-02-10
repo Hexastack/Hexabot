@@ -11,7 +11,7 @@ const LoadingIcon: FC<
     size?: number;
     color?: string;
   }
-> = ({ size = 50, color = "#000", ...rest }) => {
+> = ({ size = 50, color = "currentColor", ...rest }) => {
   return (
     <svg
       width={size}

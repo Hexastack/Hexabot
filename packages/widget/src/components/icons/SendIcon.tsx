@@ -11,7 +11,12 @@ const SendIcon: FC<SVGProps<SVGSVGElement>> = ({
   ...rest
 }) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} {...rest}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={viewBox}
+      fill="currentColor"
+      {...rest}
+    >
       <path d="M4.02 42L46 24 4.02 6 4 20l30 4-30 4z" />
       <path fill="none" d="M0 0h48v48H0z" />
     </svg>

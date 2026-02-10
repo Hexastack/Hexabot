@@ -37,13 +37,13 @@ const Suggestions: React.FC = () => {
 
   return (
     <div
-      className="sc-suggestions-row"
+      className="hb-suggestions-row"
       style={{ background: colors.button.bg }}
     >
       {suggestions.map((suggestion, idx) => (
         <button
           key={idx}
-          className="sc-suggestions-element"
+          className="hb-suggestions-element"
           onClick={(event) => sendSuggestion(event, suggestion)}
           style={{ borderColor: colors.button.text, color: colors.button.text }}
         >

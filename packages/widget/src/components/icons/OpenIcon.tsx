@@ -23,7 +23,7 @@ const OpenIcon: FC<SVGProps<SVGSVGElement>> = ({
         <path
           d="M32.756 170.872l-4.26 7.482-2.786-7.494-8.211-.017a4.405 4.405 0 01-3.8-2.191l-6.443-11.087a4.215 4.215 0 01-.011-4.216l6.213-10.833a4.96 4.96 0 014.288-2.492l12.2-.034a4.715 4.715 0 014.09 2.347l6.16 10.602a4.864 4.864 0 01.02 4.855z"
           fill="none"
-          stroke="#fff"
+          stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeOpacity={1}
@@ -35,7 +35,7 @@ const OpenIcon: FC<SVGProps<SVGSVGElement>> = ({
           transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427)"
         />
         <g
-          fill="#fff"
+          fill="currentColor"
           fillRule="nonzero"
           stroke="none"
           strokeWidth={0.662}

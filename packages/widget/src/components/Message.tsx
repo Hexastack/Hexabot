@@ -49,11 +49,11 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   };
 
   return (
-    <div className={`sc-message ${message.direction}`}>
-      <div className={`sc-message--content ${message.direction}`}>
+    <div className={`hb-message ${message.direction}`}>
+      <div className={`hb-message--content ${message.direction}`}>
         <div
           title={user.name}
-          className="sc-message--avatar"
+          className="hb-message--avatar"
           style={
             user.imageUrl
               ? {
@@ -70,7 +70,7 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
             <ChatIcon width="32px" height="32px" />
           ) : null}
         </div>
-        <div className="sc-message--wrapper" onClick={handleTime}>
+        <div className="hb-message--wrapper" onClick={handleTime}>
           {message.data && "text" in message.data && (
             <TextMessage message={message} />
           )}
@@ -84,13 +84,13 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           )}
           {message.type === "buttons" && <ButtonsMessage message={message} />}
 
-          <div className="sc-message--meta">
+          <div className="hb-message--meta">
             {message.direction === "sent" && (
               <MessageStatus message={message} />
             )}
             <div
               style={{ color: colors.messageTime.text }}
-              className="sc-message--time"
+              className="hb-message--time"
             >
               {isTimeVisible && fromNow(message.createdAt)}
             </div>

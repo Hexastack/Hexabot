@@ -10,7 +10,7 @@ const BackIcon: FC<SVGProps<SVGSVGElement>> = ({
   width = "24",
   height = "24",
   fill = "none",
-  stroke = "#000",
+  stroke = "currentColor",
   strokeLinecap = "round",
   strokeLinejoin = "round",
   strokeWidth = "2",
@@ -30,7 +30,7 @@ const BackIcon: FC<SVGProps<SVGSVGElement>> = ({
       viewBox={viewBox}
       {...rest}
     >
-      <path stroke="#fff" strokeOpacity="1" d="M15 18L9 12 15 6" />
+      <path stroke="currentColor" strokeOpacity="1" d="M15 18L9 12 15 6" />
     </svg>
   );
 };

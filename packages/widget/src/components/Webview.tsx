@@ -28,15 +28,15 @@ const Webview: React.FC = () => {
   };
 
   return (
-    <div className="sc-webview">
+    <div className="hb-webview">
       {loaded && webviewUrl && (
         <iframe src={webviewUrl} title="webview" frameBorder="0" />
       )}
       <div
-        className="sc-webview--footer"
+        className="hb-webview--footer"
         style={{ background: colors.header.bg, color: colors.header.text }}
       >
-        <h3 className="sc-webview--button" onClick={close}>
+        <h3 className="hb-webview--button" onClick={close}>
           <BackIcon width="16px" height="16px" />
           {t("settings.back")}
         </h3>

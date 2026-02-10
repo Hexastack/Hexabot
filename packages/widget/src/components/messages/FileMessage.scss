@@ -1,8 +1,8 @@
-.sc-message--file {
+.hb-message--file {
   background-color: transparent !important;
   border-radius: 0.5rem;
   font-weight: 300;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.4;
   -webkit-font-smoothing: subpixel-antialiased;
 
@@ -12,64 +12,64 @@
   }
   .error-message {
     margin: 0;
-    // padding: 10px 0 10px 10px;
-    padding: 10px;
-    border-radius: 5px;
-    color: #666;
+    // padding: 0.625rem 0 0.625rem 0.625rem;
+    padding: 0.625rem;
+    border-radius: 0.3125rem;
+    color: var(--hb-color-text-muted);
     width: 100%;
     display: block;
   }
 }
 
-.sc-message--content.sent .sc-message--file {
+.hb-message--content.sent .hb-message--file {
   word-wrap: break-word;
 }
 
-.sc-message--file-icon {
+.hb-message--file-icon {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
-  // margin-top: 15px;
-  margin-bottom: 0px;
+  // margin-top: 0.9375rem;
+  margin-bottom: 0;
 }
 
-.sc-image {
+.hb-image {
   max-width: 100%;
   height: auto;
 }
 
-.sc-message--file-download {
-  padding: 10px 20px;
+.hb-message--file-download {
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
-  color: white;
+  color: var(--hb-color-text-inverse);
   text-align: center;
 
   a {
     text-decoration: none;
-    color: #ece7e7;
+    color: var(--hb-color-text-inverse);
 
     img {
       vertical-align: middle;
-      width: 24px;
+      width: 1.5rem;
       height: auto;
     }
   }
 }
 
-.sc-message--content.received .sc-message--file {
-  color: #263238;
-  background-color: #f4f7f9;
-  margin-right: 40px;
+.hb-message--content.received .hb-message--file {
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
+  margin-right: 2.5rem;
 }
 
-.sc-message--content.received .sc-message--file-download {
-  color: #000;
+.hb-message--content.received .hb-message--file-download {
+  color: var(--hb-color-text-primary);
 }
 
-.sc-message--content.received .sc-message--file a {
-  color: rgba(43, 40, 40, 0.7);
+.hb-message--content.received .hb-message--file a {
+  color: var(--hb-color-text-secondary);
 }
 
-.sc-message--content.received .sc-message--file a:hover {
-  color: #0c0c0c;
+.hb-message--content.received .hb-message--file a:hover {
+  color: var(--hb-color-interactive-icon-strong);
 }

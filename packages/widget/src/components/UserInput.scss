@@ -1,91 +1,91 @@
-.sc-user-input {
-  min-height: 55px;
-  margin: 0px;
+.hb-user-input {
+  min-height: 3.4375rem;
+  margin: 0;
   position: relative;
   bottom: 0;
   display: flex;
-  background-color: #f4f7f9;
+  background-color: var(--hb-color-surface-input);
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease;
-  border-top: 1px solid #eef2f4;
+  border-top: 0.0625rem solid var(--hb-color-border-subtle);
 }
 
-.sc-user-input--text {
+.hb-user-input--text {
   flex-grow: 1;
   resize: none;
   border: none;
   outline: none;
   border-bottom-left-radius: 0.5rem;
   box-sizing: border-box;
-  padding: 18px 8px;
-  font-size: 15px;
+  padding: 1.125rem 0.5rem;
+  font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.33;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #565867;
+  color: var(--hb-color-text-secondary);
   -webkit-font-smoothing: antialiased;
-  max-height: 200px;
+  max-height: 12.5rem;
   overflow: scroll;
   bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-.sc-user-input--text:empty:before {
+.hb-user-input--text:empty:before {
   content: attr(placeholder);
   display: block; /* For Firefox */
-  color: rgba(86, 88, 103, 0.5);
+  color: var(--hb-color-text-muted);
   filter: contrast(15%);
   outline: none;
   cursor: text;
 }
 
-.sc-user-input--text[contenteditable="true"]:focus:empty:before {
+.hb-user-input--text[contenteditable="true"]:focus:empty:before {
   position: absolute;
 }
 
-.sc-user-input--text[contenteditable="true"]:focus:empty:after {
+.hb-user-input--text[contenteditable="true"]:focus:empty:after {
   content: "\00a0";
 }
 
-.sc-user-input--buttons {
+.hb-user-input--buttons {
   display: flex;
-  gap: 4px;
+  gap: 0.25rem;
   margin: 0 0.5rem;
 }
 
-.sc-user-input--button {
+.hb-user-input--button {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.sc-user-input--button:not(:last-child) {
-  margin-right: 2px;
+.hb-user-input--button:not(:last-child) {
+  margin-right: 0.125rem;
 }
 
-.sc-user-input.active {
+.hb-user-input.active {
   box-shadow: none;
-  background-color: white;
-  box-shadow: 0px -5px 20px 0px rgba(150, 165, 190, 0.2);
+  background-color: var(--hb-color-surface-panel);
+  box-shadow: var(--hb-shadow-widget);
 }
 
-.sc-user-input--button label {
+.hb-user-input--button label {
   position: relative;
-  height: 24px;
-  padding-left: 3px;
+  height: 1.5rem;
+  padding-left: 0.1875rem;
   cursor: pointer;
 }
 
-.sc-user-input--button label:hover path {
-  fill: rgba(86, 88, 103, 1);
+.hb-user-input--button label:hover path {
+  fill: var(--hb-color-interactive-icon);
 }
 
-.sc-user-input--button input {
+.hb-user-input--button input {
   position: absolute;
   left: 0;
   top: 0;
@@ -97,29 +97,29 @@
   overflow: hidden;
 }
 
-.sc-file-container {
-  padding: 5px 20px;
+.hb-file-container {
+  padding: 0.3125rem 1.25rem;
   display: flex;
   align-items: center;
 }
 
-.sc-user-input--file-icon {
+.hb-user-input--file-icon {
   vertical-align: bottom;
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .delete-file-message {
   font-style: normal;
   float: right;
   cursor: pointer;
-  color: #c8cad0;
+  color: var(--hb-color-state-disabled);
 }
 
 .delete-file-message:hover {
-  color: #5d5e6d;
+  color: var(--hb-color-interactive-icon);
 }
 
 .icon-file-message {
-  margin-right: 5px;
+  margin-right: 0.3125rem;
 }

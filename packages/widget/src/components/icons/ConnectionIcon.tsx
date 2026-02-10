@@ -22,6 +22,7 @@ const ConnectionIcon: FC<SVGProps<SVGSVGElement>> = ({
       x={x}
       y={y}
       viewBox={viewBox}
+      fill="currentColor"
       {...rest}
     >
       <circle cx="255.998" cy="374.496" r="32.133" />

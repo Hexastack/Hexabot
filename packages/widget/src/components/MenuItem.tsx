@@ -41,16 +41,16 @@ const MenuItem: React.FC<MenuItemProps> = ({
   };
 
   return (
-    <div className="sc-menu-element">
+    <div className="hb-menu-element">
       <a
-        className="sc-menu-item"
+        className="hb-menu-item"
         style={{ color: colors.header.text }}
         role="button"
         onClick={handleClick}
       >
         {item.title}
         {item.type === "nested" && (
-          <span className="sc-menu-item-button">&#10095;</span>
+          <span className="hb-menu-item-button">&#10095;</span>
         )}
       </a>
     </div>

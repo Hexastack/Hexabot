@@ -55,11 +55,11 @@ const LocationButton: React.FC = () => {
   };
 
   return (
-    <div className="sc-user-input--location-wrapper">
+    <div className="hb-user-input--location-wrapper">
       <button
         onClick={locateMe}
         type="button"
-        className="sc-user-input--location-icon-wrapper"
+        className="hb-user-input--location-icon-wrapper"
       >
         <LocationIcon />
       </button>

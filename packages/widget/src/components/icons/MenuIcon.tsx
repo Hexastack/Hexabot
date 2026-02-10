@@ -11,7 +11,7 @@ const MenuIcon: FC<SVGProps<SVGSVGElement>> = ({
   height = "32",
   x = "0",
   y = "0",
-  className = "sc-user-input--menu-img",
+  className = "hb-user-input--menu-img",
   viewBox = "0 0 32 32",
   ...rest
 }) => {
@@ -24,6 +24,7 @@ const MenuIcon: FC<SVGProps<SVGSVGElement>> = ({
       y={y}
       className={className}
       viewBox={viewBox}
+      fill="currentColor"
       {...rest}
     >
       <path d="M4 10h24a2 2 0 000-4H4a2 2 0 000 4zm24 4H4a2 2 0 000 4h24a2 2 0 000-4zm0 8H4a2 2 0 000 4h24a2 2 0 000-4z" />

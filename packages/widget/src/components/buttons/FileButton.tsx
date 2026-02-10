@@ -28,8 +28,8 @@ const FileButton: React.FC = () => {
   );
 
   return (
-    <div className="sc-user-input--file-wrapper">
-      <button className="sc-user-input--file-icon-wrapper" type="button">
+    <div className="hb-user-input--file-wrapper">
+      <button className="hb-user-input--file-icon-wrapper" type="button">
         <FileInputIcon />
         <input
           accept={acceptedMimeTypes}

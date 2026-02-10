@@ -47,17 +47,17 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onBlur, onSelect }) => {
   };
 
   return (
-    <div tabIndex={0} onBlur={onBlur} className="sc-emoji-picker" ref={domNode}>
-      <div className="sc-emoji-picker--content">
+    <div tabIndex={0} onBlur={onBlur} className="hb-emoji-picker" ref={domNode}>
+      <div className="hb-emoji-picker--content">
         {emojiData.map((category) => (
-          <div className="sc-emoji-picker--category" key={category.name}>
-            <div className="sc-emoji-picker--category-title">
+          <div className="hb-emoji-picker--category" key={category.name}>
+            <div className="hb-emoji-picker--category-title">
               {category.name}
             </div>
             {category.emojis.map((emoji) => (
               <span
                 key={emoji}
-                className="sc-emoji-picker--emoji"
+                className="hb-emoji-picker--emoji"
                 onClick={(event) => emojiClicked(event, emoji)}
               >
                 {emoji}

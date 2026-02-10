@@ -77,7 +77,7 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
 
   return (
     <div
-      className="sc-message-list"
+      className="hb-message-list"
       ref={scrollListRef}
       style={{ backgroundColor: colors.messageList.bg }}
     >

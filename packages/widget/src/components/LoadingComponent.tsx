@@ -5,18 +5,18 @@
  */
 
 import { useTranslation } from "../hooks/useTranslation";
-import { useColors } from "../providers/ColorProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 import LoadingIcon from "./icons/LoadingIcon";
 
 export const LoadingComponent = () => {
-  const { colors } = useColors();
+  const { tokens } = useTheme();
   const { t } = useTranslation();
 
   return (
-    <div className="sc-chat--attempt-reconnect">
+    <div className="hb-chat--attempt-reconnect">
       <h3>{t("messages.attempting_reconnect")}</h3>
-      <LoadingIcon color={colors.button.text} />
+      <LoadingIcon color={tokens.interactive.buttonSecondaryText} />
     </div>
   );
 };

@@ -45,29 +45,29 @@ const Launcher: React.FC<LauncherProps> = ({
   return (
     <div style={{ width: "100%" }}>
       <div
-        className={`sc-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
+        className={`hb-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
         onClick={handleToggle}
       >
         {CustomLauncher ? (
           <CustomLauncher widget={widget} />
         ) : (
           <div
-            className="sc-launcher"
+            className="hb-launcher"
             style={{ backgroundColor: colors.launcher.bg }}
           >
             {chat.newMessagesCount > 0 && !widget.isOpen && (
-              <div className="sc-new-messages-count">
+              <div className="hb-new-messages-count">
                 {chat.newMessagesCount}
               </div>
             )}
             {widget.isOpen ? (
               <CloseIcon
-                className="sc-closed-icon"
+                className="hb-closed-icon"
                 width="16px"
                 height="16px"
               />
             ) : (
-              <OpenIcon className="sc-open-icon" />
+              <OpenIcon className="hb-open-icon" />
             )}
           </div>
         )}

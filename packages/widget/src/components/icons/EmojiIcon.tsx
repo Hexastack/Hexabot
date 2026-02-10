@@ -9,7 +9,7 @@ import { FC, SVGProps } from "react";
 const EmojiIcon: FC<SVGProps<SVGSVGElement>> = ({
   x = "0",
   y = "0",
-  className = "sc-user-input--emoji-icon",
+  className = "hb-user-input--emoji-icon",
   viewBox = "0 0 24 24",
   ...rest
 }) => {
@@ -20,6 +20,7 @@ const EmojiIcon: FC<SVGProps<SVGSVGElement>> = ({
       y={y}
       className={className}
       viewBox={viewBox}
+      fill="currentColor"
       {...rest}
     >
       <circle cx="15.5" cy="9.5" r="1.5" />

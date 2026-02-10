@@ -24,9 +24,9 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
   }
 
   return (
-    <div className="sc--status" style={{ color: colors.messageStatus.bg }}>
+    <div className="hb--status" style={{ color: colors.messageStatus.bg }}>
       {message.read && (
-        <div className="sc--status-wrapper sc--status-read" title="Read">
+        <div className="hb--status-wrapper hb--status-read" title="Read">
           <CheckIcon
             width="16px"
             height="16px"
@@ -37,7 +37,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
       )}
       {message.delivery && (
         <div
-          className="sc--status-wrapper sc--status-delivery"
+          className="hb--status-wrapper hb--status-delivery"
           title="Delivered"
         >
           <CheckIcon

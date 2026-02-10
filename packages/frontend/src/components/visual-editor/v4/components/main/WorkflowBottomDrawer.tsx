@@ -56,7 +56,7 @@ const ChatWidgetColumn = styled(DrawerColumn)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.common.black, 0.08)}`,
   overflow: "hidden",
   width: "100%",
-  "& .sc-chat-window": {
+  "& .hb-chat-window": {
     position: "relative",
     right: "auto !important",
     bottom: "auto !important",
@@ -67,7 +67,7 @@ const ChatWidgetColumn = styled(DrawerColumn)(({ theme }) => ({
     boxShadow: "none !important",
     zIndex: "auto !important",
   },
-  "& .sc-header--close-button": {
+  "& .hb-header--close-button": {
     display: "none",
   },
 }));

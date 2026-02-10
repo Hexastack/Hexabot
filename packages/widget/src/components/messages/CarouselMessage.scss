@@ -1,38 +1,38 @@
-.sc-message--carousel {
+.hb-message--carousel {
   border-radius: 0.5rem;
   position: relative;
   width: 100%;
   overflow: hidden;
 
-  .sc-message--carousel-inner {
+  .hb-message--carousel-inner {
     display: flex;
     transition: transform 0.5s ease;
     width: 100%;
 
-    .sc-message--carousel-element-wrapper {
+    .hb-message--carousel-element-wrapper {
       min-width: 100%;
       height: 100%;
       display: flex;
       align-items: flex-end;
       justify-content: center;
 
-      .sc-message--carousel-element {
+      .hb-message--carousel-element {
         width: 100%;
-        .sc-message--carousel-element-image {
+        .hb-message--carousel-element-image {
           background-repeat: no-repeat;
           background-size: cover;
           position: relative;
           width: 100%;
-          height: 150px;
+          height: 9.375rem;
         }
 
-        .sc-message--carousel-title {
+        .hb-message--carousel-title {
           font-size: 1rem;
           font-weight: 600;
           padding: 0.5rem 0;
-          margin-top: 8px;
+          margin-top: 0.5rem;
         }
-        .sc-message--carousel-element-description {
+        .hb-message--carousel-element-description {
           width: 100%;
           padding: 0 2rem;
           box-sizing: border-box;
@@ -41,27 +41,27 @@
     }
   }
 
-  .sc-message--carousel-control {
+  .hb-message--carousel-control {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
+    background-color: var(--hb-color-surface-overlay);
+    color: var(--hb-color-text-inverse);
     border: none;
     cursor: pointer;
     z-index: 2;
     font-size: 0.75rem;
 
     &.prev {
-      left: 0px;
-      top: calc(50% - 14px);
+      left: 0;
+      top: calc(50% - 0.875rem);
       width: 1.5rem;
       height: 2rem;
     }
 
     &.next {
-      top: calc(50% - 14px);
-      right: 0px;
+      top: calc(50% - 0.875rem);
+      right: 0;
       width: 1.5rem;
       height: 2rem;
     }

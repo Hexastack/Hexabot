@@ -4,9 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ThemeOverrides } from "../theme/theme.types";
+
 export type Config = {
   apiUrl: string;
   channel: string;
   language: string;
   maxUploadSize: number;
+  instanceId?: string;
+  theme?: ThemeOverrides;
+  theme_color?: string;
+  themeColor?: string;
 };

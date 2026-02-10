@@ -60,7 +60,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
 
   return (
     <div
-      className="sc-message--location"
+      className="hb-message--location"
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
@@ -75,7 +75,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
           marginHeight={0}
           marginWidth={0}
           src={openStreetMapUrl}
-          className="sc-message-map"
+          className="hb-message-map"
         />
       )}
     </div>

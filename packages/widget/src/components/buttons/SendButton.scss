@@ -1,23 +1,28 @@
-.sc-user-input--button-icon-wrapper {
+.hb-user-input--button-icon-wrapper {
   background: none;
   border: none;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   outline: none;
   cursor: pointer;
+  color: var(--hb-color-interactive-icon-muted);
 }
-.sc-user-input--button-icon-wrapper:focus {
+.hb-user-input--button-icon-wrapper:focus {
   outline: none;
 }
-.sc-user-input--button-icon-wrapper svg {
-  width: 16px;
-  height: 16px;
+.hb-user-input--button-icon-wrapper:disabled {
+  cursor: not-allowed;
+  color: var(--hb-color-state-disabled);
+}
+.hb-user-input--button-icon-wrapper svg {
+  width: 1rem;
+  height: 1rem;
   cursor: pointer;
   align-self: center;
   outline: none;
   display: inline-block;
   vertical-align: middle;
 }
-.sc-user-input--button-icon-wrapper svg:hover path {
-  filter: contrast(15%);
+.hb-user-input--button-icon-wrapper:not(:disabled):hover {
+  color: var(--hb-color-interactive-icon);
 }

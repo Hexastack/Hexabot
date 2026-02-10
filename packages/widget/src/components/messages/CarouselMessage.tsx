@@ -33,16 +33,16 @@ type CarouselItemProps = {
 };
 
 const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
-  <div className="sc-message--carousel-element-wrapper">
-    <div className="sc-message--carousel-element">
+  <div className="hb-message--carousel-element-wrapper">
+    <div className="hb-message--carousel-element">
       {message.image_url && (
         <div
-          className="sc-message--carousel-element-image"
+          className="hb-message--carousel-element-image"
           style={{ backgroundImage: `url('${message.image_url}')` }}
         />
       )}
-      <div className="sc-message--carousel-element-description">
-        <h3 className="sc-message--carousel-title">{message.title}</h3>
+      <div className="hb-message--carousel-element-description">
+        <h3 className="hb-message--carousel-title">{message.title}</h3>
         {message.subtitle && (
           <p
             dangerouslySetInnerHTML={{
@@ -83,14 +83,14 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
 
   return (
     <div
-      className="sc-message--carousel"
+      className="hb-message--carousel"
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
       }}
     >
       <div
-        className="sc-message--carousel-inner"
+        className="hb-message--carousel-inner"
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
       >
         {items.map((message, idx) => (
@@ -100,13 +100,13 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
       {shouldDisplayNavigationButtons && (
         <>
           <button
-            className="sc-message--carousel-control prev"
+            className="hb-message--carousel-control prev"
             onClick={goToPrevious}
           >
             &#10094;
           </button>
           <button
-            className="sc-message--carousel-control next"
+            className="hb-message--carousel-control next"
             onClick={goToNext}
           >
             &#10095;

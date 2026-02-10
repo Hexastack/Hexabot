@@ -4,42 +4,42 @@
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
 }
-.sc-chat--error-icon-wrapper {
+.hb-chat--error-icon-wrapper {
   position: relative;
   height: 100%;
   width: 100%;
   display: grid;
   place-items: center;
   overflow: auto;
-  padding: 14px 0;
+  padding: 0.875rem 0;
 }
-.sc-chat--error-icon {
+.hb-chat--error-icon {
   position: relative;
   text-align: center;
 }
-.sc-chat--error-text {
+.hb-chat--error-text {
   width: 100%;
 }
-.sc-chat--error-button {
-  border: 1px solid;
+.hb-chat--error-button {
+  border: 0.0625rem solid;
   border-radius: 2rem;
-  padding: 5px 10px;
+  padding: 0.3125rem 0.625rem;
   width: 80%;
-  margin: 2px;
+  margin: 0.125rem;
   cursor: pointer;
   outline: 0;
 }
-.sc-chat--error-button:active {
+.hb-chat--error-button:active {
   opacity: 0;
   transition: all 0.5s;
 }
 
-.sc-chat--error-button:active:after {
+.hb-chat--error-button:active:after {
   opacity: 1;
   transition: 0s;
 }
 
-.sc-chat--attempt-reconnect {
+.hb-chat--attempt-reconnect {
   width: 100%;
   height: 100%;
   display: flex;

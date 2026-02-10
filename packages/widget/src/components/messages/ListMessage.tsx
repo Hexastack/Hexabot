@@ -41,7 +41,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
 
   return (
     <div
-      className="sc-message--list"
+      className="hb-message--list"
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
@@ -58,18 +58,18 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
         return (
           <div
             key={idx}
-            className="sc-message--list-element"
+            className="hb-message--list-element"
             style={{ borderColor: allColors.messageList.bg }}
           >
-            <div className={`sc-message--list-element-content ${mode}`}>
+            <div className={`hb-message--list-element-content ${mode}`}>
               {message.image_url && (
                 <div
-                  className="sc-message--list-element-image"
+                  className="hb-message--list-element-image"
                   style={{ backgroundImage: `url('${message.image_url}')` }}
                 >
                   {mode === "large" && (
-                    <div className="sc-message--list-element-description">
-                      <h3 className="sc-message--title">{message.title}</h3>
+                    <div className="hb-message--list-element-description">
+                      <h3 className="hb-message--title">{message.title}</h3>
                       {message.subtitle && (
                         <p
                           dangerouslySetInnerHTML={{
@@ -82,8 +82,8 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
                 </div>
               )}
               {mode === "compact" && (
-                <div className="sc-message--list-element-description">
-                  <h3 className="sc-message--title">{message.title}</h3>
+                <div className="hb-message--list-element-description">
+                  <h3 className="hb-message--title">{message.title}</h3>
                   {message.subtitle && (
                     <p
                       dangerouslySetInnerHTML={{
@@ -105,7 +105,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
       {"buttons" in messageList.data &&
         Array.isArray(messageList.data.buttons) &&
         messageList.data.buttons.length > 0 && (
-          <div className="sc-message--list-element-bottom">
+          <div className="hb-message--list-element-bottom">
             <ButtonsMessage message={messageList as TMessage} />
           </div>
         )}

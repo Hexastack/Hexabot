@@ -1,20 +1,25 @@
-.sc-user-input--menu {
+.hb-user-input--menu {
   align-self: center;
 }
-.sc-user-input--menu-button {
+.hb-user-input--menu-button {
   border: 0;
   background-color: transparent;
   cursor: pointer;
+  color: var(--hb-color-interactive-icon-muted);
+
+  &:hover {
+    color: var(--hb-color-interactive-icon);
+  }
 }
-.sc-user-input--menu-img {
-  max-width: 24px;
+.hb-user-input--menu-img {
+  max-width: 1.5rem;
 }
-.sc-menu-content {
+.hb-menu-content {
   display: block;
   position: absolute;
-  box-shadow: 0px -10px 20px 5px rgba(150, 165, 190, 0.2);
+  box-shadow: var(--hb-shadow-widget);
   width: 60%;
-  bottom: 55px;
+  bottom: 3.4375rem;
   z-index: 3;
 
   &:active,
@@ -22,17 +27,17 @@
     outline: none;
   }
 
-  .sc-header-submenu-content {
+  .hb-header-submenu-content {
     position: relative;
     text-align: center;
 
-    .sc-title-submenu-title {
+    .hb-title-submenu-title {
       font-weight: 600;
       font-size: 1.125rem;
     }
   }
 
-  .sc-return-submenu-content {
+  .hb-return-submenu-content {
     display: inline-block;
     position: absolute;
     left: 0;

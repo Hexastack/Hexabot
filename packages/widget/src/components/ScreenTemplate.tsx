@@ -31,22 +31,22 @@ const Template: React.FC<{ name: string; Icon: React.FC }> = ({
 
   return (
     <div
-      className={`sc-chat--${name}-icon-wrapper`}
+      className={`hb-chat--${name}-icon-wrapper`}
       style={{ backgroundColor: colors.messageList.bg }}
     >
       {loading ? (
         <LoadingComponent />
       ) : (
-        <div className={`sc-chat--${name}-icon`}>
+        <div className={`hb-chat--${name}-icon`}>
           <Icon />
           <h3
-            className={`sc-chat--${name}-text`}
+            className={`hb-chat--${name}-text`}
             style={{ color: colors.button.text }}
           >
             {t(`settings.${name}`)}
           </h3>
           <button
-            className={`sc-chat--${name}-button`}
+            className={`hb-chat--${name}-button`}
             style={{
               color: colors.button.text,
               backgroundColor: colors.button.bg,

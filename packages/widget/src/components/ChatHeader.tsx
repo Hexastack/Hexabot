@@ -23,7 +23,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
 
   return (
     <div
-      className="sc-header"
+      className="hb-header"
       style={{ background: colors.header.bg, color: colors.header.text }}
     >
       {children ? (
@@ -34,15 +34,15 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
             href="https://hexabot.ai"
             target="_blank"
             title="Powered By Hexabot.ai"
-            className="sc-header--img"
+            className="hb-header--img"
           >
             <OpenIcon width={32} height={32} />
           </a>
-          <div className="sc-header--title">{settings.title}</div>
+          <div className="hb-header--title">{settings.title}</div>
         </>
       )}
       <div
-        className="sc-header--close-button"
+        className="hb-header--close-button"
         onClick={() => widget.setIsOpen(false)}
       >
         <CloseIcon />

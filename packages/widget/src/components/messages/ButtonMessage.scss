@@ -1,5 +1,5 @@
-.sc-message--buttons {
-  color: rgb(34, 34, 34);
+.hb-message--buttons {
+  color: var(--hb-color-text-primary);
   max-width: -webkit-fill-available;
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
@@ -10,49 +10,49 @@
   -webkit-font-smoothing: subpixel-antialiased;
   text-align: center;
 
-  .sc-message--buttons-content {
-    border: 1px solid;
+  .hb-message--buttons-content {
+    border: 0.0625rem solid;
     border-radius: 2rem;
     padding: 0.25rem;
     width: 80%;
-    margin: 2px;
+    margin: 0.125rem;
     cursor: pointer;
     outline: 0;
     font-size: 0.75rem;
   }
 }
 
-.sc-message--list-element-bottom {
-  .sc-message--buttons-content {
+.hb-message--list-element-bottom {
+  .hb-message--buttons-content {
     width: 100%;
     font-weight: 600;
-    border-radius: 0 0 6px 6px;
+    border-radius: 0 0 0.375rem 0.375rem;
     padding: 0.5rem;
     margin: 0;
   }
-  .sc-message--buttons {
+  .hb-message--buttons {
     padding: 0;
   }
 }
 
-.sc-message--list-element {
-  .sc-message--buttons-content {
+.hb-message--list-element {
+  .hb-message--buttons-content {
     padding: 0.5rem;
     margin: 0;
   }
-  .sc-message--buttons {
+  .hb-message--buttons {
     padding: 0;
     margin: 1rem;
     text-align: center;
   }
 }
 
-.sc-message--carousel-element {
-  .sc-message--buttons-content {
+.hb-message--carousel-element {
+  .hb-message--buttons-content {
     padding: 0.5rem;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
-  .sc-message--buttons {
+  .hb-message--buttons {
     margin: 0;
     text-align: center;
   }

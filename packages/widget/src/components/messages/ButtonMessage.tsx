@@ -59,11 +59,11 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
   }
 
   return (
-    <div className="sc-message--buttons">
+    <div className="hb-message--buttons">
       {message.data.buttons.map((button, index) => (
         <button
           key={index}
-          className="sc-message--buttons-content"
+          className="hb-message--buttons-content"
           onClick={(event) => handleClick(event, button)}
           style={{
             borderColor: colors.button.border,

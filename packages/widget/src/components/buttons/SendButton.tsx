@@ -19,7 +19,7 @@ const SendButton: React.FC<SendButtonProps> = (props) => {
     <button
       onClick={onClick}
       {...rest}
-      className="sc-user-input--button-icon-wrapper"
+      className="hb-user-input--button-icon-wrapper"
     >
       <SendIcon />
     </button>

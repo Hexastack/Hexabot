@@ -137,12 +137,12 @@ const UserInput: React.FC = () => {
   const uploading = outgoingMessageState === OutgoingMessageState.uploading;
 
   return (
-    <div className="sc-user-input-wrapper">
+    <div className="hb-user-input-wrapper">
       {suggestions.length > 0 && <Suggestions />}
 
       {(file || uploading) && (
         <div
-          className="sc-file-container"
+          className="hb-file-container"
           style={{
             backgroundColor: colors.userInput.text,
             color: colors.userInput.bg,
@@ -169,7 +169,7 @@ const UserInput: React.FC = () => {
       )}
 
       <form
-        className={`sc-user-input ${inputActive ? "active" : ""}`}
+        className={`hb-user-input ${inputActive ? "active" : ""}`}
         style={{ background: colors.userInput.bg }}
       >
         {menu.length > 0 && <MenuButton />}
@@ -202,27 +202,27 @@ const UserInput: React.FC = () => {
           aria-autocomplete="list"
           // @ts-expect-error to check
           placeholder={placeholder} // Adjust for localization
-          className="sc-user-input--text"
+          className="hb-user-input--text"
           ref={userInputRef}
           style={{ color: colors.userInput.text }}
         />
-        <div className="sc-user-input--buttons">
+        <div className="hb-user-input--buttons">
           {showEmoji && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <EmojiButton inputRef={userInputRef} onInput={handleInput} />
             </div>
           )}
           {showLocation && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <LocationButton />
             </div>
           )}
           {showFile && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <FileButton />
             </div>
           )}
-          <div className="sc-user-input--button">
+          <div className="hb-user-input--button">
             <SendButton
               disabled={!message}
               onClick={(event) => sendMessage(event)}

@@ -22,6 +22,7 @@ const ErrorIcon: FC<SVGProps<SVGSVGElement>> = ({
       x={x}
       y={y}
       viewBox={viewBox}
+      fill="currentColor"
       {...rest}
     >
       <path

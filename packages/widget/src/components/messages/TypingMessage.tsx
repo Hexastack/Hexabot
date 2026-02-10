@@ -15,7 +15,7 @@ const TypingMessage: React.FC = () => {
 
   return (
     <div
-      className="sc-typing-indicator"
+      className="hb-typing-indicator"
       style={{
         color: colors.received.text,
         backgroundColor: colors.received.bg,

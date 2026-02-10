@@ -47,7 +47,7 @@ const MenuButton: React.FC = () => {
   const blur = (e: React.FocusEvent<HTMLDivElement>) => {
     if (
       !e.relatedTarget ||
-      (e.relatedTarget as HTMLElement).id !== "sc-menu-button"
+      (e.relatedTarget as HTMLElement).id !== "hb-menu-button"
     ) {
       setDisplayMenu(false);
     }
@@ -81,12 +81,12 @@ const MenuButton: React.FC = () => {
   };
 
   return (
-    <div className="sc-user-input--menu sc-user-menu">
+    <div className="hb-user-input--menu hb-user-menu">
       <button
         onClick={toggleMenu}
         type="button"
-        id="sc-menu-button"
-        className="sc-user-input--menu-button"
+        id="hb-menu-button"
+        className="hb-user-input--menu-button"
       >
         <MenuIcon />
       </button>
@@ -95,27 +95,27 @@ const MenuButton: React.FC = () => {
           tabIndex={0}
           onBlur={blur}
           ref={menuRef}
-          className="sc-menu-content"
+          className="hb-menu-content"
           style={{
             color: colors.header.text,
             backgroundColor: colors.header.bg,
           }}
         >
-          <div className="sc-header-submenu-content">
+          <div className="hb-header-submenu-content">
             {current._parent && (
               <a
                 style={{ color: colors.header.text }}
-                className="sc-return-submenu-content"
+                className="hb-return-submenu-content"
                 onClick={() => previous(current)}
               >
                 &#10094;
               </a>
             )}
-            <h4 className="sc-title-submenu-title">{current.title}</h4>
+            <h4 className="hb-title-submenu-title">{current.title}</h4>
           </div>
           {current.call_to_actions && (
             <div
-              className="sc-menu-elements"
+              className="hb-menu-elements"
               style={{ color: colors.header.text }}
             >
               {current.call_to_actions.map((subitem, index) => (

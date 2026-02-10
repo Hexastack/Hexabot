@@ -61,7 +61,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   if (type === "unknown") {
     return (
       <div
-        className="sc-message--file"
+        className="hb-message--file"
         style={{
           color: colors.text,
           backgroundColor: colors.bg,
@@ -76,14 +76,14 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
 
   return (
     <div
-      className="sc-message--file"
+      className="hb-message--file"
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
       }}
     >
       {type === "image" && (
-        <div className="sc-message--file-icon">
+        <div className="hb-message--file-icon">
           {imageErrored ? (
             <p
               className="error-message"
@@ -97,14 +97,14 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
             <img
               onError={() => setImageErrored(true)}
               src={hasUrl(message) ? message.data.url : ""}
-              className="sc-image"
+              className="hb-image"
               alt="File"
             />
           )}
         </div>
       )}
       {type === "audio" && (
-        <div className="sc-message--file-audio">
+        <div className="hb-message--file-audio">
           {audioErrored ? (
             <p
               className="error-message"
@@ -122,7 +122,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
         </div>
       )}
       {type === "video" && (
-        <div className="sc-message--file-video">
+        <div className="hb-message--file-video">
           {videoErrored ? (
             <p
               className="error-message"
@@ -142,7 +142,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
       )}
       {type === "file" && (
         <div
-          className="sc-message--file-download"
+          className="hb-message--file-download"
           style={{
             color: colors.text,
             backgroundColor: colors.bg,
