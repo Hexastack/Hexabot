@@ -6,6 +6,8 @@
 
 import { Components, Theme } from "@mui/material/styles";
 
+import { getNotistackVariantStyles } from "@/utils/toast.utils";
+
 import { gray } from "../themePrimitives";
 
 /* eslint-disable import/prefer-default-export */
@@ -215,4 +217,9 @@ export const feedbackCustomizations: Components<Theme> = {
   //     },
   //   },
   // },
+  MuiCssBaseline: {
+    styleOverrides: (theme) => {
+      return getNotistackVariantStyles(theme);
+    },
+  },
 };

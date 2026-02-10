@@ -9,6 +9,7 @@ import { CssBaseline } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import * as monaco from "monaco-editor";
+import { SnackbarProvider } from "notistack";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -17,7 +18,6 @@ import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton
 import BroadcastChannelProvider from "@/contexts/broadcast-channel.context";
 import { ConfigProvider } from "@/contexts/config.context";
 import { SettingsProvider } from "@/contexts/setting.context";
-import { ToastProvider } from "@/hooks/useToast";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
 import { DialogsProvider } from "./contexts/dialogs.context";
@@ -63,7 +63,7 @@ ReactDOM.createRoot(rootElement).render(
     <ConfigProvider>
       <AppTheme>
         <CssBaseline enableColorScheme />
-        <ToastProvider
+        <SnackbarProvider
           maxSnack={3}
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
           action={(snackbarKey) => (
@@ -93,7 +93,7 @@ ReactDOM.createRoot(rootElement).render(
               buttonPosition="bottom-left"
             />
           </QueryClientProvider>
-        </ToastProvider>
+        </SnackbarProvider>
       </AppTheme>
     </ConfigProvider>
   </BrowserRouter>,
