@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Paperclip } from "lucide-react";
 import React, { ChangeEvent, useMemo } from "react";
 
 import { useChat } from "../../providers/ChatProvider";
 import { MIME_TYPES } from "../../utils/attachment";
-import FileInputIcon from "../icons/FileInputIcon";
 
 import "./FileButton.scss";
 
@@ -30,7 +30,7 @@ const FileButton: React.FC = () => {
   return (
     <div className="hb-user-input--file-wrapper">
       <button className="hb-user-input--file-icon-wrapper" type="button">
-        <FileInputIcon />
+        <Paperclip className="hb-user-input--file-icon" x="0" y="0" />
         <input
           accept={acceptedMimeTypes}
           type="file"

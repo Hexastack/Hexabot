@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Paperclip, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
@@ -19,8 +20,6 @@ import FileButton from "./buttons/FileButton";
 import LocationButton from "./buttons/LocationButton";
 import MenuButton from "./buttons/MenuButton";
 import SendButton from "./buttons/SendButton";
-import CloseIcon from "./icons/CloseIcon";
-import FileInputIcon from "./icons/FileInputIcon";
 import Suggestions from "./Suggestions";
 
 import "./UserInput.scss";
@@ -148,7 +147,7 @@ const UserInput: React.FC = () => {
             color: colors.userInput.bg,
           }}
         >
-          <FileInputIcon
+          <Paperclip
             width="16px"
             height="16px"
             className="icon-file-message"
@@ -163,7 +162,7 @@ const UserInput: React.FC = () => {
             </span>
           )}
           <span className="delete-file-message" onClick={cancelFile}>
-            <CloseIcon height="10" />
+            <X height="10" />
           </span>
         </div>
       )}

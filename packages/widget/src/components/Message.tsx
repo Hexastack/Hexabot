@@ -8,13 +8,13 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/fr";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { MessageCircle } from "lucide-react";
 import React, { PropsWithChildren, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { TMessage } from "../types/message.types";
 
-import ChatIcon from "./icons/ChatIcon";
 import "./Message.scss";
 import ButtonsMessage from "./messages/ButtonMessage";
 import CarouselMessage from "./messages/CarouselMessage";
@@ -67,7 +67,7 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           {Avatar ? (
             <Avatar />
           ) : !user.imageUrl ? (
-            <ChatIcon width="32px" height="32px" />
+            <MessageCircle width="32px" height="32px" />
           ) : null}
         </div>
         <div className="hb-message--wrapper" onClick={handleTime}>

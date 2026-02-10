@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MessageCircle, X } from "lucide-react";
 import React, { PropsWithChildren } from "react";
 
 import { useChat } from "../providers/ChatProvider";
@@ -12,8 +13,6 @@ import { useSocketLifecycle } from "../providers/SocketProvider";
 import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
 
 import ChatWindow from "./ChatWindow";
-import CloseIcon from "./icons/CloseIcon";
-import OpenIcon from "./icons/OpenIcon";
 
 import "./Launcher.scss";
 
@@ -61,13 +60,17 @@ const Launcher: React.FC<LauncherProps> = ({
               </div>
             )}
             {widget.isOpen ? (
-              <CloseIcon
+              <X
                 className="hb-closed-icon"
                 width="16px"
                 height="16px"
               />
             ) : (
-              <OpenIcon className="hb-open-icon" />
+              <MessageCircle
+                className="hb-open-icon"
+                width="18px"
+                height="18px"
+              />
             )}
           </div>
         )}

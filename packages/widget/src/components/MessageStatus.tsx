@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Check } from "lucide-react";
 import React from "react";
 
 import { useColors } from "../providers/ColorProvider";
 import { TMessage } from "../types/message.types";
 
-import CheckIcon from "./icons/CheckIcon";
 import "./MessageStatus.scss";
 
 interface MessageStatusProps {
@@ -27,7 +27,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
     <div className="hb--status" style={{ color: colors.messageStatus.bg }}>
       {message.read && (
         <div className="hb--status-wrapper hb--status-read" title="Read">
-          <CheckIcon
+          <Check
             width="16px"
             height="16px"
             className="read check"
@@ -40,7 +40,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
           className="hb--status-wrapper hb--status-delivery"
           title="Delivered"
         >
-          <CheckIcon
+          <Check
             width="16px"
             height="16px"
             className="delivery check"

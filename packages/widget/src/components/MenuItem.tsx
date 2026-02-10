@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ChevronRight } from "lucide-react";
 import React from "react";
 
 import { useColors } from "../providers/ColorProvider";
@@ -50,7 +51,9 @@ const MenuItem: React.FC<MenuItemProps> = ({
       >
         {item.title}
         {item.type === "nested" && (
-          <span className="hb-menu-item-button">&#10095;</span>
+          <span className="hb-menu-item-button" aria-hidden="true">
+            <ChevronRight />
+          </span>
         )}
       </a>
     </div>

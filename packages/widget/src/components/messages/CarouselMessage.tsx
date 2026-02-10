@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
 import { useColors } from "../../providers/ColorProvider";
@@ -100,16 +101,20 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
       {shouldDisplayNavigationButtons && (
         <>
           <button
+            type="button"
             className="hb-message--carousel-control prev"
             onClick={goToPrevious}
+            aria-label="Previous slide"
           >
-            &#10094;
+            <ChevronLeft />
           </button>
           <button
+            type="button"
             className="hb-message--carousel-control next"
             onClick={goToNext}
+            aria-label="Next slide"
           >
-            &#10095;
+            <ChevronRight />
           </button>
         </>
       )}

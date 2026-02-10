@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ChevronLeft, Menu } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useChat } from "../../providers/ChatProvider";
@@ -11,7 +12,6 @@ import { useColors } from "../../providers/ColorProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { IMenuNode, MenuType } from "../../types/menu.type";
 import { IPayload, TOutgoingMessageType } from "../../types/message.types";
-import MenuIcon from "../icons/MenuIcon";
 import MenuItem from "../MenuItem";
 
 import "./MenuButton.scss";
@@ -88,7 +88,13 @@ const MenuButton: React.FC = () => {
         id="hb-menu-button"
         className="hb-user-input--menu-button"
       >
-        <MenuIcon />
+        <Menu
+          width="32"
+          height="32"
+          x="0"
+          y="0"
+          className="hb-user-input--menu-img"
+        />
       </button>
       {displayMenu && (
         <div
@@ -108,7 +114,7 @@ const MenuButton: React.FC = () => {
                 className="hb-return-submenu-content"
                 onClick={() => previous(current)}
               >
-                &#10094;
+                <ChevronLeft className="hb-return-submenu-content-icon" />
               </a>
             )}
             <h4 className="hb-title-submenu-title">{current.title}</h4>

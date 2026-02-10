@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { File } from "lucide-react";
 import React, { useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
 import { useColors } from "../../providers/ColorProvider";
 import { Direction, TMessage } from "../../types/message.types";
-import FileIcon from "../icons/FileIcon";
 import "./FileMessage.scss";
 
 const getFileMessageType = (
@@ -159,7 +159,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
               rel="noopener noreferrer"
               download
             >
-              <FileIcon />
+              <File width="24" height="24" />
               {t("messages.file_message.download")}
             </a>
           )}

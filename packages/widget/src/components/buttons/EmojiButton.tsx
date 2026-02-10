@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Smile } from "lucide-react";
 import React, { RefObject, useRef, useState } from "react";
 
 import EmojiPicker from "../EmojiPicker";
-import EmojiIcon from "../icons/EmojiIcon";
 import "./EmojiButton.scss";
 
 const EmojiButton: React.FC<{
@@ -64,7 +64,7 @@ const EmojiButton: React.FC<{
         className="hb-user-input--emoji-icon-wrapper"
         ref={emojiButtonRef}
       >
-        <EmojiIcon />
+        <Smile className="hb-user-input--emoji-icon" x="0" y="0" />
       </button>
     </div>
   );

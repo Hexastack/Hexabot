@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { LucideIcon } from "lucide-react";
 import React from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
@@ -14,7 +15,7 @@ import { ConnectionState } from "../types/state.types";
 
 import { LoadingComponent } from "./LoadingComponent";
 
-const Template: React.FC<{ name: string; Icon: React.FC }> = ({
+const Template: React.FC<{ name: string; Icon: LucideIcon }> = ({
   name,
   Icon,
 }) => {
@@ -38,7 +39,7 @@ const Template: React.FC<{ name: string; Icon: React.FC }> = ({
         <LoadingComponent />
       ) : (
         <div className={`hb-chat--${name}-icon`}>
-          <Icon />
+          <Icon width="100" height="100" x="0" y="0" />
           <h3
             className={`hb-chat--${name}-text`}
             style={{ color: colors.button.text }}

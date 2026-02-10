@@ -45,12 +45,19 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    display: grid;
+    place-items: center;
     background-color: var(--hb-color-surface-overlay);
     color: var(--hb-color-text-inverse);
     border: none;
+    padding: 0;
     cursor: pointer;
     z-index: 2;
-    font-size: 0.75rem;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
 
     &.prev {
       left: 0;

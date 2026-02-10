@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MapPin } from "lucide-react";
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../../types/message.types";
-import LocationIcon from "../icons/LocationIcon";
 
 import "./LocationButton.scss";
 
@@ -61,7 +61,7 @@ const LocationButton: React.FC = () => {
         type="button"
         className="hb-user-input--location-icon-wrapper"
       >
-        <LocationIcon />
+        <MapPin className="hb-user-input--location-icon" x="0" y="0" />
       </button>
     </div>
   );

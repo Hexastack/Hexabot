@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MessageCircle, X } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 
 import { useColors } from "../providers/ColorProvider";
@@ -11,8 +12,6 @@ import { useSettings } from "../providers/SettingsProvider";
 import { useWidget } from "../providers/WidgetProvider";
 
 import "./ChatHeader.scss";
-import CloseIcon from "./icons/CloseIcon";
-import OpenIcon from "./icons/OpenIcon";
 
 type ChatHeaderProps = PropsWithChildren;
 
@@ -36,7 +35,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
             title="Powered By Hexabot.ai"
             className="hb-header--img"
           >
-            <OpenIcon width={32} height={32} />
+            <MessageCircle width={32} height={32} />
           </a>
           <div className="hb-header--title">{settings.title}</div>
         </>
@@ -45,7 +44,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
         className="hb-header--close-button"
         onClick={() => widget.setIsOpen(false)}
       >
-        <CloseIcon />
+        <X />
       </div>
     </div>
   );
