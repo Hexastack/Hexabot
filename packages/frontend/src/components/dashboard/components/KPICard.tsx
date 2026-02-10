@@ -40,32 +40,16 @@ export const KPICard = ({
     >
       <CardContent>
         <Box textAlign="center">
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            mb={1}
-          >
+          <Stack alignItems="center" mb={1}>
             <IconContainer icon={Icon} color={mainColor} borderRadius="16px" />
           </Stack>
-
-          <Typography variant="h4" component="div" fontWeight="800">
-            {value}
-          </Typography>
+          <Typography variant="h4">{value}</Typography>
         </Box>
 
         <Stack direction="row" justifyContent="center" spacing={1}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            fontWeight="medium"
-          >
-            {title}
-          </Typography>
+          <Typography>{title}</Typography>
           {subtext && (
-            <Typography variant="caption" color="text.secondary">
-              ({subtext})
-            </Typography>
+            <Typography color="text.secondary">({subtext})</Typography>
           )}
         </Stack>
       </CardContent>
