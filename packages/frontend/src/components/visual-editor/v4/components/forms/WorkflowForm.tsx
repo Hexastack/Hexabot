@@ -19,6 +19,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import { WorkflowTypeBadge } from "@/app-components/workflow/WorkflowTypeBadge";
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -32,8 +33,6 @@ import {
   WorkflowType,
   type IWorkflow,
 } from "@/types/workfow.types";
-
-import { WorkflowTypeBadge } from "../../../../../app-components/workflow/WorkflowTypeBadge";
 
 const createWorkflowBadgeStub = (type: WorkflowType): IWorkflow => ({
   id: `workflow-type-${type}`,
@@ -233,9 +232,7 @@ export const WorkflowForm: FC<
                   required
                   disabled={isEditing}
                   error={!!errors.type}
-                  sx={{ alignItems: "flex-end" }}
                 >
-                  {/* <FormLabel component="legend">{t("label.type")}</FormLabel> */}
                   <RadioGroup
                     row
                     name={field.name}
@@ -259,6 +256,7 @@ export const WorkflowForm: FC<
                               typeKey.charAt(0).toUpperCase() +
                               typeKey.slice(1),
                           });
+                      const isSelected = typeValue === type;
 
                       return (
                         <FormControlLabel
@@ -274,18 +272,26 @@ export const WorkflowForm: FC<
                                 },
                               }}
                               icon={
-                                <WorkflowTypeBadge workflow={badgeWorkflow} />
+                                <WorkflowTypeBadge
+                                  workflow={badgeWorkflow}
+                                  selected={false}
+                                />
                               }
                               checkedIcon={
                                 <WorkflowTypeBadge
                                   workflow={badgeWorkflow}
-                                  selected
+                                  selected={isSelected}
                                 />
                               }
                             />
                           }
                           label={
-                            <Typography variant="body2" component="span">
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              fontWeight={500}
+                              color={isSelected ? "primary" : "textPrimary"}
+                            >
                               {typeLabel}
                             </Typography>
                           }

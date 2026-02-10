@@ -50,6 +50,11 @@ export const WorkflowTypeBadge = ({
           flexShrink: 0,
           color: resolvedColor,
           backgroundColor: resolvedBackground,
+          transition: "0.33s",
+          border: ".15rem solid transparent",
+          borderColor: selected
+            ? alpha(theme.palette.primary.main, 0.2)
+            : "transparent",
         }}
       >
         <Icon size={18} />
