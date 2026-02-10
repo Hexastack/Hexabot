@@ -5,7 +5,7 @@
  */
 
 import { ActionStatus } from "@hexabot-ai/agentic";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Theme } from "@mui/material";
 import * as Icons from "lucide-react";
 
 import type { IAction } from "@/types/action.types";
@@ -24,11 +24,11 @@ type WorkflowThemeInput = {
   baseTheme?: WorkflowNodeTheme;
   action?: IAction;
   status?: ActionStatus;
+  mode?: "light" | "dark" | "system";
+  theme?: Theme;
 };
 
 export type ResolvedWorkflowTheme = WorkflowNodeTheme & { Icon: WorkflowIcon };
-
-const DEFAULT_TEXT_COLOR = "#4a5565";
 
 export const getWorkflowStateConfig = (
   status?: ActionStatus,
@@ -51,7 +51,10 @@ export const resolveWorkflowStepTheme = ({
   baseTheme,
   action,
   status,
+  mode,
+  theme,
 }: WorkflowThemeInput): ResolvedWorkflowTheme => {
+  const isDarkMode = mode === "dark";
   const stateConfig = getWorkflowStateConfig(status);
   const uiColor = baseTheme?.borderColor;
   const apiColor = action?.color;
@@ -62,11 +65,11 @@ export const resolveWorkflowStepTheme = ({
 
   return {
     Icon,
-    color: baseTheme?.color || DEFAULT_TEXT_COLOR,
+    color: baseTheme?.color || theme?.typography.caption.color,
     bgColor:
       baseTheme?.bgColor ||
       (accentColor
-        ? `color-mix(in srgb, ${accentColor}, white 95%)`
+        ? `color-mix(in srgb, ${accentColor}, ${isDarkMode ? theme?.palette.common.black : theme?.palette.common.white} ${isDarkMode ? "85%" : "95%"})`
         : undefined),
     iconColor: accentColor || baseTheme?.iconColor,
     borderColor: accentColor || baseTheme?.borderColor,
