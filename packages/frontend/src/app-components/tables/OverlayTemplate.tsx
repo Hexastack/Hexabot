@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Alert, AlertProps, Box } from "@mui/material";
+import { Alert, AlertProps } from "@mui/material";
 import type { LucideIcon } from "lucide-react";
 import { type ComponentType, type SVGProps } from "react";
 
@@ -31,7 +31,7 @@ export const OverlayTemplate = ({
       color={color}
       className="custom-alert"
     >
-      <Box>{t(i18nKey)}</Box>
+      {t(i18nKey)}
     </Alert>
   );
 };
