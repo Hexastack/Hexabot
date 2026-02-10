@@ -61,7 +61,7 @@ const LocationButton: React.FC = () => {
         type="button"
         className="hb-user-input--location-icon-wrapper"
       >
-        <MapPin className="hb-user-input--location-icon" x="0" y="0" />
+        <MapPin className="hb-user-input--location-icon" />
       </button>
     </div>
   );

@@ -13,8 +13,8 @@
 }
 
 .hb-user-input--location-icon {
-  width: 20px;
-  height: 20px;
+  width: var(--hb-user-input-action-icon-size, 1rem);
+  height: var(--hb-user-input-action-icon-size, 1rem);
   cursor: pointer;
   align-self: center;
   vertical-align: middle;

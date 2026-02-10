@@ -64,7 +64,7 @@ const EmojiButton: React.FC<{
         className="hb-user-input--emoji-icon-wrapper"
         ref={emojiButtonRef}
       >
-        <Smile className="hb-user-input--emoji-icon" x="0" y="0" />
+        <Smile className="hb-user-input--emoji-icon" />
       </button>
     </div>
   );

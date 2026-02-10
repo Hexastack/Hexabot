@@ -23,6 +23,8 @@
   display: inline-block;
   vertical-align: middle;
 }
-.hb-user-input--button-icon-wrapper:not(:disabled):hover {
+.hb-user-input--button-icon-wrapper:not(:disabled):hover,
+.hb-user-input--button-icon-wrapper:not(:disabled):focus-visible {
+  opacity: 1;
   color: var(--hb-color-interactive-icon);
 }

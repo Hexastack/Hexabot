@@ -11,6 +11,9 @@
     background-color 0.2s ease,
     box-shadow 0.2s ease;
   border-top: 0.0625rem solid var(--hb-color-border-subtle);
+  --hb-user-input-action-size: 1.25rem;
+  --hb-user-input-action-icon-size: 1rem;
+  --hb-user-input-action-gap: 0.125rem;
 }
 
 .hb-user-input--text {
@@ -54,18 +57,24 @@
 
 .hb-user-input--buttons {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+  gap: var(--hb-user-input-action-gap);
   margin: 0 0.5rem;
 }
 
 .hb-user-input--button {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 }
 
-.hb-user-input--button:not(:last-child) {
-  margin-right: 0.125rem;
+.hb-user-input--button .hb-user-input--picker-wrapper,
+.hb-user-input--button .hb-user-input--location-wrapper {
+  width: var(--hb-user-input-action-size);
+  height: var(--hb-user-input-action-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hb-user-input.active {
@@ -74,10 +83,74 @@
   box-shadow: var(--hb-shadow-widget);
 }
 
+.hb-user-input--button button,
+.hb-user-input--button .hb-user-input--file-wrapper,
+.hb-user-input--button label,
+.hb-user-input--menu-button {
+  position: relative;
+  width: var(--hb-user-input-action-size);
+  height: var(--hb-user-input-action-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 0.375rem;
+  background: none;
+  cursor: pointer;
+  color: var(--hb-color-interactive-icon-muted);
+  opacity: 0.8;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.hb-user-input--button button:focus,
+.hb-user-input--button button:focus-visible,
+.hb-user-input--menu-button:focus,
+.hb-user-input--menu-button:focus-visible {
+  outline: none;
+}
+
+.hb-user-input--button button:not(:disabled):hover,
+.hb-user-input--button button:not(:disabled):focus-visible,
+.hb-user-input--button .hb-user-input--file-wrapper:hover,
+.hb-user-input--button .hb-user-input--file-wrapper:focus-within,
+.hb-user-input--button label:hover,
+.hb-user-input--button label:focus-within,
+.hb-user-input--menu-button:hover,
+.hb-user-input--menu-button:focus-visible {
+  opacity: 1;
+  color: var(--hb-color-interactive-icon);
+}
+
+.hb-user-input--button button:disabled {
+  cursor: not-allowed;
+  color: var(--hb-color-state-disabled);
+  opacity: 1;
+}
+
+.hb-user-input--button svg,
+.hb-user-input--menu-button svg {
+  width: var(--hb-user-input-action-icon-size);
+  height: var(--hb-user-input-action-icon-size);
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.hb-user-input--menu {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
 .hb-user-input--button label {
   position: relative;
-  height: 24px;
-  padding-left: 0.1875rem;
   cursor: pointer;
 }
 
@@ -87,11 +160,10 @@
 
 .hb-user-input--button input {
   position: absolute;
-  left: 0;
-  top: 0;
+  inset: 0;
   width: 100%;
-  z-index: 99999;
   height: 100%;
+  z-index: 1;
   opacity: 0;
   cursor: pointer;
   overflow: hidden;

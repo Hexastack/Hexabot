@@ -22,12 +22,23 @@
 .hb-user-input--file-icon {
   width: 16px;
   height: 16px;
+  cursor: pointer;
   align-self: center;
   outline: none;
   vertical-align: middle;
 }
 
 .hb-user-input--file-wrapper:hover {
+  cursor: pointer;
   opacity: 1;
   color: var(--hb-color-interactive-icon);
+}
+
+.hb-user-input--file-wrapper:hover .hb-user-input--file-icon-wrapper,
+.hb-user-input--file-wrapper:hover .hb-user-input--file-icon {
+  cursor: pointer;
+}
+
+.hb-user-input--file-input {
+  display: none;
 }

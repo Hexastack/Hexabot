@@ -5,7 +5,7 @@
  */
 
 import { Paperclip } from "lucide-react";
-import React, { ChangeEvent, useMemo } from "react";
+import React, { ChangeEvent, useMemo, useRef } from "react";
 
 import { useChat } from "../../providers/ChatProvider";
 import { MIME_TYPES } from "../../utils/attachment";
@@ -14,8 +14,13 @@ import "./FileButton.scss";
 
 const FileButton: React.FC = () => {
   const { setFile } = useChat();
-  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    (e.target as HTMLInputElement).value = "";
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const openFilePicker = () => {
+    if (!fileInputRef.current) return;
+
+    // Reset the current value so selecting the same file triggers `onChange`.
+    fileInputRef.current.value = "";
+    fileInputRef.current.click();
   };
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -29,16 +34,21 @@ const FileButton: React.FC = () => {
 
   return (
     <div className="hb-user-input--file-wrapper">
-      <button className="hb-user-input--file-icon-wrapper" type="button">
-        <Paperclip className="hb-user-input--file-icon" x="0" y="0" />
-        <input
-          accept={acceptedMimeTypes}
-          type="file"
-          id="file-input"
-          onChange={handleChange}
-          onClick={handleClick}
-        />
+      <button
+        className="hb-user-input--file-icon-wrapper"
+        type="button"
+        onClick={openFilePicker}
+      >
+        <Paperclip className="hb-user-input--file-icon" />
       </button>
+      <input
+        ref={fileInputRef}
+        accept={acceptedMimeTypes}
+        type="file"
+        id="file-input"
+        className="hb-user-input--file-input"
+        onChange={handleChange}
+      />
     </div>
   );
 };
