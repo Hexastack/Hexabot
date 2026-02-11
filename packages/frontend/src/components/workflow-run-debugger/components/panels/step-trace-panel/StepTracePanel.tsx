@@ -10,7 +10,6 @@ import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
 import { StepTraceFilters } from "./StepTraceFilters";
-import { StepTraceHeader } from "./StepTraceHeader";
 import { StepTraceList } from "./StepTraceList";
 
 type StepTracePanelProps = {
@@ -30,18 +29,16 @@ export const StepTracePanel = ({
   return (
     <Grid size={{ xs: 12, lg: 6 }}>
       <Paper
+        variant="outlined"
         sx={{
-          p: 2,
-          border: "1px solid",
-          borderColor: "divider",
-          boxShadow: (theme) => theme.shadows[1],
-          minHeight: "60vh",
+          p: 1,
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          height: "100%",
         }}
       >
-        <StepTraceHeader />
+        {/* <StepTraceHeader /> */}
         <StepTraceFilters
           includeSkipped={includeSkipped}
           onIncludeSkippedChange={setIncludeSkipped}

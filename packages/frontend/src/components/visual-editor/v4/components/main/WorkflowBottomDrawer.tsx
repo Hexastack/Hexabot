@@ -81,12 +81,7 @@ const DrawerColumn = styled(Stack)(() => ({
   overflow: "auto",
 }));
 const ChatWidgetColumn = styled(Paper)(({ theme }) => ({
-  minHeight: 0,
-  minWidth: 0,
-  display: "flex",
-  flexDirection: "column",
-  overflow: "hidden",
-  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(0.5),
   "& .hb-chat-window": {
     position: "relative",
     right: "auto !important",
@@ -388,8 +383,7 @@ export const WorkflowBottomDrawer = () => {
         chatColumnWidth={chatColumnWidth}
       >
         <ChatWidgetColumn
-          elevation={0}
-          variant="outlined"
+          variant="spaced"
           onWheelCapture={(event) => {
             event.stopPropagation();
           }}
