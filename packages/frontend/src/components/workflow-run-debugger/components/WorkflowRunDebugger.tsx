@@ -103,7 +103,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
     : null;
 
   return (
-    <Stack direction="column" spacing={1}>
+    <Stack direction="column" spacing={1} pr={1}>
       <RunHeader
         workflowRuns={workflowRuns}
         isFetching={isFetching}
@@ -113,7 +113,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
         onSelectRun={setSelectedRunId}
       />
       <WorkflowActionsProvider workflowType={selectedWorkflow?.type}>
-        <Grid container spacing={3}>
+        <Grid container spacing={1}>
           <StepTracePanel
             stepLog={selectedRun?.stepLog ?? null}
             selectedStepId={selectedStepId}

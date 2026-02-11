@@ -5,10 +5,9 @@
  */
 
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
-import { Paper, Typography } from "@mui/material";
+import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
-import { useTranslate } from "@/hooks/useTranslate";
 import { IWorkflowRun } from "@/types/workflow-run.types";
 
 import { InspectorTabs } from "./InspectorTabs";
@@ -19,25 +18,20 @@ type InspectorPanelProps = {
 };
 
 export const InspectorPanel = ({ run, step }: InspectorPanelProps) => {
-  const { t } = useTranslate();
-
   return (
     <Grid size={{ xs: 12, lg: 6 }}>
       <Paper
+        variant="outlined"
         sx={{
-          p: 2,
-          border: "1px solid",
-          borderColor: "divider",
-          boxShadow: (theme) => theme.shadows[1],
-          minHeight: "60vh",
+          p: 1,
           display: "flex",
           flexDirection: "column",
           gap: 2,
         }}
       >
-        <Typography variant="subtitle2" fontWeight={600}>
+        {/* <Typography variant="subtitle2" fontWeight={600}>
           {t("label.inspector")}
-        </Typography>
+        </Typography> */}
         <InspectorTabs run={run} step={step ?? null} />
       </Paper>
     </Grid>

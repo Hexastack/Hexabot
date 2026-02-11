@@ -35,11 +35,12 @@ export const RunHeader = ({
   return (
     <Paper
       sx={{
+        p: 1,
         position: "sticky",
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar - 1,
       }}
-      variant="spaced"
+      variant="outlined"
     >
       <Grid container spacing={2} alignItems="center">
         <Grid
