@@ -90,8 +90,19 @@ export const AuthenticatedLayout: React.FC<
 
   useSocketGetQuery("/entity/subscribe/");
 
+  const invalidateCountAndCollection = async (entity: EntityType) => {
+    await queryClient.invalidateQueries({
+      queryKey: [QueryType.count, entity],
+    });
+
+    setTimeout(async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [QueryType.collection, entity],
+      });
+    }, 10);
+  };
   const handleEntityMutation = React.useCallback(
-    (payload: EntityMutationEvent) => {
+    async (payload: EntityMutationEvent) => {
       const entity = resolveEntityType(payload.entity);
 
       if (!entity) {
@@ -109,6 +120,8 @@ export const AuthenticatedLayout: React.FC<
           queryKey: [QueryType.item, entity, id],
           exact: true,
         });
+
+        await invalidateCountAndCollection(entity);
 
         return;
       }
@@ -145,6 +158,8 @@ export const AuthenticatedLayout: React.FC<
           );
         });
       });
+
+      await invalidateCountAndCollection(entity);
     },
     [queryClient],
   );

@@ -130,12 +130,12 @@ export class AppService {
   }
 
   private getEventData(event: EntityMutationEvent): unknown {
-    if (event.entity) {
-      return event.entity;
-    }
-
     if (event.databaseEntity) {
       return event.databaseEntity;
+    }
+
+    if (event.entity) {
+      return event.entity;
     }
 
     return typeof event.entityId === 'undefined'
