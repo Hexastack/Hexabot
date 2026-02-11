@@ -15,16 +15,22 @@ import {
 } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
+import { SubscriberTransformerDto } from '@/chat';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import { UserTransformerDto } from '@/user';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils';
 import { buildURL } from '@/utils/helpers/URL';
 
-import { Attachment } from '../dto/attachment.dto';
+import {
+  Attachment,
+  AttachmentFull,
+  AttachmentTransformerDto,
+} from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -33,7 +39,11 @@ import {
 
 @Entity({ name: 'attachments' })
 @Index('idx_attachment_resource_ref', ['resourceRef'])
-export class AttachmentOrmEntity extends BaseOrmEntity {
+export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentTransformerDto> {
+  protected plainCls = Attachment;
+
+  protected fullCls = AttachmentFull;
+
   @Column()
   name!: string;
 
@@ -55,7 +65,9 @@ export class AttachmentOrmEntity extends BaseOrmEntity {
   })
   @JoinColumn({ name: 'created_by_id' })
   @AsRelation()
-  createdBy?: UserProfileOrmEntity | null;
+  createdBy?: UserProfileOrmEntity<
+    UserTransformerDto | SubscriberTransformerDto
+  > | null;
 
   @RelationId((attachment: Attachment) => attachment.createdBy)
   private readonly createdById?: string;

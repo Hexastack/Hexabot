@@ -6,7 +6,7 @@
 
 import { Exclude, Expose } from 'class-transformer';
 
-type Ctor<T = unknown> = abstract new (...args: any[]) => T;
+export type Ctor<T = unknown> = abstract new (...args: any[]) => T;
 
 // Get the instance type of a constructor (handles abstract)
 type InstanceOf<C> = C extends abstract new (...args: any[]) => infer R

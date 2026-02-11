@@ -56,10 +56,7 @@ describe('WebChannelHandler', () => {
   } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
   const websocketGatewayMock = {
     broadcast: jest.fn(),
-    joinNotificationSockets: jest.fn(),
-  } as jest.Mocked<
-    Pick<WebsocketGateway, 'broadcast' | 'joinNotificationSockets'>
-  >;
+  } as jest.Mocked<Pick<WebsocketGateway, 'broadcast'>>;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({

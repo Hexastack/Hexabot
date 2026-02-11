@@ -6,18 +6,15 @@
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { In, InsertEvent, UpdateEvent } from 'typeorm';
+import { In } from 'typeorm';
 
 import { StatsType } from '@/analytics/entities/stats.entity';
 import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { AgenticService } from '@/workflow/services/agentic.service';
 
 import { MessageCreateDto } from '../dto/message.dto';
-import { SubscriberOrmEntity } from '../entities/subscriber.entity';
-import { OutgoingMessage } from '../types/message';
 
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
@@ -31,7 +28,6 @@ export class ChatService {
     private readonly subscriberService: SubscriberService,
     @Inject(forwardRef(() => AgenticService))
     private readonly agenticService: AgenticService,
-    private readonly websocketGateway: WebsocketGateway,
   ) {}
 
   /**
@@ -43,13 +39,12 @@ export class ChatService {
   async handleSentMessage(sentMessage: MessageCreateDto) {
     if (sentMessage.mid) {
       try {
-        const message = await this.messageService.findOneOrCreate(
+        await this.messageService.findOneOrCreate(
           {
             where: { mid: sentMessage.mid },
           },
           sentMessage,
         );
-        this.websocketGateway.broadcastMessageSent(message as OutgoingMessage);
         this.logger.debug('Message has been logged.', sentMessage.mid);
       } catch (err) {
         this.logger.error('Unable to log sent message.', err);
@@ -89,7 +84,6 @@ export class ChatService {
         throw new Error(`Unable to find Message by ID ${msg.id} not found`);
       }
 
-      this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
       this.eventEmitter.emit(
         'hook:stats:entry',
         StatsType.incoming,
@@ -113,16 +107,11 @@ export class ChatService {
   @OnEvent('hook:chatbot:delivery')
   async handleMessageDelivery(event: ConversationalEventWrapper<any, any>) {
     if (config.chatbot.messages.track_delivery) {
-      const subscriber = event.getInitiator();
       const deliveredMessages = event.getDeliveredMessages();
       try {
         await this.messageService.updateMany(
           { where: { mid: In(deliveredMessages) } },
           { delivery: true },
-        );
-        this.websocketGateway.broadcastMessageDelivered(
-          deliveredMessages,
-          subscriber,
         );
       } catch (err) {
         this.logger.error('Unable to mark message as delivered.', err);
@@ -153,10 +142,6 @@ export class ChatService {
             delivery: true,
             read: true,
           },
-        );
-        this.websocketGateway.broadcastMessageRead(
-          watermark.getTime(),
-          subscriber,
         );
       } catch (err) {
         this.logger.error('Unable to mark message as read.', err);
@@ -249,8 +234,6 @@ export class ChatService {
       // Exec lastvisit hook
       this.eventEmitter.emit('hook:user:lastvisit', subscriber);
 
-      this.websocketGateway.broadcastSubscriberUpdate(subscriber);
-
       // Set the subscriber object
       event.setInitiator(subscriber!);
 
@@ -271,38 +254,6 @@ export class ChatService {
       await this.agenticService.handleEvent(event);
     } catch (err) {
       this.logger.error('Error handling new message', err);
-    }
-  }
-
-  /**
-   * Handle new subscriber and send notification the websocket
-   *
-   * @param subscriber - The end user (subscriber)
-   */
-  @OnEvent('hook:subscriber:postCreate')
-  async onSubscriberCreate(e: InsertEvent<SubscriberOrmEntity>) {
-    if (e.entityId) {
-      const subscriber = await this.subscriberService.findOne(e.entityId);
-      if (subscriber) {
-        this.websocketGateway.broadcastSubscriberNew(subscriber);
-      }
-    }
-  }
-
-  /**
-   * Handle updated subscriber and send notification the websocket
-   *
-   * @param subscriber - The end user (subscriber)
-   */
-  @OnEvent('hook:subscriber:postUpdate')
-  async onSubscriberUpdate(e: UpdateEvent<SubscriberOrmEntity>) {
-    if (e.databaseEntity) {
-      const subscriber = await this.subscriberService.findOne(
-        e.databaseEntity.id,
-      );
-      if (subscriber) {
-        this.websocketGateway.broadcastSubscriberUpdate(subscriber);
-      }
     }
   }
 }

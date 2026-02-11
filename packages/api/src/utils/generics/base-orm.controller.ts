@@ -15,7 +15,7 @@ import { DtoActionConfig, DtoTransformerConfig } from '../types/dto.types';
 import { BaseOrmService } from './base-orm.service';
 
 export abstract class BaseOrmController<
-  Entity extends BaseOrmEntity,
+  Entity extends BaseOrmEntity<TransformerDto>,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
 > {

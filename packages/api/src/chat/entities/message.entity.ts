@@ -18,6 +18,11 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
+import {
+  Message,
+  MessageFull,
+  MessageTransformerDto,
+} from '../dto/message.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
@@ -27,7 +32,11 @@ import { SubscriberOrmEntity } from './subscriber.entity';
   '"sender_id" IS NOT NULL OR "recipient_id" IS NOT NULL',
 )
 @Entity({ name: 'messages' })
-export class MessageOrmEntity extends BaseOrmEntity {
+export class MessageOrmEntity extends BaseOrmEntity<MessageTransformerDto> {
+  protected plainCls = Message;
+
+  protected fullCls = MessageFull;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;
 

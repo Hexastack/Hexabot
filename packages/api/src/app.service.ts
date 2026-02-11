@@ -125,9 +125,6 @@ export class AppService {
   }
 
   private getEventData(event: EntityMutationEvent<BaseOrmEntity>): unknown {
-    return {
-      ...(event.entity || {}),
-      id: 'entityId' in event ? event.entityId : event.entity?.id,
-    };
+    return event.entity?.toPlainCls();
   }
 }

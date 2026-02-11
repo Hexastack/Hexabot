@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Message,
@@ -68,9 +67,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'DESC')
       .limit(limit);
     const results = await qb.getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**
@@ -105,9 +103,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'ASC')
       .limit(limit);
     const results = await qb.getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**
@@ -144,9 +141,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'DESC')
       .limit(limit)
       .getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**

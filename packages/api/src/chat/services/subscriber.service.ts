@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { In, IsNull, Not } from 'typeorm';
@@ -19,17 +19,6 @@ import {
 } from '@/attachment/types';
 import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import {
-  SocketGet,
-  SocketPost,
-} from '@/websocket/decorators/socket-method.decorator';
-import { SocketReq } from '@/websocket/decorators/socket-req.decorator';
-import { SocketRes } from '@/websocket/decorators/socket-res.decorator';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
-import { SocketRequest } from '@/websocket/utils/socket-request';
-import { SocketResponse } from '@/websocket/utils/socket-response';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import {
   Subscriber,
@@ -52,35 +41,8 @@ export class SubscriberService extends BaseOrmService<
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
     protected readonly labelService: LabelService,
-    private readonly gateway: WebsocketGateway,
   ) {
     super(repository);
-  }
-
-  /**
-   * Internally subscribe web-sockets to user's event
-   * For example : Notify chat if new user interacted with the chatbot
-   *
-   * @param req - The socket request object
-   * @param res - The socket response object
-   */
-  @SocketGet('/subscriber/subscribe/')
-  @SocketPost('/subscriber/subscribe/')
-  async subscribe(
-    @SocketReq() req: SocketRequest,
-    @SocketRes() res: SocketResponse,
-  ): Promise<IOOutgoingSubscribeMessage> {
-    try {
-      await this.gateway.joinNotificationSockets(req, Room.SUBSCRIBER);
-
-      return res.status(200).json({
-        success: true,
-        subscribe: Room.SUBSCRIBER,
-      });
-    } catch (e) {
-      this.logger.error('Websocket subscription', e);
-      throw new InternalServerErrorException(e);
-    }
   }
 
   /**
@@ -333,7 +295,7 @@ export class SubscriberService extends BaseOrmService<
           JSON.stringify(user),
         );
       } catch (err) {
-        this.logger.error(err);
+        this.logger.error('Unable to log user last visit', err);
       }
     }
   }

@@ -18,7 +18,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 describe('MessageService (TypeORM)', () => {
   let module: TestingModule;
@@ -37,21 +36,12 @@ describe('MessageService (TypeORM)', () => {
     success: true,
     subscribe: Room.MESSAGE,
   };
-  const websocketGatewayMock: Partial<WebsocketGateway> = {
-    joinNotificationSockets: jest.fn(),
-  };
   const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        MessageService,
-        {
-          provide: WebsocketGateway,
-          useValue: websocketGatewayMock,
-        },
-      ],
+      providers: [MessageService],
       typeorm: {
         fixtures: installMessageFixturesTypeOrm,
       },
@@ -119,10 +109,6 @@ describe('MessageService (TypeORM)', () => {
       };
       const result = await messageService.subscribe(req as any, res as any);
 
-      expect(websocketGatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
-        req,
-        Room.MESSAGE,
-      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
       expect(result).toEqual(SUCCESS_PAYLOAD);

@@ -10,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateEvent } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Setting,
@@ -42,12 +41,11 @@ export class SettingRepository extends BaseOrmRepository<
    * based on the `group` and `label` of the `Setting`.
    */
   async afterUpdate(event: UpdateEvent<SettingOrmEntity>) {
-    const setting = this.getTransformer(DtoTransformer.PlainCls)(
-      event.databaseEntity,
-    );
+    const setting = event.databaseEntity.toPlainCls();
     const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
     const label = setting.label as '*';
     this.eventEmitter.emit(`hook:${group}:${label}`, setting);
+    // @todo: repository is supposed to emit
     this.eventEmitter.emit(`hook:setting:postUpdate`, {
       entity: setting,
       metadata: { name: 'setting' },

@@ -4,19 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import {
-  SocketGet,
-  SocketPost,
-} from '@/websocket/decorators/socket-method.decorator';
-import { SocketReq } from '@/websocket/decorators/socket-req.decorator';
-import { SocketRes } from '@/websocket/decorators/socket-res.decorator';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
-import { SocketRequest } from '@/websocket/utils/socket-request';
-import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import {
@@ -39,31 +29,6 @@ export class MessageService extends BaseOrmService<
     private readonly gateway: WebsocketGateway,
   ) {
     super(repository);
-  }
-
-  /**
-   * Subscribes the socket to the message room
-   *
-   * @param req - The socket request object
-   * @param res - The socket response object
-   */
-  @SocketGet('/message/subscribe/')
-  @SocketPost('/message/subscribe/')
-  async subscribe(
-    @SocketReq() req: SocketRequest,
-    @SocketRes() res: SocketResponse,
-  ): Promise<IOOutgoingSubscribeMessage> {
-    try {
-      await this.gateway.joinNotificationSockets(req, Room.MESSAGE);
-
-      return res.status(200).json({
-        success: true,
-        subscribe: Room.MESSAGE,
-      });
-    } catch (e) {
-      this.logger.error('Websocket subscription', e);
-      throw new InternalServerErrorException(e);
-    }
   }
 
   /**

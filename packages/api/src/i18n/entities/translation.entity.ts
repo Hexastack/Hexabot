@@ -9,8 +9,14 @@ import { Column, Entity, Index } from 'typeorm';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
+import { Translation, TranslationTransformerDto } from '../dto/translation.dto';
+
 @Entity({ name: 'translations' })
-export class TranslationOrmEntity extends BaseOrmEntity {
+export class TranslationOrmEntity extends BaseOrmEntity<TranslationTransformerDto> {
+  protected plainCls = Translation;
+
+  protected fullCls = Translation;
+
   @Column({ unique: true })
   @Index()
   str!: string;

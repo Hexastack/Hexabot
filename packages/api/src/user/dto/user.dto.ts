@@ -24,17 +24,22 @@ import {
 } from 'class-validator';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import {
+  Subscriber,
+  SubscriberCreateDto,
+  SubscriberFull,
+  SubscriberStub,
+} from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 
 import { UserProvider } from '../types/user-provider.type';
 
 import { Role } from './role.dto';
-import { UserProfileCreateDto, UserProfileStub } from './user-profile.dto';
+import { UserProfileCreateDto } from './user-profile.dto';
 
 @Exclude()
-export class UserStub extends UserProfileStub {
+export class UserStub extends SubscriberStub {
   @Expose()
   username!: string;
 
@@ -58,7 +63,28 @@ export class UserStub extends UserProfileStub {
 }
 
 @Exclude()
-export class User extends UserStub {
+export class User extends Subscriber {
+  @Expose()
+  username!: string;
+
+  @Expose()
+  email!: string;
+
+  @Expose()
+  sendEmail!: boolean;
+
+  @Expose()
+  state!: boolean;
+
+  @Expose()
+  resetCount!: number;
+
+  @Expose()
+  resetToken!: string | null;
+
+  @Expose()
+  provider?: UserProvider;
+
   @Expose({ name: 'roleIds' })
   roles: string[];
 
@@ -67,7 +93,28 @@ export class User extends UserStub {
 }
 
 @Exclude()
-export class UserFull extends UserStub {
+export class UserFull extends SubscriberFull {
+  @Expose()
+  username!: string;
+
+  @Expose()
+  email!: string;
+
+  @Expose()
+  sendEmail!: boolean;
+
+  @Expose()
+  state!: boolean;
+
+  @Expose()
+  resetCount!: number;
+
+  @Expose()
+  resetToken!: string | null;
+
+  @Expose()
+  provider?: UserProvider;
+
   @Expose()
   @Type(() => Role)
   roles: Role[];

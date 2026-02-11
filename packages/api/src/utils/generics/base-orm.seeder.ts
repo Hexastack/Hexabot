@@ -18,7 +18,7 @@ import {
 import { BaseOrmRepository, FindAllOptions } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
-  Entity extends BaseOrmEntity,
+  Entity extends BaseOrmEntity<TransformerDto>,
   TransformerDto extends DtoTransformerConfig,
   ActionDto extends DtoActionConfig,
   OrmRepository extends BaseOrmRepository<

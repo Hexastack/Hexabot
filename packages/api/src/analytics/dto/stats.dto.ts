@@ -9,7 +9,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsDate,
-  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -110,8 +109,8 @@ export class StatsFindDatumDto extends StatsFindDto {
   /**
    * Type for message to retrieve.
    */
-  @IsEnum(StatsType)
-  @IsNotEmpty()
+  // @IsEnum(StatsType)
+  // @IsOptional()
   type: StatsType;
 }
 

@@ -17,12 +17,21 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
+import {
+  Invitation,
+  InvitationFull,
+  InvitationTransformerDto,
+} from '../dto/invitation.dto';
 import { sha256Hash } from '../utilities/hash';
 
 import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'invitations' })
-export class InvitationOrmEntity extends BaseOrmEntity {
+export class InvitationOrmEntity extends BaseOrmEntity<InvitationTransformerDto> {
+  protected plainCls = Invitation;
+
+  protected fullCls = InvitationFull;
+
   @Column({ type: 'varchar' })
   email!: string;
 

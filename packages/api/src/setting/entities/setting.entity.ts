@@ -11,11 +11,16 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
+import { Setting, SettingTransformerDto } from '../dto/setting.dto';
 import { SettingType } from '../types';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
-export class SettingOrmEntity extends BaseOrmEntity {
+export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
+  protected plainCls = Setting;
+
+  protected fullCls = Setting;
+
   @Column()
   @Index()
   group!: string;

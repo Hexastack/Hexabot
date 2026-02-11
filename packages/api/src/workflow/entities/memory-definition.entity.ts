@@ -11,12 +11,21 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
+import {
+  MemoryDefinition,
+  MemoryDefinitionFull,
+  MemoryDefinitionTransformerDto,
+} from '../dto/memory-definition.dto';
 import { MemoryScope } from '../types';
 
 @Entity({ name: 'memory_definitions' })
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
-export class MemoryDefinitionOrmEntity extends BaseOrmEntity {
+export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionTransformerDto> {
+  protected plainCls = MemoryDefinition;
+
+  protected fullCls = MemoryDefinitionFull;
+
   /** Human-friendly label for the memory definition. */
   @Column({ type: 'varchar', length: 255 })
   name!: string;

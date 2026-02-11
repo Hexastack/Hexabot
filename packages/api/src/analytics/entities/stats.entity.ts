@@ -10,6 +10,8 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
+import { Stats, StatsTransformerDto } from '../dto/stats.dto';
+
 export enum StatsType {
   outgoing = 'outgoing',
   new_users = 'new_users',
@@ -28,7 +30,11 @@ export type ToLinesType = {
 
 @Entity({ name: 'stats' })
 @Index(['day', 'type', 'name'], { unique: true })
-export class StatsOrmEntity extends BaseOrmEntity {
+export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
+  protected plainCls = Stats;
+
+  protected fullCls = Stats;
+
   /**
    * Type of the captured insight.
    */
@@ -76,15 +82,11 @@ export class StatsOrmEntity extends BaseOrmEntity {
       },
       {},
     );
-    const result = stats.reduce(
-      (acc, stat: StatsOrmEntity & { date: Date }) => {
-        stat.date = stat.day;
-        acc[index[stat.type]].values.push(stat);
+    const result = stats.reduce((acc, stat: StatsOrmEntity) => {
+      acc[index[stat.type]].values.push({ ...stat, date: stat.day });
 
-        return acc;
-      },
-      data,
-    );
+      return acc;
+    }, data);
 
     return result;
   }

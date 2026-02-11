@@ -13,7 +13,6 @@ import {
   BaseOrmRepository,
   FindAllOptions,
 } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Subscriber,
@@ -65,9 +64,7 @@ export class SubscriberRepository extends BaseOrmRepository<
         const previousAssignedTo = previous?.id;
 
         if (newAssignedTo !== previousAssignedTo) {
-          const previousSubscriber = this.getTransformer(
-            DtoTransformer.PlainCls,
-          )(previous);
+          const previousSubscriber = previous.toPlainCls();
           const subscriberUpdates: SubscriberUpdateDto = {
             assignedTo: newAssignedTo ?? null,
           };

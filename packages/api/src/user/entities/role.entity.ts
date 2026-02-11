@@ -8,6 +8,8 @@ import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
+import { Role, RoleFull, RoleTransformerDto } from '../dto/role.dto';
+
 import { PermissionOrmEntity } from './permission.entity';
 import { UserOrmEntity } from './user.entity';
 
@@ -15,7 +17,11 @@ export type TRole = 'admin' | 'public';
 
 @Entity({ name: 'roles' })
 @Index(['name'], { unique: true })
-export class RoleOrmEntity extends BaseOrmEntity {
+export class RoleOrmEntity extends BaseOrmEntity<RoleTransformerDto> {
+  protected plainCls = Role;
+
+  protected fullCls = RoleFull;
+
   @Column()
   name!: string;
 

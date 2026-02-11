@@ -11,11 +11,13 @@ import { Cache } from 'cache-manager';
 import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { SettingDtoConfig, SettingTransformerDto } from '../dto/setting.dto';
+import {
+  SettingCreateDto,
+  SettingDtoConfig,
+  SettingTransformerDto,
+} from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
-
-type SeedSetting = Omit<SettingOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Injectable()
 export class SettingSeeder extends BaseOrmSeeder<
@@ -30,8 +32,8 @@ export class SettingSeeder extends BaseOrmSeeder<
     super(settingRepository);
   }
 
-  async seed(models: SeedSetting[]): Promise<boolean> {
-    const grouped = models.reduce<Record<string, SeedSetting[]>>(
+  async seed(models: SettingCreateDto[]): Promise<boolean> {
+    const grouped = models.reduce<Record<string, SettingCreateDto[]>>(
       (acc, model) => {
         acc[model.group] = acc[model.group] || [];
         acc[model.group].push(model);

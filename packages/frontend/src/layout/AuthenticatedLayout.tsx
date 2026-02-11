@@ -207,12 +207,18 @@ export const AuthenticatedLayout: React.FC<
                   isSameEntity(qEntity, EntityType.MESSAGE)
                 ) {
                   const params = JSON.parse(String(qParams));
-
-                  console.log("===== PARAMS", params);
+                  const subscriberId =
+                    "recipient" in data
+                      ? data.recipient
+                      : "sender" in data
+                        ? data.sender
+                        : "";
 
                   return (
-                    !params.where ||
-                    params.where?.["channel.name"]?.["$in"]?.length === 0
+                    subscriberId &&
+                    params.where?.["or"]?.[0]?.["recipient.id"] ===
+                      subscriberId &&
+                    params.where?.["or"]?.[1]?.["sender.id"] === subscriberId
                   );
                 }
 
