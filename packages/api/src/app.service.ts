@@ -125,6 +125,12 @@ export class AppService {
   }
 
   private getEventData(event: EntityMutationEvent<BaseOrmEntity>): unknown {
+    if (!event.entity) {
+      throw new Error('Unable to extract entity event data');
+    }
+
+    event.entity.id = 'entityId' in event ? event.entityId : event.entity.id;
+
     return event.entity?.toPlainCls();
   }
 }
