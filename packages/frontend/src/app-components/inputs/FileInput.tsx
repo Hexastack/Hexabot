@@ -52,6 +52,7 @@ const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
       <>
         <Button
           ref={ref}
+          size="small"
           htmlFor="importFile"
           variant="contained"
           component="label"
