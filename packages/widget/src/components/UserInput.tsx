@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Paperclip, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../types/message.types";
@@ -19,8 +19,6 @@ import FileButton from "./buttons/FileButton";
 import LocationButton from "./buttons/LocationButton";
 import MenuButton from "./buttons/MenuButton";
 import SendButton from "./buttons/SendButton";
-import CloseIcon from "./icons/CloseIcon";
-import FileInputIcon from "./icons/FileInputIcon";
 import Suggestions from "./Suggestions";
 
 import "./UserInput.scss";
@@ -28,7 +26,6 @@ import "./UserInput.scss";
 const UserInput: React.FC = () => {
   const { maxUploadSize } = useConfig();
   const { t } = useTranslation();
-  const { colors } = useColors();
   const {
     suggestions,
     message,
@@ -137,18 +134,12 @@ const UserInput: React.FC = () => {
   const uploading = outgoingMessageState === OutgoingMessageState.uploading;
 
   return (
-    <div className="sc-user-input-wrapper">
+    <div className="hb-user-input-wrapper">
       {suggestions.length > 0 && <Suggestions />}
 
       {(file || uploading) && (
-        <div
-          className="sc-file-container"
-          style={{
-            backgroundColor: colors.userInput.text,
-            color: colors.userInput.bg,
-          }}
-        >
-          <FileInputIcon
+        <div className="hb-file-container">
+          <Paperclip
             width="16px"
             height="16px"
             className="icon-file-message"
@@ -163,14 +154,13 @@ const UserInput: React.FC = () => {
             </span>
           )}
           <span className="delete-file-message" onClick={cancelFile}>
-            <CloseIcon height="10" />
+            <X height="10" />
           </span>
         </div>
       )}
 
       <form
-        className={`sc-user-input ${inputActive ? "active" : ""}`}
-        style={{ background: colors.userInput.bg }}
+        className={`hb-user-input ${inputActive ? "active" : ""}`}
       >
         {menu.length > 0 && <MenuButton />}
         <div
@@ -202,27 +192,26 @@ const UserInput: React.FC = () => {
           aria-autocomplete="list"
           // @ts-expect-error to check
           placeholder={placeholder} // Adjust for localization
-          className="sc-user-input--text"
+          className="hb-user-input--text"
           ref={userInputRef}
-          style={{ color: colors.userInput.text }}
         />
-        <div className="sc-user-input--buttons">
+        <div className="hb-user-input--buttons">
           {showEmoji && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <EmojiButton inputRef={userInputRef} onInput={handleInput} />
             </div>
           )}
           {showLocation && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <LocationButton />
             </div>
           )}
           {showFile && (
-            <div className="sc-user-input--button">
+            <div className="hb-user-input--button">
               <FileButton />
             </div>
           )}
-          <div className="sc-user-input--button">
+          <div className="hb-user-input--button">
             <SendButton
               disabled={!message}
               onClick={(event) => sendMessage(event)}

@@ -9,15 +9,34 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
+  useMemo,
   useState,
 } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
+import { ThemeOverrides } from "../theme/theme.types";
 import { IMenuNode } from "../types/menu.type";
 import { ISubscriber, TMessage } from "../types/message.types";
 import { SessionStorage } from "../utils/sessionStorage";
 
+import { useConfig } from "./ConfigProvider";
 import { useSubscribe } from "./SocketProvider";
+
+const LEGACY_SETTINGS_STORAGE_KEY = "settings";
+const getScopedSettingsStorageKey = ({
+  apiUrl,
+  channel,
+  instanceId,
+}: {
+  apiUrl: string;
+  channel: string;
+  instanceId?: string;
+}) => {
+  const scope = instanceId?.trim() || `${apiUrl}::${channel}`;
+
+  return `hexabot:widget:settings:${encodeURIComponent(scope)}`;
+};
 
 export type ChannelSettings = {
   menu: IMenuNode[];
@@ -26,7 +45,7 @@ export type ChannelSettings = {
   start_button: boolean;
   input_disabled: boolean;
   persistent_menu: boolean;
-  theme_color: string;
+  theme?: ThemeOverrides;
   window_title: string;
   avatar_url: string;
   show_emoji: boolean;
@@ -38,7 +57,7 @@ export type ChannelSettings = {
   profile?: ISubscriber;
 };
 
-type ChatSettings = {
+export type ChatSettings = {
   showEmoji: boolean;
   showFile: boolean;
   showLocation: boolean;
@@ -52,7 +71,7 @@ type ChatSettings = {
   menu: IMenuNode[];
   autoFlush: boolean;
   allowedUploadTypes: string[];
-  color: string;
+  theme?: ThemeOverrides;
   greetingMessage: string;
   avatarUrl: string;
 };
@@ -71,7 +90,7 @@ const defaultSettings: ChatSettings = {
   menu: [],
   autoFlush: true,
   allowedUploadTypes: ["image/gif", "image/png", "image/jpeg"],
-  color: "blue",
+  theme: undefined,
   greetingMessage: "Welcome !",
   avatarUrl: "",
 };
@@ -83,16 +102,37 @@ interface ChatSettingsProviderProps {
 export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
   children,
 }) => {
+  const { apiUrl, channel, instanceId } = useConfig();
   const { t } = useTranslation();
-  const defaultOrSavedSettings =
-    SessionStorage.getItem<ChatSettings>("settings");
+  const settingsStorageKey = useMemo(
+    () =>
+      getScopedSettingsStorageKey({
+        apiUrl,
+        channel,
+        instanceId,
+      }),
+    [apiUrl, channel, instanceId],
+  );
+  const scopedSettings = useMemo(() => {
+    return SessionStorage.getItem<ChatSettings>(settingsStorageKey);
+  }, [settingsStorageKey]);
+  const legacySettings = useMemo(() => {
+    return SessionStorage.getItem<ChatSettings>(LEGACY_SETTINGS_STORAGE_KEY);
+  }, []);
+  const defaultOrSavedSettings = scopedSettings ?? legacySettings;
   const [settings, setSettingsState] = useState(
     defaultOrSavedSettings || defaultSettings,
   );
   const setSettings = useCallback((settings: ChatSettings) => {
-    SessionStorage.setItem("settings", settings);
+    SessionStorage.setItem(settingsStorageKey, settings);
     setSettingsState(settings);
-  }, []);
+  }, [settingsStorageKey]);
+
+  useEffect(() => {
+    if (!scopedSettings && legacySettings) {
+      SessionStorage.setItem(settingsStorageKey, legacySettings);
+    }
+  }, [scopedSettings, legacySettings, settingsStorageKey]);
 
   useSubscribe("settings", (settings: ChannelSettings) => {
     setSettings({
@@ -103,9 +143,11 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
       title: settings.window_title,
       titleImageUrl: settings.avatar_url,
       menu: settings.menu,
-      allowedUploadTypes: settings.allowed_upload_types.split(","),
+      allowedUploadTypes: settings.allowed_upload_types
+        ? settings.allowed_upload_types.split(",")
+        : defaultSettings.allowedUploadTypes,
       inputDisabled: settings.input_disabled,
-      color: settings.theme_color,
+      theme: settings.theme,
       greetingMessage: settings.greeting_message,
       placeholder: t("settings.placeholder"),
       avatarUrl: settings.avatar_url,

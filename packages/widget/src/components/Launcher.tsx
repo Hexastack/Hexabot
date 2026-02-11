@@ -4,16 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MessageCircle, X } from "lucide-react";
 import React, { PropsWithChildren } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useSocketLifecycle } from "../providers/SocketProvider";
 import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
 
 import ChatWindow from "./ChatWindow";
-import CloseIcon from "./icons/CloseIcon";
-import OpenIcon from "./icons/OpenIcon";
 
 import "./Launcher.scss";
 
@@ -34,7 +32,6 @@ const Launcher: React.FC<LauncherProps> = ({
 }) => {
   const chat = useChat();
   const widget = useWidget();
-  const { colors } = useColors();
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     widget.setIsOpen(!widget.isOpen);
@@ -43,31 +40,40 @@ const Launcher: React.FC<LauncherProps> = ({
   useSocketLifecycle();
 
   return (
-    <div style={{ width: "100%" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <div
-        className={`sc-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
+        className={`hb-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
         onClick={handleToggle}
       >
         {CustomLauncher ? (
           <CustomLauncher widget={widget} />
         ) : (
-          <div
-            className="sc-launcher"
-            style={{ backgroundColor: colors.launcher.bg }}
-          >
+          <div className="hb-launcher">
             {chat.newMessagesCount > 0 && !widget.isOpen && (
-              <div className="sc-new-messages-count">
+              <div className="hb-new-messages-count">
                 {chat.newMessagesCount}
               </div>
             )}
             {widget.isOpen ? (
-              <CloseIcon
-                className="sc-closed-icon"
+              <X
+                className="hb-closed-icon"
                 width="16px"
                 height="16px"
               />
             ) : (
-              <OpenIcon className="sc-open-icon" />
+              <MessageCircle
+                className="hb-open-icon"
+                width="18px"
+                height="18px"
+              />
             )}
           </div>
         )}

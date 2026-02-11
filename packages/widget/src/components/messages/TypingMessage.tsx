@@ -6,21 +6,11 @@
 
 import React from "react";
 
-import { useColors } from "../../providers/ColorProvider";
-
 import "./TypingMessage.scss";
 
 const TypingMessage: React.FC = () => {
-  const { colors } = useColors();
-
   return (
-    <div
-      className="sc-typing-indicator"
-      style={{
-        color: colors.received.text,
-        backgroundColor: colors.received.bg,
-      }}
-    >
+    <div className="hb-typing-indicator">
       <span />
       <span />
       <span />

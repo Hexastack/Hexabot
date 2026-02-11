@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-import { useColors } from "../../providers/ColorProvider";
 import { Direction, TButton, TMessage } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
@@ -33,16 +33,16 @@ type CarouselItemProps = {
 };
 
 const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
-  <div className="sc-message--carousel-element-wrapper">
-    <div className="sc-message--carousel-element">
+  <div className="hb-message--carousel-element-wrapper">
+    <div className="hb-message--carousel-element">
       {message.image_url && (
         <div
-          className="sc-message--carousel-element-image"
+          className="hb-message--carousel-element-image"
           style={{ backgroundImage: `url('${message.image_url}')` }}
         />
       )}
-      <div className="sc-message--carousel-element-description">
-        <h3 className="sc-message--carousel-title">{message.title}</h3>
+      <div className="hb-message--carousel-element-description">
+        <h3 className="hb-message--carousel-title">{message.title}</h3>
         {message.subtitle && (
           <p
             dangerouslySetInnerHTML={{
@@ -67,7 +67,6 @@ interface CarouselMessageProps {
 const CarouselMessage: React.FC<CarouselMessageProps> = ({
   messageCarousel,
 }) => {
-  const { colors: allColors } = useColors();
   const [activeIndex, setActiveIndex] = useState(0);
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
@@ -78,19 +77,14 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
   const goToNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
-  const colors = allColors[messageCarousel.direction || "received"];
   const shouldDisplayNavigationButtons = items.length > 1;
 
   return (
     <div
-      className="sc-message--carousel"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
+      className={`hb-message--carousel ${messageCarousel.direction || "received"}`}
     >
       <div
-        className="sc-message--carousel-inner"
+        className="hb-message--carousel-inner"
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
       >
         {items.map((message, idx) => (
@@ -100,16 +94,20 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
       {shouldDisplayNavigationButtons && (
         <>
           <button
-            className="sc-message--carousel-control prev"
+            type="button"
+            className="hb-message--carousel-control prev"
             onClick={goToPrevious}
+            aria-label="Previous slide"
           >
-            &#10094;
+            <ChevronLeft />
           </button>
           <button
-            className="sc-message--carousel-control next"
+            type="button"
+            className="hb-message--carousel-control next"
             onClick={goToNext}
+            aria-label="Next slide"
           >
-            &#10095;
+            <ChevronRight />
           </button>
         </>
       )}

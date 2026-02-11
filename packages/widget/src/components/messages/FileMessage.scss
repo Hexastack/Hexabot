@@ -1,52 +1,67 @@
-.sc-message--file {
-  background-color: transparent !important;
+.hb-message--file {
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
   border-radius: 0.5rem;
   font-weight: 300;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.4;
   -webkit-font-smoothing: subpixel-antialiased;
+
+  &.sent {
+    color: var(--hb-color-text-on-primary);
+    background-color: var(--hb-color-surface-message-sent);
+  }
 
   audio,
   video {
     max-width: 100%;
   }
+
   .error-message {
     margin: 0;
-    // padding: 10px 0 10px 10px;
-    padding: 10px;
-    border-radius: 5px;
-    color: #666;
+    padding: 0.625rem;
+    border-radius: 0.3125rem;
+    color: var(--hb-color-text-muted);
+    background-color: inherit;
     width: 100%;
     display: block;
+
+    &.no-padding {
+      padding: 0;
+    }
   }
 }
 
-.sc-message--content.sent .sc-message--file {
-  word-wrap: break-word;
+.hb-message--content.sent .hb-message--file {
+  overflow-wrap: break-word;
 }
 
-.sc-message--file-icon {
+.hb-message--content.received .hb-message--file {
+  margin-right: 2.5rem;
+}
+
+.hb-message--file-icon {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
-  // margin-top: 15px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
-.sc-image {
+.hb-image {
   max-width: 100%;
   height: auto;
 }
 
-.sc-message--file-download {
-  padding: 10px 20px;
+.hb-message--file-download {
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
-  color: white;
+  color: inherit;
+  background-color: inherit;
   text-align: center;
 
   a {
     text-decoration: none;
-    color: #ece7e7;
+    color: inherit;
 
     img {
       vertical-align: middle;
@@ -56,20 +71,14 @@
   }
 }
 
-.sc-message--content.received .sc-message--file {
-  color: #263238;
-  background-color: #f4f7f9;
-  margin-right: 40px;
+.hb-message--file.received .hb-message--file-download a {
+  color: var(--hb-color-text-secondary);
 }
 
-.sc-message--content.received .sc-message--file-download {
-  color: #000;
+.hb-message--file.received .hb-message--file-download a:hover {
+  color: var(--hb-color-interactive-icon-strong);
 }
 
-.sc-message--content.received .sc-message--file a {
-  color: rgba(43, 40, 40, 0.7);
-}
-
-.sc-message--content.received .sc-message--file a:hover {
-  color: #0c0c0c;
+.hb-message--file.sent .hb-message--file-download a:hover {
+  color: var(--hb-color-interactive-button-primary-hover);
 }

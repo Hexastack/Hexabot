@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Smile } from "lucide-react";
 import React, { RefObject, useRef, useState } from "react";
 
 import EmojiPicker from "../EmojiPicker";
-import "./EmojiButton.scss";
-import EmojiIcon from "../icons/EmojiIcon";
 
 const EmojiButton: React.FC<{
   inputRef: RefObject<HTMLDivElement>;
@@ -53,18 +52,18 @@ const EmojiButton: React.FC<{
   };
 
   return (
-    <div className="sc-user-input--picker-wrapper">
+    <div className="hb-user-input--picker-wrapper">
       {isActive && <EmojiPicker onBlur={handleBlur} onSelect={handleSelect} />}
       <button
         onClick={(e) => {
           e.preventDefault();
           togglePicker();
         }}
-        id="sc-emoji-button"
-        className="sc-user-input--emoji-icon-wrapper"
+        id="hb-emoji-button"
+        className="hb-user-input--emoji-icon-wrapper"
         ref={emojiButtonRef}
       >
-        <EmojiIcon />
+        <Smile className="hb-user-input--emoji-icon" />
       </button>
     </div>
   );

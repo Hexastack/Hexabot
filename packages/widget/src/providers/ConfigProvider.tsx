@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import React, { createContext, ReactNode, useContext, useRef } from "react";
+import React, { createContext, ReactNode, useContext } from "react";
 
 import { DEFAULT_CONFIG } from "../constants/defaultConfig";
 import { Config } from "../types/config.types";
@@ -16,13 +16,13 @@ export const ConfigProvider: React.FC<
     children: ReactNode;
   }
 > = ({ children, ...providedConfig }) => {
-  const config = useRef<Config>({
+  const config: Config = {
     ...DEFAULT_CONFIG,
     ...providedConfig,
-  });
+  };
 
   return (
-    <ConfigContext.Provider value={config.current}>
+    <ConfigContext.Provider value={config}>
       {children}
     </ConfigContext.Provider>
   );

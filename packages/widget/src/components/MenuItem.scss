@@ -1,21 +1,31 @@
-.sc-menu-element {
-  border-top: 1px solid #b9b9b9;
+.hb-menu-element {
+  border-top: 0.0625rem solid var(--hb-color-border-strong);
   position: relative;
   font-size: 1rem;
   cursor: pointer;
 }
-.sc-menu-item {
+
+.hb-menu-item {
   display: inline-block;
   padding: 1rem;
   text-decoration: none;
   width: 100%;
+  color: var(--hb-color-text-on-primary);
 }
-.sc-menu-item-button {
-  display: inline-block;
+
+.hb-menu-item-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.5rem;
   padding: 1rem;
+  color: inherit;
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
 }

@@ -1,109 +1,196 @@
-.sc-user-input {
+@mixin hb-user-input-action-control {
+  position: relative;
+  width: var(--hb-user-input-action-size);
+  height: var(--hb-user-input-action-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 0.375rem;
+  background: none;
+  cursor: pointer;
+  color: var(--hb-color-interactive-icon-muted);
+  opacity: 0.8;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.hb-user-input-wrapper {
+  flex-shrink: 0;
+}
+
+.hb-user-input {
   min-height: 55px;
-  margin: 0px;
+  margin: 0;
   position: relative;
   bottom: 0;
   display: flex;
-  background-color: #f4f7f9;
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
+  background-color: var(--hb-color-surface-input);
+  border-radius: 0 0 0.5rem 0.5rem;
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease;
-  border-top: 1px solid #eef2f4;
+  border-top: 0.0625rem solid var(--hb-color-border-subtle);
+  --hb-user-input-action-size: 1.25rem;
+  --hb-user-input-action-icon-size: 1rem;
+  --hb-user-input-action-gap: 0.125rem;
+
+  &.active {
+    background-color: var(--hb-color-surface-panel);
+    box-shadow: var(--hb-shadow-widget);
+  }
+
+  &--text {
+    flex-grow: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    border-bottom-left-radius: 0.5rem;
+    box-sizing: border-box;
+    padding: 1.125rem 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.33;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    color: var(--hb-color-text-secondary);
+    -webkit-font-smoothing: antialiased;
+    max-height: 200px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    &:empty::before {
+      content: attr(placeholder);
+      display: block;
+      color: var(--hb-color-text-muted);
+      filter: contrast(15%);
+      outline: none;
+      cursor: text;
+    }
+
+    &[contenteditable="true"]:focus:empty::before {
+      position: absolute;
+    }
+
+    &[contenteditable="true"]:focus:empty::after {
+      content: "\00a0";
+    }
+  }
+
+  &--buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--hb-user-input-action-gap);
+    margin: 0 0.5rem;
+  }
+
+  &--button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .hb-user-input--picker-wrapper,
+    .hb-user-input--location-wrapper {
+      width: var(--hb-user-input-action-size);
+      height: var(--hb-user-input-action-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button,
+    .hb-user-input--file-wrapper {
+      @include hb-user-input-action-control;
+    }
+
+    button {
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+
+      &:not(:disabled):hover,
+      &:not(:disabled):focus-visible {
+        opacity: 1;
+        color: var(--hb-color-interactive-icon);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        color: var(--hb-color-state-disabled);
+        opacity: 1;
+      }
+    }
+
+    .hb-user-input--file-wrapper {
+      &:hover,
+      &:focus-within {
+        opacity: 1;
+        color: var(--hb-color-interactive-icon);
+      }
+    }
+
+    svg {
+      width: var(--hb-user-input-action-icon-size);
+      height: var(--hb-user-input-action-icon-size);
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+  }
+
+  &--menu {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+  }
+
+  &--menu-button {
+    @include hb-user-input-action-control;
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+      color: var(--hb-color-interactive-icon);
+    }
+
+    svg {
+      width: var(--hb-user-input-action-icon-size);
+      height: var(--hb-user-input-action-icon-size);
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+  }
+
+  &--file-input {
+    display: none;
+  }
 }
 
-.sc-user-input--text {
-  flex-grow: 1;
-  resize: none;
-  border: none;
-  outline: none;
-  border-bottom-left-radius: 0.5rem;
-  box-sizing: border-box;
-  padding: 18px 8px;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.33;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  color: #565867;
-  -webkit-font-smoothing: antialiased;
-  max-height: 200px;
-  overflow: scroll;
-  bottom: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.sc-user-input--text:empty:before {
-  content: attr(placeholder);
-  display: block; /* For Firefox */
-  color: rgba(86, 88, 103, 0.5);
-  filter: contrast(15%);
-  outline: none;
-  cursor: text;
-}
-
-.sc-user-input--text[contenteditable="true"]:focus:empty:before {
-  position: absolute;
-}
-
-.sc-user-input--text[contenteditable="true"]:focus:empty:after {
-  content: "\00a0";
-}
-
-.sc-user-input--buttons {
-  display: flex;
-  gap: 4px;
-  margin: 0 0.5rem;
-}
-
-.sc-user-input--button {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.sc-user-input--button:not(:last-child) {
-  margin-right: 2px;
-}
-
-.sc-user-input.active {
-  box-shadow: none;
-  background-color: white;
-  box-shadow: 0px -5px 20px 0px rgba(150, 165, 190, 0.2);
-}
-
-.sc-user-input--button label {
-  position: relative;
-  height: 24px;
-  padding-left: 3px;
-  cursor: pointer;
-}
-
-.sc-user-input--button label:hover path {
-  fill: rgba(86, 88, 103, 1);
-}
-
-.sc-user-input--button input {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  z-index: 99999;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.sc-file-container {
-  padding: 5px 20px;
+.hb-file-container {
+  padding: 0.3125rem 1.25rem;
   display: flex;
   align-items: center;
+  gap: 0.3125rem;
+  background-color: var(--hb-color-text-secondary);
+  color: var(--hb-color-surface-input);
 }
 
-.sc-user-input--file-icon {
+.hb-user-input--file-icon,
+.icon-file-message {
   vertical-align: bottom;
   width: 16px;
   height: 16px;
@@ -111,15 +198,11 @@
 
 .delete-file-message {
   font-style: normal;
-  float: right;
+  margin-left: auto;
   cursor: pointer;
-  color: #c8cad0;
-}
+  color: var(--hb-color-state-disabled);
 
-.delete-file-message:hover {
-  color: #5d5e6d;
-}
-
-.icon-file-message {
-  margin-right: 5px;
+  &:hover {
+    color: var(--hb-color-interactive-icon);
+  }
 }

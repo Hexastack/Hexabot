@@ -1,31 +1,41 @@
-.sc-message--list {
+.hb-message--list {
   border-radius: 0.5rem;
   width: 256px;
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
 
-  .sc-message--list-element {
+  &.sent {
+    color: var(--hb-color-text-on-primary);
+    background-color: var(--hb-color-surface-message-sent);
+
+    .hb-message--list-element {
+      border-bottom-color: rgba(255, 255, 255, 0.24);
+    }
+  }
+
+  .hb-message--list-element {
     position: relative;
-    border-bottom: 1px solid;
+    border-bottom: 0.0625rem solid;
+    border-bottom-color: var(--hb-color-border-subtle);
     padding: 1rem;
 
-    .sc-message--list-element-content {
+    .hb-message--list-element-content {
       width: 100%;
       display: block;
 
       &.large {
-        width: 100%;
-        display: block;
         margin: 0;
 
-        .sc-message--list-element-image {
+        .hb-message--list-element-image {
           background-size: cover;
           height: auto;
           border-radius: 0.5rem 0.5rem 0 0;
         }
 
-        .sc-message--list-element-description {
-          color: #fff;
+        .hb-message--list-element-description {
+          color: var(--hb-color-text-inverse);
           border-radius: 0.5rem 0.5rem 0 0;
-          background: rgba(0, 0, 0, 0.5);
+          background: var(--hb-color-surface-overlay);
         }
       }
 
@@ -33,14 +43,14 @@
         padding: 0.5rem 0;
       }
 
-      .sc-message--list-element-title {
+      .hb-message--title {
         font-size: 1.125rem;
         font-weight: 600;
         margin: 0;
         white-space: pre-line;
       }
 
-      .sc-message--list-element-image {
+      .hb-message--list-element-image {
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;

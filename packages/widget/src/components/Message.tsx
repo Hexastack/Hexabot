@@ -8,13 +8,12 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/fr";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { MessageCircle } from "lucide-react";
 import React, { PropsWithChildren, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { TMessage } from "../types/message.types";
 
-import ChatIcon from "./icons/ChatIcon";
 import "./Message.scss";
 import ButtonsMessage from "./messages/ButtonMessage";
 import CarouselMessage from "./messages/CarouselMessage";
@@ -33,7 +32,6 @@ type MessageProps = PropsWithChildren<{
 
 const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   const { participants } = useChat();
-  const { colors } = useColors();
   const [isTimeVisible, setIsTimeVisible] = useState(false);
   const user = participants.find(
     (participant) => participant.id === message.author,
@@ -49,17 +47,15 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   };
 
   return (
-    <div className={`sc-message ${message.direction}`}>
-      <div className={`sc-message--content ${message.direction}`}>
+    <div className={`hb-message ${message.direction}`}>
+      <div className={`hb-message--content ${message.direction}`}>
         <div
           title={user.name}
-          className="sc-message--avatar"
+          className="hb-message--avatar"
           style={
             user.imageUrl
               ? {
-                  backgroundImage: `url(${
-                    user.imageUrl
-                  }?color=${encodeURIComponent(colors.header.bg)})`,
+                  backgroundImage: `url(${user.imageUrl})`,
                 }
               : undefined
           }
@@ -67,10 +63,10 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           {Avatar ? (
             <Avatar />
           ) : !user.imageUrl ? (
-            <ChatIcon width="32px" height="32px" />
+            <MessageCircle width="32px" height="32px" />
           ) : null}
         </div>
-        <div className="sc-message--wrapper" onClick={handleTime}>
+        <div className="hb-message--wrapper" onClick={handleTime}>
           {message.data && "text" in message.data && (
             <TextMessage message={message} />
           )}
@@ -84,14 +80,11 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           )}
           {message.type === "buttons" && <ButtonsMessage message={message} />}
 
-          <div className="sc-message--meta">
+          <div className="hb-message--meta">
             {message.direction === "sent" && (
               <MessageStatus message={message} />
             )}
-            <div
-              style={{ color: colors.messageTime.text }}
-              className="sc-message--time"
-            >
+            <div className="hb-message--time">
               {isTimeVisible && fromNow(message.createdAt)}
             </div>
           </div>

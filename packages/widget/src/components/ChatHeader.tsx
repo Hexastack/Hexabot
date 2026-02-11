@@ -4,28 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MessageCircle, X } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 
-import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useWidget } from "../providers/WidgetProvider";
 
 import "./ChatHeader.scss";
-import CloseIcon from "./icons/CloseIcon";
-import OpenIcon from "./icons/OpenIcon";
 
 type ChatHeaderProps = PropsWithChildren;
 
 const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
   const settings = useSettings();
-  const { colors } = useColors();
   const widget = useWidget();
 
   return (
-    <div
-      className="sc-header"
-      style={{ background: colors.header.bg, color: colors.header.text }}
-    >
+    <div className="hb-header">
       {children ? (
         children
       ) : (
@@ -34,18 +28,18 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
             href="https://hexabot.ai"
             target="_blank"
             title="Powered By Hexabot.ai"
-            className="sc-header--img"
+            className="hb-header--img"
           >
-            <OpenIcon width={32} height={32} />
+            <MessageCircle width={32} height={32} />
           </a>
-          <div className="sc-header--title">{settings.title}</div>
+          <div className="hb-header--title">{settings.title}</div>
         </>
       )}
       <div
-        className="sc-header--close-button"
+        className="hb-header--close-button"
         onClick={() => widget.setIsOpen(false)}
       >
-        <CloseIcon />
+        <X />
       </div>
     </div>
   );

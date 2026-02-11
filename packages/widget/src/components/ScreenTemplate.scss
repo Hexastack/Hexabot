@@ -1,0 +1,64 @@
+.hb-chat--disconnected-icon-wrapper,
+.hb-chat--error-icon-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 0.875rem 0;
+  background-color: var(--hb-color-surface-root);
+  color: var(--hb-color-text-primary);
+}
+
+.hb-chat--disconnected-icon,
+.hb-chat--error-icon {
+  position: relative;
+  text-align: center;
+}
+
+.hb-chat--disconnected-text,
+.hb-chat--error-text {
+  width: 100%;
+  color: var(--hb-color-interactive-button-secondary-text);
+}
+
+.hb-chat--disconnected-button,
+.hb-chat--error-button {
+  border: 0.0625rem solid;
+  border-radius: 2rem;
+  padding: 0.3125rem 0.625rem;
+  width: 80%;
+  margin: 0.125rem;
+  cursor: pointer;
+  outline: 0;
+  border-color: var(--hb-color-border-interactive);
+  color: var(--hb-color-interactive-button-secondary-text);
+  background-color: var(--hb-color-interactive-button-secondary-bg);
+
+  &:hover {
+    background-color: var(--hb-color-interactive-button-secondary-hover);
+    color: var(--hb-color-text-on-primary);
+  }
+
+  &:active {
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  &:active::after {
+    opacity: 1;
+    transition: 0s;
+  }
+}
+
+.hb-chat--attempt-reconnect {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}

@@ -7,7 +7,6 @@
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import { useColors } from "../../providers/ColorProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import {
   TButton,
@@ -24,7 +23,6 @@ interface ButtonsMessageProps {
 const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
   const { setPayload, send, setWebviewUrl } = useChat();
   const settings = useSettings();
-  const { colors } = useColors();
   const handleClick = (
     event: React.MouseEvent<HTMLButtonElement>,
     button: TButton,
@@ -59,17 +57,12 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
   }
 
   return (
-    <div className="sc-message--buttons">
+    <div className="hb-message--buttons">
       {message.data.buttons.map((button, index) => (
         <button
           key={index}
-          className="sc-message--buttons-content"
+          className="hb-message--buttons-content"
           onClick={(event) => handleClick(event, button)}
-          style={{
-            borderColor: colors.button.border,
-            color: colors.button.text,
-            backgroundColor: colors.button.bg,
-          }}
         >
           {button.title}
         </button>

@@ -1,4 +1,4 @@
-.sc-message {
+.hb-message {
   margin: auto;
   padding: 0 0.5rem 0 0;
   display: flex;
@@ -11,88 +11,91 @@
   &.sent {
     flex-direction: row-reverse;
 
-    .sc-message--content {
+    .hb-message--content {
       justify-content: flex-end;
 
-      .sc-message--avatar {
+      .hb-message--avatar {
         display: none;
       }
 
-      .sc-message--wrapper {
+      .hb-message--wrapper {
         align-items: flex-end;
 
-        .sc-message--text {
-          color: white;
-          background-color: #4e8cff;
-          word-wrap: break-word;
+        .hb-message--text {
+          color: var(--hb-color-text-on-primary);
+          background-color: var(--hb-color-surface-message-sent);
+          overflow-wrap: break-word;
+          --hb-message-link-hover-color: var(
+            --hb-color-interactive-button-primary-hover
+          );
         }
 
-        .sc-message--meta {
+        .hb-message--meta {
           flex-direction: row-reverse;
         }
       }
     }
   }
 
-  .sc-message--content {
+  .hb-message--content {
     display: flex;
     flex-direction: row;
     position: relative;
     max-width: calc(100% - 40px); // same as avatar spacing
     width: auto;
 
-    .sc-message--avatar {
+    .hb-message--avatar {
       width: 32px;
       height: 32px;
-      margin-right: 4px;
-      margin: 2px 4px;
+      margin: 0.125rem 0.25rem;
       background-position: 0 0;
       flex-shrink: 0;
       background-size: cover;
       border-radius: 100%;
     }
 
-    .sc-message--wrapper {
+    .hb-message--wrapper {
       display: flex;
       flex-direction: column;
       overflow: hidden;
       word-break: break-word;
 
-      .sc-message--text {
-        padding: 10px 20px;
-        border-radius: 0.5rem;
+        .hb-message--text {
+          padding: 0.625rem 1.25rem;
+          border-radius: 0.5rem;
         font-weight: 400;
         font-size: 0.9rem;
         line-height: 1.5;
         position: relative;
-        -webkit-font-smoothing: subpixel-antialiased;
-        color: #263238;
-        background-color: #f4f7f9;
-
-        .sc-message--text-body {
-          .sc-message--text-content {
-            white-space: pre-wrap;
-          }
+          -webkit-font-smoothing: subpixel-antialiased;
+          color: var(--hb-color-text-primary);
+          background-color: var(--hb-color-surface-message-received);
+          --hb-message-link-hover-color: var(
+            --hb-color-interactive-button-secondary-hover
+          );
         }
-      }
 
-      .sc-message--meta {
-        display: flex;
+        .hb-message--meta {
+          display: flex;
         justify-content: space-between;
         align-items: flex-start;
         font-size: 0.65rem;
-        margin-top: 4px;
-        padding: 0 4px;
-        width: 100%;
-        height: 18px;
-        box-sizing: border-box;
+        margin-top: 0.25rem;
+        padding: 0 0.25rem;
+          width: 100%;
+          height: 18px;
+          box-sizing: border-box;
+
+          .hb-message--time {
+            color: var(--hb-color-text-muted);
+          }
+        }
       }
     }
-  }
 }
 
 @media (max-width: 450px) {
-  .sc-message {
+  .hb-message {
     width: 80%;
   }
 }

@@ -10,10 +10,10 @@ import Launcher from "./components/Launcher";
 import UserSubscription from "./components/UserSubscription";
 import BroadcastChannelProvider from "./providers/BroadcastChannelProvider";
 import ChatProvider from "./providers/ChatProvider";
-import { ColorProvider } from "./providers/ColorProvider";
 import { ConfigProvider } from "./providers/ConfigProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { SocketProvider } from "./providers/SocketProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
@@ -45,7 +45,7 @@ function UiChatWidget({
       <TranslationProvider>
         <SocketProvider socketErrorHandlers={socketErrorHandlers}>
           <SettingsProvider>
-            <ColorProvider>
+            <ThemeProvider>
               <BroadcastChannelProvider channelName="main-channel">
                 <WidgetProvider
                   defaultScreen={ChatScreen.CHAT}
@@ -63,7 +63,7 @@ function UiChatWidget({
                   </ChatProvider>
                 </WidgetProvider>
               </BroadcastChannelProvider>
-            </ColorProvider>
+            </ThemeProvider>
           </SettingsProvider>
         </SocketProvider>
       </TranslationProvider>

@@ -4,14 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MapPin } from "lucide-react";
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../../types/message.types";
-import LocationIcon from "../icons/LocationIcon";
-
-import "./LocationButton.scss";
 
 const LocationButton: React.FC = () => {
   const { setPayload, send } = useChat();
@@ -55,13 +53,13 @@ const LocationButton: React.FC = () => {
   };
 
   return (
-    <div className="sc-user-input--location-wrapper">
+    <div className="hb-user-input--location-wrapper">
       <button
         onClick={locateMe}
         type="button"
-        className="sc-user-input--location-icon-wrapper"
+        className="hb-user-input--location-icon-wrapper"
       >
-        <LocationIcon />
+        <MapPin className="hb-user-input--location-icon" />
       </button>
     </div>
   );

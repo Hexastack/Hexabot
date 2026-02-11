@@ -7,7 +7,6 @@
 import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
 import { useWidget } from "../providers/WidgetProvider";
 import { TMessage } from "../types/message.types";
 
@@ -22,7 +21,6 @@ type MessagesProps = PropsWithChildren<{
 const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
   const { scroll, setScroll, isOpen } = useWidget();
   const { messages, showTypingIndicator, setNewIOMessage } = useChat();
-  const { colors } = useColors();
   const scrollListRef = useRef<HTMLDivElement>(null);
   const [lastReceivedMessage, setLastReceivedMessage] = useState<
     TMessage | undefined
@@ -77,9 +75,14 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
 
   return (
     <div
-      className="sc-message-list"
+      className="hb-message-list nowheel"
       ref={scrollListRef}
-      style={{ backgroundColor: colors.messageList.bg }}
+      onWheelCapture={(event) => {
+        event.stopPropagation();
+      }}
+      onTouchMoveCapture={(event) => {
+        event.stopPropagation();
+      }}
     >
       {messages.map((message) => (
         <Message key={message.mid} message={message} Avatar={Avatar} />

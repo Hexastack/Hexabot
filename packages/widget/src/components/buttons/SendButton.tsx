@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SendHorizontal } from "lucide-react";
 import React from "react";
-
-import SendIcon from "../icons/SendIcon";
-import "./SendButton.scss";
 
 interface SendButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
@@ -19,9 +17,9 @@ const SendButton: React.FC<SendButtonProps> = (props) => {
     <button
       onClick={onClick}
       {...rest}
-      className="sc-user-input--button-icon-wrapper"
+      className="hb-user-input--button-icon-wrapper"
     >
-      <SendIcon />
+      <SendHorizontal />
     </button>
   );
 };

@@ -1,15 +1,23 @@
-.sc-suggestions-row {
+.hb-suggestions-row {
   text-align: center;
   padding: 0.5rem 0;
+  background: var(--hb-color-interactive-button-secondary-bg);
 }
 
-.sc-suggestions-element {
+.hb-suggestions-element {
   margin: 0 0 0.25rem 0.25rem;
   padding: 0.25rem 0.5rem;
-  border: 1px solid;
+  border: 0.0625rem solid;
   border-radius: 2rem;
   font-size: 1rem;
   background: inherit;
   cursor: pointer;
   outline: 0;
+  border-color: var(--hb-color-interactive-button-secondary-text);
+  color: var(--hb-color-interactive-button-secondary-text);
+
+  &:hover {
+    background: var(--hb-color-interactive-button-secondary-hover);
+    color: var(--hb-color-text-on-primary);
+  }
 }

@@ -77,13 +77,14 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
       apiUrl: 'https://api.yourdomain.com',
       channel: 'web-channel',
       token: 'token123',
+      primaryColor: '#1ba089',
     }),
     domContainer,
   );
 </script>
 ```
 
-Replace the values in apiUrl and token with your configuration details.
+Replace the values in `apiUrl`, `token`, and `primaryColor` with your configuration details.
 
 To prevent the website css from conflicting with the chat widget css, we can leverage the shadow dom:
 
@@ -114,6 +115,7 @@ To prevent the website css from conflicting with the chat widget css, we can lev
       apiUrl: 'https://api.yourdomain.com',
       channel: 'web-channel',
       token: 'token123',
+      primaryColor: '#1ba089',
     }),
     shadowContainer,
   );

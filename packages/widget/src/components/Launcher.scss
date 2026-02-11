@@ -1,8 +1,10 @@
-.sc-launcher {
+.hb-launcher-wrapper.opened .hb-launcher::before {
+  box-shadow: var(--hb-shadow-overlay);
+}
+
+.hb-launcher {
   width: 60px;
   height: 60px;
-  background-position: center;
-  background-repeat: no-repeat;
   position: fixed;
   right: 20px;
   bottom: 20px;
@@ -10,37 +12,32 @@
   box-shadow: none;
   transition: box-shadow 0.2s ease-in-out;
   cursor: pointer;
+  background-color: var(--hb-color-interactive-launcher);
+  color: var(--hb-color-interactive-launcher-icon);
 
-  &:before {
+  &::before {
     content: "";
     position: relative;
     display: block;
-    width: 60px;
-    height: 60px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     transition: box-shadow 0.2s ease-in-out;
   }
-  .sc-open-icon {
+
+  .hb-open-icon,
+  .hb-closed-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 32px;
     height: 32px;
-    fill: #fff;
+    color: currentColor;
+    fill: currentColor;
   }
 
-  .sc-closed-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 32px;
-    height: 32px;
-    fill: #fff;
-  }
-
-  .sc-new-messages-count {
+  .hb-new-messages-count {
     position: absolute;
     top: -3px;
     left: 41px;
@@ -50,21 +47,16 @@
     border-radius: 50%;
     width: 22px;
     height: 22px;
-    background: #ff4646;
-    color: white;
+    background: var(--hb-color-interactive-badge-bg);
+    color: var(--hb-color-interactive-badge-text);
     text-align: center;
     margin: auto;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--hb-font-family);
   }
-}
 
-.sc-launcher.opened:before {
-  box-shadow: 0px 0px 400px 250px rgba(148, 149, 150, 0.2);
-}
-
-.sc-launcher:hover {
-  box-shadow: 0 0px 27px 1.5px rgba(0, 0, 0, 0.2);
+  &:hover {
+    box-shadow: var(--hb-shadow-elevated);
+  }
 }

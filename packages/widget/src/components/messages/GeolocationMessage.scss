@@ -1,7 +1,14 @@
-.sc-message--location {
+.hb-message--location {
   border-radius: 0.5rem;
+  color: var(--hb-color-text-primary);
+  background-color: var(--hb-color-surface-message-received);
+
+  &.sent {
+    color: var(--hb-color-text-on-primary);
+    background-color: var(--hb-color-surface-message-sent);
+  }
 }
-.sc-message-map {
+.hb-message-map {
   width: 200px;
   height: 150px;
   border-radius: 0.5rem;

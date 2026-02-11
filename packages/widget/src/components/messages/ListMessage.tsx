@@ -6,8 +6,7 @@
 
 import React from "react";
 
-import { useColors } from "../../providers/ColorProvider";
-import { Direction, TMessage } from "../../types/message.types";
+import { TMessage } from "../../types/message.types";
 
 import ButtonsMessage from "./ButtonMessage";
 
@@ -18,7 +17,6 @@ interface ListMessageProps {
 }
 
 const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
-  const { colors: allColors } = useColors();
   const processContent = (string: string) => {
     let result = truncate(string, 50);
 
@@ -37,16 +35,8 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
     throw new Error("Unable to find elements");
   }
 
-  const colors = allColors[messageList.direction || Direction.received];
-
   return (
-    <div
-      className="sc-message--list"
-      style={{
-        color: colors.text,
-        backgroundColor: colors.bg,
-      }}
-    >
+    <div className={`hb-message--list ${messageList.direction || "received"}`}>
       {messageList.data.elements.map((message, idx) => {
         const mode =
           idx === 0 &&
@@ -56,20 +46,16 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
             : "compact";
 
         return (
-          <div
-            key={idx}
-            className="sc-message--list-element"
-            style={{ borderColor: allColors.messageList.bg }}
-          >
-            <div className={`sc-message--list-element-content ${mode}`}>
+          <div key={idx} className="hb-message--list-element">
+            <div className={`hb-message--list-element-content ${mode}`}>
               {message.image_url && (
                 <div
-                  className="sc-message--list-element-image"
+                  className="hb-message--list-element-image"
                   style={{ backgroundImage: `url('${message.image_url}')` }}
                 >
                   {mode === "large" && (
-                    <div className="sc-message--list-element-description">
-                      <h3 className="sc-message--title">{message.title}</h3>
+                    <div className="hb-message--list-element-description">
+                      <h3 className="hb-message--title">{message.title}</h3>
                       {message.subtitle && (
                         <p
                           dangerouslySetInnerHTML={{
@@ -82,8 +68,8 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
                 </div>
               )}
               {mode === "compact" && (
-                <div className="sc-message--list-element-description">
-                  <h3 className="sc-message--title">{message.title}</h3>
+                <div className="hb-message--list-element-description">
+                  <h3 className="hb-message--title">{message.title}</h3>
                   {message.subtitle && (
                     <p
                       dangerouslySetInnerHTML={{
@@ -105,7 +91,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
       {"buttons" in messageList.data &&
         Array.isArray(messageList.data.buttons) &&
         messageList.data.buttons.length > 0 && (
-          <div className="sc-message--list-element-bottom">
+          <div className="hb-message--list-element-bottom">
             <ButtonsMessage message={messageList as TMessage} />
           </div>
         )}

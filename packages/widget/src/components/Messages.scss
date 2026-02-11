@@ -1,6 +1,10 @@
-.sc-message-list {
-  height: 80%;
+.hb-message-list {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  background-size: 100%;
-  padding: 40px 0px;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 2.5rem 0;
+  background-color: var(--hb-color-surface-root);
 }

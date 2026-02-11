@@ -4,14 +4,6 @@
   "input_disabled": "Disable Input",
   "persistent_menu": "Display Persistent Menu",
   "greeting_message": "Greeting Message",
-  "theme_color": "Widget Theme",
-  "theme_color_options": {
-    "orange": "Orange",
-    "red": "Red",
-    "green": "Green",
-    "blue": "Blue",
-    "dark": "Dark"
-  },
   "window_title": "Chat Window Title",
   "avatar_url": "Chatbot Avatar URL",
   "show_emoji": "Enable Emoji Picker",

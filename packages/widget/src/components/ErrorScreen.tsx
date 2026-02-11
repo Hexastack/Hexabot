@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AlertTriangle } from "lucide-react";
 import React from "react";
 
-import "./ErrorScreen.scss";
-import ErrorIcon from "./icons/Error";
 import Template from "./ScreenTemplate";
 
 const ErrorScreen: React.FC = () => {
-  return <Template name="error" Icon={ErrorIcon} />;
+  return <Template name="error" Icon={AlertTriangle} />;
 };
 
 export default ErrorScreen;
