@@ -6,17 +6,19 @@
 
 import { Box, Grid, useMediaQuery } from "@mui/material";
 import { normalize } from "normalizr";
-import React from "react";
+import React, { useCallback } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/DashboardHeader";
 import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
+import { InfiniteData } from "@/types/tanstack.types";
 import { getMenuItems } from "@/utils/menu.util";
 import { useSocketGetQuery, useSubscribe } from "@/websocket/socket-hooks";
 
@@ -64,10 +66,6 @@ export const AuthenticatedLayout: React.FC<
 > = ({ children, hasNoPadding }) => {
   const queryClient = useTanstackQueryClient();
 
-  useSocketGetQuery("/message/subscribe/");
-
-  useSocketGetQuery("/subscriber/subscribe/");
-
   useSocketGetQuery("/workflow/subscribe/");
   const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] =
     React.useState(false);
@@ -90,27 +88,16 @@ export const AuthenticatedLayout: React.FC<
 
   useSocketGetQuery("/entity/subscribe/");
 
-  const invalidateCountAndCollection = async (entity: EntityType) => {
-    await queryClient.invalidateQueries({
-      queryKey: [QueryType.count, entity],
-    });
+  const handleEntityMutation = useCallback(
+    async ({ entity: targetEntity, op, data }: EntityMutationEvent) => {
+      const entity = resolveEntityType(targetEntity);
 
-    setTimeout(async () => {
-      await queryClient.invalidateQueries({
-        queryKey: [QueryType.collection, entity],
-      });
-    }, 10);
-  };
-  const handleEntityMutation = React.useCallback(
-    async (payload: EntityMutationEvent) => {
-      const entity = resolveEntityType(payload.entity);
-
-      if (!entity) {
+      if (!entity || !(entity in ENTITY_MAP)) {
         return;
       }
 
-      if (payload.op === "delete") {
-        const id = payload.data.id;
+      if (op === "delete") {
+        const id = data.id;
 
         if (!id) {
           return;
@@ -121,18 +108,24 @@ export const AuthenticatedLayout: React.FC<
           exact: true,
         });
 
-        await invalidateCountAndCollection(entity);
+        queryClient.refetchQueries({
+          predicate: ({ queryKey }) => {
+            const [qType, qEntity] = queryKey;
 
-        return;
-      }
-      if (!(entity in ENTITY_MAP)) {
+            return (
+              (qType === QueryType.count || qType === QueryType.collection) &&
+              isSameEntity(qEntity, entity)
+            );
+          },
+        });
+
         return;
       }
 
       const schemaEntity = ENTITY_MAP[entity];
-      const { entities } = normalize(
-        payload.data,
-        Array.isArray(payload.data) ? [schemaEntity] : schemaEntity,
+      const { result, entities } = normalize(
+        data,
+        Array.isArray(data) ? [schemaEntity] : schemaEntity,
       );
 
       Object.entries(entities).forEach(([entityType, dataDict]) => {
@@ -152,14 +145,110 @@ export const AuthenticatedLayout: React.FC<
                 ...newData,
               };
             },
-            {
-              updatedAt: newData.updatedAt,
-            },
           );
         });
       });
 
-      await invalidateCountAndCollection(entity);
+      if (op === "create") {
+        queryClient.refetchQueries({
+          predicate: ({ queryKey }) => {
+            const [qType, qEntity] = queryKey;
+
+            return (
+              (qType === QueryType.count || qType === QueryType.collection) &&
+              isSameEntity(qEntity, entity)
+            );
+          },
+        });
+        // @todo : enhance this logic
+        if (entity === EntityType.SUBSCRIBER) {
+          // Inbox : Only update the unfiltered (all-subscribers) cache
+          queryClient.setQueriesData(
+            {
+              predicate: ({ queryKey }) => {
+                const [qType, qEntity, qParams] = queryKey;
+
+                if (
+                  qType === QueryType.infinite &&
+                  isSameEntity(qEntity, EntityType.SUBSCRIBER)
+                ) {
+                  const params = JSON.parse(String(qParams));
+
+                  return (
+                    !params.where ||
+                    params.where?.["channel.name"]?.["$in"]?.length === 0
+                  );
+                }
+
+                return false;
+              },
+            },
+            (oldData) => {
+              if (oldData) {
+                const data = oldData as InfiniteData<string[]>;
+
+                return {
+                  ...data,
+                  pages: [[result, ...data.pages[0]], ...data.pages.slice(1)],
+                };
+              }
+
+              return oldData;
+            },
+          );
+        } else if (entity === EntityType.MESSAGE) {
+          queryClient.setQueriesData(
+            {
+              predicate: ({ queryKey }) => {
+                const [qType, qEntity, qParams] = queryKey;
+
+                if (
+                  qType === QueryType.infinite &&
+                  isSameEntity(qEntity, EntityType.MESSAGE)
+                ) {
+                  const params = JSON.parse(String(qParams));
+
+                  console.log("===== PARAMS", params);
+
+                  return (
+                    !params.where ||
+                    params.where?.["channel.name"]?.["$in"]?.length === 0
+                  );
+                }
+
+                return false;
+              },
+            },
+            (oldData) => {
+              if (oldData) {
+                const data = oldData as InfiniteData<string[]>;
+
+                return {
+                  ...data,
+                  pages: [[result, ...data.pages[0]], ...data.pages.slice(1)],
+                };
+              }
+
+              return oldData;
+            },
+          );
+        }
+      } else {
+        queryClient.setQueriesData(
+          {
+            predicate({ queryKey }) {
+              const [qType, qEntity] = queryKey;
+
+              return (
+                qType === QueryType.collection && isSameEntity(qEntity, entity)
+              );
+            },
+          },
+          (collection: unknown[]) => {
+            return [...collection, undefined];
+          },
+        );
+      }
     },
     [queryClient],
   );

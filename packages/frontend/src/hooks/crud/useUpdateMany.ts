@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { QueryType, TMutationOptions } from "@/services/types";
+import { TMutationOptions } from "@/services/types";
 import { THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
-import { isSameEntity } from "./helpers";
-import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
+import { useTanstackMutation } from "./useTanstack";
 
 export const useUpdateMany = <
   TE extends THook["entity"],
@@ -29,37 +28,11 @@ export const useUpdateMany = <
   >,
 ) => {
   const api = useEntityApiClient(entity);
-  const queryClient = useTanstackQueryClient();
-  const { invalidate = true, routeParams, ...otherOptions } = options || {};
+  const { routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async ({ ids, payload }) => {
       const result = await api.updateMany(ids, payload, routeParams);
-
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [qType, qEntity, qId] = queryKey;
-
-          return (
-            qType === QueryType.item &&
-            isSameEntity(qEntity, entity) &&
-            ids.includes(qId as string)
-          );
-        },
-      });
-
-      if (invalidate) {
-        queryClient.invalidateQueries({
-          predicate: ({ queryKey }) => {
-            const [qType, qEntity] = queryKey;
-
-            return (
-              (qType === QueryType.count || qType === QueryType.collection) &&
-              isSameEntity(qEntity, entity)
-            );
-          },
-        });
-      }
 
       return result;
     },

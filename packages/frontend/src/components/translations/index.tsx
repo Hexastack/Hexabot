@@ -16,12 +16,11 @@ import {
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, QueryType } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ITranslation } from "@/types/translation.types";
@@ -33,7 +32,6 @@ export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const queryClient = useTanstackQueryClient();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
@@ -54,9 +52,6 @@ export const Translations = () => {
         toast.error(t("message.internal_server_error"));
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.collection, EntityType.TRANSLATION],
-        });
         toast.success(t("message.success_translation_refresh"));
       },
     });

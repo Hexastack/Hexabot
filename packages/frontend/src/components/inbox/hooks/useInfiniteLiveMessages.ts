@@ -4,18 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
-import { useNormalizeAndCache } from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import { EntityType, QueryType } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { IMessage } from "@/types/message.types";
 import { SearchPayload } from "@/types/search.types";
-import { InfiniteData } from "@/types/tanstack.types";
-import { useSubscribe } from "@/websocket/socket-hooks";
-
-import { SocketMessageEvents } from "../types";
 
 import { useChat } from "./ChatContext";
 
@@ -23,8 +17,6 @@ const PAGE_SIZE = 20;
 
 export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
-  const queryClient = useTanstackQueryClient();
-  const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
   const params = useMemo(
     () =>
       ({
@@ -72,37 +64,6 @@ export const useInfinitedLiveMessages = () => {
       enabled: !!activeChat?.id,
     },
   );
-  const addMessage = useCallback(
-    (event: SocketMessageEvents) => {
-      if (
-        (event.op === "messageReceived" || event.op === "messageSent") &&
-        event.speakerId === activeChat?.id
-      ) {
-        const { result } = normalizeAndCache(event.msg);
-
-        queryClient.setQueryData(
-          [QueryType.infinite, EntityType.MESSAGE, JSON.stringify(params)],
-          (oldData) => {
-            if (oldData) {
-              const data = oldData as InfiniteData<string[]>;
-
-              return {
-                ...data,
-                pages: [[result, ...data.pages[0]], ...data.pages.slice(1)],
-              };
-            }
-
-            return oldData;
-          },
-        );
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [queryClient, activeChat?.id],
-  );
-
-  useSubscribe<SocketMessageEvents>("message", addMessage);
-
   const messages = useMemo(() => {
     const seen = new Set<string>();
 

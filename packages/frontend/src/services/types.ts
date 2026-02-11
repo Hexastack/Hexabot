@@ -81,9 +81,7 @@ export type TMutationOptions<
   TVariables = void,
   TContext = unknown,
 > = Omit<
-  UseMutationOptions<TData, TError, TVariables, TContext> & {
-    invalidate?: boolean;
-  },
+  UseMutationOptions<TData, TError, TVariables, TContext>,
   "mutationFn" | "mutationKey"
 > & {
   routeParams?: RouteParams;

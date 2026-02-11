@@ -18,6 +18,8 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 export abstract class BaseOrmEntity {
   private static entityManagerProvider?: () => EntityManager;
 
+  public static transformer?: (source: unknown) => unknown;
+
   @PrimaryColumn()
   id!: string;
 
@@ -44,6 +46,10 @@ export abstract class BaseOrmEntity {
 
   static registerEntityManagerProvider(provider: () => EntityManager): void {
     this.entityManagerProvider = provider;
+  }
+
+  static registerTransformer(transformer: (source: unknown) => unknown): void {
+    this.transformer = transformer;
   }
 
   protected static getEntityManager(): EntityManager {

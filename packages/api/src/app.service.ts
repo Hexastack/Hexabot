@@ -6,7 +6,9 @@
 
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
+import { BaseOrmEntity } from './database';
 import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
@@ -21,14 +23,7 @@ import {
   WebsocketGateway,
 } from './websocket';
 
-type EntityMutationEvent = {
-  metadata?: {
-    name?: string;
-  };
-  entity?: unknown;
-  databaseEntity?: unknown;
-  entityId?: unknown;
-};
+type EntityMutationEvent<T> = UpdateEvent<T> | RemoveEvent<T> | InsertEvent<T>;
 
 type EntityMutationOperation = 'create' | 'update' | 'delete';
 
@@ -86,23 +81,23 @@ export class AppService {
   }
 
   @OnEvent('hook:*:postCreate')
-  handleEntityCreated(event: EntityMutationEvent) {
+  handleEntityCreated(event: EntityMutationEvent<BaseOrmEntity>) {
     this.broadcastEntityMutationEvent('create', event);
   }
 
   @OnEvent('hook:*:postUpdate')
-  handleEntityUpdated(event: EntityMutationEvent) {
+  handleEntityUpdated(event: EntityMutationEvent<BaseOrmEntity>) {
     this.broadcastEntityMutationEvent('update', event);
   }
 
   @OnEvent('hook:*:postDelete')
-  handleEntityDeleted(event: EntityMutationEvent) {
+  handleEntityDeleted(event: EntityMutationEvent<BaseOrmEntity>) {
     this.broadcastEntityMutationEvent('delete', event);
   }
 
   private broadcastEntityMutationEvent(
     op: EntityMutationOperation,
-    event: EntityMutationEvent,
+    event: EntityMutationEvent<BaseOrmEntity>,
   ): void {
     const entity = this.getEntityRoom(event);
 
@@ -119,7 +114,7 @@ export class AppService {
     });
   }
 
-  private getEntityRoom(event: EntityMutationEvent): string | null {
+  private getEntityRoom(event: EntityMutationEvent<unknown>): string | null {
     const metadataName = event.metadata?.name;
 
     if (!metadataName) {
@@ -129,17 +124,10 @@ export class AppService {
     return metadataName.replace(/OrmEntity$/, '').toLowerCase();
   }
 
-  private getEventData(event: EntityMutationEvent): unknown {
-    if (event.databaseEntity) {
-      return event.databaseEntity;
-    }
-
-    if (event.entity) {
-      return event.entity;
-    }
-
-    return typeof event.entityId === 'undefined'
-      ? null
-      : { id: event.entityId };
+  private getEventData(event: EntityMutationEvent<BaseOrmEntity>): unknown {
+    return {
+      ...(event.entity || {}),
+      id: 'entityId' in event ? event.entityId : event.entity?.id,
+    };
   }
 }

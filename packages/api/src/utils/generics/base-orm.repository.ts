@@ -16,8 +16,8 @@ import set from 'lodash/set';
 import {
   DataSource,
   DeepPartial,
-  EntityMetadata,
   EntityManager,
+  EntityMetadata,
   EntitySubscriberInterface,
   FindManyOptions,
   FindOneOptions,
@@ -423,6 +423,12 @@ export abstract class BaseOrmRepository<
     entityConstructor.registerEntityManagerProvider(
       () => this.repository.manager,
     );
+
+    if (typeof entityConstructor.registerTransformer !== 'function') {
+      entityConstructor.registerTransformer(
+        this.getTransformer(DtoTransformer.PlainCls) as (s: unknown) => unknown,
+      );
+    }
   }
 
   protected getEventName(

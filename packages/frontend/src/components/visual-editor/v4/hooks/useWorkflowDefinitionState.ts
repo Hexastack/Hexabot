@@ -36,13 +36,10 @@ export const useWorkflowDefinitionState = ({
   hasActions,
 }: UseWorkflowDefinitionStateArgs) => {
   const queryClient = useTanstackQueryClient();
-  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
+  const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW);
   const { mutate: commitVersion, isPending: isSaving } = useCreate(
     EntityType.WORKFLOW_VERSION,
     {
-      invalidate: true,
       routeParams: { id: workflow?.id },
       onSuccess(data, variables) {
         const isPublish = variables?.action === WorkflowVersionAction.publish;
