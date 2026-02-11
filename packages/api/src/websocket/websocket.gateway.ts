@@ -21,7 +21,7 @@ import Cookie from 'cookie';
 import signature from 'cookie-signature';
 import { Request } from 'express';
 import { Session as ExpressSession, SessionData } from 'express-session';
-import { Server, Socket } from 'socket.io';
+import { ExtendedError, Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
 import { MessageFull } from '@/chat/dto/message.dto';
@@ -263,7 +263,7 @@ export class WebsocketGateway
         }
       } catch (e) {
         this.logger.warn('Something unexpected happening');
-        next(e);
+        next(e as ExtendedError);
       }
     });
   }

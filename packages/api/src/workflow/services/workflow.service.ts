@@ -4,16 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Workflow as AgenticWorkflow,
-  WorkflowDefinition,
-  WorkflowEventMap,
-} from '@hexabot-ai/agentic';
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { WorkflowEventMap } from '@hexabot-ai/agentic';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -34,7 +26,6 @@ import {
   WorkflowTransformerDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
-import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
 
@@ -169,38 +160,5 @@ export class WorkflowService extends BaseOrmService<
   @OnEvent('hook:step:error')
   sendWorkflowStepError(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
     this.sendWorkflowEvent('hook:step:error', payload);
-  }
-
-  private resolveDefinitionYml(payload: {
-    definition?: WorkflowDefinition;
-    definitionYml?: string | null;
-  }): string {
-    const hasDefinition = payload.definition !== undefined;
-    const hasDefinitionYml = payload.definitionYml !== undefined;
-
-    if (hasDefinition && hasDefinitionYml) {
-      throw new BadRequestException(
-        'Provide either definition or definitionYml, not both',
-      );
-    }
-
-    if (!hasDefinition && !hasDefinitionYml) {
-      throw new BadRequestException('Workflow definition is required');
-    }
-
-    if (payload.definitionYml !== undefined) {
-      const definitionYml = payload.definitionYml ?? '';
-      if (definitionYml.trim() === '') {
-        throw new BadRequestException('Workflow definition is required');
-      }
-
-      parseWorkflowDefinition(definitionYml);
-
-      return definitionYml;
-    }
-
-    const definition = payload.definition as WorkflowDefinition;
-
-    return AgenticWorkflow.stringifyDefinition(definition);
   }
 }
