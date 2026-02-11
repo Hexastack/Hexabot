@@ -5,7 +5,10 @@
  */
 
 import Editor from "@monaco-editor/react";
+import { useColorScheme } from "@mui/material";
 import * as React from "react";
+
+import { handleEditorWillMount } from "./JsonataFormulaField/monaco";
 
 export type JsonViewerProps = {
   value: unknown;
@@ -57,15 +60,17 @@ const safeJsonStringify = (input: unknown): string => {
 
 export function JsonViewer({ value }: JsonViewerProps) {
   const jsonText = React.useMemo(() => safeJsonStringify(value), [value]);
+  const { mode } = useColorScheme();
 
   return (
     <Editor
       value={jsonText}
       defaultLanguage="json"
-      theme="light"
+      theme={mode}
       height="100%"
       width="100%"
       options={JSON_VIEWER_OPTIONS}
+      beforeMount={handleEditorWillMount}
     />
   );
 }
