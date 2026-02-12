@@ -45,10 +45,6 @@ export class SettingRepository extends BaseOrmRepository<
     const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
     const label = setting.label as '*';
     this.eventEmitter.emit(`hook:${group}:${label}`, setting);
-    // @todo: repository is supposed to emit
-    this.eventEmitter.emit(`hook:setting:postUpdate`, {
-      entity: setting,
-      metadata: { name: 'setting' },
-    });
+    super.afterUpdate(event);
   }
 }
