@@ -16,8 +16,6 @@ import {
 } from '@/utils/test/fixtures/message';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
 
 describe('MessageService (TypeORM)', () => {
   let module: TestingModule;
@@ -31,11 +29,6 @@ describe('MessageService (TypeORM)', () => {
   let referenceSubscriber: Subscriber;
   let subscriberMessagesAsc: Message[];
 
-  const SESSION_ID = 'session-123';
-  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
-    success: true,
-    subscribe: Room.MESSAGE,
-  };
   const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
