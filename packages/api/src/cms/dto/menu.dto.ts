@@ -22,7 +22,7 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { MenuType } from '../entities/menu.entity';
+import { MenuType } from '../enums/menu-type.enum';
 
 @Exclude()
 export class MenuStub extends BaseStub {

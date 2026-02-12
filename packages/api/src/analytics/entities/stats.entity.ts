@@ -66,7 +66,7 @@ export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
    * @param types - The array of bot statistics types.
    * @returns An array of data representing the bot statistics data.
    */
-  static toLines(stats: StatsOrmEntity[], types: StatsType[]): ToLinesType[] {
+  static toLines(stats: Stats[], types: StatsType[]): ToLinesType[] {
     const data = types.map((type, index) => {
       return {
         id: index + 1,
@@ -82,7 +82,7 @@ export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
       },
       {},
     );
-    const result = stats.reduce((acc, stat: StatsOrmEntity) => {
+    const result = stats.reduce((acc, stat: Stats) => {
       acc[index[stat.type]].values.push({ ...stat, date: stat.day });
 
       return acc;

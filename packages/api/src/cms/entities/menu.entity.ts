@@ -22,12 +22,9 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { Menu, MenuFull, MenuTransformerDto } from '../dto/menu.dto';
+import { MenuType } from '../enums/menu-type.enum';
 
-export enum MenuType {
-  web_url = 'web_url',
-  postback = 'postback',
-  nested = 'nested',
-}
+export { MenuType };
 
 @Entity({ name: 'menus' })
 @Index(['parent'])
