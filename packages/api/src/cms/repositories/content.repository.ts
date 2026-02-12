@@ -10,28 +10,19 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Content,
-  ContentDtoConfig,
-  ContentFull,
-  ContentTransformerDto,
-} from '../dto/content.dto';
+import { ContentDtoConfig } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 
 @Injectable()
 export class ContentRepository extends BaseOrmRepository<
   ContentOrmEntity,
-  ContentTransformerDto,
   ContentDtoConfig
 > {
   constructor(
     @InjectRepository(ContentOrmEntity)
     repository: Repository<ContentOrmEntity>,
   ) {
-    super(repository, ['contentType'], {
-      PlainCls: Content,
-      FullCls: ContentFull,
-    });
+    super(repository, ['contentType']);
   }
 
   /**

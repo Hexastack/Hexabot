@@ -10,7 +10,7 @@ import { merge } from "@/utils/object";
 
 import { useEntityApiClient } from "../useApiClient";
 
-import { isSameEntity, useNormalizeAndCache } from "./helpers";
+import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
 import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
@@ -29,27 +29,12 @@ export const useUpdate = <
 ) => {
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string>(entity);
-  const queryClient = useTanstackQueryClient();
-  const { invalidate = true, routeParams, ...otherOptions } = options || {};
+  const { routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async ({ id, params }) => {
       const data = await api.update(id, params, routeParams);
       const { entities, result } = normalizeAndCache(data);
-      // Invalidate all counts & collections
-
-      if (invalidate) {
-        queryClient.removeQueries({
-          predicate: ({ queryKey }) => {
-            const [qType, qEntity] = queryKey;
-
-            return (
-              (qType === QueryType.count || qType === QueryType.collection) &&
-              isSameEntity(qEntity, entity)
-            );
-          },
-        });
-      }
 
       return entities[entity]?.[result] as TBasic;
     },

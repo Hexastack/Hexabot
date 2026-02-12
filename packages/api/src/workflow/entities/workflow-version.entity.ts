@@ -22,13 +22,22 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
+import {
+  WorkflowVersion,
+  WorkflowVersionFull,
+  WorkflowVersionTransformerDto,
+} from '../dto/workflow-version.dto';
 import { WorkflowVersionAction } from '../types';
 
 import { WorkflowOrmEntity } from './workflow.entity';
 
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
-export class WorkflowVersionOrmEntity extends BaseOrmEntity {
+export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTransformerDto> {
+  plainCls = WorkflowVersion;
+
+  fullCls = WorkflowVersionFull;
+
   /** Workflow that owns this version snapshot. */
   @ManyToOne(() => WorkflowOrmEntity, {
     nullable: false,

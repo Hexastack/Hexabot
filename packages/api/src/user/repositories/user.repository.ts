@@ -10,28 +10,19 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  User,
-  UserDtoConfig,
-  UserFull,
-  UserTransformerDto,
-} from '../dto/user.dto';
+import { UserDtoConfig } from '../dto/user.dto';
 import { UserOrmEntity } from '../entities/user.entity';
 
 @Injectable()
 export class UserRepository extends BaseOrmRepository<
   UserOrmEntity,
-  UserTransformerDto,
   UserDtoConfig
 > {
   constructor(
     @InjectRepository(UserOrmEntity)
     repository: Repository<UserOrmEntity>,
   ) {
-    super(repository, ['roles', 'avatar'], {
-      PlainCls: User,
-      FullCls: UserFull,
-    });
+    super(repository, ['labels', 'assignedTo', 'roles', 'avatar']);
   }
 
   async findOneByEmailWithPassword(

@@ -15,13 +15,12 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, QueryType } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -32,16 +31,12 @@ export const Languages = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const queryClient = useTanstackQueryClient();
   const hasPermission = useHasPermission();
   const { mutate: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: [QueryType.collection, EntityType.LANGUAGE],
-      });
       toast.success(t("message.success_save"));
     },
   });

@@ -84,6 +84,12 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
   }, [selectedRun?.stepLog, selectedStepId]);
 
   useEffect(() => {
+    // New run
+    setSelectedRunId(latestRun?.id);
+    setSelectedStepId(undefined);
+  }, [workflowRuns.length]);
+
+  useEffect(() => {
     setSelectedStepId(undefined);
   }, [selectedRun?.id]);
 
@@ -92,7 +98,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
     if (!selectedRun?.stepLog?.[selectedStepId]) {
       setSelectedStepId(undefined);
     }
-  }, [selectedRun?.stepLog, selectedStepId]);
+  }, [latestRun?.stepLog, selectedStepId]);
 
   const handleSelectStep = (stepId: string) => {
     setSelectedStepId((current) => (current === stepId ? undefined : stepId));

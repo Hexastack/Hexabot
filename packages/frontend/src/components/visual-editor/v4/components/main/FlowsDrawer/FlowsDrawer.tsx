@@ -22,11 +22,10 @@ import {
 } from "@/constants/workflow.constants";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, QueryType } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -63,7 +62,6 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
   const { getLocalStorage, setLocalStorage } = useLocalStorage();
-  const queryClient = useTanstackQueryClient();
   const {
     workflows,
     selectedFlowId,
@@ -111,9 +109,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     },
     { enabled: isSearching },
   );
-  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW, {
-    invalidate: false,
-  });
+  const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const workflowsList = isSearching ? searchedWorkflows : workflows;
   const minAllowedWidth = isSmall ? 240 : minDrawerWidth;
   const maxAllowedWidth = isSmall ? 280 : maxDrawerWidth;
@@ -433,12 +429,6 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         if (selectedFlowId === flowId && fallbackFlowId) {
           updateWorkflowURL(fallbackFlowId);
         }
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.collection, EntityType.WORKFLOW],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.count, EntityType.WORKFLOW],
-        });
       },
     });
   };

@@ -12,6 +12,7 @@ import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/Dashboa
 import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
+import { useEntityMutationSubscription } from "@/hooks/useEntityMutationSubscription";
 import { getMenuItems } from "@/utils/menu.util";
 import { useSocketGetQuery } from "@/websocket/socket-hooks";
 
@@ -22,11 +23,9 @@ import { theme } from "./theme";
 export const AuthenticatedLayout: React.FC<
   LayoutProps & { hasNoPadding?: boolean }
 > = ({ children, hasNoPadding }) => {
-  useSocketGetQuery("/message/subscribe/");
-
-  useSocketGetQuery("/subscriber/subscribe/");
-
   useSocketGetQuery("/workflow/subscribe/");
+  useEntityMutationSubscription();
+
   const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] =
     React.useState(false);
   const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));

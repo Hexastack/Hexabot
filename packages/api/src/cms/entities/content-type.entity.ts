@@ -9,13 +9,22 @@ import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { ContentField } from '../dto/contentType.dto';
+import {
+  ContentField,
+  ContentType,
+  ContentTypeFull,
+  ContentTypeTransformerDto,
+} from '../dto/contentType.dto';
 
 import { ContentOrmEntity } from './content.entity';
 
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
-export class ContentTypeOrmEntity extends BaseOrmEntity {
+export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeTransformerDto> {
+  plainCls = ContentType;
+
+  fullCls = ContentTypeFull;
+
   @Column({ unique: true })
   name!: string;
 

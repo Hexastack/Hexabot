@@ -52,16 +52,12 @@ export const useFind = <
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
   const { data: ids = [], ...normalizedQuery } = useTanstackQuery({
-    enabled: !!countQuery.data || !hasCount,
     queryFn: async () => {
-      const data =
-        !hasCount || (hasCount && !!countQuery.data?.count)
-          ? await api.find(
-              normalizedParams,
-              format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
-              routeParams,
-            )
-          : [];
+      const data = await api.find(
+        normalizedParams,
+        format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+        routeParams,
+      );
       const { result } = normalizeAndCache(data);
 
       return result;

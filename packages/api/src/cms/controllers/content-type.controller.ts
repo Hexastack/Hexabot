@@ -25,7 +25,6 @@ import {
   ContentType,
   ContentTypeCreateDto,
   ContentTypeDtoConfig,
-  ContentTypeTransformerDto,
   ContentTypeUpdateDto,
 } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
@@ -34,7 +33,6 @@ import { ContentTypeService } from '../services/content-type.service';
 @Controller('contenttype')
 export class ContentTypeController extends BaseOrmController<
   ContentTypeOrmEntity,
-  ContentTypeTransformerDto,
   ContentTypeDtoConfig
 > {
   constructor(protected readonly contentTypeService: ContentTypeService) {

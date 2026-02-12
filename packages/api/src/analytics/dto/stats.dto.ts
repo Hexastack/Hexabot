@@ -22,7 +22,7 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { StatsType } from '../entities/stats.entity';
+import { StatsType } from '../enums/stats-type.enum';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
 
 @Exclude()
@@ -111,7 +111,7 @@ export class StatsFindDatumDto extends StatsFindDto {
    * Type for message to retrieve.
    */
   @IsEnum(StatsType)
-  @IsNotEmpty()
+  @IsOptional()
   type: StatsType;
 }
 

@@ -14,7 +14,6 @@ import {
 } from '@/utils/test/fixtures/subscriber';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber, SubscriberFull } from '../dto/subscriber.dto';
 
@@ -37,9 +36,6 @@ describe('SubscriberController (TypeORM)', () => {
     readAsBuffer: jest.fn(),
     readAsStream: jest.fn(),
   };
-  const websocketGatewayMock: Partial<WebsocketGateway> = {
-    joinNotificationSockets: jest.fn(),
-  };
   const defaultOrder = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
@@ -50,10 +46,6 @@ describe('SubscriberController (TypeORM)', () => {
         {
           provide: AttachmentService,
           useValue: attachmentServiceMock,
-        },
-        {
-          provide: WebsocketGateway,
-          useValue: websocketGatewayMock,
         },
       ],
       typeorm: {

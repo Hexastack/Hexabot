@@ -20,6 +20,7 @@
     "noFallthroughCasesInSwitch": false,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "types": ["node", "jest"],
     "paths": {
       "@/*": ["src/*", "src/extra/*"],
       "hexabot/src/*": ["src/*"]

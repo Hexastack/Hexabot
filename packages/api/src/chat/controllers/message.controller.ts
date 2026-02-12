@@ -30,7 +30,6 @@ import {
   MessageCreateDto,
   MessageDtoConfig,
   MessageFull,
-  MessageTransformerDto,
 } from '../dto/message.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
@@ -46,7 +45,6 @@ import {
 @Controller('message')
 export class MessageController extends BaseOrmController<
   MessageOrmEntity,
-  MessageTransformerDto,
   MessageDtoConfig
 > {
   constructor(

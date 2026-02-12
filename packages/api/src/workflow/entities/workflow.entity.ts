@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow } from '@hexabot-ai/agentic';
+import { Workflow as AgenticWorkflow } from '@hexabot-ai/agentic';
 import { CronJob } from 'cron';
 import {
   AfterInsert,
@@ -24,6 +24,11 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
+import {
+  Workflow,
+  WorkflowFull,
+  WorkflowTransformerDto,
+} from '../dto/workflow.dto';
 import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
@@ -31,12 +36,17 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
-export class WorkflowOrmEntity extends BaseOrmEntity {
-  private static readonly BLANK_DEFINITION_YML = Workflow.stringifyDefinition({
-    tasks: {},
-    flow: [],
-    outputs: {},
-  });
+export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
+  plainCls = Workflow;
+
+  fullCls = WorkflowFull;
+
+  private static readonly BLANK_DEFINITION_YML =
+    AgenticWorkflow.stringifyDefinition({
+      tasks: {},
+      flow: [],
+      outputs: {},
+    });
 
   /** Human-readable workflow name, unique per version. */
   @Column({ type: 'varchar', length: 255 })

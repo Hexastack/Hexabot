@@ -22,7 +22,6 @@ import {
   Setting,
   SettingCreateDto,
   SettingDtoConfig,
-  SettingTransformerDto,
 } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
@@ -32,7 +31,6 @@ import { TextSetting } from '../types';
 @Injectable()
 export class SettingService extends BaseOrmService<
   SettingOrmEntity,
-  SettingTransformerDto,
   SettingDtoConfig
 > {
   constructor(

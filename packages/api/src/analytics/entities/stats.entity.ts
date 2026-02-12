@@ -10,15 +10,10 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-export enum StatsType {
-  outgoing = 'outgoing',
-  new_users = 'new_users',
-  all_messages = 'all_messages',
-  incoming = 'incoming',
-  returning_users = 'returning_users',
-  retention = 'retention',
-  echo = 'echo',
-}
+import { Stats, StatsTransformerDto } from '../dto/stats.dto';
+import { StatsType } from '../enums/stats-type.enum';
+
+export { StatsType };
 
 export type ToLinesType = {
   id: number;
@@ -28,7 +23,11 @@ export type ToLinesType = {
 
 @Entity({ name: 'stats' })
 @Index(['day', 'type', 'name'], { unique: true })
-export class StatsOrmEntity extends BaseOrmEntity {
+export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
+  plainCls = Stats;
+
+  fullCls = Stats;
+
   /**
    * Type of the captured insight.
    */
@@ -60,7 +59,7 @@ export class StatsOrmEntity extends BaseOrmEntity {
    * @param types - The array of bot statistics types.
    * @returns An array of data representing the bot statistics data.
    */
-  static toLines(stats: StatsOrmEntity[], types: StatsType[]): ToLinesType[] {
+  static toLines(stats: Stats[], types: StatsType[]): ToLinesType[] {
     const data = types.map((type, index) => {
       return {
         id: index + 1,
@@ -76,15 +75,11 @@ export class StatsOrmEntity extends BaseOrmEntity {
       },
       {},
     );
-    const result = stats.reduce(
-      (acc, stat: StatsOrmEntity & { date: Date }) => {
-        stat.date = stat.day;
-        acc[index[stat.type]].values.push(stat);
+    const result = stats.reduce((acc, stat: Stats) => {
+      acc[index[stat.type]].values.push({ ...stat, date: stat.day });
 
-        return acc;
-      },
-      data,
-    );
+      return acc;
+    }, data);
 
     return result;
   }

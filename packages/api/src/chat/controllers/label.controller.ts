@@ -29,7 +29,6 @@ import {
   LabelCreateDto,
   LabelDtoConfig,
   LabelFull,
-  LabelTransformerDto,
   LabelUpdateDto,
 } from '../dto/label.dto';
 import { LabelOrmEntity } from '../entities/label.entity';
@@ -38,7 +37,6 @@ import { LabelService } from '../services/label.service';
 @Controller('label')
 export class LabelController extends BaseOrmController<
   LabelOrmEntity,
-  LabelTransformerDto,
   LabelDtoConfig
 > {
   constructor(private readonly labelService: LabelService) {

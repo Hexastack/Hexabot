@@ -21,7 +21,6 @@ import {
   WorkflowRun,
   WorkflowRunDtoConfig,
   WorkflowRunFull,
-  WorkflowRunTransformerDto,
 } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowRunService } from '../services/workflow-run.service';
@@ -29,7 +28,6 @@ import { WorkflowRunService } from '../services/workflow-run.service';
 @Controller('workflowrun')
 export class WorkflowRunController extends BaseOrmController<
   WorkflowRunOrmEntity,
-  WorkflowRunTransformerDto,
   WorkflowRunDtoConfig
 > {
   constructor(private readonly workflowRunService: WorkflowRunService) {

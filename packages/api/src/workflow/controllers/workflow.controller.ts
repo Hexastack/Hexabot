@@ -34,7 +34,6 @@ import {
   WorkflowCreateDto,
   WorkflowDtoConfig,
   WorkflowFull,
-  WorkflowTransformerDto,
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
@@ -46,7 +45,6 @@ import { WorkflowType } from '../types';
 @Controller('workflow')
 export class WorkflowController extends BaseOrmController<
   WorkflowOrmEntity,
-  WorkflowTransformerDto,
   WorkflowDtoConfig
 > {
   constructor(

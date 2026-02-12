@@ -128,7 +128,7 @@ export const useLoadSettings = () => {
     { entity: EntityType.SETTING },
     {
       hasCount: false,
-      initialSortState: [{ field: "weight", sort: "desc" }],
+      initialSortState: [{ field: "weight", sort: "asc" }],
     },
     {
       enabled: isAuthenticated,

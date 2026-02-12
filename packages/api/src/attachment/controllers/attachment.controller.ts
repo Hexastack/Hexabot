@@ -39,7 +39,6 @@ import {
   AttachmentDownloadDto,
   AttachmentDtoConfig,
   AttachmentFull,
-  AttachmentTransformerDto,
 } from '../dto/attachment.dto';
 import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
@@ -50,7 +49,6 @@ import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 @UseGuards(AttachmentGuard)
 export class AttachmentController extends BaseOrmController<
   AttachmentOrmEntity,
-  AttachmentTransformerDto,
   AttachmentDtoConfig
 > {
   constructor(protected readonly attachmentService: AttachmentService) {

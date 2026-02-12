@@ -18,9 +18,7 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { User } from '@/user/dto/user.dto';
-import { UserOrmEntity } from '@/user/entities/user.entity';
+import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -71,12 +69,13 @@ export class Attachment extends AttachmentStub {
 }
 
 @Exclude()
+export class AttachmentOwnerStub extends UserProfileAssignedStub {}
+
+@Exclude()
 export class AttachmentFull extends AttachmentStub {
   @Expose({ name: 'createdBy' })
-  @Type((options) =>
-    options?.object.createdBy instanceof UserOrmEntity ? User : Subscriber,
-  )
-  createdBy?: User | Subscriber;
+  @Type(() => AttachmentOwnerStub)
+  createdBy?: AttachmentOwnerStub | null;
 }
 
 export class AttachmentMetadataDto {

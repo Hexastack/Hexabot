@@ -11,14 +11,13 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { ModelDtoConfig, ModelTransformerDto } from '../dto/model.dto';
+import { ModelDtoConfig } from '../dto/model.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { ModelService } from '../services/model.service';
 
 @Controller('model')
 export class ModelController extends BaseOrmController<
   ModelOrmEntity,
-  ModelTransformerDto,
   ModelDtoConfig
 > {
   constructor(protected readonly modelService: ModelService) {

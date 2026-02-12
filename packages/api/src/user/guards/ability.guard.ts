@@ -39,7 +39,6 @@ export class Ability implements CanActivate {
     const { user, method, _parsedUrl, session } = context
       .switchToHttp()
       .getRequest<Request & { user: User; _parsedUrl: Url }>();
-
     if (!user) {
       throw new UnauthorizedException();
     }

@@ -26,7 +26,6 @@ import {
   Menu,
   MenuCreateDto,
   MenuDtoConfig,
-  MenuTransformerDto,
   MenuUpdateDto,
 } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
@@ -35,7 +34,6 @@ import { MenuService } from '../services/menu.service';
 @Controller('menu')
 export class MenuController extends BaseOrmController<
   MenuOrmEntity,
-  MenuTransformerDto,
   MenuDtoConfig
 > {
   constructor(protected readonly menuService: MenuService) {

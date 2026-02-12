@@ -18,7 +18,9 @@ import {
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation } from '@/utils';
+import { AsRelation, DtoTransformerConfig } from '@/utils';
+
+import { UserProfileStub } from '../dto/user-profile.dto';
 
 export enum EUserProfileType {
   SubscriberOrmEntity = 'SubscriberOrmEntity',
@@ -31,7 +33,13 @@ export enum EUserProfileType {
 })
 @Index(['firstName'])
 @Index(['lastName'])
-export class UserProfileOrmEntity extends BaseOrmEntity {
+export class UserProfileOrmEntity<
+  TransformerDto extends DtoTransformerConfig,
+> extends BaseOrmEntity<TransformerDto> {
+  plainCls = UserProfileStub;
+
+  fullCls = UserProfileStub;
+
   @Column()
   firstName: string;
 
@@ -46,7 +54,7 @@ export class UserProfileOrmEntity extends BaseOrmEntity {
   @AsRelation()
   avatar: AttachmentOrmEntity | null;
 
-  @RelationId((profile: UserProfileOrmEntity) => profile.avatar)
+  @RelationId((profile: UserProfileOrmEntity<TransformerDto>) => profile.avatar)
   private readonly avatarId?: string | null;
 
   @Column({ length: 2, default: 'en' })

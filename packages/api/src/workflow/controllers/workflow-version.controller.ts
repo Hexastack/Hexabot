@@ -26,7 +26,6 @@ import {
   WorkflowNewVersionDto,
   WorkflowVersion,
   WorkflowVersionDtoConfig,
-  WorkflowVersionTransformerDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionService } from '../services/workflow-version.service';
@@ -36,7 +35,6 @@ import { WorkflowVersionAction } from '../types';
 @Controller('workflow')
 export class WorkflowVersionController extends BaseOrmController<
   WorkflowVersionOrmEntity,
-  WorkflowVersionTransformerDto,
   WorkflowVersionDtoConfig
 > {
   constructor(

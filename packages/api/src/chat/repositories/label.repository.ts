@@ -10,27 +10,18 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Label,
-  LabelDtoConfig,
-  LabelFull,
-  LabelTransformerDto,
-} from '../dto/label.dto';
+import { LabelDtoConfig } from '../dto/label.dto';
 import { LabelOrmEntity } from '../entities/label.entity';
 
 @Injectable()
 export class LabelRepository extends BaseOrmRepository<
   LabelOrmEntity,
-  LabelTransformerDto,
   LabelDtoConfig
 > {
   constructor(
     @InjectRepository(LabelOrmEntity)
     repository: Repository<LabelOrmEntity>,
   ) {
-    super(repository, ['users', 'group'], {
-      PlainCls: Label,
-      FullCls: LabelFull,
-    });
+    super(repository, ['users', 'group']);
   }
 }

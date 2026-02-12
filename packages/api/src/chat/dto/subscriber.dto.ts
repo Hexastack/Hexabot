@@ -17,11 +17,11 @@ import {
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
+import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import {
   UserProfileCreateDto,
   UserProfileStub,
 } from '@/user/dto/user-profile.dto';
-import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
@@ -76,8 +76,8 @@ export class SubscriberFull extends SubscriberStub {
   labels!: Label[];
 
   @Expose()
-  @Type(() => User)
-  assignedTo: User | null;
+  @Type(() => UserProfileAssignedStub)
+  assignedTo: UserProfileAssignedStub | null;
 
   @Expose()
   @Type(() => Attachment)

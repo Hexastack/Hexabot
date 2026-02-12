@@ -13,8 +13,6 @@ import { LoggerService } from '@/logger/logger.service';
 import {
   DtoAction,
   DtoActionConfig,
-  DtoTransformer,
-  DtoTransformerConfig,
   InferActionDto,
   InferTransformDto,
 } from '../types/dto.types';
@@ -27,14 +25,15 @@ import {
 } from './base-orm.repository';
 
 export abstract class BaseOrmService<
-  Entity extends BaseOrmEntity,
-  TransformerDto extends DtoTransformerConfig,
+  Entity extends BaseOrmEntity<{
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  }>,
   ActionDto extends DtoActionConfig,
   OrmRepository extends BaseOrmRepository<
     Entity,
-    TransformerDto,
     ActionDto
-  > = BaseOrmRepository<Entity, TransformerDto, ActionDto>,
+  > = BaseOrmRepository<Entity, ActionDto>,
 > {
   protected constructor(protected readonly repository: OrmRepository) {}
 
@@ -55,25 +54,25 @@ export abstract class BaseOrmService<
 
   async find(
     options?: FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     return await this.repository.find(options);
   }
 
   async findAndPopulate(
     options?: FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['fullCls']>[]> {
     return await this.repository.findAndPopulate(options);
   }
 
   async findAll(
     options?: FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     return await this.repository.findAll(options);
   }
 
   async findAllAndPopulate(
     options?: FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['fullCls']>[]> {
     return await this.repository.findAllAndPopulate(options);
   }
 
@@ -83,28 +82,25 @@ export abstract class BaseOrmService<
 
   async findOne(
     idOrOptions: string | FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<
-    DtoTransformer.PlainCls,
-    TransformerDto
-  > | null> {
+  ): Promise<InferTransformDto<Entity['plainCls']> | null> {
     return await this.repository.findOne(idOrOptions);
   }
 
   async findOneAndPopulate(
     idOrOptions: string | FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null> {
+  ): Promise<InferTransformDto<Entity['fullCls']> | null> {
     return await this.repository.findOneAndPopulate(idOrOptions);
   }
 
   async create(
     payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     return await this.repository.create(payload);
   }
 
   async createMany(
     payloads: InferActionDto<DtoAction.Create, ActionDto>[],
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     return await this.repository.createMany(payloads);
   }
 
@@ -112,21 +108,21 @@ export abstract class BaseOrmService<
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
     options?: UpdateOneOptions,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     return await this.repository.updateOne(idOrOptions, payload, options);
   }
 
   async updateMany(
     options: FindManyOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     return await this.repository.updateMany(options, payload);
   }
 
   async findOneOrCreate(
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     return await this.repository.findOneOrCreate(idOrOptions, payload);
   }
 

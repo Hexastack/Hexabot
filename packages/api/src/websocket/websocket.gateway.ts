@@ -21,12 +21,11 @@ import Cookie from 'cookie';
 import signature from 'cookie-signature';
 import { Request } from 'express';
 import { Session as ExpressSession, SessionData } from 'express-session';
-import { Server, Socket } from 'socket.io';
+import { ExtendedError, Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
-import { MessageFull } from '@/chat/dto/message.dto';
-import { Subscriber, SubscriberFull } from '@/chat/dto/subscriber.dto';
-import { OutgoingMessage, StdEventType } from '@/chat/types/message';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { PermissionService } from '@/user/services/permission.service';
@@ -57,61 +56,6 @@ export class WebsocketGateway
   ) {}
 
   @WebSocketServer() io: Server;
-
-  broadcastMessageSent(message: OutgoingMessage): void {
-    this.io.to(Room.MESSAGE).emit('message', {
-      op: 'messageSent',
-      speakerId: message.recipient,
-      msg: message,
-    });
-  }
-
-  broadcastMessageReceived(
-    message: MessageFull,
-    subscriber: Subscriber | SubscriberFull,
-  ): void {
-    this.io.to(Room.MESSAGE).emit('message', {
-      op: 'messageReceived',
-      speakerId: subscriber.id,
-      msg: message,
-    });
-  }
-
-  broadcastMessageDelivered(
-    deliveredMessages: string[],
-    subscriber: Subscriber | SubscriberFull,
-  ): void {
-    this.io.to(Room.MESSAGE).emit('message', {
-      op: 'messageDelivered',
-      speakerId: subscriber.id,
-      mids: deliveredMessages,
-    });
-  }
-
-  broadcastMessageRead(
-    watermark: number,
-    subscriber: Subscriber | SubscriberFull,
-  ): void {
-    this.io.to(Room.MESSAGE).emit('message', {
-      op: 'messageRead',
-      speakerId: subscriber.id,
-      watermark,
-    });
-  }
-
-  broadcastSubscriberNew(subscriber: Subscriber | SubscriberFull) {
-    this.io.to(Room.SUBSCRIBER).emit('subscriber', {
-      op: 'newSubscriber',
-      profile: subscriber,
-    });
-  }
-
-  broadcastSubscriberUpdate(subscriber: Subscriber | SubscriberFull): void {
-    this.io.to(Room.SUBSCRIBER).emit('subscriber', {
-      op: 'updateSubscriber',
-      profile: subscriber,
-    });
-  }
 
   broadcastWorkflowEvent({
     initiatorId,
@@ -263,7 +207,7 @@ export class WebsocketGateway
         }
       } catch (e) {
         this.logger.warn('Something unexpected happening');
-        next(e);
+        next(e as ExtendedError);
       }
     });
   }
@@ -427,22 +371,6 @@ export class WebsocketGateway
     );
 
     return response.getPromise();
-  }
-
-  /**
-   * Allows a given socket to join a notification room.
-   *
-   * @param req - Socket request
-   * @param room - The room name
-   */
-  async joinNotificationSockets(req: SocketRequest, room: Room): Promise<void> {
-    if (!req.session.passport?.user?.id) {
-      throw new Error(
-        'Only authenticated users are allowed to join notification rooms!',
-      );
-    }
-
-    return await req.socket.join(room);
   }
 
   /**

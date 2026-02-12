@@ -18,14 +18,12 @@ import {
   AttachmentDtoConfig,
   AttachmentMetadataDto,
   AttachmentStub,
-  AttachmentTransformerDto,
 } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 
 @Injectable()
 export class AttachmentService extends BaseOrmService<
   AttachmentOrmEntity,
-  AttachmentTransformerDto,
   AttachmentDtoConfig
 > {
   constructor(

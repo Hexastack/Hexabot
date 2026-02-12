@@ -21,11 +21,10 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-export enum MenuType {
-  web_url = 'web_url',
-  postback = 'postback',
-  nested = 'nested',
-}
+import { Menu, MenuFull, MenuTransformerDto } from '../dto/menu.dto';
+import { MenuType } from '../enums/menu-type.enum';
+
+export { MenuType };
 
 @Entity({ name: 'menus' })
 @Index(['parent'])
@@ -40,7 +39,11 @@ export enum MenuType {
 `,
 )
 @Check(`"parent_id" IS NULL OR "id" <> "parent_id"`)
-export class MenuOrmEntity extends BaseOrmEntity {
+export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
+  plainCls = Menu;
+
+  fullCls = MenuFull;
+
   /**
    * The displayed title of the menu.
    */

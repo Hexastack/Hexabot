@@ -18,17 +18,13 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import {
-  TranslationDtoConfig,
-  TranslationTransformerDto,
-} from '../dto/translation.dto';
+import { TranslationDtoConfig } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
 
 @Injectable()
 export class TranslationService extends BaseOrmService<
   TranslationOrmEntity,
-  TranslationTransformerDto,
   TranslationDtoConfig
 > {
   constructor(

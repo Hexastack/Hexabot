@@ -258,7 +258,7 @@ describe('SettingRepository (TypeORM)', () => {
   });
 
   describe('afterUpdate', () => {
-    it('emits hook events with the transformed setting payload', () => {
+    it('emits hook events with the transformed setting payload', async () => {
       const eventEmitter = settingRepository.getEventEmitter();
       expect(eventEmitter).toBeDefined();
 
@@ -276,9 +276,10 @@ describe('SettingRepository (TypeORM)', () => {
         });
         const updateEvent = {
           databaseEntity,
+          metadata: repository.metadata,
         } as unknown as UpdateEvent<SettingOrmEntity>;
 
-        settingRepository.afterUpdate(updateEvent);
+        await settingRepository.afterUpdate(updateEvent);
 
         expect(emitSpy).toHaveBeenCalledTimes(1);
         const [eventName, payload] = emitSpy.mock.calls[0];

@@ -13,7 +13,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   Setting,
   SettingDtoConfig,
-  SettingTransformerDto,
   SettingUpdateDto,
 } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
@@ -22,7 +21,6 @@ import { SettingService } from '../services/setting.service';
 @Controller('setting')
 export class SettingController extends BaseOrmController<
   SettingOrmEntity,
-  SettingTransformerDto,
   SettingDtoConfig
 > {
   constructor(protected readonly settingService: SettingService) {

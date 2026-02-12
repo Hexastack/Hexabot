@@ -13,13 +13,11 @@ import {
   BaseOrmRepository,
   FindAllOptions,
 } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
 import {
   Subscriber,
   SubscriberDtoConfig,
   SubscriberFull,
-  SubscriberTransformerDto,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
@@ -27,17 +25,13 @@ import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 @Injectable()
 export class SubscriberRepository extends BaseOrmRepository<
   SubscriberOrmEntity,
-  SubscriberTransformerDto,
   SubscriberDtoConfig
 > {
   constructor(
     @InjectRepository(SubscriberOrmEntity)
     repository: Repository<SubscriberOrmEntity>,
   ) {
-    super(repository, ['labels', 'assignedTo', 'avatar'], {
-      PlainCls: Subscriber,
-      FullCls: SubscriberFull,
-    });
+    super(repository, ['labels', 'assignedTo', 'avatar']);
   }
 
   /**
@@ -65,9 +59,7 @@ export class SubscriberRepository extends BaseOrmRepository<
         const previousAssignedTo = previous?.id;
 
         if (newAssignedTo !== previousAssignedTo) {
-          const previousSubscriber = this.getTransformer(
-            DtoTransformer.PlainCls,
-          )(previous);
+          const previousSubscriber = previous.toPlainCls();
           const subscriberUpdates: SubscriberUpdateDto = {
             assignedTo: newAssignedTo ?? null,
           };

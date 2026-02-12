@@ -16,9 +16,6 @@ import {
 } from '@/utils/test/fixtures/message';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 describe('MessageService (TypeORM)', () => {
   let module: TestingModule;
@@ -32,26 +29,12 @@ describe('MessageService (TypeORM)', () => {
   let referenceSubscriber: Subscriber;
   let subscriberMessagesAsc: Message[];
 
-  const SESSION_ID = 'session-123';
-  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
-    success: true,
-    subscribe: Room.MESSAGE,
-  };
-  const websocketGatewayMock: Partial<WebsocketGateway> = {
-    joinNotificationSockets: jest.fn(),
-  };
   const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        MessageService,
-        {
-          provide: WebsocketGateway,
-          useValue: websocketGatewayMock,
-        },
-      ],
+      providers: [MessageService],
       typeorm: {
         fixtures: installMessageFixturesTypeOrm,
       },
@@ -104,29 +87,6 @@ describe('MessageService (TypeORM)', () => {
       await module.close();
     }
     await closeTypeOrmConnections();
-  });
-
-  describe('subscribe', () => {
-    it('joins the message room and returns a success response', async () => {
-      const req = {
-        request: {
-          session: { passport: { user: { id: SESSION_ID } } },
-        },
-      };
-      const res = {
-        json: jest.fn().mockReturnValue(SUCCESS_PAYLOAD),
-        status: jest.fn().mockReturnThis(),
-      };
-      const result = await messageService.subscribe(req as any, res as any);
-
-      expect(websocketGatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
-        req,
-        Room.MESSAGE,
-      );
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
-      expect(result).toEqual(SUCCESS_PAYLOAD);
-    });
   });
 
   describe('findOneAndPopulate', () => {

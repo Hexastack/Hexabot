@@ -4,19 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
-import { useNormalizeAndCache } from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
-import { EntityType, QueryType } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
-import { InfiniteData } from "@/types/tanstack.types";
-import { useSubscribe } from "@/websocket/socket-hooks";
 
-import { AssignedTo, SocketSubscriberEvents } from "../types";
+import { AssignedTo } from "../types";
 
 export const useInfiniteLiveSubscribers = (props: {
   channels: string[];
@@ -24,9 +19,9 @@ export const useInfiniteLiveSubscribers = (props: {
   assignedTo: AssignedTo;
 }) => {
   const { user } = useAuth();
-  const updateCachedSubscriber = useUpdateCache(EntityType.SUBSCRIBER);
-  const normalizeAndCache = useNormalizeAndCache(EntityType.SUBSCRIBER);
-  const queryClient = useTanstackQueryClient();
+  // const updateCachedSubscriber = useUpdateCache(EntityType.SUBSCRIBER);
+  // const normalizeAndCache = useNormalizeAndCache(EntityType.SUBSCRIBER);
+  // const queryClient = useTanstackQueryClient();
   const params = {
     where: {
       // Firstname and lastname keyword search
@@ -65,44 +60,6 @@ export const useInfiniteLiveSubscribers = (props: {
       ],
     },
   );
-  const handleSubscriberEvent = useCallback(
-    (event: SocketSubscriberEvents) => {
-      if (event.op === "newSubscriber") {
-        const { result } = normalizeAndCache(event.profile);
-
-        // Only update the unfiltered (all-subscribers) cache
-        queryClient.setQueryData(
-          [
-            QueryType.infinite,
-            EntityType.SUBSCRIBER,
-            JSON.stringify({ where: {} }),
-          ],
-          (oldData) => {
-            if (oldData) {
-              const data = oldData as InfiniteData<string[]>;
-
-              return {
-                ...data,
-                pages: [[result, ...data.pages[0]], ...data.pages.slice(1)],
-              };
-            }
-
-            return oldData;
-          },
-        );
-      } else if (event.op === "updateSubscriber") {
-        updateCachedSubscriber({
-          id: event.profile.id,
-          payload: event.profile,
-          strategy: "overwrite",
-        });
-      }
-    },
-    [queryClient, normalizeAndCache, updateCachedSubscriber],
-  );
-
-  useSubscribe<SocketSubscriberEvents>("subscriber", handleSubscriberEvent);
-
   const subscribers = useMemo(
     () =>
       (data?.pages || [])

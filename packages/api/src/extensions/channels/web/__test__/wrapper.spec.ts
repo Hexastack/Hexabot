@@ -40,10 +40,7 @@ describe(`Web event wrapper`, () => {
   } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
   const websocketGatewayMock = {
     broadcast: jest.fn(),
-    joinNotificationSockets: jest.fn(),
-  } as jest.Mocked<
-    Pick<WebsocketGateway, 'broadcast' | 'joinNotificationSockets'>
-  >;
+  } as jest.Mocked<Pick<WebsocketGateway, 'broadcast'>>;
   const messageServiceMock = {
     findHistoryUntilDate: jest.fn(),
     findHistorySinceDate: jest.fn(),

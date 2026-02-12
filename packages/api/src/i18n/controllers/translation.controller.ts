@@ -25,7 +25,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 
 import {
   TranslationDtoConfig,
-  TranslationTransformerDto,
   TranslationUpdateDto,
 } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
@@ -35,7 +34,6 @@ import { TranslationService } from '../services/translation.service';
 @Controller('translation')
 export class TranslationController extends BaseOrmController<
   TranslationOrmEntity,
-  TranslationTransformerDto,
   TranslationDtoConfig
 > {
   constructor(

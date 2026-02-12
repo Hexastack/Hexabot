@@ -23,9 +23,6 @@ import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscrib
 import { sortRowsBy } from '@/utils/test/sort';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber } from '../dto/subscriber.dto';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
@@ -46,17 +43,9 @@ describe('SubscriberService (TypeORM)', () => {
   let userRepository: UserRepository;
   const STORED_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
   const EXISTING_ATTACHMENT_ID = '88888888-8888-4888-8888-888888888888';
-  const gatewayMock = {
-    joinNotificationSockets: jest.fn(),
-  } as jest.Mocked<Pick<WebsocketGateway, 'joinNotificationSockets'>>;
   const attachmentServiceMock = {
     store: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'store'>>;
-  const SESSION_ID = 'session-123';
-  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
-    success: true,
-    subscribe: Room.SUBSCRIBER,
-  };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -67,7 +56,6 @@ describe('SubscriberService (TypeORM)', () => {
         LabelGroupRepository,
         UserRepository,
         { provide: AttachmentService, useValue: attachmentServiceMock },
-        { provide: WebsocketGateway, useValue: gatewayMock },
       ],
       typeorm: {
         fixtures: [
@@ -104,29 +92,6 @@ describe('SubscriberService (TypeORM)', () => {
       await module.close();
     }
     await closeTypeOrmConnections();
-  });
-
-  describe('subscribe', () => {
-    it('should join Notification sockets subscriber room and return a success response', async () => {
-      const req = {
-        request: {
-          session: { passport: { user: { id: SESSION_ID } } },
-        },
-      };
-      const res = {
-        json: jest.fn(),
-        status: jest.fn().mockReturnThis(),
-      };
-
-      await subscriberService.subscribe(req as any, res as any);
-
-      expect(gatewayMock.joinNotificationSockets).toHaveBeenCalledWith(
-        req,
-        Room.SUBSCRIBER,
-      );
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
-    });
   });
 
   describe('findOneAndPopulate', () => {

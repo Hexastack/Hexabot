@@ -11,26 +11,17 @@ import { Repository } from 'typeorm';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Attachment,
-  AttachmentDtoConfig,
-  AttachmentFull,
-  AttachmentTransformerDto,
-} from '../dto/attachment.dto';
+import { AttachmentDtoConfig } from '../dto/attachment.dto';
 
 @Injectable()
 export class AttachmentRepository extends BaseOrmRepository<
   AttachmentOrmEntity,
-  AttachmentTransformerDto,
   AttachmentDtoConfig
 > {
   constructor(
     @InjectRepository(AttachmentOrmEntity)
     repository: Repository<AttachmentOrmEntity>,
   ) {
-    super(repository, ['createdBy'], {
-      PlainCls: Attachment,
-      FullCls: AttachmentFull,
-    });
+    super(repository, ['createdBy']);
   }
 }

@@ -12,11 +12,7 @@ import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  ContentCreateDto,
-  ContentDtoConfig,
-  ContentTransformerDto,
-} from '../dto/content.dto';
+import { ContentCreateDto, ContentDtoConfig } from '../dto/content.dto';
 import { ContentType } from '../dto/contentType.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
@@ -24,7 +20,6 @@ import { ContentRepository } from '../repositories/content.repository';
 @Injectable()
 export class ContentService extends BaseOrmService<
   ContentOrmEntity,
-  ContentTransformerDto,
   ContentDtoConfig
 > {
   constructor(readonly repository: ContentRepository) {

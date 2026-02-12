@@ -6,9 +6,7 @@
 
 import { Stream } from 'node:stream';
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-
-import { AttachmentCreateDto } from '../dto/attachment.dto';
+import { Attachment, AttachmentCreateDto } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -27,8 +25,8 @@ const baseAttachment = {
   createdByRef: AttachmentCreatedByRef.User,
 } satisfies Partial<AttachmentCreateDto>;
 
-export const attachment: AttachmentOrmEntity = Object.assign(
-  new AttachmentOrmEntity(),
+export const attachment: Attachment = Object.assign(
+  new Attachment(),
   baseAttachment,
 );
 

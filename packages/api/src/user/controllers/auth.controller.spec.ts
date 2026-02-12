@@ -9,6 +9,7 @@ import { BadRequestException } from '@nestjs/common/exceptions/bad-request.excep
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
+import { SubscriberCreateDto } from '@/chat';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -35,7 +36,7 @@ describe('AuthController (TypeORM)', () => {
   let roleService: RoleService;
   let jwtService: JwtService;
   let role: Role;
-  let baseUser: UserCreateDto;
+  let baseUser: UserCreateDto & SubscriberCreateDto;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -75,6 +76,17 @@ describe('AuthController (TypeORM)', () => {
       lastName: 'test',
       roles: [role.id],
       avatar: null,
+      locale: 'en',
+      timezone: 1,
+      gender: 'other',
+      country: 'US',
+      foreignId: '',
+      labels: [],
+      assignedTo: null,
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: 'console-channel' },
     };
     const invitationPayload: InvitationCreateDto = {
       email: baseUser.email,

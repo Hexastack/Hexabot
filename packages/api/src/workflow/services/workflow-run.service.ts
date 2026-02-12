@@ -13,7 +13,6 @@ import {
   WorkflowRun,
   WorkflowRunDtoConfig,
   WorkflowRunFull,
-  WorkflowRunTransformerDto,
 } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
@@ -26,7 +25,6 @@ type StateUpdate = {
 @Injectable()
 export class WorkflowRunService extends BaseOrmService<
   WorkflowRunOrmEntity,
-  WorkflowRunTransformerDto,
   WorkflowRunDtoConfig
 > {
   /**

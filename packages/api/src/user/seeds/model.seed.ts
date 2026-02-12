@@ -8,16 +8,12 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { ModelDtoConfig, ModelTransformerDto } from '../dto/model.dto';
+import { ModelDtoConfig } from '../dto/model.dto';
 import { ModelOrmEntity } from '../entities/model.entity';
 import { ModelRepository } from '../repositories/model.repository';
 
 @Injectable()
-export class ModelSeeder extends BaseOrmSeeder<
-  ModelOrmEntity,
-  ModelTransformerDto,
-  ModelDtoConfig
-> {
+export class ModelSeeder extends BaseOrmSeeder<ModelOrmEntity, ModelDtoConfig> {
   constructor(private readonly modelRepository: ModelRepository) {
     super(modelRepository);
   }

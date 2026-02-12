@@ -9,7 +9,6 @@ import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
-import { isSameEntity } from "./helpers";
 import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useDelete = <
@@ -20,38 +19,11 @@ export const useDelete = <
   options?: TMutationOptions<string, Error, string, TBasic>,
 ) => {
   const api = useEntityApiClient(entity);
-  const queryClient = useTanstackQueryClient();
-  const { invalidate = true, routeParams, ...otherOptions } = options || {};
+  const { routeParams, ...otherOptions } = options || {};
 
   return useTanstackMutation({
     mutationFn: async (id) => {
       const result = await api.delete(id, routeParams);
-
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [qType, qEntity, qId] = queryKey;
-
-          return (
-            qType === QueryType.item &&
-            isSameEntity(qEntity, entity) &&
-            qId === id
-          );
-        },
-      });
-
-      // Invalidate all counts & collections
-      if (invalidate) {
-        queryClient.removeQueries({
-          predicate: ({ queryKey }) => {
-            const [qType, qEntity] = queryKey;
-
-            return (
-              (qType === QueryType.count || qType === QueryType.collection) &&
-              isSameEntity(qEntity, entity)
-            );
-          },
-        });
-      }
 
       return result;
     },

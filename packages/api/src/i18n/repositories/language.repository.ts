@@ -10,26 +10,18 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Language,
-  LanguageDtoConfig,
-  LanguageTransformerDto,
-} from '../dto/language.dto';
+import { LanguageDtoConfig } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 
 @Injectable()
 export class LanguageRepository extends BaseOrmRepository<
   LanguageOrmEntity,
-  LanguageTransformerDto,
   LanguageDtoConfig
 > {
   constructor(
     @InjectRepository(LanguageOrmEntity)
     repository: Repository<LanguageOrmEntity>,
   ) {
-    super(repository, [], {
-      PlainCls: Language,
-      FullCls: Language,
-    });
+    super(repository, []);
   }
 }

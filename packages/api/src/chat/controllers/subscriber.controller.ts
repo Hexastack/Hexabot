@@ -26,7 +26,6 @@ import {
   Subscriber,
   SubscriberDtoConfig,
   SubscriberFull,
-  SubscriberTransformerDto,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
@@ -35,7 +34,6 @@ import { SubscriberService } from '../services/subscriber.service';
 @Controller('subscriber')
 export class SubscriberController extends BaseOrmController<
   SubscriberOrmEntity,
-  SubscriberTransformerDto,
   SubscriberDtoConfig
 > {
   constructor(

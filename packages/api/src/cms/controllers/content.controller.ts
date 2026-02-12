@@ -29,7 +29,6 @@ import {
   Content,
   ContentCreateDto,
   ContentDtoConfig,
-  ContentTransformerDto,
   ContentUpdateDto,
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
@@ -40,7 +39,6 @@ import { ContentService } from './../services/content.service';
 @Controller('content')
 export class ContentController extends BaseOrmController<
   ContentOrmEntity,
-  ContentTransformerDto,
   ContentDtoConfig
 > {
   constructor(

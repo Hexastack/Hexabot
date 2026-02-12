@@ -11,12 +11,20 @@ import {
 } from '@hexabot-ai/agentic';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
+import { SubscriberTransformerDto } from '@/chat';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { UserTransformerDto } from '@/user';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
+
+import {
+  WorkflowRun,
+  WorkflowRunFull,
+  WorkflowRunTransformerDto,
+} from '../dto/workflow-run.dto';
 
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
@@ -30,7 +38,11 @@ export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
 ];
 
 @Entity({ name: 'workflow_runs' })
-export class WorkflowRunOrmEntity extends BaseOrmEntity {
+export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunTransformerDto> {
+  plainCls = WorkflowRun;
+
+  fullCls = WorkflowRunFull;
+
   /** Workflow definition executed by this run. */
   @ManyToOne(() => WorkflowOrmEntity, {
     nullable: false,
@@ -64,7 +76,9 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity {
   })
   @JoinColumn({ name: 'triggered_by_id' })
   @AsRelation()
-  triggeredBy?: UserProfileOrmEntity | null;
+  triggeredBy?: UserProfileOrmEntity<
+    UserTransformerDto | SubscriberTransformerDto
+  > | null;
 
   /** Identifier of the triggering subscriber (for internal relations). */
   @RelationId((run: WorkflowRunOrmEntity) => run.triggeredBy)

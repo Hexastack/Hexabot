@@ -27,7 +27,6 @@ import {
   MemoryDefinition,
   MemoryDefinitionCreateDto,
   MemoryDefinitionDtoConfig,
-  MemoryDefinitionTransformerDto,
   MemoryDefinitionUpdateDto,
 } from '../dto/memory-definition.dto';
 import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity';
@@ -36,7 +35,6 @@ import { MemoryDefinitionService } from '../services/memory-definition.service';
 @Controller('memorydefinition')
 export class MemoryDefinitionController extends BaseOrmController<
   MemoryDefinitionOrmEntity,
-  MemoryDefinitionTransformerDto,
   MemoryDefinitionDtoConfig
 > {
   constructor(

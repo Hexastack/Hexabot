@@ -21,14 +21,22 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Content } from '../dto/content.dto';
+import {
+  Content,
+  ContentFull,
+  ContentTransformerDto,
+} from '../dto/content.dto';
 
 import { ContentTypeOrmEntity } from './content-type.entity';
 
 @Entity({ name: 'contents' })
 @Index(['title'])
 @Index(['rag'])
-export class ContentOrmEntity extends BaseOrmEntity {
+export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
+  plainCls = Content;
+
+  fullCls = ContentFull;
+
   /**
    * The content type of this content.
    */

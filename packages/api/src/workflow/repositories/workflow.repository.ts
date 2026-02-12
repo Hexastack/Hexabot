@@ -10,18 +10,12 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Workflow,
-  WorkflowDtoConfig,
-  WorkflowFull,
-  WorkflowTransformerDto,
-} from '../dto/workflow.dto';
+import { WorkflowDtoConfig } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 
 @Injectable()
 export class WorkflowRepository extends BaseOrmRepository<
   WorkflowOrmEntity,
-  WorkflowTransformerDto,
   WorkflowDtoConfig
 > {
   /**
@@ -33,13 +27,11 @@ export class WorkflowRepository extends BaseOrmRepository<
     @InjectRepository(WorkflowOrmEntity)
     repository: Repository<WorkflowOrmEntity>,
   ) {
-    super(
-      repository,
-      ['createdBy', 'memoryDefinitions', 'currentVersion', 'publishedVersion'],
-      {
-        PlainCls: Workflow,
-        FullCls: WorkflowFull,
-      },
-    );
+    super(repository, [
+      'createdBy',
+      'memoryDefinitions',
+      'currentVersion',
+      'publishedVersion',
+    ]);
   }
 }

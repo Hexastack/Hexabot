@@ -17,6 +17,11 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
+import {
+  Permission,
+  PermissionFull,
+  PermissionTransformerDto,
+} from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
 
@@ -25,7 +30,11 @@ import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
-export class PermissionOrmEntity extends BaseOrmEntity {
+export class PermissionOrmEntity extends BaseOrmEntity<PermissionTransformerDto> {
+  plainCls = Permission;
+
+  fullCls = PermissionFull;
+
   @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
     onDelete: 'CASCADE',
   })

@@ -12,7 +12,6 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   Metadata,
   MetadataDtoConfig,
-  MetadataTransformerDto,
   MetadataUpdateDto,
 } from '../dto/metadata.dto';
 import { MetadataOrmEntity } from '../entities/metadata.entity';
@@ -21,7 +20,6 @@ import { MetadataRepository } from '../repositories/metadata.repository';
 @Injectable()
 export class MetadataService extends BaseOrmService<
   MetadataOrmEntity,
-  MetadataTransformerDto,
   MetadataDtoConfig
 > {
   constructor(repository: MetadataRepository) {

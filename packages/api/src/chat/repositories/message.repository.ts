@@ -9,31 +9,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
-import { DtoTransformer } from '@/utils/types/dto.types';
 
-import {
-  Message,
-  MessageDtoConfig,
-  MessageFull,
-  MessageTransformerDto,
-} from '../dto/message.dto';
+import { Message, MessageDtoConfig } from '../dto/message.dto';
 import { SubscriberStub } from '../dto/subscriber.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 
 @Injectable()
 export class MessageRepository extends BaseOrmRepository<
   MessageOrmEntity,
-  MessageTransformerDto,
   MessageDtoConfig
 > {
   constructor(
     @InjectRepository(MessageOrmEntity)
     repository: Repository<MessageOrmEntity>,
   ) {
-    super(repository, ['sender', 'recipient', 'sentBy'], {
-      PlainCls: Message,
-      FullCls: MessageFull,
-    });
+    super(repository, ['sender', 'recipient', 'sentBy']);
   }
 
   /**
@@ -68,9 +58,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'DESC')
       .limit(limit);
     const results = await qb.getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**
@@ -105,9 +94,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'ASC')
       .limit(limit);
     const results = await qb.getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**
@@ -144,9 +132,8 @@ export class MessageRepository extends BaseOrmRepository<
       .orderBy('message.created_at', 'DESC')
       .limit(limit)
       .getMany();
-    const toDto = this.getTransformer(DtoTransformer.PlainCls);
 
-    return results.map(toDto);
+    return results.map((m) => m.toPlainCls());
   }
 
   /**
