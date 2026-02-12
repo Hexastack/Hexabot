@@ -140,7 +140,8 @@ export const WorkflowRuns = ({
         defaultOption: {
           icon: GalleryHorizontalEnd,
           title: `${t("label.all")} ${t("label.types")}`,
-          background: "#f8f8f8",
+          width: "18px",
+          height: "18px",
         },
         typeInfo: WORKFLOW_TYPES,
         onChange: setName,
@@ -154,8 +155,9 @@ export const WorkflowRuns = ({
         defaultOption: {
           icon: GalleryHorizontalEnd,
           title: `${t("label.all")} ${t("label.types")}`,
-          background: "#f8f8f8",
           defaultValue: defaultType,
+          width: "18px",
+          height: "18px",
         },
         typeInfo: WORKFLOW_TYPES,
         onChange: setType,
@@ -169,8 +171,9 @@ export const WorkflowRuns = ({
         defaultOption: {
           icon: GalleryHorizontalEnd,
           title: `${t("label.all")} ${t("label.status")}`,
-          background: "#f8f8f8",
           defaultValue: defaultWorkflowRunStatus,
+          width: "18px",
+          height: "18px",
         },
         typeInfo: WORKFLOW_STATUS,
         onChange: setWorkflowRunStatus,

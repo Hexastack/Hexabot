@@ -93,7 +93,9 @@ export const WorkflowTitleBar = ({
         >
           <WorkflowTypeBadge
             workflow={workflow}
-            selected
+            width="32px"
+            height="32px"
+            padding="4px"
           />
           <Box
             sx={{

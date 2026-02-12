@@ -274,13 +274,18 @@ export const WorkflowForm: FC<
                               icon={
                                 <WorkflowTypeBadge
                                   workflow={badgeWorkflow}
-                                  selected={false}
+                                  width="32px"
+                                  height="32px"
+                                  padding="4px"
                                 />
                               }
                               checkedIcon={
                                 <WorkflowTypeBadge
                                   workflow={badgeWorkflow}
                                   selected={isSelected}
+                                  width="32px"
+                                  height="32px"
+                                  padding="4px"
                                 />
                               }
                             />

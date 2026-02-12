@@ -4,23 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Tooltip } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
-
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflow } from "@/types/workfow.types";
 
-type WorkflowTypeBadgeProps = {
+import { Badge, BadgeWithTitleProps } from "../displays/Badge";
+
+type WorkflowTypeBadgeProps = BadgeWithTitleProps & {
   workflow: IWorkflow;
-  selected?: boolean;
 };
 
 export const WorkflowTypeBadge = ({
   workflow,
-  selected = true,
+  ...rest
 }: WorkflowTypeBadgeProps) => {
-  const theme = useTheme();
   const { t } = useTranslate();
   const typeInfo = WORKFLOW_TYPES[workflow.type];
 
@@ -28,37 +25,8 @@ export const WorkflowTypeBadge = ({
     return null;
   }
 
-  const { icon: Icon, labelKey } = typeInfo;
+  const { icon: Icon, labelKey, color } = typeInfo;
   const label = t(labelKey);
-  const resolvedColor = selected
-    ? typeInfo.color
-    : theme.palette.text.secondary;
-  const resolvedBackground = selected
-    ? typeInfo.background
-    : alpha(resolvedColor, 0.12);
 
-  return (
-    <Tooltip title={label} arrow disableHoverListener={!label}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 32,
-          height: 32,
-          borderRadius: (theme) => (theme.shape.borderRadius as number) + 1,
-          flexShrink: 0,
-          color: resolvedColor,
-          backgroundColor: resolvedBackground,
-          transition: "0.33s",
-          border: ".15rem solid transparent",
-          borderColor: selected
-            ? alpha(theme.palette.primary.main, 0.2)
-            : "transparent",
-        }}
-      >
-        <Icon size={18} />
-      </Box>
-    </Tooltip>
-  );
+  return <Badge title={label} icon={Icon} color={color} {...rest} />;
 };

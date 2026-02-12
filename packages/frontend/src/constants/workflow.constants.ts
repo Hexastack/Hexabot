@@ -17,7 +17,7 @@ import {
   GitBranch,
   GripVertical,
   Hand,
-  MessageSquare,
+  MessagesSquare,
   Pause,
   Play,
   Repeat,
@@ -192,31 +192,26 @@ export const WORKFLOW_STATUS: Record<
     key: WorkflowType.conversational,
     icon: X,
     color: theme.palette.error.main,
-    background: "#f8f8f8",
   },
   [EWorkflowRunStatus.FINISHED]: {
     key: WorkflowType.conversational,
     icon: Check,
     color: theme.palette.success.main,
-    background: "#f8f8f8",
   },
   [EWorkflowRunStatus.IDLE]: {
     key: WorkflowType.conversational,
     icon: ChartNoAxesGantt,
     color: theme.palette.info.main,
-    background: "#f8f8f8",
   },
   [EWorkflowRunStatus.RUNNING]: {
     key: WorkflowType.conversational,
     icon: Play,
     color: theme.palette.success.main,
-    background: "#f8f8f8",
   },
   [EWorkflowRunStatus.SUSPENDED]: {
     key: WorkflowType.conversational,
     icon: Pause,
     color: theme.palette.warning.main,
-    background: "#f8f8f8",
   },
 };
 
@@ -225,30 +220,26 @@ type WorkflowTypeInfo = {
   labelKey: TTranslationKeys;
   icon: LucideIcon;
   color: string;
-  background: string;
 };
 
 export const WORKFLOW_TYPES: Record<WorkflowType, WorkflowTypeInfo> = {
   [WorkflowType.conversational]: {
     key: WorkflowType.conversational,
     labelKey: "label.conversational",
-    icon: MessageSquare,
-    color: "#1d4ed8",
-    background: "#e0ecff",
+    icon: MessagesSquare,
+    color: theme.palette.info.main,
   },
   [WorkflowType.scheduled]: {
     key: WorkflowType.scheduled,
     labelKey: "label.scheduled",
     icon: Clock,
-    color: "#b45309",
-    background: "#fef3c7",
+    color: theme.palette.warning.main,
   },
   [WorkflowType.manual]: {
     key: WorkflowType.manual,
     labelKey: "label.manual",
     icon: Hand,
-    color: "#047857",
-    background: "#d1fae5",
+    color: theme.palette.success.main,
   },
 };
 
