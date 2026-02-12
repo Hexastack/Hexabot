@@ -111,16 +111,6 @@
   border-width: 2px;
 }
 
-.react-flow__node.selectable.selected {
-  border-color: var(--xy-theme-selected);
-  border-width: 2px;
-  box-shadow: var(--xy-node-boxshadow-default);
-}
-
-.react-flow .selected {
-  border-radius: 12px 0 12px 12px !important;
-}
-
 .react-flow__node.selectable.selected .custom-node2 {
   border-radius: 12px !important;
   transform: scale(1.06);

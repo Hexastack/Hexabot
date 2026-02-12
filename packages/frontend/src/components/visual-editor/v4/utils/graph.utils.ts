@@ -53,6 +53,7 @@ export type TraversalContext = {
   nodes: GraphNode[];
   edges: Edge[];
   nodePaths: Map<string, FlowStepPath>;
+  placeholderNodeIds: Set<string>;
   config?: INodeConfig;
 };
 
@@ -63,6 +64,7 @@ type WalkArgs = {
   incoming: string[];
   ctx: TraversalContext;
   path: FlowStepPath;
+  entryEdgeLabel?: string;
 };
 
 type TaskNodeArgs = {
@@ -111,10 +113,15 @@ const connectIncomingEdges = (
   incoming: string[],
   target: string,
   insertPath?: FlowStepPath,
+  label?: string,
 ) => {
-  incoming.forEach((source) =>
-    addEdge(ctx, source, target, undefined, undefined, insertPath),
-  );
+  incoming.forEach((source, index) => {
+    const edgeInsertPath =
+      insertPath && !ctx.placeholderNodeIds.has(source) ? insertPath : undefined;
+    const edgeLabel = index === 0 ? label : undefined;
+
+    addEdge(ctx, source, target, undefined, edgeLabel, edgeInsertPath);
+  });
 };
 const addGroupEdge = (
   ctx: TraversalContext,
@@ -429,6 +436,7 @@ const addOperatorNode = (
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.OPERATOR, config),
     ...DEFAULT_NODE_PROPS,
+    selectable: operatorType === StepType.Conditional,
     id: operatorNodeId,
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
@@ -440,6 +448,59 @@ const addOperatorNode = (
       stepPath,
     },
   });
+};
+const addBranchPlaceholderNode = (
+  ctx: TraversalContext,
+  config: INodeConfig,
+  operatorNodeId: string,
+  branchIndex: number,
+  level: number,
+  insertPath: FlowStepPath,
+  label?: string,
+) => {
+  const placeholderNodeId = `${operatorNodeId}-branch-${branchIndex}-placeholder`;
+  const groupName = getGroupId(placeholderNodeId, config.highlights);
+
+  ctx.nodes.push({
+    ...getNodeDimensions(ENodeType.BRANCH_PLACEHOLDER, config),
+    ...DEFAULT_NODE_PROPS,
+    id: placeholderNodeId,
+    type: ENodeType.BRANCH_PLACEHOLDER,
+    position: { x: 0, y: 0 },
+    data: {
+      ...config.nodes[ENodeType.BRANCH_PLACEHOLDER],
+      level,
+      groupName,
+      insertPath,
+      label,
+    },
+  });
+  ctx.placeholderNodeIds.add(placeholderNodeId);
+  addEdge(ctx, operatorNodeId, placeholderNodeId);
+
+  return placeholderNodeId;
+};
+const CONDITIONAL_ELSE_LABEL = "else";
+const getConditionalBranchLabel = (
+  branch: CompiledConditionalStep["branches"][number],
+) => {
+  if (!branch.condition) {
+    return CONDITIONAL_ELSE_LABEL;
+  }
+
+  if (branch.condition.kind === "expression") {
+    return branch.condition.source;
+  }
+
+  if (typeof branch.condition.value === "string") {
+    return branch.condition.value;
+  }
+
+  try {
+    return JSON.stringify(branch.condition.value);
+  } catch {
+    return String(branch.condition.value);
+  }
 };
 // Traverse parallel steps as separate branches from the operator node.
 const walkParallelSteps = (
@@ -472,7 +533,14 @@ const walkConditionalBranches = (
   ctx: TraversalContext,
   stepPath: FlowStepPath,
 ) => {
+  if (!ctx.config) {
+    return [operatorNodeId];
+  }
+
+  const config = ctx.config;
+
   return step.branches.flatMap((branch, branchIndex) => {
+    const branchLabel = getConditionalBranchLabel(branch);
     const conditionalStepsPath: FlowStepPath = [
       ...stepPath,
       "conditional",
@@ -480,6 +548,21 @@ const walkConditionalBranches = (
       branchIndex,
       "steps",
     ];
+    const insertPath: FlowStepPath = [...conditionalStepsPath, 0];
+
+    if (!Array.isArray(branch.steps) || branch.steps.length === 0) {
+      const placeholderNodeId = addBranchPlaceholderNode(
+        ctx,
+        config,
+        operatorNodeId,
+        branchIndex,
+        level + 1,
+        insertPath,
+        branchLabel,
+      );
+
+      return [placeholderNodeId];
+    }
 
     return walkSteps({
       steps: branch.steps,
@@ -488,6 +571,7 @@ const walkConditionalBranches = (
       incoming: [operatorNodeId],
       ctx,
       path: conditionalStepsPath,
+      entryEdgeLabel: branchLabel,
     });
   });
 };
@@ -526,6 +610,7 @@ const walkStep = ({
   ctx,
   path,
   pathIndex,
+  entryEdgeLabel,
 }: WalkStepArgs): string[] => {
   if (!ctx.config) {
     return incoming;
@@ -574,7 +659,7 @@ const walkStep = ({
       });
     }
 
-    connectIncomingEdges(ctx, incoming, taskNodeId, stepPath);
+    connectIncomingEdges(ctx, incoming, taskNodeId, stepPath, entryEdgeLabel);
 
     return [taskNodeId];
   }
@@ -593,12 +678,18 @@ const walkStep = ({
     stepPath,
   });
 
-  connectIncomingEdges(ctx, incoming, operatorNodeId, stepPath);
+  connectIncomingEdges(
+    ctx,
+    incoming,
+    operatorNodeId,
+    stepPath,
+    entryEdgeLabel,
+  );
 
   if (step.type === StepType.Parallel) {
     const exits = walkParallelSteps(step, operatorNodeId, level, ctx, stepPath);
 
-    return uniqueIds(exits.length ? exits : incoming);
+    return uniqueIds(exits.length ? exits : [operatorNodeId]);
   }
 
   if (step.type === StepType.Conditional) {
@@ -610,12 +701,12 @@ const walkStep = ({
       stepPath,
     );
 
-    return uniqueIds(exits.length ? exits : incoming);
+    return uniqueIds(exits.length ? exits : [operatorNodeId]);
   }
 
   const exits = walkLoopSteps(step, operatorNodeId, level, ctx, stepPath);
 
-  return uniqueIds(exits.length ? exits : incoming);
+  return uniqueIds(exits.length ? exits : [operatorNodeId]);
 };
 
 export function walkSteps({
@@ -625,6 +716,7 @@ export function walkSteps({
   incoming,
   ctx,
   path,
+  entryEdgeLabel,
 }: WalkArgs): string[] {
   if (!Array.isArray(steps) || steps.length === 0) {
     return uniqueIds(incoming);
@@ -641,6 +733,7 @@ export function walkSteps({
       incoming: currentSources,
       ctx,
       path,
+      entryEdgeLabel: index === 0 ? entryEdgeLabel : undefined,
     });
   });
 

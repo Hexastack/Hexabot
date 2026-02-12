@@ -58,6 +58,7 @@ export interface IWorkflowContext {
   isDefinitionDirty: boolean;
   isSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
+  addConditionalStep: (insertPath?: FlowStepPath | null) => void;
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   executionStates: Record<string, { state: NodeExecutionState; t: number }[]>;
   setExecutionStates: Dispatch<

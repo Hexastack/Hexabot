@@ -217,6 +217,18 @@ const getConfig = (
             : {}),
         },
       };
+    case ELinkType.BRANCH_PLACEHOLDER_IN:
+      return {
+        type: EHandleType.TARGET,
+        position: direction === "horizontal" ? Position.Left : Position.Top,
+      };
+    case ELinkType.BRANCH_PLACEHOLDER_OUT:
+      return {
+        type: EHandleType.SOURCE,
+        position: direction === "horizontal" ? Position.Right : Position.Bottom,
+        isConnectable: false,
+        isValidConnection: () => false,
+      };
     default:
       return {
         type: EHandleType.TARGET,
