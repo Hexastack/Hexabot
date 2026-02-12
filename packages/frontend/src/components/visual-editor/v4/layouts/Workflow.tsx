@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
+import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
 import { Background, Controls, useReactFlow } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
@@ -43,6 +43,7 @@ import { useWorkflow } from "../hooks/useWorkflow";
 import { WorkflowGraph } from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
+  EdgeInsertType,
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
@@ -91,6 +92,7 @@ export const Workflow = () => {
     persistDefinition,
     actions,
     addActionStep,
+    addConditionalStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -121,10 +123,22 @@ export const Workflow = () => {
   const isPublishDisabled =
     !definition || isDefinitionSaving || isCurrentVersionPublished;
   const tasks = definition?.tasks;
-  const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
-    setPendingInsertPath(insertPath);
-    setActionsDrawerOpen(true);
-  }, []);
+  const handleEdgeInsert = useCallback(
+    (insertPath: FlowStepPath, insertType: EdgeInsertType = "step") => {
+      if (insertType === StepType.Conditional) {
+        addConditionalStep(insertPath);
+
+        return;
+      }
+      if (insertType !== "step") {
+        return;
+      }
+
+      setPendingInsertPath(insertPath);
+      setActionsDrawerOpen(true);
+    },
+    [addConditionalStep],
+  );
   const handleActionSelect = useCallback(
     (action: IAction) => {
       addActionStep(action, pendingInsertPath);

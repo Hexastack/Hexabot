@@ -9,18 +9,14 @@ import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
   Brain,
-  ChartNoAxesGantt,
   Check,
   CircleStop,
   Clock,
   Database,
-  GitBranch,
-  GripVertical,
   Hand,
   MessageSquare,
   Pause,
   Play,
-  Repeat,
   X,
   Zap,
   type LucideIcon,
@@ -32,6 +28,10 @@ import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 import { WorkflowType } from "@/types/workfow.types";
 
 import type { FlowTypeInfo } from "../components/visual-editor/v4/components/main/FlowsDrawer/types";
+import {
+  WORKFLOW_OPERATOR_GRAPH_THEME,
+  WORKFLOW_STEP_GRAPH_THEME,
+} from "../components/visual-editor/v4/constants/workflow-graph-theme.constants";
 import {
   EEdgeType,
   EIndicatorType,
@@ -138,29 +138,20 @@ export const NODES = {
   [ENodeType.OPERATOR]: {
     [StepType.Parallel]: {
       operatorType: StepType.Parallel,
-      theme: {
-        Icon: GripVertical,
-        bgColor: "#0c9ba0",
-      },
-      i18nTitle: "message.parallel_indicator",
+      theme: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].nodeTheme,
+      i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].i18nTitle,
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [StepType.Conditional]: {
       operatorType: StepType.Conditional,
-      theme: {
-        Icon: GitBranch,
-        borderColor: "#2162fb",
-      },
-      i18nTitle: "message.conditional_indicator",
+      theme: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].nodeTheme,
+      i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].i18nTitle,
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
     [StepType.Loop]: {
       operatorType: StepType.Loop,
-      theme: {
-        Icon: Repeat,
-        borderColor: "#0c9ba0",
-      },
-      i18nTitle: "message.loop_indicator",
+      theme: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].nodeTheme,
+      i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].i18nTitle,
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
@@ -202,8 +193,8 @@ export const WORKFLOW_STATUS: Record<
   },
   [EWorkflowRunStatus.IDLE]: {
     key: WorkflowType.conversational,
-    icon: ChartNoAxesGantt,
-    color: theme.palette.info.main,
+    icon: WORKFLOW_STEP_GRAPH_THEME.Icon,
+    color: WORKFLOW_STEP_GRAPH_THEME.color,
     background: "#f8f8f8",
   },
   [EWorkflowRunStatus.RUNNING]: {

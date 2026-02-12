@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StepType } from "@hexabot-ai/agentic";
+import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -11,16 +13,24 @@ import {
   type EdgeProps,
 } from "@xyflow/react";
 import { Plus } from "lucide-react";
-import { useCallback, useMemo, type MouseEvent } from "react";
+import { useCallback, useMemo, useState, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-import type { EdgeInsertData } from "../../types/workflow-path.types";
+import {
+  WORKFLOW_OPERATOR_GRAPH_THEME,
+  WORKFLOW_STEP_GRAPH_THEME,
+} from "../../constants/workflow-graph-theme.constants";
+import type {
+  EdgeInsertData,
+  EdgeInsertType,
+} from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
 export const EdgeWithButton = ({
+  id,
   sourceX,
   sourceY,
   targetX,
@@ -37,6 +47,9 @@ export const EdgeWithButton = ({
   const { t } = useTranslate();
   const edgeData = data as EdgeInsertData | undefined;
   const insertPath = edgeData?.insertPath;
+  const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
+    useState<HTMLElement | null>(null);
+  const isInsertMenuOpen = Boolean(insertMenuAnchorEl);
   const [path, labelX, labelY] = useMemo(() => {
     return getBezierPath({
       sourceX,
@@ -56,15 +69,72 @@ export const EdgeWithButton = ({
     sourcePosition,
     targetPosition,
   ]);
-  const handleInsert = useCallback(
+  const handleInsert = useCallback((type: EdgeInsertType) => {
+    if (insertPath) {
+      edgeData?.onInsert?.(insertPath, type);
+    }
+  }, [edgeData, insertPath]);
+  const handleOpenInsertMenu = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       event.stopPropagation();
-      if (insertPath) {
-        edgeData?.onInsert?.(insertPath);
-      }
+      setInsertMenuAnchorEl(event.currentTarget);
     },
-    [edgeData, insertPath],
+    [],
+  );
+  const handleCloseInsertMenu = useCallback(() => {
+    setInsertMenuAnchorEl(null);
+  }, []);
+  const handleInsertStep = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseInsertMenu();
+      handleInsert("step");
+    },
+    [handleCloseInsertMenu, handleInsert],
+  );
+  const handleInsertConditionalStep = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseInsertMenu();
+      handleInsert(StepType.Conditional);
+    },
+    [handleCloseInsertMenu, handleInsert],
+  );
+  const handleSelectNoopOption = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseInsertMenu();
+    },
+    [handleCloseInsertMenu],
+  );
+  const insertMenuItems = useMemo(
+    () => [
+      {
+        id: StepType.Conditional,
+        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional],
+        onClick: handleInsertConditionalStep,
+      },
+      {
+        id: StepType.Loop,
+        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop],
+        onClick: handleSelectNoopOption,
+      },
+      {
+        id: StepType.Parallel,
+        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel],
+        onClick: handleSelectNoopOption,
+      },
+      {
+        id: "step",
+        ...WORKFLOW_STEP_GRAPH_THEME,
+        onClick: handleInsertStep,
+      },
+    ],
+    [handleInsertConditionalStep, handleInsertStep, handleSelectNoopOption],
   );
   const showInsert = Boolean(insertPath && edgeData?.onInsert);
 
@@ -92,10 +162,31 @@ export const EdgeWithButton = ({
               size={25}
               className="nodrag nopan"
               aria-label={t("button.add")}
-              onClick={handleInsert}
+              aria-controls={
+                isInsertMenuOpen ? `edge-insert-menu-${id}` : undefined
+              }
+              aria-haspopup="menu"
+              aria-expanded={isInsertMenuOpen ? "true" : undefined}
+              onClick={handleOpenInsertMenu}
             >
               <Plus size={14} />
             </PulseIconButton>
+            <Menu
+              id={`edge-insert-menu-${id}`}
+              anchorEl={insertMenuAnchorEl}
+              open={isInsertMenuOpen}
+              onClose={handleCloseInsertMenu}
+              slotProps={{ list: { className: "nodrag nopan" } }}
+            >
+              {insertMenuItems.map((item) => (
+                <MenuItem key={item.id} onClick={item.onClick}>
+                  <ListItemIcon sx={{ color: item.color }}>
+                    <item.Icon size={18} />
+                  </ListItemIcon>
+                  <ListItemText primary={t(item.i18nTitle)} />
+                </MenuItem>
+              ))}
+            </Menu>
           </div>
         </EdgeLabelRenderer>
       ) : label ? (

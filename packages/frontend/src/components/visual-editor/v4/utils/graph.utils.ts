@@ -598,7 +598,7 @@ const walkStep = ({
   if (step.type === StepType.Parallel) {
     const exits = walkParallelSteps(step, operatorNodeId, level, ctx, stepPath);
 
-    return uniqueIds(exits.length ? exits : incoming);
+    return uniqueIds(exits.length ? exits : [operatorNodeId]);
   }
 
   if (step.type === StepType.Conditional) {
@@ -610,12 +610,12 @@ const walkStep = ({
       stepPath,
     );
 
-    return uniqueIds(exits.length ? exits : incoming);
+    return uniqueIds(exits.length ? exits : [operatorNodeId]);
   }
 
   const exits = walkLoopSteps(step, operatorNodeId, level, ctx, stepPath);
 
-  return uniqueIds(exits.length ? exits : incoming);
+  return uniqueIds(exits.length ? exits : [operatorNodeId]);
 };
 
 export function walkSteps({
