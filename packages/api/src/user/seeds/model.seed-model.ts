@@ -18,26 +18,6 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
-    name: 'NlpEntity',
-    identity: 'nlpentity',
-    attributes: {},
-  },
-  {
-    name: 'NlpSampleEntity',
-    identity: 'nlpsampleentity',
-    attributes: {},
-  },
-  {
-    name: 'NlpSample',
-    identity: 'nlpsample',
-    attributes: {},
-  },
-  {
-    name: 'NlpValue',
-    identity: 'nlpvalue',
-    attributes: {},
-  },
-  {
     name: 'Setting',
     identity: 'setting',
     attributes: {},
@@ -95,6 +75,11 @@ export const modelModels: ModelCreateDto[] = [
   {
     name: 'Workflow',
     identity: 'workflow',
+    attributes: {},
+  },
+  {
+    name: 'WorkflowVersion',
+    identity: 'workflowversion',
     attributes: {},
   },
   {

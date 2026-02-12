@@ -25,6 +25,7 @@ export type TModel =
   | 'stats'
   | 'menu'
   | 'workflow'
+  | 'workflowversion'
   | 'workflowrun'
   | 'memorydefinition'
   | 'memoryrecord'
