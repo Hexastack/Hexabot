@@ -41,12 +41,12 @@ export class StatsRepository extends BaseOrmRepository<
     from: Date,
     to: Date,
     types: StatsType[],
-  ): Promise<StatsOrmEntity[]> {
+  ): Promise<Stats[]> {
     if (!types.length) {
       return [];
     }
 
-    return await this.repository.find({
+    return await this.find({
       where: {
         type: In(types),
         day: Between(from, to),

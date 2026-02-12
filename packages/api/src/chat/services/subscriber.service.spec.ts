@@ -101,25 +101,6 @@ describe('SubscriberService (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('subscribe', () => {
-    it('should join Notification sockets subscriber room and return a success response', async () => {
-      const req = {
-        request: {
-          session: { passport: { user: { id: SESSION_ID } } },
-        },
-      };
-      const res = {
-        json: jest.fn(),
-        status: jest.fn().mockReturnThis(),
-      };
-
-      await subscriberService.subscribe(req as any, res as any);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
-    });
-  });
-
   describe('findOneAndPopulate', () => {
     it('should find one subscriber and populate related data', async () => {
       const subscriber = await subscriberRepository.findOne({

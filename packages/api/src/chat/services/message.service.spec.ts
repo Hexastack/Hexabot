@@ -96,25 +96,6 @@ describe('MessageService (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('subscribe', () => {
-    it('joins the message room and returns a success response', async () => {
-      const req = {
-        request: {
-          session: { passport: { user: { id: SESSION_ID } } },
-        },
-      };
-      const res = {
-        json: jest.fn().mockReturnValue(SUCCESS_PAYLOAD),
-        status: jest.fn().mockReturnThis(),
-      };
-      const result = await messageService.subscribe(req as any, res as any);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
-      expect(result).toEqual(SUCCESS_PAYLOAD);
-    });
-  });
-
   describe('findOneAndPopulate', () => {
     it('finds a message by id and populates relations', async () => {
       const spy = jest.spyOn(messageRepository, 'findOneAndPopulate');

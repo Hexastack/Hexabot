@@ -179,7 +179,7 @@ describe('AppService', () => {
     it('ignores events with missing metadata', () => {
       appService.handleEntityCreated({
         entity: { id: 'ignored' },
-      });
+      } as any);
 
       expect(to).not.toHaveBeenCalled();
       expect(emit).not.toHaveBeenCalled();

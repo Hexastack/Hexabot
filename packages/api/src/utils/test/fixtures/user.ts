@@ -25,6 +25,17 @@ export const users: UserCreateDto[] = [
     password: 'adminadmin',
     roles: [roleFixtureIds.admin, roleFixtureIds.manager],
     avatar: null,
+    assignedAt: null,
+    channel: {
+      data: null,
+      name: null,
+    },
+    country: null,
+    foreignId: null,
+    gender: null,
+    lastvisit: null,
+    locale: null,
+    retainedFrom: null,
   },
 ];
 

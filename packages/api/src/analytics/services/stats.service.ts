@@ -21,6 +21,7 @@ import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import {
+  Stats,
   StatsActionDto,
   StatsSummaryDto,
   StatsTransformerDto,
@@ -111,7 +112,7 @@ export class StatsService extends BaseOrmService<
     from: Date,
     to: Date,
     types: StatsType[],
-  ): Promise<StatsOrmEntity[]> {
+  ): Promise<Stats[]> {
     return await this.repository.findMessages(from, to, types);
   }
 

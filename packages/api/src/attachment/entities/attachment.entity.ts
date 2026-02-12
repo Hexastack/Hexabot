@@ -15,13 +15,13 @@ import {
 } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
-import { SubscriberTransformerDto } from '@/chat';
+import type { SubscriberTransformerDto } from '@/chat/dto/subscriber.dto';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { UserTransformerDto } from '@/user';
+import type { UserTransformerDto } from '@/user/dto/user.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils';
 import { buildURL } from '@/utils/helpers/URL';
