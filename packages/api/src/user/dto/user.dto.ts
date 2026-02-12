@@ -36,7 +36,6 @@ import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
 import { UserProvider } from '../types/user-provider.type';
 
 import { Role } from './role.dto';
-import { UserProfileCreateDto } from './user-profile.dto';
 
 @Exclude()
 export class UserStub extends SubscriberStub {
@@ -124,7 +123,7 @@ export class UserFull extends SubscriberFull {
   avatar: Attachment | null;
 }
 
-export class UserCreateDto extends UserProfileCreateDto {
+export class UserCreateDto extends SubscriberCreateDto {
   @ApiProperty({ description: 'User username', type: String })
   @IsNotEmpty()
   @IsString()

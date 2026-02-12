@@ -40,11 +40,14 @@ export class SettingRepository extends BaseOrmRepository<
    * This method is used to synchronize global settings by emitting an event
    * based on the `group` and `label` of the `Setting`.
    */
-  async afterUpdate(event: UpdateEvent<SettingOrmEntity>) {
-    const setting = event.databaseEntity.toPlainCls();
-    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-    const label = setting.label as '*';
-    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
-    super.afterUpdate(event);
+  async afterUpdate(event: UpdateEvent<SettingOrmEntity>): Promise<void> {
+    if (event.databaseEntity) {
+      const setting = event.databaseEntity.toPlainCls();
+      const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
+      const label = setting.label as '*';
+      this.eventEmitter?.emit(`hook:${group}:${label}`, setting);
+    }
+
+    await super.afterUpdate(event);
   }
 }

@@ -18,7 +18,7 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
-import { UserProfileAssignedStub } from '@/user/dto/user-profile.dto';
+import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
@@ -69,31 +69,7 @@ export class Attachment extends AttachmentStub {
 }
 
 @Exclude()
-export class AttachmentOwnerStub extends UserProfileAssignedStub {
-  @Expose()
-  locale?: string | null;
-
-  @Expose()
-  gender?: string | null;
-
-  @Expose()
-  country?: string | null;
-
-  @Expose()
-  foreignId?: string;
-
-  @Expose()
-  assignedAt?: Date | null;
-
-  @Expose()
-  lastvisit?: Date | null;
-
-  @Expose()
-  retainedFrom?: Date | null;
-
-  @Expose()
-  channel?: Partial<Record<ChannelName, any>>;
-}
+export class AttachmentOwnerStub extends UserProfileAssignedStub {}
 
 @Exclude()
 export class AttachmentFull extends AttachmentStub {

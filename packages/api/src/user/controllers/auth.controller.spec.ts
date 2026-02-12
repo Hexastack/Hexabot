@@ -75,6 +75,17 @@ describe('AuthController (TypeORM)', () => {
       lastName: 'test',
       roles: [role.id],
       avatar: null,
+      locale: 'en',
+      timezone: 1,
+      gender: 'other',
+      country: 'US',
+      foreignId: '',
+      labels: [],
+      assignedTo: null,
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: 'console-channel' },
     };
     const invitationPayload: InvitationCreateDto = {
       email: baseUser.email,

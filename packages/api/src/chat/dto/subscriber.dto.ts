@@ -17,8 +17,8 @@ import {
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
+import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import {
-  UserProfileAssignedStub,
   UserProfileCreateDto,
   UserProfileStub,
 } from '@/user/dto/user-profile.dto';

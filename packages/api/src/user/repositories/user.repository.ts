@@ -28,7 +28,7 @@ export class UserRepository extends BaseOrmRepository<
     @InjectRepository(UserOrmEntity)
     repository: Repository<UserOrmEntity>,
   ) {
-    super(repository, ['roles', 'avatar'], {
+    super(repository, ['labels', 'assignedTo', 'roles', 'avatar'], {
       PlainCls: User,
       FullCls: UserFull,
     });

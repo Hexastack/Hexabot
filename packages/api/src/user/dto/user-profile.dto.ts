@@ -25,18 +25,6 @@ export class UserProfileStub extends BaseStub {
   timezone: number = 0;
 }
 
-@Exclude()
-export class UserProfileAssignedStub extends UserProfileStub {
-  @Expose()
-  username?: string;
-
-  @Expose()
-  email?: string;
-
-  @Expose({ name: 'avatarId' })
-  avatar?: string | null;
-}
-
 export class UserProfileCreateDto {
   @ApiProperty({ description: `User Profile firstName`, type: String })
   @IsNotEmpty()

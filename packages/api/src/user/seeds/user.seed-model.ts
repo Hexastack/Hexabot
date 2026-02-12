@@ -16,6 +16,19 @@ export const userModels = (roles: string[]): UserCreateDto[] => {
       password: 'adminadmin',
       roles,
       avatar: null,
+      locale: null,
+      timezone: 0,
+      gender: null,
+      country: null,
+      foreignId: '',
+      labels: [],
+      assignedTo: null,
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: {
+        name: 'console-channel',
+      },
     },
   ];
 };

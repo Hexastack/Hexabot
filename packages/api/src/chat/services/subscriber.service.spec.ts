@@ -23,8 +23,6 @@ import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscrib
 import { sortRowsBy } from '@/utils/test/sort';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
-import { Room } from '@/websocket/types';
 
 import { Subscriber } from '../dto/subscriber.dto';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
@@ -48,11 +46,6 @@ describe('SubscriberService (TypeORM)', () => {
   const attachmentServiceMock = {
     store: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'store'>>;
-  const SESSION_ID = 'session-123';
-  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
-    success: true,
-    subscribe: Room.SUBSCRIBER,
-  };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
