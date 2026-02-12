@@ -9,14 +9,17 @@ import { Box, Typography } from "@mui/material";
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import type { IWorkflow } from "@/types/workfow.types";
 
+import { BadgeWithTitleProps } from "../displays/Badge";
+
 import { WorkflowTypeBadge } from "./WorkflowTypeBadge";
 
-export type WorkflowBadgeWithTitleProps = {
+export type WorkflowBadgeWithTitleProps = BadgeWithTitleProps & {
   workflow?: IWorkflow | null;
 };
 
 export const WorkflowBadgeWithTitle = ({
   workflow,
+  ...rest
 }: WorkflowBadgeWithTitleProps) => {
   if (!workflow) {
     return null;
@@ -31,7 +34,7 @@ export const WorkflowBadgeWithTitle = ({
   return (
     <Box gap={1} display="flex" alignItems="stretch">
       <Box display="flex" alignItems="center" justifyContent="center">
-        <WorkflowTypeBadge workflow={workflow} />
+        <WorkflowTypeBadge workflow={workflow} {...rest} />
       </Box>
       <Box display="flex" alignItems="center" justifyContent="center">
         <Typography

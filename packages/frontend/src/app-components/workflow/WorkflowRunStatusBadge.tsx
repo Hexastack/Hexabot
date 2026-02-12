@@ -29,5 +29,11 @@ export const WorkflowRunStatusBadge = ({
     WORKFLOW_STATUS[status] ?? WORKFLOW_STATUS[EWorkflowRunStatus.IDLE];
   const title = workflowRun?.status ?? status;
 
-  return <BadgeWithTitle {...badgeRest} title={title} />;
+  return (
+    <BadgeWithTitle
+      {...badgeRest}
+      title={title}
+      isLoading={workflowRun?.status === "running"}
+    />
+  );
 };

@@ -22,7 +22,6 @@ export type FlowTypeInfo = {
   labelKey: TTranslationKeys;
   icon: LucideIcon;
   color: string;
-  background: string;
 };
 
 export type FlowTypeMeta = {

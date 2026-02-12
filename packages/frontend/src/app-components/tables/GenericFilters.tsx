@@ -77,9 +77,15 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
       onChange,
       ...rest
     }) => {
-      if (rest.type === "enumFilter") {
-        const { defaultValue, ...defaultOptionRest } = defaultOption;
+      const {
+        defaultValue,
+        width,
+        height,
+        padding = "0px",
+        ...defaultOptionRest
+      } = defaultOption;
 
+      if (rest.type === "enumFilter") {
         return (
           <Grid key={field} flex={1} minWidth="180px">
             <TextField
@@ -92,14 +98,21 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
             >
               {defaultValue ? (
                 <MenuItem value={defaultValue}>
-                  <BadgeWithTitle {...defaultOptionRest} />
+                  <BadgeWithTitle
+                    {...defaultOptionRest}
+                    {...{ width, height, padding }}
+                  />
                 </MenuItem>
               ) : null}
               {typeInfo
                 ? Object.entries(typeInfo).map(
                     ([type, { key, ...infoRest }]) => (
                       <MenuItem key={key} value={type}>
-                        <BadgeWithTitle {...infoRest} title={type} />
+                        <BadgeWithTitle
+                          {...infoRest}
+                          title={type}
+                          {...{ width, height, padding }}
+                        />
                       </MenuItem>
                     ),
                   )
@@ -125,6 +138,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
                   <BadgeWithTitle
                     {...typeInfo?.[workflow.type]}
                     title={workflow.name}
+                    {...{ width, height, padding }}
                   />
                 </Box>
               )}
@@ -133,6 +147,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
                   <BadgeWithTitle
                     {...typeInfo?.[workflow.type]}
                     title={workflow.name}
+                    {...{ width, height, padding }}
                   />
                 </li>
               )}
