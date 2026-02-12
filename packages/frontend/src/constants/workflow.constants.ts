@@ -16,6 +16,7 @@ import {
   Hand,
   MessageSquare,
   Pause,
+  Plus,
   Play,
   X,
   Zap,
@@ -59,6 +60,7 @@ export const DIMENSIONS = {
   [ENodeType.TASK]: { width: 260, height: 75 },
   [ENodeType.OPERATOR]: { width: 150, height: 55 },
   [ENodeType.MEMORY]: { width: 250, height: 75 },
+  [ENodeType.BRANCH_PLACEHOLDER]: { width: 84, height: 84 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
   // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
@@ -171,6 +173,17 @@ export const NODES = {
     ports: [ELinkType.GROUP_IN, ELinkType.GROUP_OUT],
     theme: {
       bgColor: "#7bb0ff",
+    },
+  },
+  [ENodeType.BRANCH_PLACEHOLDER]: {
+    i18nTitle: "button.add",
+    ports: [
+      ELinkType.BRANCH_PLACEHOLDER_IN,
+      ELinkType.BRANCH_PLACEHOLDER_OUT,
+    ],
+    theme: {
+      Icon: Plus,
+      borderColor: "#7f8ea3",
     },
   },
 } satisfies INodeConfig["nodes"];

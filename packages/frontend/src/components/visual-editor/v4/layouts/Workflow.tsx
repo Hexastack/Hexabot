@@ -6,7 +6,12 @@
 
 import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
-import { Background, Controls, useReactFlow } from "@xyflow/react";
+import {
+  Background,
+  Controls,
+  type NodeMouseHandler,
+  useReactFlow,
+} from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
   useCallback,
@@ -41,7 +46,11 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
-import { WorkflowGraph } from "../types/workflow-node.types";
+import {
+  ENodeType,
+  type GraphNode,
+  type WorkflowGraph,
+} from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
   EdgeInsertType,
@@ -147,6 +156,27 @@ export const Workflow = () => {
       setPendingInsertPath(null);
     },
     [addActionStep, pendingInsertPath],
+  );
+  const handleNodeClick = useCallback<NodeMouseHandler>(
+    (event, node) => {
+      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const placeholderNode =
+        node as unknown as GraphNode<ENodeType.BRANCH_PLACEHOLDER>;
+      const insertPath = placeholderNode.data?.insertPath;
+
+      if (!insertPath) {
+        return;
+      }
+
+      setPendingInsertPath(insertPath);
+      setActionsDrawerOpen(true);
+    },
+    [],
   );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
@@ -293,6 +323,7 @@ export const Workflow = () => {
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
+          onNodeClick={handleNodeClick}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}

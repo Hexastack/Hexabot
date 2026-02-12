@@ -7,6 +7,7 @@
 import { useColorScheme } from "@mui/material";
 import {
   type Node,
+  type NodeMouseHandler,
   type Viewport,
   OnNodesChange,
   ReactFlow,
@@ -27,6 +28,7 @@ export const ReactFlowWrapper = ({
   defaultNodes,
   defaultViewport,
   onViewport,
+  onNodeClick,
   children,
 }: {
   defaultNodes: Node[];
@@ -34,7 +36,7 @@ export const ReactFlowWrapper = ({
   defaultEdges: EdgeLink[];
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
-  onNodeDoubleClick?: (selectedNodeId: string) => void;
+  onNodeClick?: NodeMouseHandler<Node>;
 } & PropsWithChildren) => {
   const { mode } = useColorScheme();
 
@@ -97,6 +99,7 @@ export const ReactFlowWrapper = ({
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
       onNodesChange={handleNodesChange}
+      onNodeClick={onNodeClick}
       onlyRenderVisibleElements
       colorMode={mode}
     >

@@ -31,6 +31,7 @@ import { Agent } from "../components/workflow-nodes/Agent";
 import { Memory } from "../components/workflow-nodes/Agent/Memory";
 import { Model } from "../components/workflow-nodes/Agent/Model";
 import { Tool } from "../components/workflow-nodes/Agent/Tool";
+import { BranchPlaceholder } from "../components/workflow-nodes/BranchPlaceholder";
 import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
@@ -90,6 +91,11 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
   indicator?: EIndicatorType;
 };
 
+export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
+  insertPath?: FlowStepPath;
+  label?: string;
+};
+
 export enum EIndicatorType {
   WORKFLOW_START = "workflowStart",
   WORKFLOW_END = "workflowEnd",
@@ -142,6 +148,8 @@ export enum ELinkType {
   GROUP_IN = "groupIn",
   GROUP_OUT = "groupOut",
   MEMORY_IN = "memoryIn",
+  BRANCH_PLACEHOLDER_IN = "branchPlaceholderIn",
+  BRANCH_PLACEHOLDER_OUT = "branchPlaceholderOut",
 }
 
 export type Port<P extends string> = Extract<ELinkType, `${P}${string}`>;
@@ -195,6 +203,7 @@ export type NodeDataTypes = {
   [ENodeType.TASK]: TaskData;
   [ENodeType.GROUP]: GroupData;
   [ENodeType.MEMORY]: MemoryData;
+  [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholderData;
 };
 
 export type NodeType<V, T = NodeDataTypes> = {
@@ -212,7 +221,8 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
         | Node<GroupData, ENodeType.GROUP>
-        | Node<MemoryData, ENodeType.MEMORY>;
+        | Node<MemoryData, ENodeType.MEMORY>
+        | Node<BranchPlaceholderData, ENodeType.BRANCH_PLACEHOLDER>;
 
 export enum ENodeType {
   MODEL = "model",
@@ -223,6 +233,7 @@ export enum ENodeType {
   TASK = "task",
   GROUP = "group",
   MEMORY = "memory",
+  BRANCH_PLACEHOLDER = "branchPlaceholder",
 }
 
 export enum EEdgeType {
@@ -238,6 +249,7 @@ export const NODE_TYPES = {
   [ENodeType.TASK]: Task,
   [ENodeType.GROUP]: Group,
   [ENodeType.MEMORY]: Memory,
+  [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholder,
 } satisfies {
   [NT in ENodeType]: FC<NodeProps<GraphNode<NT>>>;
 };

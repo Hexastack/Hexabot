@@ -26,6 +26,7 @@ import type {
   EdgeInsertType,
 } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
+import { ZoomAwareTooltip } from "../ZoomAwareTooltip";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
@@ -149,28 +150,27 @@ export const EdgeWithButton = ({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               display: "flex",
               alignItems: "center",
-              gap: 6,
+              gap: 0,
             }}
           >
-            {label ? (
-              <span className="button-edge__text" aria-hidden="true">
-                {label}
+            <ZoomAwareTooltip title={label} placement="left-end">
+              <span style={{ display: "inline-flex" }}>
+                <PulseIconButton
+                  type="button"
+                  size={25}
+                  className="nodrag nopan"
+                  aria-label={t("button.add")}
+                  aria-controls={
+                    isInsertMenuOpen ? `edge-insert-menu-${id}` : undefined
+                  }
+                  aria-haspopup="menu"
+                  aria-expanded={isInsertMenuOpen ? "true" : undefined}
+                  onClick={handleOpenInsertMenu}
+                >
+                  <Plus size={14} />
+                </PulseIconButton>
               </span>
-            ) : null}
-            <PulseIconButton
-              type="button"
-              size={25}
-              className="nodrag nopan"
-              aria-label={t("button.add")}
-              aria-controls={
-                isInsertMenuOpen ? `edge-insert-menu-${id}` : undefined
-              }
-              aria-haspopup="menu"
-              aria-expanded={isInsertMenuOpen ? "true" : undefined}
-              onClick={handleOpenInsertMenu}
-            >
-              <Plus size={14} />
-            </PulseIconButton>
+            </ZoomAwareTooltip>
             <Menu
               id={`edge-insert-menu-${id}`}
               anchorEl={insertMenuAnchorEl}
