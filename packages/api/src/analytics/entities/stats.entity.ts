@@ -11,16 +11,9 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Stats, StatsTransformerDto } from '../dto/stats.dto';
+import { StatsType } from '../enums/stats-type.enum';
 
-export enum StatsType {
-  outgoing = 'outgoing',
-  new_users = 'new_users',
-  all_messages = 'all_messages',
-  incoming = 'incoming',
-  returning_users = 'returning_users',
-  retention = 'retention',
-  echo = 'echo',
-}
+export { StatsType };
 
 export type ToLinesType = {
   id: number;
