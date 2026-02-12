@@ -4,9 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
+import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
-import { Background, Controls, useReactFlow } from "@xyflow/react";
+import {
+  Background,
+  Controls,
+  type NodeMouseHandler,
+  useReactFlow,
+} from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
   useCallback,
@@ -32,6 +37,7 @@ import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
+import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
@@ -40,9 +46,14 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
-import { WorkflowGraph } from "../types/workflow-node.types";
+import {
+  ENodeType,
+  type GraphNode,
+  type WorkflowGraph,
+} from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
+  EdgeInsertType,
   FlowStepPath,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
@@ -91,6 +102,7 @@ export const Workflow = () => {
     persistDefinition,
     actions,
     addActionStep,
+    addConditionalStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -121,10 +133,22 @@ export const Workflow = () => {
   const isPublishDisabled =
     !definition || isDefinitionSaving || isCurrentVersionPublished;
   const tasks = definition?.tasks;
-  const handleEdgeInsert = useCallback((insertPath: FlowStepPath) => {
-    setPendingInsertPath(insertPath);
-    setActionsDrawerOpen(true);
-  }, []);
+  const handleEdgeInsert = useCallback(
+    (insertPath: FlowStepPath, insertType: EdgeInsertType = "step") => {
+      if (insertType === StepType.Conditional) {
+        addConditionalStep(insertPath);
+
+        return;
+      }
+      if (insertType !== "step") {
+        return;
+      }
+
+      setPendingInsertPath(insertPath);
+      setActionsDrawerOpen(true);
+    },
+    [addConditionalStep],
+  );
   const handleActionSelect = useCallback(
     (action: IAction) => {
       addActionStep(action, pendingInsertPath);
@@ -132,6 +156,27 @@ export const Workflow = () => {
       setPendingInsertPath(null);
     },
     [addActionStep, pendingInsertPath],
+  );
+  const handleNodeClick = useCallback<NodeMouseHandler>(
+    (event, node) => {
+      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const placeholderNode =
+        node as unknown as GraphNode<ENodeType.BRANCH_PLACEHOLDER>;
+      const insertPath = placeholderNode.data?.insertPath;
+
+      if (!insertPath) {
+        return;
+      }
+
+      setPendingInsertPath(insertPath);
+      setActionsDrawerOpen(true);
+    },
+    [],
   );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
@@ -278,6 +323,7 @@ export const Workflow = () => {
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
+          onNodeClick={handleNodeClick}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
           defaultViewport={defaultViewport}
@@ -350,6 +396,7 @@ export const Workflow = () => {
         <WorkflowBottomDrawer />
       </StyledBox>
       <ActionFormDrawer />
+      <ConditionalFormDrawer />
       <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}

@@ -140,3 +140,28 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+.workflow-branch-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  border: 2px dashed #bdc6d4;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.workflow-branch-placeholder:hover {
+  border-color: #90a4c9;
+  transform: scale(1.03);
+}
+
+.react-flow.dark .workflow-branch-placeholder {
+  border-color: #4f5b70;
+  background: #111827;
+}

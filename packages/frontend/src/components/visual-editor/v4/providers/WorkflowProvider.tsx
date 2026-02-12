@@ -193,6 +193,30 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
     updateDefinitionState(nextDefinition);
   };
+  const addConditionalStep = (insertPath?: FlowStepPath | null) => {
+    const baseDefinition = definition ?? createBaseDefinition();
+    const conditionalStep: FlowStep = {
+      conditional: {
+        when: [
+          { condition: "=false", steps: [] },
+          { else: true, steps: [] },
+        ],
+      },
+    };
+    const insertedDefinition = insertPath
+      ? WorkflowHelper.insertStepAtPath(
+          baseDefinition,
+          insertPath,
+          conditionalStep,
+        )
+      : null;
+    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+      ...baseDefinition,
+      flow: [...(baseDefinition.flow ?? []), conditionalStep],
+    };
+
+    updateDefinitionState(nextDefinition);
+  };
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
     const changes = getNodes().map(({ id }) => ({
@@ -303,6 +327,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         isDefinitionDirty,
         isSaving,
         addActionStep,
+        addConditionalStep,
         removeStepAtPath,
         actions,
         definition,

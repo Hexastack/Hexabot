@@ -752,6 +752,16 @@
         }
       }
     },
+    "conditional_drawer": {
+      "title": "Conditionnel",
+      "description": "Définissez des conditions JSONata pour cet opérateur.",
+      "form": {
+        "condition_label": "Condition {{0}}",
+        "helper": "Condition JSONata (doit commencer par '=')",
+        "add_condition": "Ajouter une condition",
+        "empty_state": "Aucune condition configurée."
+      }
+    },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"
