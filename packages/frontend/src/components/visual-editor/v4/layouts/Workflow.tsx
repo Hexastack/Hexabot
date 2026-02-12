@@ -32,6 +32,7 @@ import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
+import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
@@ -364,6 +365,7 @@ export const Workflow = () => {
         <WorkflowBottomDrawer />
       </StyledBox>
       <ActionFormDrawer />
+      <ConditionalFormDrawer />
       <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}

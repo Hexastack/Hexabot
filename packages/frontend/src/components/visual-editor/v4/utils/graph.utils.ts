@@ -429,6 +429,7 @@ const addOperatorNode = (
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.OPERATOR, config),
     ...DEFAULT_NODE_PROPS,
+    selectable: operatorType === StepType.Conditional,
     id: operatorNodeId,
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
