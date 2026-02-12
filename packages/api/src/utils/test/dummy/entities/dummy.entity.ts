@@ -13,9 +13,9 @@ import { Dummy, DummyTransformerDto } from '../dto/dummy.dto';
 
 @Entity({ name: 'dummy' })
 export class DummyOrmEntity extends BaseOrmEntity<DummyTransformerDto> {
-  protected plainCls = Dummy;
+  plainCls = Dummy;
 
-  protected fullCls = Dummy;
+  fullCls = Dummy;
 
   @Column()
   dummy!: string;

@@ -21,9 +21,9 @@ import { ContentOrmEntity } from './content.entity';
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
 export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeTransformerDto> {
-  protected plainCls = ContentType;
+  plainCls = ContentType;
 
-  protected fullCls = ContentTypeFull;
+  fullCls = ContentTypeFull;
 
   @Column({ unique: true })
   name!: string;

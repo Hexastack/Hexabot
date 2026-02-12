@@ -23,7 +23,6 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   Subscriber,
   SubscriberDtoConfig,
-  SubscriberTransformerDto,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
@@ -34,7 +33,6 @@ import { LabelService } from './label.service';
 @Injectable()
 export class SubscriberService extends BaseOrmService<
   SubscriberOrmEntity,
-  SubscriberTransformerDto,
   SubscriberDtoConfig
 > {
   constructor(

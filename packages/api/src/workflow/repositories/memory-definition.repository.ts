@@ -10,27 +10,18 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  MemoryDefinition,
-  MemoryDefinitionDtoConfig,
-  MemoryDefinitionFull,
-  MemoryDefinitionTransformerDto,
-} from '../dto/memory-definition.dto';
+import { MemoryDefinitionDtoConfig } from '../dto/memory-definition.dto';
 import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity';
 
 @Injectable()
 export class MemoryDefinitionRepository extends BaseOrmRepository<
   MemoryDefinitionOrmEntity,
-  MemoryDefinitionTransformerDto,
   MemoryDefinitionDtoConfig
 > {
   constructor(
     @InjectRepository(MemoryDefinitionOrmEntity)
     repository: Repository<MemoryDefinitionOrmEntity>,
   ) {
-    super(repository, [], {
-      PlainCls: MemoryDefinition,
-      FullCls: MemoryDefinitionFull,
-    });
+    super(repository, []);
   }
 }

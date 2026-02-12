@@ -46,7 +46,6 @@ import {
   UserEditProfileDto,
   UserRequestResetDto,
   UserResetPasswordDto,
-  UserTransformerDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
 import { UserOrmEntity } from '../entities/user.entity';
@@ -60,7 +59,6 @@ import { ValidateAccountService } from '../services/validate-account.service';
 @Controller('user')
 export class ReadOnlyUserController extends BaseOrmController<
   UserOrmEntity,
-  UserTransformerDto,
   UserDtoConfig
 > {
   constructor(
@@ -128,6 +126,7 @@ export class ReadOnlyUserController extends BaseOrmController<
   @Get(':id/profile_pic')
   async getAvatar(@Param('id') id: string) {
     const user = await this.userService.findOneAndPopulate(id);
+
     if (!user) {
       throw new NotFoundException(`user with ID ${id} not found`);
     }

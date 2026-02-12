@@ -39,9 +39,9 @@ export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
 
 @Entity({ name: 'workflow_runs' })
 export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunTransformerDto> {
-  protected plainCls = WorkflowRun;
+  plainCls = WorkflowRun;
 
-  protected fullCls = WorkflowRunFull;
+  fullCls = WorkflowRunFull;
 
   /** Workflow definition executed by this run. */
   @ManyToOne(() => WorkflowOrmEntity, {

@@ -8,13 +8,6 @@ import { Exclude, Expose } from 'class-transformer';
 
 export type Ctor<T = unknown> = abstract new (...args: any[]) => T;
 
-// Get the instance type of a constructor (handles abstract)
-type InstanceOf<C> = C extends abstract new (...args: any[]) => infer R
-  ? R
-  : C extends new (...args: any[]) => infer R
-    ? R
-    : never;
-
 @Exclude()
 export class BaseIdStub {
   @Expose()
@@ -52,7 +45,7 @@ export type DtoActionConfig<
 > = A;
 
 export type DtoTransformerConfig<
-  T extends Record<DtoTransformer, Ctor> = Record<DtoTransformer, Ctor>,
+  T extends Record<DtoTransformer, any> = Record<DtoTransformer, any>,
 > = T;
 
 export type InferActionDto<
@@ -61,7 +54,8 @@ export type InferActionDto<
   Fallback = unknown,
 > = K extends keyof Dto ? Dto[K] : Fallback;
 
-export type InferTransformDto<
-  K extends DtoTransformer,
-  Dto extends DtoTransformerConfig,
-> = InstanceOf<Dto[K]>;
+export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
+  ? R
+  : T extends { prototype: infer P }
+    ? P
+    : unknown;

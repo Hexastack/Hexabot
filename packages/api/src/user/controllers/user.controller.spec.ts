@@ -187,17 +187,6 @@ describe('UserController (TypeORM)', () => {
         password: 'test',
         roles: [role!.id],
         avatar: null,
-        locale: null,
-        timezone: 0,
-        gender: null,
-        country: null,
-        foreignId: '',
-        labels: [],
-        assignedTo: null,
-        assignedAt: null,
-        lastvisit: null,
-        retainedFrom: null,
-        channel: { name: 'console-channel' },
       };
       const result = await userController.create(userDto);
       expect(userService.create).toHaveBeenCalledWith(userDto);

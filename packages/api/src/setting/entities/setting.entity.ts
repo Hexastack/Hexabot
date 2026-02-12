@@ -17,9 +17,9 @@ import { SettingType } from '../types';
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
 export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
-  protected plainCls = Setting;
+  plainCls = Setting;
 
-  protected fullCls = Setting;
+  fullCls = Setting;
 
   @Column()
   @Index()

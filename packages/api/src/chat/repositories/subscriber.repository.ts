@@ -18,7 +18,6 @@ import {
   Subscriber,
   SubscriberDtoConfig,
   SubscriberFull,
-  SubscriberTransformerDto,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
@@ -26,17 +25,13 @@ import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 @Injectable()
 export class SubscriberRepository extends BaseOrmRepository<
   SubscriberOrmEntity,
-  SubscriberTransformerDto,
   SubscriberDtoConfig
 > {
   constructor(
     @InjectRepository(SubscriberOrmEntity)
     repository: Repository<SubscriberOrmEntity>,
   ) {
-    super(repository, ['labels', 'assignedTo', 'avatar'], {
-      PlainCls: Subscriber,
-      FullCls: SubscriberFull,
-    });
+    super(repository, ['labels', 'assignedTo', 'avatar']);
   }
 
   /**

@@ -10,27 +10,18 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Permission,
-  PermissionDtoConfig,
-  PermissionFull,
-  PermissionTransformerDto,
-} from '../dto/permission.dto';
+import { PermissionDtoConfig } from '../dto/permission.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 
 @Injectable()
 export class PermissionRepository extends BaseOrmRepository<
   PermissionOrmEntity,
-  PermissionTransformerDto,
   PermissionDtoConfig
 > {
   constructor(
     @InjectRepository(PermissionOrmEntity)
     repository: Repository<PermissionOrmEntity>,
   ) {
-    super(repository, ['model', 'role'], {
-      PlainCls: Permission,
-      FullCls: PermissionFull,
-    });
+    super(repository, ['model', 'role']);
   }
 }

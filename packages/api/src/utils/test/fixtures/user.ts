@@ -25,20 +25,6 @@ export const users: UserCreateDto[] = [
     password: 'adminadmin',
     roles: [roleFixtureIds.admin, roleFixtureIds.manager],
     avatar: null,
-    assignedAt: null,
-    channel: {
-      data: {},
-      name: 'console-channel',
-    },
-    country: null,
-    foreignId: 'admin',
-    gender: null,
-    lastvisit: null,
-    locale: null,
-    retainedFrom: null,
-    labels: [],
-    assignedTo: null,
-    timezone: 1,
   },
 ];
 
@@ -48,6 +34,19 @@ export const userDefaultValues: TFixturesDefaultValues<User> = {
   timezone: 1,
   sendEmail: false,
   resetCount: 0,
+  assignedAt: null,
+  channel: {
+    data: null as any,
+    name: null as any,
+  },
+  country: null,
+  foreignId: null as any,
+  gender: null,
+  lastvisit: null,
+  locale: null,
+  retainedFrom: null,
+  labels: [],
+  assignedTo: null,
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>
@@ -80,9 +79,6 @@ export const installUserFixturesTypeOrm = async (dataSource: DataSource) => {
         userFixtureIds[user.username as keyof typeof userFixtureIds] ??
         (index === 0 ? userFixtureIds.admin : undefined),
       ...user,
-      labels: user.labels.map((labelId) => ({ id: labelId })),
-      assignedTo: user.assignedTo ? { id: user.assignedTo } : undefined,
-      language: user.language || undefined,
       password: hash(user.password),
       roles: user.roles.map((roleId) => ({ id: roleId })),
       avatar: user.avatar ? { id: user.avatar } : undefined,

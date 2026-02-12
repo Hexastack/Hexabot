@@ -10,27 +10,18 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  MemoryRecord,
-  MemoryRecordDtoConfig,
-  MemoryRecordFull,
-  MemoryRecordTransformerDto,
-} from '../dto/memory-record.dto';
+import { MemoryRecordDtoConfig } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 
 @Injectable()
 export class MemoryRecordRepository extends BaseOrmRepository<
   MemoryRecordOrmEntity,
-  MemoryRecordTransformerDto,
   MemoryRecordDtoConfig
 > {
   constructor(
     @InjectRepository(MemoryRecordOrmEntity)
     repository: Repository<MemoryRecordOrmEntity>,
   ) {
-    super(repository, ['definition', 'owner', 'workflow', 'run'], {
-      PlainCls: MemoryRecord,
-      FullCls: MemoryRecordFull,
-    });
+    super(repository, ['definition', 'owner', 'workflow', 'run']);
   }
 }

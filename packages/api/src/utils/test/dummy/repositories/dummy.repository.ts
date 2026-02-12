@@ -9,19 +9,15 @@ import { DataSource } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Dummy, DummyDtoConfig, DummyTransformerDto } from '../dto/dummy.dto';
+import { DummyDtoConfig } from '../dto/dummy.dto';
 import { DummyOrmEntity } from '../entities/dummy.entity';
 
 @Injectable()
 export class DummyRepository extends BaseOrmRepository<
   DummyOrmEntity,
-  DummyTransformerDto,
   DummyDtoConfig
 > {
   constructor(dataSource: DataSource) {
-    super(dataSource.getRepository(DummyOrmEntity), [], {
-      PlainCls: Dummy,
-      FullCls: Dummy,
-    });
+    super(dataSource.getRepository(DummyOrmEntity), []);
   }
 }

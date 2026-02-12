@@ -40,9 +40,9 @@ export { MenuType };
 )
 @Check(`"parent_id" IS NULL OR "id" <> "parent_id"`)
 export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
-  protected plainCls = Menu;
+  plainCls = Menu;
 
-  protected fullCls = MenuFull;
+  fullCls = MenuFull;
 
   /**
    * The displayed title of the menu.

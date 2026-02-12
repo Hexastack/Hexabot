@@ -19,9 +19,9 @@ import { Language, LanguageTransformerDto } from '../dto/language.dto';
 
 @Entity({ name: 'languages' })
 export class LanguageOrmEntity extends BaseOrmEntity<LanguageTransformerDto> {
-  protected plainCls = Language;
+  plainCls = Language;
 
-  protected fullCls = Language;
+  fullCls = Language;
 
   @Column({ unique: true })
   @Index()

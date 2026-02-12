@@ -24,7 +24,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   PermissionCreateDto,
   PermissionDtoConfig,
-  PermissionTransformerDto,
 } from '../dto/permission.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { ModelService } from '../services/model.service';
@@ -34,7 +33,6 @@ import { RoleService } from '../services/role.service';
 @Controller('permission')
 export class PermissionController extends BaseOrmController<
   PermissionOrmEntity,
-  PermissionTransformerDto,
   PermissionDtoConfig
 > {
   constructor(

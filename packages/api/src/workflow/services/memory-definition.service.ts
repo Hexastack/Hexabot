@@ -12,7 +12,6 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   MemoryDefinition,
   MemoryDefinitionDtoConfig,
-  MemoryDefinitionTransformerDto,
 } from '../dto/memory-definition.dto';
 import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity';
 import { MemoryDefinitionRepository } from '../repositories/memory-definition.repository';
@@ -23,7 +22,6 @@ import { WorkflowService } from './workflow.service';
 @Injectable()
 export class MemoryDefinitionService extends BaseOrmService<
   MemoryDefinitionOrmEntity,
-  MemoryDefinitionTransformerDto,
   MemoryDefinitionDtoConfig
 > {
   constructor(

@@ -33,9 +33,9 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 )
 @Entity({ name: 'messages' })
 export class MessageOrmEntity extends BaseOrmEntity<MessageTransformerDto> {
-  protected plainCls = Message;
+  plainCls = Message;
 
-  protected fullCls = MessageFull;
+  fullCls = MessageFull;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;

@@ -41,9 +41,9 @@ export class SubscriberChannel {
 export class SubscriberOrmEntity<
   TransformerDto extends DtoTransformerConfig = SubscriberTransformerDto,
 > extends UserProfileOrmEntity<TransformerDto> {
-  protected plainCls = Subscriber;
+  plainCls = Subscriber;
 
-  protected fullCls = SubscriberFull;
+  fullCls = SubscriberFull;
 
   @Column({ type: 'varchar', length: 5, nullable: true })
   locale: string | null;

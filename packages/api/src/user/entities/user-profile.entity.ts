@@ -36,9 +36,9 @@ export enum EUserProfileType {
 export class UserProfileOrmEntity<
   TransformerDto extends DtoTransformerConfig,
 > extends BaseOrmEntity<TransformerDto> {
-  protected plainCls = UserProfileStub;
+  plainCls = UserProfileStub;
 
-  protected fullCls = UserProfileStub;
+  fullCls = UserProfileStub;
 
   @Column()
   firstName: string;

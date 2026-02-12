@@ -28,9 +28,9 @@ import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'invitations' })
 export class InvitationOrmEntity extends BaseOrmEntity<InvitationTransformerDto> {
-  protected plainCls = Invitation;
+  plainCls = Invitation;
 
-  protected fullCls = InvitationFull;
+  fullCls = InvitationFull;
 
   @Column({ type: 'varchar' })
   email!: string;

@@ -27,9 +27,9 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 @Index(['title'], { unique: true })
 @Index(['name'], { unique: true })
 export class LabelOrmEntity extends BaseOrmEntity<LabelTransformerDto> {
-  protected plainCls = Label;
+  plainCls = Label;
 
-  protected fullCls = LabelFull;
+  fullCls = LabelFull;
 
   @Column()
   title!: string;

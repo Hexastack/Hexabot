@@ -13,7 +13,6 @@ import {
   StatsFindDatumDto,
   StatsFindDto,
   StatsSummaryDto,
-  StatsTransformerDto,
 } from '../dto/stats.dto';
 import {
   StatsOrmEntity,
@@ -26,7 +25,6 @@ import { aMonthAgo } from '../utilities/a-month-ago';
 @Controller('stats')
 export class StatsController extends BaseOrmController<
   StatsOrmEntity,
-  StatsTransformerDto,
   StatsActionDto
 > {
   constructor(protected readonly statsService: StatsService) {

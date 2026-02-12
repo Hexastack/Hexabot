@@ -22,9 +22,9 @@ import { MemoryScope } from '../types';
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
 export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionTransformerDto> {
-  protected plainCls = MemoryDefinition;
+  plainCls = MemoryDefinition;
 
-  protected fullCls = MemoryDefinitionFull;
+  fullCls = MemoryDefinitionFull;
 
   /** Human-friendly label for the memory definition. */
   @Column({ type: 'varchar', length: 255 })

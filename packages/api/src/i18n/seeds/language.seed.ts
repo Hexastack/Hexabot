@@ -14,18 +14,13 @@ import {
 } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import {
-  LanguageCreateDto,
-  LanguageDtoConfig,
-  LanguageTransformerDto,
-} from '../dto/language.dto';
+import { LanguageCreateDto, LanguageDtoConfig } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 
 @Injectable()
 export class LanguageSeeder extends BaseOrmSeeder<
   LanguageOrmEntity,
-  LanguageTransformerDto,
   LanguageDtoConfig
 > {
   constructor(

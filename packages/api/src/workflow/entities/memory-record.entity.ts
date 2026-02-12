@@ -36,9 +36,9 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Index(['definition', 'owner', 'workflow', 'run'])
 @Index(['expiresAt'])
 export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordTransformerDto> {
-  protected plainCls = MemoryRecord;
+  plainCls = MemoryRecord;
 
-  protected fullCls = MemoryRecordFull;
+  fullCls = MemoryRecordFull;
 
   /** Memory definition that governs the structure and scope of this record. */
   @ManyToOne(() => MemoryDefinitionOrmEntity, {

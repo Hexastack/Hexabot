@@ -31,9 +31,9 @@ import { RoleOrmEntity } from './role.entity';
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
 export class PermissionOrmEntity extends BaseOrmEntity<PermissionTransformerDto> {
-  protected plainCls = Permission;
+  plainCls = Permission;
 
-  protected fullCls = PermissionFull;
+  fullCls = PermissionFull;
 
   @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
     onDelete: 'CASCADE',

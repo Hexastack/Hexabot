@@ -13,11 +13,7 @@ import { PERMISSION_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  PermissionDtoConfig,
-  PermissionFull,
-  PermissionTransformerDto,
-} from '../dto/permission.dto';
+import { PermissionDtoConfig, PermissionFull } from '../dto/permission.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { PermissionsTree } from '../types/permission.type';
@@ -25,7 +21,6 @@ import { PermissionsTree } from '../types/permission.type';
 @Injectable()
 export class PermissionService extends BaseOrmService<
   PermissionOrmEntity,
-  PermissionTransformerDto,
   PermissionDtoConfig
 > {
   constructor(

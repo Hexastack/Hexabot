@@ -37,9 +37,9 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
 export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
-  protected plainCls = Workflow;
+  plainCls = Workflow;
 
-  protected fullCls = WorkflowFull;
+  fullCls = WorkflowFull;
 
   private static readonly BLANK_DEFINITION_YML =
     AgenticWorkflow.stringifyDefinition({

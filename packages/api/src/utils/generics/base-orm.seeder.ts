@@ -8,24 +8,20 @@ import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  DtoAction,
-  DtoActionConfig,
-  DtoTransformerConfig,
-  InferActionDto,
-} from '../types/dto.types';
+import { DtoAction, DtoActionConfig, InferActionDto } from '../types/dto.types';
 
 import { BaseOrmRepository, FindAllOptions } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
-  Entity extends BaseOrmEntity<TransformerDto>,
-  TransformerDto extends DtoTransformerConfig,
+  Entity extends BaseOrmEntity<{
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  }>,
   ActionDto extends DtoActionConfig,
   OrmRepository extends BaseOrmRepository<
     Entity,
-    TransformerDto,
     ActionDto
-  > = BaseOrmRepository<Entity, TransformerDto, ActionDto>,
+  > = BaseOrmRepository<Entity, ActionDto>,
 > {
   protected constructor(protected readonly repository: OrmRepository) {}
 

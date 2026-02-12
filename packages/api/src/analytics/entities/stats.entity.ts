@@ -24,9 +24,9 @@ export type ToLinesType = {
 @Entity({ name: 'stats' })
 @Index(['day', 'type', 'name'], { unique: true })
 export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
-  protected plainCls = Stats;
+  plainCls = Stats;
 
-  protected fullCls = Stats;
+  fullCls = Stats;
 
   /**
    * Type of the captured insight.

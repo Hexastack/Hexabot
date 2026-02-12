@@ -21,14 +21,13 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LanguageDtoConfig, LanguageTransformerDto } from '../dto/language.dto';
+import { LanguageDtoConfig } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 
 @Injectable()
 export class LanguageService extends BaseOrmService<
   LanguageOrmEntity,
-  LanguageTransformerDto,
   LanguageDtoConfig
 > {
   constructor(

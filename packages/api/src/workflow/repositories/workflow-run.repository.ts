@@ -10,18 +10,12 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  WorkflowRun,
-  WorkflowRunDtoConfig,
-  WorkflowRunFull,
-  WorkflowRunTransformerDto,
-} from '../dto/workflow-run.dto';
+import { WorkflowRunDtoConfig } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 
 @Injectable()
 export class WorkflowRunRepository extends BaseOrmRepository<
   WorkflowRunOrmEntity,
-  WorkflowRunTransformerDto,
   WorkflowRunDtoConfig
 > {
   /**
@@ -33,9 +27,6 @@ export class WorkflowRunRepository extends BaseOrmRepository<
     @InjectRepository(WorkflowRunOrmEntity)
     repository: Repository<WorkflowRunOrmEntity>,
   ) {
-    super(repository, ['workflow', 'workflowVersion', 'triggeredBy'], {
-      PlainCls: WorkflowRun,
-      FullCls: WorkflowRunFull,
-    });
+    super(repository, ['workflow', 'workflowVersion', 'triggeredBy']);
   }
 }

@@ -19,9 +19,9 @@ import { LabelOrmEntity } from './label.entity';
 @Entity({ name: 'label_groups' })
 @Index(['name'], { unique: true })
 export class LabelGroupOrmEntity extends BaseOrmEntity<LabelGroupTransformerDto> {
-  protected plainCls = LabelGroup;
+  plainCls = LabelGroup;
 
-  protected fullCls = LabelGroupFull;
+  fullCls = LabelGroupFull;
 
   @Column()
   name!: string;

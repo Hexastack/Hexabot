@@ -29,7 +29,6 @@ import {
   LabelGroupCreateDto,
   LabelGroupDtoConfig,
   LabelGroupFull,
-  LabelGroupTransformerDto,
   LabelGroupUpdateDto,
 } from '../dto/label-group.dto';
 import { LabelGroupOrmEntity } from '../entities/label-group.entity';
@@ -38,7 +37,6 @@ import { LabelGroupService } from '../services/label-group.service';
 @Controller('labelgroup')
 export class LabelGroupController extends BaseOrmController<
   LabelGroupOrmEntity,
-  LabelGroupTransformerDto,
   LabelGroupDtoConfig
 > {
   constructor(private readonly labelGroupService: LabelGroupService) {

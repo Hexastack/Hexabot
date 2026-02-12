@@ -18,9 +18,9 @@ export type TRole = 'admin' | 'public';
 @Entity({ name: 'roles' })
 @Index(['name'], { unique: true })
 export class RoleOrmEntity extends BaseOrmEntity<RoleTransformerDto> {
-  protected plainCls = Role;
+  plainCls = Role;
 
-  protected fullCls = RoleFull;
+  fullCls = RoleFull;
 
   @Column()
   name!: string;

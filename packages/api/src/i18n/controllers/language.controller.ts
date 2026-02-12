@@ -27,7 +27,6 @@ import {
   Language,
   LanguageCreateDto,
   LanguageDtoConfig,
-  LanguageTransformerDto,
   LanguageUpdateDto,
 } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
@@ -36,7 +35,6 @@ import { LanguageService } from '../services/language.service';
 @Controller('language')
 export class LanguageController extends BaseOrmController<
   LanguageOrmEntity,
-  LanguageTransformerDto,
   LanguageDtoConfig
 > {
   constructor(protected readonly languageService: LanguageService) {

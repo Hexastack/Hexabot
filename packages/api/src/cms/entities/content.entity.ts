@@ -33,9 +33,9 @@ import { ContentTypeOrmEntity } from './content-type.entity';
 @Index(['title'])
 @Index(['rag'])
 export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
-  protected plainCls = Content;
+  plainCls = Content;
 
-  protected fullCls = ContentFull;
+  fullCls = ContentFull;
 
   /**
    * The content type of this content.

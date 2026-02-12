@@ -20,11 +20,7 @@ import {
   WebsocketGateway,
 } from '@/websocket';
 
-import {
-  WorkflowDtoConfig,
-  WorkflowFull,
-  WorkflowTransformerDto,
-} from '../dto/workflow.dto';
+import { WorkflowDtoConfig, WorkflowFull } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
@@ -34,7 +30,6 @@ import { WorkflowRunService } from './workflow-run.service';
 @Injectable()
 export class WorkflowService extends BaseOrmService<
   WorkflowOrmEntity,
-  WorkflowTransformerDto,
   WorkflowDtoConfig
 > {
   /**

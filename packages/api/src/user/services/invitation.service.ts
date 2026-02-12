@@ -21,7 +21,6 @@ import {
   Invitation,
   InvitationCreateDto,
   InvitationDtoConfig,
-  InvitationTransformerDto,
 } from '../dto/invitation.dto';
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
@@ -29,7 +28,6 @@ import { InvitationRepository } from '../repositories/invitation.repository';
 @Injectable()
 export class InvitationService extends BaseOrmService<
   InvitationOrmEntity,
-  InvitationTransformerDto,
   InvitationDtoConfig
 > {
   constructor(

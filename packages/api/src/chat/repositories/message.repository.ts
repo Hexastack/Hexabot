@@ -10,29 +10,20 @@ import { Brackets, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import {
-  Message,
-  MessageDtoConfig,
-  MessageFull,
-  MessageTransformerDto,
-} from '../dto/message.dto';
+import { Message, MessageDtoConfig } from '../dto/message.dto';
 import { SubscriberStub } from '../dto/subscriber.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 
 @Injectable()
 export class MessageRepository extends BaseOrmRepository<
   MessageOrmEntity,
-  MessageTransformerDto,
   MessageDtoConfig
 > {
   constructor(
     @InjectRepository(MessageOrmEntity)
     repository: Repository<MessageOrmEntity>,
   ) {
-    super(repository, ['sender', 'recipient', 'sentBy'], {
-      PlainCls: Message,
-      FullCls: MessageFull,
-    });
+    super(repository, ['sender', 'recipient', 'sentBy']);
   }
 
   /**

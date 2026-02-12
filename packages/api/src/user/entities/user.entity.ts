@@ -29,9 +29,9 @@ import { RoleOrmEntity } from './role.entity';
 @Index(['username'], { unique: true })
 @Index(['email'], { unique: true })
 export class UserOrmEntity extends SubscriberOrmEntity<UserTransformerDto> {
-  protected plainCls = User;
+  plainCls = User;
 
-  protected fullCls = UserFull;
+  fullCls = UserFull;
 
   @Column()
   username!: string;

@@ -14,9 +14,9 @@ import { Metadata, MetadataTransformerDto } from '../dto/metadata.dto';
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })
 export class MetadataOrmEntity extends BaseOrmEntity<MetadataTransformerDto> {
-  protected plainCls = Metadata;
+  plainCls = Metadata;
 
-  protected fullCls = Metadata;
+  fullCls = Metadata;
 
   @Column()
   name!: string;

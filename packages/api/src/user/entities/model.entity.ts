@@ -18,9 +18,9 @@ import { PermissionOrmEntity } from './permission.entity';
 @Index(['name'], { unique: true })
 @Index(['identity'], { unique: true })
 export class ModelOrmEntity extends BaseOrmEntity<ModelTransformerDto> {
-  protected plainCls = Model;
+  plainCls = Model;
 
-  protected fullCls = ModelFull;
+  fullCls = ModelFull;
 
   @Column()
   name!: string;

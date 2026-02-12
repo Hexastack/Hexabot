@@ -15,27 +15,22 @@ import {
 } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import {
-  Ctor,
-  DtoTransformer,
-  DtoTransformerConfig,
-  InferTransformDto,
-} from '@/utils';
+import { InferTransformDto } from '@/utils';
 
 export abstract class BaseOrmEntity<
-  TransformerDto extends DtoTransformerConfig<{
-    PlainCls: Ctor<unknown>;
-    FullCls: Ctor<unknown>;
-  }> = DtoTransformerConfig<{
-    PlainCls: Ctor<unknown>;
-    FullCls: Ctor<unknown>;
-  }>,
+  TransformerDto extends {
+    FullCls: unknown;
+    PlainCls: unknown;
+  } = {
+    FullCls: unknown;
+    PlainCls: unknown;
+  },
 > {
   private static entityManagerProvider?: () => EntityManager;
 
-  protected abstract plainCls: TransformerDto['PlainCls'];
+  abstract plainCls: TransformerDto['PlainCls'];
 
-  protected abstract fullCls: TransformerDto['FullCls'];
+  abstract fullCls: TransformerDto['FullCls'];
 
   @PrimaryColumn()
   id!: string;
@@ -87,19 +82,13 @@ export abstract class BaseOrmEntity<
     }
   }
 
-  public toPlainCls(): InferTransformDto<
-    DtoTransformer.PlainCls,
-    TransformerDto
-  > {
+  public toPlainCls(): InferTransformDto<TransformerDto['PlainCls']> {
     return plainToInstance(this.plainCls as any, this, {
       exposeUnsetFields: false,
     });
   }
 
-  public toFullCls(): InferTransformDto<
-    DtoTransformer.FullCls,
-    TransformerDto
-  > {
+  public toFullCls(): InferTransformDto<TransformerDto['FullCls']> {
     return plainToInstance(this.fullCls as any, this, {
       exposeUnsetFields: false,
     });

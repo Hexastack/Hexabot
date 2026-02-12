@@ -13,9 +13,9 @@ import { Translation, TranslationTransformerDto } from '../dto/translation.dto';
 
 @Entity({ name: 'translations' })
 export class TranslationOrmEntity extends BaseOrmEntity<TranslationTransformerDto> {
-  protected plainCls = Translation;
+  plainCls = Translation;
 
-  protected fullCls = Translation;
+  fullCls = Translation;
 
   @Column({ unique: true })
   @Index()

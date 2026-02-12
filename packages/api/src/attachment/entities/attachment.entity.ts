@@ -40,9 +40,9 @@ import {
 @Entity({ name: 'attachments' })
 @Index('idx_attachment_resource_ref', ['resourceRef'])
 export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentTransformerDto> {
-  protected plainCls = Attachment;
+  plainCls = Attachment;
 
-  protected fullCls = AttachmentFull;
+  fullCls = AttachmentFull;
 
   @Column()
   name!: string;

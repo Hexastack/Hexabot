@@ -13,7 +13,6 @@ import type { MemoryDefinition } from '../dto/memory-definition.dto';
 import {
   MemoryRecordDtoConfig,
   MemoryRecordFull,
-  MemoryRecordTransformerDto,
 } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 import { MemoryRecordRepository } from '../repositories/memory-record.repository';
@@ -22,7 +21,6 @@ import { MemoryScope, MemoryStoreIdentifier, MemoryValue } from '../types';
 @Injectable()
 export class MemoryRecordService extends BaseOrmService<
   MemoryRecordOrmEntity,
-  MemoryRecordTransformerDto,
   MemoryRecordDtoConfig
 > {
   constructor(readonly repository: MemoryRecordRepository) {

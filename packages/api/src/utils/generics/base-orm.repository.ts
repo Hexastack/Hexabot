@@ -35,8 +35,6 @@ import { flatten } from '@/utils/helpers/flatten';
 import {
   DtoAction,
   DtoActionConfig,
-  DtoTransformer,
-  DtoTransformerConfig,
   InferActionDto,
   InferTransformDto,
 } from '../types/dto.types';
@@ -74,8 +72,10 @@ export type FindAllOptions<EntityType> = Omit<
 };
 
 export abstract class BaseOrmRepository<
-  Entity extends BaseOrmEntity<TransformerDto>,
-  TransformerDto extends DtoTransformerConfig,
+  Entity extends BaseOrmEntity<{
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  }>,
   ActionDto extends DtoActionConfig,
 > implements EntitySubscriberInterface<Entity>
 {
@@ -84,7 +84,6 @@ export abstract class BaseOrmRepository<
   protected constructor(
     protected readonly repository: Repository<Entity>,
     protected readonly populateRelations: string[] = [],
-    protected readonly transformers: TransformerDto,
   ) {
     this.dataSource = repository.manager.connection;
     this.registerEntityManagerProvider();
@@ -132,7 +131,7 @@ export abstract class BaseOrmRepository<
 
   async findAll(
     options: FindAllOptions<Entity> = {} as FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     const entities = await this.findAllEntities(options);
 
     return entities.map((e) => e.toPlainCls());
@@ -146,7 +145,7 @@ export abstract class BaseOrmRepository<
 
   async findAllAndPopulate(
     options: FindAllOptions<Entity> = {} as FindAllOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['fullCls']>[]> {
     const populatedEntities = await this.repository.find(
       this.withPopulateRelations(options as FindManyOptions<Entity>, true),
     );
@@ -156,7 +155,7 @@ export abstract class BaseOrmRepository<
 
   async find(
     options: FindManyOptions<Entity> = {} as FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     const entities = await this.findEntities(options);
 
     return entities.map((e) => e.toPlainCls());
@@ -198,7 +197,7 @@ export abstract class BaseOrmRepository<
 
   async findAndPopulate(
     options: FindManyOptions<Entity> = {} as FindManyOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['fullCls']>[]> {
     const entities = await this.findEntities(options, true);
 
     return entities.map((e) => e.toFullCls());
@@ -212,10 +211,7 @@ export abstract class BaseOrmRepository<
 
   async findOne(
     idOrOptions: string | FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<
-    DtoTransformer.PlainCls,
-    TransformerDto
-  > | null> {
+  ): Promise<InferTransformDto<Entity['plainCls']> | null> {
     const entity = await this.findOneEntity(idOrOptions);
 
     return entity ? entity.toPlainCls() : null;
@@ -243,7 +239,7 @@ export abstract class BaseOrmRepository<
 
   async findOneAndPopulate(
     idOrOptions: string | FindOneOptions<Entity>,
-  ): Promise<InferTransformDto<DtoTransformer.FullCls, TransformerDto> | null> {
+  ): Promise<InferTransformDto<Entity['fullCls']> | null> {
     const entity = await this.findOneEntity(idOrOptions, true);
 
     return entity ? entity.toFullCls() : null;
@@ -251,7 +247,7 @@ export abstract class BaseOrmRepository<
 
   async create(
     payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
     const created = await this.repository.save(entity);
 
@@ -260,7 +256,7 @@ export abstract class BaseOrmRepository<
 
   async createMany(
     payloads: InferActionDto<DtoAction.Create, ActionDto>[],
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     const entities = this.repository.create(
       payloads.map((payload) => this.actionDtoToEntity(payload)),
     );
@@ -273,7 +269,7 @@ export abstract class BaseOrmRepository<
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
     options?: UpdateOneOptions,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     const entity = await this.findOneEntity(idOrOptions);
     if (entity) {
       const updates = this.actionDtoToEntity(payload);
@@ -310,7 +306,7 @@ export abstract class BaseOrmRepository<
   async updateMany(
     options: FindManyOptions<Entity> = {} as FindManyOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>[]> {
+  ): Promise<InferTransformDto<Entity['plainCls']>[]> {
     const entities = await this.findEntities(options);
 
     if (!entities.length) {
@@ -331,7 +327,7 @@ export abstract class BaseOrmRepository<
   async findOneOrCreate(
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Create, ActionDto>,
-  ): Promise<InferTransformDto<DtoTransformer.PlainCls, TransformerDto>> {
+  ): Promise<InferTransformDto<Entity['plainCls']>> {
     const existing = await this.findOneEntity(idOrOptions);
     if (existing) {
       return existing.toPlainCls();
