@@ -21,7 +21,7 @@ import { useChat } from "../hooks/ChatContext";
 import { useInfiniteLiveSubscribers } from "../hooks/useInfiniteLiveSubscribers";
 import { AssignedTo } from "../types";
 
-import { Avatars } from "./Avatars";
+import { SubscriberAvatars } from "./SubscriberAvatars";
 
 export const SubscribersList = (props: {
   channels: string[];
@@ -93,7 +93,7 @@ export const SubscribersList = (props: {
             router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
           }}
         >
-          <Avatars subscriber={sub} />
+          <SubscriberAvatars subscriber={sub} />
           <Grid textAlign="left" flex={1}>
             <Typography variant="body2">{sub.fullName}</Typography>
             <Typography variant="caption">
