@@ -6,7 +6,7 @@
 
 import { type NodeProps } from "@xyflow/react";
 import { Plus } from "lucide-react";
-import type { FC } from "react";
+import { useCallback, type FC, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -22,21 +22,36 @@ export const BranchPlaceholder: FC<
   const { t } = useTranslate();
   const addLabel = t("button.add");
   const branchLabel = data?.label;
+  const insertPath = data?.insertPath;
+  const onOpenInsertMenu = data?.onOpenInsertMenu;
+  const canInsert = Boolean(insertPath && onOpenInsertMenu);
+  const handleOpenInsertMenu = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!insertPath) {
+        return;
+      }
+
+      onOpenInsertMenu?.(event.currentTarget, insertPath);
+    },
+    [insertPath, onOpenInsertMenu],
+  );
 
   return (
     <WorkflowNodeProvider id={id}>
       <ZoomAwareTooltip title={branchLabel} placement="top">
-        <div
-          className="workflow-branch-placeholder nodrag nopan"
-          role="button"
-          aria-label={addLabel}
-        >
+        <div className="workflow-branch-placeholder nodrag nopan">
           <PulseIconButton
+            type="button"
             tabIndex={-1}
             size={42}
             className="workflow-branch-placeholder__pulse"
-            sx={{ pointerEvents: "none" }}
-            aria-hidden
+            aria-label={addLabel}
+            aria-haspopup="menu"
+            onClick={handleOpenInsertMenu}
+            disabled={!canInsert}
           >
             <Plus size={18} />
           </PulseIconButton>

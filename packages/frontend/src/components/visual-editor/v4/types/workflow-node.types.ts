@@ -36,7 +36,10 @@ import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
-import type { FlowStepPath } from "../types/workflow-path.types";
+import type {
+  FlowStepPath,
+  OnOpenInsertMenu,
+} from "../types/workflow-path.types";
 
 import { NodeExecutionState } from "./workflow.types";
 
@@ -94,6 +97,7 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
 export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
   insertPath?: FlowStepPath;
   label?: string;
+  onOpenInsertMenu?: OnOpenInsertMenu;
 };
 
 export enum EIndicatorType {

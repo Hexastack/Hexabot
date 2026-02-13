@@ -202,7 +202,10 @@ function addEdge(
   const hasGroupEdge = addGroupEdge(ctx, source, target, label, insertPath);
   const edgeInsertPath = hasGroupEdge ? undefined : insertPath;
   const isFromBranchPlaceholder = ctx.placeholderNodeIds.has(source);
-  const shouldHideDirectEdge = isFromBranchPlaceholder || hasGroupEdge;
+  const isToBranchPlaceholder = ctx.placeholderNodeIds.has(target);
+  const shouldHideDirectEdge =
+    hasGroupEdge ||
+    (isFromBranchPlaceholder && !isToBranchPlaceholder);
 
   ctx.edges.push({
     id: `e-${source}-${target}`,

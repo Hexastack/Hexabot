@@ -15,7 +15,6 @@ import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
 import { DEFAULT_NODE_PROPS } from "@/constants/workflow.constants";
-import { generateId } from "@/utils/generateId";
 
 import {
   EEdgeType,
@@ -94,10 +93,13 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
   return {
     id: "root",
     layoutOptions: {
-      "elk.algorithm": "mrtree",
-      "elk.direction": elkDirection,
-      "elk.spacing.nodeNode": "128",
-      "elk.mrtree.compaction": "true",
+      "elk.algorithm": "layered",
+      "org.eclipse.elk.direction": elkDirection,
+      "elk.spacing.nodeNode": "24",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "128",
+      "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
+      "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder":
+        "true",
     },
     children: nodes.map((n) => {
       const ports =
@@ -343,13 +345,15 @@ export const buildNodesAndEdges = async ({
     const directEdgeInsertPath = groupName ? undefined : insertPath;
 
     ctx.edges.push({
-      id: generateId(),
+      id: `e-${endEdgesId}-${endIndicatorId}`,
       source: endEdgesId,
       target: endIndicatorId,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       hidden: isFromBranchPlaceholder,
-      data: directEdgeInsertPath ? { insertPath: directEdgeInsertPath } : undefined,
+      data: directEdgeInsertPath
+        ? { insertPath: directEdgeInsertPath }
+        : undefined,
     });
 
     if (groupName) {

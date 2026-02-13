@@ -14,7 +14,9 @@ export type EdgeInsertType =
   | StepType.Parallel
   | "step";
 
+export type OnOpenInsertMenu = (anchorEl: HTMLElement, path: FlowStepPath) => void;
+
 export type EdgeInsertData = {
   insertPath?: FlowStepPath;
-  onInsert?: (path: FlowStepPath, type: EdgeInsertType) => void;
+  onOpenInsertMenu?: OnOpenInsertMenu;
 };
