@@ -16,7 +16,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { Link } from "react-router-dom";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
@@ -66,7 +65,7 @@ export const DashboardHeader = ({
             </IconButton>
           </Tooltip>
 
-          <Link to="/">{logo && <LogoContainer>{logo}</LogoContainer>}</Link>
+          {logo && <LogoContainer>{logo}</LogoContainer>}
 
           <Box
             sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}
