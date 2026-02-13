@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType } from "@hexabot-ai/agentic";
-import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -17,15 +15,12 @@ import { useCallback, useMemo, useState, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-import {
-  WORKFLOW_OPERATOR_GRAPH_THEME,
-  WORKFLOW_STEP_GRAPH_THEME,
-} from "../../constants/workflow-graph-theme.constants";
 import type {
   EdgeInsertData,
   EdgeInsertType,
 } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
+import { WorkflowInsertMenu } from "../WorkflowInsertMenu";
 import { ZoomAwareTooltip } from "../ZoomAwareTooltip";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
@@ -86,72 +81,6 @@ export const EdgeWithButton = ({
   const handleCloseInsertMenu = useCallback(() => {
     setInsertMenuAnchorEl(null);
   }, []);
-  const handleInsertStep = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleCloseInsertMenu();
-      handleInsert("step");
-    },
-    [handleCloseInsertMenu, handleInsert],
-  );
-  const handleInsertConditionalStep = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleCloseInsertMenu();
-      handleInsert(StepType.Conditional);
-    },
-    [handleCloseInsertMenu, handleInsert],
-  );
-  const handleInsertLoopStep = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleCloseInsertMenu();
-      handleInsert(StepType.Loop);
-    },
-    [handleCloseInsertMenu, handleInsert],
-  );
-  const handleInsertParallelStep = useCallback(
-    (event: MouseEvent<HTMLElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleCloseInsertMenu();
-      handleInsert(StepType.Parallel);
-    },
-    [handleCloseInsertMenu, handleInsert],
-  );
-  const insertMenuItems = useMemo(
-    () => [
-      {
-        id: "step",
-        ...WORKFLOW_STEP_GRAPH_THEME,
-        onClick: handleInsertStep,
-      },
-      {
-        id: StepType.Conditional,
-        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional],
-        onClick: handleInsertConditionalStep,
-      },
-      {
-        id: StepType.Loop,
-        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop],
-        onClick: handleInsertLoopStep,
-      },
-      {
-        id: StepType.Parallel,
-        ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel],
-        onClick: handleInsertParallelStep,
-      },
-    ],
-    [
-      handleInsertConditionalStep,
-      handleInsertLoopStep,
-      handleInsertParallelStep,
-      handleInsertStep,
-    ],
-  );
   const showInsert = Boolean(insertPath && edgeData?.onInsert);
 
   return (
@@ -186,22 +115,13 @@ export const EdgeWithButton = ({
                 </PulseIconButton>
               </span>
             </ZoomAwareTooltip>
-            <Menu
+            <WorkflowInsertMenu
               id={`edge-insert-menu-${id}`}
               anchorEl={insertMenuAnchorEl}
               open={isInsertMenuOpen}
               onClose={handleCloseInsertMenu}
-              slotProps={{ list: { className: "nodrag nopan" } }}
-            >
-              {insertMenuItems.map((item) => (
-                <MenuItem key={item.id} onClick={item.onClick}>
-                  <ListItemIcon sx={{ color: item.color }}>
-                    <item.Icon size={18} />
-                  </ListItemIcon>
-                  <ListItemText primary={t(item.i18nTitle)} />
-                </MenuItem>
-              ))}
-            </Menu>
+              onInsert={handleInsert}
+            />
           </div>
         </EdgeLabelRenderer>
       ) : label ? (
