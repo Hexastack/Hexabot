@@ -303,6 +303,11 @@ export const inputsCustomizations: Components<Theme> = {
           display: "flex",
           gap: "6px",
         },
+        "&[data-multiple='true']": {
+          "& .MuiAutocomplete-inputRoot": {
+            height: "100%",
+          },
+        },
       },
     },
   },

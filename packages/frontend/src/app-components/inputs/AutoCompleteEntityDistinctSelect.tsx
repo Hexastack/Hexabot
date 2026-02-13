@@ -127,6 +127,7 @@ const AutoCompleteEntityDistinctSelect = <
         </Box>
       )}
       multiple
+      data-multiple="true"
       {...rest}
     />
   );

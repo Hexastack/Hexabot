@@ -74,7 +74,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
             />
           </ContentItem>
           <ContentItem>
-            <Grid container gap="20px">
+            <Grid container gap={2}>
               <Grid size="grow">
                 <Controller
                   name="labels"
@@ -104,9 +104,11 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                   control={control}
                 />
               </Grid>
-              <Grid size="auto" alignContent="center">
-                <Link href="/labels">
-                  <Button variant="contained">{t("button.manage")}</Button>
+              <Grid size="auto" alignContent="end">
+                <Link href="/subscribers/labels">
+                  <Button variant="contained" size="small">
+                    {t("button.manage")}
+                  </Button>
                 </Link>
               </Grid>
             </Grid>

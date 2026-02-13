@@ -134,6 +134,7 @@ const AutoCompleteEntitySelect = <
       options={options || []}
       onSearch={onSearch}
       loading={isFetching}
+      data-multiple={rest.multiple}
       {...rest}
     />
   );
