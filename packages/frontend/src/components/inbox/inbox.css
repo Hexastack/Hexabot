@@ -45,25 +45,6 @@ div .cs-message-input__content-editor-container,
   color: var(--cs-main-color) !important;
 }
 
-.cs-conversation {
-  background-color: #f7f7f700 !important;
-  color: #071b19 !important;
-  font-weight: 500 !important;
-}
-
-.cs-conversation--active {
-  background-color: var(--cs-message-input-bg) !important;
-}
-
-.cs-conversation-list {
-  overflow: auto !important;
-}
-
-.cs-conversation__info {
-  color: #0e2525 !important;
-  font-weight: 200;
-}
-
 .cs-search {
   background-color: var(--cs-message-search-bg) !important;
   outline: 1px solid rgba(0, 0, 0, 0.23);
