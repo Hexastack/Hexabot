@@ -39,6 +39,7 @@ import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDraw
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
+import { ParallelFormDrawer } from "../components/main/ParallelDrawer/ParallelFormDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
@@ -409,6 +410,7 @@ export const Workflow = () => {
       </StyledBox>
       <ActionFormDrawer />
       <ConditionalFormDrawer />
+      <ParallelFormDrawer />
       <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}

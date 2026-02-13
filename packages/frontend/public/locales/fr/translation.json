@@ -762,6 +762,24 @@
         "empty_state": "Aucune condition configurée."
       }
     },
+    "parallel_drawer": {
+      "title": "Parallèle",
+      "description": "Choisissez comment l'étape parallèle doit poursuivre son exécution.",
+      "form": {
+        "strategy": {
+          "label": "Stratégie de complétion",
+          "wait_all": {
+            "label": "Attendre tout",
+            "description": "Continuer après la fin de toutes les branches."
+          },
+          "wait_any": {
+            "label": "Attendre une",
+            "description": "Continuer dès qu'une branche se termine."
+          }
+        },
+        "empty_state": "Aucune option de stratégie disponible."
+      }
+    },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"

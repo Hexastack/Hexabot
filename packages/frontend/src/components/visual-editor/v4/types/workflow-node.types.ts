@@ -108,6 +108,7 @@ export type EOperatorType = Extract<
 
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
+  strategy?: "wait_all" | "wait_any";
 };
 
 // Group types

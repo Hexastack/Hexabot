@@ -83,6 +83,7 @@ type OperatorNodeArgs = {
   level: number;
   groupName?: string;
   stepPath: FlowStepPath;
+  strategy?: CompiledParallelStep["strategy"];
 };
 
 function uniqueIds(ids: string[]) {
@@ -447,12 +448,15 @@ const addOperatorNode = (
     level,
     groupName,
     stepPath,
+    strategy,
   }: OperatorNodeArgs,
 ) => {
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.OPERATOR, config),
     ...DEFAULT_NODE_PROPS,
-    selectable: operatorType === StepType.Conditional,
+    selectable:
+      operatorType === StepType.Conditional ||
+      operatorType === StepType.Parallel,
     id: operatorNodeId,
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
@@ -462,6 +466,7 @@ const addOperatorNode = (
       level,
       groupName,
       stepPath,
+      strategy,
     },
   });
 };
@@ -743,6 +748,7 @@ const walkStep = ({
     level,
     groupName,
     stepPath,
+    strategy: step.type === StepType.Parallel ? step.strategy : undefined,
   });
 
   connectIncomingEdges(
