@@ -60,7 +60,7 @@ export const DIMENSIONS = {
   [ENodeType.TASK]: { width: 256, height: 75 },
   [ENodeType.OPERATOR]: { width: 150, height: 55 },
   [ENodeType.MEMORY]: { width: 256, height: 75 },
-  [ENodeType.BRANCH_PLACEHOLDER]: { width: 256, height: 84 },
+  [ENodeType.BRANCH_PLACEHOLDER]: { width: 64, height: 64 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
   [StepType.Loop]: { color: "#fefbe8", padding: 32 },

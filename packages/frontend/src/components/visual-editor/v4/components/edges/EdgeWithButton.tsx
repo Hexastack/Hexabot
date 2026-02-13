@@ -125,6 +125,11 @@ export const EdgeWithButton = ({
   const insertMenuItems = useMemo(
     () => [
       {
+        id: "step",
+        ...WORKFLOW_STEP_GRAPH_THEME,
+        onClick: handleInsertStep,
+      },
+      {
         id: StepType.Conditional,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional],
         onClick: handleInsertConditionalStep,
@@ -138,11 +143,6 @@ export const EdgeWithButton = ({
         id: StepType.Parallel,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel],
         onClick: handleInsertParallelStep,
-      },
-      {
-        id: "step",
-        ...WORKFLOW_STEP_GRAPH_THEME,
-        onClick: handleInsertStep,
       },
     ],
     [
