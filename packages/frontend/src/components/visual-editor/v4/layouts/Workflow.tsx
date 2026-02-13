@@ -39,6 +39,8 @@ import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDraw
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
+import { LoopFormDrawer } from "../components/main/LoopDrawer/LoopFormDrawer";
+import { ParallelFormDrawer } from "../components/main/ParallelDrawer/ParallelFormDrawer";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
@@ -103,6 +105,8 @@ export const Workflow = () => {
     actions,
     addActionStep,
     addConditionalStep,
+    addLoopStep,
+    addParallelStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -140,6 +144,16 @@ export const Workflow = () => {
 
         return;
       }
+      if (insertType === StepType.Loop) {
+        addLoopStep(insertPath);
+
+        return;
+      }
+      if (insertType === StepType.Parallel) {
+        addParallelStep(insertPath);
+
+        return;
+      }
       if (insertType !== "step") {
         return;
       }
@@ -147,7 +161,7 @@ export const Workflow = () => {
       setPendingInsertPath(insertPath);
       setActionsDrawerOpen(true);
     },
-    [addConditionalStep],
+    [addConditionalStep, addLoopStep, addParallelStep],
   );
   const handleActionSelect = useCallback(
     (action: IAction) => {
@@ -397,6 +411,8 @@ export const Workflow = () => {
       </StyledBox>
       <ActionFormDrawer />
       <ConditionalFormDrawer />
+      <LoopFormDrawer />
+      <ParallelFormDrawer />
       <WorkflowMenu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}

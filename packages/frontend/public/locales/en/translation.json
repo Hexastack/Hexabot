@@ -764,6 +764,69 @@
         "empty_state": "No conditions configured."
       }
     },
+    "loop_drawer": {
+      "title": "Loop",
+      "description": "Configure loop iteration, exit rule, and accumulator settings.",
+      "form": {
+        "empty_state": "No loop configuration available.",
+        "name": {
+          "label": "Name",
+          "helper": "Optional key used to expose loop output."
+        },
+        "description": {
+          "label": "Description",
+          "helper": "Optional loop description."
+        },
+        "for_each": {
+          "section": "For each",
+          "item_label": "Item variable",
+          "item_helper": "Variable available in the loop as $iteration.item.",
+          "in_label": "Input expression",
+          "in_helper": "JSONata expression that returns the collection (must start with '=')."
+        },
+        "max_concurrency": {
+          "label": "Max concurrency",
+          "helper": "Optional positive integer. Leave empty to use the default."
+        },
+        "until": {
+          "label": "Until condition",
+          "helper": "Optional JSONata expression to stop early when true."
+        },
+        "accumulate": {
+          "enabled": "Enable accumulator",
+          "as_label": "Accumulator name",
+          "as_helper": "Name exposed in expressions as $accumulator.<name>.",
+          "initial_label": "Initial value (JSON)",
+          "initial_helper": "Seed accumulator value as valid JSON.",
+          "merge_label": "Merge expression",
+          "merge_helper": "JSONata expression to compute the next accumulator value."
+        },
+        "errors": {
+          "required": "This field is required.",
+          "jsonata_required": "Must start with '='.",
+          "positive_integer": "Must be a positive integer.",
+          "json_invalid": "Must be valid JSON."
+        }
+      }
+    },
+    "parallel_drawer": {
+      "title": "Parallel",
+      "description": "Choose how the parallel step should continue execution.",
+      "form": {
+        "strategy": {
+          "label": "Completion strategy",
+          "wait_all": {
+            "label": "Wait all",
+            "description": "Continue after every branch has completed."
+          },
+          "wait_any": {
+            "label": "Wait any",
+            "description": "Continue as soon as one branch completes."
+          }
+        },
+        "empty_state": "No strategy options available."
+      }
+    },
     "yaml_editor": {
       "show": "Show YAML editor",
       "hide": "Hide YAML editor"

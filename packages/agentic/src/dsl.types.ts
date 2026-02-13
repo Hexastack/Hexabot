@@ -227,7 +227,7 @@ const ConditionalSchema: z.ZodType<{
 const ParallelSchema: z.ZodType<ParallelBlock> = z.strictObject({
   description: z.string().optional(),
   strategy: z.enum(['wait_all', 'wait_any']).optional(),
-  steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
+  steps: z.array(z.lazy(() => FlowStepSchema)),
 });
 const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
   z.strictObject({
@@ -246,7 +246,7 @@ const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
         merge: ExpressionStringSchema,
       })
       .optional(),
-    steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
+    steps: z.array(z.lazy(() => FlowStepSchema)),
   }),
 );
 

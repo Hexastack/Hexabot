@@ -104,16 +104,31 @@ export const EdgeWithButton = ({
     },
     [handleCloseInsertMenu, handleInsert],
   );
-  const handleSelectNoopOption = useCallback(
+  const handleInsertLoopStep = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       event.preventDefault();
       event.stopPropagation();
       handleCloseInsertMenu();
+      handleInsert(StepType.Loop);
     },
-    [handleCloseInsertMenu],
+    [handleCloseInsertMenu, handleInsert],
+  );
+  const handleInsertParallelStep = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseInsertMenu();
+      handleInsert(StepType.Parallel);
+    },
+    [handleCloseInsertMenu, handleInsert],
   );
   const insertMenuItems = useMemo(
     () => [
+      {
+        id: "step",
+        ...WORKFLOW_STEP_GRAPH_THEME,
+        onClick: handleInsertStep,
+      },
       {
         id: StepType.Conditional,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional],
@@ -122,20 +137,20 @@ export const EdgeWithButton = ({
       {
         id: StepType.Loop,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop],
-        onClick: handleSelectNoopOption,
+        onClick: handleInsertLoopStep,
       },
       {
         id: StepType.Parallel,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel],
-        onClick: handleSelectNoopOption,
-      },
-      {
-        id: "step",
-        ...WORKFLOW_STEP_GRAPH_THEME,
-        onClick: handleInsertStep,
+        onClick: handleInsertParallelStep,
       },
     ],
-    [handleInsertConditionalStep, handleInsertStep, handleSelectNoopOption],
+    [
+      handleInsertConditionalStep,
+      handleInsertLoopStep,
+      handleInsertParallelStep,
+      handleInsertStep,
+    ],
   );
   const showInsert = Boolean(insertPath && edgeData?.onInsert);
 

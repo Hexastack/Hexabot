@@ -83,6 +83,7 @@ type OperatorNodeArgs = {
   level: number;
   groupName?: string;
   stepPath: FlowStepPath;
+  strategy?: CompiledParallelStep["strategy"];
 };
 
 function uniqueIds(ids: string[]) {
@@ -116,11 +117,9 @@ const connectIncomingEdges = (
   label?: string,
 ) => {
   incoming.forEach((source, index) => {
-    const edgeInsertPath =
-      insertPath && !ctx.placeholderNodeIds.has(source) ? insertPath : undefined;
     const edgeLabel = index === 0 ? label : undefined;
 
-    addEdge(ctx, source, target, undefined, edgeLabel, edgeInsertPath);
+    addEdge(ctx, source, target, undefined, edgeLabel, insertPath);
   });
 };
 const addGroupEdge = (
@@ -128,55 +127,69 @@ const addGroupEdge = (
   source: string,
   target: string,
   label?: string,
+  insertPath?: FlowStepPath,
 ) => {
   const sourceGroupName = getGroupId(source, ctx.config?.highlights);
   const targetGroupName = getGroupId(target, ctx.config?.highlights);
 
-  if (sourceGroupName !== targetGroupName) {
-    if (!sourceGroupName && targetGroupName) {
-      // task -> group
-      const id = `e-${source}-${targetGroupName}`;
-
-      if (ctx.edges.findIndex((e) => e.id === id) === -1) {
-        ctx.edges.push({
-          id,
-          type: EEdgeType.EDGE_WITH_BUTTON,
-          ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-          source,
-          target: targetGroupName,
-          label,
-        });
-      }
-    } else if (sourceGroupName && targetGroupName) {
-      // group -> other group
-      const id = `e-${sourceGroupName}-${targetGroupName}`;
-
-      if (ctx.edges.findIndex((e) => e.id === id) === -1) {
-        ctx.edges.push({
-          id,
-          type: EEdgeType.EDGE_WITH_BUTTON,
-          ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-          source: sourceGroupName,
-          target: targetGroupName,
-          label,
-        });
-      }
-    } else if (sourceGroupName && !targetGroupName) {
-      // group -> task
-      const id = `e-${sourceGroupName}-${target}`;
-
-      if (ctx.edges.findIndex((e) => e.id === id) === -1) {
-        ctx.edges.push({
-          id,
-          type: EEdgeType.EDGE_WITH_BUTTON,
-          ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-          source: sourceGroupName,
-          target,
-          label,
-        });
-      }
-    }
+  if (sourceGroupName === targetGroupName) {
+    return false;
   }
+
+  const upsertGroupEdge = (
+    id: string,
+    groupSource: string,
+    groupTarget: string,
+  ) => {
+    const existingEdge = ctx.edges.find((e) => e.id === id);
+
+    if (existingEdge) {
+      const edgeData = existingEdge.data as { insertPath?: FlowStepPath } | undefined;
+
+      if (!edgeData?.insertPath && insertPath) {
+        existingEdge.data = { ...(edgeData || {}), insertPath };
+      }
+
+      if (label && !existingEdge.label) {
+        existingEdge.label = label;
+      }
+
+      return true;
+    }
+
+    ctx.edges.push({
+      id,
+      type: EEdgeType.EDGE_WITH_BUTTON,
+      ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
+      source: groupSource,
+      target: groupTarget,
+      label,
+      data: insertPath ? { insertPath } : undefined,
+    });
+
+    return true;
+  };
+
+  if (!sourceGroupName && targetGroupName) {
+    // task -> group
+    return upsertGroupEdge(`e-${source}-${targetGroupName}`, source, targetGroupName);
+  }
+
+  if (sourceGroupName && targetGroupName) {
+    // group -> other group
+    return upsertGroupEdge(
+      `e-${sourceGroupName}-${targetGroupName}`,
+      sourceGroupName,
+      targetGroupName,
+    );
+  }
+
+  if (sourceGroupName && !targetGroupName) {
+    // group -> task
+    return upsertGroupEdge(`e-${sourceGroupName}-${target}`, sourceGroupName, target);
+  }
+
+  return false;
 };
 
 function addEdge(
@@ -187,7 +200,10 @@ function addEdge(
   label?: string,
   insertPath?: FlowStepPath,
 ) {
-  addGroupEdge(ctx, source, target, label);
+  const hasGroupEdge = addGroupEdge(ctx, source, target, label, insertPath);
+  const edgeInsertPath = hasGroupEdge ? undefined : insertPath;
+  const isFromBranchPlaceholder = ctx.placeholderNodeIds.has(source);
+  const shouldHideDirectEdge = isFromBranchPlaceholder || hasGroupEdge;
 
   ctx.edges.push({
     id: `e-${source}-${target}`,
@@ -196,8 +212,9 @@ function addEdge(
     source,
     target,
     label,
+    hidden: shouldHideDirectEdge,
     sourceHandle,
-    data: insertPath ? { insertPath } : undefined,
+    data: edgeInsertPath ? { insertPath: edgeInsertPath } : undefined,
   });
 }
 
@@ -431,12 +448,16 @@ const addOperatorNode = (
     level,
     groupName,
     stepPath,
+    strategy,
   }: OperatorNodeArgs,
 ) => {
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.OPERATOR, config),
     ...DEFAULT_NODE_PROPS,
-    selectable: operatorType === StepType.Conditional,
+    selectable:
+      operatorType === StepType.Conditional ||
+      operatorType === StepType.Parallel ||
+      operatorType === StepType.Loop,
     id: operatorNodeId,
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
@@ -446,6 +467,7 @@ const addOperatorNode = (
       level,
       groupName,
       stepPath,
+      strategy,
     },
   });
 };
@@ -457,6 +479,7 @@ const addBranchPlaceholderNode = (
   level: number,
   insertPath: FlowStepPath,
   label?: string,
+  incoming: string[] = [operatorNodeId],
 ) => {
   const placeholderNodeId = `${operatorNodeId}-branch-${branchIndex}-placeholder`;
   const groupName = getGroupId(placeholderNodeId, config.highlights);
@@ -476,7 +499,7 @@ const addBranchPlaceholderNode = (
     },
   });
   ctx.placeholderNodeIds.add(placeholderNodeId);
-  addEdge(ctx, operatorNodeId, placeholderNodeId);
+  connectIncomingEdges(ctx, uniqueIds(incoming), placeholderNodeId);
 
   return placeholderNodeId;
 };
@@ -510,9 +533,14 @@ const walkParallelSteps = (
   ctx: TraversalContext,
   stepPath: FlowStepPath,
 ) => {
-  const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
+  if (!ctx.config) {
+    return [operatorNodeId];
+  }
 
-  return step.steps.flatMap((branchStep, branchIndex) =>
+  const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
+  const parallelSteps = Array.isArray(step.steps) ? step.steps : [];
+
+  parallelSteps.forEach((branchStep, branchIndex) => {
     walkStep({
       step: branchStep,
       index: 0,
@@ -522,8 +550,21 @@ const walkParallelSteps = (
       incoming: [operatorNodeId],
       ctx,
       path: parallelStepsPath,
-    }),
+      disableEntryInsertPath: true,
+    });
+  });
+
+  const insertPath: FlowStepPath = [...parallelStepsPath, parallelSteps.length];
+  const placeholderNodeId = addBranchPlaceholderNode(
+    ctx,
+    ctx.config,
+    operatorNodeId,
+    parallelSteps.length,
+    level + 1,
+    insertPath,
   );
+
+  return [placeholderNodeId];
 };
 // Traverse conditional branches with their own nested step lists.
 const walkConditionalBranches = (
@@ -541,6 +582,7 @@ const walkConditionalBranches = (
 
   return step.branches.flatMap((branch, branchIndex) => {
     const branchLabel = getConditionalBranchLabel(branch);
+    const branchSteps = Array.isArray(branch.steps) ? branch.steps : [];
     const conditionalStepsPath: FlowStepPath = [
       ...stepPath,
       "conditional",
@@ -548,31 +590,34 @@ const walkConditionalBranches = (
       branchIndex,
       "steps",
     ];
-    const insertPath: FlowStepPath = [...conditionalStepsPath, 0];
-
-    if (!Array.isArray(branch.steps) || branch.steps.length === 0) {
-      const placeholderNodeId = addBranchPlaceholderNode(
-        ctx,
-        config,
-        operatorNodeId,
-        branchIndex,
-        level + 1,
-        insertPath,
-        branchLabel,
-      );
-
-      return [placeholderNodeId];
-    }
-
-    return walkSteps({
-      steps: branch.steps,
-      level: level + 1,
-      prefix: `${operatorNodeId}${branchIndex}`,
-      incoming: [operatorNodeId],
+    const insertPath: FlowStepPath = [
+      ...conditionalStepsPath,
+      branchSteps.length,
+    ];
+    const branchExits =
+      branchSteps.length > 0
+        ? walkSteps({
+            steps: branchSteps,
+            level: level + 1,
+            prefix: `${operatorNodeId}${branchIndex}`,
+            incoming: [operatorNodeId],
+            ctx,
+            path: conditionalStepsPath,
+            entryEdgeLabel: branchLabel,
+          })
+        : [operatorNodeId];
+    const placeholderNodeId = addBranchPlaceholderNode(
       ctx,
-      path: conditionalStepsPath,
-      entryEdgeLabel: branchLabel,
-    });
+      config,
+      operatorNodeId,
+      branchIndex,
+      level + 1,
+      insertPath,
+      branchLabel,
+      branchExits,
+    );
+
+    return [placeholderNodeId];
   });
 };
 // Traverse loop steps in sequence under the operator node.
@@ -583,22 +628,43 @@ const walkLoopSteps = (
   ctx: TraversalContext,
   stepPath: FlowStepPath,
 ) => {
-  const loopStepsPath: FlowStepPath = [...stepPath, "loop", "steps"];
+  if (!ctx.config) {
+    return [operatorNodeId];
+  }
 
-  return walkSteps({
-    steps: step.steps,
-    level: level + 1,
-    prefix: operatorNodeId,
-    incoming: [operatorNodeId],
+  const loopSteps = Array.isArray(step.steps) ? step.steps : [];
+  const loopStepsPath: FlowStepPath = [...stepPath, "loop", "steps"];
+  const insertPath: FlowStepPath = [...loopStepsPath, loopSteps.length];
+  const loopExits =
+    loopSteps.length > 0
+      ? walkSteps({
+          steps: loopSteps,
+          level: level + 1,
+          prefix: operatorNodeId,
+          incoming: [operatorNodeId],
+          ctx,
+          path: loopStepsPath,
+        })
+      : [operatorNodeId];
+  const placeholderNodeId = addBranchPlaceholderNode(
     ctx,
-    path: loopStepsPath,
-  });
+    ctx.config,
+    operatorNodeId,
+    0,
+    level + 1,
+    insertPath,
+    undefined,
+    loopExits,
+  );
+
+  return [placeholderNodeId];
 };
 
 type WalkStepArgs = Omit<WalkArgs, "steps"> & {
   step: CompiledStep;
   index: number;
   pathIndex?: number;
+  disableEntryInsertPath?: boolean;
 };
 
 const walkStep = ({
@@ -611,6 +677,7 @@ const walkStep = ({
   path,
   pathIndex,
   entryEdgeLabel,
+  disableEntryInsertPath,
 }: WalkStepArgs): string[] => {
   if (!ctx.config) {
     return incoming;
@@ -659,7 +726,13 @@ const walkStep = ({
       });
     }
 
-    connectIncomingEdges(ctx, incoming, taskNodeId, stepPath, entryEdgeLabel);
+    connectIncomingEdges(
+      ctx,
+      incoming,
+      taskNodeId,
+      disableEntryInsertPath ? undefined : stepPath,
+      entryEdgeLabel,
+    );
 
     return [taskNodeId];
   }
@@ -676,13 +749,14 @@ const walkStep = ({
     level,
     groupName,
     stepPath,
+    strategy: step.type === StepType.Parallel ? step.strategy : undefined,
   });
 
   connectIncomingEdges(
     ctx,
     incoming,
     operatorNodeId,
-    stepPath,
+    disableEntryInsertPath ? undefined : stepPath,
     entryEdgeLabel,
   );
 

@@ -762,6 +762,69 @@
         "empty_state": "Aucune condition configurée."
       }
     },
+    "loop_drawer": {
+      "title": "Boucle",
+      "description": "Configurez l'itération, la règle d'arrêt et l'accumulateur de la boucle.",
+      "form": {
+        "empty_state": "Aucune configuration de boucle disponible.",
+        "name": {
+          "label": "Nom",
+          "helper": "Clé optionnelle utilisée pour exposer la sortie de la boucle."
+        },
+        "description": {
+          "label": "Description",
+          "helper": "Description optionnelle de la boucle."
+        },
+        "for_each": {
+          "section": "Pour chaque",
+          "item_label": "Variable d'élément",
+          "item_helper": "Variable disponible dans la boucle comme $iteration.item.",
+          "in_label": "Expression d'entrée",
+          "in_helper": "Expression JSONata qui retourne la collection (doit commencer par '=')."
+        },
+        "max_concurrency": {
+          "label": "Concurrence max",
+          "helper": "Entier positif optionnel. Laissez vide pour utiliser la valeur par défaut."
+        },
+        "until": {
+          "label": "Condition d'arrêt",
+          "helper": "Expression JSONata optionnelle pour arrêter la boucle dès qu'elle est vraie."
+        },
+        "accumulate": {
+          "enabled": "Activer l'accumulateur",
+          "as_label": "Nom de l'accumulateur",
+          "as_helper": "Nom exposé dans les expressions comme $accumulator.<nom>.",
+          "initial_label": "Valeur initiale (JSON)",
+          "initial_helper": "Valeur de départ de l'accumulateur en JSON valide.",
+          "merge_label": "Expression de fusion",
+          "merge_helper": "Expression JSONata pour calculer la prochaine valeur de l'accumulateur."
+        },
+        "errors": {
+          "required": "Ce champ est requis.",
+          "jsonata_required": "Doit commencer par '='.",
+          "positive_integer": "Doit être un entier positif.",
+          "json_invalid": "Doit être un JSON valide."
+        }
+      }
+    },
+    "parallel_drawer": {
+      "title": "Parallèle",
+      "description": "Choisissez comment l'étape parallèle doit poursuivre son exécution.",
+      "form": {
+        "strategy": {
+          "label": "Stratégie de complétion",
+          "wait_all": {
+            "label": "Attendre tout",
+            "description": "Continuer après la fin de toutes les branches."
+          },
+          "wait_any": {
+            "label": "Attendre une",
+            "description": "Continuer dès qu'une branche se termine."
+          }
+        },
+        "empty_state": "Aucune option de stratégie disponible."
+      }
+    },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"

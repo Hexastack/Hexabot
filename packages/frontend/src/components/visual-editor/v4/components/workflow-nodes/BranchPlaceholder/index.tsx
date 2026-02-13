@@ -30,7 +30,6 @@ export const BranchPlaceholder: FC<
           className="workflow-branch-placeholder nodrag nopan"
           role="button"
           aria-label={addLabel}
-          title={addLabel}
         >
           <PulseIconButton
             tabIndex={-1}

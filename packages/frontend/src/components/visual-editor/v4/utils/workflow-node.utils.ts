@@ -26,6 +26,7 @@ import {
   type GraphNode,
   type IBuildNodesAndEdgesProps,
 } from "../types/workflow-node.types";
+import type { FlowStepPath } from "../types/workflow-path.types";
 
 import {
   getGroupId,
@@ -96,7 +97,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       "elk.algorithm": "layered",
       "org.eclipse.elk.direction": elkDirection,
       "elk.spacing.nodeNode": "48",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "256",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "168",
     },
     children: nodes.map((n) => {
       const ports =
@@ -267,7 +268,7 @@ export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
           height: groupBounds.height + padding,
           zIndex: -1,
           borderRadius: "13px",
-          backgroundColor: color ? `${color}99` : undefined,
+          backgroundColor: color ? `${color}30` : undefined,
           border: "1px solid #0004",
         },
       });
@@ -322,13 +323,24 @@ export const buildNodesAndEdges = async ({
   });
 
   endStepIds.forEach((endEdgesId) => {
+    const isFromBranchPlaceholder = ctx.placeholderNodeIds.has(endEdgesId);
     const groupName = getGroupId(endEdgesId, ctx.config?.highlights);
-    const sourcePath = ctx.nodePaths.get(endEdgesId);
-    const lastIndex = sourcePath?.[sourcePath.length - 1];
-    const insertPath =
-      sourcePath && typeof lastIndex === "number"
-        ? [...sourcePath.slice(0, -1), lastIndex + 1]
+    const groupPrefix = `${ENodeType.GROUP}-`;
+    const groupStepId =
+      groupName && groupName.startsWith(groupPrefix)
+        ? groupName.slice(groupPrefix.length)
         : undefined;
+    const sourcePath = ctx.nodePaths.get(endEdgesId);
+    const baseInsertPath =
+      groupStepId && ctx.nodePaths.has(groupStepId)
+        ? ctx.nodePaths.get(groupStepId)
+        : sourcePath;
+    const lastIndex = baseInsertPath?.[baseInsertPath.length - 1];
+    const insertPath =
+      baseInsertPath && typeof lastIndex === "number"
+        ? [...baseInsertPath.slice(0, -1), lastIndex + 1]
+        : undefined;
+    const directEdgeInsertPath = groupName ? undefined : insertPath;
 
     ctx.edges.push({
       id: generateId(),
@@ -336,17 +348,32 @@ export const buildNodesAndEdges = async ({
       target: endIndicatorId,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-      data: insertPath ? { insertPath } : undefined,
+      hidden: isFromBranchPlaceholder,
+      data: directEdgeInsertPath ? { insertPath: directEdgeInsertPath } : undefined,
     });
 
-    if (groupName && !ctx.edges.some((edge) => edge.id === groupName)) {
-      ctx.edges.push({
-        id: generateId(),
-        source: groupName,
-        target: endIndicatorId,
-        type: EEdgeType.EDGE_WITH_BUTTON,
-        ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-      });
+    if (groupName) {
+      const groupToEndId = `e-${groupName}-${endIndicatorId}`;
+      const existingGroupEdge = ctx.edges.find((edge) => edge.id === groupToEndId);
+
+      if (existingGroupEdge) {
+        const edgeData = existingGroupEdge.data as
+          | { insertPath?: FlowStepPath }
+          | undefined;
+
+        if (!edgeData?.insertPath && insertPath) {
+          existingGroupEdge.data = { ...(edgeData || {}), insertPath };
+        }
+      } else {
+        ctx.edges.push({
+          id: groupToEndId,
+          source: groupName,
+          target: endIndicatorId,
+          type: EEdgeType.EDGE_WITH_BUTTON,
+          ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
+          data: insertPath ? { insertPath } : undefined,
+        });
+      }
     }
   });
   const elkNodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);

@@ -5,7 +5,13 @@
  */
 
 import { StepType } from "@hexabot-ai/agentic";
-import { ChartNoAxesGantt, GitBranch, GripVertical, Repeat } from "lucide-react";
+import {
+  ChartNoAxesGantt,
+  GitBranch,
+  GripVertical,
+  ListTree,
+  Repeat,
+} from "lucide-react";
 
 import { theme } from "@/layout/theme";
 
@@ -14,8 +20,8 @@ export const WORKFLOW_OPERATOR_GRAPH_THEME = {
     Icon: GripVertical,
     color: "#0c9ba0",
     nodeTheme: {
-      Icon: GripVertical,
-      bgColor: "#0c9ba0",
+      Icon: ListTree,
+      borderColor: "#0c9ba0",
     },
     i18nTitle: "message.parallel_indicator",
   },

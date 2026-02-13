@@ -53,7 +53,7 @@
   --xy-node-color-default: #f8f8f8;
   --xy-node-border-default: 1px solid #3c3c3c;
   --xy-node-background-color-default: #1e1e1e;
-  --xy-node-group-background-color-default: rgba(240, 240, 240, 0.25);
+  --xy-node-group-background-color-default: rgba(255, 248, 151, 0.796);
   --xy-node-boxshadow-hover-default: 0 1px 4px 1px rgba(255, 255, 255, 0.08);
   --xy-node-boxshadow-selected-default: 0 0 0 0.5px #999;
   --xy-handle-background-color-default: #bebebe;
