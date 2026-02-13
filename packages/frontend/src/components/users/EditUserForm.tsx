@@ -115,9 +115,11 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
                   }}
                 />
               </Grid>
-              <Grid size="auto" alignContent="center">
+              <Grid size="auto" alignContent="end">
                 <Link href="/roles">
-                  <Button variant="contained">{t("button.manage")}</Button>
+                  <Button variant="contained" size="small">
+                    {t("button.manage")}
+                  </Button>
                 </Link>
               </Grid>
             </Grid>
