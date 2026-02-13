@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Avatar } from "@chatscope/chat-ui-kit-react";
-import {
-  Button,
-  IconButton,
-  MenuItem,
-  TextField,
-  Typography,
-} from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -44,74 +43,75 @@ export const ChatActions = () => {
   }, [activeChat?.assignedTo]);
 
   return (
-    <Grid gap="6px" container alignItems="center">
-      <Grid flexGrow={0} flexShrink={1} minWidth="150px">
-        {users.length > 0 && (
+    <Stack
+      direction="row"
+      spacing={1}
+      alignItems="center"
+      justifyContent="flex-end"
+      flexWrap="wrap"
+      marginLeft="auto"
+    >
+      {users.length > 0 && (
+        <Box minWidth={180}>
           <TextField
+            fullWidth
+            size="small"
             onChange={(e) => setTakeoverBy(e.target.value)}
             value={takeoverBy}
             disabled={!activeChat}
             label={t("label.assign_to")}
             select
           >
-            {(users || []).map((user) => (
-              <MenuItem key={user.id} value={user.id}>
-                <Grid direction="row" container alignItems="center" gap="4px">
-                  <Grid>
-                    <Avatar
-                      size="sm"
-                      name={user.firstName}
-                      src={getAvatarSrc(apiUrl, EntityType.USER, user.id)}
-                    />
-                  </Grid>
-                  <Grid>
-                    <Typography sx={{ textTransform: "capitalize" }}>
-                      {user.firstName} {user.lastName}
-                    </Typography>
-                  </Grid>
-                </Grid>
+            {(users || []).map((chatUser) => (
+              <MenuItem key={chatUser.id} value={chatUser.id}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Avatar
+                    alt={chatUser.firstName || ""}
+                    src={getAvatarSrc(apiUrl, EntityType.USER, chatUser.id)}
+                    style={{ width: 24, height: 24 }}
+                  />
+                  <Typography style={{ textTransform: "capitalize" }}>
+                    {chatUser.firstName} {chatUser.lastName}
+                  </Typography>
+                </Stack>
               </MenuItem>
             ))}
           </TextField>
-        )}
-      </Grid>
-      <Grid flexShrink={0}>
-        <IconButton
-          disabled={!activeChat}
-          onClick={() =>
-            activeChat &&
-            takeoverBy &&
-            mutate({
-              id: activeChat?.id,
-              params: { assignedTo: takeoverBy },
-            })
-          }
-          sx={{ outline: "#AAAAAA solid 1px" }}
-          color="default"
-        >
-          <Hand />
-        </IconButton>
-      </Grid>
+        </Box>
+      )}
+      <IconButton
+        disabled={!activeChat}
+        onClick={() =>
+          activeChat &&
+          takeoverBy &&
+          mutate({
+            id: activeChat.id,
+            params: { assignedTo: takeoverBy },
+          })
+        }
+        color="default"
+        style={{ border: "text.primary" }}
+      >
+        <Hand size={18} />
+      </IconButton>
 
-      <Grid flexShrink={0}>
-        <Button
-          disabled={!activeChat}
-          onClick={() =>
-            activeChat &&
-            mutate({
-              id: activeChat?.id,
-              params: {
-                assignedTo:
-                  user && user.id === activeChat?.assignedTo ? null : user?.id,
-              },
-            })
-          }
-        >
-          {user && user.id === activeChat?.assignedTo
-            ? t("button.handback")
-            : t("button.takeover")}
-        </Button>
-      </Grid>
-    </Grid>
+      <Button
+        disabled={!activeChat}
+        onClick={() =>
+          activeChat &&
+          mutate({
+            id: activeChat.id,
+            params: {
+              assignedTo:
+                user && user.id === activeChat.assignedTo ? null : user?.id,
+            },
+          })
+        }
+      >
+        {user && user.id === activeChat?.assignedTo
+          ? t("button.handback")
+          : t("button.takeover")}
+      </Button>
+    </Stack>
   );
 };

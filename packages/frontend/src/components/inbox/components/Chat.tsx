@@ -5,14 +5,16 @@
  */
 
 import {
-  Avatar,
-  ChatContainer,
-  ConversationHeader,
+  Avatar as ChatAvatar,
   Message,
   MessageInput,
   MessageList,
 } from "@chatscope/chat-ui-kit-react";
-import Grid from "@mui/material/Grid";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import debounce from "@mui/utils/debounce";
 import { MessageSquare } from "lucide-react";
 
@@ -45,18 +47,18 @@ export function Chat() {
 
   if (!subscriber) {
     return (
-      <Grid
-        sx={{
-          width: "100%",
-        }}
-        container
+      <Stack
+        width="100%"
+        spacing={1}
         direction="column"
         justifyContent="center"
         alignItems="center"
       >
-        <MessageSquare size={100} style={{ opacity: 0.3 }} />
-        {t("message.no_message_to_display")}
-      </Grid>
+        <Box style={{ opacity: 0.3 }}>
+          <MessageSquare size={100} />
+        </Box>
+        <Typography>{t("message.no_message_to_display")}</Typography>
+      </Stack>
     );
   }
   const handleLoadMore = debounce(() => {
@@ -64,20 +66,23 @@ export function Chat() {
   }, 400);
 
   return (
-    <ChatContainer>
-      <ConversationHeader>
-        <Avatar
-          name={subscriber?.firstName}
-          src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
-        />
-        <ConversationHeader.Content>
+    <Box className="cs-chat-container">
+      <Box px={2} py={1.5} sx={{ backgroundColor: "background.paper" }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          flexWrap="wrap"
+        >
+          <Avatar
+            alt={subscriber.firstName || ""}
+            src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
+          />
           <ChatHeader />
-        </ConversationHeader.Content>
-
-        <ConversationHeader.Actions>
           <ChatActions />
-        </ConversationHeader.Actions>
-      </ConversationHeader>
+        </Stack>
+      </Box>
+      <Divider />
       {messages?.length > 0 && (
         <MessageList
           loading={isFetching}
@@ -109,7 +114,7 @@ export function Chat() {
                 children={[
                   ...(position === "last" || position === "single"
                     ? [
-                        <Avatar
+                        <ChatAvatar
                           key={message.id}
                           title={`${subscriber.firstName} ${subscriber.lastName}`}
                           src={getAvatarSrc(
@@ -155,6 +160,6 @@ export function Chat() {
           })
         }
       />
-    </ChatContainer>
+    </Box>
   );
 }

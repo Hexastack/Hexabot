@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Typography } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { EntityType } from "@/services/types";
@@ -16,24 +16,27 @@ export const ChatHeader = () => {
   const { subscriber } = useChat();
 
   return (
-    <Grid container gap="7px" direction="row">
-      <Grid>
-        <Typography fontSize="1.17em" fontWeight={700}>
-          {subscriber?.firstName} {subscriber?.lastName} :
-        </Typography>
-      </Grid>
-      <Grid gap="4px" container width="fit-content">
-        {subscriber
-          ? subscriber?.labels?.map((label) => (
-              <ChipEntity
-                id={label}
-                key={label}
-                field="title"
-                entity={EntityType.LABEL}
-              />
-            ))
-          : null}
-      </Grid>
-    </Grid>
+    <Stack
+      direction="row"
+      spacing={1}
+      alignItems="center"
+      flexWrap="wrap"
+      flexGrow={1}
+      width={240}
+    >
+      <Typography fontSize="1.17em" fontWeight={700} color="text.primary">
+        {subscriber?.fullName}:
+      </Typography>
+      <Stack direction="row" spacing={0.5} flexWrap="wrap">
+        {(subscriber?.labels || []).map((label) => (
+          <ChipEntity
+            id={label}
+            key={label}
+            field="title"
+            entity={EntityType.LABEL}
+          />
+        ))}
+      </Stack>
+    </Stack>
   );
 };
