@@ -246,7 +246,7 @@ const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
         merge: ExpressionStringSchema,
       })
       .optional(),
-    steps: z.array(z.lazy(() => FlowStepSchema)).min(1),
+    steps: z.array(z.lazy(() => FlowStepSchema)),
   }),
 );
 

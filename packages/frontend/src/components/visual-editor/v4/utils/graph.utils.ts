@@ -584,6 +584,24 @@ const walkLoopSteps = (
   stepPath: FlowStepPath,
 ) => {
   const loopStepsPath: FlowStepPath = [...stepPath, "loop", "steps"];
+  const insertPath: FlowStepPath = [...loopStepsPath, 0];
+
+  if (!Array.isArray(step.steps) || step.steps.length === 0) {
+    if (!ctx.config) {
+      return [operatorNodeId];
+    }
+
+    const placeholderNodeId = addBranchPlaceholderNode(
+      ctx,
+      ctx.config,
+      operatorNodeId,
+      0,
+      level + 1,
+      insertPath,
+    );
+
+    return [placeholderNodeId];
+  }
 
   return walkSteps({
     steps: step.steps,

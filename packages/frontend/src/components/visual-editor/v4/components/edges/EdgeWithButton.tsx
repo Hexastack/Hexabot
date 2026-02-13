@@ -104,6 +104,15 @@ export const EdgeWithButton = ({
     },
     [handleCloseInsertMenu, handleInsert],
   );
+  const handleInsertLoopStep = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCloseInsertMenu();
+      handleInsert(StepType.Loop);
+    },
+    [handleCloseInsertMenu, handleInsert],
+  );
   const handleSelectNoopOption = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       event.preventDefault();
@@ -122,7 +131,7 @@ export const EdgeWithButton = ({
       {
         id: StepType.Loop,
         ...WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop],
-        onClick: handleSelectNoopOption,
+        onClick: handleInsertLoopStep,
       },
       {
         id: StepType.Parallel,
@@ -135,7 +144,12 @@ export const EdgeWithButton = ({
         onClick: handleInsertStep,
       },
     ],
-    [handleInsertConditionalStep, handleInsertStep, handleSelectNoopOption],
+    [
+      handleInsertConditionalStep,
+      handleInsertLoopStep,
+      handleInsertStep,
+      handleSelectNoopOption,
+    ],
   );
   const showInsert = Boolean(insertPath && edgeData?.onInsert);
 

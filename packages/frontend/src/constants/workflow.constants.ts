@@ -63,9 +63,9 @@ export const DIMENSIONS = {
   [ENodeType.BRANCH_PLACEHOLDER]: { width: 84, height: 84 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
-  // [EOperatorType.LOOP]: { color: "#b0e7b0", padding: 60 },
-  // [EOperatorType.PARALLEL]: { color: "#add8e6", padding: 60 },
-  // [EOperatorType.CONDITIONAL]: { color: "#fefbe8", padding: 60 },
+  [StepType.Loop]: { color: "#b0e7b0", padding: 60 },
+  [StepType.Parallel]: { color: "#add8e6", padding: 60 },
+  [StepType.Conditional]: { color: "#fefbe8", padding: 60 },
 } satisfies INodeConfig["highlights"];
 export const EDGES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {

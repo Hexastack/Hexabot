@@ -217,6 +217,27 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
     updateDefinitionState(nextDefinition);
   };
+  const addLoopStep = (insertPath?: FlowStepPath | null) => {
+    const baseDefinition = definition ?? createBaseDefinition();
+    const loopStep: FlowStep = {
+      loop: {
+        for_each: {
+          item: "item",
+          in: "=[]",
+        },
+        steps: [],
+      },
+    };
+    const insertedDefinition = insertPath
+      ? WorkflowHelper.insertStepAtPath(baseDefinition, insertPath, loopStep)
+      : null;
+    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+      ...baseDefinition,
+      flow: [...(baseDefinition.flow ?? []), loopStep],
+    };
+
+    updateDefinitionState(nextDefinition);
+  };
   const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
     const changes = getNodes().map(({ id }) => ({
@@ -328,6 +349,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         isSaving,
         addActionStep,
         addConditionalStep,
+        addLoopStep,
         removeStepAtPath,
         actions,
         definition,

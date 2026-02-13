@@ -103,6 +103,7 @@ export const Workflow = () => {
     actions,
     addActionStep,
     addConditionalStep,
+    addLoopStep,
   } = useWorkflow();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
@@ -140,6 +141,11 @@ export const Workflow = () => {
 
         return;
       }
+      if (insertType === StepType.Loop) {
+        addLoopStep(insertPath);
+
+        return;
+      }
       if (insertType !== "step") {
         return;
       }
@@ -147,7 +153,7 @@ export const Workflow = () => {
       setPendingInsertPath(insertPath);
       setActionsDrawerOpen(true);
     },
-    [addConditionalStep],
+    [addConditionalStep, addLoopStep],
   );
   const handleActionSelect = useCallback(
     (action: IAction) => {
