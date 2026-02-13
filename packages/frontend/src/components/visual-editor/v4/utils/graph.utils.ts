@@ -527,9 +527,14 @@ const walkParallelSteps = (
   ctx: TraversalContext,
   stepPath: FlowStepPath,
 ) => {
-  const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
+  if (!ctx.config) {
+    return [operatorNodeId];
+  }
 
-  return step.steps.flatMap((branchStep, branchIndex) =>
+  const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
+  const parallelSteps = Array.isArray(step.steps) ? step.steps : [];
+
+  parallelSteps.forEach((branchStep, branchIndex) => {
     walkStep({
       step: branchStep,
       index: 0,
@@ -539,8 +544,21 @@ const walkParallelSteps = (
       incoming: [operatorNodeId],
       ctx,
       path: parallelStepsPath,
-    }),
+      disableEntryInsertPath: true,
+    });
+  });
+
+  const insertPath: FlowStepPath = [...parallelStepsPath, parallelSteps.length];
+  const placeholderNodeId = addBranchPlaceholderNode(
+    ctx,
+    ctx.config,
+    operatorNodeId,
+    parallelSteps.length,
+    level + 1,
+    insertPath,
   );
+
+  return [placeholderNodeId];
 };
 // Traverse conditional branches with their own nested step lists.
 const walkConditionalBranches = (
@@ -640,6 +658,7 @@ type WalkStepArgs = Omit<WalkArgs, "steps"> & {
   step: CompiledStep;
   index: number;
   pathIndex?: number;
+  disableEntryInsertPath?: boolean;
 };
 
 const walkStep = ({
@@ -652,6 +671,7 @@ const walkStep = ({
   path,
   pathIndex,
   entryEdgeLabel,
+  disableEntryInsertPath,
 }: WalkStepArgs): string[] => {
   if (!ctx.config) {
     return incoming;
@@ -700,7 +720,13 @@ const walkStep = ({
       });
     }
 
-    connectIncomingEdges(ctx, incoming, taskNodeId, stepPath, entryEdgeLabel);
+    connectIncomingEdges(
+      ctx,
+      incoming,
+      taskNodeId,
+      disableEntryInsertPath ? undefined : stepPath,
+      entryEdgeLabel,
+    );
 
     return [taskNodeId];
   }
@@ -723,7 +749,7 @@ const walkStep = ({
     ctx,
     incoming,
     operatorNodeId,
-    stepPath,
+    disableEntryInsertPath ? undefined : stepPath,
     entryEdgeLabel,
   );
 

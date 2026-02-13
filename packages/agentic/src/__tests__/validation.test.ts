@@ -53,6 +53,21 @@ describe('validateWorkflow', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts parallel steps with an empty body', () => {
+    const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
+    parsed.flow = [
+      {
+        parallel: {
+          steps: [],
+        },
+      },
+    ];
+
+    const result = validateWorkflow(parsed);
+
+    expect(result.success).toBe(true);
+  });
+
   it('fails when flow references unknown tasks', () => {
     const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
     parsed.flow = [{ do: 'non_existent_task' }];

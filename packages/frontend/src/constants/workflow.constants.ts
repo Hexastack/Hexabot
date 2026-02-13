@@ -55,17 +55,17 @@ export const DEFAULT_NODE_PROPS = {
 export const DIMENSIONS = {
   [ENodeType.MODEL]: { width: 180, height: 55 },
   [ENodeType.TOOL]: { width: 180, height: 55 },
-  [ENodeType.AGENT]: { width: 260, height: 75 },
+  [ENodeType.AGENT]: { width: 256, height: 75 },
   [ENodeType.INDICATOR]: { width: 100, height: 56 },
-  [ENodeType.TASK]: { width: 260, height: 75 },
+  [ENodeType.TASK]: { width: 256, height: 75 },
   [ENodeType.OPERATOR]: { width: 150, height: 55 },
-  [ENodeType.MEMORY]: { width: 250, height: 75 },
-  [ENodeType.BRANCH_PLACEHOLDER]: { width: 84, height: 84 },
+  [ENodeType.MEMORY]: { width: 256, height: 75 },
+  [ENodeType.BRANCH_PLACEHOLDER]: { width: 256, height: 84 },
 } satisfies INodeConfig["dimensions"];
 export const HIGHLIGHTS = {
-  [StepType.Loop]: { color: "#fefbe8", padding: 60 },
-  [StepType.Parallel]: { color: "#fefbe8", padding: 60 },
-  [StepType.Conditional]: { color: "#fefbe8", padding: 60 },
+  [StepType.Loop]: { color: "#fefbe8", padding: 32 },
+  [StepType.Parallel]: { color: "#fefbe8", padding: 32 },
+  [StepType.Conditional]: { color: "#fefbe8", padding: 32 },
 } satisfies INodeConfig["highlights"];
 export const EDGES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {

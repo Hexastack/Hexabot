@@ -97,7 +97,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       "elk.algorithm": "layered",
       "org.eclipse.elk.direction": elkDirection,
       "elk.spacing.nodeNode": "48",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "128",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "168",
     },
     children: nodes.map((n) => {
       const ports =

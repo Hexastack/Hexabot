@@ -158,7 +158,6 @@
 
 .workflow-branch-placeholder:hover {
   border-color: #90a4c9;
-  transform: scale(1.03);
 }
 
 .react-flow.dark .workflow-branch-placeholder {
