@@ -20,7 +20,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import { useDashboardSidebar } from "./hooks/useDashboardSidebar";
-import { ICON_WIDTH, MINI_DRAWER_WIDTH } from "./measurements.constansts";
+import { ICON_WIDTH } from "./measurements.constansts";
 import { DashboardSidebarProvider } from "./providers/DashboardSidebarProvider";
 import { DashboardSidebarPageItemProps } from "./types/sidebar.types";
 
@@ -40,6 +40,10 @@ export const DashboardSidebarPageItem = ({
     useDashboardSidebar();
   const [isHovered, setIsHovered] = React.useState(false);
   const hasSub = !!nestedNavigation;
+  const submenuAnchorName = `--dashboard-sidebar-item-${React.useId().replaceAll(
+    ":",
+    "",
+  )}`;
   const isExternal = href?.startsWith("http");
   const LinkComp = isExternal ? "a" : Link;
   const handleClick = () => onPageItemClick?.(id, hasSub);
@@ -66,6 +70,7 @@ export const DashboardSidebarPageItem = ({
       <ListItem
         sx={{
           px: mini ? 0 : 1,
+          anchorName: mini ? submenuAnchorName : undefined,
         }}
         disablePadding
         onMouseEnter={() => hasSub && mini && setIsHovered(true)}
@@ -136,7 +141,14 @@ export const DashboardSidebarPageItem = ({
 
         {hasSub && mini && (
           <Grow in={isHovered}>
-            <Box sx={{ position: "fixed", left: MINI_DRAWER_WIDTH }}>
+            <Box
+              sx={{
+                position: "fixed",
+                positionAnchor: submenuAnchorName,
+                top: "anchor(top)",
+                left: "calc(anchor(right) + 8px)",
+              }}
+            >
               <Paper elevation={8}>
                 <DashboardSidebarProvider
                   {...{
