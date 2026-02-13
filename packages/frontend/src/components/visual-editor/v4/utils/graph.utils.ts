@@ -456,7 +456,8 @@ const addOperatorNode = (
     ...DEFAULT_NODE_PROPS,
     selectable:
       operatorType === StepType.Conditional ||
-      operatorType === StepType.Parallel,
+      operatorType === StepType.Parallel ||
+      operatorType === StepType.Loop,
     id: operatorNodeId,
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
