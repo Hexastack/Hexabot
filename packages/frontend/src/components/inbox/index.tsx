@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { MainContainer, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { MenuItem, TextField } from "@mui/material";
+import { MenuItem, Paper, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 
@@ -45,10 +44,23 @@ export const Inbox = () => {
           maxHeight: "calc(100vh - 64px)",
         }}
       >
-        <Grid size="grow" width="100%" height="100%" overflow="hidden">
-          <MainContainer style={{ height: "100%" }}>
-            <Sidebar position="left" style={{ flexBasis: "100%" }}>
-              <Grid mt={2} mx={2} gap={1} flexDirection="column" display="flex">
+        <Grid width="100%" height="100%" flexDirection="row" display="flex">
+          <Paper
+            sx={{
+              width: "375px",
+              height: "100%",
+              overflow: "hidden",
+              borderRadius: 0,
+            }}
+          >
+            <Grid gap={2} flexDirection="column" display="flex" height="100%">
+              <Grid
+                m={2}
+                mb={0}
+                gap={0.5}
+                flexDirection="column"
+                display="flex"
+              >
                 <FilterTextfield
                   onChange={onSearch}
                   defaultValue={searchText}
@@ -77,15 +89,17 @@ export const Inbox = () => {
                   <MenuItem value={AssignedTo.ME}>To Me</MenuItem>
                   <MenuItem value={AssignedTo.OTHERS}>To Others</MenuItem>
                 </TextField>
-                <SubscribersList
-                  channels={channels}
-                  searchPayload={searchPayload}
-                  assignedTo={assignment}
-                />
               </Grid>
-            </Sidebar>
+              <SubscribersList
+                channels={channels}
+                searchPayload={searchPayload}
+                assignedTo={assignment}
+              />
+            </Grid>
+          </Paper>
+          <Grid flex="auto" height="100%" alignContent="center">
             <Chat />
-          </MainContainer>
+          </Grid>
         </Grid>
       </Grid>
     </ChatProvider>

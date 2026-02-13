@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Conversation, ConversationList } from "@chatscope/chat-ui-kit-react";
-import { Chip } from "@mui/material";
+import { Chip, List, MenuItem, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
 import { Inbox } from "lucide-react";
-import { useEffect } from "react";
+import { UIEventHandler, useCallback, useEffect } from "react";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -47,60 +46,63 @@ export const SubscribersList = (props: {
       chat.setSubscriberId(subscriber);
     }
   }, [subscriber]);
+  const handleScroll: UIEventHandler<HTMLDivElement> = useCallback(
+    (event) => {
+      const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+
+      if (Math.ceil(scrollTop + clientHeight) >= scrollHeight) {
+        handleLoadMore();
+      }
+    },
+    [handleLoadMore],
+  );
 
   return (
-    <Grid mt={2}>
-      <Title title={t(props.assignedTo)} Icon={Inbox} />
-      {subscribers?.length > 0 ? (
-        <ConversationList
-          scrollable={false}
-          loading={isFetching}
-          loadingMore={isFetching}
-          onScroll={({ target }) => {
-            const container = target as HTMLDivElement;
-
-            if (
-              container.scrollTop + container.clientHeight >=
-              container.scrollHeight
-            ) {
-              handleLoadMore();
-            }
+    <List
+      onScroll={handleScroll}
+      component="div"
+      sx={{
+        display: "flex",
+        gap: 1,
+        height: "100%",
+        overflow: "auto",
+        p: 1.5,
+        pt: 0,
+      }}
+      subheader={
+        <Grid
+          sx={{
+            px: 1.5,
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            bgcolor: "background.default",
+            borderRadius: "shape.borderRadius",
           }}
         >
-          {subscribers.map((subscriber) => (
-            <Conversation
-              onClick={() => {
-                chat.setSubscriberId(subscriber.id);
-
-                router.push({
-                  pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
-                });
-              }}
-              className="changeColor"
-              key={subscriber.id}
-              active={chat.subscriber?.id === subscriber.id}
-              style={{ paddingLeft: 0 }}
-            >
-              {Avatars({ subscriber })}
-              <Conversation.Content>
-                <div>
-                  {subscriber.firstName} {subscriber.lastName}
-                </div>
-                <div className="cs-conversation__info">
-                  {normalizeDate(i18n.language, subscriber.lastvisit)}
-                </div>
-              </Conversation.Content>
-              <Conversation.Operations visible>
-                <Chip size="medium" label={subscriber.channel.name} />
-              </Conversation.Operations>
-            </Conversation>
-          ))}
-        </ConversationList>
-      ) : (
-        <Grid p={1} color="gray" textAlign="center">
-          {t("message.no_result_found")}
+          <Title title={t(props.assignedTo)} Icon={Inbox} />
         </Grid>
-      )}
-    </Grid>
+      }
+    >
+      {subscribers?.map((sub) => (
+        <MenuItem
+          key={sub.id}
+          selected={chat.subscriber?.id === sub.id}
+          onClick={() => {
+            chat.setSubscriberId(sub.id);
+            router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
+          }}
+        >
+          <Avatars subscriber={sub} />
+          <Grid textAlign="left" flex={1}>
+            <Typography variant="body2">{sub.fullName}</Typography>
+            <Typography variant="caption">
+              {normalizeDate(i18n.language, sub.lastvisit)}
+            </Typography>
+          </Grid>
+          <Chip size="medium" label={sub.channel.name} />
+        </MenuItem>
+      ))}
+    </List>
   );
 };
