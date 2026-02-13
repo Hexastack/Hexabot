@@ -47,7 +47,7 @@ export const Inbox = () => {
         <Grid width="100%" height="100%" flexDirection="row" display="flex">
           <Paper
             sx={{
-              width: "375px",
+              minWidth: "375px",
               height: "100%",
               overflow: "hidden",
               borderRadius: 0,
