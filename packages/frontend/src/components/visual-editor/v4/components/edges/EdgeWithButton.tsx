@@ -97,7 +97,7 @@ export const EdgeWithButton = ({
               gap: 0,
             }}
           >
-            <ZoomAwareTooltip title={label} placement="left-end">
+            <ZoomAwareTooltip title={label} placement="top">
               <span style={{ display: "inline-flex" }}>
                 <PulseIconButton
                   type="button"

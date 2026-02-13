@@ -30,7 +30,7 @@ export const Operator: FC<NodeProps<GraphNode<ENodeType.OPERATOR>>> = ({
 
   return (
     <WorkflowNodeProvider id={id}>
-      <ZoomAwareTooltip title={tooltipTitle} placement="bottom">
+      <ZoomAwareTooltip title={tooltipTitle} placement="top">
         <div>
           <GenericNodeContainer>
             <GenericNodeRightContent>

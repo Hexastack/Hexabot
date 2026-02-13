@@ -41,7 +41,7 @@ export const ZoomAwareTooltip = ({
             {
               name: "offset",
               options: {
-                offset: [0, 6], // [skidding, distance] - e.g., 0px skidding, 10px distance
+                offset: [0, 0], // [skidding, distance] - e.g., 0px skidding, 10px distance
               },
             },
           ],

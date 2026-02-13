@@ -23,7 +23,6 @@ import {
   NODES,
 } from "@/constants/workflow.constants";
 import { IMemoryDefinition } from "@/types/memory-definition.types";
-import { generateId } from "@/utils/generateId";
 
 import {
   EEdgeType,
@@ -230,7 +229,7 @@ export const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
 };
 
 export const getGroupId = (id: string, groups?: THighlightGroups) => {
-  const groupId = id.match(/step-\d+-(conditional|loop|parallel)/)?.[0];
+  const groupId = id.match(/^step-\d+-(conditional|loop|parallel)/)?.[0];
 
   if (groupId) {
     const [, , operator] = groupId.split("-");
@@ -266,32 +265,17 @@ const getIndicator = <T extends EIndicatorType>(
     },
   } satisfies GraphNode<ENodeType.INDICATOR>;
 };
-const getIndicatorEdge = <T extends EIndicatorType>(
-  type: T,
-  ctx: TraversalContext,
-  target: string,
-  insertPath?: FlowStepPath,
-) => {
-  return {
-    id: generateId(),
-    source: `${type}-${target}`,
-    target,
-    type: EEdgeType.EDGE_WITH_BUTTON,
-    ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-    data: insertPath ? { insertPath } : undefined,
-  };
-};
-// Ensure the workflow start indicator exists for the first task node.
+// Ensure the workflow start indicator exists for the first workflow node.
 const ensureWorkflowStartIndicator = (
   ctx: TraversalContext,
-  taskNodeId: string,
+  targetNodeId: string,
   level: number,
   groupName?: string,
 ) => {
   if (!ctx.nodes.length) {
     const startIndicator = getIndicator(
       EIndicatorType.WORKFLOW_START,
-      taskNodeId,
+      targetNodeId,
       ctx,
       level,
       groupName,
@@ -306,18 +290,13 @@ const ensureWorkflowStartIndicator = (
 const ensureWorkflowStartEdge = (
   ctx: TraversalContext,
   incoming: string[],
-  taskNodeId: string,
+  targetNodeId: string,
   stepPath: FlowStepPath,
 ) => {
   if (!incoming.length) {
-    const startIndicatorEdge = getIndicatorEdge(
-      EIndicatorType.WORKFLOW_START,
-      ctx,
-      taskNodeId,
-      stepPath,
-    );
+    const startIndicatorId = `${EIndicatorType.WORKFLOW_START}-${targetNodeId}`;
 
-    ctx.edges.push(startIndicatorEdge);
+    addEdge(ctx, startIndicatorId, targetNodeId, undefined, undefined, stepPath);
   }
 };
 // Push a regular task node into the graph.
@@ -742,6 +721,9 @@ const walkStep = ({
   const groupName = getGroupId(operatorNodeId, config.highlights);
 
   ctx.nodePaths.set(operatorNodeId, stepPath);
+  ensureWorkflowStartIndicator(ctx, operatorNodeId, level, groupName);
+  ensureWorkflowStartEdge(ctx, incoming, operatorNodeId, stepPath);
+
   addOperatorNode(ctx, config, {
     operatorNodeId,
     operatorType,

@@ -25,7 +25,7 @@ export const BranchPlaceholder: FC<
 
   return (
     <WorkflowNodeProvider id={id}>
-      <ZoomAwareTooltip title={branchLabel} placement="left">
+      <ZoomAwareTooltip title={branchLabel} placement="top">
         <div
           className="workflow-branch-placeholder nodrag nopan"
           role="button"
