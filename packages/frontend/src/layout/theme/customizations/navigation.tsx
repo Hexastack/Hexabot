@@ -37,12 +37,14 @@ export const navigationCustomizations: Components<Theme> = {
   MuiMenu: {
     styleOverrides: {
       list: {
+        padding: 0,
         gap: "0px",
         [`&.${dividerClasses.root}`]: {
           margin: "0 -8px",
         },
       },
       paper: ({ theme }) => ({
+        padding: theme.spacing(1),
         marginTop: "4px",
         borderRadius: (theme.vars || theme).shape.borderRadius,
         border: `1px solid ${(theme.vars || theme).palette.divider}`,

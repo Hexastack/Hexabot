@@ -137,19 +137,25 @@ export const Workflow = () => {
   const isPublishDisabled =
     !definition || isDefinitionSaving || isCurrentVersionPublished;
   const tasks = definition?.tasks;
-  const handleEdgeInsert = useCallback(
-    (insertPath: FlowStepPath, insertType: EdgeInsertType = "step") => {
+  const handleInsert = useCallback(
+    (
+      insertType: EdgeInsertType = "step",
+      insertPath?: FlowStepPath | null,
+    ) => {
       if (insertType === StepType.Conditional) {
+        setPendingInsertPath(null);
         addConditionalStep(insertPath);
 
         return;
       }
       if (insertType === StepType.Loop) {
+        setPendingInsertPath(null);
         addLoopStep(insertPath);
 
         return;
       }
       if (insertType === StepType.Parallel) {
+        setPendingInsertPath(null);
         addParallelStep(insertPath);
 
         return;
@@ -158,10 +164,22 @@ export const Workflow = () => {
         return;
       }
 
-      setPendingInsertPath(insertPath);
+      setPendingInsertPath(insertPath ?? null);
       setActionsDrawerOpen(true);
     },
     [addConditionalStep, addLoopStep, addParallelStep],
+  );
+  const handleEdgeInsert = useCallback(
+    (insertPath: FlowStepPath, insertType: EdgeInsertType = "step") => {
+      handleInsert(insertType, insertPath);
+    },
+    [handleInsert],
+  );
+  const handleRootInsert = useCallback(
+    (insertType: EdgeInsertType = "step") => {
+      handleInsert(insertType, null);
+    },
+    [handleInsert],
   );
   const handleActionSelect = useCallback(
     (action: IAction) => {
@@ -356,12 +374,7 @@ export const Workflow = () => {
           <Background size={2} />
           {isEmptyWorkflow && (
             <WorkflowEmptyState
-              drawerId={actionsDrawerId}
-              drawerOpen={actionsDrawerOpen}
-              onOpenActionsDrawer={() => {
-                setPendingInsertPath(null);
-                setActionsDrawerOpen(true);
-              }}
+              onInsert={handleRootInsert}
             />
           )}
         </ReactFlowWrapper>
