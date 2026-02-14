@@ -121,6 +121,32 @@ const connectIncomingEdges = (
     addEdge(ctx, source, target, undefined, edgeLabel, insertPath);
   });
 };
+const GROUP_ID_PREFIX = `${ENodeType.GROUP}-`;
+const getGroupStepId = (groupName?: string) =>
+  groupName?.startsWith(GROUP_ID_PREFIX)
+    ? groupName.slice(GROUP_ID_PREFIX.length)
+    : undefined;
+const getNestedGroupDirection = (
+  sourceGroupName?: string,
+  targetGroupName?: string,
+) => {
+  const sourceStepId = getGroupStepId(sourceGroupName);
+  const targetStepId = getGroupStepId(targetGroupName);
+
+  if (!sourceStepId || !targetStepId || sourceStepId === targetStepId) {
+    return "none" as const;
+  }
+
+  if (sourceStepId.startsWith(targetStepId)) {
+    return "sourceNested" as const;
+  }
+
+  if (targetStepId.startsWith(sourceStepId)) {
+    return "targetNested" as const;
+  }
+
+  return "none" as const;
+};
 const addGroupEdge = (
   ctx: TraversalContext,
   source: string,
@@ -134,7 +160,10 @@ const addGroupEdge = (
   if (sourceGroupName === targetGroupName) {
     return false;
   }
-
+  const nestedDirection = getNestedGroupDirection(
+    sourceGroupName,
+    targetGroupName,
+  );
   const upsertGroupEdge = (
     id: string,
     groupSource: string,
@@ -175,6 +204,16 @@ const addGroupEdge = (
   }
 
   if (sourceGroupName && targetGroupName) {
+    if (nestedDirection === "sourceNested") {
+      // nested group -> parent node (keep parent node as target)
+      return upsertGroupEdge(`e-${sourceGroupName}-${target}`, sourceGroupName, target);
+    }
+
+    if (nestedDirection === "targetNested") {
+      // parent node -> nested group (keep parent node as source)
+      return upsertGroupEdge(`e-${source}-${targetGroupName}`, source, targetGroupName);
+    }
+
     // group -> other group
     return upsertGroupEdge(
       `e-${sourceGroupName}-${targetGroupName}`,
@@ -231,15 +270,21 @@ export const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
   return tasks?.[taskName]?.action;
 };
 
+const OPERATOR_GROUP_PATH_PATTERN =
+  /^(step-\d+(?:(?:-(?:conditional|parallel)\d+-\d+|-(?:loop)-\d+)*)-(conditional|loop|parallel))(?:(?:-branch-)|(?:-?\d)|$)/;
+
 export const getGroupId = (id: string, groups?: THighlightGroups) => {
-  const groupId = id.match(/^step-\d+-(conditional|loop|parallel)/)?.[0];
+  const groupMatch = id.match(OPERATOR_GROUP_PATH_PATTERN);
 
-  if (groupId) {
-    const [, , operator] = groupId.split("-");
+  if (!groupMatch) {
+    return;
+  }
 
-    if (groups?.[operator]) {
-      return `${ENodeType.GROUP}-${groupId}`;
-    }
+  const groupId = groupMatch[1];
+  const operator = groupMatch[2] as EOperatorType;
+
+  if (groups?.[operator]) {
+    return `${ENodeType.GROUP}-${groupId}`;
   }
 };
 
