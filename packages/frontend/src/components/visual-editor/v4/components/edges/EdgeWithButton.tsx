@@ -103,16 +103,22 @@ export const EdgeWithButton = ({
           </div>
         </EdgeLabelRenderer>
       ) : label ? (
-        <text
-          x={(sourceX + targetX) / 2}
-          y={(sourceY + targetY) / 2}
-          fill="black"
-          fontSize={14}
-          textAnchor="middle"
-          dy={0}
-        >
-          {label}
-        </text>
+        <EdgeLabelRenderer>
+          <div
+            className="button-edge__label nodrag nopan"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              display: "inline-flex",
+              pointerEvents: "none",
+            }}
+          >
+            <ZoomAwareTooltip title={label} placement="top">
+              <span className="button-edge__tooltip-anchor" aria-hidden>
+                {label}
+              </span>
+            </ZoomAwareTooltip>
+          </div>
+        </EdgeLabelRenderer>
       ) : null}
     </>
   );

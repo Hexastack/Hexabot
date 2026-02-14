@@ -116,6 +116,9 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
       "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder":
         "true",
+      "org.eclipse.elk.layered.considerModelOrder.crossingCounterNodeInfluence":
+        "0.001",
+      "org.eclipse.elk.randomSeed": "1",
     },
     children: nodes.map((n) => {
       const ports =

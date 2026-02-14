@@ -505,8 +505,9 @@ const addBranchPlaceholderNode = (
   branchIndex: number,
   level: number,
   insertPath: FlowStepPath,
-  label?: string,
+  edgeLabel?: string,
   incoming: string[] = [operatorNodeId],
+  placeholderLabel?: string,
 ) => {
   const placeholderNodeId = `${operatorNodeId}-branch-${branchIndex}-placeholder`;
   const groupName = getGroupId(placeholderNodeId, config.highlights);
@@ -522,11 +523,17 @@ const addBranchPlaceholderNode = (
       level,
       groupName,
       insertPath,
-      label,
+      label: placeholderLabel,
     },
   });
   ctx.placeholderNodeIds.add(placeholderNodeId);
-  connectIncomingEdges(ctx, uniqueIds(incoming), placeholderNodeId);
+  connectIncomingEdges(
+    ctx,
+    uniqueIds(incoming),
+    placeholderNodeId,
+    undefined,
+    edgeLabel,
+  );
 
   return placeholderNodeId;
 };
@@ -633,6 +640,8 @@ const walkConditionalBranches = (
             entryEdgeLabel: branchLabel,
           })
         : [operatorNodeId];
+    const placeholderEdgeLabel =
+      branchSteps.length === 0 ? branchLabel : undefined;
     const placeholderNodeId = addBranchPlaceholderNode(
       ctx,
       config,
@@ -640,7 +649,7 @@ const walkConditionalBranches = (
       branchIndex,
       level + 1,
       insertPath,
-      branchLabel,
+      placeholderEdgeLabel,
       branchExits,
     );
 

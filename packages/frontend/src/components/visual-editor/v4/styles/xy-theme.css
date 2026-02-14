@@ -128,3 +128,7 @@
     in 0.4s,
     out 0.5s;
 }
+
+.react-flow__edgelabel-renderer {
+  z-index: 10000;
+}
