@@ -25,6 +25,7 @@ import {
   ENodeType,
   type GraphNode,
   type IBuildNodesAndEdgesProps,
+  type WorkflowPort,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
 
@@ -68,7 +69,7 @@ const getElkSide = (position: Position) => {
 };
 
 type ElkPort = {
-  handleId: ELinkType;
+  handleId: WorkflowPort;
   elkId: string;
   side: string;
   type: EHandleType;
@@ -112,7 +113,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       "elk.algorithm": "layered",
       "org.eclipse.elk.direction": elkDirection,
       "elk.spacing.nodeNode": "64",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "128",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "186",
       "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
       "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder":
         "true",
@@ -122,7 +123,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
     },
     children: nodes.map((n) => {
       const ports =
-        (n.data as { ports?: ELinkType[] })?.ports?.map((handleId) => {
+        (n.data as { ports?: WorkflowPort[] })?.ports?.map((handleId) => {
           const handle = getHandleConfig(handleId, direction);
 
           return {

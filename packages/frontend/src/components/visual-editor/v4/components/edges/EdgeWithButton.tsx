@@ -17,7 +17,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 import type { EdgeInsertData } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
-import { ZoomAwareTooltip } from "../ZoomAwareTooltip";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
@@ -32,7 +31,6 @@ export const EdgeWithButton = ({
   markerEnd,
   source,
   target,
-  label,
   data,
 }: EdgeProps) => {
   const { t } = useTranslate();
@@ -86,37 +84,18 @@ export const EdgeWithButton = ({
               gap: 0,
             }}
           >
-            <ZoomAwareTooltip title={label} placement="top">
-              <span style={{ display: "inline-flex" }}>
-                <PulseIconButton
-                  type="button"
-                  size={25}
-                  className="nodrag nopan"
-                  aria-label={t("button.add")}
-                  aria-haspopup="menu"
-                  onClick={handleOpenInsertMenu}
-                >
-                  <Plus size={14} />
-                </PulseIconButton>
-              </span>
-            </ZoomAwareTooltip>
-          </div>
-        </EdgeLabelRenderer>
-      ) : label ? (
-        <EdgeLabelRenderer>
-          <div
-            className="button-edge__label nodrag nopan"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              display: "inline-flex",
-              pointerEvents: "none",
-            }}
-          >
-            <ZoomAwareTooltip title={label} placement="top">
-              <span className="button-edge__tooltip-anchor" aria-hidden>
-                {label}
-              </span>
-            </ZoomAwareTooltip>
+            <span style={{ display: "inline-flex" }}>
+              <PulseIconButton
+                type="button"
+                size={25}
+                className="nodrag nopan"
+                aria-label={t("button.add")}
+                aria-haspopup="menu"
+                onClick={handleOpenInsertMenu}
+              >
+                <Plus size={14} />
+              </PulseIconButton>
+            </span>
           </div>
         </EdgeLabelRenderer>
       ) : null}

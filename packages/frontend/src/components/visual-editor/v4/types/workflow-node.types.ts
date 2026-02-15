@@ -96,7 +96,6 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
 
 export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
   insertPath?: FlowStepPath;
-  label?: string;
   onOpenInsertMenu?: OnOpenInsertMenu;
 };
 
@@ -113,6 +112,7 @@ export type EOperatorType = Extract<
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
   strategy?: "wait_all" | "wait_any";
+  conditionPortLabels?: { handleId: ConditionalOperatorOutPort; label: string }[];
 };
 
 // Group types
@@ -157,7 +157,12 @@ export enum ELinkType {
   BRANCH_PLACEHOLDER_OUT = "branchPlaceholderOut",
 }
 
-export type Port<P extends string> = Extract<ELinkType, `${P}${string}`>;
+export type ConditionalOperatorOutPort =
+  `${ELinkType.OPERATOR_OUT}-${number}-${number}`;
+
+export type WorkflowPort = ELinkType | ConditionalOperatorOutPort;
+
+export type Port<P extends string> = Extract<WorkflowPort, `${P}${string}`>;
 
 // Workflow global types
 export type THighlightGroups = {
