@@ -32,7 +32,8 @@ export async function executeParallel(
 ): Promise<Suspension | void> {
   for (let index = startIndex; index < step.steps.length; index += 1) {
     const child = step.steps[index];
-    const suspension = await env.executeStep(child, state, [...path, index]);
+    const childPath = [...path, 'parallel', index];
+    const suspension = await env.executeStep(child, state, childPath);
     if (suspension) {
       return {
         ...suspension,

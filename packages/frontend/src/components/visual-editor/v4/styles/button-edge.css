@@ -2,6 +2,7 @@
   position: absolute;
   pointer-events: all;
   transform-origin: center;
+  z-index: 10000;
 }
 
 .button-edge__button {
@@ -29,4 +30,19 @@
   color: var(--xy-edge-label-color-default);
   font-size: 12px;
   white-space: nowrap;
+}
+
+.button-edge__tooltip-anchor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 18px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
 }

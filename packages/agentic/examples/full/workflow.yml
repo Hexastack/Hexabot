@@ -263,6 +263,7 @@ flow:
   - do: fetch_user_profile      # Step 3: enrich with CRM data before branching.
 
   # Step 4: run three independent enrichment tasks concurrently.
+  # Note: each entry under `parallel.steps` can be a `do`, `conditional`, `loop`, or nested `parallel` block.
   - parallel:
       strategy: wait_all        # wait_all ensures downstream steps see every output
       steps:

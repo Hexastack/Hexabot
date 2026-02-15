@@ -9,7 +9,6 @@ import { Box, Button, styled } from "@mui/material";
 import {
   Background,
   Controls,
-  type NodeMouseHandler,
   useReactFlow,
 } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
@@ -45,18 +44,20 @@ import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
+import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
 import {
   ENodeType,
-  type GraphNode,
+  type BranchPlaceholderData,
   type WorkflowGraph,
 } from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
   EdgeInsertType,
   FlowStepPath,
+  OnOpenInsertMenu,
 } from "../types/workflow-path.types";
 import { getWorkflowDefaultConfig } from "../utils/graph.utils";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
@@ -127,9 +128,15 @@ export const Workflow = () => {
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
+  const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
+    useState<HTMLElement | null>(null);
+  const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
+    null,
+  );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
+  const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
@@ -169,17 +176,32 @@ export const Workflow = () => {
     },
     [addConditionalStep, addLoopStep, addParallelStep],
   );
-  const handleEdgeInsert = useCallback(
-    (insertPath: FlowStepPath, insertType: EdgeInsertType = "step") => {
-      handleInsert(insertType, insertPath);
-    },
-    [handleInsert],
-  );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
       handleInsert(insertType, null);
     },
     [handleInsert],
+  );
+  const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
+    (anchorEl, insertPath) => {
+      setInsertMenuAnchorEl(anchorEl);
+      setInsertMenuPath(insertPath);
+    },
+    [],
+  );
+  const handleCloseInsertMenu = useCallback(() => {
+    setInsertMenuAnchorEl(null);
+    setInsertMenuPath(null);
+  }, []);
+  const handleSharedInsert = useCallback(
+    (insertType: EdgeInsertType = "step") => {
+      if (!insertMenuPath) {
+        return;
+      }
+
+      handleInsert(insertType, insertMenuPath);
+    },
+    [handleInsert, insertMenuPath],
   );
   const handleActionSelect = useCallback(
     (action: IAction) => {
@@ -188,27 +210,6 @@ export const Workflow = () => {
       setPendingInsertPath(null);
     },
     [addActionStep, pendingInsertPath],
-  );
-  const handleNodeClick = useCallback<NodeMouseHandler>(
-    (event, node) => {
-      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-      const placeholderNode =
-        node as unknown as GraphNode<ENodeType.BRANCH_PLACEHOLDER>;
-      const insertPath = placeholderNode.data?.insertPath;
-
-      if (!insertPath) {
-        return;
-      }
-
-      setPendingInsertPath(insertPath);
-      setActionsDrawerOpen(true);
-    },
-    [],
   );
 
   useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
@@ -282,11 +283,32 @@ export const Workflow = () => {
         ...edge,
         data: {
           ...edgeData,
-          onInsert: handleEdgeInsert,
+          onOpenInsertMenu: handleOpenInsertMenu,
         },
       };
     });
-  }, [graph.edges, handleEdgeInsert]);
+  }, [graph.edges, handleOpenInsertMenu]);
+  const nodesWithHandlers = useMemo(() => {
+    return graph.nodes.map((node) => {
+      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
+        return node;
+      }
+
+      const nodeData = node.data as BranchPlaceholderData | undefined;
+
+      if (!nodeData?.insertPath) {
+        return node;
+      }
+
+      return {
+        ...node,
+        data: {
+          ...nodeData,
+          onOpenInsertMenu: handleOpenInsertMenu,
+        },
+      };
+    });
+  }, [graph.nodes, handleOpenInsertMenu]);
   const handleNewWorkflow = () => {
     const baseDefinition = createBaseDefinition();
     const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
@@ -355,9 +377,8 @@ export const Workflow = () => {
       <StyledBox>
         <ReactFlowWrapper
           onViewport={debouncedWorkflowUpdate}
-          onNodeClick={handleNodeClick}
           defaultEdges={edgesWithHandlers || []}
-          defaultNodes={isEmptyWorkflow ? [] : graph?.nodes || []}
+          defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
           defaultViewport={defaultViewport}
         >
           <Controls
@@ -419,6 +440,13 @@ export const Workflow = () => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
           }}
+        />
+        <WorkflowInsertMenu
+          id={sharedInsertMenuId}
+          anchorEl={insertMenuAnchorEl}
+          open={Boolean(insertMenuAnchorEl)}
+          onClose={handleCloseInsertMenu}
+          onInsert={handleSharedInsert}
         />
         <WorkflowBottomDrawer />
       </StyledBox>

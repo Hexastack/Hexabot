@@ -80,18 +80,16 @@ describe('executeParallel', () => {
 
     expect(result).toBeUndefined();
     expect(env.executeStep).toHaveBeenCalledTimes(2);
-    expect(env.executeStep).toHaveBeenNthCalledWith(
+    expect(env.executeStep).toHaveBeenNthCalledWith(1, step.steps[0], state, [
+      0,
+      'parallel',
+      0,
+    ]);
+    expect(env.executeStep).toHaveBeenNthCalledWith(2, step.steps[1], state, [
+      0,
+      'parallel',
       1,
-      step.steps[0],
-      state,
-      [0, 0],
-    );
-    expect(env.executeStep).toHaveBeenNthCalledWith(
-      2,
-      step.steps[1],
-      state,
-      [0, 1],
-    );
+    ]);
   });
 
   it('short-circuits on first completion when using wait_any', async () => {
@@ -110,7 +108,10 @@ describe('executeParallel', () => {
 
     expect(result).toBeUndefined();
     expect(env.executeStep).toHaveBeenCalledTimes(1);
-    expect(env.executeStep).toHaveBeenCalledWith(step.steps[0], state, [0]);
+    expect(env.executeStep).toHaveBeenCalledWith(step.steps[0], state, [
+      'parallel',
+      0,
+    ]);
   });
 
   it('continues remaining steps after resuming from suspension (wait_all)', async () => {
@@ -141,7 +142,10 @@ describe('executeParallel', () => {
     expect(result).toBeUndefined();
     expect(innerSuspension.continue).toHaveBeenCalledWith('resume-data');
     expect(env.executeStep).toHaveBeenCalledTimes(2);
-    expect(env.executeStep).toHaveBeenLastCalledWith(step.steps[1], state, [1]);
+    expect(env.executeStep).toHaveBeenLastCalledWith(step.steps[1], state, [
+      'parallel',
+      1,
+    ]);
   });
 
   it('stops after resuming a suspended child when using wait_any', async () => {

@@ -11,22 +11,16 @@ import {
   type EdgeProps,
 } from "@xyflow/react";
 import { Plus } from "lucide-react";
-import { useCallback, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useMemo, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-import type {
-  EdgeInsertData,
-  EdgeInsertType,
-} from "../../types/workflow-path.types";
+import type { EdgeInsertData } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
-import { WorkflowInsertMenu } from "../WorkflowInsertMenu";
-import { ZoomAwareTooltip } from "../ZoomAwareTooltip";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
 export const EdgeWithButton = ({
-  id,
   sourceX,
   sourceY,
   targetX,
@@ -37,15 +31,11 @@ export const EdgeWithButton = ({
   markerEnd,
   source,
   target,
-  label,
   data,
 }: EdgeProps) => {
   const { t } = useTranslate();
   const edgeData = data as EdgeInsertData | undefined;
   const insertPath = edgeData?.insertPath;
-  const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
-    useState<HTMLElement | null>(null);
-  const isInsertMenuOpen = Boolean(insertMenuAnchorEl);
   const [path, labelX, labelY] = useMemo(() => {
     return getBezierPath({
       sourceX,
@@ -65,23 +55,20 @@ export const EdgeWithButton = ({
     sourcePosition,
     targetPosition,
   ]);
-  const handleInsert = useCallback((type: EdgeInsertType) => {
-    if (insertPath) {
-      edgeData?.onInsert?.(insertPath, type);
-    }
-  }, [edgeData, insertPath]);
   const handleOpenInsertMenu = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       event.stopPropagation();
-      setInsertMenuAnchorEl(event.currentTarget);
+
+      if (!insertPath) {
+        return;
+      }
+
+      edgeData?.onOpenInsertMenu?.(event.currentTarget, insertPath);
     },
-    [],
+    [edgeData, insertPath],
   );
-  const handleCloseInsertMenu = useCallback(() => {
-    setInsertMenuAnchorEl(null);
-  }, []);
-  const showInsert = Boolean(insertPath && edgeData?.onInsert);
+  const showInsert = Boolean(insertPath && edgeData?.onOpenInsertMenu);
 
   return (
     <>
@@ -97,44 +84,20 @@ export const EdgeWithButton = ({
               gap: 0,
             }}
           >
-            <ZoomAwareTooltip title={label} placement="left-end">
-              <span style={{ display: "inline-flex" }}>
-                <PulseIconButton
-                  type="button"
-                  size={25}
-                  className="nodrag nopan"
-                  aria-label={t("button.add")}
-                  aria-controls={
-                    isInsertMenuOpen ? `edge-insert-menu-${id}` : undefined
-                  }
-                  aria-haspopup="menu"
-                  aria-expanded={isInsertMenuOpen ? "true" : undefined}
-                  onClick={handleOpenInsertMenu}
-                >
-                  <Plus size={14} />
-                </PulseIconButton>
-              </span>
-            </ZoomAwareTooltip>
-            <WorkflowInsertMenu
-              id={`edge-insert-menu-${id}`}
-              anchorEl={insertMenuAnchorEl}
-              open={isInsertMenuOpen}
-              onClose={handleCloseInsertMenu}
-              onInsert={handleInsert}
-            />
+            <span style={{ display: "inline-flex" }}>
+              <PulseIconButton
+                type="button"
+                size={25}
+                className="nodrag nopan"
+                aria-label={t("button.add")}
+                aria-haspopup="menu"
+                onClick={handleOpenInsertMenu}
+              >
+                <Plus size={14} />
+              </PulseIconButton>
+            </span>
           </div>
         </EdgeLabelRenderer>
-      ) : label ? (
-        <text
-          x={(sourceX + targetX) / 2}
-          y={(sourceY + targetY) / 2}
-          fill="black"
-          fontSize={14}
-          textAnchor="middle"
-          dy={0}
-        >
-          {label}
-        </text>
       ) : null}
     </>
   );

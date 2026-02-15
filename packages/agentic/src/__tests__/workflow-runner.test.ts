@@ -227,6 +227,135 @@ describe('WorkflowRunner', () => {
     expect(snapshots['1.branch.1.0:second_task']?.status).toBe('skipped');
   });
 
+  it('supports conditional, loop, and nested parallel children inside a parallel step', async () => {
+    const firstExecute = jest.fn(async () => ({ value: 'alpha' }));
+    const secondExecute = jest.fn(async () => ({ value: 'beta' }));
+    const echoExecute = jest.fn(async ({ input }) => ({
+      message: String(input.message),
+    }));
+    const firstAction = defineAction<
+      unknown,
+      { value: string },
+      TestContext,
+      Settings
+    >({
+      name: 'first_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ value: z.string() }),
+      execute: firstExecute,
+    });
+    const secondAction = defineAction<
+      unknown,
+      { value: string },
+      TestContext,
+      Settings
+    >({
+      name: 'second_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ value: z.string() }),
+      execute: secondExecute,
+    });
+    const echoAction = defineAction<
+      { message?: unknown },
+      { message: string },
+      TestContext,
+      Settings
+    >({
+      name: 'echo_action',
+      inputSchema: z.object({ message: z.any() }),
+      outputSchema: z.object({ message: z.string() }),
+      execute: echoExecute,
+    });
+    const definition: WorkflowDefinition = {
+      defaults: { settings: { timeout_ms: 0, retries: baseRetries } },
+      tasks: {
+        first_task: {
+          action: 'first_action',
+        },
+        second_task: {
+          action: 'second_action',
+        },
+        loop_task: {
+          action: 'echo_action',
+          inputs: { message: '=$iteration.item' },
+        },
+      },
+      flow: [
+        {
+          parallel: {
+            strategy: 'wait_all',
+            steps: [
+              { do: 'first_task' },
+              {
+                conditional: {
+                  when: [
+                    { condition: '=true', steps: [{ do: 'second_task' }] },
+                  ],
+                },
+              },
+              {
+                loop: {
+                  name: 'inner_loop',
+                  for_each: { item: 'item', in: '=["one","two"]' },
+                  steps: [
+                    {
+                      parallel: {
+                        strategy: 'wait_all',
+                        steps: [{ do: 'loop_task' }],
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+      outputs: {
+        first: '=$output.first_task.value',
+        second: '=$output.second_task.value',
+        loop_last: '=$output.loop_task.message',
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: {
+        first_action: firstAction,
+        second_action: secondAction,
+        echo_action: echoAction,
+      },
+    });
+    const runner = new WorkflowRunner(compiled, {
+      runId: 'run-nested-parallel',
+    });
+    const context = new TestContext({});
+    const result = await runner.start({
+      inputData: {},
+      context,
+    });
+
+    expect(result.status).toBe('finished');
+    if (result.status === 'finished') {
+      expect(result.output.first).toBe('alpha');
+      expect(result.output.second).toBe('beta');
+      expect(result.output.loop_last).toBe('two');
+    }
+
+    expect(firstExecute).toHaveBeenCalledTimes(1);
+    expect(secondExecute).toHaveBeenCalledTimes(1);
+    expect(echoExecute).toHaveBeenCalledTimes(2);
+    const snapshots = runner.getSnapshot().actions;
+    expect(snapshots['0.parallel.0:first_task']?.status).toBe('completed');
+    expect(snapshots['0.parallel.1.branch.0.0:second_task']?.status).toBe(
+      'completed',
+    );
+    expect(
+      snapshots['0.parallel.2.inner_loop.0.parallel.0:loop_task[0]']?.status,
+    ).toBe('completed');
+    expect(
+      snapshots['0.parallel.2.inner_loop.0.parallel.0:loop_task[1]']?.status,
+    ).toBe('completed');
+  });
+
   it('handles suspension and resumes with provided data', async () => {
     const suspendAction = defineAction<
       { prompt: string },

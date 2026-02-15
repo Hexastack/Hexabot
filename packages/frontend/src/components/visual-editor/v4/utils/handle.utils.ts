@@ -8,15 +8,68 @@ import { type HandleProps, Position } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import { merge } from "lodash";
 
-import { EHandleType, ELinkType } from "../types/workflow-node.types";
+import {
+  EHandleType,
+  ELinkType,
+  type WorkflowPort,
+} from "../types/workflow-node.types";
 
 type getHandleConfigProps = Omit<HandleProps, "type"> & { type: EHandleType };
 
+const CONDITIONAL_OPERATOR_OUT_PATTERN = /^operatorOut-(\d+)-(\d+)$/;
+
+export const getConditionalOperatorOutHandleMeta = (
+  id: WorkflowPort | string,
+) => {
+  const match = String(id).match(CONDITIONAL_OPERATOR_OUT_PATTERN);
+
+  if (!match) {
+    return;
+  }
+
+  const index = Number(match[1]);
+  const total = Number(match[2]);
+
+  if (
+    !Number.isInteger(index) ||
+    !Number.isInteger(total) ||
+    index < 0 ||
+    total < 1 ||
+    index >= total
+  ) {
+    return;
+  }
+
+  return { index, total } as const;
+};
+
+const getHandleBaseId = (id: WorkflowPort): ELinkType => {
+  return getConditionalOperatorOutHandleMeta(id)
+    ? ELinkType.OPERATOR_OUT
+    : (id as ELinkType);
+};
+const getConditionalOperatorOutStyle = (
+  id: WorkflowPort,
+  direction: ResizeControlDirection,
+) => {
+  const meta = getConditionalOperatorOutHandleMeta(id);
+
+  if (!meta) {
+    return;
+  }
+
+  const progress = ((meta.index + 1) / (meta.total + 1)) * 100;
+
+  return direction === "horizontal"
+    ? { top: `${progress}%` }
+    : { left: `${progress}%` };
+};
 const getHandleDimensions = (
-  id: ELinkType,
+  id: WorkflowPort,
   position: Position,
   direction: ResizeControlDirection,
 ) => {
+  const baseId = getHandleBaseId(id);
   const isHorizontalLeftRight =
     direction === "horizontal" &&
     [Position.Left, Position.Right].includes(position);
@@ -32,7 +85,9 @@ const getHandleDimensions = (
   } else if (isVerticalTopBottom) {
     return { width: "15px", height: "10px" };
   } else if (
-    [ELinkType.TOOL_IN, ELinkType.MODEL_IN, ELinkType.MEMORY_IN].includes(id)
+    [ELinkType.TOOL_IN, ELinkType.MODEL_IN, ELinkType.MEMORY_IN].includes(
+      baseId,
+    )
   ) {
     return direction === "horizontal"
       ? { width: "15px", height: "10px" }
@@ -45,7 +100,7 @@ const getHandleDimensions = (
       ELinkType.AGENT_TOOL,
       ELinkType.AGENT_MODEL,
       ELinkType.AGENT_MEMORY,
-    ].includes(id)
+    ].includes(baseId)
   ) {
     return direction === "horizontal"
       ? { width: "15px", height: "10px" }
@@ -81,10 +136,16 @@ const getBorderRadius = (
   return radiusMap[position][direction];
 };
 const getConfig = (
-  id: ELinkType,
+  id: WorkflowPort,
   direction: ResizeControlDirection,
 ): getHandleConfigProps => {
-  switch (id) {
+  const baseId = getHandleBaseId(id);
+  const conditionalOperatorOutStyle = getConditionalOperatorOutStyle(
+    id,
+    direction,
+  );
+
+  switch (baseId) {
     case ELinkType.GROUP_IN:
       return {
         type: EHandleType.TARGET,
@@ -116,6 +177,7 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
+        style: conditionalOperatorOutStyle,
         isConnectable: false,
         isValidConnection: () => false,
       };
@@ -238,15 +300,16 @@ const getConfig = (
 };
 
 export const getHandleConfig = (
-  id: ELinkType,
+  id: WorkflowPort,
   direction: ResizeControlDirection = "horizontal",
 ): getHandleConfigProps => {
+  const baseId = getHandleBaseId(id);
   const config = getConfig(id, direction);
   const { position: initialPosition } = getConfig(id, "horizontal");
   const defaultConfig: Partial<HandleProps> = {
     id,
     style: {
-      ...getHandleDimensions(id, config.position, direction),
+      ...getHandleDimensions(baseId, config.position, direction),
       ...getBorderRadius(initialPosition, direction),
       background: "#555",
     },

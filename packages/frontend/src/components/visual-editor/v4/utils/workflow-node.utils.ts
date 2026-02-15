@@ -11,11 +11,11 @@ import {
   type WorkflowCompileOptions,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
+import { alpha } from "@mui/material/styles";
 import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
 import { DEFAULT_NODE_PROPS } from "@/constants/workflow.constants";
-import { generateId } from "@/utils/generateId";
 
 import {
   EEdgeType,
@@ -25,6 +25,7 @@ import {
   ENodeType,
   type GraphNode,
   type IBuildNodesAndEdgesProps,
+  type WorkflowPort,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
 
@@ -37,6 +38,21 @@ import {
 import { getHandleConfig } from "./handle.utils";
 
 const elk = new ELK();
+const GROUP_MIN_PADDING = 32;
+const GROUP_PADDING_DECAY_PER_LEVEL = 16;
+const GROUP_BASE_ALPHA = 0.22;
+const GROUP_ALPHA_DECAY_PER_LEVEL = 0.05;
+const GROUP_MIN_ALPHA = 0.08;
+const getGroupPadding = (basePadding: number, level: number) =>
+  Math.max(
+    GROUP_MIN_PADDING,
+    basePadding - level * GROUP_PADDING_DECAY_PER_LEVEL,
+  );
+const getGroupBackgroundAlpha = (level: number) =>
+  Math.max(
+    GROUP_MIN_ALPHA,
+    GROUP_BASE_ALPHA - level * GROUP_ALPHA_DECAY_PER_LEVEL,
+  );
 const getElkSide = (position: Position) => {
   switch (position) {
     case Position.Top:
@@ -53,7 +69,7 @@ const getElkSide = (position: Position) => {
 };
 
 type ElkPort = {
-  handleId: ELinkType;
+  handleId: WorkflowPort;
   elkId: string;
   side: string;
   type: EHandleType;
@@ -96,12 +112,18 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
     layoutOptions: {
       "elk.algorithm": "layered",
       "org.eclipse.elk.direction": elkDirection,
-      "elk.spacing.nodeNode": "48",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "168",
+      "elk.spacing.nodeNode": "64",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "186",
+      "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
+      "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder":
+        "true",
+      "org.eclipse.elk.layered.considerModelOrder.crossingCounterNodeInfluence":
+        "0.001",
+      "org.eclipse.elk.randomSeed": "1",
     },
     children: nodes.map((n) => {
       const ports =
-        (n.data as { ports?: ELinkType[] })?.ports?.map((handleId) => {
+        (n.data as { ports?: WorkflowPort[] })?.ports?.map((handleId) => {
           const handle = getHandleConfig(handleId, direction);
 
           return {
@@ -236,27 +258,35 @@ export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
     .filter(
       ({ data }) =>
         data.operatorType &&
-        ctx.config?.highlights?.[data.operatorType] &&
-        data.level === 0,
+        ctx.config?.highlights?.[data.operatorType],
     )
     .forEach((n) => {
       if (!ctx.config) {
         return;
       }
       const groupId = n.id;
+      const groupNodeId =
+        n.data.groupName || getGroupId(groupId, ctx.config.highlights);
+
+      if (!groupNodeId) {
+        return;
+      }
       const color =
         n.data.operatorType &&
         ctx.config?.highlights?.[n.data.operatorType]?.color;
-      const padding =
+      const basePadding =
         (n.data.operatorType &&
           ctx.config?.highlights?.[n.data.operatorType]?.padding) ||
         0;
+      const level = n.data.level || 0;
+      const padding = getGroupPadding(basePadding, level);
+      const backgroundAlpha = getGroupBackgroundAlpha(level);
       const groupNodes = nodes.filter((n) => n.id.startsWith(groupId));
       const groupBounds = getNodesBounds(groupNodes);
 
       groups.push({
         ...DEFAULT_NODE_PROPS,
-        id: n.data.groupName || "",
+        id: groupNodeId,
         type: ENodeType.GROUP,
         position: {
           x: groupBounds.x - padding / 2,
@@ -267,9 +297,9 @@ export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
           width: groupBounds.width + padding,
           height: groupBounds.height + padding,
           zIndex: -1,
-          borderRadius: "13px",
-          backgroundColor: color ? `${color}30` : undefined,
-          border: "1px solid #0004",
+          borderRadius: "1rem",
+          backgroundColor: color ? alpha(color, backgroundAlpha) : undefined,
+          border: `1px solid ${alpha("#0004", backgroundAlpha)}`,
         },
       });
     });
@@ -343,13 +373,15 @@ export const buildNodesAndEdges = async ({
     const directEdgeInsertPath = groupName ? undefined : insertPath;
 
     ctx.edges.push({
-      id: generateId(),
+      id: `e-${endEdgesId}-${endIndicatorId}`,
       source: endEdgesId,
       target: endIndicatorId,
       type: EEdgeType.EDGE_WITH_BUTTON,
       ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
       hidden: isFromBranchPlaceholder,
-      data: directEdgeInsertPath ? { insertPath: directEdgeInsertPath } : undefined,
+      data: directEdgeInsertPath
+        ? { insertPath: directEdgeInsertPath }
+        : undefined,
     });
 
     if (groupName) {
@@ -389,7 +421,7 @@ export const buildNodesAndEdges = async ({
     ctx,
   );
   const groupNodes = getGroupNodes(nodes, ctx);
-  const anchoredNodes = [...nodes, ...groupNodes];
+  const anchoredNodes = [...groupNodes, ...nodes];
 
   return {
     edges: ctx.edges,

@@ -6,14 +6,13 @@
 
 import { type NodeProps } from "@xyflow/react";
 import { Plus } from "lucide-react";
-import type { FC } from "react";
+import { useCallback, type FC, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { PulseIconButton } from "../../PulseIconButton";
-import { ZoomAwareTooltip } from "../../ZoomAwareTooltip";
 import { GenericNodePorts } from "../GenericNodePorts";
 
 export const BranchPlaceholder: FC<
@@ -21,27 +20,39 @@ export const BranchPlaceholder: FC<
 > = ({ id, data }) => {
   const { t } = useTranslate();
   const addLabel = t("button.add");
-  const branchLabel = data?.label;
+  const insertPath = data?.insertPath;
+  const onOpenInsertMenu = data?.onOpenInsertMenu;
+  const canInsert = Boolean(insertPath && onOpenInsertMenu);
+  const handleOpenInsertMenu = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!insertPath) {
+        return;
+      }
+
+      onOpenInsertMenu?.(event.currentTarget, insertPath);
+    },
+    [insertPath, onOpenInsertMenu],
+  );
 
   return (
     <WorkflowNodeProvider id={id}>
-      <ZoomAwareTooltip title={branchLabel} placement="left">
-        <div
-          className="workflow-branch-placeholder nodrag nopan"
-          role="button"
+      <div className="workflow-branch-placeholder nodrag nopan">
+        <PulseIconButton
+          type="button"
+          tabIndex={-1}
+          size={42}
+          className="workflow-branch-placeholder__pulse"
           aria-label={addLabel}
+          aria-haspopup="menu"
+          onClick={handleOpenInsertMenu}
+          disabled={!canInsert}
         >
-          <PulseIconButton
-            tabIndex={-1}
-            size={42}
-            className="workflow-branch-placeholder__pulse"
-            sx={{ pointerEvents: "none" }}
-            aria-hidden
-          >
-            <Plus size={18} />
-          </PulseIconButton>
-        </div>
-      </ZoomAwareTooltip>
+          <Plus size={18} />
+        </PulseIconButton>
+      </div>
       <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER> />
     </WorkflowNodeProvider>
   );
