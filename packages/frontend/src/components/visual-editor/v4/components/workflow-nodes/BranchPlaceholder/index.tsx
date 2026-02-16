@@ -11,8 +11,13 @@ import { useCallback, type FC, type MouseEvent } from "react";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
+import {
+  ELinkType,
+  ENodeType,
+  type GraphNode,
+} from "../../../types/workflow-node.types";
 import { PulseIconButton } from "../../PulseIconButton";
+import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodePorts } from "../GenericNodePorts";
 
 export const BranchPlaceholder: FC<
@@ -39,21 +44,27 @@ export const BranchPlaceholder: FC<
 
   return (
     <WorkflowNodeProvider id={id}>
-      <div className="workflow-branch-placeholder nodrag nopan">
-        <PulseIconButton
-          type="button"
-          tabIndex={-1}
-          size={42}
-          className="workflow-branch-placeholder__pulse"
-          aria-label={addLabel}
-          aria-haspopup="menu"
-          onClick={handleOpenInsertMenu}
-          disabled={!canInsert}
-        >
-          <Plus size={18} />
-        </PulseIconButton>
-      </div>
-      <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER> />
+      <GenericNodeContainer>
+        <div className="workflow-branch-placeholder nodrag nopan">
+          <PulseIconButton
+            type="button"
+            tabIndex={-1}
+            size={42}
+            className="workflow-branch-placeholder__pulse"
+            aria-label={addLabel}
+            aria-haspopup="menu"
+            onClick={handleOpenInsertMenu}
+            disabled={!canInsert}
+          >
+            <Plus size={18} />
+          </PulseIconButton>
+        </div>
+        <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER>
+          getDisabled={({ port, node }) =>
+            port === ELinkType.BRANCH_PLACEHOLDER_OUT && !!node.groupName
+          }
+        />
+      </GenericNodeContainer>
     </WorkflowNodeProvider>
   );
 };

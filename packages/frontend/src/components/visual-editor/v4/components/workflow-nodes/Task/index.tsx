@@ -8,11 +8,7 @@ import { NodeProps } from "@xyflow/react";
 import { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import {
-  ELinkType,
-  ENodeType,
-  GraphNode,
-} from "../../../types/workflow-node.types";
+import { ENodeType, GraphNode } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
@@ -26,11 +22,7 @@ export const Task: FC<NodeProps<GraphNode<ENodeType.TASK>>> = ({ id }) => (
         <GenericNodeTitle />
         <GenericNodeDescription />
       </GenericNodeRightContent>
-      <GenericNodePorts<ENodeType.TASK>
-        getDisabled={({ port, hasEnabledPort }) =>
-          port === ELinkType.TASK_OUT && hasEnabledPort
-        }
-      />
+      <GenericNodePorts />
     </GenericNodeContainer>
   </WorkflowNodeProvider>
 );

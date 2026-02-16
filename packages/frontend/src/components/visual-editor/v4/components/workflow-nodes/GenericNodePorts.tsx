@@ -12,8 +12,6 @@ import {
 } from "../../types/workflow-node.types";
 import { GenericHandle } from "../handlers/GenericHandle";
 
-import { useHasEnabledPort } from "./Task/hooks/useHasEnabledPort";
-
 export const GenericNodePorts = <T extends ENodeType = ENodeType>({
   getDisabled,
 }: {
@@ -21,20 +19,21 @@ export const GenericNodePorts = <T extends ENodeType = ENodeType>({
     port: Port<T>;
     idx: number;
     node: IWorkflowNodeContext<T>;
-    hasEnabledPort: boolean;
   }) => boolean;
 }) => {
   const workflowNode = useWorkflowNode<T>();
-  const hasEnabledPort = useHasEnabledPort<T>();
 
   return (workflowNode.ports as Port<T>[])?.map((port, idx) => {
     const isDisabled = getDisabled?.({
       port,
       idx,
       node: workflowNode,
-      hasEnabledPort,
     });
 
-    return <GenericHandle key={port} id={port} hidden={Boolean(isDisabled)} />;
+    if (isDisabled) {
+      return null;
+    }
+
+    return <GenericHandle key={port} id={port} />;
   });
 };
