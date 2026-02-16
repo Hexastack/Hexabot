@@ -49,9 +49,7 @@ export const Operator: FC<NodeProps<GraphNode<ENodeType.OPERATOR>>> = ({
             <GenericNodeTitle />
           </GenericNodeRightContent>
           <GenericNodePorts<ENodeType.OPERATOR>
-            getDisabled={({ idx, node }) =>
-              !!node.groupName && node.level === 0 && idx === 0
-            }
+            getDisabled={({ idx, node }) => !!node.groupName && idx === 0}
           />
           {data?.operatorType === StepType.Conditional
             ? data.conditionPortLabels?.map(({ handleId, label }) => {
