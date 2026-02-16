@@ -41,6 +41,39 @@ export type { WorkflowCompileOptions } from './workflow-compiler';
 
 export type FlowStepPath = Array<string | number>;
 
+const getTaskNameFromStep = (step: unknown): string | null => {
+  if (!step || typeof step !== 'object') {
+    return null;
+  }
+
+  const taskName = (step as { do?: unknown }).do;
+
+  return typeof taskName === 'string' ? taskName : null;
+};
+const hasTaskReference = (steps: FlowStep[], taskName: string): boolean => {
+  return steps.some((step) => {
+    if ('do' in step) {
+      return step.do === taskName;
+    }
+
+    if ('parallel' in step) {
+      return hasTaskReference(step.parallel.steps, taskName);
+    }
+
+    if ('conditional' in step) {
+      return step.conditional.when.some((branch) =>
+        hasTaskReference(branch.steps, taskName),
+      );
+    }
+
+    if ('loop' in step) {
+      return hasTaskReference(step.loop.steps, taskName);
+    }
+
+    return false;
+  });
+};
+
 /**
  * Entry point for preparing and executing workflows from YAML or object definitions.
  * Instances are thin wrappers around a compiled workflow graph.
@@ -179,11 +212,38 @@ export class Workflow {
       return null;
     }
 
+    const removedTaskName = getTaskNameFromStep(steps[removeIndex]);
     const nextSteps = [...steps];
 
     nextSteps.splice(removeIndex, 1);
 
-    return Workflow.setValueAtPath(definition, stepsPath, nextSteps);
+    const nextDefinition = Workflow.setValueAtPath(
+      definition,
+      stepsPath,
+      nextSteps,
+    );
+
+    if (
+      !removedTaskName ||
+      !Object.prototype.hasOwnProperty.call(
+        nextDefinition.tasks,
+        removedTaskName,
+      )
+    ) {
+      return nextDefinition;
+    }
+
+    if (hasTaskReference(nextDefinition.flow, removedTaskName)) {
+      return nextDefinition;
+    }
+
+    const { [removedTaskName]: _removedTask, ...remainingTasks } =
+      nextDefinition.tasks;
+
+    return {
+      ...nextDefinition,
+      tasks: remainingTasks,
+    };
   }
 
   /**
