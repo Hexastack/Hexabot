@@ -167,6 +167,13 @@ export class MemoryStore {
   }
 
   /**
+   * Re-sync the current store snapshot into the workflow context state.
+   */
+  public syncToContext(): void {
+    this.commitToContext();
+  }
+
+  /**
    * Create a MemoryStore instance with the provided identifiers and records.
    * @param params - Initialization parameters.
    * @param params.identifiers - Identifiers for owner, workflow, and run.
