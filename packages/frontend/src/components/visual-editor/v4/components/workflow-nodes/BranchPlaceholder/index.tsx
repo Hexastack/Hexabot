@@ -11,7 +11,11 @@ import { useCallback, type FC, type MouseEvent } from "react";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
+import {
+  ELinkType,
+  ENodeType,
+  type GraphNode,
+} from "../../../types/workflow-node.types";
 import { PulseIconButton } from "../../PulseIconButton";
 import { GenericNodePorts } from "../GenericNodePorts";
 
@@ -53,7 +57,9 @@ export const BranchPlaceholder: FC<
           <Plus size={18} />
         </PulseIconButton>
       </div>
-      <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER> />
+      <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER>
+        getDisabled={({ port }) => port === ELinkType.BRANCH_PLACEHOLDER_OUT}
+      />
     </WorkflowNodeProvider>
   );
 };
