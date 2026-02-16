@@ -35,6 +35,10 @@ export const GenericNodePorts = <T extends ENodeType = ENodeType>({
       hasEnabledPort,
     });
 
-    return <GenericHandle key={port} id={port} hidden={Boolean(isDisabled)} />;
+    if (isDisabled) {
+      return null;
+    }
+
+    return <GenericHandle key={port} id={port} />;
   });
 };

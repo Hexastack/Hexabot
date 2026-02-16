@@ -165,8 +165,6 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
-        isConnectable: false,
-        isValidConnection: () => false,
       };
     case ELinkType.OPERATOR_IN:
       return {
@@ -178,8 +176,6 @@ const getConfig = (
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
         style: conditionalOperatorOutStyle,
-        isConnectable: false,
-        isValidConnection: () => false,
       };
     case ELinkType.TASK_IN:
       return {
@@ -288,8 +284,6 @@ const getConfig = (
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Right : Position.Bottom,
-        isConnectable: false,
-        isValidConnection: () => false,
       };
     default:
       return {
