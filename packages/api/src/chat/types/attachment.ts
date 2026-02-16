@@ -36,13 +36,10 @@ export const attachmentRefSchema = z.union([
 
 export type AttachmentRef = z.infer<typeof attachmentRefSchema>;
 
-export const attachmentPayloadSchema = z
-  .object({
-    type: fileTypeSchema,
-    payload: attachmentRefSchema,
-  })
-  .default({ payload: { id: null }, type: FileType.image })
-  .meta({ title: 'test title', description: 'test description' });
+export const attachmentPayloadSchema = z.object({
+  type: fileTypeSchema,
+  payload: attachmentRefSchema,
+});
 
 export type AttachmentPayload = z.infer<typeof attachmentPayloadSchema>;
 

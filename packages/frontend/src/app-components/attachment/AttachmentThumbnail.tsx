@@ -13,10 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 import {
+  X as ClearIcon,
   File as FileOpenIcon,
   Music as MusicNoteIcon,
   Video as VideoCameraBackOutlinedIcon,
-  X as ClearIcon,
 } from "lucide-react";
 import { FC } from "react";
 

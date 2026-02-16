@@ -19,5 +19,4 @@ export const FORM_WIDGETS = {
   CheckboxesWidget: ActionCheckboxesWidget,
   RadioWidget: ActionRadioWidget,
   RangeWidget: ActionRangeWidget,
-  // FileWidget: ActionAttachmentField,
 } as const;

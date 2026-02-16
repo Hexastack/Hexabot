@@ -5,12 +5,14 @@
  */
 
 import { Box, Typography } from "@mui/material";
-import type { FieldProps } from "@rjsf/utils";
+import type { FieldProps, RJSFSchema } from "@rjsf/utils";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import { AttachmentResourceRef } from "@/types/attachment.types";
 import { getFileType, MIME_TYPES } from "@/utils/attachment";
+
+import { getDescription, LabelWithTooltip } from "../widgets/shared";
 
 type AttachmentValue = {
   type: string;
@@ -55,13 +57,12 @@ export const ActionAttachmentField = ({
 }: FieldProps) => {
   const { t } = useTranslate();
   const label = schema.title || t("label.attachment");
-  const description =
-    typeof schema.description === "string" ? schema.description : undefined;
+  const description = getDescription(schema as RJSFSchema);
   const currentAttachment = getAttachmentValue(formData);
   const isReadOnly = disabled || readonly;
   const handleChange = (id: string | null, mimeType: string | null) => {
     if (!id || !mimeType) {
-      onChange(undefined, []);
+      onChange({ attachment: { type: "image", payload: { id: null } } }, []);
 
       return;
     }
@@ -77,22 +78,18 @@ export const ActionAttachmentField = ({
   return (
     <Box>
       <AttachmentInput
-        label={required ? `${label} *` : label}
+        label={<LabelWithTooltip label={label} description={description} />}
+        required={required}
         value={currentAttachment?.id}
         format="full"
         accept={ATTACHMENT_ACCEPT}
         enableMediaLibrary={!isReadOnly}
         size={128}
         onChange={handleChange}
-        helperText={description}
         resourceRef={AttachmentResourceRef.MessageAttachment}
       />
       {!currentAttachment?.id && currentAttachment?.url ? (
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ wordBreak: "break-word" }}
-        >
+        <Typography variant="caption" sx={{ wordBreak: "break-word" }}>
           {currentAttachment.url}
         </Typography>
       ) : null}

@@ -39,6 +39,43 @@ const COMMON_SETTING_KEYS = [
   "guardrails",
   "audit",
 ] as const;
+const buildActionsUiSchema = (
+  actionName?: string,
+  schema?: RJSFSchema,
+): UiSchema | undefined => {
+  if (
+    !schema ||
+    typeof schema !== "object" ||
+    actionName !== "send_attachment"
+  ) {
+    return undefined;
+  }
+
+  const properties =
+    schema.properties && typeof schema.properties === "object"
+      ? Object.keys(schema.properties)
+      : [];
+
+  if (properties.length === 0) {
+    return undefined;
+  }
+
+  const uiSchema: UiSchema = {};
+
+  if (
+    properties.includes("attachment") &&
+    schema.properties &&
+    "attachment" in schema.properties &&
+    typeof schema.properties.attachment === "object" &&
+    "uiField" in schema.properties.attachment
+  ) {
+    uiSchema.attachment = {
+      "ui:field": schema.properties.attachment.uiField,
+    };
+  }
+
+  return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
+};
 const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
   if (!schema || typeof schema !== "object") {
     return undefined;
@@ -88,34 +125,10 @@ const ActionFormDrawerContent = ({
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
   const inputUiSchema = useMemo(() => {
-    const schema = actionSchema?.inputSchema as RJSFSchema | undefined;
-
-    if (
-      !schema ||
-      typeof schema !== "object" ||
-      actionSchema?.name !== "send_attachment"
-    ) {
-      return undefined;
-    }
-
-    const properties =
-      schema.properties && typeof schema.properties === "object"
-        ? Object.keys(schema.properties)
-        : [];
-
-    if (properties.length === 0) {
-      return undefined;
-    }
-
-    const uiSchema: UiSchema = {};
-
-    if (properties.includes("attachment")) {
-      uiSchema.attachment = {
-        "ui:field": "ActionAttachmentField",
-      };
-    }
-
-    return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
+    return buildActionsUiSchema(
+      actionSchema?.name,
+      actionSchema?.inputSchema as RJSFSchema | undefined,
+    );
   }, [actionSchema?.name, actionSchema?.inputSchema]);
   const settingsUiSchema = useMemo(
     () =>
