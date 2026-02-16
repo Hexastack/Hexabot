@@ -58,7 +58,9 @@ export const BranchPlaceholder: FC<
         </PulseIconButton>
       </div>
       <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER>
-        getDisabled={({ port }) => port === ELinkType.BRANCH_PLACEHOLDER_OUT}
+        getDisabled={({ port, node }) =>
+          port === ELinkType.BRANCH_PLACEHOLDER_OUT && !!node.groupName
+        }
       />
     </WorkflowNodeProvider>
   );
