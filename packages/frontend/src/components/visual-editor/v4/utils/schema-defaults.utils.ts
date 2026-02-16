@@ -5,7 +5,7 @@
  */
 
 import { JsonValue } from "@hexabot-ai/agentic";
-import { getDefaultFormState, RJSFSchema } from "@rjsf/utils";
+import { getDefaultFormState, RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { JSONSchema } from "monaco-yaml";
 
@@ -60,4 +60,67 @@ const normalizeDefaults = (
   }
 
   return value;
+};
+
+type SchemaProperties = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+};
+
+export const getSchemaProperties = (
+  schema?: RJSFSchema,
+): SchemaProperties | undefined => {
+  if (!isRecord(schema) || !isRecord(schema.properties)) {
+    return undefined;
+  }
+
+  const properties = schema.properties as SchemaProperties;
+
+  return Object.keys(properties).length > 0 ? properties : undefined;
+};
+
+export const getSchemaPropertyNames = (schema?: RJSFSchema): string[] => {
+  return Object.keys(getSchemaProperties(schema) ?? {});
+};
+
+export const buildUiSchemaFromPropertyUiFields = (
+  schema: RJSFSchema | undefined,
+  propertyNames: string[],
+): UiSchema | undefined => {
+  if (propertyNames.length === 0) {
+    return undefined;
+  }
+
+  const properties = getSchemaProperties(schema);
+
+  if (!properties) {
+    return undefined;
+  }
+
+  const uiSchema: UiSchema = {};
+
+  propertyNames.forEach((propertyName) => {
+    const propertySchema = properties[propertyName];
+
+    if (!isRecord(propertySchema)) {
+      return;
+    }
+
+    const uiField = propertySchema.uiField;
+
+    if (typeof uiField === "string" && uiField.length > 0) {
+      uiSchema[propertyName] = {
+        "ui:field": uiField,
+      };
+    }
+  });
+
+  return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
+};
+
+export const buildUiSchemaFromSchemaUiFields = (
+  schema: RJSFSchema | undefined,
+): UiSchema | undefined => {
+  return buildUiSchemaFromPropertyUiFields(schema, getSchemaPropertyNames(schema));
 };

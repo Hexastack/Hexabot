@@ -9,7 +9,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
@@ -19,6 +19,10 @@ import { IAction } from "@/types/action.types";
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { humanizeTaskName } from "../../../utils/graph.utils";
+import {
+  buildUiSchemaFromSchemaUiFields,
+  getSchemaPropertyNames,
+} from "../../../utils/schema-defaults.utils";
 
 import { ActionSchemaPanel } from "./ActionSchemaPanel";
 
@@ -39,52 +43,8 @@ const COMMON_SETTING_KEYS = [
   "guardrails",
   "audit",
 ] as const;
-const buildActionsUiSchema = (
-  actionName?: string,
-  schema?: RJSFSchema,
-): UiSchema | undefined => {
-  if (
-    !schema ||
-    typeof schema !== "object" ||
-    actionName !== "send_attachment"
-  ) {
-    return undefined;
-  }
-
-  const properties =
-    schema.properties && typeof schema.properties === "object"
-      ? Object.keys(schema.properties)
-      : [];
-
-  if (properties.length === 0) {
-    return undefined;
-  }
-
-  const uiSchema: UiSchema = {};
-
-  if (
-    properties.includes("attachment") &&
-    schema.properties &&
-    "attachment" in schema.properties &&
-    typeof schema.properties.attachment === "object" &&
-    "uiField" in schema.properties.attachment
-  ) {
-    uiSchema.attachment = {
-      "ui:field": schema.properties.attachment.uiField,
-    };
-  }
-
-  return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
-};
 const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
-  if (!schema || typeof schema !== "object") {
-    return undefined;
-  }
-
-  const properties =
-    schema.properties && typeof schema.properties === "object"
-      ? Object.keys(schema.properties)
-      : [];
+  const properties = getSchemaPropertyNames(schema);
 
   if (properties.length === 0) {
     return undefined;
@@ -124,19 +84,6 @@ const ActionFormDrawerContent = ({
   onSettingsDataChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
-  const inputUiSchema = useMemo(() => {
-    return buildActionsUiSchema(
-      actionSchema?.name,
-      actionSchema?.inputSchema as RJSFSchema | undefined,
-    );
-  }, [actionSchema?.name, actionSchema?.inputSchema]);
-  const settingsUiSchema = useMemo(
-    () =>
-      buildSettingsUiSchema(
-        actionSchema?.settingSchema as RJSFSchema | undefined,
-      ),
-    [actionSchema?.settingSchema],
-  );
 
   if (!isOpen) return null;
 
@@ -158,7 +105,9 @@ const ActionFormDrawerContent = ({
           onFormDataChange={onInputDataChange}
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
-          uiSchema={inputUiSchema}
+          uiSchema={buildUiSchemaFromSchemaUiFields(
+            actionSchema?.inputSchema as RJSFSchema,
+          )}
         />
       ) : null}
       {actionSchema.settingSchema ? (
@@ -171,7 +120,9 @@ const ActionFormDrawerContent = ({
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
           )}
-          uiSchema={settingsUiSchema}
+          uiSchema={buildSettingsUiSchema(
+            actionSchema?.settingSchema as RJSFSchema | undefined,
+          )}
         />
       ) : null}
     </Stack>
