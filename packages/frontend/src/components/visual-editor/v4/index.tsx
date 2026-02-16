@@ -8,6 +8,11 @@ import { styled } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { ReactFlowProvider } from "@xyflow/react";
 
+import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
+import { useGet } from "@/hooks/crud/useGet";
+import { useQueryState } from "@/hooks/useQueryState";
+import { EntityType, Format } from "@/services/types";
+
 import { Workflow } from "./layouts/Workflow";
 import { WorkflowProvider } from "./providers/WorkflowProvider";
 
@@ -23,16 +28,32 @@ const StyledGrid = styled(Grid)(() => ({
   flexDirection: "column",
 }));
 
-export const WorkflowEditor = () => (
-  <ReactFlowProvider>
-    <WorkflowProvider>
-      <StyledContainerGrid container>
-        <Grid container height="100%" width="100%" wrap="nowrap">
-          <StyledGrid size="grow">
-            <Workflow />
-          </StyledGrid>
-        </Grid>
-      </StyledContainerGrid>
-    </WorkflowProvider>
-  </ReactFlowProvider>
-);
+export const WorkflowEditor = () => {
+  const [flowId] = useQueryState("flowId");
+  const { data: workflow } = useGet(
+    flowId || "",
+    {
+      entity: EntityType.WORKFLOW,
+      format: Format.FULL,
+    },
+    {
+      enabled: !!flowId,
+    },
+  );
+
+  return (
+    <ReactFlowProvider>
+      <WorkflowActionsProvider workflowType={workflow?.type}>
+        <WorkflowProvider workflow={workflow}>
+          <StyledContainerGrid container>
+            <Grid container height="100%" width="100%" wrap="nowrap">
+              <StyledGrid size="grow">
+                <Workflow />
+              </StyledGrid>
+            </Grid>
+          </StyledContainerGrid>
+        </WorkflowProvider>
+      </WorkflowActionsProvider>
+    </ReactFlowProvider>
+  );
+};

@@ -5,7 +5,6 @@
  */
 
 import {
-  WorkflowCompileOptions,
   WorkflowDefinition,
   Workflow as WorkflowHelper,
   type FlowStep,
@@ -17,10 +16,10 @@ import {
   type NodeChange,
   type XYPosition,
 } from "@xyflow/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
-import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
@@ -49,6 +48,7 @@ type TaskSettings = NonNullable<
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
+  workflow,
 }) => {
   const [flowId] = useQueryState("flowId");
   const { data: workflows } = useFind(
@@ -59,24 +59,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     {
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-  );
-  const { data: workflow } = useGet(
-    flowId || "",
-    {
-      entity: EntityType.WORKFLOW,
-      format: Format.FULL,
-    },
-    {
-      enabled: !!flowId,
-    },
-  );
-  const { data: actions } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-    {
-      routeParams: workflow?.type ? { type: workflow?.type } : undefined,
-      enabled: !!workflow?.type,
     },
   );
   const router = useAppRouter();
@@ -103,37 +85,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
     return screenToFlowPosition(screenCenter);
   };
-  // Cache the action map by content signature to avoid re-parsing on each render.
-  const actionsSignature = useMemo(
-    () =>
-      actions
-        .map(
-          (action) => `${action.id}:${action.name}:${action.updatedAt ?? ""}`,
-        )
-        .sort()
-        .join("|"),
-    [actions],
-  );
-  const actionsSignatureRef = useRef("");
-  const actionsByNameRef = useRef<WorkflowCompileOptions["actions"]>(
-    {} as WorkflowCompileOptions["actions"],
-  );
-
-  if (actionsSignatureRef.current !== actionsSignature) {
-    actionsSignatureRef.current = actionsSignature;
-    actionsByNameRef.current = actions.reduce(
-      (acc, cur) => {
-        acc[cur.name] =
-          cur as unknown as WorkflowCompileOptions["actions"][string];
-
-        return acc;
-      },
-      {} as WorkflowCompileOptions["actions"],
-    );
-  }
-
-  const actionsByName = actionsByNameRef.current;
-  const hasActions = actions.length > 0;
   const {
     yaml,
     definition,
@@ -146,8 +97,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     isSaving,
   } = useWorkflowDefinitionState({
     workflow,
-    actionsByName,
-    hasActions,
   });
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition();
@@ -370,7 +319,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         addLoopStep,
         addParallelStep,
         removeStepAtPath,
-        actions,
         definition,
         flow,
       }}

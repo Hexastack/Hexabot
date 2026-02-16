@@ -8,22 +8,24 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { WorkflowActionsProvider } from "@/components/workflow-run-debugger/contexts/workflow-actions.context";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
+import type { IWorkflow } from "@/types/workfow.types";
 
 import { RunHeader } from "./header/RunHeader";
 import { InspectorPanel } from "./panels/inspector-panel/InspectorPanel";
 import { StepTracePanel } from "./panels/step-trace-panel";
 
 type WorkflowRunDebuggerProps = {
-  workflowId?: string;
   initiatorId?: string;
-}
+  workflow?: IWorkflow;
+};
 
-export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, initiatorId }) => {
-  const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
+export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({
+  initiatorId,
+  workflow,
+}) => {
   const getWorkflowVersionFromCache = useGetFromCache(
     EntityType.WORKFLOW_VERSION,
   );
@@ -32,7 +34,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
     {
       params: {
         where: {
-          ["workflow.id"]: workflowId,
+          ["workflow.id"]: workflow?.id,
           ["triggeredBy.id"]: initiatorId,
         },
       },
@@ -45,7 +47,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
       ],
     },
     {
-      enabled: Boolean(workflowId || initiatorId),
+      enabled: Boolean(workflow?.id || initiatorId),
     },
   );
   const latestRun = workflowRuns[0];
@@ -103,7 +105,6 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
   const handleSelectStep = (stepId: string) => {
     setSelectedStepId((current) => (current === stepId ? undefined : stepId));
   };
-  const selectedWorkflow = getWorkflowFromCache(selectedRun?.workflow);
   const selectedWorkflowVersion = selectedRun?.workflowVersion
     ? getWorkflowVersionFromCache(selectedRun?.workflowVersion)
     : null;
@@ -114,20 +115,18 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({ workflowId, 
         workflowRuns={workflowRuns}
         isFetching={isFetching}
         selectedRun={selectedRun}
-        workflow={selectedWorkflow ?? null}
+        workflow={workflow ?? null}
         workflowVersion={selectedWorkflowVersion ?? null}
         onSelectRun={setSelectedRunId}
       />
-      <WorkflowActionsProvider workflowType={selectedWorkflow?.type}>
-        <Grid container spacing={1}>
-          <StepTracePanel
-            stepLog={selectedRun?.stepLog ?? null}
-            selectedStepId={selectedStepId}
-            onSelectStep={handleSelectStep}
-          />
-          <InspectorPanel run={selectedRun ?? null} step={selectedStep} />
-        </Grid>
-      </WorkflowActionsProvider>
+      <Grid container spacing={1}>
+        <StepTracePanel
+          stepLog={selectedRun?.stepLog ?? null}
+          selectedStepId={selectedStepId}
+          onSelectStep={handleSelectStep}
+        />
+        <InspectorPanel run={selectedRun ?? null} step={selectedStep} />
+      </Grid>
     </Stack>
   );
 };

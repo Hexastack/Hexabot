@@ -6,6 +6,10 @@
 
 import { useParams } from "react-router-dom";
 
+import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
+import { useGet } from "@/hooks/crud/useGet";
+import { EntityType, Format } from "@/services/types";
+
 import { WorkflowRunDebugger } from "./components/WorkflowRunDebugger";
 
 export const WorkflowRunDebuggerPage = () => {
@@ -13,8 +17,23 @@ export const WorkflowRunDebuggerPage = () => {
     workflowId?: string;
     initiatorId?: string;
   }>();
+  const { data: workflow } = useGet(
+    workflowId || "",
+    {
+      entity: EntityType.WORKFLOW,
+      format: Format.FULL,
+    },
+    {
+      enabled: Boolean(workflowId),
+    },
+  );
 
   return (
-    <WorkflowRunDebugger workflowId={workflowId} initiatorId={initiatorId} />
+    <WorkflowActionsProvider workflowType={workflow?.type}>
+      <WorkflowRunDebugger
+        initiatorId={initiatorId}
+        workflow={workflow}
+      />
+    </WorkflowActionsProvider>
   );
 };

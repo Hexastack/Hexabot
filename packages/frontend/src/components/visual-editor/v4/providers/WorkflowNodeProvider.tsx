@@ -7,6 +7,8 @@
 import { useNodeConnections, useReactFlow } from "@xyflow/react";
 import { type FC, useMemo } from "react";
 
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
+
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
 import { useWorkflow } from "../hooks/useWorkflow";
 import type {
@@ -21,8 +23,9 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   const { getNode } = useReactFlow();
   const { data, ...rest } = useMemo(() => getNode(id) as GraphNode, [id]);
   const connections = useNodeConnections({ id });
-  const { executionStates, actions } = useWorkflow();
-  const action = actions.find((a) => a.name === data["actionName"]);
+  const { actionsByName } = useWorkflowActionsCatalog();
+  const { executionStates } = useWorkflow();
+  const action = actionsByName.get(data["actionName"]);
   const executionState = executionStates[id]
     ?.sort((e1, e2) => (e1.t - e2.t > 0 ? 1 : -1))
     .at(-1)?.state;
