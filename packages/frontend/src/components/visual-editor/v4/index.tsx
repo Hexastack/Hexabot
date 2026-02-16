@@ -14,6 +14,7 @@ import { useQueryState } from "@/hooks/useQueryState";
 import { EntityType, Format } from "@/services/types";
 
 import { Workflow } from "./layouts/Workflow";
+import { WorkflowJsonataGlobalsSchemaProvider } from "./providers/WorkflowJsonataGlobalsSchemaProvider";
 import { WorkflowProvider } from "./providers/WorkflowProvider";
 
 const StyledContainerGrid = styled(Grid)(() => ({
@@ -45,13 +46,15 @@ export const WorkflowEditor = () => {
     <ReactFlowProvider>
       <WorkflowActionsProvider workflowType={workflow?.type}>
         <WorkflowProvider workflow={workflow}>
-          <StyledContainerGrid container>
-            <Grid container height="100%" width="100%" wrap="nowrap">
-              <StyledGrid size="grow">
-                <Workflow />
-              </StyledGrid>
-            </Grid>
-          </StyledContainerGrid>
+          <WorkflowJsonataGlobalsSchemaProvider>
+            <StyledContainerGrid container>
+              <Grid container height="100%" width="100%" wrap="nowrap">
+                <StyledGrid size="grow">
+                  <Workflow />
+                </StyledGrid>
+              </Grid>
+            </StyledContainerGrid>
+          </WorkflowJsonataGlobalsSchemaProvider>
         </WorkflowProvider>
       </WorkflowActionsProvider>
     </ReactFlowProvider>

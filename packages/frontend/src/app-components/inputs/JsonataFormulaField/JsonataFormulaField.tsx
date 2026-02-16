@@ -10,6 +10,7 @@ import { useColorScheme, useTheme } from "@mui/material/styles";
 import jsonata from "jsonata";
 import * as React from "react";
 
+import { useJsonataGlobalsSchema } from "./globals-schema.context";
 import { indexToLineCol } from "./jsonataUtils";
 import {
   createCompletionProvider,
@@ -34,9 +35,11 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     sx,
   } = props;
   const theme = useTheme();
+  const contextGlobalsSchema = useJsonataGlobalsSchema();
+  const resolvedGlobalsSchema = globalsSchema ?? contextGlobalsSchema;
   const { root, input, output, context } = React.useMemo(
-    () => extractGlobals(globalsSchema),
-    [globalsSchema],
+    () => extractGlobals(resolvedGlobalsSchema),
+    [resolvedGlobalsSchema],
   );
   const isJsonataMode = value.startsWith("=");
   const monacoRef = React.useRef<typeof import("monaco-editor") | null>(null);

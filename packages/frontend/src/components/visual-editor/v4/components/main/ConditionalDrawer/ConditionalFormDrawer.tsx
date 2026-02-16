@@ -16,10 +16,7 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
-import {
-  JsonataFormulaField,
-  type GlobalsSchema,
-} from "@/app-components/inputs/JsonataFormulaField";
+import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -27,10 +24,6 @@ import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import type { FlowStepPath } from "../../../types/workflow-path.types";
 
 const DEFAULT_CONDITION = "=false";
-const JSONATA_GLOBALS_SCHEMA: GlobalsSchema = {
-  type: "object",
-  properties: {},
-};
 
 type ConditionalStep = Extract<FlowStep, { conditional: unknown }>;
 type ConditionalBranchWithCondition = Extract<
@@ -144,7 +137,6 @@ const ConditionalFormDrawerContent = ({
             <JsonataFormulaField
               value={condition}
               onChange={(nextValue) => onConditionChange(index, nextValue)}
-              globalsSchema={JSONATA_GLOBALS_SCHEMA}
               helperText={conditionHelperText}
               fullWidth
             />

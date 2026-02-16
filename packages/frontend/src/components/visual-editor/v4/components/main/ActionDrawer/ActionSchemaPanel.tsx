@@ -43,33 +43,33 @@ export const ActionSchemaPanel = ({
   emptyLabel,
   uiSchema,
 }: ActionSchemaPanelProps) => (
-  <Accordion variant="elevation" defaultExpanded>
-    <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-        {title}
-      </Typography>
-    </AccordionSummary>
-    <AccordionDetails>
-      {schema ? (
-        <Form
-          schema={schema as RJSFSchema}
-          validator={validator}
-          formData={formData}
-          onChange={(event) =>
-            onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
-          }
-          showErrorList={false}
-          noHtml5Validate
-          uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
-          idPrefix={`action-${panelKey}`}
-          templates={FORM_TEMPLATES}
-          widgets={FORM_WIDGETS}
-        />
-      ) : (
-        <Typography variant="body2" color="text.secondary">
-          {emptyLabel}
+    <Accordion variant="elevation" defaultExpanded>
+      <AccordionSummary expandIcon={<ChevronDown size={16} />}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          {title}
         </Typography>
-      )}
-    </AccordionDetails>
-  </Accordion>
+      </AccordionSummary>
+      <AccordionDetails>
+        {schema ? (
+          <Form
+            schema={schema as RJSFSchema}
+            validator={validator}
+            formData={formData}
+            onChange={(event) =>
+              onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
+            }
+            showErrorList={false}
+            noHtml5Validate
+            uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
+            idPrefix={`action-${panelKey}`}
+            templates={FORM_TEMPLATES}
+            widgets={FORM_WIDGETS}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {emptyLabel}
+          </Typography>
+        )}
+      </AccordionDetails>
+    </Accordion>
 );

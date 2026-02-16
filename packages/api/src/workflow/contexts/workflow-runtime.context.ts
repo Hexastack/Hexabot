@@ -113,6 +113,7 @@ export abstract class WorkflowRuntimeContext<
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
     this.memoryStore = memory;
+    this.memoryStore.syncToContext();
 
     return this;
   }

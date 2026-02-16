@@ -24,10 +24,7 @@ import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
-import {
-  JsonataFormulaField,
-  type GlobalsSchema,
-} from "@/app-components/inputs/JsonataFormulaField";
+import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -39,10 +36,6 @@ const DEFAULT_FOR_EACH_IN = "=[]";
 const DEFAULT_ACCUMULATE_AS = "items";
 const DEFAULT_ACCUMULATE_INITIAL = "[]";
 const DEFAULT_ACCUMULATE_MERGE = "=$append($accumulator, [$iteration.item])";
-const JSONATA_GLOBALS_SCHEMA: GlobalsSchema = {
-  type: "object",
-  properties: {},
-};
 
 type LoopStep = Extract<FlowStep, { loop: unknown }>;
 type LoopFormValues = {
@@ -181,7 +174,6 @@ const LoopFormDrawerContent = ({
             <JsonataFormulaField
               value={values.forEachIn}
               onChange={(nextValue) => onFieldChange("forEachIn", nextValue)}
-              globalsSchema={JSONATA_GLOBALS_SCHEMA}
               helperText={
                 errors.forEachIn ??
                 t("visual_editor.loop_drawer.form.for_each.in_helper")
@@ -221,7 +213,6 @@ const LoopFormDrawerContent = ({
         <JsonataFormulaField
           value={values.until}
           onChange={(nextValue) => onFieldChange("until", nextValue)}
-          globalsSchema={JSONATA_GLOBALS_SCHEMA}
           helperText={
             errors.until ?? t("visual_editor.loop_drawer.form.until.helper")
           }
@@ -284,7 +275,6 @@ const LoopFormDrawerContent = ({
                 onChange={(nextValue) =>
                   onFieldChange("accumulateMerge", nextValue)
                 }
-                globalsSchema={JSONATA_GLOBALS_SCHEMA}
                 helperText={
                   errors.accumulateMerge ??
                   t("visual_editor.loop_drawer.form.accumulate.merge_helper")
