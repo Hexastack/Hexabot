@@ -12,6 +12,7 @@ import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
@@ -140,11 +141,11 @@ export const ActionFormDrawer = () => {
     selectedNodeIds,
     selectedFlowId,
     updateWorkflowURL,
-    actions,
     definition,
     updateDefinitionState,
     isSaving,
   } = useWorkflow();
+  const { actionsByName } = useWorkflowActionsCatalog();
   const { getNode } = useReactFlow();
   const selectedNodeId =
     selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
@@ -162,15 +163,6 @@ export const ActionFormDrawer = () => {
   const taskName = isActionNode
     ? (selectedNode?.data as { title?: string })?.title
     : undefined;
-  const actionsByName = useMemo(() => {
-    const map = new Map<string, IAction>();
-
-    actions.forEach((action) => {
-      map.set(action.name, action);
-    });
-
-    return map;
-  }, [actions]);
   const actionSchema = actionName ? actionsByName.get(actionName) : undefined;
   const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});

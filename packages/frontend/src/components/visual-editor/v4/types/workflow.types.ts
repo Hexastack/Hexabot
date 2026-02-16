@@ -66,13 +66,13 @@ export interface IWorkflowContext {
   setExecutionStates: Dispatch<
     Record<string, { state: NodeExecutionState; t: number }[]>
   >;
-  actions: IAction[];
   definition?: WorkflowDefinition;
   flow?: CompiledStep[];
 }
 
 export interface WorkflowContextProps {
   children: ReactNode;
+  workflow?: IWorkflow;
 }
 
 export type TCb<T> = ((props: T) => void | undefined) & Cancelable;

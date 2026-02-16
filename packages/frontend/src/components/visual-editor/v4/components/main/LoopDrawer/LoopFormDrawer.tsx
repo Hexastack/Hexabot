@@ -66,28 +66,6 @@ type LoopFormErrors = {
   accumulateInitial?: string;
   accumulateMerge?: string;
 };
-type LoopFormLabels = {
-  nameLabel: string;
-  nameHelperText: string;
-  descriptionLabel: string;
-  descriptionHelperText: string;
-  forEachSectionLabel: string;
-  forEachItemLabel: string;
-  forEachItemHelperText: string;
-  forEachInLabel: string;
-  forEachInHelperText: string;
-  maxConcurrencyLabel: string;
-  maxConcurrencyHelperText: string;
-  untilLabel: string;
-  untilHelperText: string;
-  accumulateEnabledLabel: string;
-  accumulateAsLabel: string;
-  accumulateAsHelperText: string;
-  accumulateInitialLabel: string;
-  accumulateInitialHelperText: string;
-  accumulateMergeLabel: string;
-  accumulateMergeHelperText: string;
-};
 
 const isLoopStep = (step: unknown): step is LoopStep => {
   if (!step || typeof step !== "object" || !("loop" in step)) {
@@ -141,7 +119,6 @@ type LoopFormDrawerContentProps = {
   isOpen: boolean;
   values: LoopFormValues;
   errors: LoopFormErrors;
-  labels: LoopFormLabels;
   onFieldChange: (field: keyof LoopFormValues, value: string | boolean) => void;
 };
 
@@ -149,57 +126,66 @@ const LoopFormDrawerContent = ({
   isOpen,
   values,
   errors,
-  labels,
   onFieldChange,
 }: LoopFormDrawerContentProps) => {
+  const { t } = useTranslate();
+
   if (!isOpen) {
     return null;
   }
 
   return (
     <Stack spacing={2}>
-      <TextField
+      {/* <TextField
         fullWidth
         size="small"
-        label={labels.nameLabel}
+        label={t("visual_editor.loop_drawer.form.name.label")}
         value={values.name}
         onChange={(event) => onFieldChange("name", event.target.value)}
-        helperText={labels.nameHelperText}
+        helperText={t("visual_editor.loop_drawer.form.name.helper")}
       />
       <TextField
         fullWidth
         size="small"
-        label={labels.descriptionLabel}
+        label={t("visual_editor.loop_drawer.form.description.label")}
         value={values.description}
         onChange={(event) => onFieldChange("description", event.target.value)}
-        helperText={labels.descriptionHelperText}
+        helperText={t("visual_editor.loop_drawer.form.description.helper")}
         multiline
         minRows={2}
-      />
+      /> */}
 
       <Box>
         <Typography variant="subtitle2" mb={1}>
-          {labels.forEachSectionLabel}
+          {t("visual_editor.loop_drawer.form.for_each.section")}
         </Typography>
         <Stack spacing={1.5}>
           <TextField
             fullWidth
             size="small"
-            label={labels.forEachItemLabel}
+            label={t("visual_editor.loop_drawer.form.for_each.item_label")}
             value={values.forEachItem}
-            onChange={(event) => onFieldChange("forEachItem", event.target.value)}
-            helperText={errors.forEachItem ?? labels.forEachItemHelperText}
+            onChange={(event) =>
+              onFieldChange("forEachItem", event.target.value)
+            }
+            helperText={
+              errors.forEachItem ??
+              t("visual_editor.loop_drawer.form.for_each.item_helper")
+            }
             error={Boolean(errors.forEachItem)}
           />
           <Box>
             <Typography variant="subtitle2" mb={0.5}>
-              {labels.forEachInLabel}
+              {t("visual_editor.loop_drawer.form.for_each.in_label")}
             </Typography>
             <JsonataFormulaField
               value={values.forEachIn}
               onChange={(nextValue) => onFieldChange("forEachIn", nextValue)}
               globalsSchema={JSONATA_GLOBALS_SCHEMA}
-              helperText={errors.forEachIn ?? labels.forEachInHelperText}
+              helperText={
+                errors.forEachIn ??
+                t("visual_editor.loop_drawer.form.for_each.in_helper")
+              }
               fullWidth
             />
           </Box>
@@ -210,10 +196,15 @@ const LoopFormDrawerContent = ({
         fullWidth
         size="small"
         type="number"
-        label={labels.maxConcurrencyLabel}
+        label={t("visual_editor.loop_drawer.form.max_concurrency.label")}
         value={values.maxConcurrency}
-        onChange={(event) => onFieldChange("maxConcurrency", event.target.value)}
-        helperText={errors.maxConcurrency ?? labels.maxConcurrencyHelperText}
+        onChange={(event) =>
+          onFieldChange("maxConcurrency", event.target.value)
+        }
+        helperText={
+          errors.maxConcurrency ??
+          t("visual_editor.loop_drawer.form.max_concurrency.helper")
+        }
         error={Boolean(errors.maxConcurrency)}
         slotProps={{
           htmlInput: {
@@ -225,13 +216,15 @@ const LoopFormDrawerContent = ({
 
       <Box>
         <Typography variant="subtitle2" mb={0.5}>
-          {labels.untilLabel}
+          {t("visual_editor.loop_drawer.form.until.label")}
         </Typography>
         <JsonataFormulaField
           value={values.until}
           onChange={(nextValue) => onFieldChange("until", nextValue)}
           globalsSchema={JSONATA_GLOBALS_SCHEMA}
-          helperText={errors.until ?? labels.untilHelperText}
+          helperText={
+            errors.until ?? t("visual_editor.loop_drawer.form.until.helper")
+          }
           fullWidth
         />
       </Box>
@@ -246,31 +239,37 @@ const LoopFormDrawerContent = ({
               }
             />
           }
-          label={labels.accumulateEnabledLabel}
+          label={t("visual_editor.loop_drawer.form.accumulate.enabled")}
         />
         {values.accumulateEnabled ? (
           <Stack spacing={1.5} mt={1}>
             <TextField
               fullWidth
               size="small"
-              label={labels.accumulateAsLabel}
+              label={t("visual_editor.loop_drawer.form.accumulate.as_label")}
               value={values.accumulateAs}
               onChange={(event) =>
                 onFieldChange("accumulateAs", event.target.value)
               }
-              helperText={errors.accumulateAs ?? labels.accumulateAsHelperText}
+              helperText={
+                errors.accumulateAs ??
+                t("visual_editor.loop_drawer.form.accumulate.as_helper")
+              }
               error={Boolean(errors.accumulateAs)}
             />
             <TextField
               fullWidth
               size="small"
-              label={labels.accumulateInitialLabel}
+              label={t(
+                "visual_editor.loop_drawer.form.accumulate.initial_label",
+              )}
               value={values.accumulateInitial}
               onChange={(event) =>
                 onFieldChange("accumulateInitial", event.target.value)
               }
               helperText={
-                errors.accumulateInitial ?? labels.accumulateInitialHelperText
+                errors.accumulateInitial ??
+                t("visual_editor.loop_drawer.form.accumulate.initial_helper")
               }
               error={Boolean(errors.accumulateInitial)}
               multiline
@@ -278,7 +277,7 @@ const LoopFormDrawerContent = ({
             />
             <Box>
               <Typography variant="subtitle2" mb={0.5}>
-                {labels.accumulateMergeLabel}
+                {t("visual_editor.loop_drawer.form.accumulate.merge_label")}
               </Typography>
               <JsonataFormulaField
                 value={values.accumulateMerge}
@@ -287,7 +286,8 @@ const LoopFormDrawerContent = ({
                 }
                 globalsSchema={JSONATA_GLOBALS_SCHEMA}
                 helperText={
-                  errors.accumulateMerge ?? labels.accumulateMergeHelperText
+                  errors.accumulateMerge ??
+                  t("visual_editor.loop_drawer.form.accumulate.merge_helper")
                 }
                 fullWidth
               />
@@ -433,39 +433,6 @@ export const LoopFormDrawer = () => {
     () => Object.values(errors).some(Boolean),
     [errors],
   );
-  const labels = useMemo<LoopFormLabels>(
-    () => ({
-      nameLabel: t("visual_editor.loop_drawer.form.name.label"),
-      nameHelperText: t("visual_editor.loop_drawer.form.name.helper"),
-      descriptionLabel: t("visual_editor.loop_drawer.form.description.label"),
-      descriptionHelperText: t("visual_editor.loop_drawer.form.description.helper"),
-      forEachSectionLabel: t("visual_editor.loop_drawer.form.for_each.section"),
-      forEachItemLabel: t("visual_editor.loop_drawer.form.for_each.item_label"),
-      forEachItemHelperText: t("visual_editor.loop_drawer.form.for_each.item_helper"),
-      forEachInLabel: t("visual_editor.loop_drawer.form.for_each.in_label"),
-      forEachInHelperText: t("visual_editor.loop_drawer.form.for_each.in_helper"),
-      maxConcurrencyLabel: t("visual_editor.loop_drawer.form.max_concurrency.label"),
-      maxConcurrencyHelperText: t(
-        "visual_editor.loop_drawer.form.max_concurrency.helper",
-      ),
-      untilLabel: t("visual_editor.loop_drawer.form.until.label"),
-      untilHelperText: t("visual_editor.loop_drawer.form.until.helper"),
-      accumulateEnabledLabel: t("visual_editor.loop_drawer.form.accumulate.enabled"),
-      accumulateAsLabel: t("visual_editor.loop_drawer.form.accumulate.as_label"),
-      accumulateAsHelperText: t("visual_editor.loop_drawer.form.accumulate.as_helper"),
-      accumulateInitialLabel: t(
-        "visual_editor.loop_drawer.form.accumulate.initial_label",
-      ),
-      accumulateInitialHelperText: t(
-        "visual_editor.loop_drawer.form.accumulate.initial_helper",
-      ),
-      accumulateMergeLabel: t("visual_editor.loop_drawer.form.accumulate.merge_label"),
-      accumulateMergeHelperText: t(
-        "visual_editor.loop_drawer.form.accumulate.merge_helper",
-      ),
-    }),
-    [t],
-  );
   const handleFieldChange = (
     field: keyof LoopFormValues,
     value: string | boolean,
@@ -550,9 +517,6 @@ export const LoopFormDrawer = () => {
     updateDefinitionState(nextDefinition);
     handleClose();
   };
-  const drawerTitle = t("visual_editor.loop_drawer.title");
-  const drawerDescription = t("visual_editor.loop_drawer.description");
-  const saveLabel = t("button.save");
   const saveDisabled =
     !definition || !stepPath || !selectedStep || hasInvalidForm || isSaving;
 
@@ -561,17 +525,16 @@ export const LoopFormDrawer = () => {
       isOpen={open}
       values={formValues}
       errors={errors}
-      labels={labels}
       onFieldChange={handleFieldChange}
       open={open}
       onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>
-            {drawerTitle}
+            {t("visual_editor.loop_drawer.title")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {drawerDescription}
+            {t("visual_editor.loop_drawer.description")}
           </Typography>
         </Box>
       }
@@ -582,11 +545,11 @@ export const LoopFormDrawer = () => {
             size="large"
             onClick={handleSave}
             disabled={saveDisabled}
-            aria-label={saveLabel}
+            aria-label={t("button.save")}
             startIcon={<Save size={18} />}
             sx={{ minWidth: 200 }}
           >
-            {saveLabel}
+            {t("button.save")}
           </Button>
         </Box>
       }

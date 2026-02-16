@@ -112,6 +112,8 @@ describe('workflow definition path helpers', () => {
 
       expect(nextDefinition.flow).toHaveLength(2);
       expect(nextDefinition.flow[1]).toEqual(definition.flow[2]);
+      expect(nextDefinition.tasks.task_two).toEqual({ action: 'noop' });
+      expect(nextDefinition.tasks.task_three).toEqual({ action: 'noop' });
       expect(definition.flow).toHaveLength(3);
     });
 
@@ -131,6 +133,40 @@ describe('workflow definition path helpers', () => {
 
       expect(steps).toHaveLength(1);
       expect(steps[0]).toEqual({ do: 'task_three' });
+      expect(nextDefinition.tasks.task_two).toBeUndefined();
+      expect(nextDefinition.tasks.task_three).toEqual({ action: 'noop' });
+    });
+
+    it('removes an unreferenced task definition when deleting a task step', () => {
+      const definition = createDefinition();
+      const updated = Workflow.removeStepAtPath(definition, ['flow', 0]);
+
+      expect(updated).not.toBeNull();
+      const nextDefinition = updated as WorkflowDefinition;
+
+      expect(nextDefinition.tasks.task_one).toBeUndefined();
+      expect(nextDefinition.flow).toEqual(definition.flow.slice(1));
+    });
+
+    it('keeps task definitions that are still referenced by other steps', () => {
+      const definition = createDefinition();
+      const definitionWithDuplicateTask: WorkflowDefinition = {
+        ...definition,
+        flow: [...definition.flow, { do: 'task_one' }],
+      };
+      const updated = Workflow.removeStepAtPath(definitionWithDuplicateTask, [
+        'flow',
+        0,
+      ]);
+
+      expect(updated).not.toBeNull();
+      const nextDefinition = updated as WorkflowDefinition;
+
+      expect(nextDefinition.tasks.task_one).toEqual({ action: 'noop' });
+      expect(nextDefinition.flow).toEqual([
+        ...definition.flow.slice(1),
+        { do: 'task_one' },
+      ]);
     });
 
     it('returns null for invalid paths', () => {

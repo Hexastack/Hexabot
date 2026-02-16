@@ -21,6 +21,7 @@ import {
 } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -103,12 +104,12 @@ export const Workflow = () => {
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
     persistDefinition,
-    actions,
     addActionStep,
     addConditionalStep,
     addLoopStep,
     addParallelStep,
   } = useWorkflow();
+  const { actions } = useWorkflowActionsCatalog();
   const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);

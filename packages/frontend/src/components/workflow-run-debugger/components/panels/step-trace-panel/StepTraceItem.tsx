@@ -10,7 +10,7 @@ import { alpha, useTheme } from "@mui/material/styles";
 import type { KeyboardEvent } from "react";
 
 import { resolveWorkflowStepTheme } from "@/components/visual-editor/v4/utils/workflow-theme.utils";
-import { useWorkflowActionsCatalog } from "@/components/workflow-run-debugger/contexts/workflow-actions.context";
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 
 import { ActionStatusIndicator } from "./ActionStatusIndicator";
 import { getDurationLabel } from "./utils";

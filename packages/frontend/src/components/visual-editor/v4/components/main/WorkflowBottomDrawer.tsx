@@ -403,7 +403,7 @@ export const WorkflowBottomDrawer = () => {
         )}
         <DrawerColumn>
           <WorkflowRunDebugger
-            workflowId={workflow?.id}
+            workflow={workflow}
             initiatorId={user?.id}
           />
         </DrawerColumn>

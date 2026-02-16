@@ -13,6 +13,7 @@ import {
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
@@ -26,15 +27,12 @@ import { getDefinition } from "../utils/workflow-node.utils";
 
 type UseWorkflowDefinitionStateArgs = {
   workflow?: IWorkflow;
-  actionsByName: WorkflowCompileOptions["actions"];
-  hasActions: boolean;
 };
 
 export const useWorkflowDefinitionState = ({
   workflow,
-  actionsByName,
-  hasActions,
 }: UseWorkflowDefinitionStateArgs) => {
+  const { actionsByName } = useWorkflowActionsCatalog();
   const queryClient = useTanstackQueryClient();
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW);
   const { mutate: commitVersion, isPending: isSaving } = useCreate(
@@ -74,19 +72,32 @@ export const useWorkflowDefinitionState = ({
   const [yaml, setYaml] = useState(
     currentVersion ? currentVersion.definitionYml : "",
   );
+  const compileActionsByName = useMemo(
+    () =>
+      Array.from(actionsByName.entries()).reduce(
+        (acc, [name, action]) => {
+          acc[name] =
+            action as unknown as WorkflowCompileOptions["actions"][string];
+
+          return acc;
+        },
+        {} as WorkflowCompileOptions["actions"],
+      ),
+    [actionsByName],
+  );
   const definitionSignatureRef = useRef("");
   const {
     definition,
     flow,
     error: definitionError,
   } = useMemo(() => {
-    if (!yaml || !hasActions) {
+    if (!yaml || actionsByName.size === 0) {
       return { definition: undefined, error: null };
     }
 
     try {
       const { flow, definition } = getDefinition(yaml, {
-        actions: actionsByName,
+        actions: compileActionsByName,
       });
 
       return {
@@ -97,7 +108,7 @@ export const useWorkflowDefinitionState = ({
     } catch (error) {
       return { definition: undefined, flow: undefined, error: error as Error };
     }
-  }, [actionsByName, hasActions, yaml, workflow?.id]);
+  }, [actionsByName, compileActionsByName, yaml, workflow?.id]);
   // New definition version not yet saved ?
   const isDefinitionDirty = useMemo(() => {
     if (workflow?.currentVersion && !currentVersion) {
