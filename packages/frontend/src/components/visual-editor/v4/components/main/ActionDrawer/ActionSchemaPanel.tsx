@@ -15,6 +15,7 @@ import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
+import { FORM_FIELDS } from "./fields";
 import { FORM_TEMPLATES } from "./templates";
 import { FORM_WIDGETS } from "./widgets";
 
@@ -63,6 +64,7 @@ export const ActionSchemaPanel = ({
           uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
           idPrefix={`action-${panelKey}`}
           templates={FORM_TEMPLATES}
+          fields={FORM_FIELDS}
           widgets={FORM_WIDGETS}
         />
       ) : (

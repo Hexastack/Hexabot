@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { attachmentPayloadSchema } from '@/chat/types/attachment';
-import { stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
@@ -22,7 +22,17 @@ import {
 
 const attachmentInputSchema = z.object({
   attachment: attachmentPayloadSchema,
-  quick_replies: z.array(stdQuickReplySchema).optional(),
+  quick_replies: z
+    .array(stdQuickReplySchema)
+    .optional()
+    .default([
+      { content_type: QuickReplyType.text, payload: 'yes', title: 'Yes' },
+      { content_type: QuickReplyType.text, payload: 'no', title: 'No' },
+    ])
+    .meta({
+      title: 'Options',
+      description: 'Quick replies options.',
+    }),
 });
 
 type AttachmentInput = z.infer<typeof attachmentInputSchema>;

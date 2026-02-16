@@ -87,6 +87,36 @@ const ActionFormDrawerContent = ({
   onSettingsDataChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
+  const inputUiSchema = useMemo(() => {
+    const schema = actionSchema?.inputSchema as RJSFSchema | undefined;
+
+    if (
+      !schema ||
+      typeof schema !== "object" ||
+      actionSchema?.name !== "send_attachment"
+    ) {
+      return undefined;
+    }
+
+    const properties =
+      schema.properties && typeof schema.properties === "object"
+        ? Object.keys(schema.properties)
+        : [];
+
+    if (properties.length === 0) {
+      return undefined;
+    }
+
+    const uiSchema: UiSchema = {};
+
+    if (properties.includes("attachment")) {
+      uiSchema.attachment = {
+        "ui:field": "ActionAttachmentField",
+      };
+    }
+
+    return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
+  }, [actionSchema?.name, actionSchema?.inputSchema]);
   const settingsUiSchema = useMemo(
     () =>
       buildSettingsUiSchema(
@@ -115,6 +145,7 @@ const ActionFormDrawerContent = ({
           onFormDataChange={onInputDataChange}
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
+          uiSchema={inputUiSchema}
         />
       ) : null}
       {actionSchema.settingSchema ? (
