@@ -11,11 +11,13 @@ import type {
   JsonSchemaLike,
 } from "@/app-components/inputs/JsonataFormulaField";
 import type { IAction } from "@/types/action.types";
+import type { IMemoryDefinition } from "@/types/memory-definition.types";
 
 type WorkflowTaskDefinition = NonNullable<WorkflowDefinition["tasks"]>[string];
 type BuildJsonataGlobalsSchemaArgs = {
   definition?: WorkflowDefinition;
   actionsByName: ReadonlyMap<string, IAction>;
+  memoryDefinitions?: IMemoryDefinition[];
 };
 
 const createOpenObjectSchema = (): JsonSchemaLike => ({
@@ -42,10 +44,49 @@ const getTaskOutputSchema = ({
 
   return createOpenObjectSchema();
 };
+const getMemoryContextSchema = (
+  memoryDefinitions: IMemoryDefinition[] = [],
+): JsonSchemaLike => {
+  const memoryProperties = memoryDefinitions.reduce<Record<string, JsonSchemaLike>>(
+    (acc, memoryDefinition) => {
+      const memorySchema = memoryDefinition?.schema;
+
+      if (!memoryDefinition?.slug) {
+        return acc;
+      }
+      acc[memoryDefinition.slug] = isJsonSchemaLike(memorySchema)
+        ? memorySchema
+        : createOpenObjectSchema();
+
+      return acc;
+    },
+    {},
+  );
+
+  return {
+    type: "object",
+    properties: memoryProperties,
+    additionalProperties: false,
+  };
+};
+const getContextSchema = (
+  memoryDefinitions: IMemoryDefinition[] = [],
+): JsonSchemaLike => ({
+  type: "object",
+  properties: {
+    initiatorId: { type: "string" },
+    workflowId: { type: "string" },
+    runId: { type: "string" },
+    memory: getMemoryContextSchema(memoryDefinitions),
+  },
+  required: ["initiatorId", "workflowId", "runId"],
+  additionalProperties: true,
+});
 
 export const buildJsonataGlobalsSchema = ({
   definition,
   actionsByName,
+  memoryDefinitions,
 }: BuildJsonataGlobalsSchemaArgs): GlobalsSchema => {
   const outputProperties = Object.entries(definition?.tasks ?? {}).reduce<
     Record<string, JsonSchemaLike>
@@ -67,7 +108,7 @@ export const buildJsonataGlobalsSchema = ({
         properties: outputProperties,
         additionalProperties: true,
       },
-      $context: createOpenObjectSchema(),
+      $context: getContextSchema(memoryDefinitions),
     },
   };
 };
