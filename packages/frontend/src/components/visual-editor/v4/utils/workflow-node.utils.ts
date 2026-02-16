@@ -257,7 +257,8 @@ export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
   (nodes as GraphNode<ENodeType.OPERATOR>[])
     .filter(
       ({ data }) =>
-        data.operatorType && ctx.config?.highlights?.[data.operatorType],
+        data.operatorType &&
+        ctx.config?.highlights?.[data.operatorType],
     )
     .forEach((n) => {
       if (!ctx.config) {
@@ -385,9 +386,7 @@ export const buildNodesAndEdges = async ({
 
     if (groupName) {
       const groupToEndId = `e-${groupName}-${endIndicatorId}`;
-      const existingGroupEdge = ctx.edges.find(
-        (edge) => edge.id === groupToEndId,
-      );
+      const existingGroupEdge = ctx.edges.find((edge) => edge.id === groupToEndId);
 
       if (existingGroupEdge) {
         const edgeData = existingGroupEdge.data as
