@@ -61,12 +61,13 @@ export type JsonataFormulaFieldProps = {
 
   /**
    * JSON schema that describes the shapes of $input / $output / $context.
+   * Optional when a `JsonataGlobalsSchemaProvider` is present upstream.
    * Supported:
    *  - { input, output, context }
    *  - OR schema.properties.$input / $output / $context
    *  - OR schema.properties.input / output / context
    */
-  globalsSchema: GlobalsSchema;
+  globalsSchema?: GlobalsSchema;
 
   disabled?: boolean;
   helperText?: React.ReactNode;
