@@ -87,14 +87,56 @@ div .cs-message-input__content-editor-container,
   box-shadow: 0px 4px 10px 10px rgba(0, 0, 0, 0.066);
 }
 
-/* Styles for autolinked chat messages */
-.chat-link {
-  color: inherit !important;
-  text-decoration: underline !important;
-  word-break: break-all !important;
+/* Styles for markdown-rendered chat messages */
+.markdown-content {
+  white-space: normal;
 }
 
-.chat-link:hover {
+.markdown-content p {
+  margin: 0.35rem 0;
+}
+
+.markdown-content p:first-child {
+  margin-top: 0;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0.35rem 0;
+  padding-left: 1.25rem;
+}
+
+.markdown-content pre {
+  margin: 0.35rem 0;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.markdown-content code {
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+.markdown-content blockquote {
+  margin: 0.35rem 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(0, 0, 0, 0.25);
+}
+
+.markdown-content a {
+  color: inherit !important;
+  text-decoration: underline !important;
+  word-break: break-word !important;
+}
+
+.markdown-content a:hover {
   opacity: 0.8;
 }
 

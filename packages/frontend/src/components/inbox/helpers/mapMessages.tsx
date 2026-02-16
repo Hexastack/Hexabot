@@ -7,8 +7,9 @@
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import { Chip, Tooltip } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import Autolinker from "autolinker";
+import DOMPurify from "dompurify";
 import { Menu, Reply } from "lucide-react";
+import { marked } from "marked";
 import React, { ReactNode } from "react";
 
 import { theme } from "@/layout/theme";
@@ -61,27 +62,28 @@ export function isSubsequent(
 }
 
 /**
- * @description Detects URLs in text and converts them to clickable links using Autolinker
+ * @description Converts markdown to safe HTML for rendering in chat messages
  */
 function formatMessageText(text: string): ReactNode {
   try {
-    const linkedText = Autolinker.link(text, {
-      className: "chat-link",
-      newWindow: true,
-      truncate: { length: 50, location: "middle" },
-      stripPrefix: false,
-      sanitizeHtml: true,
+    const unsafeHtml = marked.parse(text, {
+      gfm: true,
+      breaks: true,
     });
+    const safeHtml = DOMPurify.sanitize(
+      typeof unsafeHtml === "string" ? unsafeHtml : text,
+    );
 
     return (
       <div
+        className="markdown-content"
         dangerouslySetInnerHTML={{
-          __html: linkedText,
+          __html: safeHtml,
         }}
       />
     );
   } catch (_error) {
-    return <div>{text}</div>;
+    return <div className="markdown-content">{text}</div>;
   }
 }
 /**
