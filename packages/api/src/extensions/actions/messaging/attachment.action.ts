@@ -26,7 +26,7 @@ const attachmentInputSchema = z.object({
     .meta({
       title: 'Attachment',
       description: 'File attachment submitted via an Attachment action',
-      uiField: 'ActionAttachmentField',
+      'ui:field': 'ActionAttachmentField',
     }),
   quick_replies: z
     .array(stdQuickReplySchema)

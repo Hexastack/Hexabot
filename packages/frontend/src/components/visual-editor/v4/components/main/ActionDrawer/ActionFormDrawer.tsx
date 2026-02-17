@@ -20,7 +20,7 @@ import { useWorkflow } from "../../../hooks/useWorkflow";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { humanizeTaskName } from "../../../utils/graph.utils";
 import {
-  buildUiSchemaFromSchemaUiFields,
+  extractUiSchema,
   getSchemaPropertyNames,
 } from "../../../utils/schema-defaults.utils";
 
@@ -56,6 +56,7 @@ const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
     properties.includes(key),
   );
   const uiSchema: UiSchema = {
+    ...extractUiSchema(schema),
     "ui:order": [...actionSpecific, ...commonOrdered, "*"],
   };
 
@@ -105,9 +106,7 @@ const ActionFormDrawerContent = ({
           onFormDataChange={onInputDataChange}
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
-          uiSchema={buildUiSchemaFromSchemaUiFields(
-            actionSchema?.inputSchema as RJSFSchema,
-          )}
+          uiSchema={extractUiSchema(actionSchema?.inputSchema as RJSFSchema)}
         />
       ) : null}
       {actionSchema.settingSchema ? (

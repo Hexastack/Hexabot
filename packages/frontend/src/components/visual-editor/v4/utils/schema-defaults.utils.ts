@@ -84,43 +84,36 @@ export const getSchemaPropertyNames = (schema?: RJSFSchema): string[] => {
   return Object.keys(getSchemaProperties(schema) ?? {});
 };
 
-export const buildUiSchemaFromPropertyUiFields = (
-  schema: RJSFSchema | undefined,
-  propertyNames: string[],
-): UiSchema | undefined => {
-  if (propertyNames.length === 0) {
-    return undefined;
+const UI_KEYS = [
+  "ui:widget",
+  "ui:field",
+  "ui:options",
+  "ui:placeholder",
+  "ui:help",
+] as const;
+
+export const extractUiSchema = (jsonSchema: any): UiSchema => {
+  const ui: Record<string, any> = {};
+
+  for (const k of UI_KEYS) {
+    if (jsonSchema?.[k] !== undefined) ui[k] = jsonSchema[k];
   }
 
-  const properties = getSchemaProperties(schema);
+  if (jsonSchema?.type === "object" && jsonSchema?.properties) {
+    for (const [propName, propSchema] of Object.entries(
+      jsonSchema.properties,
+    )) {
+      const childUi = extractUiSchema(propSchema);
 
-  if (!properties) {
-    return undefined;
+      if (Object.keys(childUi).length) ui[propName] = childUi;
+    }
   }
 
-  const uiSchema: UiSchema = {};
+  if (jsonSchema?.type === "array" && jsonSchema?.items) {
+    const itemsUi = extractUiSchema(jsonSchema.items);
 
-  propertyNames.forEach((propertyName) => {
-    const propertySchema = properties[propertyName];
+    if (Object.keys(itemsUi).length) ui.items = itemsUi;
+  }
 
-    if (!isRecord(propertySchema)) {
-      return;
-    }
-
-    const uiField = propertySchema.uiField;
-
-    if (typeof uiField === "string" && uiField.length > 0) {
-      uiSchema[propertyName] = {
-        "ui:field": uiField,
-      };
-    }
-  });
-
-  return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
-};
-
-export const buildUiSchemaFromSchemaUiFields = (
-  schema: RJSFSchema | undefined,
-): UiSchema | undefined => {
-  return buildUiSchemaFromPropertyUiFields(schema, getSchemaPropertyNames(schema));
+  return ui;
 };
