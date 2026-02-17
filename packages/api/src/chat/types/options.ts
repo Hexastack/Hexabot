@@ -59,7 +59,7 @@ export const contentOptionsSchema = z.object({
         }),
     })
     .meta({ title: 'Fields' }),
-  buttons: z.array(buttonSchema),
+  buttons: z.array(buttonSchema).meta({ title: 'Buttons' }),
   limit: z.number().finite(),
   query: z.any().optional(),
   top_element_style: z.enum(['large', 'compact']).optional().meta({

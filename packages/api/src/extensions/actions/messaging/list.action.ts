@@ -26,19 +26,22 @@ const listActionInputSchema = z
     query: z.any().optional(),
   })
   .extend({
-    content: contentOptionsSchema.omit({ limit: true }).default({
-      display: 'list',
-      buttons: [
-        {
-          title: 'Hexabot',
-          type: ButtonType.web_url,
-          url: 'http://hexabot.ai/',
-        },
-      ],
-      fields: { title: '', subtitle: '', image_url: '' },
-      contentType: '',
-      top_element_style: 'compact',
-    }),
+    content: contentOptionsSchema
+      .omit({ limit: true })
+      .default({
+        display: 'list',
+        buttons: [
+          {
+            title: 'Hexabot',
+            type: ButtonType.web_url,
+            url: 'http://hexabot.ai/',
+          },
+        ],
+        fields: { title: '', subtitle: '', image_url: '' },
+        contentType: '',
+        top_element_style: 'compact',
+      })
+      .meta({ title: 'Content' }),
   });
 
 type ListActionInput = z.infer<typeof listActionInputSchema>;
