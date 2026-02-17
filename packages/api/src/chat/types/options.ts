@@ -30,9 +30,15 @@ export const contentOptionsSchema = z.object({
         title: 'Image URL Field',
         'ui:field': 'ContentAutoCompleteField',
       }),
-      url: z.string().optional().meta({
-        title: 'URL',
-      }),
+      url: z
+        .string()
+        .optional()
+        .meta({
+          title: 'URL',
+          'ui:options': {
+            showOnlyWhenWebUrlButton: true,
+          },
+        }),
       action_title: z.string().optional().meta({
         title: 'Action Title',
       }),

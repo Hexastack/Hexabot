@@ -31,13 +31,30 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     registry,
   } = props;
   const uiOptions = getUiOptions(uiSchema);
+  const shouldShowOnlyWhenWebUrlButton =
+    uiOptions?.showOnlyWhenWebUrlButton === true;
+  const rootFormData = props.registry.formContext?.formData as
+    | Record<string, unknown>
+    | undefined;
+  const contentNode =
+    (rootFormData?.content as Record<string, unknown> | undefined) ??
+    rootFormData;
+  const buttons = contentNode?.buttons;
+  const hasWebUrlButton =
+    Array.isArray(buttons) &&
+    buttons.some(
+      (button) =>
+        button &&
+        typeof button === "object" &&
+        (button as { type?: string }).type === "web_url",
+    );
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
     uiOptions,
   );
 
-  if (hidden) {
+  if (hidden || (shouldShowOnlyWhenWebUrlButton && !hasWebUrlButton)) {
     return <div style={{ display: "none" }}>{children}</div>;
   }
 

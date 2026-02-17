@@ -11,50 +11,69 @@ export enum ButtonType {
   web_url = 'web_url',
 }
 
-const postBackButtonSchema = z.object({
-  type: z.literal(ButtonType.postback).meta({
-    title: 'Type',
-    description: 'The type of button.',
-  }),
-  title: z.string().meta({
-    title: 'Title',
-    description: 'The label shown to the user.',
-  }),
-  payload: z.string().meta({
-    title: 'Payload',
-    description: 'The value sent back when the button is clicked.',
-  }),
-});
-const webUrlButtonSchema = z.object({
-  type: z.literal(ButtonType.web_url).meta({
-    title: 'Type',
-    description: 'The type of button.',
-  }),
-  title: z.string().meta({
-    title: 'Title',
-    description: 'The label shown to the user.',
-  }),
-  url: z.union([z.url(), z.literal('')]).meta({
-    title: 'URL',
-    description: 'The destination URL opened when the button is clicked.',
-  }),
-  messenger_extensions: z.boolean().optional().meta({
-    title: 'Messenger extensions',
-    description: 'Whether to enable Messenger Extensions for the webview.',
-  }),
-  webview_height_ratio: z.enum(['compact', 'tall', 'full']).optional().meta({
-    title: 'Webview height ratio',
-    description: 'The height of the webview.',
-  }),
-});
+export type PostBackButton = {
+  type: ButtonType.postback;
+  title: string;
+  payload: string;
+};
 
-export const buttonSchema = z.union([postBackButtonSchema, webUrlButtonSchema]);
+export type WebUrlButton = {
+  type: ButtonType.web_url;
+  title: string;
+  url: string;
+  messenger_extensions?: boolean;
+  webview_height_ratio?: 'compact' | 'tall' | 'full';
+};
 
-export type PostBackButton = z.infer<typeof postBackButtonSchema>;
+export type Button = PostBackButton | WebUrlButton;
 
-export type WebUrlButton = z.infer<typeof webUrlButtonSchema>;
+export const buttonSchema = z
+  .object({
+    type: z.enum([ButtonType.postback, ButtonType.web_url]).meta({
+      title: 'Type',
+      description: 'The type of button.',
+    }),
+    title: z.string().meta({
+      title: 'Title',
+      description: 'The label shown to the user.',
+    }),
+    payload: z.string().optional().meta({
+      title: 'Payload',
+      description: 'The value sent back when the button is clicked.',
+    }),
+    url: z
+      .union([z.url(), z.literal('')])
+      .optional()
+      .meta({
+        title: 'URL',
+        description: 'The destination URL opened when the button is clicked.',
+      }),
+    messenger_extensions: z.boolean().optional().meta({
+      title: 'Messenger extensions',
+      description: 'Whether to enable Messenger Extensions for the webview.',
+    }),
+    webview_height_ratio: z.enum(['compact', 'tall', 'full']).optional().meta({
+      title: 'Webview height ratio',
+      description: 'The height of the webview.',
+    }),
+  })
+  .superRefine((button, ctx) => {
+    if (button.type === ButtonType.postback && !button.payload) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['payload'],
+        message: 'Payload is required for postback buttons.',
+      });
+    }
 
-export type Button = z.infer<typeof buttonSchema>;
+    if (button.type === ButtonType.web_url && !button.url) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['url'],
+        message: 'URL is required for web_url buttons.',
+      });
+    }
+  }) as unknown as z.ZodType<Button>;
 
 export enum PayloadType {
   location = 'location',
