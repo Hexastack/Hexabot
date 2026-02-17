@@ -90,7 +90,6 @@ export const GenericDataGrid = <
   return (
     <Grid width="100%">
       <Grid container={!!headerI18nTitle} flexDirection="column" gap={3}>
-        {headerLeftButtons}
         <PageHeader
           icon={headerIcon}
           title={headerI18nTitle && t(headerI18nTitle)}
@@ -99,6 +98,7 @@ export const GenericDataGrid = <
               <Chip label={headerTitleChip} size="medium" variant="outlined" />
             ) : null
           }
+          headerLeftButtons={headerLeftButtons}
         >
           <Grid
             gap={1}
