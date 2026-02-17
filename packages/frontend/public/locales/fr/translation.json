@@ -530,8 +530,7 @@
     "inspector": "Inspecteur",
     "latest_run": "Dernière exécution",
     "run_at": "Exécution {{0}}",
-    "unknown": "Inconnu",
-    "content_type": "Type de contenu"
+    "unknown": "Inconnu"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
