@@ -76,6 +76,21 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
     entity: EntityType.ATTACHMENT,
   });
   const { t } = useTranslate();
+  const AttachmentDeleteButton = (
+    <Button
+      color="inherit"
+      variant="contained"
+      startIcon={<ClearIcon size={18} />}
+      onClick={(e) => {
+        onChange?.(null);
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      size="small"
+    >
+      {t("button.delete")}
+    </Button>
+  );
 
   if (!attachment) {
     return (
@@ -84,6 +99,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
           {t("message.attachment_not_found")}
         </Typography>
         <Typography variant="body1">{`id: ${id}`}</Typography>
+        {AttachmentDeleteButton}
       </Paper>
     );
   }
@@ -107,19 +123,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
 
           {format === "full" && onChange ? (
             <CardActions sx={{ justifyContent: "center", flex: "1 1 50%" }}>
-              <Button
-                color="inherit"
-                variant="contained"
-                startIcon={<ClearIcon size={18} />}
-                onClick={(e) => {
-                  onChange?.(null);
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                size="small"
-              >
-                {t("button.delete")}
-              </Button>
+              {AttachmentDeleteButton}
             </CardActions>
           ) : null}
         </>
