@@ -569,15 +569,15 @@ importers:
       '@xyflow/react':
         specifier: ^12.10.0
         version: 12.10.0(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      autolinker:
-        specifier: ^4.1.5
-        version: 4.1.5
       axios:
         specifier: ^1.12.2
         version: 1.12.2
       dayjs:
         specifier: ^1.11.13
         version: 1.11.18
+      dompurify:
+        specifier: 3.2.7
+        version: 3.2.7
       elkjs:
         specifier: ^0.11.0
         version: 0.11.0
@@ -590,6 +590,9 @@ importers:
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@18.3.1)
+      marked:
+        specifier: 14.0.0
+        version: 14.0.0
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1
@@ -699,21 +702,24 @@ importers:
 
   packages/widget:
     dependencies:
-      autolinker:
-        specifier: ^4.1.5
-        version: 4.1.5
       chroma-js:
         specifier: ^3.2.0
         version: 3.2.0
       dayjs:
         specifier: ^1.11.12
         version: 1.11.18
+      dompurify:
+        specifier: 3.2.7
+        version: 3.2.7
       emoji-js:
         specifier: ^3.8.0
         version: 3.9.0
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@18.3.1)
+      marked:
+        specifier: 14.0.0
+        version: 14.0.0
       normalize.css:
         specifier: ^8.0.1
         version: 8.0.1
@@ -4254,10 +4260,6 @@ packages:
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
-
-  autolinker@4.1.5:
-    resolution: {integrity: sha512-vEfYZPmvVOIuE567XBVCsx8SBgOYtjB2+S1iAaJ+HgH+DNjAcrHem2hmAeC9yaNGWayicv4yR+9UaJlkF3pvtw==}
-    engines: {pnpm: '>=10.10.0'}
 
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
@@ -13445,10 +13447,6 @@ snapshots:
   async@3.2.6: {}
 
   asynckit@0.4.0: {}
-
-  autolinker@4.1.5:
-    dependencies:
-      tslib: 2.8.1
 
   available-typed-arrays@1.0.7:
     dependencies:

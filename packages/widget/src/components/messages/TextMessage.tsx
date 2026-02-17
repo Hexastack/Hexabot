@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import Autolinker from "autolinker";
-import React, { useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
+import React, { useMemo } from "react";
 
-import { TMessage } from "../../types/message.types";
+import { Direction, TMessage } from "../../types/message.types";
 
 import "./TextMessage.scss";
 
@@ -16,33 +17,39 @@ interface TextMessageProps {
 }
 
 const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
-  const messageTextRef = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    autoLink();
-  }, [message]);
-
-  const autoLink = () => {
-    if (messageTextRef.current) {
-      const text = messageTextRef.current.innerText;
-
-      messageTextRef.current.innerHTML = Autolinker.link(text, {
-        className: "chatLink",
-        truncate: { length: 50, location: "smart" },
-        sanitizeHtml: true,
-      });
-    }
-  };
-
   if (!("text" in message.data)) {
     throw new Error("Unable to find text.");
   }
+  const text = message.data.text;
+  const safeHtml = useMemo(() => {
+    if (message.direction !== Direction.received) {
+      return "";
+    }
+
+    try {
+      const unsafeHtml = marked.parse(text, {
+        gfm: true,
+        breaks: true,
+      });
+
+      return DOMPurify.sanitize(
+        typeof unsafeHtml === "string" ? unsafeHtml : text,
+      );
+    } catch (_error) {
+      return DOMPurify.sanitize(text);
+    }
+  }, [message.direction, text]);
 
   return (
     <div className="hb-message--text">
-      <p className="hb-message--text-content" ref={messageTextRef}>
-        {message.data.text}
-      </p>
+      {message.direction === Direction.received ? (
+        <div
+          className="hb-message--text-content markdown"
+          dangerouslySetInnerHTML={{ __html: safeHtml }}
+        />
+      ) : (
+        <p className="hb-message--text-content plain">{text}</p>
+      )}
     </div>
   );
 };

@@ -1,8 +1,53 @@
 .hb-message--text-content {
   margin: 0;
-  white-space: pre-line;
 
-  a.chatLink {
+  &.plain {
+    white-space: pre-line;
+  }
+
+  &.markdown {
+    white-space: normal;
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    ul,
+    ol {
+      margin: 0.5rem 0;
+      padding-left: 1.25rem;
+    }
+
+    pre {
+      margin: 0.5rem 0;
+      padding: 0.5rem 0.625rem;
+      border-radius: 0.375rem;
+      overflow-x: auto;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85em;
+    }
+
+    blockquote {
+      margin: 0.5rem 0;
+      padding-left: 0.75rem;
+      border-left: 0.125rem solid var(--hb-color-border-subtle);
+    }
+  }
+
+  a {
     text-decoration: underline;
     transition: color 0.2s ease;
 
