@@ -107,8 +107,10 @@ export abstract class WorkflowRuntimeContext<
     memory: MemoryStore,
   ): Promise<this> {
     this.resetState();
-    await this.hydrate(run.context);
     this.event = event;
+    // Hydrate persisted state first, then merge transient event context.
+    await this.hydrate(run.context);
+    await this.hydrate(event.getContextData());
     this.initiatorId = run.triggeredBy.id;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
@@ -118,7 +120,13 @@ export abstract class WorkflowRuntimeContext<
     return this;
   }
 
-  async hydrate(stored: WorkflowContextState): Promise<this> {
+  async hydrate(
+    stored?: Record<string, unknown> | WorkflowContextState | null,
+  ): Promise<this> {
+    if (!stored) {
+      return this;
+    }
+
     this.state = {
       ...this.state,
       ...stored,

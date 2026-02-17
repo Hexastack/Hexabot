@@ -32,6 +32,9 @@ export abstract class TriggerEventWrapper<
 
   abstract getMetadata(): Record<string, unknown>;
 
+  /**
+   * Returns event-scoped data that should live on workflow context state.
+   */
   abstract getContextData(): Record<string, unknown>;
 
   abstract buildInput(): Record<string, unknown>;
