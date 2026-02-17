@@ -79,24 +79,32 @@ describe('SendListAction', () => {
     contentService.getContent.mockResolvedValue(contentResult);
 
     const settings = {
-      content: { ...baseContentOptions, entity: 'ct-id' },
-    } as MessageActionSettings & { content: ContentOptions };
-    const input = { skip: 1, query: { status: true } };
+      skip: 1,
+      limit: 2,
+    } as unknown as MessageActionSettings & {
+      content: ContentOptions;
+      skip: number;
+      limit: number;
+    };
+    const input = {
+      content: { ...baseContentOptions, contentType: 'ct-id' },
+      query: { status: true },
+    };
     const result = await action.execute({ input, context, settings } as any);
 
     expect(prepareSpy).toHaveBeenCalledWith(context);
     expect(contentTypeService.findOne).toHaveBeenCalledWith('ct-id');
     expect(contentService.getContent).toHaveBeenCalledWith(
-      { ...baseContentOptions, entity: 'ct-id', query: { status: true } },
+      { ...baseContentOptions, contentType: 'ct-id', query: { status: true } },
       1,
     );
     expect(prepared.envelopeFactory.buildListEnvelope).toHaveBeenCalledWith(
       OutgoingMessageFormat.list,
-      { ...baseContentOptions, entity: 'ct-id', query: { status: true } },
+      { ...baseContentOptions, contentType: 'ct-id', query: { status: true } },
       contentResult.elements,
       contentResult.pagination,
     );
-    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, settings);
+    expect(sendSpy).toHaveBeenCalledWith(context, prepared, envelope, input);
     expect(result).toBe('sent');
   });
 
@@ -118,11 +126,11 @@ describe('SendListAction', () => {
 
     await expect(
       action.execute({
-        input: { skip: 0 } as any,
-        context,
-        settings: {
-          content: { ...baseContentOptions, entity: 'missing' },
+        input: {
+          content: { ...baseContentOptions, contentType: 'missing' },
         } as any,
+        context,
+        settings: { skip: 0 } as any,
       }),
     ).rejects.toThrow('Content type with id "missing" not found');
   });

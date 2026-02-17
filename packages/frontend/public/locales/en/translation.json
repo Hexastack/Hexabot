@@ -527,7 +527,8 @@
       "logs_errors": "Logs / Errors"
     },
     "inspector": "Inspector",
-    "no_scheduled_workflows": "No scheduled workflows yet"
+    "no_scheduled_workflows": "No scheduled workflows yet",
+    "content_type": "Content Type"
   },
   "placeholder": {
     "your_username": "Your username",

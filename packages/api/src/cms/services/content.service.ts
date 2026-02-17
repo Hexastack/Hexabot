@@ -55,9 +55,9 @@ export class ContentService extends BaseOrmService<
     };
     const limit = options.limit;
 
-    if (typeof options.entity === 'string') {
+    if (typeof options.contentType === 'string') {
       where.contentType = {
-        id: options.entity,
+        id: options.contentType,
       };
     }
 

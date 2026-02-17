@@ -9,20 +9,44 @@ import { z } from 'zod';
 import { buttonSchema } from './button';
 
 export const contentOptionsSchema = z.object({
-  display: z.enum(['list', 'carousel']),
-  fields: z.object({
-    title: z.string(),
-    subtitle: z.string().nullable(),
-    image_url: z.string().nullable(),
-    url: z.string().optional(),
-    action_title: z.string().optional(),
-    action_payload: z.string().optional(),
+  display: z.enum(['list', 'carousel']).meta({
+    title: 'Display',
   }),
+  contentType: z.string().optional().meta({
+    title: 'Content Type',
+    'ui:widget': 'ContentTypeAutoCompleteWidget',
+  }),
+  fields: z
+    .object({
+      title: z.string().meta({
+        title: 'Title',
+        'ui:field': 'ContentAutoCompleteField',
+      }),
+      subtitle: z.string().optional().meta({
+        title: 'Subtitle',
+        'ui:field': 'ContentAutoCompleteField',
+      }),
+      image_url: z.string().optional().meta({
+        title: 'Image URL Field',
+        'ui:field': 'ContentAutoCompleteField',
+      }),
+      url: z.string().optional().meta({
+        title: 'URL',
+      }),
+      action_title: z.string().optional().meta({
+        title: 'Action Title',
+      }),
+      action_payload: z.string().optional().meta({
+        title: 'Action Payload',
+      }),
+    })
+    .meta({ title: 'Fields' }),
   buttons: z.array(buttonSchema),
   limit: z.number().finite(),
   query: z.any().optional(),
-  entity: z.string().optional(),
-  top_element_style: z.enum(['large', 'compact']).optional(),
+  top_element_style: z.enum(['large', 'compact']).optional().meta({
+    title: 'Top Element Style',
+  }),
 });
 
 export type ContentOptions = z.infer<typeof contentOptionsSchema>;

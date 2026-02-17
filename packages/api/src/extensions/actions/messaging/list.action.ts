@@ -9,6 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
+import { ButtonType } from '@/chat';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ContentOptions, contentOptionsSchema } from '@/chat/types/options';
 import { ContentTypeService } from '@/cms/services/content-type.service';
@@ -16,24 +17,49 @@ import { ConversationalWorkflowContext } from '@/workflow/contexts/conversationa
 
 import {
   MessageAction,
-  MessageActionSettings,
   messageActionOutputSchema,
   messageActionSettingsSchema,
 } from './message-action.base';
 
-const listActionInputSchema = z.object({
-  skip: z.int().nonnegative().prefault(0),
-  query: z.any().optional(),
-});
+const listActionInputSchema = z
+  .object({
+    query: z.any().optional(),
+  })
+  .extend({
+    content: contentOptionsSchema.omit({ limit: true }).default({
+      display: 'list',
+      buttons: [
+        {
+          title: 'Hexabot',
+          type: ButtonType.web_url,
+          url: 'http://hexabot.ai/',
+        },
+      ],
+      fields: { title: '', subtitle: '', image_url: '' },
+      contentType: '',
+    }),
+  });
 
 type ListActionInput = z.infer<typeof listActionInputSchema>;
-type ListActionSettings = MessageActionSettings & {
-  content: ContentOptions;
-};
 
-const listActionSettingsSchema = messageActionSettingsSchema.extend({
-  content: contentOptionsSchema,
-});
+const listActionSettingsSchema = messageActionSettingsSchema
+  .omit({ typing: true })
+  .extend({
+    skip: z.int().nonnegative().prefault(0),
+    limit: z.number(),
+  })
+  .default({
+    skip: 0,
+    limit: 1,
+    retries: {
+      max_attempts: 3,
+      backoff_ms: 25,
+      max_delay_ms: 10000,
+      jitter: 0,
+      multiplier: 1,
+    },
+  });
+type ListActionSettings = z.infer<typeof listActionSettingsSchema>;
 
 @Injectable()
 export class SendListAction extends MessageAction<
@@ -54,10 +80,11 @@ export class SendListAction extends MessageAction<
     );
   }
 
-  protected resolveMessageOptions(settings: ListActionSettings) {
-    const options = super.resolveMessageOptions(settings) ?? {};
+  // //TODO
+  protected resolveMessageOptions(input: ListActionInput) {
+    const options = super.resolveMessageOptions(input) ?? {};
 
-    return { ...options, content: settings.content };
+    return { ...options, content: input.content };
   }
 
   private async ensureContentType(
@@ -84,7 +111,7 @@ export class SendListAction extends MessageAction<
     ConversationalWorkflowContext,
     ListActionSettings
   >) {
-    const contentOptions = settings.content;
+    const contentOptions = input.content;
 
     if (!contentOptions) {
       throw new Error('Content settings are required to send a list');
@@ -97,11 +124,12 @@ export class SendListAction extends MessageAction<
       throw new Error('Content services are missing from the workflow context');
     }
 
-    await this.ensureContentType(contentType, contentOptions.entity);
+    await this.ensureContentType(contentType, contentOptions.contentType);
 
-    const skip = input.skip ?? 0;
+    const skip = settings.skip ?? 0;
     const options: ContentOptions = {
       ...contentOptions,
+      limit: settings.limit,
       query: input.query ?? contentOptions.query,
     };
     const { elements, pagination } = await contentService.getContent(
@@ -117,7 +145,7 @@ export class SendListAction extends MessageAction<
       pagination,
     );
 
-    return this.sendPreparedMessage(context, prepared, envelope, settings);
+    return this.sendPreparedMessage(context, prepared, envelope, input);
   }
 }
 

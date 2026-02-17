@@ -5,7 +5,9 @@
  */
 
 import { ActionAttachmentField } from "./ActionAttachmentField";
+import { ContentAutoCompleteField } from "./ContentAutoCompleteField";
 
 export const FORM_FIELDS = {
   ActionAttachmentField,
+  ContentAutoCompleteField,
 } as const;
