@@ -10,13 +10,14 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Paper,
   Typography,
 } from "@mui/material";
 import {
+  X as ClearIcon,
   File as FileOpenIcon,
   Music as MusicNoteIcon,
   Video as VideoCameraBackOutlinedIcon,
-  X as ClearIcon,
 } from "lucide-react";
 import { FC } from "react";
 
@@ -75,9 +76,32 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
     entity: EntityType.ATTACHMENT,
   });
   const { t } = useTranslate();
+  const AttachmentDeleteButton = (
+    <Button
+      color="inherit"
+      variant="contained"
+      startIcon={<ClearIcon size={18} />}
+      onClick={(e) => {
+        onChange?.(null);
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      size="small"
+    >
+      {t("button.delete")}
+    </Button>
+  );
 
   if (!attachment) {
-    return t("message.attachment_not_found") + id;
+    return (
+      <Paper variant="spaced" sx={{ textAlign: "center" }}>
+        <Typography variant="h6">
+          {t("message.attachment_not_found")}
+        </Typography>
+        <Typography variant="body1">{`id: ${id}`}</Typography>
+        {AttachmentDeleteButton}
+      </Paper>
+    );
   }
 
   return format === "small" ? (
@@ -99,19 +123,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
 
           {format === "full" && onChange ? (
             <CardActions sx={{ justifyContent: "center", flex: "1 1 50%" }}>
-              <Button
-                color="inherit"
-                variant="contained"
-                startIcon={<ClearIcon size={18} />}
-                onClick={(e) => {
-                  onChange?.(null);
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                size="small"
-              >
-                {t("button.delete")}
-              </Button>
+              {AttachmentDeleteButton}
             </CardActions>
           ) : null}
         </>

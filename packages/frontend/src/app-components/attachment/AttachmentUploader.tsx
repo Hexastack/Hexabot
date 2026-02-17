@@ -35,11 +35,10 @@ const FileUploadLabel = styled("label")(
   cursor: pointer;
   text-align: center;
   display: flex;
-  with: 100%;
+  width: 100%;
   height: 256px;
   border: 2px dashed #b0b0b0;
   border-radius: 15px;
-  background-color: #f0f0f0;
   transition: all 0.4s ease-in-out;
   &:hover p,
   &:hover svg,
@@ -177,6 +176,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               display="flex"
               justifyContent="center"
               alignItems="center"
+              width="100%"
               sx={{ padding: "20px" }}
             >
               {isPending ? (

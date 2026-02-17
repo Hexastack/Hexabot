@@ -9,20 +9,36 @@ import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
-import { attachmentPayloadSchema } from '@/chat/types/attachment';
-import { stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { attachmentPayloadSchema, FileType } from '@/chat/types/attachment';
+import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
   MessageAction,
-  MessageActionSettings,
   messageActionOutputSchema,
+  MessageActionSettings,
   messageActionSettingsSchema,
 } from '../messaging/message-action.base';
 
 const attachmentInputSchema = z.object({
-  attachment: attachmentPayloadSchema,
-  quick_replies: z.array(stdQuickReplySchema).optional(),
+  attachment: attachmentPayloadSchema
+    .default({ payload: { id: null }, type: FileType.image })
+    .meta({
+      title: 'Attachment',
+      description: 'File attachment submitted via an Attachment action',
+      'ui:field': 'ActionAttachmentField',
+    }),
+  quick_replies: z
+    .array(stdQuickReplySchema)
+    .optional()
+    .default([
+      { content_type: QuickReplyType.text, payload: 'yes', title: 'Yes' },
+      { content_type: QuickReplyType.text, payload: 'no', title: 'No' },
+    ])
+    .meta({
+      title: 'Options',
+      description: 'Quick replies options.',
+    }),
 });
 
 type AttachmentInput = z.infer<typeof attachmentInputSchema>;

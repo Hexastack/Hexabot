@@ -5,8 +5,9 @@
  */
 
 import { JsonValue } from "@hexabot-ai/agentic";
-import { getDefaultFormState, RJSFSchema } from "@rjsf/utils";
+import { getDefaultFormState, RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import { JSONSchema7 } from "json-schema";
 import { JSONSchema } from "monaco-yaml";
 
 export const getSchemaDefaults = <T extends Record<string, JsonValue>>(
@@ -60,4 +61,62 @@ const normalizeDefaults = (
   }
 
   return value;
+};
+
+type SchemaProperties = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+};
+
+export const getSchemaProperties = (
+  schema?: RJSFSchema,
+): SchemaProperties | undefined => {
+  if (!isRecord(schema) || !isRecord(schema.properties)) {
+    return undefined;
+  }
+
+  const properties = schema.properties as SchemaProperties;
+
+  return Object.keys(properties).length > 0 ? properties : undefined;
+};
+
+export const getSchemaPropertyNames = (schema?: RJSFSchema): string[] => {
+  return Object.keys(getSchemaProperties(schema) ?? {});
+};
+
+const UI_KEYS = [
+  "ui:widget",
+  "ui:field",
+  "ui:options",
+  "ui:placeholder",
+  "ui:help",
+] as const;
+
+export const extractUiSchema = (
+  jsonSchema?: RJSFSchema | JSONSchema7,
+): UiSchema => {
+  const ui: UiSchema = {};
+
+  for (const k of UI_KEYS) {
+    if (jsonSchema?.[k] !== undefined) ui[k] = jsonSchema[k];
+  }
+
+  if (jsonSchema?.type === "object" && jsonSchema?.properties) {
+    for (const [propName, propSchema] of Object.entries(
+      jsonSchema.properties,
+    )) {
+      const childUi = extractUiSchema(propSchema as RJSFSchema);
+
+      if (Object.keys(childUi).length) ui[propName] = childUi;
+    }
+  }
+
+  if (jsonSchema?.type === "array" && jsonSchema?.items) {
+    const itemsUi = extractUiSchema(jsonSchema.items as JSONSchema7);
+
+    if (Object.keys(itemsUi).length) ui.items = itemsUi;
+  }
+
+  return ui;
 };

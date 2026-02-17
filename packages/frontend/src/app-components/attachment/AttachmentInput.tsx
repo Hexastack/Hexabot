@@ -5,7 +5,7 @@
  */
 
 import { Box, FormHelperText, FormLabel } from "@mui/material";
-import { forwardRef } from "react";
+import { ReactNode, forwardRef } from "react";
 
 import { useGet } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -17,7 +17,8 @@ import AttachmentThumbnail from "./AttachmentThumbnail";
 import AttachmentUploader from "./AttachmentUploader";
 
 type AttachmentThumbnailProps = {
-  label: string;
+  label: ReactNode;
+  required?: boolean;
   value: string | undefined | null;
   format: "small" | "basic" | "full";
   accept: string;
@@ -33,6 +34,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
   (
     {
       label,
+      required = false,
       value,
       format,
       accept,
@@ -65,6 +67,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
       <Box ref={ref}>
         <FormLabel
           component="label"
+          required={required}
           style={{ display: "inline-block", marginBottom: 1 }}
         >
           {label}

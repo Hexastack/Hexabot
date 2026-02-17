@@ -9,7 +9,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
@@ -19,6 +19,10 @@ import { IAction } from "@/types/action.types";
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { humanizeTaskName } from "../../../utils/graph.utils";
+import {
+  extractUiSchema,
+  getSchemaPropertyNames,
+} from "../../../utils/schema-defaults.utils";
 
 import { ActionSchemaPanel } from "./ActionSchemaPanel";
 
@@ -40,14 +44,7 @@ const COMMON_SETTING_KEYS = [
   "audit",
 ] as const;
 const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
-  if (!schema || typeof schema !== "object") {
-    return undefined;
-  }
-
-  const properties =
-    schema.properties && typeof schema.properties === "object"
-      ? Object.keys(schema.properties)
-      : [];
+  const properties = getSchemaPropertyNames(schema);
 
   if (properties.length === 0) {
     return undefined;
@@ -59,6 +56,7 @@ const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
     properties.includes(key),
   );
   const uiSchema: UiSchema = {
+    ...extractUiSchema(schema),
     "ui:order": [...actionSpecific, ...commonOrdered, "*"],
   };
 
@@ -87,13 +85,6 @@ const ActionFormDrawerContent = ({
   onSettingsDataChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
-  const settingsUiSchema = useMemo(
-    () =>
-      buildSettingsUiSchema(
-        actionSchema?.settingSchema as RJSFSchema | undefined,
-      ),
-    [actionSchema?.settingSchema],
-  );
 
   if (!isOpen) return null;
 
@@ -115,6 +106,7 @@ const ActionFormDrawerContent = ({
           onFormDataChange={onInputDataChange}
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
+          uiSchema={extractUiSchema(actionSchema?.inputSchema as RJSFSchema)}
         />
       ) : null}
       {actionSchema.settingSchema ? (
@@ -127,7 +119,9 @@ const ActionFormDrawerContent = ({
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
           )}
-          uiSchema={settingsUiSchema}
+          uiSchema={buildSettingsUiSchema(
+            actionSchema?.settingSchema as RJSFSchema | undefined,
+          )}
         />
       ) : null}
     </Stack>

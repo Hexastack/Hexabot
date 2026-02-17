@@ -50,6 +50,7 @@ describe('SendAttachmentAction', () => {
       .spyOn(action as any, 'sendPreparedMessage')
       .mockResolvedValue('result');
     const input: Parameters<SendAttachmentAction['execute']>[0]['input'] = {
+      quick_replies: [],
       attachment: { type: FileType.image, payload: { id: '123' } },
     };
     const result = await action.execute({
