@@ -32,15 +32,12 @@ export const JsonataTextWidget = ({
   onChange,
   options,
   schema,
-  formContext,
   registry,
 }: WidgetProps) => {
   const widgetOptions = options as JsonataWidgetOptions;
-  const context = formContext as JsonataFormContext | undefined;
+  const context = registry.formContext as JsonataFormContext | undefined;
   const globalsSchema =
-    widgetOptions?.globalsSchema ??
-    context?.globalsSchema ??
-    (registry.rootSchema as GlobalsSchema);
+    widgetOptions?.globalsSchema ?? context?.globalsSchema;
   const emptyValue = widgetOptions?.emptyValue;
   const safeValue =
     typeof value === "string" ? value : value == null ? "" : String(value);
