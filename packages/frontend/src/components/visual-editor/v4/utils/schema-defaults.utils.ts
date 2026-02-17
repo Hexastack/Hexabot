@@ -7,6 +7,7 @@
 import { JsonValue } from "@hexabot-ai/agentic";
 import { getDefaultFormState, RJSFSchema, UiSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import { JSONSchema7 } from "json-schema";
 import { JSONSchema } from "monaco-yaml";
 
 export const getSchemaDefaults = <T extends Record<string, JsonValue>>(
@@ -92,8 +93,10 @@ const UI_KEYS = [
   "ui:help",
 ] as const;
 
-export const extractUiSchema = (jsonSchema?: RJSFSchema): UiSchema => {
-  const ui: Record<string, any> = {};
+export const extractUiSchema = (
+  jsonSchema?: RJSFSchema | JSONSchema7,
+): UiSchema => {
+  const ui: UiSchema = {};
 
   for (const k of UI_KEYS) {
     if (jsonSchema?.[k] !== undefined) ui[k] = jsonSchema[k];
@@ -110,7 +113,7 @@ export const extractUiSchema = (jsonSchema?: RJSFSchema): UiSchema => {
   }
 
   if (jsonSchema?.type === "array" && jsonSchema?.items) {
-    const itemsUi = extractUiSchema(jsonSchema.items as RJSFSchema);
+    const itemsUi = extractUiSchema(jsonSchema.items as JSONSchema7);
 
     if (Object.keys(itemsUi).length) ui.items = itemsUi;
   }
