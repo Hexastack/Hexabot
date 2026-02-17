@@ -10,6 +10,7 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Paper,
   Typography,
 } from "@mui/material";
 import {
@@ -77,7 +78,14 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   const { t } = useTranslate();
 
   if (!attachment) {
-    return t("message.attachment_not_found") + id;
+    return (
+      <Paper variant="spaced" sx={{ textAlign: "center" }}>
+        <Typography variant="h6">
+          {t("message.attachment_not_found")}
+        </Typography>
+        <Typography variant="body1">{`id: ${id}`}</Typography>
+      </Paper>
+    );
   }
 
   return format === "small" ? (
