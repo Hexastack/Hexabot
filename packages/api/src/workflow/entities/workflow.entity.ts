@@ -4,11 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import { isDeepStrictEqual } from 'node:util';
+
 import { Workflow as AgenticWorkflow } from '@hexabot-ai/agentic';
 import { CronJob } from 'cron';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import {
   AfterInsert,
+  BeforeInsert,
   BeforeRemove,
+  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -20,6 +25,7 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
@@ -29,6 +35,11 @@ import {
   WorkflowFull,
   WorkflowTransformerDto,
 } from '../dto/workflow.dto';
+import {
+  conversationalWorkflowInputJsonSchema,
+  manualWorkflowDefaultInputJsonSchema,
+  scheduledWorkflowInputJsonSchema,
+} from '../schemas/workflow-input-schemas';
 import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
@@ -66,6 +77,10 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
   /** Cron expression used when the workflow is scheduled. */
   @Column({ type: 'varchar', length: 255, nullable: true })
   schedule?: string | null;
+
+  /** JSON Schema describing the expected workflow input payload. */
+  @JsonColumn({ name: 'input_schema' })
+  inputSchema!: JsonSchema;
 
   /** Indicates if the workflow is built-in and protected from deletion. */
   @Column({ default: false })
@@ -174,6 +189,53 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
     if (this.builtin) {
       throw new Error('Cannot delete builtin workflow');
     }
+  }
+
+  /**
+   * Keep workflow input schema aligned with workflow trigger type.
+   *
+   * Conversational and scheduled workflows are assigned fixed schemas.
+   * Manual workflows preserve custom schemas, defaulting to an open object schema.
+   * When a workflow switches from a fixed-schema type to manual without an explicit
+   * custom schema, the previous fixed schema is replaced with the manual default.
+   */
+  @BeforeInsert()
+  @BeforeUpdate()
+  protected syncInputSchema(): void {
+    if (!this.type) {
+      return;
+    }
+
+    if (this.type === WorkflowType.conversational) {
+      this.inputSchema = conversationalWorkflowInputJsonSchema;
+
+      return;
+    }
+
+    if (this.type === WorkflowType.scheduled) {
+      this.inputSchema = scheduledWorkflowInputJsonSchema;
+
+      return;
+    }
+
+    if (
+      !this.inputSchema ||
+      typeof this.inputSchema !== 'object' ||
+      Array.isArray(this.inputSchema) ||
+      this.hasFixedInputSchema(this.inputSchema)
+    ) {
+      this.inputSchema = manualWorkflowDefaultInputJsonSchema;
+    }
+  }
+
+  /**
+   * Check whether the provided schema matches one of the fixed trigger schemas.
+   */
+  private hasFixedInputSchema(schema: JsonSchema): boolean {
+    return (
+      isDeepStrictEqual(schema, conversationalWorkflowInputJsonSchema) ||
+      isDeepStrictEqual(schema, scheduledWorkflowInputJsonSchema)
+    );
   }
 
   get runAfterMs() {

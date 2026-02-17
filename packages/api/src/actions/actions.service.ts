@@ -6,10 +6,9 @@
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { JSONSchema7 as JSONSchema } from 'json-schema';
-import { ZodType } from 'zod';
 
 import { LoggerService } from '@/logger/logger.service';
+import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 import { WorkflowType } from '@/workflow/types';
 
 import { BaseAction } from './base-action';
@@ -50,10 +49,6 @@ export class ActionService {
     return Array.from(this.registry.values());
   }
 
-  private buildJsonSchema(schema: ZodType) {
-    return schema.toJSONSchema({ target: 'draft-07' }) as JSONSchema;
-  }
-
   getAllSchemaDefinitions(workflowType?: WorkflowType) {
     const actions = workflowType
       ? this.getAll().filter((action) =>
@@ -71,9 +66,9 @@ export class ActionService {
         color: action.color,
         group: action.group,
         workflowTypes: action.workflowTypes,
-        inputSchema: this.buildJsonSchema(action.inputSchema),
-        outputSchema: this.buildJsonSchema(action.outputSchema),
-        settingSchema: this.buildJsonSchema(action.settingSchema),
+        inputSchema: toDraft07JsonSchema(action.inputSchema),
+        outputSchema: toDraft07JsonSchema(action.outputSchema),
+        settingSchema: toDraft07JsonSchema(action.settingSchema),
       };
     });
   }

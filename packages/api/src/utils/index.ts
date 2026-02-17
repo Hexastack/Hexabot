@@ -48,6 +48,8 @@ export * from './helpers/safeRandom';
 
 export * from './helpers/svg';
 
+export * from './helpers/zod';
+
 export * from './pipes/populate.pipe';
 
 export * from './pipes/typeorm-search-filter.pipe';

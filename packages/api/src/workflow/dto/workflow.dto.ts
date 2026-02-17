@@ -5,7 +5,12 @@
  */
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PartialType,
+} from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -17,6 +22,8 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
+import { z } from 'zod';
 
 import { User } from '@/user/dto/user.dto';
 import { Validate } from '@/utils';
@@ -34,6 +41,8 @@ import { DirectionType, WorkflowType } from '../types';
 import { MemoryDefinition } from './memory-definition.dto';
 import { WorkflowVersion } from './workflow-version.dto';
 
+const WorkflowInputSchemaValidator = z.looseObject({});
+
 @Exclude()
 export class WorkflowStub extends BaseStub {
   @Expose()
@@ -47,6 +56,9 @@ export class WorkflowStub extends BaseStub {
 
   @Expose()
   schedule?: string | null;
+
+  @Expose()
+  inputSchema!: JsonSchema;
 
   @Expose()
   builtin!: boolean;
@@ -155,6 +167,15 @@ export class WorkflowCreateDto {
   schedule?: string | null;
 
   @ApiPropertyOptional({
+    description:
+      'JSON Schema for workflow input. Editable only for manual workflows.',
+    type: Object,
+  })
+  @IsOptional()
+  @Validate(WorkflowInputSchemaValidator)
+  inputSchema?: JsonSchema;
+
+  @ApiPropertyOptional({
     description: 'Indicates if the workflow is built-in',
     type: Boolean,
     default: false,
@@ -216,16 +237,9 @@ export type WorkflowTransformerDto = DtoTransformerConfig<{
   FullCls: typeof WorkflowFull;
 }>;
 
-export class WorkflowUpdateDto extends PartialType(WorkflowCreateDto) {
-  @ApiPropertyOptional({
-    description: 'Workflow trigger type',
-    enumName: 'WorkflowType',
-    enum: WorkflowType,
-  })
-  @IsOptional()
-  @IsEnum(WorkflowType)
-  type?: WorkflowType;
-
+export class WorkflowUpdateDto extends PartialType(
+  OmitType(WorkflowCreateDto, ['type'] as const),
+) {
   @ApiProperty({ description: 'Current version', type: String })
   @IsOptional()
   @IsUUIDv4({

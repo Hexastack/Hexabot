@@ -6,6 +6,7 @@
 
 import { User } from '@/user';
 import { UserProfileStub } from '@/user/dto/user-profile.dto';
+import { ScheduledWorkflowInput } from '@/workflow/schemas/workflow-input-schemas';
 
 import { WorkflowType } from '../types';
 
@@ -47,14 +48,31 @@ export class ScheduledEventWrapper extends TriggerEventWrapper<User> {
     private readonly payload: {
       schedule?: string | null;
       triggeredAt?: Date | string;
-      input?: Record<string, unknown>;
     } = {},
   ) {
     super();
   }
 
-  buildInput(): Record<string, unknown> {
-    return { ...(this.payload.input ?? {}) };
+  /**
+   * Normalize the trigger timestamp to an ISO-8601 string.
+   */
+  private normalizeTriggeredAt(): string | null {
+    const { triggeredAt } = this.payload;
+
+    if (!triggeredAt) {
+      return null;
+    }
+
+    return triggeredAt instanceof Date
+      ? triggeredAt.toISOString()
+      : triggeredAt;
+  }
+
+  buildInput(): ScheduledWorkflowInput {
+    return {
+      schedule: this.payload.schedule ?? null,
+      triggered_at: this.normalizeTriggeredAt(),
+    };
   }
 
   getMetadata(): Record<string, unknown> {
