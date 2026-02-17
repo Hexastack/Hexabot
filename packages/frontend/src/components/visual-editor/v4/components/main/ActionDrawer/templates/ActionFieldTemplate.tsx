@@ -33,6 +33,8 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
   const uiOptions = getUiOptions(uiSchema);
   const shouldShowOnlyWhenWebUrlButton =
     uiOptions?.showOnlyWhenWebUrlButton === true;
+  const shouldShowOnlyWhenPostbackButton =
+    uiOptions?.showOnlyWhenPostbackButton === true;
   const rootFormData = props.registry.formContext?.formData as
     | Record<string, unknown>
     | undefined;
@@ -48,13 +50,25 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
         typeof button === "object" &&
         (button as { type?: string }).type === "web_url",
     );
+  const hasPostbackButton =
+    Array.isArray(buttons) &&
+    buttons.some(
+      (button) =>
+        button &&
+        typeof button === "object" &&
+        (button as { type?: string }).type === "postback",
+    );
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
     uiOptions,
   );
 
-  if (hidden || (shouldShowOnlyWhenWebUrlButton && !hasWebUrlButton)) {
+  if (
+    hidden ||
+    (shouldShowOnlyWhenWebUrlButton && !hasWebUrlButton) ||
+    (shouldShowOnlyWhenPostbackButton && !hasPostbackButton)
+  ) {
     return <div style={{ display: "none" }}>{children}</div>;
   }
 

@@ -37,6 +37,7 @@ const listActionInputSchema = z
       ],
       fields: { title: '', subtitle: '', image_url: '' },
       contentType: '',
+      top_element_style: 'compact',
     }),
   });
 

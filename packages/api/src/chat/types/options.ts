@@ -39,12 +39,24 @@ export const contentOptionsSchema = z.object({
             showOnlyWhenWebUrlButton: true,
           },
         }),
-      action_title: z.string().optional().meta({
-        title: 'Action Title',
-      }),
-      action_payload: z.string().optional().meta({
-        title: 'Action Payload',
-      }),
+      action_title: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Action Title',
+          'ui:options': {
+            showOnlyWhenPostbackButton: true,
+          },
+        }),
+      action_payload: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Action Payload',
+          'ui:options': {
+            showOnlyWhenPostbackButton: true,
+          },
+        }),
     })
     .meta({ title: 'Fields' }),
   buttons: z.array(buttonSchema),
