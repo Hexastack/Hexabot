@@ -275,12 +275,16 @@ export class AgenticService {
     if (!workflow.definition) {
       throw new Error('Workflow definition is required to create a run');
     }
+    const initialContext = {
+      ...(workflow.definition.context ?? {}),
+      ...event.getContextData(),
+    };
     const run = await this.workflowRunService.create({
       workflow: workflow.id,
       workflowVersion: workflow.currentVersion?.id ?? null,
       triggeredBy: initiator.id,
       input: event.buildInput(),
-      context: workflow.definition.context ?? null,
+      context: Object.keys(initialContext).length > 0 ? initialContext : null,
       metadata: event.getMetadata(),
     });
     const populated = await this.workflowRunService.findOneAndPopulate(run.id);

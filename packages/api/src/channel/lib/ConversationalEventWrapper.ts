@@ -253,18 +253,15 @@ export default abstract class ConversationalEventWrapper<
 
   getContextData() {
     return {
-      messageId: this.getId(),
-      eventType: this.getEventType(),
-      messageType: this.getMessageType(),
+      channel: this.getChannelData(),
+      initiator: this.getInitiator(),
     };
   }
 
   buildInput(): Record<string, unknown> {
     const input: Record<string, unknown> = {
-      channel: this.getChannelData(),
       message_type: this.getMessageType(),
       event_type: this.getEventType(),
-      sender: this.getInitiator(),
       payload: this.getPayload(),
       message: this.getMessage(),
       text: this.getText(),
