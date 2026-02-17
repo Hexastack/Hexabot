@@ -124,5 +124,18 @@ describe(`Web event wrapper`, () => {
     expect(event.getPayload()).toEqual(expected.payload);
     expect(event.getMessage()).toEqual(expected.message);
     expect(event.getDeliveredMessages()).toEqual([]);
+    expect(event.buildInput()).not.toHaveProperty('channel');
+    expect(event.buildInput()).not.toHaveProperty('sender');
+    expect(event.getContextData()).toEqual(
+      expect.objectContaining({
+        channel: {
+          ...expected.channelData,
+          name: WEB_CHANNEL_NAME,
+        },
+      }),
+    );
+    expect(event.getContextData()).not.toHaveProperty('messageId');
+    expect(event.getContextData()).not.toHaveProperty('eventType');
+    expect(event.getContextData()).not.toHaveProperty('messageType');
   });
 });
