@@ -92,7 +92,7 @@ const UI_KEYS = [
   "ui:help",
 ] as const;
 
-export const extractUiSchema = (jsonSchema: any): UiSchema => {
+export const extractUiSchema = (jsonSchema?: RJSFSchema): UiSchema => {
   const ui: Record<string, any> = {};
 
   for (const k of UI_KEYS) {
@@ -103,14 +103,14 @@ export const extractUiSchema = (jsonSchema: any): UiSchema => {
     for (const [propName, propSchema] of Object.entries(
       jsonSchema.properties,
     )) {
-      const childUi = extractUiSchema(propSchema);
+      const childUi = extractUiSchema(propSchema as RJSFSchema);
 
       if (Object.keys(childUi).length) ui[propName] = childUi;
     }
   }
 
   if (jsonSchema?.type === "array" && jsonSchema?.items) {
-    const itemsUi = extractUiSchema(jsonSchema.items);
+    const itemsUi = extractUiSchema(jsonSchema.items as RJSFSchema);
 
     if (Object.keys(itemsUi).length) ui.items = itemsUi;
   }
