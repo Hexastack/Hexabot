@@ -124,8 +124,6 @@ const buildInputSchemaNode = (
 
   return fromJsonSchema(defaultSchema, "object");
 };
-const cloneSchemaNode = (schema: SchemaNodeForm): SchemaNodeForm =>
-  JSON.parse(JSON.stringify(schema)) as SchemaNodeForm;
 
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
@@ -192,27 +190,36 @@ export const WorkflowForm: FC<
     control,
     register,
     reset,
-    clearErrors,
-    getValues,
+    resetField,
     setValue,
+    getValues,
+    clearErrors,
     formState: { errors, dirtyFields },
     handleSubmit,
   } = form;
   const typeValue = (useWatch({ control, name: "type" }) ??
     defaultValues.type) as WorkflowType;
-  const inputSchemaValue = useWatch({
-    control,
-    name: "inputSchema",
-  }) as SchemaNodeForm | undefined;
   const isManualWorkflow = typeValue === WorkflowType.manual;
-  const previousTypeRef = useRef<WorkflowType>(defaultValues.type);
-  const manualInputSchemaDraftRef = useRef<SchemaNodeForm>(
-    buildInputSchemaNode(WorkflowType.manual, translateRef.current),
-  );
   const nameRegister = register("name", {
     required: t("message.name_is_required"),
     setValueAs: (value: string) => value?.trim(),
   });
+  const handleTypeChange = (nextType: WorkflowType) => {
+    const currentType = getValues("type");
+
+    if (currentType === nextType) {
+      return;
+    }
+
+    setValue("type", nextType, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    resetField("inputSchema", {
+      defaultValue: buildInputSchemaNode(nextType, translateRef.current),
+    });
+  };
   const scheduleRegister = register("schedule", {
     validate: (value) => {
       if (typeValue !== WorkflowType.scheduled) {
@@ -304,12 +311,6 @@ export const WorkflowForm: FC<
 
   useEffect(() => {
     reset(defaultValues);
-    previousTypeRef.current = defaultValues.type;
-    manualInputSchemaDraftRef.current = cloneSchemaNode(
-      defaultValues.type === WorkflowType.manual
-        ? defaultValues.inputSchema
-        : buildInputSchemaNode(WorkflowType.manual, translateRef.current),
-    );
   }, [defaultValues, reset]);
 
   useEffect(() => {
@@ -317,46 +318,6 @@ export const WorkflowForm: FC<
       clearErrors("schedule");
     }
   }, [clearErrors, typeValue]);
-
-  useEffect(() => {
-    if (typeValue !== WorkflowType.manual || !inputSchemaValue) {
-      return;
-    }
-
-    manualInputSchemaDraftRef.current = cloneSchemaNode(inputSchemaValue);
-  }, [inputSchemaValue, typeValue]);
-
-  useEffect(() => {
-    const previousType = previousTypeRef.current;
-
-    if (previousType === typeValue) {
-      return;
-    }
-
-    if (previousType === WorkflowType.manual) {
-      manualInputSchemaDraftRef.current = cloneSchemaNode(
-        getValues("inputSchema"),
-      );
-    }
-
-    if (typeValue === WorkflowType.manual) {
-      setValue("inputSchema", cloneSchemaNode(manualInputSchemaDraftRef.current), {
-        shouldDirty: true,
-        shouldTouch: false,
-      });
-    } else {
-      setValue(
-        "inputSchema",
-        buildInputSchemaNode(typeValue, translateRef.current),
-        {
-          shouldDirty: true,
-          shouldTouch: false,
-        },
-      );
-    }
-
-    previousTypeRef.current = typeValue;
-  }, [getValues, setValue, typeValue]);
 
   return (
     <FormProvider {...form}>
@@ -388,7 +349,7 @@ export const WorkflowForm: FC<
                           (field.value as WorkflowType) ?? defaultValues.type
                         }
                         onBlur={field.onBlur}
-                        onChange={field.onChange}
+                        onChange={handleTypeChange}
                         disabled={isEditing}
                         error={!!errors.type}
                         helperText={errors.type?.message}
@@ -465,6 +426,7 @@ export const WorkflowForm: FC<
               <ContentContainer>
                 <ContentItem>
                   <JsonSchemaObjectBuilder
+                    key={`input-schema-${typeValue}`}
                     name="inputSchema"
                     label={t("label.input_schema", {
                       defaultValue: "Input schema",
