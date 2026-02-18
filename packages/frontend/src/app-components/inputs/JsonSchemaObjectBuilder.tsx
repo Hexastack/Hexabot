@@ -49,7 +49,6 @@ export type SchemaNodeForm =
       type: "object";
       title?: string;
       description?: string;
-      additionalProperties?: boolean;
       properties: PropertyEntryForm[];
     }
   | {
@@ -85,7 +84,6 @@ export function makeDefaultSchemaNode(type: JsonSchemaType): SchemaNodeForm {
     case "object":
       return {
         type: "object",
-        additionalProperties: true,
         properties: [],
       };
     case "array":
@@ -126,11 +124,8 @@ export function toJsonSchema(node: SchemaNodeForm): Record<string, any> {
     base.properties = propsObj;
     if (required.length) base.required = required;
 
-    // JSON Schema default is "allowed", but we keep it explicit (clearer in UIs)
-    base.additionalProperties =
-      typeof node.additionalProperties === "boolean"
-        ? node.additionalProperties
-        : true;
+    // We enforce strict object schemas in the builder output.
+    base.additionalProperties = false;
   }
 
   if (node.type === "array") {
@@ -192,10 +187,6 @@ export function fromJsonSchema(
       type: "object",
       title,
       description,
-      additionalProperties:
-        typeof schema.additionalProperties === "boolean"
-          ? schema.additionalProperties
-          : true,
       properties: Object.entries(properties).map(([key, value]) => ({
         key,
         required: requiredSet.has(key),
@@ -287,14 +278,6 @@ function SchemaNodeEditor({
 
       if (!Array.isArray(props)) {
         setValue(`${name}.properties`, [], {
-          shouldDirty: false,
-          shouldTouch: false,
-        });
-      }
-      const ap = getValues(`${name}.additionalProperties`);
-
-      if (typeof ap !== "boolean") {
-        setValue(`${name}.additionalProperties`, true, {
           shouldDirty: false,
           shouldTouch: false,
         });
@@ -407,11 +390,11 @@ function SchemaNodeEditor({
                 />
               )}
             />
-
-            <Divider />
           </>
         )}
-
+        {["object", "array"].includes(effectiveType) && canGoDeeper && (
+          <Divider />
+        )}
         {/* Type-specific */}
         {effectiveType === "object" && canGoDeeper && (
           <ObjectSchemaBody
@@ -431,12 +414,11 @@ function SchemaNodeEditor({
           />
         )}
 
-        {!canGoDeeper &&
-          (effectiveType === "object" || effectiveType === "array") && (
-            <Typography variant="body2" color="text.secondary">
-              {t("message.max_depth_reached")}
-            </Typography>
-          )}
+        {!canGoDeeper && ["object", "array"].includes(effectiveType) && (
+          <Typography variant="body2" color="text.secondary">
+            {t("message.max_depth_reached")}
+          </Typography>
+        )}
       </Stack>
     </Paper>
   );
@@ -470,23 +452,6 @@ function ObjectSchemaBody({
 
   return (
     <Stack spacing={1.5}>
-      <Controller
-        control={control}
-        name={`${name}.additionalProperties`}
-        render={({ field }) => (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={Boolean(field.value)}
-                disabled={readOnly}
-                onChange={(_, checked) => field.onChange(checked)}
-              />
-            }
-            label={t("label.allow_additional_properties")}
-          />
-        )}
-      />
-
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle1">{t("label.properties")}</Typography>
         <Button
