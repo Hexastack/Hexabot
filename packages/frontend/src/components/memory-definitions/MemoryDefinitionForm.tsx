@@ -279,7 +279,8 @@ export const MemoryDefinitionForm: FC<
                   <JsonSchemaObjectBuilder
                     name="schema"
                     label={t("label.schema")}
-                    hideTitle
+                    hideTitle={true}
+                    hideDescription={false}
                   />
                   {schemaError?.message && (
                     <FormHelperText error>{schemaError.message}</FormHelperText>

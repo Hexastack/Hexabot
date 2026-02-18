@@ -7,6 +7,7 @@
 import CheckBoxOutlineBlankRoundedIcon from "@mui/icons-material/CheckBoxOutlineBlankRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
+import { inputBaseClasses } from "@mui/material/InputBase";
 import { outlinedInputClasses } from "@mui/material/OutlinedInput";
 import { alpha, Components, Theme } from "@mui/material/styles";
 import { toggleButtonClasses } from "@mui/material/ToggleButton";
@@ -336,6 +337,14 @@ export const inputsCustomizations: Components<Theme> = {
           transform: "none",
           marginBottom: theme.spacing(0.5),
         },
+        [
+          `&:has(.MuiInputBase-root.${inputBaseClasses.readOnly}) .MuiInputLabel-root.Mui-focused`
+        ]: {
+          color: (theme.vars || theme).palette.text.secondary,
+        },
+        "& .MuiInputLabel-root.Mui-focused.Mui-disabled": {
+          color: (theme.vars || theme).palette.text.disabled,
+        },
         "& .MuiOutlinedInput-notchedOutline": {
           top: 0,
           "& legend": {
@@ -372,12 +381,44 @@ export const inputsCustomizations: Components<Theme> = {
         borderColor: (theme.vars || theme).palette.divider,
         backgroundColor: (theme.vars || theme).palette.background.default,
         transition: "border 120ms ease-in",
+        [`&.${inputBaseClasses.disabled}, &.${inputBaseClasses.readOnly}`]: {
+          color: (theme.vars || theme).palette.text.secondary,
+          backgroundColor: (theme.vars || theme).palette.action.hover,
+        },
+        [
+          `&.${inputBaseClasses.disabled} .${outlinedInputClasses.input}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.input}`
+        ]: {
+          color: (theme.vars || theme).palette.text.secondary,
+          WebkitTextFillColor: (theme.vars || theme).palette.text.secondary,
+        },
+        [
+          `&.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`
+        ]: {
+          borderColor: (theme.vars || theme).palette.divider,
+        },
         "&:hover": {
           borderColor: gray[400],
         },
-        [`&.${outlinedInputClasses.focused}`]: {
-          // outline: `3px solid ${alpha(brand[500], 0.5)}`,
+        [
+          `&.${inputBaseClasses.disabled}:hover .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly}:hover .${outlinedInputClasses.notchedOutline}`
+        ]: {
+          borderColor: (theme.vars || theme).palette.divider,
+        },
+        [
+          `&.${outlinedInputClasses.focused}:not(.${inputBaseClasses.disabled}):not(.${inputBaseClasses.readOnly}) .${outlinedInputClasses.notchedOutline}`
+        ]: {
           borderColor: brand[400],
+        },
+        [
+          `&.${outlinedInputClasses.focused}.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`
+        ]: {
+          borderColor: (theme.vars || theme).palette.divider,
+          borderWidth: 1,
+        },
+        [
+          `&.${outlinedInputClasses.focused}.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}`
+        ]: {
+          borderWidth: 1,
         },
         ...theme.applyStyles("dark", {
           "&:hover": {

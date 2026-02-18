@@ -224,11 +224,15 @@ type SchemaNodeEditorProps = {
   label?: string;
   /** If set, type is enforced and selection is hidden. */
   forcedType?: JsonSchemaType;
-  /** Hide title input (useful when title is derived externally). */
+  /** Hide title input for the root schema node. */
   hideTitle?: boolean;
+  /** Hide description input and divider for the root schema node. */
+  hideDescription?: boolean;
   /** Prevent infinite/deep UIs */
   depth?: number;
   maxDepth?: number;
+  /** Display schema without allowing edits. */
+  readOnly?: boolean;
 };
 
 function SchemaNodeEditor({
@@ -237,7 +241,9 @@ function SchemaNodeEditor({
   forcedType,
   depth = 0,
   maxDepth = 6,
-  hideTitle = false,
+  hideTitle = true,
+  hideDescription = true,
+  readOnly = false,
 }: SchemaNodeEditorProps) {
   const { control, getValues, setValue } = useFormContext();
   const { t } = useTranslate();
@@ -267,7 +273,10 @@ function SchemaNodeEditor({
 
       next.title = (current as any).title;
       next.description = (current as any).description;
-      setValue(name, next, { shouldDirty: true, shouldTouch: true });
+      setValue(name, next, {
+        shouldDirty: !readOnly,
+        shouldTouch: !readOnly,
+      });
 
       return;
     }
@@ -306,8 +315,14 @@ function SchemaNodeEditor({
 
   const effectiveType = forcedType ?? type ?? "object";
   const showTypeSelect = !forcedType;
-  const showTitleInput = !hideTitle;
+  const isRootNode = depth === 0;
+  const showTitleInput = !(isRootNode && hideTitle);
+  const showDescriptionInput = !(isRootNode && hideDescription);
   const resetNodeToType = (nextType: JsonSchemaType) => {
+    if (readOnly) {
+      return;
+    }
+
     const prev = (getValues(name) ?? {}) as any;
     const next = makeDefaultSchemaNode(nextType) as any;
     // Keep human fields across type changes
@@ -319,15 +334,15 @@ function SchemaNodeEditor({
   const canGoDeeper = depth < maxDepth;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+    <Paper variant="spaced">
       <Stack spacing={1.5}>
         {(label || depth === 0) && (
-          <Typography variant={depth === 0 ? "h6" : "subtitle1"}>
+          <Typography variant={depth === 0 ? "h6" : "subtitle2"}>
             {label ?? t("label.schema", { defaultValue: "Schema" })}
           </Typography>
         )}
 
-        {/* Type + title + description */}
+        {/* Type + title */}
         {(showTypeSelect || showTitleInput) && (
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
             {showTypeSelect && (
@@ -339,6 +354,7 @@ function SchemaNodeEditor({
                     select
                     size="small"
                     label={t("label.type")}
+                    disabled={readOnly}
                     value={effectiveType}
                     onChange={(e) =>
                       resetNodeToType(e.target.value as JsonSchemaType)
@@ -365,6 +381,7 @@ function SchemaNodeEditor({
                     size="small"
                     label={t("label.title")}
                     value={field.value ?? ""}
+                    slotProps={{ input: { readOnly } }}
                   />
                 )}
               />
@@ -372,31 +389,46 @@ function SchemaNodeEditor({
           </Stack>
         )}
 
-        <Controller
-          control={control}
-          name={`${name}.description`}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              fullWidth
-              size="small"
-              label={t("label.description")}
-              multiline
-              minRows={2}
-              value={field.value ?? ""}
+        {showDescriptionInput && (
+          <>
+            <Controller
+              control={control}
+              name={`${name}.description`}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  size="small"
+                  label={t("label.description")}
+                  multiline
+                  minRows={2}
+                  value={field.value ?? ""}
+                  slotProps={{ input: { readOnly } }}
+                />
+              )}
             />
-          )}
-        />
 
-        <Divider />
+            <Divider />
+          </>
+        )}
 
         {/* Type-specific */}
         {effectiveType === "object" && canGoDeeper && (
-          <ObjectSchemaBody name={name} depth={depth} maxDepth={maxDepth} />
+          <ObjectSchemaBody
+            name={name}
+            depth={depth}
+            maxDepth={maxDepth}
+            readOnly={readOnly}
+          />
         )}
 
         {effectiveType === "array" && canGoDeeper && (
-          <ArraySchemaBody name={name} depth={depth} maxDepth={maxDepth} />
+          <ArraySchemaBody
+            name={name}
+            depth={depth}
+            maxDepth={maxDepth}
+            readOnly={readOnly}
+          />
         )}
 
         {!canGoDeeper &&
@@ -414,10 +446,12 @@ function ObjectSchemaBody({
   name,
   depth,
   maxDepth,
+  readOnly,
 }: {
   name: string;
   depth: number;
   maxDepth: number;
+  readOnly: boolean;
 }) {
   const { control, getValues } = useFormContext();
   const { t } = useTranslate();
@@ -444,6 +478,7 @@ function ObjectSchemaBody({
             control={
               <Switch
                 checked={Boolean(field.value)}
+                disabled={readOnly}
                 onChange={(_, checked) => field.onChange(checked)}
               />
             }
@@ -458,6 +493,7 @@ function ObjectSchemaBody({
           variant="contained"
           startIcon={<AddIcon />}
           onClick={addProperty}
+          disabled={readOnly}
           size="small"
         >
           {t("button.add_property")}
@@ -478,6 +514,7 @@ function ObjectSchemaBody({
               onRemove={() => remove(index)}
               depth={depth}
               maxDepth={maxDepth}
+              readOnly={readOnly}
               getAllProperties={() =>
                 (getValues(propertiesPath) as PropertyEntryForm[]) ?? []
               }
@@ -495,6 +532,7 @@ function PropertyEntryEditor({
   onRemove,
   depth,
   maxDepth,
+  readOnly,
   getAllProperties,
 }: {
   objectName: string;
@@ -502,6 +540,7 @@ function PropertyEntryEditor({
   onRemove: () => void;
   depth: number;
   maxDepth: number;
+  readOnly: boolean;
   getAllProperties: () => PropertyEntryForm[];
 }) {
   const { control, setValue } = useFormContext();
@@ -526,6 +565,10 @@ function PropertyEntryEditor({
   const summary = summaryKey + (schemaType ? ` : ${schemaType}` : "");
 
   React.useEffect(() => {
+    if (readOnly) {
+      return;
+    }
+
     const key = (keyValue ?? "").trim();
 
     if (!key) {
@@ -552,10 +595,10 @@ function PropertyEntryEditor({
     }
 
     previousKeyRef.current = keyValue;
-  }, [entryPath, keyValue, setValue, titleValue]);
+  }, [entryPath, keyValue, readOnly, setValue, titleValue]);
 
   return (
-    <Accordion variant="outlined" sx={{ borderRadius: 2 }}>
+    <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="subtitle2">{summary}</Typography>
       </AccordionSummary>
@@ -591,6 +634,7 @@ function PropertyEntryEditor({
                   size="small"
                   label={t("label.property_name")}
                   value={field.value ?? ""}
+                  slotProps={{ input: { readOnly } }}
                   error={Boolean(fieldState.error)}
                   helperText={fieldState.error?.message}
                 />
@@ -605,6 +649,7 @@ function PropertyEntryEditor({
                   control={
                     <Switch
                       checked={Boolean(field.value)}
+                      disabled={readOnly}
                       onChange={(_, checked) => field.onChange(checked)}
                     />
                   }
@@ -617,6 +662,7 @@ function PropertyEntryEditor({
 
             <IconButton
               onClick={onRemove}
+              disabled={readOnly}
               color="error"
               aria-label={t("button.remove_property")}
             >
@@ -631,6 +677,7 @@ function PropertyEntryEditor({
               label={t("label.property_schema")}
               depth={depth + 1}
               maxDepth={maxDepth}
+              readOnly={readOnly}
             />
           </Box>
         </Stack>
@@ -643,10 +690,12 @@ function ArraySchemaBody({
   name,
   depth,
   maxDepth,
+  readOnly,
 }: {
   name: string;
   depth: number;
   maxDepth: number;
+  readOnly: boolean;
 }) {
   const { t } = useTranslate();
 
@@ -658,6 +707,7 @@ function ArraySchemaBody({
         label={t("label.items_schema")}
         depth={depth + 1}
         maxDepth={maxDepth}
+        readOnly={readOnly}
       />
     </Stack>
   );
@@ -671,12 +721,16 @@ export function JsonSchemaObjectBuilder({
   name,
   label,
   maxDepth = 6,
-  hideTitle = false,
+  hideTitle = true,
+  hideDescription = true,
+  readOnly = false,
 }: {
   name: string;
   label?: string;
   maxDepth?: number;
   hideTitle?: boolean;
+  hideDescription?: boolean;
+  readOnly?: boolean;
 }) {
   const { t } = useTranslate();
   const resolvedLabel =
@@ -691,6 +745,8 @@ export function JsonSchemaObjectBuilder({
       depth={0}
       maxDepth={maxDepth}
       hideTitle={hideTitle}
+      hideDescription={hideDescription}
+      readOnly={readOnly}
     />
   );
 }

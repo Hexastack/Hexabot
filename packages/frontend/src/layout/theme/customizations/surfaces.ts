@@ -31,24 +31,13 @@ export const surfacesCustomizations: Components<Theme> = {
     },
     styleOverrides: {
       root: ({ theme }) => ({
-        padding: 4,
+        padding: 2,
         overflow: "clip",
-        backgroundColor: (theme.vars || theme).palette.background.default,
+        backgroundColor: (theme.vars || theme).palette.background.paper,
         border: "1px solid",
         borderColor: (theme.vars || theme).palette.divider,
         ":before": {
           backgroundColor: "transparent",
-        },
-        "&:not(:last-of-type)": {
-          borderBottom: "none",
-        },
-        "&:first-of-type": {
-          borderTopLeftRadius: (theme.vars || theme).shape.borderRadius,
-          borderTopRightRadius: (theme.vars || theme).shape.borderRadius,
-        },
-        "&:last-of-type": {
-          borderBottomLeftRadius: (theme.vars || theme).shape.borderRadius,
-          borderBottomRightRadius: (theme.vars || theme).shape.borderRadius,
         },
       }),
     },
@@ -61,14 +50,21 @@ export const surfacesCustomizations: Components<Theme> = {
         "&:hover": { backgroundColor: gray[100] },
         "&:focus-visible": { backgroundColor: "transparent" },
         ...theme.applyStyles("dark", {
-          "&:hover": { backgroundColor: gray[800] },
+          "&:hover": { backgroundColor: gray[600] },
         }),
+        ".MuiAccordionSummary-content": {
+          margin: 1,
+        },
+        ".MuiTypography-root": {
+          fontSize: "1rem",
+          lineHeight: 1,
+        },
       }),
     },
   },
   MuiAccordionDetails: {
     styleOverrides: {
-      root: { mb: 20, border: "none" },
+      root: { marginBottom: 4, border: "none" },
     },
   },
   MuiPaper: {

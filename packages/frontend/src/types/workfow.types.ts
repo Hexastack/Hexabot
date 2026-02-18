@@ -6,6 +6,7 @@
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
 import type { ResizeControlDirection } from "@xyflow/system";
+import type { JSONSchema7 as JsonSchema } from "json-schema";
 
 import { EntityType, Format } from "@/services/types";
 
@@ -25,6 +26,7 @@ export interface IWorkflowAttributes {
   builtin?: boolean;
   schedule?: string | null;
   type: WorkflowType;
+  inputSchema?: JsonSchema;
   zoom?: number;
   x?: number;
   y?: number;

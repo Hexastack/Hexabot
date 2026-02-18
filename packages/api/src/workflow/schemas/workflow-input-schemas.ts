@@ -16,12 +16,31 @@ import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 export const conversationalWorkflowInputZodSchema = z
   .object({
-    event_type: z.enum(StdEventType),
-    message_type: incomingMessageType.optional(),
-    payload: z.union([payloadSchema, z.string()]).optional(),
-    message: stdIncomingMessageSchema,
-    text: z.string(),
-    mid: z.string().optional(),
+    event_type: z.enum(StdEventType).meta({
+      title: 'Event type',
+      description: 'Type of event that triggered this workflow run.',
+    }),
+    message_type: incomingMessageType.optional().meta({
+      title: 'Message type',
+      description:
+        'Type of inbound message associated with the triggering event.',
+    }),
+    payload: z.union([payloadSchema, z.string()]).optional().meta({
+      title: 'Payload',
+      description: 'Raw event payload passed to the workflow.',
+    }),
+    message: stdIncomingMessageSchema.meta({
+      title: 'Message',
+      description: 'Full message object received from the channel.',
+    }),
+    text: z.string().meta({
+      title: 'Text',
+      description: 'Extracted text content from the inbound message.',
+    }),
+    mid: z.string().optional().meta({
+      title: 'Message ID',
+      description: 'Unique identifier of the inbound message.',
+    }),
   })
   .strict();
 
@@ -35,8 +54,14 @@ export const conversationalWorkflowInputJsonSchema = toDraft07JsonSchema(
 
 export const scheduledWorkflowInputZodSchema = z
   .object({
-    schedule: z.string().nullable(),
-    triggered_at: z.string().datetime({ offset: true }).nullable(),
+    schedule: z.string().nullable().meta({
+      title: 'Schedule',
+      description: 'Schedule expression that triggered this workflow run.',
+    }),
+    triggered_at: z.string().datetime({ offset: true }).nullable().meta({
+      title: 'Triggered At',
+      description: 'Date and time when this workflow run was triggered.',
+    }),
   })
   .strict();
 
