@@ -10,6 +10,7 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Chip,
   Divider,
   FormControlLabel,
   IconButton,
@@ -24,6 +25,7 @@ import {
   Plus as AddIcon,
   Trash2 as DeleteIcon,
   ChevronDown as ExpandMoreIcon,
+  Lock as LockIcon,
 } from "lucide-react";
 import * as React from "react";
 import {
@@ -320,38 +322,60 @@ function SchemaNodeEditor({
     <Paper variant="spaced">
       <Stack spacing={1.5}>
         {(label || depth === 0) && (
-          <Typography variant={depth === 0 ? "h6" : "subtitle2"}>
-            {label ?? t("label.schema", { defaultValue: "Schema" })}
-          </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            spacing={1}
+          >
+            <Typography variant={depth === 0 ? "h6" : "subtitle2"}>
+              {label ?? t("label.schema", { defaultValue: "Schema" })}
+            </Typography>
+            {readOnly && isRootNode && (
+              <Chip
+                size="small"
+                variant="outlined"
+                icon={<LockIcon size={14} />}
+                label={t("label.read_only", { defaultValue: "Read only" })}
+              />
+            )}
+          </Stack>
         )}
 
         {/* Type + title */}
         {(showTypeSelect || showTitleInput) && (
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            {showTypeSelect && (
-              <Controller
-                control={control}
-                name={`${name}.type`}
-                render={() => (
-                  <TextField
-                    select
-                    size="small"
-                    label={t("label.type")}
-                    disabled={readOnly}
-                    value={effectiveType}
-                    onChange={(e) =>
-                      resetNodeToType(e.target.value as JsonSchemaType)
-                    }
-                  >
-                    {TYPE_OPTIONS.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            )}
+            {showTypeSelect &&
+              (readOnly ? (
+                <TextField
+                  size="small"
+                  label={t("label.type")}
+                  value={effectiveType}
+                  slotProps={{ input: { readOnly: true } }}
+                />
+              ) : (
+                <Controller
+                  control={control}
+                  name={`${name}.type`}
+                  render={() => (
+                    <TextField
+                      select
+                      size="small"
+                      label={t("label.type")}
+                      value={effectiveType}
+                      onChange={(e) =>
+                        resetNodeToType(e.target.value as JsonSchemaType)
+                      }
+                    >
+                      {TYPE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              ))}
 
             {showTitleInput && (
               <Controller
@@ -454,15 +478,16 @@ function ObjectSchemaBody({
     <Stack spacing={1.5}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle1">{t("label.properties")}</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={addProperty}
-          disabled={readOnly}
-          size="small"
-        >
-          {t("button.add_property")}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={addProperty}
+            size="small"
+          >
+            {t("button.add_property")}
+          </Button>
+        )}
       </Stack>
 
       {fields.length === 0 ? (
@@ -606,33 +631,35 @@ function PropertyEntryEditor({
               )}
             />
 
-            <Controller
-              control={control}
-              name={`${entryPath}.required`}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={Boolean(field.value)}
-                      disabled={readOnly}
-                      onChange={(_, checked) => field.onChange(checked)}
-                    />
-                  }
-                  label={t("label.required")}
-                />
-              )}
-            />
+            {!readOnly && (
+              <Controller
+                control={control}
+                name={`${entryPath}.required`}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={Boolean(field.value)}
+                        onChange={(_, checked) => field.onChange(checked)}
+                      />
+                    }
+                    label={t("label.required")}
+                  />
+                )}
+              />
+            )}
 
             <Box sx={{ flex: 1 }} />
 
-            <IconButton
-              onClick={onRemove}
-              disabled={readOnly}
-              color="error"
-              aria-label={t("button.remove_property")}
-            >
-              <DeleteIcon />
-            </IconButton>
+            {!readOnly && (
+              <IconButton
+                onClick={onRemove}
+                color="error"
+                aria-label={t("button.remove_property")}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
           </Stack>
 
           {/* Property schema editor (type/title/description + nested if object/array) */}
@@ -703,15 +730,17 @@ export function JsonSchemaObjectBuilder({
     t("label.json_schema_object", { defaultValue: "JSON Schema (Object)" });
 
   return (
-    <SchemaNodeEditor
-      name={name}
-      label={resolvedLabel}
-      forcedType="object"
-      depth={0}
-      maxDepth={maxDepth}
-      hideTitle={hideTitle}
-      hideDescription={hideDescription}
-      readOnly={readOnly}
-    />
+    <Stack spacing={1}>
+      <SchemaNodeEditor
+        name={name}
+        label={resolvedLabel}
+        forcedType="object"
+        depth={0}
+        maxDepth={maxDepth}
+        hideTitle={hideTitle}
+        hideDescription={hideDescription}
+        readOnly={readOnly}
+      />
+    </Stack>
   );
 }
