@@ -31,10 +31,14 @@ import {
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import {
+  conversationalWorkflowInputJsonSchema,
+  scheduledWorkflowInputJsonSchema,
+} from '@/workflow/schemas/workflow-input-schemas';
 
 import { ManualWorkflowContext } from '../contexts/manual-workflow.context';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
-import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
@@ -89,6 +93,7 @@ describe('WorkflowController (TypeORM)', () => {
       description: 'Workflow controller test definition',
       type: WorkflowType.conversational,
       schedule: null,
+      inputSchema: conversationalWorkflowInputJsonSchema,
       memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
@@ -287,6 +292,24 @@ describe('WorkflowController (TypeORM)', () => {
       );
     });
 
+    it('rejects workflow type changes', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      await expect(
+        workflowController.updateOne(created.id, {
+          type: WorkflowType.manual,
+        } as WorkflowUpdateDto & {
+          type: WorkflowType;
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('Workflow type cannot be changed once created'),
+      );
+    });
+
     it('throws NotFoundException when attempting to update a missing workflow', async () => {
       const id = randomUUID();
       const updateSpy = jest.spyOn(workflowService, 'updateOne');
@@ -338,6 +361,7 @@ describe('WorkflowController (TypeORM)', () => {
         ...buildWorkflowPayload(),
         type: WorkflowType.scheduled,
         schedule: '*/5 * * * * *',
+        inputSchema: scheduledWorkflowInputJsonSchema,
         createdBy: userFixtureIds.admin,
       });
       createdWorkflowIds.add(scheduled.id);
@@ -348,18 +372,23 @@ describe('WorkflowController (TypeORM)', () => {
         session: { passport: { user: { id: userId } } },
       } as any);
       expect(spyAgenticService).toHaveBeenCalledTimes(1);
-      spyAgenticService.mockImplementation(async (eventArg, workflowArg) => {
-        expect(workflowArg?.id).toEqual(scheduled.id);
-        expect(eventArg).toBeInstanceOf(ManualEventWrapper);
-        expect(eventArg.buildInput()).toEqual(input);
-        expect(eventArg.getInitiator()?.id).toEqual(userId);
-        expect(eventArg.getMetadata()).toEqual(
-          expect.objectContaining({
-            trigger: WorkflowType.manual,
-            initiated_by: userId,
-          }),
-        );
-      });
+      const [eventArg, workflowArg] = spyAgenticService.mock.calls[0];
+      expect(workflowArg?.id).toEqual(scheduled.id);
+      expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
+      expect(eventArg.buildInput()).toEqual(
+        expect.objectContaining({
+          schedule: scheduled.schedule,
+          triggered_at: expect.any(String),
+        }),
+      );
+      expect(eventArg.getInitiator()?.id).toEqual(userId);
+      expect(eventArg.getMetadata()).toEqual(
+        expect.objectContaining({
+          trigger: WorkflowType.scheduled,
+          schedule: scheduled.schedule,
+          triggered_at: expect.any(Date),
+        }),
+      );
 
       expect(result).toEqual({ accepted: true });
     });
@@ -388,6 +417,7 @@ describe('WorkflowController (TypeORM)', () => {
         ...buildWorkflowPayload(),
         type: WorkflowType.scheduled,
         schedule: '*/5 * * * * *',
+        inputSchema: scheduledWorkflowInputJsonSchema,
         createdBy: userFixtureIds.admin,
       });
       createdWorkflowIds.add(scheduled.id);

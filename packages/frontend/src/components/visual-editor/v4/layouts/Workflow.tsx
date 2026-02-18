@@ -314,21 +314,29 @@ export const Workflow = () => {
     const baseDefinition = createBaseDefinition();
     const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
 
-    dialogs.open(WorkflowFormDialog, {
-      defaultValues: null,
-      presetValues: {
-        definition: baseDefinition,
-        definitionYaml: baseYaml,
-        onCreated: (createdWorkflow) => {
-          updateWorkflowURL(createdWorkflow.id);
+    dialogs.open(
+      WorkflowFormDialog,
+      {
+        defaultValues: null,
+        presetValues: {
+          definition: baseDefinition,
+          definitionYaml: baseYaml,
+          onCreated: (createdWorkflow) => {
+            updateWorkflowURL(createdWorkflow.id);
+          },
         },
       },
-    });
+      { maxWidth: "lg" },
+    );
   };
   const handleEditWorkflow = (workflowToEdit: IWorkflow) => {
-    dialogs.open(WorkflowFormDialog, {
-      defaultValues: workflowToEdit,
-    });
+    dialogs.open(
+      WorkflowFormDialog,
+      {
+        defaultValues: workflowToEdit,
+      },
+      { maxWidth: "lg" },
+    );
   };
   const handleOpenMenu = (
     event: ReactMouseEvent<HTMLElement>,

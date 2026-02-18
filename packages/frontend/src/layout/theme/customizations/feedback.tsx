@@ -86,9 +86,6 @@ export const feedbackCustomizations: Components<Theme> = {
   },
   MuiTooltip: {
     styleOverrides: {
-      tooltip: {
-        paddingBottom: 0,
-      },
       popper: ({ theme }) => ({
         [`&.${ZOOM_AWARE_TOOLTIP_POPPER_CLASSNAME}`]: {
           pointerEvents: "none",

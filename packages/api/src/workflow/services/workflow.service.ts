@@ -5,9 +5,15 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
+import { FindOneOptions } from 'typeorm';
 
+import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   Room,
@@ -20,7 +26,12 @@ import {
   WebsocketGateway,
 } from '@/websocket';
 
-import { WorkflowDtoConfig, WorkflowFull } from '../dto/workflow.dto';
+import {
+  Workflow,
+  WorkflowDtoConfig,
+  WorkflowFull,
+  WorkflowUpdateDto,
+} from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
@@ -55,6 +66,36 @@ export class WorkflowService extends BaseOrmService<
     });
 
     return latest ?? null;
+  }
+
+  /**
+   * Update a workflow while enforcing immutability of its trigger type.
+   */
+  async updateOne(
+    idOrOptions: string | FindOneOptions<WorkflowOrmEntity>,
+    payload: WorkflowUpdateDto,
+    options?: UpdateOneOptions,
+  ): Promise<Workflow> {
+    const workflow = await this.findOne(idOrOptions);
+    const { type, ...rest } = payload as WorkflowUpdateDto & {
+      type?: WorkflowType;
+    };
+
+    if (!workflow) {
+      return await super.updateOne(idOrOptions, payload, options);
+    }
+
+    if (type !== undefined && type !== workflow.type) {
+      throw new BadRequestException(
+        'Workflow type cannot be changed once created',
+      );
+    }
+
+    return await super.updateOne(
+      idOrOptions,
+      rest as WorkflowUpdateDto,
+      options,
+    );
   }
 
   /**

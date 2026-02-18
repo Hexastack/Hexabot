@@ -8,7 +8,9 @@ import {
   WorkflowDefinition,
   Workflow as WorkflowHelper,
 } from '@hexabot-ai/agentic';
+import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 
 import {
   installUserFixturesTypeOrm,
@@ -16,8 +18,12 @@ import {
 } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import {
+  conversationalWorkflowInputJsonSchema,
+  scheduledWorkflowInputJsonSchema,
+} from '@/workflow/schemas/workflow-input-schemas';
 
-import { Workflow } from '../dto/workflow.dto';
+import { Workflow, WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType, WorkflowVersionAction } from '../types';
 
@@ -120,6 +126,7 @@ describe('WorkflowService (TypeORM)', () => {
       description: workflow.description,
       type: WorkflowType.conversational,
       schedule: null,
+      inputSchema: conversationalWorkflowInputJsonSchema,
     });
   });
 
@@ -142,6 +149,86 @@ describe('WorkflowService (TypeORM)', () => {
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();
+  });
+
+  it('keeps the fixed conversational input schema on create', async () => {
+    const customSchema: JsonSchema = {
+      type: 'object',
+      properties: {
+        custom: { type: 'string' },
+      },
+    };
+    const created = await workflowService.create({
+      name: `workflow_with_custom_schema_${Date.now()}`,
+      description: 'Should still use fixed conversational schema',
+      type: WorkflowType.conversational,
+      schedule: null,
+      inputSchema: customSchema,
+      createdBy: creatorId,
+      memoryDefinitions: [],
+    });
+
+    expect(created.inputSchema).toEqual(conversationalWorkflowInputJsonSchema);
+  });
+
+  it('allows custom manual schema updates', async () => {
+    const manualSchema: JsonSchema = {
+      type: 'object',
+      properties: {
+        amount: { type: 'number' },
+      },
+      required: ['amount'],
+    };
+    const created = await workflowService.create({
+      name: `manual_workflow_${Date.now()}`,
+      description: 'Manual workflow schema test',
+      type: WorkflowType.manual,
+      inputSchema: manualSchema,
+      schedule: null,
+      createdBy: creatorId,
+      memoryDefinitions: [],
+    });
+
+    expect(created.inputSchema).toEqual(manualSchema);
+
+    const updatedManual = await workflowService.updateOne(created.id, {
+      inputSchema: {
+        type: 'object',
+        properties: {
+          city: { type: 'string' },
+        },
+        required: ['city'],
+      },
+    });
+    expect(updatedManual.inputSchema).toEqual({
+      type: 'object',
+      properties: {
+        city: { type: 'string' },
+      },
+      required: ['city'],
+    });
+  });
+
+  it('rejects workflow type changes after creation', async () => {
+    const scheduled = await workflowService.create({
+      name: `scheduled_to_manual_${Date.now()}`,
+      description: 'Switch scheduled workflow to manual',
+      type: WorkflowType.scheduled,
+      schedule: '*/10 * * * * *',
+      createdBy: creatorId,
+      memoryDefinitions: [],
+    });
+
+    expect(scheduled.inputSchema).toEqual(scheduledWorkflowInputJsonSchema);
+
+    await expect(
+      workflowService.updateOne(scheduled.id, {
+        type: WorkflowType.manual,
+        schedule: null,
+      } as WorkflowUpdateDto & { type: WorkflowType }),
+    ).rejects.toThrow(
+      new BadRequestException('Workflow type cannot be changed once created'),
+    );
   });
 
   it('returns the latest workflow when one exists', async () => {

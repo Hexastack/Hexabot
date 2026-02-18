@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { BadRequestException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -141,6 +142,12 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
         triggered_at: expect.any(Date),
       }),
     );
+    expect(eventArg.buildInput()).toEqual(
+      expect.objectContaining({
+        schedule: workflow.schedule,
+        triggered_at: expect.any(String),
+      }),
+    );
     expect(eventArg.getInitiator()).toEqual(
       expect.objectContaining({ id: workflow.createdBy }),
     );
@@ -202,15 +209,19 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     expect(replacementJob).not.toBe(existingJob);
   });
 
-  it('removes cron jobs when workflows change away from scheduled', async () => {
+  it('rejects workflow type changes and keeps scheduled cron jobs', async () => {
     await schedulerService.onModuleInit();
     expect(schedulerRegistry.getCronJobs().size).toBe(1);
 
-    await workflowService.updateOne(workflow.id, {
-      type: WorkflowType.conversational,
-    });
+    await expect(
+      workflowService.updateOne(workflow.id, {
+        type: WorkflowType.conversational,
+      } as any),
+    ).rejects.toThrow(
+      new BadRequestException('Workflow type cannot be changed once created'),
+    );
 
-    expect(schedulerRegistry.getCronJobs().size).toBe(0);
+    expect(schedulerRegistry.getCronJobs().size).toBe(1);
   });
 
   it('unregisters cron jobs when workflows are deleted', async () => {

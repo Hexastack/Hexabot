@@ -14,6 +14,7 @@ import {
 } from '@/chat/types/message';
 import { Payload } from '@/chat/types/quick-reply';
 import { TriggerEventWrapper } from '@/workflow/lib/trigger-event-wrapper';
+import { ConversationalWorkflowInput } from '@/workflow/schemas/workflow-input-schemas';
 import { WorkflowType } from '@/workflow/types';
 
 import { ChannelName } from '../types';
@@ -258,8 +259,8 @@ export default abstract class ConversationalEventWrapper<
     };
   }
 
-  buildInput(): Record<string, unknown> {
-    const input: Record<string, unknown> = {
+  buildInput(): ConversationalWorkflowInput {
+    const input: ConversationalWorkflowInput = {
       message_type: this.getMessageType(),
       event_type: this.getEventType(),
       payload: this.getPayload(),

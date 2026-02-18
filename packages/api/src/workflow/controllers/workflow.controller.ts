@@ -37,7 +37,10 @@ import {
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
-import { ManualEventWrapper } from '../lib/trigger-event-wrapper';
+import {
+  ManualEventWrapper,
+  ScheduledEventWrapper,
+} from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
@@ -198,7 +201,7 @@ export class WorkflowController extends BaseOrmController<
    * Manually triggers a workflow run for manual or scheduled workflows.
    *
    * @param id - The workflow ID to execute.
-   * @param input - Optional workflow input payload.
+   * @param input - Optional workflow input payload (manual workflows only).
    * @param req - Express request containing the authenticated session.
    */
   @Post(':id/run')
@@ -230,7 +233,13 @@ export class WorkflowController extends BaseOrmController<
       );
     }
 
-    const event = new ManualEventWrapper(input ?? {}, userId);
+    const event =
+      workflow.type === WorkflowType.scheduled
+        ? new ScheduledEventWrapper({
+            schedule: workflow.schedule ?? null,
+            triggeredAt: new Date(),
+          })
+        : new ManualEventWrapper(input ?? {}, userId);
     const initiator = await this.userService.findOne(userId);
     event.setInitiator(initiator!);
 
