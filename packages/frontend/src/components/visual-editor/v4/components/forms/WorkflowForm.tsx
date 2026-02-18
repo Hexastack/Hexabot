@@ -5,15 +5,7 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
-import {
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
 import { FC, Fragment, useEffect, useMemo, useRef } from "react";
@@ -27,8 +19,6 @@ import {
   fromJsonSchema,
   toJsonSchema,
 } from "@/app-components/inputs/JsonSchemaObjectBuilder";
-import { WorkflowTypeBadge } from "@/app-components/workflow/WorkflowTypeBadge";
-import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -41,6 +31,8 @@ import {
   WorkflowType,
   type IWorkflow,
 } from "@/types/workfow.types";
+
+import { WorkflowTypeSelector } from "./WorkflowTypeSelector";
 
 type TranslateFn = ReturnType<typeof useTranslate>["t"];
 
@@ -134,20 +126,6 @@ const buildInputSchemaNode = (
 };
 const cloneSchemaNode = (schema: SchemaNodeForm): SchemaNodeForm =>
   JSON.parse(JSON.stringify(schema)) as SchemaNodeForm;
-const createWorkflowBadgeStub = (type: WorkflowType): IWorkflow => ({
-  id: `workflow-type-${type}`,
-  createdAt: new Date(0),
-  updatedAt: new Date(0),
-  format: Format.BASIC,
-  name: "",
-  description: null,
-  schedule: null,
-  type,
-  memoryDefinitions: [],
-  runAfterMs: 0,
-  currentVersion: null,
-  publishedVersion: null,
-});
 
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
@@ -404,104 +382,17 @@ export const WorkflowForm: FC<
                       }),
                     }}
                     render={({ field }) => (
-                      <FormControl
-                        component="fieldset"
-                        required
+                      <WorkflowTypeSelector
+                        name={field.name}
+                        value={
+                          (field.value as WorkflowType) ?? defaultValues.type
+                        }
+                        onBlur={field.onBlur}
+                        onChange={field.onChange}
                         disabled={isEditing}
                         error={!!errors.type}
-                      >
-                        <RadioGroup
-                          row
-                          name={field.name}
-                          value={field.value}
-                          onBlur={field.onBlur}
-                          sx={{ gap: 1 }}
-                          onChange={(_event, value) =>
-                            field.onChange(value as WorkflowType)
-                          }
-                        >
-                          {Object.values(WorkflowType).map((type) => {
-                            const typeKey = String(type);
-                            const typeInfo = WORKFLOW_TYPES[type];
-                            const badgeWorkflow = workflow
-                              ? { ...workflow, type }
-                              : createWorkflowBadgeStub(type);
-                            const typeLabel = typeInfo
-                              ? t(typeInfo.labelKey)
-                              : t(`label.${typeKey}`, {
-                                  defaultValue:
-                                    typeKey.charAt(0).toUpperCase() +
-                                    typeKey.slice(1),
-                                });
-                            const isSelected = typeValue === type;
-
-                            return (
-                              <FormControlLabel
-                                key={typeKey}
-                                value={type}
-                                control={
-                                  <Radio
-                                    disableRipple
-                                    sx={{
-                                      p: 0,
-                                      "&.Mui-disabled": {
-                                        opacity: 1,
-                                      },
-                                    }}
-                                    icon={
-                                      <WorkflowTypeBadge
-                                        workflow={badgeWorkflow}
-                                        width="32px"
-                                        height="32px"
-                                        padding="4px"
-                                      />
-                                    }
-                                    checkedIcon={
-                                      <WorkflowTypeBadge
-                                        workflow={badgeWorkflow}
-                                        selected={isSelected}
-                                        width="32px"
-                                        height="32px"
-                                        padding="4px"
-                                      />
-                                    }
-                                  />
-                                }
-                                label={
-                                  <Typography
-                                    variant="body2"
-                                    component="span"
-                                    fontWeight={500}
-                                    color={
-                                      isSelected ? "primary" : "textPrimary"
-                                    }
-                                  >
-                                    {typeLabel}
-                                  </Typography>
-                                }
-                                sx={{
-                                  gap: 1,
-                                  ml: 0,
-                                  mr: 0,
-                                  "&.Mui-disabled": {
-                                    opacity: 0.8,
-                                    cursor: "not-allowed",
-                                  },
-                                  "&.Mui-disabled .MuiTypography-root": {
-                                    color: "text.disabled",
-                                  },
-                                  "&.Mui-disabled .MuiRadio-root": {
-                                    cursor: "not-allowed",
-                                  },
-                                }}
-                              />
-                            );
-                          })}
-                        </RadioGroup>
-                        {errors.type ? (
-                          <FormHelperText>{errors.type.message}</FormHelperText>
-                        ) : null}
-                      </FormControl>
+                        helperText={errors.type?.message}
+                      />
                     )}
                   />
                 </ContentItem>
@@ -572,19 +463,6 @@ export const WorkflowForm: FC<
 
             <Grid size={{ xs: 12, md: 7 }}>
               <ContentContainer>
-                {!isManualWorkflow && (
-                  <ContentItem pt={0}>
-                    <Typography variant="caption" color="text.secondary">
-                      {t(
-                        "message.input_schema_readonly_for_non_manual_workflows",
-                        {
-                          defaultValue:
-                            "Input schema is read-only for conversational and scheduled workflows.",
-                        },
-                      )}
-                    </Typography>
-                  </ContentItem>
-                )}
                 <ContentItem>
                   <JsonSchemaObjectBuilder
                     name="inputSchema"
