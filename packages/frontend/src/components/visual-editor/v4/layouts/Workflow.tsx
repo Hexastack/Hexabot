@@ -9,6 +9,7 @@ import { Box, Button, styled } from "@mui/material";
 import {
   Background,
   Controls,
+  useNodesInitialized,
   useReactFlow,
 } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
@@ -90,7 +91,8 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
 }));
 
 export const Workflow = () => {
-  const { setViewport } = useReactFlow();
+  const { setViewport, fitView } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
   const { t } = useTranslate();
   const {
     workflow,
@@ -126,6 +128,8 @@ export const Workflow = () => {
     edges: [],
   });
   const isEmptyWorkflow = graph.nodes.length < 3;
+  const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
+    useState(false);
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
@@ -179,9 +183,12 @@ export const Workflow = () => {
   );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
+      if (isEmptyWorkflow) {
+        setShouldCenterAfterFirstInsert(true);
+      }
       handleInsert(insertType, null);
     },
-    [handleInsert],
+    [handleInsert, isEmptyWorkflow],
   );
   const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
     (anchorEl, insertPath) => {
@@ -272,6 +279,18 @@ export const Workflow = () => {
       setActionsDrawerOpen(false);
     }
   }, [isEmptyWorkflow]);
+  useEffect(() => {
+    if (
+      isEmptyWorkflow ||
+      !shouldCenterAfterFirstInsert ||
+      !nodesInitialized
+    ) {
+      return;
+    }
+
+    void fitView({ duration: 200, interpolate: "smooth" });
+    setShouldCenterAfterFirstInsert(false);
+  }, [fitView, isEmptyWorkflow, nodesInitialized, shouldCenterAfterFirstInsert]);
   const edgesWithHandlers = useMemo(() => {
     return graph.edges.map((edge) => {
       const edgeData = edge.data as EdgeInsertData | undefined;
