@@ -150,10 +150,7 @@ export const Workflow = () => {
     !definition || isDefinitionSaving || isCurrentVersionPublished;
   const tasks = definition?.tasks;
   const handleInsert = useCallback(
-    (
-      insertType: EdgeInsertType = "step",
-      insertPath?: FlowStepPath | null,
-    ) => {
+    (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
       if (insertType === StepType.Conditional) {
         setPendingInsertPath(null);
         addConditionalStep(insertPath);
@@ -280,17 +277,18 @@ export const Workflow = () => {
     }
   }, [isEmptyWorkflow]);
   useEffect(() => {
-    if (
-      isEmptyWorkflow ||
-      !shouldCenterAfterFirstInsert ||
-      !nodesInitialized
-    ) {
+    if (isEmptyWorkflow || !shouldCenterAfterFirstInsert || !nodesInitialized) {
       return;
     }
 
-    void fitView({ duration: 200, interpolate: "smooth" });
+    fitView();
     setShouldCenterAfterFirstInsert(false);
-  }, [fitView, isEmptyWorkflow, nodesInitialized, shouldCenterAfterFirstInsert]);
+  }, [
+    fitView,
+    isEmptyWorkflow,
+    nodesInitialized,
+    shouldCenterAfterFirstInsert,
+  ]);
   const edgesWithHandlers = useMemo(() => {
     return graph.edges.map((edge) => {
       const edgeData = edge.data as EdgeInsertData | undefined;
@@ -414,9 +412,7 @@ export const Workflow = () => {
 
           <Background size={2} />
           {isEmptyWorkflow && (
-            <WorkflowEmptyState
-              onInsert={handleRootInsert}
-            />
+            <WorkflowEmptyState onInsert={handleRootInsert} />
           )}
         </ReactFlowWrapper>
         {workflow && (
