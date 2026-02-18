@@ -7,6 +7,8 @@
 import { FormControl } from "@mui/material";
 import { getTemplate, getUiOptions, type FieldTemplateProps } from "@rjsf/utils";
 
+import { isActionFieldHidden } from "./action-field-template.utils";
+
 export const ActionFieldTemplate = (props: FieldTemplateProps) => {
   const {
     id,
@@ -31,44 +33,21 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     registry,
   } = props;
   const uiOptions = getUiOptions(uiSchema);
-  const shouldShowOnlyWhenWebUrlButton =
-    uiOptions?.showOnlyWhenWebUrlButton === true;
-  const shouldShowOnlyWhenPostbackButton =
-    uiOptions?.showOnlyWhenPostbackButton === true;
-  const rootFormData = props.registry.formContext?.formData as
+  const rootFormData = registry.formContext?.formData as
     | Record<string, unknown>
     | undefined;
-  const contentNode =
-    (rootFormData?.content as Record<string, unknown> | undefined) ??
-    rootFormData;
-  const buttons = contentNode?.buttons;
-  const hasWebUrlButton =
-    Array.isArray(buttons) &&
-    buttons.some(
-      (button) =>
-        button &&
-        typeof button === "object" &&
-        (button as { type?: string }).type === "web_url",
-    );
-  const hasPostbackButton =
-    Array.isArray(buttons) &&
-    buttons.some(
-      (button) =>
-        button &&
-        typeof button === "object" &&
-        (button as { type?: string }).type === "postback",
-    );
+  const isHidden = isActionFieldHidden({
+    hidden,
+    uiOptions,
+    formData: rootFormData,
+  });
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
     uiOptions,
   );
 
-  if (
-    hidden ||
-    (shouldShowOnlyWhenWebUrlButton && !hasWebUrlButton) ||
-    (shouldShowOnlyWhenPostbackButton && !hasPostbackButton)
-  ) {
+  if (isHidden) {
     return <div style={{ display: "none" }}>{children}</div>;
   }
 

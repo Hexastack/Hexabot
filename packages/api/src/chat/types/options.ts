@@ -20,23 +20,60 @@ export const contentOptionsSchema = z.object({
     .object({
       title: z.string().meta({
         title: 'Title',
-        'ui:field': 'ContentAutoCompleteField',
+        'ui:field': 'AutoCompleteField',
+        'ui:options': {
+          entity: 'ContentType',
+          valueKey: 'name',
+          idFormPath: 'content.contentType',
+          nestedArrayField: 'fields',
+          nestedArrayItemField: 'type',
+          nestedArrayItemValue: 'text',
+        },
       }),
-      subtitle: z.string().optional().meta({
-        title: 'Subtitle',
-        'ui:field': 'ContentAutoCompleteField',
-      }),
-      image_url: z.string().optional().meta({
-        title: 'Image URL Field',
-        'ui:field': 'ContentAutoCompleteField',
-      }),
+      subtitle: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Subtitle',
+          'ui:field': 'AutoCompleteField',
+          'ui:options': {
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'text',
+          },
+        }),
+      image_url: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Image URL Field',
+          'ui:field': 'AutoCompleteField',
+          'ui:options': {
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'file',
+          },
+        }),
       url: z
         .string()
         .optional()
         .meta({
           title: 'URL',
+          'ui:field': 'AutoCompleteField',
           'ui:options': {
             showOnlyWhenWebUrlButton: true,
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'url',
           },
         }),
       action_title: z

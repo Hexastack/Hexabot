@@ -46,23 +46,17 @@ const listActionInputSchema = z
 
 type ListActionInput = z.infer<typeof listActionInputSchema>;
 
-const listActionSettingsSchema = messageActionSettingsSchema
+const baseListActionSettingsSchema = messageActionSettingsSchema
   .omit({ typing: true })
   .extend({
-    skip: z.int().nonnegative().prefault(0),
-    limit: z.number(),
-  })
-  .default({
-    skip: 0,
-    limit: 1,
-    retries: {
-      max_attempts: 3,
-      backoff_ms: 25,
-      max_delay_ms: 10000,
-      jitter: 0,
-      multiplier: 1,
-    },
+    skip: z.int().min(0).max(100).nonnegative().prefault(0).default(0),
+    limit: z.number().min(1).max(100).default(2),
   });
+const listActionSettingsSchema = baseListActionSettingsSchema.default(() => ({
+  ...baseListActionSettingsSchema.parse({}),
+  skip: 0,
+  limit: 1,
+}));
 type ListActionSettings = z.infer<typeof listActionSettingsSchema>;
 
 @Injectable()
@@ -84,7 +78,6 @@ export class SendListAction extends MessageAction<
     );
   }
 
-  // //TODO
   protected resolveMessageOptions(input: ListActionInput) {
     const options = super.resolveMessageOptions(input) ?? {};
 
