@@ -7,6 +7,8 @@
 import { FormControl } from "@mui/material";
 import { getTemplate, getUiOptions, type FieldTemplateProps } from "@rjsf/utils";
 
+import { isActionFieldHidden } from "./action-field-template.utils";
+
 export const ActionFieldTemplate = (props: FieldTemplateProps) => {
   const {
     id,
@@ -31,13 +33,21 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     registry,
   } = props;
   const uiOptions = getUiOptions(uiSchema);
+  const rootFormData = registry.formContext?.formData as
+    | Record<string, unknown>
+    | undefined;
+  const isHidden = isActionFieldHidden({
+    hidden,
+    uiOptions,
+    formData: rootFormData,
+  });
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
     uiOptions,
   );
 
-  if (hidden) {
+  if (isHidden) {
     return <div style={{ display: "none" }}>{children}</div>;
   }
 

@@ -56,6 +56,7 @@ export const ActionSchemaPanel = ({
           schema={schema as RJSFSchema}
           validator={validator}
           formData={formData}
+          formContext={{ formData }}
           onChange={(event) =>
             onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
           }

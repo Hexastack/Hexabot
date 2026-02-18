@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { IEntityMapTypes } from "@/types/base.types";
 import { UseMutationOptions } from "@/types/tanstack.types";
 
 import { RouteParams } from "./api.class";
@@ -113,3 +114,15 @@ export type TGetQueryKey = {
 };
 
 export type Flatten<T> = T extends any[] ? T[number] : T;
+
+export const normalizeEntity = (entity: string): keyof IEntityMapTypes => {
+  const entityTypeKey = Object.keys(EntityType).find(
+    (key) => EntityType[key] === entity,
+  );
+
+  if (!entityTypeKey) {
+    throw `Not existing entity: ${entity}`;
+  }
+
+  return EntityType[entityTypeKey];
+};

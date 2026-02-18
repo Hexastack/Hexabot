@@ -9,20 +9,107 @@ import { z } from 'zod';
 import { buttonSchema } from './button';
 
 export const contentOptionsSchema = z.object({
-  display: z.enum(['list', 'carousel']),
-  fields: z.object({
-    title: z.string(),
-    subtitle: z.string().nullable(),
-    image_url: z.string().nullable(),
-    url: z.string().optional(),
-    action_title: z.string().optional(),
-    action_payload: z.string().optional(),
+  display: z.enum(['list', 'carousel']).meta({
+    title: 'Display',
   }),
-  buttons: z.array(buttonSchema),
+  contentType: z
+    .string()
+    .optional()
+    .meta({
+      title: 'Content Type',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'ContentType',
+        valueKey: 'id',
+        labelKey: 'name',
+      },
+    }),
+  fields: z
+    .object({
+      title: z.string().meta({
+        title: 'Title',
+        'ui:field': 'AutoCompleteField',
+        'ui:options': {
+          entity: 'ContentType',
+          valueKey: 'name',
+          idFormPath: 'content.contentType',
+          nestedArrayField: 'fields',
+          nestedArrayItemField: 'type',
+          nestedArrayItemValue: 'text',
+        },
+      }),
+      subtitle: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Subtitle',
+          'ui:field': 'AutoCompleteField',
+          'ui:options': {
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'text',
+          },
+        }),
+      image_url: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Image URL Field',
+          'ui:field': 'AutoCompleteField',
+          'ui:options': {
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'file',
+          },
+        }),
+      url: z
+        .string()
+        .optional()
+        .meta({
+          title: 'URL',
+          'ui:field': 'AutoCompleteField',
+          'ui:options': {
+            showOnlyWhenWebUrlButton: true,
+            entity: 'ContentType',
+            valueKey: 'name',
+            idFormPath: 'content.contentType',
+            nestedArrayField: 'fields',
+            nestedArrayItemField: 'type',
+            nestedArrayItemValue: 'url',
+          },
+        }),
+      action_title: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Action Title',
+          'ui:options': {
+            showOnlyWhenPostbackButton: true,
+          },
+        }),
+      action_payload: z
+        .string()
+        .optional()
+        .meta({
+          title: 'Action Payload',
+          'ui:options': {
+            showOnlyWhenPostbackButton: true,
+          },
+        }),
+    })
+    .meta({ title: 'Fields' }),
+  buttons: z.array(buttonSchema).meta({ title: 'Buttons' }),
   limit: z.number().finite(),
   query: z.any().optional(),
-  entity: z.string().optional(),
-  top_element_style: z.enum(['large', 'compact']).optional(),
+  top_element_style: z.enum(['large', 'compact']).optional().meta({
+    title: 'Top Element Style',
+  }),
 });
 
 export type ContentOptions = z.infer<typeof contentOptionsSchema>;

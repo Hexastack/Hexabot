@@ -134,12 +134,13 @@ export abstract class MessageAction<
     workflowContext: ConversationalWorkflowContext,
     prepared: PreparedMessageContext,
     envelope: StdOutgoingMessageEnvelope,
-    settings: S,
+    // settings: S,
+    input?: any,
   ): Promise<MessageActionOutput> {
     const { event, recipient } = prepared;
     const eventEmitter = workflowContext.eventEmitter!;
     const { logger } = workflowContext.services;
-    const options = this.resolveMessageOptions(settings);
+    const options = this.resolveMessageOptions(input);
     const sendOptions = options ?? {};
 
     logger.debug('Sending action message ... ', event.getSenderForeignId());
@@ -189,13 +190,11 @@ export abstract class MessageAction<
     );
   }
 
-  protected resolveMessageOptions(
-    settings: S,
-  ): Record<string, any> | undefined {
-    if (settings.typing === undefined) {
+  protected resolveMessageOptions(input: I): Record<string, any> | undefined {
+    if (input['typing'] === undefined) {
       return undefined;
     }
 
-    return { typing: settings.typing };
+    return { typing: input['typing'] };
   }
 }

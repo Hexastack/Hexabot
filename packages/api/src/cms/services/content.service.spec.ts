@@ -129,8 +129,8 @@ describe('ContentService (TypeORM)', () => {
       buttons: [],
       fields: {
         title: 'title',
-        subtitle: null,
-        image_url: null,
+        subtitle: 'subtitle',
+        image_url: 'image_url',
       },
       limit: 3,
     };
@@ -155,7 +155,7 @@ describe('ContentService (TypeORM)', () => {
         contentService.getContent(
           {
             ...baseOptions,
-            entity: '00000000-0000-4000-8000-000000000001',
+            contentType: '00000000-0000-4000-8000-000000000001',
           },
           0,
         ),
