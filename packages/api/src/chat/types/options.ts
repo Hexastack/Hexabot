@@ -12,10 +12,18 @@ export const contentOptionsSchema = z.object({
   display: z.enum(['list', 'carousel']).meta({
     title: 'Display',
   }),
-  contentType: z.string().optional().meta({
-    title: 'Content Type',
-    'ui:widget': 'ContentTypeAutoCompleteWidget',
-  }),
+  contentType: z
+    .string()
+    .optional()
+    .meta({
+      title: 'Content Type',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'ContentType',
+        valueKey: 'id',
+        labelKey: 'name',
+      },
+    }),
   fields: z
     .object({
       title: z.string().meta({

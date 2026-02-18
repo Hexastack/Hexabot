@@ -9,7 +9,7 @@ import { ActionCheckboxWidget } from "./ActionCheckboxWidget";
 import { ActionRadioWidget } from "./ActionRadioWidget";
 import { ActionRangeWidget } from "./ActionRangeWidget";
 import { ActionSelectWidget } from "./ActionSelectWidget";
-import { ContentTypeAutoCompleteWidget } from "./AutoCompleteEntitySelectWidget";
+import { AutoCompleteWidget } from "./AutoCompleteWidget";
 import { JsonataTextWidget } from "./JsonataTextWidget";
 
 export const FORM_WIDGETS = {
@@ -20,5 +20,5 @@ export const FORM_WIDGETS = {
   CheckboxesWidget: ActionCheckboxesWidget,
   RadioWidget: ActionRadioWidget,
   RangeWidget: ActionRangeWidget,
-  ContentTypeAutoCompleteWidget,
+  AutoCompleteWidget,
 } as const;

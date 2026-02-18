@@ -38,9 +38,9 @@ export const AutoCompleteFieldWrapper = ({
   onChange,
 }: Rjsf["uiSchema"]["ui:options"] & {
   id: string;
-  entity: keyof IEntityMapTypes;
   title?: string;
   value: any;
+  entity: keyof IEntityMapTypes;
   onChange: (e: SyntheticEvent<Element, Event>, value: any) => void;
 }) => {
   const { data } = useGet(id, {
