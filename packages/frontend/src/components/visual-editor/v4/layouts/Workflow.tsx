@@ -11,6 +11,7 @@ import {
   Controls,
   useNodesInitialized,
   useReactFlow,
+  useStore,
 } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
@@ -92,6 +93,7 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
 
 export const Workflow = () => {
   const { setViewport, fitView } = useReactFlow();
+  const domNode = useStore((state) => state.domNode);
   const nodesInitialized = useNodesInitialized();
   const { t } = useTranslate();
   const {
@@ -122,6 +124,14 @@ export const Workflow = () => {
       zoom: workflow?.zoom || 1,
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
+  );
+  const emptyViewport = useMemo(
+    () => ({
+      x: (domNode?.clientWidth || 0) / 2,
+      y: (domNode?.clientHeight || 0) / 2,
+      zoom: 1,
+    }),
+    [domNode?.clientWidth, domNode?.clientHeight],
   );
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],
@@ -221,11 +231,18 @@ export const Workflow = () => {
     if (nodesInitialized) {
       if (nodesToFocus.length) {
         animateFocus(nodesToFocus);
+      } else if (isEmptyWorkflow) {
+        setViewport(emptyViewport);
       } else {
         setViewport(defaultViewport);
       }
     }
   });
+  useEffect(() => {
+    if (nodesInitialized && isEmptyWorkflow) {
+      setViewport(emptyViewport);
+    }
+  }, [isEmptyWorkflow, nodesInitialized]);
   const getMemoryDefinitionsFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
@@ -389,6 +406,11 @@ export const Workflow = () => {
     });
   };
 
+  // useEffect(() => {
+  //   console.log({ emptyViewport });
+  //   setViewport(emptyViewport);
+  // }, [workflow?.id, isEmptyWorkflow]);
+
   return (
     <div className="visual-editor-v4">
       <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
@@ -397,7 +419,7 @@ export const Workflow = () => {
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
-          defaultViewport={defaultViewport}
+          defaultViewport={isEmptyWorkflow ? emptyViewport : defaultViewport}
         >
           <Controls
             onFitView={animateFocus}
