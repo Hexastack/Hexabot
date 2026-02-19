@@ -6,6 +6,7 @@
 
 import {
   getNodesBounds,
+  getViewportForBounds,
   useNodesInitialized,
   useReactFlow,
   useStore,
@@ -21,42 +22,6 @@ import { useFocusNode } from "./useFocusNode";
 import { useWorkflow } from "./useWorkflow";
 
 const EMPTY_WORKFLOW_SYNC_KEY = "__workflow-empty__";
-const toViewportNumber = (value: unknown, fallback: number) => {
-  const parsed = Number(value);
-
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-const centerViewportOnNodes = ({
-  nodes,
-  width,
-  height,
-  zoom,
-  fallback,
-}: {
-  nodes: WorkflowGraph["nodes"];
-  width: number;
-  height: number;
-  zoom: number;
-  fallback: Viewport;
-}) => {
-  if (!nodes.length || width <= 0 || height <= 0) {
-    return fallback;
-  }
-
-  const bounds = getNodesBounds(nodes);
-  const centerX = bounds.x + bounds.width / 2;
-  const centerY = bounds.y + bounds.height / 2;
-
-  if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
-    return fallback;
-  }
-
-  return {
-    x: width / 2 - centerX * zoom,
-    y: height / 2 - centerY * zoom,
-    zoom,
-  };
-};
 
 export const useWorkflowViewport = ({
   workflow,
@@ -68,30 +33,30 @@ export const useWorkflowViewport = ({
   graphNodes: WorkflowGraph["nodes"];
 }) => {
   const { setViewport, getViewport } = useReactFlow();
-  const domNode = useStore((state) => state.domNode);
+  const workflowWidth = useStore((state) => state.domNode?.clientWidth ?? 0);
+  const workflowHeight = useStore((state) => state.domNode?.clientHeight ?? 0);
   const nodesInitialized = useNodesInitialized();
   const { toFocusIds } = useWorkflow();
   const { animateFocus } = useFocusNode();
-  const viewportWidth = domNode?.clientWidth || 0;
-  const viewportHeight = domNode?.clientHeight || 0;
   const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
     useState(false);
   const viewportInitializedForFlowRef = useRef<string | null>(null);
-  const defaultViewport = useMemo(
-    () => ({
-      x: toViewportNumber(workflow?.x, 0),
-      y: toViewportNumber(workflow?.y, 0),
-      zoom: toViewportNumber(workflow?.zoom, 1),
-    }),
-    [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
-  );
+  const defaultViewport = useMemo(() => {
+    const [x = 0, y = 0, zoom = 1] = [
+      Number(workflow?.x),
+      Number(workflow?.y),
+      Number(workflow?.zoom),
+    ].map((value) => (Number.isFinite(value) ? value : undefined));
+
+    return { x, y, zoom };
+  }, [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom]);
   const emptyViewport = useMemo(
     () => ({
-      x: viewportWidth / 2,
-      y: viewportHeight / 2,
+      x: workflowWidth / 2,
+      y: workflowHeight / 2,
       zoom: 1,
     }),
-    [viewportHeight, viewportWidth],
+    [workflowHeight, workflowWidth],
   );
   const shouldUseComputedEmptyViewport =
     isEmptyWorkflow &&
@@ -147,15 +112,18 @@ export const useWorkflowViewport = ({
     }
 
     const currentViewport = getViewport();
-    const centeredViewport = centerViewportOnNodes({
-      nodes: graphNodes,
-      width: viewportWidth,
-      height: viewportHeight,
-      zoom: currentViewport.zoom,
-      fallback: currentViewport,
-    });
+    const graphBounds = getNodesBounds(graphNodes);
+    const centeredViewport = getViewportForBounds(
+      graphBounds,
+      workflowWidth,
+      workflowHeight,
+      currentViewport.zoom,
+      currentViewport.zoom,
+      0,
+    );
 
     syncViewportForFlow(centeredViewport);
+
     setShouldCenterAfterFirstInsert(false);
   }, [
     getViewport,
@@ -163,8 +131,8 @@ export const useWorkflowViewport = ({
     nodesInitialized,
     shouldCenterAfterFirstInsert,
     syncViewportForFlow,
-    viewportHeight,
-    viewportWidth,
+    workflowHeight,
+    workflowWidth,
   ]);
 
   const requestCenterAfterFirstInsert = useCallback(() => {
