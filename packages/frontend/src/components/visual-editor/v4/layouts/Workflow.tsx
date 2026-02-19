@@ -9,6 +9,7 @@ import { Box, Button, styled } from "@mui/material";
 import {
   Background,
   Controls,
+  getNodesBounds,
   useNodesInitialized,
   useReactFlow,
   useStore,
@@ -18,6 +19,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
@@ -49,7 +51,6 @@ import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useFocusNode } from "../hooks/useFocusNode";
-import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
 import {
   ENodeType,
@@ -95,9 +96,40 @@ const toViewportNumber = (value: unknown, fallback: number) => {
 
   return Number.isFinite(parsed) ? parsed : fallback;
 };
+const centerViewportOnNodes = ({
+  nodes,
+  width,
+  height,
+  zoom,
+  fallback,
+}: {
+  nodes: WorkflowGraph["nodes"];
+  width: number;
+  height: number;
+  zoom: number;
+  fallback: { x: number; y: number; zoom: number };
+}) => {
+  if (!nodes.length || width <= 0 || height <= 0) {
+    return fallback;
+  }
+
+  const bounds = getNodesBounds(nodes);
+  const centerX = bounds.x + bounds.width / 2;
+  const centerY = bounds.y + bounds.height / 2;
+
+  if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
+    return fallback;
+  }
+
+  return {
+    x: width / 2 - centerX * zoom,
+    y: height / 2 - centerY * zoom,
+    zoom,
+  };
+};
 
 export const Workflow = () => {
-  const { setViewport, fitView } = useReactFlow();
+  const { setViewport, getViewport } = useReactFlow();
   const domNode = useStore((state) => state.domNode);
   const nodesInitialized = useNodesInitialized();
   const { t } = useTranslate();
@@ -112,6 +144,7 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
+    toFocusIds,
     persistDefinition,
     addActionStep,
     addConditionalStep,
@@ -160,9 +193,11 @@ export const Workflow = () => {
   );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
+  const viewportInitializedForFlowRef = useRef<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
+  const viewportSyncKey = workflow?.id ?? "__workflow-empty__";
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
@@ -237,22 +272,34 @@ export const Workflow = () => {
     [addActionStep, pendingInsertPath],
   );
 
-  useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
-    if (nodesInitialized) {
-      if (nodesToFocus.length) {
-        animateFocus(nodesToFocus);
-      } else if (shouldUseComputedEmptyViewport) {
-        setViewport(emptyViewport);
-      } else {
-        setViewport(defaultViewport);
-      }
-    }
-  });
   useEffect(() => {
-    if (nodesInitialized && isEmptyWorkflow) {
-      setViewport(emptyViewport);
+    if (!nodesInitialized) {
+      return;
     }
-  }, [isEmptyWorkflow, nodesInitialized]);
+
+    if (toFocusIds.length) {
+      viewportInitializedForFlowRef.current = viewportSyncKey;
+      animateFocus(toFocusIds);
+
+      return;
+    }
+
+    if (viewportInitializedForFlowRef.current === viewportSyncKey) {
+      return;
+    }
+
+    setViewport(shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport);
+    viewportInitializedForFlowRef.current = viewportSyncKey;
+  }, [
+    animateFocus,
+    defaultViewport,
+    emptyViewport,
+    nodesInitialized,
+    setViewport,
+    shouldUseComputedEmptyViewport,
+    toFocusIds,
+    viewportSyncKey,
+  ]);
   const getMemoryDefinitionsFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
@@ -304,16 +351,32 @@ export const Workflow = () => {
     }
   }, [isEmptyWorkflow]);
   useEffect(() => {
-    if (isEmptyWorkflow || !shouldCenterAfterFirstInsert || !nodesInitialized) {
+    if (
+      !shouldCenterAfterFirstInsert ||
+      !nodesInitialized ||
+      graph.nodes.length === 0
+    ) {
       return;
     }
 
-    fitView();
+    const currentViewport = getViewport();
+    const centeredViewport = centerViewportOnNodes({
+      nodes: graph.nodes,
+      width: domNode?.clientWidth || 0,
+      height: domNode?.clientHeight || 0,
+      zoom: currentViewport.zoom,
+      fallback: currentViewport,
+    });
+
+    setViewport(centeredViewport);
     setShouldCenterAfterFirstInsert(false);
   }, [
-    fitView,
-    isEmptyWorkflow,
+    domNode?.clientHeight,
+    domNode?.clientWidth,
+    getViewport,
+    graph.nodes,
     nodesInitialized,
+    setViewport,
     shouldCenterAfterFirstInsert,
   ]);
   const edgesWithHandlers = useMemo(() => {
@@ -484,6 +547,7 @@ export const Workflow = () => {
           onClose={() => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
+            setShouldCenterAfterFirstInsert(false);
           }}
         />
         <WorkflowInsertMenu

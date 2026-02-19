@@ -11,9 +11,8 @@ import {
   type Viewport,
   OnNodesChange,
   ReactFlow,
-  useOnViewportChange,
 } from "@xyflow/react";
-import { PropsWithChildren, useCallback } from "react";
+import { PropsWithChildren, useCallback, useEffect, useRef } from "react";
 
 import "@xyflow/react/dist/style.css";
 import { useWorkflow } from "../../hooks/useWorkflow";
@@ -22,6 +21,12 @@ import {
   EDGE_TYPES,
   NODE_TYPES,
 } from "../../types/workflow-node.types";
+
+const VIEWPORT_EPSILON = 0.01;
+const isSameViewport = (a: Viewport, b: Viewport): boolean =>
+  Math.abs(a.x - b.x) <= VIEWPORT_EPSILON &&
+  Math.abs(a.y - b.y) <= VIEWPORT_EPSILON &&
+  Math.abs(a.zoom - b.zoom) <= VIEWPORT_EPSILON;
 
 export const ReactFlowWrapper = ({
   defaultEdges,
@@ -39,19 +44,23 @@ export const ReactFlowWrapper = ({
   onNodeClick?: NodeMouseHandler<Node>;
 } & PropsWithChildren) => {
   const { mode } = useColorScheme();
+  const lastViewportRef = useRef<Viewport>(defaultViewport);
 
-  useOnViewportChange({
-    onEnd: ({ x, y, zoom }) => {
-      if (
-        defaultViewport.x === x &&
-        defaultViewport.y === y &&
-        defaultViewport.zoom === zoom
-      ) {
+  useEffect(() => {
+    lastViewportRef.current = defaultViewport;
+  }, [defaultViewport.x, defaultViewport.y, defaultViewport.zoom]);
+
+  const handleMoveEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
+      if (isSameViewport(lastViewportRef.current, viewport)) {
         return;
       }
-      onViewport({ x, y, zoom });
+
+      lastViewportRef.current = viewport;
+      onViewport(viewport);
     },
-  });
+    [onViewport],
+  );
   const {
     selectedFlowId,
     selectedNodeIds,
@@ -99,6 +108,7 @@ export const ReactFlowWrapper = ({
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
       onNodesChange={handleNodesChange}
+      onMoveEnd={handleMoveEnd}
       onNodeClick={onNodeClick}
       onlyRenderVisibleElements
       colorMode={mode}
