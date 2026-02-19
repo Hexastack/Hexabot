@@ -6,20 +6,12 @@
 
 import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
-import {
-  Background,
-  Controls,
-  getNodesBounds,
-  useNodesInitialized,
-  useReactFlow,
-  useStore,
-} from "@xyflow/react";
+import { Background, Controls } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
@@ -50,8 +42,8 @@ import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
-import { useFocusNode } from "../hooks/useFocusNode";
 import { useWorkflow } from "../hooks/useWorkflow";
+import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
 import {
   ENodeType,
   type BranchPlaceholderData,
@@ -91,47 +83,8 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
   right: 12,
   zIndex: 2,
 }));
-const toViewportNumber = (value: unknown, fallback: number) => {
-  const parsed = Number(value);
-
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-const centerViewportOnNodes = ({
-  nodes,
-  width,
-  height,
-  zoom,
-  fallback,
-}: {
-  nodes: WorkflowGraph["nodes"];
-  width: number;
-  height: number;
-  zoom: number;
-  fallback: { x: number; y: number; zoom: number };
-}) => {
-  if (!nodes.length || width <= 0 || height <= 0) {
-    return fallback;
-  }
-
-  const bounds = getNodesBounds(nodes);
-  const centerX = bounds.x + bounds.width / 2;
-  const centerY = bounds.y + bounds.height / 2;
-
-  if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
-    return fallback;
-  }
-
-  return {
-    x: width / 2 - centerX * zoom,
-    y: height / 2 - centerY * zoom,
-    zoom,
-  };
-};
 
 export const Workflow = () => {
-  const { setViewport, getViewport } = useReactFlow();
-  const domNode = useStore((state) => state.domNode);
-  const nodesInitialized = useNodesInitialized();
   const { t } = useTranslate();
   const {
     workflow,
@@ -144,7 +97,6 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
-    toFocusIds,
     persistDefinition,
     addActionStep,
     addConditionalStep,
@@ -152,37 +104,13 @@ export const Workflow = () => {
     addParallelStep,
   } = useWorkflow();
   const { actions } = useWorkflowActionsCatalog();
-  const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
-  const defaultViewport = useMemo(
-    () => ({
-      x: toViewportNumber(workflow?.x, 0),
-      y: toViewportNumber(workflow?.y, 0),
-      zoom: toViewportNumber(workflow?.zoom, 1),
-    }),
-    [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
-  );
-  const emptyViewport = useMemo(
-    () => ({
-      x: (domNode?.clientWidth || 0) / 2,
-      y: (domNode?.clientHeight || 0) / 2,
-      zoom: 1,
-    }),
-    [domNode?.clientWidth, domNode?.clientHeight],
-  );
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],
     edges: [],
   });
   const isEmptyWorkflow = graph.nodes.length < 3;
-  const shouldUseComputedEmptyViewport =
-    isEmptyWorkflow &&
-    defaultViewport.x === 0 &&
-    defaultViewport.y === 0 &&
-    defaultViewport.zoom === 1;
-  const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
-    useState(false);
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
@@ -193,11 +121,19 @@ export const Workflow = () => {
   );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
-  const viewportInitializedForFlowRef = useRef<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
-  const viewportSyncKey = workflow?.id ?? "__workflow-empty__";
+  const {
+    initialViewport,
+    requestCenterAfterFirstInsert,
+    clearCenterAfterFirstInsert,
+    animateFocus,
+  } = useWorkflowViewport({
+    workflow,
+    isEmptyWorkflow,
+    graphNodes: graph.nodes,
+  });
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
@@ -235,12 +171,10 @@ export const Workflow = () => {
   );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
-      if (isEmptyWorkflow) {
-        setShouldCenterAfterFirstInsert(true);
-      }
+      requestCenterAfterFirstInsert();
       handleInsert(insertType, null);
     },
-    [handleInsert, isEmptyWorkflow],
+    [handleInsert, requestCenterAfterFirstInsert],
   );
   const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
     (anchorEl, insertPath) => {
@@ -271,35 +205,6 @@ export const Workflow = () => {
     },
     [addActionStep, pendingInsertPath],
   );
-
-  useEffect(() => {
-    if (!nodesInitialized) {
-      return;
-    }
-
-    if (toFocusIds.length) {
-      viewportInitializedForFlowRef.current = viewportSyncKey;
-      animateFocus(toFocusIds);
-
-      return;
-    }
-
-    if (viewportInitializedForFlowRef.current === viewportSyncKey) {
-      return;
-    }
-
-    setViewport(shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport);
-    viewportInitializedForFlowRef.current = viewportSyncKey;
-  }, [
-    animateFocus,
-    defaultViewport,
-    emptyViewport,
-    nodesInitialized,
-    setViewport,
-    shouldUseComputedEmptyViewport,
-    toFocusIds,
-    viewportSyncKey,
-  ]);
   const getMemoryDefinitionsFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
@@ -350,35 +255,6 @@ export const Workflow = () => {
       setActionsDrawerOpen(false);
     }
   }, [isEmptyWorkflow]);
-  useEffect(() => {
-    if (
-      !shouldCenterAfterFirstInsert ||
-      !nodesInitialized ||
-      graph.nodes.length === 0
-    ) {
-      return;
-    }
-
-    const currentViewport = getViewport();
-    const centeredViewport = centerViewportOnNodes({
-      nodes: graph.nodes,
-      width: domNode?.clientWidth || 0,
-      height: domNode?.clientHeight || 0,
-      zoom: currentViewport.zoom,
-      fallback: currentViewport,
-    });
-
-    setViewport(centeredViewport);
-    setShouldCenterAfterFirstInsert(false);
-  }, [
-    domNode?.clientHeight,
-    domNode?.clientWidth,
-    getViewport,
-    graph.nodes,
-    nodesInitialized,
-    setViewport,
-    shouldCenterAfterFirstInsert,
-  ]);
   const edgesWithHandlers = useMemo(() => {
     return graph.edges.map((edge) => {
       const edgeData = edge.data as EdgeInsertData | undefined;
@@ -487,9 +363,7 @@ export const Workflow = () => {
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
-          defaultViewport={
-            shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport
-          }
+          defaultViewport={initialViewport}
         >
           <Controls
             onFitView={animateFocus}
@@ -547,7 +421,7 @@ export const Workflow = () => {
           onClose={() => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
-            setShouldCenterAfterFirstInsert(false);
+            clearCenterAfterFirstInsert();
           }}
         />
         <WorkflowInsertMenu
