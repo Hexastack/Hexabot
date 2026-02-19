@@ -90,6 +90,11 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
   right: 12,
   zIndex: 2,
 }));
+const toViewportNumber = (value: unknown, fallback: number) => {
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 
 export const Workflow = () => {
   const { setViewport, fitView } = useReactFlow();
@@ -119,9 +124,9 @@ export const Workflow = () => {
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const defaultViewport = useMemo(
     () => ({
-      x: workflow?.x || 0,
-      y: workflow?.y || 0,
-      zoom: workflow?.zoom || 1,
+      x: toViewportNumber(workflow?.x, 0),
+      y: toViewportNumber(workflow?.y, 0),
+      zoom: toViewportNumber(workflow?.zoom, 1),
     }),
     [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
   );
@@ -138,6 +143,11 @@ export const Workflow = () => {
     edges: [],
   });
   const isEmptyWorkflow = graph.nodes.length < 3;
+  const shouldUseComputedEmptyViewport =
+    isEmptyWorkflow &&
+    defaultViewport.x === 0 &&
+    defaultViewport.y === 0 &&
+    defaultViewport.zoom === 1;
   const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
     useState(false);
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
@@ -231,7 +241,7 @@ export const Workflow = () => {
     if (nodesInitialized) {
       if (nodesToFocus.length) {
         animateFocus(nodesToFocus);
-      } else if (isEmptyWorkflow) {
+      } else if (shouldUseComputedEmptyViewport) {
         setViewport(emptyViewport);
       } else {
         setViewport(defaultViewport);
@@ -406,11 +416,6 @@ export const Workflow = () => {
     });
   };
 
-  // useEffect(() => {
-  //   console.log({ emptyViewport });
-  //   setViewport(emptyViewport);
-  // }, [workflow?.id, isEmptyWorkflow]);
-
   return (
     <div className="visual-editor-v4">
       <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
@@ -419,7 +424,9 @@ export const Workflow = () => {
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
-          defaultViewport={isEmptyWorkflow ? emptyViewport : defaultViewport}
+          defaultViewport={
+            shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport
+          }
         >
           <Controls
             onFitView={animateFocus}
