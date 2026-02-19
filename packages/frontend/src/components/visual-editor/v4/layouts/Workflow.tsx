@@ -6,11 +6,7 @@
 
 import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
 import { Box, Button, styled } from "@mui/material";
-import {
-  Background,
-  Controls,
-  useReactFlow,
-} from "@xyflow/react";
+import { Background, Controls } from "@xyflow/react";
 import { CloudUpload } from "lucide-react";
 import {
   useCallback,
@@ -46,9 +42,8 @@ import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
-import { useFocusNode } from "../hooks/useFocusNode";
-import { useNodesMeasured } from "../hooks/useNodesMeasured";
 import { useWorkflow } from "../hooks/useWorkflow";
+import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
 import {
   ENodeType,
   type BranchPlaceholderData,
@@ -90,7 +85,6 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
 }));
 
 export const Workflow = () => {
-  const { setViewport } = useReactFlow();
   const { t } = useTranslate();
   const {
     workflow,
@@ -110,17 +104,8 @@ export const Workflow = () => {
     addParallelStep,
   } = useWorkflow();
   const { actions } = useWorkflowActionsCatalog();
-  const { animateFocus } = useFocusNode();
   const dialogs = useDialogs();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
-  const defaultViewport = useMemo(
-    () => ({
-      x: workflow?.x || 0,
-      y: workflow?.y || 0,
-      zoom: workflow?.zoom || 1,
-    }),
-    [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
-  );
   const [graph, setGraph] = useState<WorkflowGraph>({
     nodes: [],
     edges: [],
@@ -139,6 +124,16 @@ export const Workflow = () => {
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
+  const {
+    initialViewport,
+    requestCenterAfterFirstInsert,
+    clearCenterAfterFirstInsert,
+    animateFocus,
+  } = useWorkflowViewport({
+    workflow,
+    isEmptyWorkflow,
+    graphNodes: graph.nodes,
+  });
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
@@ -146,10 +141,7 @@ export const Workflow = () => {
     !definition || isDefinitionSaving || isCurrentVersionPublished;
   const tasks = definition?.tasks;
   const handleInsert = useCallback(
-    (
-      insertType: EdgeInsertType = "step",
-      insertPath?: FlowStepPath | null,
-    ) => {
+    (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
       if (insertType === StepType.Conditional) {
         setPendingInsertPath(null);
         addConditionalStep(insertPath);
@@ -179,9 +171,10 @@ export const Workflow = () => {
   );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
+      requestCenterAfterFirstInsert();
       handleInsert(insertType, null);
     },
-    [handleInsert],
+    [handleInsert, requestCenterAfterFirstInsert],
   );
   const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
     (anchorEl, insertPath) => {
@@ -212,16 +205,6 @@ export const Workflow = () => {
     },
     [addActionStep, pendingInsertPath],
   );
-
-  useNodesMeasured(({ nodesToFocus, nodesInitialized }) => {
-    if (nodesInitialized) {
-      if (nodesToFocus.length) {
-        animateFocus(nodesToFocus);
-      } else {
-        setViewport(defaultViewport);
-      }
-    }
-  });
   const getMemoryDefinitionsFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
@@ -388,7 +371,7 @@ export const Workflow = () => {
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
-          defaultViewport={defaultViewport}
+          defaultViewport={initialViewport}
         >
           <Controls
             onFitView={animateFocus}
@@ -403,9 +386,7 @@ export const Workflow = () => {
 
           <Background size={2} />
           {isEmptyWorkflow && (
-            <WorkflowEmptyState
-              onInsert={handleRootInsert}
-            />
+            <WorkflowEmptyState onInsert={handleRootInsert} />
           )}
         </ReactFlowWrapper>
         {workflow && (
@@ -448,6 +429,7 @@ export const Workflow = () => {
           onClose={() => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
+            clearCenterAfterFirstInsert();
           }}
         />
         <WorkflowInsertMenu
