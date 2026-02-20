@@ -245,4 +245,47 @@ describe('WorkflowService (TypeORM)', () => {
 
     expect(picked).toBeNull();
   });
+
+  it('validates manual input with the provided schema', () => {
+    const manualSchema: JsonSchema = {
+      type: 'object',
+      properties: {
+        customerId: { type: 'string' },
+      },
+      required: ['customerId'],
+      additionalProperties: false,
+    };
+    const input = { customerId: 'cust-42' };
+    const parsed = workflowService.validateManualInput(input, manualSchema);
+
+    expect(parsed).toEqual(input);
+  });
+
+  it('throws when manual input does not match the provided schema', () => {
+    const manualSchema: JsonSchema = {
+      type: 'object',
+      properties: {
+        customerId: { type: 'string' },
+      },
+      required: ['customerId'],
+      additionalProperties: false,
+    };
+
+    let thrown: unknown;
+    try {
+      workflowService.validateManualInput({ customerId: 42 }, manualSchema);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(BadRequestException);
+    const response = (thrown as BadRequestException).getResponse() as {
+      message?: string;
+      details?: {
+        fieldErrors?: Record<string, string[]>;
+      };
+    };
+    expect(response.message).toEqual('Manual workflow input validation failed');
+    expect(response.details?.fieldErrors?.customerId).toBeDefined();
+  });
 });

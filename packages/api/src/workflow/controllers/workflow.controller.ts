@@ -208,7 +208,7 @@ export class WorkflowController extends BaseOrmController<
   @HttpCode(202)
   async runManually(
     @Param('id') id: string,
-    @Body('input') input: Record<string, unknown> = {},
+    @Body('input') input: unknown = {},
     @Req() req: Request,
   ): Promise<{ accepted: true }> {
     const userId = req.session?.passport?.user?.id;
@@ -233,13 +233,20 @@ export class WorkflowController extends BaseOrmController<
       );
     }
 
+    const manualInput =
+      workflow.type === WorkflowType.manual
+        ? this.workflowService.validateManualInput(
+            input ?? {},
+            workflow.inputSchema,
+          )
+        : {};
     const event =
       workflow.type === WorkflowType.scheduled
         ? new ScheduledEventWrapper({
             schedule: workflow.schedule ?? null,
             triggeredAt: new Date(),
           })
-        : new ManualEventWrapper(input ?? {}, userId);
+        : new ManualEventWrapper(manualInput, userId);
     const initiator = await this.userService.findOne(userId);
     event.setInitiator(initiator!);
 

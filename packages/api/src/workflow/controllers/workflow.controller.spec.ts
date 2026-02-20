@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -38,7 +39,10 @@ import {
 
 import { ManualWorkflowContext } from '../contexts/manual-workflow.context';
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
-import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
+import {
+  ManualEventWrapper,
+  ScheduledEventWrapper,
+} from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
@@ -356,6 +360,79 @@ describe('WorkflowController (TypeORM)', () => {
   });
 
   describe('runManually', () => {
+    it('validates and runs a manual workflow when input matches the schema', async () => {
+      const manualInputSchema: JsonSchema = {
+        type: 'object',
+        properties: {
+          customerId: { type: 'string' },
+          retryCount: { type: 'integer', minimum: 0 },
+        },
+        required: ['customerId'],
+        additionalProperties: false,
+      };
+      const manual = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.manual,
+        inputSchema: manualInputSchema,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(manual.id);
+      const input = { customerId: 'cust-1', retryCount: 1 };
+      const userId = userFixtureIds.admin;
+      const spyAgenticService = jest.spyOn(agenticService, 'handleEvent');
+      const result = await workflowController.runManually(manual.id, input, {
+        session: { passport: { user: { id: userId } } },
+      } as any);
+
+      expect(spyAgenticService).toHaveBeenCalledTimes(1);
+      const [eventArg, workflowArg] = spyAgenticService.mock.calls[0];
+      expect(workflowArg?.id).toEqual(manual.id);
+      expect(eventArg).toBeInstanceOf(ManualEventWrapper);
+      expect(eventArg.buildInput()).toEqual(input);
+      expect(eventArg.getInitiator()?.id).toEqual(userId);
+      expect(result).toEqual({ accepted: true });
+    });
+
+    it('rejects a manual workflow run when input does not match the schema', async () => {
+      const manualInputSchema: JsonSchema = {
+        type: 'object',
+        properties: {
+          customerId: { type: 'string' },
+        },
+        required: ['customerId'],
+        additionalProperties: false,
+      };
+      const manual = await workflowService.create({
+        ...buildWorkflowPayload(),
+        type: WorkflowType.manual,
+        inputSchema: manualInputSchema,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(manual.id);
+
+      let thrown: unknown;
+      try {
+        await workflowController.runManually(manual.id, { customerId: 42 }, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any);
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBeInstanceOf(BadRequestException);
+      const response = (thrown as BadRequestException).getResponse() as {
+        message?: string;
+        details?: {
+          fieldErrors?: Record<string, string[]>;
+        };
+      };
+      expect(response.message).toEqual(
+        'Manual workflow input validation failed',
+      );
+      expect(response.details?.fieldErrors?.customerId).toBeDefined();
+      expect(agenticService.handleEvent).not.toHaveBeenCalled();
+    });
+
     it('runs a scheduled workflow for an authenticated user', async () => {
       const scheduled = await workflowService.create({
         ...buildWorkflowPayload(),
