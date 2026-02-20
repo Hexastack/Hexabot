@@ -86,7 +86,7 @@ const ActionFormDrawerContent = ({
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
 
-  if (!isOpen) return null;
+  if (!isOpen || !Object.keys(inputData).length) return null;
 
   if (!actionSchema) {
     return (
@@ -168,11 +168,14 @@ export const ActionFormDrawer = () => {
     : t("visual_editor.actions_drawer.form.empty_state.no_action");
 
   useEffect(() => {
+    if (!open) {
+      return;
+    }
     setInputData((taskDefinition?.inputs as Record<string, unknown>) ?? {});
     setSettingsData(
       (taskDefinition?.settings as Record<string, unknown>) ?? {},
     );
-  }, [taskDefinition, actionName]);
+  }, [open, taskName, actionName]);
 
   const handleClose = () => {
     if (selectedFlowId) {
