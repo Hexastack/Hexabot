@@ -5,23 +5,13 @@
  */
 
 import { Paper, Stack, Typography } from "@mui/material";
-import { Form } from "@rjsf/mui";
 import type { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 
-import { FORM_FIELDS } from "@/components/visual-editor/v4/components/main/ActionDrawer/fields";
-import { FORM_TEMPLATES } from "@/components/visual-editor/v4/components/main/ActionDrawer/templates";
-import { FORM_WIDGETS } from "@/components/visual-editor/v4/components/main/ActionDrawer/widgets";
+import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { extractUiSchema } from "@/components/visual-editor/v4/utils/schema-defaults.utils";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflow } from "@/types/workfow.types";
 import { WorkflowType } from "@/types/workfow.types";
-
-const formUiSchema = {
-  "ui:submitButtonOptions": {
-    norender: true,
-  },
-} as const;
 
 type TriggerSimulatorPanelProps = {
   workflow?: IWorkflow;
@@ -48,24 +38,14 @@ export const TriggerSimulatorPanel = ({
       </Typography>
       {workflowType === WorkflowType.manual ? (
         inputSchema ? (
-          <Form
+          <JsonSchemaForm
             schema={inputSchema}
-            validator={validator}
             formData={formData}
-            formContext={{ formData }}
-            onChange={(event) =>
-              onFormDataChange(
-                (event.formData ?? {}) as Record<string, unknown>,
-              )
-            }
-            showErrorList={false}
-            noHtml5Validate
+            onFormDataChange={onFormDataChange}
             liveValidate
-            uiSchema={{ ...formUiSchema, ...extractUiSchema(inputSchema) }}
+            uiSchema={extractUiSchema(inputSchema)}
             idPrefix="workflow-trigger"
-            templates={FORM_TEMPLATES}
-            fields={FORM_FIELDS}
-            widgets={FORM_WIDGETS}
+            enableJsonataTextWidget={false}
           />
         ) : (
           <Stack spacing={0.5}>
