@@ -20,11 +20,13 @@ import { StepTracePanel } from "./panels/step-trace-panel";
 type WorkflowRunDebuggerProps = {
   initiatorId?: string;
   workflow?: IWorkflow;
+  workflowInput?: Record<string, unknown>;
 };
 
 export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({
   initiatorId,
   workflow,
+  workflowInput,
 }) => {
   const getWorkflowVersionFromCache = useGetFromCache(
     EntityType.WORKFLOW_VERSION,
@@ -116,6 +118,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({
         isFetching={isFetching}
         selectedRun={selectedRun}
         workflow={workflow ?? null}
+        workflowInput={workflowInput}
         workflowVersion={selectedWorkflowVersion ?? null}
         onSelectRun={setSelectedRunId}
       />

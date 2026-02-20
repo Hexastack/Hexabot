@@ -5,6 +5,7 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
+import { jsonSchemaToZod } from '@n8n/json-schema-to-zod';
 import {
   BadRequestException,
   Injectable,
@@ -12,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
 import { FindOneOptions } from 'typeorm';
+import { ZodType } from 'zod';
 
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -43,6 +45,12 @@ export class WorkflowService extends BaseOrmService<
   WorkflowOrmEntity,
   WorkflowDtoConfig
 > {
+  private readonly MANUAL_INPUT_VALIDATION_ERROR = {
+    statusCode: 400,
+    error: 'Bad Request',
+    message: 'Manual workflow input validation failed',
+  } as const;
+
   /**
    * Creates the workflow service with the injected repository.
    *
@@ -96,6 +104,47 @@ export class WorkflowService extends BaseOrmService<
       rest as WorkflowUpdateDto,
       options,
     );
+  }
+
+  /**
+   * Validate manual trigger input against the workflow input schema.
+   */
+  validateManualInput(
+    input: unknown,
+    inputSchema: WorkflowOrmEntity['inputSchema'],
+  ): Record<string, unknown> {
+    let schema: ZodType;
+    try {
+      schema = jsonSchemaToZod(inputSchema);
+    } catch {
+      throw new BadRequestException({
+        ...this.MANUAL_INPUT_VALIDATION_ERROR,
+        details: { schema: 'Workflow input schema is not valid.' },
+      });
+    }
+
+    const validation = schema.safeParse(input);
+    if (!validation.success) {
+      throw new BadRequestException({
+        ...this.MANUAL_INPUT_VALIDATION_ERROR,
+        details: validation.error.flatten(),
+      });
+    }
+
+    if (
+      typeof validation.data !== 'object' ||
+      validation.data === null ||
+      Array.isArray(validation.data)
+    ) {
+      throw new BadRequestException({
+        ...this.MANUAL_INPUT_VALIDATION_ERROR,
+        details: {
+          input: 'Manual workflow input must resolve to an object payload.',
+        },
+      });
+    }
+
+    return validation.data as Record<string, unknown>;
   }
 
   /**
