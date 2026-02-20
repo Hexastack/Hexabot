@@ -160,7 +160,12 @@ export const llmGenerateTextOutputSchema = z.object({
 
 export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
   .extend({
-    output_schema: jsonSchemaInput.optional(),
+    output_schema: jsonSchemaInput.optional().meta({
+      title: 'Output schema',
+      description:
+        'Optional JSON Schema used to request structured output from the model.',
+      'ui:field': 'JsonSchemaObjectField',
+    }),
     output_schema_name: z.string().min(1).optional(),
     output_schema_description: z.string().min(1).optional(),
   })
