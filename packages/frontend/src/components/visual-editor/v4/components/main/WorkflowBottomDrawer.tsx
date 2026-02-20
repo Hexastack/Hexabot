@@ -6,6 +6,8 @@
 
 import { Divider, Drawer, Paper, Stack, useMediaQuery } from "@mui/material";
 import { alpha, styled, useTheme } from "@mui/material/styles";
+import { getDefaultFormState, type RJSFSchema } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
 import {
   useCallback,
   useEffect,
@@ -15,9 +17,11 @@ import {
 } from "react";
 
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
+import { TriggerSimulatorPanel } from "@/components/workflow-run-debugger/components/panels/trigger-simulator-panel/TriggerSimulatorPanel";
 import { WorkflowRunDebugger } from "@/components/workflow-run-debugger/components/WorkflowRunDebugger";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslate } from "@/hooks/useTranslate";
+import { WorkflowType } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 
@@ -144,12 +148,35 @@ const DrawerResizer = styled(Divider)(({ theme }) => ({
     opacity: 1,
   },
 }));
+const getDefaultManualInput = (schema?: unknown): Record<string, unknown> => {
+  if (!schema || typeof schema !== "object") {
+    return {};
+  }
+
+  try {
+    return (
+      getDefaultFormState(
+        validator,
+        schema as RJSFSchema,
+        undefined,
+        schema as RJSFSchema,
+        false,
+        {
+          emptyObjectFields: "skipEmptyDefaults",
+        },
+      ) ?? {}
+    ) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+};
 
 export const WorkflowBottomDrawer = () => {
   const { t } = useTranslate();
   const theme = useTheme();
   const { workflow } = useWorkflow();
   const { user } = useAuth();
+  const isConversationalWorkflow = workflow?.type === WorkflowType.conversational;
   const isStacked = useMediaQuery(theme.breakpoints.down("md"));
   const getMaxDrawerHeight = useCallback(() => {
     if (typeof window === "undefined") {
@@ -173,6 +200,9 @@ export const WorkflowBottomDrawer = () => {
     typeof window === "undefined"
       ? defaultDrawerHeight
       : Math.min(defaultDrawerHeight, getMaxDrawerHeight()),
+  );
+  const [workflowInput, setWorkflowInput] = useState<Record<string, unknown>>(
+    {},
   );
   const [chatColumnWidth, setChatColumnWidth] = useState<number | null>(null);
   const drawerBodyRef = useRef<HTMLDivElement | null>(null);
@@ -288,6 +318,16 @@ export const WorkflowBottomDrawer = () => {
   };
 
   useEffect(() => {
+    if (workflow?.type !== WorkflowType.manual) {
+      setWorkflowInput({});
+
+      return;
+    }
+
+    setWorkflowInput(getDefaultManualInput(workflow.inputSchema));
+  }, [workflow?.id, workflow?.inputSchema, workflow?.type]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -382,17 +422,34 @@ export const WorkflowBottomDrawer = () => {
         isStacked={isStacked}
         chatColumnWidth={chatColumnWidth}
       >
-        <ChatWidgetColumn
-          variant="spaced"
-          onWheelCapture={(event) => {
-            event.stopPropagation();
-          }}
-          onTouchMoveCapture={(event) => {
-            event.stopPropagation();
-          }}
-        >
-          <ChatWidget variant="embedded" />
-        </ChatWidgetColumn>
+        {isConversationalWorkflow ? (
+          <ChatWidgetColumn
+            variant="spaced"
+            onWheelCapture={(event) => {
+              event.stopPropagation();
+            }}
+            onTouchMoveCapture={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <ChatWidget variant="embedded" />
+          </ChatWidgetColumn>
+        ) : (
+          <DrawerColumn
+            onWheelCapture={(event) => {
+              event.stopPropagation();
+            }}
+            onTouchMoveCapture={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <TriggerSimulatorPanel
+              workflow={workflow}
+              formData={workflowInput}
+              onFormDataChange={setWorkflowInput}
+            />
+          </DrawerColumn>
+        )}
         {!isStacked && (
           <ColumnResizer
             onMouseDown={handleColumnResizeStart}
@@ -405,6 +462,7 @@ export const WorkflowBottomDrawer = () => {
           <WorkflowRunDebugger
             workflow={workflow}
             initiatorId={user?.id}
+            workflowInput={workflowInput}
           />
         </DrawerColumn>
       </DrawerBody>
