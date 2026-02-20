@@ -7,8 +7,10 @@
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import {
   ENodeType,
+  getWorkflowPortId,
   IWorkflowNodeContext,
   Port,
+  WorkflowNodePort,
 } from "../../types/workflow-node.types";
 import { GenericHandle } from "../handlers/GenericHandle";
 
@@ -17,23 +19,30 @@ export const GenericNodePorts = <T extends ENodeType = ENodeType>({
 }: {
   getDisabled?: (props: {
     port: Port<T>;
+    portDef: WorkflowNodePort<T>;
     idx: number;
     node: IWorkflowNodeContext<T>;
   }) => boolean;
 }) => {
   const workflowNode = useWorkflowNode<T>();
 
-  return (workflowNode.ports as Port<T>[])?.map((port, idx) => {
-    const isDisabled = getDisabled?.({
+  return (workflowNode.ports as WorkflowNodePort<T>[])?.map((portDef, idx) => {
+    const port = getWorkflowPortId(portDef);
+    const isHidden = getDisabled?.({
       port,
+      portDef,
       idx,
       node: workflowNode,
     });
+    const label = typeof portDef === "string" ? undefined : portDef.label;
 
-    if (isDisabled) {
-      return null;
-    }
-
-    return <GenericHandle key={port} id={port} />;
+    return (
+      <GenericHandle
+        key={port}
+        id={port}
+        label={label}
+        hidden={isHidden}
+      />
+    );
   });
 };

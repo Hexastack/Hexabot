@@ -93,13 +93,16 @@ export const NODES = {
     ports: [
       ELinkType.AGENT_IN,
       ELinkType.AGENT_OUT,
-      ELinkType.AGENT_TOOL,
-      ELinkType.AGENT_MODEL,
-      ELinkType.AGENT_MEMORY,
+      { id: ELinkType.AGENT_TOOL, label: "visual_editor.port_label.tools" },
+      { id: ELinkType.AGENT_MODEL, label: "visual_editor.port_label.model" },
+      {
+        id: ELinkType.AGENT_MEMORY,
+        label: "visual_editor.port_label.memory",
+      },
     ],
     theme: {
       Icon: Bot,
-      borderColor: "#7bb0ff",
+      borderColor: "#b65bfd",
     },
     title: "",
   },

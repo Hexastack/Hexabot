@@ -23,8 +23,10 @@ import {
   EIndicatorType,
   ELinkType,
   ENodeType,
+  getWorkflowPortId,
   type GraphNode,
   type IBuildNodesAndEdgesProps,
+  type WorkflowNodePort,
   type WorkflowPort,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
@@ -123,16 +125,19 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
     },
     children: nodes.map((n) => {
       const ports =
-        (n.data as { ports?: WorkflowPort[] })?.ports?.map((handleId) => {
-          const handle = getHandleConfig(handleId, direction);
+        (n.data as { ports?: WorkflowNodePort<ENodeType>[] })?.ports?.map(
+          (portDef) => {
+            const handleId = getWorkflowPortId(portDef);
+            const handle = getHandleConfig(handleId, direction);
 
-          return {
-            handleId,
-            elkId: `${n.id}__${handleId}`,
-            side: getElkSide(handle.position),
-            type: handle.type,
-          } as ElkPort;
-        }) ?? [];
+            return {
+              handleId,
+              elkId: `${n.id}__${handleId}`,
+              side: getElkSide(handle.position),
+              type: handle.type,
+            } as ElkPort;
+          },
+        ) ?? [];
 
       nodePorts.set(n.id, ports);
 

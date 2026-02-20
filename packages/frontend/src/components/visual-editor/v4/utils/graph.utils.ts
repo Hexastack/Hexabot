@@ -34,8 +34,8 @@ import {
   type GraphNode,
   type INodeConfig,
   type OperatorData,
-  type Port,
   type THighlightGroups,
+  type WorkflowNodePort,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
 
@@ -88,6 +88,9 @@ type OperatorNodeArgs = {
   stepPath: FlowStepPath;
   strategy?: CompiledParallelStep["strategy"];
 };
+const getParallelStrategyLabelKey = (
+  strategy: CompiledParallelStep["strategy"],
+) => `visual_editor.parallel_drawer.form.strategy.${strategy}.label`;
 
 function uniqueIds(ids: string[]) {
   return Array.from(new Set(ids));
@@ -105,11 +108,16 @@ const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
   const tools = Array.isArray(settings?.tools)
     ? (settings.tools as string[])
     : [];
+  const providerValue = settings?.provider;
   const modelValue = settings?.model;
+  const provider =
+    providerValue !== undefined && providerValue !== null
+      ? String(providerValue)
+      : "";
   const model =
     modelValue !== undefined && modelValue !== null ? String(modelValue) : "";
 
-  return { settings, tools, model };
+  return { settings, tools, model, provider };
 };
 // Connect incoming sources to a target and preserve insert path metadata.
 const connectIncomingEdges = (
@@ -484,6 +492,31 @@ const addOperatorNode = (
     strategy,
   }: OperatorNodeArgs,
 ) => {
+  const operatorBaseData = config.nodes[ENodeType.OPERATOR][operatorType];
+  const ports: WorkflowNodePort<ENodeType.OPERATOR>[] =
+    operatorType === StepType.Parallel && strategy
+      ? operatorBaseData.ports.map((port) => {
+          if (port === ELinkType.OPERATOR_OUT) {
+            return {
+              id: ELinkType.OPERATOR_OUT,
+              label: getParallelStrategyLabelKey(strategy),
+            };
+          }
+
+          if (
+            typeof port !== "string" &&
+            port.id === ELinkType.OPERATOR_OUT
+          ) {
+            return {
+              ...port,
+              label: getParallelStrategyLabelKey(strategy),
+            };
+          }
+
+          return port;
+        })
+      : operatorBaseData.ports;
+
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.OPERATOR, config),
     ...DEFAULT_NODE_PROPS,
@@ -495,11 +528,12 @@ const addOperatorNode = (
     type: ENodeType.OPERATOR,
     position: { x: 0, y: 0 },
     data: {
-      ...config.nodes[ENodeType.OPERATOR][operatorType],
+      ...operatorBaseData,
       stepId,
       level,
       groupName,
       stepPath,
+      ports,
       strategy,
     },
   });
@@ -636,13 +670,15 @@ const walkConditionalBranches = (
 
   if (operatorNode) {
     const operatorData = operatorNode.data as OperatorData;
-    const conditionalOutPorts: Port<ENodeType.OPERATOR>[] =
+    const conditionalOutPorts: WorkflowNodePort<ENodeType.OPERATOR>[] =
       conditionPortLabels.length
-        ? conditionPortLabels.map((item) => item.handleId)
+        ? conditionPortLabels.map((item) => ({
+            id: item.handleId,
+            label: item.label,
+          }))
         : [ELinkType.OPERATOR_OUT];
 
     operatorData.ports = [ELinkType.OPERATOR_IN, ...conditionalOutPorts];
-    operatorData.conditionPortLabels = conditionPortLabels;
   }
 
   return step.branches.flatMap((branch, branchIndex) => {
@@ -767,9 +803,9 @@ const walkStep = ({
     ensureWorkflowStartIndicator(ctx, taskNodeId, level, groupName);
     ensureWorkflowStartEdge(ctx, incoming, taskNodeId, stepPath);
 
-    const { tools, model } = getTaskMeta(taskName, ctx.tasks);
+    const { tools, model, provider } = getTaskMeta(taskName, ctx.tasks);
 
-    if (tools.length) {
+    if (model && provider) {
       addAgentGraph(
         ctx,
         config,
@@ -782,7 +818,7 @@ const walkStep = ({
           stepPath,
         },
         tools,
-        model,
+        `${provider}/${model}`,
       );
     } else {
       addTaskNode(ctx, config, {

@@ -843,6 +843,11 @@
         "empty_state": "Aucune option de stratégie disponible."
       }
     },
+    "port_label": {
+      "memory": "Mémoire",
+      "model": "Modèle",
+      "tools": "Outils"
+    },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML"

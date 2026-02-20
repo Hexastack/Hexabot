@@ -845,6 +845,11 @@
         "empty_state": "No strategy options available."
       }
     },
+    "port_label": {
+      "memory": "Memory",
+      "model": "Model",
+      "tools": "Tools"
+    },
     "yaml_editor": {
       "show": "Show YAML editor",
       "hide": "Hide YAML editor"

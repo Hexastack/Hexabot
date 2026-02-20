@@ -67,7 +67,7 @@ export type CommonNodeDadaTypes = NodeDataTitle & {
 };
 
 type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
-  ports: Port<T>[];
+  ports: WorkflowNodePort<T>[];
 };
 
 // model types
@@ -112,12 +112,11 @@ export type EOperatorType = Extract<
 export type OperatorData = CommonNodeData<ENodeType.OPERATOR> & {
   operatorType?: EOperatorType;
   strategy?: "wait_all" | "wait_any";
-  conditionPortLabels?: { handleId: ConditionalOperatorOutPort; label: string }[];
 };
 
 // Group types
 export type GroupData = {
-  ports: Port<ENodeType.GROUP>[];
+  ports: WorkflowNodePort<ENodeType.GROUP>[];
   theme: {
     bgColor: string;
   };
@@ -163,6 +162,15 @@ export type ConditionalOperatorOutPort =
 export type WorkflowPort = ELinkType | ConditionalOperatorOutPort;
 
 export type Port<P extends string> = Extract<WorkflowPort, `${P}${string}`>;
+export type WorkflowPortObject<P extends string> = {
+  id: Port<P>;
+  label?: string;
+};
+export type WorkflowNodePort<P extends string> = Port<P> | WorkflowPortObject<P>;
+
+export const getWorkflowPortId = <P extends string>(
+  port: WorkflowNodePort<P>,
+): Port<P> => (typeof port === "string" ? port : port.id);
 
 // Workflow global types
 export type THighlightGroups = {
