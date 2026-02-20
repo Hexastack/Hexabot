@@ -8,7 +8,6 @@ import { z } from 'zod';
 
 import {
   incomingMessageType,
-  StdEventType,
   stdIncomingMessageSchema,
 } from '@/chat/types/message';
 import { payloadSchema } from '@/chat/types/quick-reply';
@@ -16,10 +15,6 @@ import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 export const conversationalWorkflowInputZodSchema = z
   .object({
-    event_type: z.enum(StdEventType).meta({
-      title: 'Event type',
-      description: 'Type of event that triggered this workflow run.',
-    }),
     message_type: incomingMessageType.optional().meta({
       title: 'Message type',
       description:

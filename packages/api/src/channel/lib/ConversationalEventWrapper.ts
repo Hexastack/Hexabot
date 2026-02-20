@@ -262,7 +262,6 @@ export default abstract class ConversationalEventWrapper<
   buildInput(): ConversationalWorkflowInput {
     const input: ConversationalWorkflowInput = {
       message_type: this.getMessageType(),
-      event_type: this.getEventType(),
       payload: this.getPayload(),
       message: this.getMessage(),
       text: this.getText(),

@@ -39,11 +39,6 @@ type TranslateFn = ReturnType<typeof useTranslate>["t"];
 const getConversationalWorkflowInputSchema = (t: TranslateFn): JsonSchema => ({
   type: "object",
   properties: {
-    event_type: {
-      type: "string",
-      title: t("label.event_type"),
-      description: t("message.workflow_input_event_type_description"),
-    },
     message_type: {
       type: "string",
       title: t("label.message_type"),
@@ -70,7 +65,7 @@ const getConversationalWorkflowInputSchema = (t: TranslateFn): JsonSchema => ({
       description: t("message.workflow_input_mid_description"),
     },
   },
-  required: ["event_type", "message", "text"],
+  required: ["message", "text"],
   additionalProperties: false,
 });
 const getScheduledWorkflowInputSchema = (t: TranslateFn): JsonSchema => ({
