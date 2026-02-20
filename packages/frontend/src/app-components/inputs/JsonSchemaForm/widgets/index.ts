@@ -12,9 +12,7 @@ import { ActionSelectWidget } from "./ActionSelectWidget";
 import { AutoCompleteWidget } from "./AutoCompleteWidget";
 import { JsonataTextWidget } from "./JsonataTextWidget";
 
-export const FORM_WIDGETS = {
-  TextWidget: JsonataTextWidget,
-  TextareaWidget: JsonataTextWidget,
+export const FORM_WIDGETS_BASE = {
   SelectWidget: ActionSelectWidget,
   CheckboxWidget: ActionCheckboxWidget,
   CheckboxesWidget: ActionCheckboxesWidget,
@@ -22,3 +20,12 @@ export const FORM_WIDGETS = {
   RangeWidget: ActionRangeWidget,
   AutoCompleteWidget,
 } as const;
+
+export const FORM_WIDGETS = {
+  ...FORM_WIDGETS_BASE,
+  TextWidget: JsonataTextWidget,
+  TextareaWidget: JsonataTextWidget,
+} as const;
+
+export const getFormWidgets = (enableJsonataTextWidget = true) =>
+  enableJsonataTextWidget ? FORM_WIDGETS : FORM_WIDGETS_BASE;

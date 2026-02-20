@@ -10,20 +10,10 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-import { Form } from "@rjsf/mui";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import { ChevronDown } from "lucide-react";
 
-import { FORM_FIELDS } from "./fields";
-import { FORM_TEMPLATES } from "./templates";
-import { FORM_WIDGETS } from "./widgets";
-
-const formUiSchema = {
-  "ui:submitButtonOptions": {
-    norender: true,
-  },
-} as const;
+import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 
 export type ActionSchemaPanelProps = {
   title: string;
@@ -52,21 +42,12 @@ export const ActionSchemaPanel = ({
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
-        <Form
+        <JsonSchemaForm
           schema={schema as RJSFSchema}
-          validator={validator}
           formData={formData}
-          formContext={{ formData }}
-          onChange={(event) =>
-            onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
-          }
-          showErrorList={false}
-          noHtml5Validate
-          uiSchema={{ ...formUiSchema, ...(uiSchema ?? {}) }}
+          onFormDataChange={onFormDataChange}
+          uiSchema={uiSchema}
           idPrefix={`action-${panelKey}`}
-          templates={FORM_TEMPLATES}
-          fields={FORM_FIELDS}
-          widgets={FORM_WIDGETS}
         />
       ) : (
         <Typography variant="body2" color="text.secondary">
