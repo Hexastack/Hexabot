@@ -18,6 +18,19 @@ type getHandleConfigProps = Omit<HandleProps, "type"> & { type: EHandleType };
 
 const CONDITIONAL_OPERATOR_OUT_PATTERN = /^operatorOut-(\d+)-(\d+)$/;
 
+type AgentOutHandle = Extract<
+  ELinkType,
+  ELinkType.AGENT_MODEL | ELinkType.AGENT_MEMORY | ELinkType.AGENT_TOOL
+>;
+const AGENT_OUT_HANDLE_PROGRESS: Record<
+  AgentOutHandle,
+  { horizontal: number; vertical: number }
+> = {
+  agentModel: { horizontal: 10, vertical: 30 },
+  agentMemory: { horizontal: 50, vertical: 50 },
+  agentTool: { horizontal: 90, vertical: 70 },
+};
+
 export const getConditionalOperatorOutHandleMeta = (
   id: WorkflowPort | string,
 ) => {
@@ -42,6 +55,20 @@ export const getConditionalOperatorOutHandleMeta = (
 
   return { index, total } as const;
 };
+export const getAgentOutHandleMeta = (id: WorkflowPort | string) => {
+  const handleId = String(id) as AgentOutHandle;
+  const progress = AGENT_OUT_HANDLE_PROGRESS[handleId];
+
+  if (!progress) {
+    return;
+  }
+
+  return {
+    handleId,
+    horizontal: progress.horizontal,
+    vertical: progress.vertical,
+  } as const;
+};
 
 const getHandleBaseId = (id: WorkflowPort): ELinkType => {
   return getConditionalOperatorOutHandleMeta(id)
@@ -63,6 +90,20 @@ const getConditionalOperatorOutStyle = (
   return direction === "horizontal"
     ? { top: `${progress}%` }
     : { left: `${progress}%` };
+};
+const getAgentOutStyle = (
+  id: WorkflowPort,
+  direction: ResizeControlDirection,
+) => {
+  const meta = getAgentOutHandleMeta(id);
+
+  if (!meta) {
+    return;
+  }
+
+  return direction === "horizontal"
+    ? { left: `${meta.horizontal}%` }
+    : { top: `${meta.vertical}%` };
 };
 const getHandleDimensions = (
   id: WorkflowPort,
@@ -216,28 +257,12 @@ const getConfig = (
       };
 
     case ELinkType.AGENT_MODEL:
-      return {
-        type: EHandleType.SOURCE,
-        position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        style: {
-          ...(direction === "horizontal" ? { left: "10%" } : { top: "30%" }),
-        },
-      };
     case ELinkType.AGENT_MEMORY:
-      return {
-        type: EHandleType.SOURCE,
-        position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        style: {
-          ...(direction === "horizontal" ? { left: "50%" } : { top: "50%" }),
-        },
-      };
     case ELinkType.AGENT_TOOL:
       return {
         type: EHandleType.SOURCE,
         position: direction === "horizontal" ? Position.Bottom : Position.Left,
-        style: {
-          ...(direction === "horizontal" ? { left: "90%" } : { top: "70%" }),
-        },
+        style: getAgentOutStyle(id, direction),
       };
     case ELinkType.TOOL_IN:
       return {
