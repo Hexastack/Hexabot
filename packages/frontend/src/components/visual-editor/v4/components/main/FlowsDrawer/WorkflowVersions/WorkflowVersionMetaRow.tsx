@@ -5,7 +5,7 @@
  */
 
 import { Button, Chip, Stack, Typography, useTheme } from "@mui/material";
-import { RotateCcw } from "lucide-react";
+import { CloudOff, CloudUpload, RotateCcw } from "lucide-react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -13,22 +13,33 @@ type WorkflowVersionMetaRowProps = {
   versionNumber: number;
   actionMeta: { label: string; color: string; background: string };
   isCurrent: boolean;
+  isPublished: boolean;
   canRestore: boolean;
+  canPublish: boolean;
+  canUnpublish: boolean;
   isSaving: boolean;
   onRestore: () => void;
+  onPublish: () => void;
+  onUnpublish: () => void;
 };
 
 export const WorkflowVersionMetaRow = ({
   versionNumber,
   actionMeta,
   isCurrent,
+  isPublished,
   canRestore,
+  canPublish,
+  canUnpublish,
   isSaving,
   onRestore,
+  onPublish,
+  onUnpublish,
 }: WorkflowVersionMetaRowProps) => {
   const { t } = useTranslate();
   const theme = useTheme();
   const iconSize = theme.typography.pxToRem(14);
+  const hasActions = canRestore || canPublish || canUnpublish;
 
   return (
     <Stack
@@ -58,7 +69,14 @@ export const WorkflowVersionMetaRow = ({
           color="primary"
         />
       )}
-      {canRestore && (
+      {isPublished && (
+        <Chip
+          size="small"
+          label={t("visual_editor.flows_drawer.status.published")}
+          color="success"
+        />
+      )}
+      {hasActions && (
         <Stack
           className="workflow-version-actions"
           direction="row"
@@ -72,22 +90,60 @@ export const WorkflowVersionMetaRow = ({
             }),
           }}
         >
-          <Button
-            size="small"
-            variant="text"
-            color="warning"
-            disabled={isSaving}
-            onClick={onRestore}
-            startIcon={<RotateCcw size={iconSize} />}
-            sx={{
-              minWidth: 0,
-              px: 1,
-              fontSize: theme.typography.caption.fontSize,
-              textTransform: "none",
-            }}
-          >
-            {t("button.restore")}
-          </Button>
+          {canPublish && (
+            <Button
+              size="small"
+              variant="text"
+              color="primary"
+              disabled={isSaving}
+              onClick={onPublish}
+              startIcon={<CloudUpload size={iconSize} />}
+              sx={{
+                minWidth: 0,
+                px: 1,
+                fontSize: theme.typography.caption.fontSize,
+                textTransform: "none",
+              }}
+            >
+              {t("button.publish")}
+            </Button>
+          )}
+          {canUnpublish && (
+            <Button
+              size="small"
+              variant="text"
+              color="warning"
+              disabled={isSaving}
+              onClick={onUnpublish}
+              startIcon={<CloudOff size={iconSize} />}
+              sx={{
+                minWidth: 0,
+                px: 1,
+                fontSize: theme.typography.caption.fontSize,
+                textTransform: "none",
+              }}
+            >
+              {t("button.unpublish")}
+            </Button>
+          )}
+          {canRestore && (
+            <Button
+              size="small"
+              variant="text"
+              color="warning"
+              disabled={isSaving}
+              onClick={onRestore}
+              startIcon={<RotateCcw size={iconSize} />}
+              sx={{
+                minWidth: 0,
+                px: 1,
+                fontSize: theme.typography.caption.fontSize,
+                textTransform: "none",
+              }}
+            >
+              {t("button.restore")}
+            </Button>
+          )}
         </Stack>
       )}
     </Stack>

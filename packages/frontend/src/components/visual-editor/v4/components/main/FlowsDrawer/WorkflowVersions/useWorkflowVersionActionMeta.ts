@@ -48,12 +48,6 @@ export const useWorkflowVersionActionMeta = () => {
             color: theme.palette.secondary.main,
             background: alpha(theme.palette.secondary.main, 0.12),
           };
-        case WorkflowVersionAction.publish:
-          return {
-            label: t("visual_editor.workflow_versions.actions.publish"),
-            color: theme.palette.primary.main,
-            background: alpha(theme.palette.primary.main, 0.12),
-          };
         default:
           return fallback;
       }

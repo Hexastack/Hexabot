@@ -16,7 +16,6 @@ import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import type { IAction } from "@/types/action.types";
-import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
 import type { FlowStepPath } from "./workflow-path.types";
@@ -53,7 +52,9 @@ export interface IWorkflowContext {
     IWorkflow
   >;
   updateDefinition: (definition: WorkflowDefinition) => void;
-  persistDefinition: (action?: WorkflowVersionAction) => void;
+  persistDefinition: () => void;
+  publishVersion: (versionId?: string) => void;
+  unpublishVersion: () => void;
   restoreVersion: (parentVersion: string, definitionYml: string) => void;
   isDefinitionDirty: boolean;
   isSaving: boolean;

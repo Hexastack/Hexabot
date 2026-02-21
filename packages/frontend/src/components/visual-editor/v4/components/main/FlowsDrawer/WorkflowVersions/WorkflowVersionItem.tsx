@@ -26,8 +26,11 @@ type WorkflowVersionItemProps = {
   index: number;
   total: number;
   currentVersionId?: string | null;
+  publishedVersionId?: string | null;
   isSaving: boolean;
   onRestore: (id: string, definitionYml: string) => void;
+  onPublish: (id: string) => void;
+  onUnpublish: () => void;
   getUserLabel: (createdBy: string) => string;
   language: string;
 };
@@ -37,8 +40,11 @@ export const WorkflowVersionItem = ({
   index,
   total,
   currentVersionId,
+  publishedVersionId,
   isSaving,
   onRestore,
+  onPublish,
+  onUnpublish,
   getUserLabel,
   language,
 }: WorkflowVersionItemProps) => {
@@ -54,6 +60,9 @@ export const WorkflowVersionItem = ({
   const createdByLabel = getUserLabel(version.createdBy);
   const message = version.message?.trim();
   const canRestore = !isCurrent && Boolean(version.definitionYml);
+  const isPublished = version.id === publishedVersionId;
+  const canPublish = Boolean(version.definitionYml) && !isPublished;
+  const canUnpublish = isPublished;
 
   return (
     <TimelineItem sx={{ minHeight: "auto" }}>
@@ -105,13 +114,20 @@ export const WorkflowVersionItem = ({
               versionNumber={version.version}
               actionMeta={actionMeta}
               isCurrent={isCurrent}
+              isPublished={isPublished}
               canRestore={canRestore}
+              canPublish={canPublish}
+              canUnpublish={canUnpublish}
               isSaving={isSaving}
               onRestore={() => {
                 if (version.definitionYml) {
                   onRestore(version.id, version.definitionYml);
                 }
               }}
+              onPublish={() => {
+                onPublish(version.id);
+              }}
+              onUnpublish={onUnpublish}
             />
             <Typography
               variant="body2"
