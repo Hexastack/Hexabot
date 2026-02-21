@@ -80,7 +80,7 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
   @RelationId((version: WorkflowVersionOrmEntity) => version.parentVersion)
   private readonly parentVersionId?: string | null;
 
-  /** Version action label (create, update, restore, import, publish). */
+  /** Version action label (create, update, restore, import). */
   @EnumColumn({ enum: WorkflowVersionAction, nullable: true })
   action?: WorkflowVersionAction | null;
 
@@ -129,9 +129,6 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
     const workflow = manager.create(WorkflowOrmEntity, {
       id: workflowId,
       currentVersion: { id: this.id },
-      ...(this.action === WorkflowVersionAction.publish
-        ? { publishedVersion: { id: this.id } }
-        : {}),
     });
     await manager.save(WorkflowOrmEntity, workflow);
   }

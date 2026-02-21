@@ -40,30 +40,6 @@ export const getInitiatorName = (
   return combined || initiator.id || "Unknown";
 };
 
-type WorkflowVersionSummary = {
-  id?: string;
-  version?: number | null;
-} | null;
-
-type WorkflowSummary = {
-  publishedVersion?: string | { id?: string } | null;
-} | null;
-
-export const getWorkflowVersionLabel = (
-  workflowVersion?: WorkflowVersionSummary,
-  workflow?: WorkflowSummary,
-): string | undefined => {
-  if (typeof workflowVersion?.version !== "number") return undefined;
-
-  const publishedVersionId = resolveEntityId(workflow?.publishedVersion);
-  const labelPrefix =
-    publishedVersionId && workflowVersion?.id === publishedVersionId
-      ? "Published"
-      : "Draft";
-
-  return `${labelPrefix} v${workflowVersion.version}`;
-};
-
 export const formatRunTimestamp = (
   locale: string,
   date?: Date | string,

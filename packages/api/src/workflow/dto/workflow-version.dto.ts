@@ -68,8 +68,8 @@ export class WorkflowVersionFull extends WorkflowVersionStub {
 
 export class WorkflowNewVersionDto {
   @ApiPropertyOptional({
-    description: 'Workflow trigger type',
-    enumName: 'WorkflowType',
+    description: 'Workflow version action',
+    enumName: 'WorkflowVersionAction',
     enum: WorkflowVersionAction,
   })
   @IsEnum(WorkflowVersionAction)
