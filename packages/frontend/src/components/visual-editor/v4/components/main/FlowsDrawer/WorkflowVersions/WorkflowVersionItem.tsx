@@ -11,7 +11,7 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
-import { Paper, Typography } from "@mui/material";
+import { Paper } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
@@ -30,6 +30,7 @@ type WorkflowVersionItemProps = {
   onRestore: (id: string, definitionYml: string) => void;
   onPublish: (id: string) => void;
   onUnpublish: () => void;
+  onUpdateMessage: (id: string, message: string) => void;
   getUserLabel: (createdBy: string) => string;
   language: string;
 };
@@ -44,6 +45,7 @@ export const WorkflowVersionItem = ({
   onRestore,
   onPublish,
   onUnpublish,
+  onUpdateMessage,
   getUserLabel,
   language,
 }: WorkflowVersionItemProps) => {
@@ -86,19 +88,6 @@ export const WorkflowVersionItem = ({
         {index < total - 1 && <TimelineConnector sx={{ bgcolor: "divider" }} />}
       </TimelineSeparator>
       <TimelineContent sx={{ pt: 1, pb: 1, pr: 1, minWidth: 0 }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          noWrap
-          title={exactDate ?? timeLabel}
-          sx={{
-            mb: 0.5,
-            display: "block",
-            textAlign: "left",
-          }}
-        >
-          {timeLabel}
-        </Typography>
         <Paper
           variant="spaced"
           sx={(theme) => ({
@@ -115,6 +104,8 @@ export const WorkflowVersionItem = ({
         >
           <WorkflowVersionMetaRow
             versionNumber={version.version}
+            timeLabel={timeLabel}
+            exactDate={exactDate}
             actionMeta={actionMeta}
             isCurrent={isCurrent}
             isPublished={isPublished}
@@ -133,6 +124,9 @@ export const WorkflowVersionItem = ({
               onPublish(version.id);
             }}
             onUnpublish={onUnpublish}
+            onUpdateMessage={(nextMessage) => {
+              onUpdateMessage(version.id, nextMessage);
+            }}
           />
         </Paper>
       </TimelineContent>

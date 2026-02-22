@@ -18,6 +18,7 @@ type WorkflowVersionsTimelineProps = {
   onRestore: (id: string, definitionYml: string) => void;
   onPublish: (id: string) => void;
   onUnpublish: () => void;
+  onUpdateMessage: (id: string, message: string) => void;
   getUserLabel: (createdBy: string) => string;
   language: string;
 };
@@ -30,6 +31,7 @@ export const WorkflowVersionsTimeline = ({
   onRestore,
   onPublish,
   onUnpublish,
+  onUpdateMessage,
   getUserLabel,
   language,
 }: WorkflowVersionsTimelineProps) => (
@@ -46,6 +48,7 @@ export const WorkflowVersionsTimeline = ({
         onRestore={onRestore}
         onPublish={onPublish}
         onUnpublish={onUnpublish}
+        onUpdateMessage={onUpdateMessage}
         getUserLabel={getUserLabel}
         language={language}
       />

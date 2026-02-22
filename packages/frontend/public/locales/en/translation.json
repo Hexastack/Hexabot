@@ -862,7 +862,7 @@
       "empty": "No versions yet.",
       "empty_selection": "Select a workflow to view its versions.",
       "current": "Current",
-      "message_fallback": "No message",
+      "add_note": "Add note...",
       "system": "System",
       "unknown_user": "Unknown user",
       "by": "by {{0}}",
