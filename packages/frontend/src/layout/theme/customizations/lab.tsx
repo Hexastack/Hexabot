@@ -50,7 +50,7 @@ export const labCustomizations: Components<Theme> = {
           },
           "&:hover": {
             borderColor: theme.palette.primary.main,
-            cursor: "pointer",
+            // cursor: "pointer",
             marginLeft: "2px",
           },
         },

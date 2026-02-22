@@ -14,6 +14,8 @@ type WorkflowVersionMetaRowProps = {
   actionMeta: { label: string; color: string; background: string };
   isCurrent: boolean;
   isPublished: boolean;
+  createdByLabel: string;
+  message?: string | null;
   canRestore: boolean;
   canPublish: boolean;
   canUnpublish: boolean;
@@ -28,6 +30,8 @@ export const WorkflowVersionMetaRow = ({
   actionMeta,
   isCurrent,
   isPublished,
+  createdByLabel,
+  message,
   canRestore,
   canPublish,
   canUnpublish,
@@ -40,54 +44,97 @@ export const WorkflowVersionMetaRow = ({
   const theme = useTheme();
   const iconSize = theme.typography.pxToRem(14);
   const hasActions = canRestore || canPublish || canUnpublish;
+  const trimmedMessage = message?.trim();
 
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      flexWrap="wrap"
-      spacing={0.5}
-      useFlexGap
-    >
-      <Typography variant="subtitle2">
-        {t("visual_editor.workflow_versions.version", {
-          0: versionNumber,
+    <Stack spacing={0.5} minWidth={0}>
+      <Stack
+        direction="row"
+        spacing={1}
+        justifyContent="space-between"
+        minWidth={0}
+      >
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          {t("visual_editor.workflow_versions.version", {
+            0: versionNumber,
+          })}
+        </Typography>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          spacing={0.5}
+          useFlexGap
+          justifyContent="flex-end"
+        >
+          <Chip
+            size="small"
+            label={actionMeta.label}
+            sx={{
+              color: actionMeta.color,
+              backgroundColor: actionMeta.background,
+              borderColor: actionMeta.color,
+            }}
+          />
+          {isCurrent && (
+            <Chip
+              size="small"
+              label={t("visual_editor.workflow_versions.current")}
+              color="primary"
+            />
+          )}
+          {isPublished && (
+            <Chip
+              size="small"
+              label={t("visual_editor.flows_drawer.status.published")}
+              color="success"
+            />
+          )}
+        </Stack>
+      </Stack>
+
+      <Typography variant="caption" color="text.secondary">
+        {t("visual_editor.workflow_versions.by", {
+          0: createdByLabel,
         })}
       </Typography>
-      <Chip
-        size="small"
-        label={actionMeta.label}
-        sx={{
-          color: actionMeta.color,
-          backgroundColor: actionMeta.background,
-        }}
-      />
-      {isCurrent && (
-        <Chip
-          size="small"
-          label={t("visual_editor.workflow_versions.current")}
-          color="primary"
-        />
-      )}
-      {isPublished && (
-        <Chip
-          size="small"
-          label={t("visual_editor.flows_drawer.status.published")}
-          color="success"
-        />
-      )}
+
+      <Typography
+        variant="body2"
+        color={trimmedMessage ? "text.primary" : "text.secondary"}
+        sx={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
+      >
+        {trimmedMessage ||
+          t("visual_editor.workflow_versions.message_fallback")}
+      </Typography>
+
       {hasActions && (
         <Stack
           className="workflow-version-actions"
           direction="row"
           alignItems="center"
-          ml="auto"
+          justifyContent="flex-end"
+          useFlexGap
+          spacing={0.5}
           sx={{
+            mt: 0,
+            pt: 0,
             opacity: 0,
+            maxHeight: 0,
+            overflow: "hidden",
+            borderTop: "1px solid transparent",
             pointerEvents: "none",
-            transition: theme.transitions.create("opacity", {
-              duration: theme.transitions.duration.shortest,
-            }),
+            transition: theme.transitions.create(
+              [
+                "opacity",
+                "max-height",
+                "margin-top",
+                "padding-top",
+                "border-color",
+              ],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
           }}
         >
           {canPublish && (
@@ -98,12 +145,6 @@ export const WorkflowVersionMetaRow = ({
               disabled={isSaving}
               onClick={onPublish}
               startIcon={<CloudUpload size={iconSize} />}
-              sx={{
-                minWidth: 0,
-                px: 1,
-                fontSize: theme.typography.caption.fontSize,
-                textTransform: "none",
-              }}
             >
               {t("button.publish")}
             </Button>
@@ -134,12 +175,6 @@ export const WorkflowVersionMetaRow = ({
               disabled={isSaving}
               onClick={onRestore}
               startIcon={<RotateCcw size={iconSize} />}
-              sx={{
-                minWidth: 0,
-                px: 1,
-                fontSize: theme.typography.caption.fontSize,
-                textTransform: "none",
-              }}
             >
               {t("button.restore")}
             </Button>
