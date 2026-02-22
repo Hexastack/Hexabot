@@ -9,10 +9,9 @@ import {
   TimelineContent,
   TimelineDot,
   TimelineItem,
-  TimelineOppositeContent,
   TimelineSeparator,
 } from "@mui/lab";
-import { Paper, Stack, Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import type { IWorkflowVersion } from "@/types/workfow-version.types";
@@ -26,8 +25,11 @@ type WorkflowVersionItemProps = {
   index: number;
   total: number;
   currentVersionId?: string | null;
+  publishedVersionId?: string | null;
   isSaving: boolean;
   onRestore: (id: string, definitionYml: string) => void;
+  onPublish: (id: string) => void;
+  onUnpublish: () => void;
   getUserLabel: (createdBy: string) => string;
   language: string;
 };
@@ -37,8 +39,11 @@ export const WorkflowVersionItem = ({
   index,
   total,
   currentVersionId,
+  publishedVersionId,
   isSaving,
   onRestore,
+  onPublish,
+  onUnpublish,
   getUserLabel,
   language,
 }: WorkflowVersionItemProps) => {
@@ -52,29 +57,22 @@ export const WorkflowVersionItem = ({
     : t("message.no_data_to_display");
   const exactDate = createdAt ? normalizeDate(language, createdAt) : undefined;
   const createdByLabel = getUserLabel(version.createdBy);
-  const message = version.message?.trim();
   const canRestore = !isCurrent && Boolean(version.definitionYml);
+  const isPublished = version.id === publishedVersionId;
+  const canPublish = Boolean(version.definitionYml) && !isPublished;
+  const canUnpublish = isPublished;
 
   return (
-    <TimelineItem sx={{ minHeight: "auto" }}>
-      <TimelineOppositeContent
-        sx={{
+    <TimelineItem
+      sx={{
+        minHeight: "auto",
+        "&::before": {
           flex: 0.35,
-          pr: 1,
-          pt: 0.7,
-          minWidth: 0,
-        }}
-        align="right"
-      >
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          noWrap
-          title={exactDate ?? timeLabel}
-        >
-          {timeLabel}
-        </Typography>
-      </TimelineOppositeContent>
+          px: 0,
+          py: 0.7,
+        },
+      }}
+    >
       <TimelineSeparator>
         <TimelineDot
           variant={isCurrent ? "filled" : "outlined"}
@@ -87,45 +85,55 @@ export const WorkflowVersionItem = ({
         />
         {index < total - 1 && <TimelineConnector sx={{ bgcolor: "divider" }} />}
       </TimelineSeparator>
-      <TimelineContent sx={{ pt: 0, pb: 1, pr: 1 }}>
-        <Paper
-          variant="outlined"
+      <TimelineContent sx={{ pt: 1, pb: 1, pr: 1, minWidth: 0 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          noWrap
+          title={exactDate ?? timeLabel}
           sx={{
-            p: 1.25,
-            borderRadius: 1,
-            minWidth: 0,
-            "&:hover .workflow-version-actions": {
-              opacity: 1,
-              pointerEvents: "auto",
-            },
+            mb: 0.5,
+            display: "block",
+            textAlign: "left",
           }}
         >
-          <Stack spacing={0.5}>
-            <WorkflowVersionMetaRow
-              versionNumber={version.version}
-              actionMeta={actionMeta}
-              isCurrent={isCurrent}
-              canRestore={canRestore}
-              isSaving={isSaving}
-              onRestore={() => {
-                if (version.definitionYml) {
-                  onRestore(version.id, version.definitionYml);
-                }
-              }}
-            />
-            <Typography
-              variant="body2"
-              color={message ? "text.primary" : "text.secondary"}
-              sx={{ wordBreak: "break-word" }}
-            >
-              {message || t("visual_editor.workflow_versions.message_fallback")}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {t("visual_editor.workflow_versions.by", {
-                0: createdByLabel,
-              })}
-            </Typography>
-          </Stack>
+          {timeLabel}
+        </Typography>
+        <Paper
+          variant="spaced"
+          sx={(theme) => ({
+            "&:hover .workflow-version-actions, &:focus-within .workflow-version-actions":
+              {
+                opacity: 1,
+                pointerEvents: "auto",
+                maxHeight: 40,
+                mt: 0.75,
+                pt: 0.75,
+                borderTopColor: theme.palette.divider,
+              },
+          })}
+        >
+          <WorkflowVersionMetaRow
+            versionNumber={version.version}
+            actionMeta={actionMeta}
+            isCurrent={isCurrent}
+            isPublished={isPublished}
+            createdByLabel={createdByLabel}
+            message={version.message}
+            canRestore={canRestore}
+            canPublish={canPublish}
+            canUnpublish={canUnpublish}
+            isSaving={isSaving}
+            onRestore={() => {
+              if (version.definitionYml) {
+                onRestore(version.id, version.definitionYml);
+              }
+            }}
+            onPublish={() => {
+              onPublish(version.id);
+            }}
+            onUnpublish={onUnpublish}
+          />
         </Paper>
       </TimelineContent>
     </TimelineItem>

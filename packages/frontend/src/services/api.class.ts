@@ -20,6 +20,7 @@ import {
   IUserAttributes,
   IUserStub,
 } from "@/types/user.types";
+import { IWorkflow } from "@/types/workfow.types";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
 
@@ -61,6 +62,8 @@ export const ROUTES = {
   RESET: "/user/reset",
   CONTENT_IMPORT: "/content/import",
   STATS_SUMMARY: "/stats/summary",
+  WORKFLOW_PUBLISH: "/workflow/:id/publish",
+  WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -256,6 +259,36 @@ export class ApiClient {
   async importContent(contentTypeId: string, attachmentId: string) {
     const { data } = await this.request.get(
       `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
+    );
+
+    return data;
+  }
+
+  async publishWorkflow(id: string) {
+    const { _csrf } = await this.getCsrf();
+    const route = resolveRoute(ROUTES.WORKFLOW_PUBLISH, { id });
+    const { data } = await this.request.post<IWorkflow>(route, { _csrf });
+
+    return data;
+  }
+
+  async unpublishWorkflow(id: string) {
+    const { _csrf } = await this.getCsrf();
+    const route = resolveRoute(ROUTES.WORKFLOW_UNPUBLISH, { id });
+    const { data } = await this.request.post<IWorkflow>(route, { _csrf });
+
+    return data;
+  }
+
+  async publishWorkflowVersion(workflowId: string, versionId: string) {
+    const { _csrf } = await this.getCsrf();
+    const route = resolveRoute(ROUTES[EntityType.WORKFLOW], {});
+    const { data } = await this.request.patch<IWorkflow>(
+      `${route}/${encodeURIComponent(workflowId)}`,
+      {
+        _csrf,
+        publishedVersion: versionId,
+      },
     );
 
     return data;

@@ -16,8 +16,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
+import {
+  useTanstackMutation,
+  useTanstackQueryClient,
+} from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useApiClient } from "@/hooks/useApiClient";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, QueryType } from "@/services/types";
 import { WorkflowVersionAction } from "@/types/workfow-version.types";
@@ -34,37 +38,91 @@ export const useWorkflowDefinitionState = ({
 }: UseWorkflowDefinitionStateArgs) => {
   const { actionsByName } = useWorkflowActionsCatalog();
   const queryClient = useTanstackQueryClient();
+  const { apiClient } = useApiClient();
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW);
-  const { mutate: commitVersion, isPending: isSaving } = useCreate(
+  const updateWorkflowCache = useCallback(
+    (updates: Partial<IWorkflow>) => {
+      queryClient.setQueryData(
+        [QueryType.item, EntityType.WORKFLOW, workflow?.id],
+        (cached?: IWorkflow) => {
+          if (!cached) {
+            return workflow ? { ...workflow, ...updates } : cached;
+          }
+
+          return {
+            ...cached,
+            ...updates,
+          };
+        },
+      );
+    },
+    [queryClient, workflow],
+  );
+  const { mutate: commitVersion, isPending: isCommitting } = useCreate(
     EntityType.WORKFLOW_VERSION,
     {
       routeParams: { id: workflow?.id },
-      onSuccess(data, variables) {
-        const isPublish = variables?.action === WorkflowVersionAction.publish;
-
-        queryClient.setQueryData(
-          [QueryType.item, EntityType.WORKFLOW, workflow?.id],
-          (cached?: IWorkflow) => {
-            if (!cached) {
-              return workflow
-                ? {
-                    ...workflow,
-                    currentVersion: data.id,
-                    ...(isPublish ? { publishedVersion: data.id } : {}),
-                  }
-                : cached;
-            }
-
-            return {
-              ...cached,
-              currentVersion: data.id,
-              ...(isPublish ? { publishedVersion: data.id } : {}),
-            };
-          },
-        );
+      onSuccess(data) {
+        updateWorkflowCache({
+          currentVersion: data.id,
+        });
       },
     },
   );
+  const { mutate: publish, isPending: isPublishing } = useTanstackMutation<
+    IWorkflow,
+    Error,
+    void
+  >({
+    mutationFn: async () => {
+      if (!workflow?.id) {
+        throw new Error("Workflow ID is required to publish");
+      }
+
+      return await apiClient.publishWorkflow(workflow.id);
+    },
+    onSuccess: (updatedWorkflow) => {
+      updateWorkflowCache({
+        currentVersion: updatedWorkflow.currentVersion,
+        publishedVersion: updatedWorkflow.publishedVersion,
+      });
+    },
+  });
+  const { mutate: publishByVersionId, isPending: isPublishingVersion } =
+    useTanstackMutation<IWorkflow, Error, string>({
+      mutationFn: async (versionId) => {
+        if (!workflow?.id) {
+          throw new Error("Workflow ID is required to publish");
+        }
+
+        return await apiClient.publishWorkflowVersion(workflow.id, versionId);
+      },
+      onSuccess: (updatedWorkflow) => {
+        updateWorkflowCache({
+          currentVersion: updatedWorkflow.currentVersion,
+          publishedVersion: updatedWorkflow.publishedVersion,
+        });
+      },
+    });
+  const { mutate: unpublish, isPending: isUnpublishing } = useTanstackMutation<
+    IWorkflow,
+    Error,
+    void
+  >({
+    mutationFn: async () => {
+      if (!workflow?.id) {
+        throw new Error("Workflow ID is required to unpublish");
+      }
+
+      return await apiClient.unpublishWorkflow(workflow.id);
+    },
+    onSuccess: (updatedWorkflow) => {
+      updateWorkflowCache({
+        currentVersion: updatedWorkflow.currentVersion,
+        publishedVersion: updatedWorkflow.publishedVersion,
+      });
+    },
+  });
   const getVersionFromCache = useGetFromCache(EntityType.WORKFLOW_VERSION);
   const currentVersion = workflow?.currentVersion
     ? getVersionFromCache(workflow?.currentVersion)
@@ -162,39 +220,61 @@ export const useWorkflowDefinitionState = ({
     [debouncedDefinitionUpdate],
   );
   // Immediate commit of the definition version
-  const persistDefinition = useCallback(
-    (action: WorkflowVersionAction = WorkflowVersionAction.update) => {
-      if (!workflow?.id || !definition || definitionError) {
-        return;
-      }
+  const persistDefinition = useCallback(() => {
+    if (!workflow?.id || !definition || definitionError || !isDefinitionDirty) {
+      return;
+    }
 
-      const shouldPersist =
-        action === WorkflowVersionAction.publish || isDefinitionDirty;
-
-      if (!shouldPersist) {
-        return;
-      }
-
-      definitionSignatureRef.current =
-        WorkflowHelper.stringifyDefinition(definition);
-      debouncedDefinitionUpdate.clear();
-      commitVersion({
-        action,
-        definitionYml: definitionSignatureRef.current,
-        parentVersion:
-          action === WorkflowVersionAction.publish ? currentVersion?.id : null,
-      });
-    },
-    [
-      debouncedDefinitionUpdate,
+    definitionSignatureRef.current = WorkflowHelper.stringifyDefinition(
       definition,
-      definitionError,
-      workflow?.id,
-      isDefinitionDirty,
-      commitVersion,
-      currentVersion?.id,
-    ],
-  );
+    );
+    debouncedDefinitionUpdate.clear();
+    commitVersion({
+      action: WorkflowVersionAction.update,
+      definitionYml: definitionSignatureRef.current,
+    });
+  }, [
+    debouncedDefinitionUpdate,
+    definition,
+    definitionError,
+    workflow?.id,
+    isDefinitionDirty,
+    commitVersion,
+  ]);
+  const publishVersion = useCallback((versionId?: string) => {
+    if (!workflow?.id) {
+      return;
+    }
+
+    if (
+      versionId &&
+      versionId !== workflow.currentVersion &&
+      versionId !== workflow.publishedVersion
+    ) {
+      publishByVersionId(versionId);
+
+      return;
+    }
+
+    if (!workflow.currentVersion || workflow.currentVersion === workflow.publishedVersion) {
+      return;
+    }
+
+    publish();
+  }, [
+    publish,
+    publishByVersionId,
+    workflow?.id,
+    workflow?.currentVersion,
+    workflow?.publishedVersion,
+  ]);
+  const unpublishVersion = useCallback(() => {
+    if (!workflow?.id || !workflow.publishedVersion) {
+      return;
+    }
+
+    unpublish();
+  }, [unpublish, workflow?.id, workflow?.publishedVersion]);
   const restoreVersion = useCallback(
     (parentVersion: string, definitionYml: string) => {
       if (!workflow?.id || !parentVersion || !definitionYml) {
@@ -233,9 +313,15 @@ export const useWorkflowDefinitionState = ({
     flow,
     updateDefinitionState,
     persistDefinition,
+    publishVersion,
+    unpublishVersion,
     restoreVersion,
     isDefinitionDirty,
     updateWorkflow,
-    isSaving,
+    isSaving:
+      isCommitting ||
+      isPublishing ||
+      isPublishingVersion ||
+      isUnpublishing,
   };
 };

@@ -606,6 +606,7 @@
     "save": "Save",
     "run": "Run",
     "publish": "Publish",
+    "unpublish": "Unpublish",
     "submit": "Submit",
     "cancel": "Cancel",
     "add": "Add",

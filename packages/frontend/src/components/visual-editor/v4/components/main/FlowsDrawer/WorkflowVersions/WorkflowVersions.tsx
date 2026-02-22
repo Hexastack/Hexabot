@@ -20,7 +20,8 @@ import { WorkflowVersionsTimeline } from "./WorkflowVersionsTimeline";
 
 export const WorkflowVersions = () => {
   const { t, i18n } = useTranslate();
-  const { workflow, restoreVersion, isSaving } = useWorkflow();
+  const { workflow, restoreVersion, publishVersion, unpublishVersion, isSaving } =
+    useWorkflow();
   const getUserFromCache = useGetFromCache(EntityType.USER);
   const {
     data: versions = [],
@@ -40,6 +41,7 @@ export const WorkflowVersions = () => {
     },
   );
   const currentVersionId = workflow?.currentVersion;
+  const publishedVersionId = workflow?.publishedVersion;
   const isBusy = isLoading || isFetching;
   const getUserLabel = useCallback(
     (createdBy: string) => {
@@ -73,8 +75,11 @@ export const WorkflowVersions = () => {
           <WorkflowVersionsTimeline
             versions={versions}
             currentVersionId={currentVersionId}
+            publishedVersionId={publishedVersionId}
             isSaving={isSaving}
             onRestore={restoreVersion}
+            onPublish={publishVersion}
+            onUnpublish={unpublishVersion}
             getUserLabel={getUserLabel}
             language={i18n.language}
           />

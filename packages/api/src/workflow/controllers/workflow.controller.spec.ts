@@ -359,6 +359,133 @@ describe('WorkflowController (TypeORM)', () => {
     });
   });
 
+  describe('publish and unpublish', () => {
+    it('publishes the current version without creating a new version', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+      const before = await workflowService.findOne(created.id);
+      const currentVersionBefore = before?.currentVersion ?? null;
+      const published = await workflowController.publish(created.id, {
+        session: { passport: { user: { id: userFixtureIds.admin } } },
+      } as any);
+      const after = await workflowService.findOne(created.id);
+
+      expect(published.publishedVersion).toBe(currentVersionBefore);
+      expect(published.currentVersion).toBe(currentVersionBefore);
+      expect(after?.currentVersion).toBe(currentVersionBefore);
+    });
+
+    it('clears published version without creating a new version', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      await workflowController.publish(created.id, {
+        session: { passport: { user: { id: userFixtureIds.admin } } },
+      } as any);
+      const before = await workflowService.findOne(created.id);
+      const currentVersionBefore = before?.currentVersion ?? null;
+      const unpublished = await workflowController.unpublish(created.id, {
+        session: { passport: { user: { id: userFixtureIds.admin } } },
+      } as any);
+      const after = await workflowService.findOne(created.id);
+
+      expect(unpublished.publishedVersion).toBeNull();
+      expect(unpublished.currentVersion).toBe(currentVersionBefore);
+      expect(after?.currentVersion).toBe(currentVersionBefore);
+    });
+
+    it('rejects publish when user session is missing', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      await expect(
+        workflowController.publish(created.id, {} as any),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Only authenticated users can publish workflows',
+        ),
+      );
+    });
+
+    it('rejects unpublish when user session is missing', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+
+      await expect(
+        workflowController.unpublish(created.id, {} as any),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Only authenticated users can unpublish workflows',
+        ),
+      );
+    });
+
+    it('throws NotFoundException when publishing a missing workflow', async () => {
+      const id = randomUUID();
+      const warnSpy = jest.spyOn(logger, 'warn');
+
+      await expect(
+        workflowController.publish(id, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any),
+      ).rejects.toThrow(
+        new NotFoundException(`Workflow with ID ${id} not found`),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Unable to publish Workflow by id ${id}`,
+      );
+    });
+
+    it('throws NotFoundException when unpublishing a missing workflow', async () => {
+      const id = randomUUID();
+      const warnSpy = jest.spyOn(logger, 'warn');
+
+      await expect(
+        workflowController.unpublish(id, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any),
+      ).rejects.toThrow(
+        new NotFoundException(`Workflow with ID ${id} not found`),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Unable to unpublish Workflow by id ${id}`,
+      );
+    });
+
+    it('throws BadRequestException when publishing without a current version', async () => {
+      const created = await workflowService.create({
+        ...buildWorkflowPayload(),
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+      await workflowService.updateOne(created.id, {
+        currentVersion: null,
+      });
+
+      await expect(
+        workflowController.publish(created.id, {
+          session: { passport: { user: { id: userFixtureIds.admin } } },
+        } as any),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Workflow must have a current version to be published',
+        ),
+      );
+    });
+  });
+
   describe('runManually', () => {
     it('validates and runs a manual workflow when input matches the schema', async () => {
       const manualInputSchema: JsonSchema = {

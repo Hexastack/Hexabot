@@ -28,7 +28,6 @@ export enum WorkflowVersionAction {
   update = 'update',
   restore = 'restore',
   import = 'import',
-  publish = 'publish',
 }
 
 export enum MemoryScope {

@@ -198,6 +198,74 @@ export class WorkflowController extends BaseOrmController<
   }
 
   /**
+   * Publishes the current workflow version.
+   *
+   * @param id - The workflow ID.
+   * @param req - Express request containing the authenticated session.
+   *
+   * @returns The updated workflow with publishedVersion set to currentVersion.
+   */
+  @Post(':id/publish')
+  async publish(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<Workflow> {
+    const userId = req.session?.passport?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Only authenticated users can publish workflows',
+      );
+    }
+
+    const workflow = await this.workflowService.findOne(id);
+    if (!workflow) {
+      this.logger.warn(`Unable to publish Workflow by id ${id}`);
+      throw new NotFoundException(`Workflow with ID ${id} not found`);
+    }
+
+    if (!workflow.currentVersion) {
+      throw new BadRequestException(
+        'Workflow must have a current version to be published',
+      );
+    }
+
+    return await this.workflowService.updateOne(id, {
+      publishedVersion: workflow.currentVersion,
+    });
+  }
+
+  /**
+   * Unpublishes a workflow.
+   *
+   * @param id - The workflow ID.
+   * @param req - Express request containing the authenticated session.
+   *
+   * @returns The updated workflow with publishedVersion cleared.
+   */
+  @Post(':id/unpublish')
+  async unpublish(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<Workflow> {
+    const userId = req.session?.passport?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Only authenticated users can unpublish workflows',
+      );
+    }
+
+    const workflow = await this.workflowService.findOne(id);
+    if (!workflow) {
+      this.logger.warn(`Unable to unpublish Workflow by id ${id}`);
+      throw new NotFoundException(`Workflow with ID ${id} not found`);
+    }
+
+    return await this.workflowService.updateOne(id, {
+      publishedVersion: null,
+    });
+  }
+
+  /**
    * Manually triggers a workflow run for manual or scheduled workflows.
    *
    * @param id - The workflow ID to execute.

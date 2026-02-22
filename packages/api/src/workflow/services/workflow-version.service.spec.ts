@@ -140,12 +140,12 @@ describe('WorkflowVersionService (TypeORM)', () => {
       expect(stored?.publishedVersion ?? null).toBeNull();
     });
 
-    it('updates the workflow published version when publishing a snapshot', async () => {
+    it('does not update published version when creating snapshots', async () => {
       const workflow = await createWorkflow();
-      const published = await workflowVersionService.createSnapshot({
+      await workflowVersionService.createSnapshot({
         workflow: workflow.id,
         definitionYml: 'version: 1',
-        action: WorkflowVersionAction.publish,
+        action: WorkflowVersionAction.update,
         createdBy: userFixtureIds.admin,
       });
       const stored = await workflowRepository.findOne({
@@ -153,7 +153,7 @@ describe('WorkflowVersionService (TypeORM)', () => {
         relations: ['publishedVersion'],
       });
 
-      expect(stored?.publishedVersion?.id).toBe(published.id);
+      expect(stored?.publishedVersion ?? null).toBeNull();
     });
   });
 });

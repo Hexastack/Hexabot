@@ -604,6 +604,7 @@
     "save": "Sauvegarder",
     "run": "Exécuter",
     "publish": "Publier",
+    "unpublish": "Dépublier",
     "submit": "Valider",
     "cancel": "Annuler",
     "add": "Ajouter",

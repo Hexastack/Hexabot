@@ -5,9 +5,9 @@
  */
 
 import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
-import { Box, Button, styled } from "@mui/material";
+import { Box, Button, Stack, styled } from "@mui/material";
 import { Background, Controls } from "@xyflow/react";
-import { CloudUpload } from "lucide-react";
+import { CloudOff, CloudUpload } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -26,7 +26,6 @@ import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import { IMemoryDefinition } from "@/types/memory-definition.types";
-import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
@@ -98,6 +97,8 @@ export const Workflow = () => {
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
     persistDefinition,
+    publishVersion,
+    unpublishVersion,
     addActionStep,
     addConditionalStep,
     addLoopStep,
@@ -124,6 +125,7 @@ export const Workflow = () => {
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
+  const unpublishLabel = t("button.unpublish");
   const {
     initialViewport,
     requestCenterAfterFirstInsert,
@@ -137,8 +139,14 @@ export const Workflow = () => {
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
+  const hasPublishedVersion = Boolean(workflow?.publishedVersion);
   const isPublishDisabled =
-    !definition || isDefinitionSaving || isCurrentVersionPublished;
+    !definition ||
+    !workflow?.currentVersion ||
+    isDefinitionDirty ||
+    isDefinitionSaving ||
+    isCurrentVersionPublished;
+  const isUnpublishDisabled = !hasPublishedVersion || isDefinitionSaving;
   const tasks = definition?.tasks;
   const handleInsert = useCallback(
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
@@ -395,7 +403,7 @@ export const Workflow = () => {
               workflow={workflow}
               onEdit={handleEditWorkflow}
               onOpenMenu={handleOpenMenu}
-              onSave={() => persistDefinition()}
+              onSave={persistDefinition}
               saveDisabled={!definition || !isDefinitionDirty}
               saveLoading={isDefinitionSaving}
               saveLabel={t("button.save")}
@@ -406,19 +414,34 @@ export const Workflow = () => {
         )}
         {workflow && (
           <WorkflowPublishOverlay>
-            <Button
-              variant="contained"
-              size="large"
-              color="primary"
-              aria-label={publishLabel}
-              startIcon={<CloudUpload />}
-              onClick={() => {
-                persistDefinition(WorkflowVersionAction.publish);
-              }}
-              disabled={isPublishDisabled}
-            >
-              {publishLabel}
-            </Button>
+            <Stack direction="row" spacing={1}>
+              {hasPublishedVersion && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  color="warning"
+                  aria-label={unpublishLabel}
+                  startIcon={<CloudOff />}
+                  onClick={unpublishVersion}
+                  disabled={isUnpublishDisabled}
+                >
+                  {unpublishLabel}
+                </Button>
+              )}
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                aria-label={publishLabel}
+                startIcon={<CloudUpload />}
+                onClick={() => {
+                  publishVersion();
+                }}
+                disabled={isPublishDisabled}
+              >
+                {publishLabel}
+              </Button>
+            </Stack>
           </WorkflowPublishOverlay>
         )}
         <ActionListDrawer
