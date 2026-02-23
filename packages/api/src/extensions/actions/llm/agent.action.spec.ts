@@ -58,13 +58,11 @@ describe('LlmAgentAction', () => {
     multiplier: 1,
   };
   const createCredentialService = (value = 'test-key') => ({
-    repository: {
-      findOneByIdWithPassword: jest.fn().mockResolvedValue({ value }),
-    },
+    findOne: jest.fn().mockResolvedValue({ value }),
   });
   const createContext = (services: Record<string, unknown> = {}) =>
     ({
-      services: { logger, credential: createCredentialService(), ...services },
+      services: { logger, credentials: createCredentialService(), ...services },
     }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {

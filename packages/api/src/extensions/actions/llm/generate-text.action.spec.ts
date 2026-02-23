@@ -66,17 +66,15 @@ describe('LlmGenerateTextAction', () => {
     jitter: 0,
     multiplier: 1,
   };
-  const createCredentialService = (value = 'test-key') => ({
-    repository: {
-      findOneByIdWithPassword: jest.fn().mockResolvedValue({ value }),
-    },
+  const createCredentialsService = (value = 'test-key') => ({
+    findOne: jest.fn().mockResolvedValue({ value }),
   });
   const createContext = (services: Record<string, unknown> = {}) =>
     ({
       services: {
         logger,
         actions: { get: jest.fn() },
-        credential: createCredentialService(),
+        credentials: createCredentialsService(),
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
