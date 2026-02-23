@@ -82,10 +82,19 @@ export const llmCommonSettingsSchema = SettingsSchema.extend({
     title: 'Model',
     description: 'Provider model identifier to use for generation.',
   }),
-  api_key: z.string().optional().meta({
-    title: 'API key',
-    description: 'Provider API key override for this action.',
-  }),
+  api_key: z
+    .string()
+    .optional()
+    .meta({
+      title: 'Credential',
+      description: 'Provider API key override for this action.',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'Credential',
+        valueKey: 'id',
+        labelKey: 'name',
+      },
+    }),
   base_url: z.url().optional().meta({
     title: 'Base URL',
     description: 'Custom provider base URL (self-hosted or proxy).',

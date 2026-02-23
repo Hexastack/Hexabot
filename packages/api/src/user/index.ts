@@ -12,6 +12,8 @@ export * from './controllers/permission.controller';
 
 export * from './controllers/role.controller';
 
+export * from './controllers/credential.controller';
+
 export * from './controllers/user.controller';
 
 export * from './dto/invitation.dto';
@@ -21,6 +23,8 @@ export * from './dto/model.dto';
 export * from './dto/permission.dto';
 
 export * from './dto/role.dto';
+
+export * from './dto/credential.dto';
 
 export * from './dto/user.dto';
 
@@ -33,6 +37,8 @@ export * from './entities/permission.entity';
 export * from './entities/role.entity';
 
 export * from './entities/session.entity';
+
+export * from './entities/credential.entity';
 
 export * from './entities/user.entity';
 
@@ -51,6 +57,8 @@ export * from './repositories/model.repository';
 export * from './repositories/permission.repository';
 
 export * from './repositories/role.repository';
+
+export * from './repositories/credential.repository';
 
 export * from './repositories/user.repository';
 
@@ -81,6 +89,8 @@ export * from './services/passwordReset.service';
 export * from './services/permission.service';
 
 export * from './services/role.service';
+
+export * from './services/credential.service';
 
 export * from './services/user.service';
 

@@ -72,8 +72,9 @@ class TestLlmBaseAction extends LlmBaseAction<
   public buildProviderInitOptionsPublic(
     provider: string,
     settings: LlmCommonSettings,
+    credential: string,
   ) {
-    return this.buildProviderInitOptions(provider, settings);
+    return this.buildProviderInitOptions(provider, settings, credential);
   }
 
   public shouldRequireApiKeyPublic(provider: string) {
@@ -163,11 +164,15 @@ describe('LlmBaseAction', () => {
 
   describe('buildProviderInitOptions', () => {
     it('returns init options when provided', () => {
-      const options = action.buildProviderInitOptionsPublic('custom', {
-        api_key: 'key',
-        base_url: 'https://example.com',
-        organization: 'org',
-      } as LlmCommonSettings);
+      const options = action.buildProviderInitOptionsPublic(
+        'custom',
+        {
+          api_key: 'key',
+          base_url: 'https://example.com',
+          organization: 'org',
+        } as LlmCommonSettings,
+        'key',
+      );
 
       expect(options).toEqual({
         apiKey: 'key',
@@ -181,6 +186,7 @@ describe('LlmBaseAction', () => {
         action.buildProviderInitOptionsPublic(
           'openai',
           {} as LlmCommonSettings,
+          'key',
         ),
       ).toThrow(
         'No API key provided for provider "openai". Set settings.api_key.',

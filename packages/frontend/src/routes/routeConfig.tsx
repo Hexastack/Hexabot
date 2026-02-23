@@ -17,6 +17,7 @@ import { ResetPassword } from "@/app-components/auth/ResetPassword";
 import { ResetPasswordRequest } from "@/app-components/auth/resetPasswordRequest";
 import { ContentTypes } from "@/components/content-types";
 import { Contents } from "@/components/contents";
+import { Credentials } from "@/components/credentials";
 import { Dashboard } from "@/components/dashboard";
 import { Inbox } from "@/components/inbox";
 import { Labels } from "@/components/labels";
@@ -157,6 +158,13 @@ export const routes: RouteObjectItem[] = [
     Component: Roles,
     handle: {
       requiredPermissions: [[EntityType.ROLE, PermissionAction.READ]],
+    },
+  },
+  {
+    path: "/credentials",
+    Component: Credentials,
+    handle: {
+      requiredPermissions: [[EntityType.CREDENTIAL, PermissionAction.READ]],
     },
   },
   {

@@ -15,6 +15,7 @@ import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { CredentialService } from '@/user';
 import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState } from '@/workflow/types';
 
@@ -51,6 +52,9 @@ export abstract class WorkflowRuntimeContext<
   @Inject(ActionService)
   protected readonly actionService: ActionService;
 
+  @Inject(CredentialService)
+  protected readonly credentialService: CredentialService;
+
   public memoryStore: MemoryStore;
 
   constructor() {
@@ -66,6 +70,7 @@ export abstract class WorkflowRuntimeContext<
       contentType: this.contentType,
       message: this.message,
       actions: this.actionService,
+      credentials: this.credentialService,
     };
   }
 
