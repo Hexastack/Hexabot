@@ -20,18 +20,32 @@ export const createBaseDefinition = (): WorkflowDefinition => ({
 });
 
 /**
+ * Normalize user input into a valid snake_case task identifier.
+ */
+export const normalizeTaskName = (value: string): string => {
+  const snakeCaseName = toSnakeCase(value.trim());
+
+  if (!snakeCaseName) {
+    return "";
+  }
+
+  if (isSnakeCaseName(snakeCaseName)) {
+    return snakeCaseName;
+  }
+
+  const fallbackName = `${snakeCaseName}_task`;
+
+  return isSnakeCaseName(fallbackName) ? fallbackName : "";
+};
+
+/**
  * Generate a unique task name derived from the action name.
  */
 export const createTaskName = (
   actionName: string,
   tasks: WorkflowDefinition["tasks"],
 ) => {
-  const snakeCaseName = toSnakeCase(actionName);
-  const baseName = isSnakeCaseName(snakeCaseName)
-    ? snakeCaseName
-    : snakeCaseName
-      ? `${snakeCaseName}_task`
-      : "new_task";
+  const baseName = normalizeTaskName(actionName) || "new_task";
   const normalizedBase = isSnakeCaseName(baseName) ? baseName : "new_task";
   let candidate = normalizedBase;
   let suffix = 2;

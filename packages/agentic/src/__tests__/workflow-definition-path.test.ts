@@ -246,4 +246,114 @@ describe('workflow definition path helpers', () => {
       ).toBeNull();
     });
   });
+
+  describe('safeRenameTaskInDefinition', () => {
+    it('renames a task and updates flow and output references', () => {
+      const baseDefinition = createDefinition();
+      const definition: WorkflowDefinition = {
+        ...baseDefinition,
+        tasks: {
+          ...baseDefinition.tasks,
+          task_two: {
+            action: 'noop',
+            inputs: {
+              from_dot: '=$output.task_one.value',
+              from_single: "=$output['task_one']",
+              from_double: '=$output["task_one"]',
+              untouched: '=$output.task_one_extra.value',
+            },
+          },
+        },
+        flow: [
+          { do: 'task_one' },
+          {
+            conditional: {
+              when: [
+                { condition: '=true', steps: [{ do: 'task_one' }] },
+                {
+                  else: true,
+                  steps: [
+                    {
+                      loop: {
+                        for_each: {
+                          item: 'item',
+                          in: '=[]',
+                        },
+                        steps: [{ do: 'task_one' }],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+        outputs: {
+          dot: '=$output.task_one.value',
+          single: "=$output['task_one'].value",
+          double: '=$output["task_one"].value',
+          untouched: '=$output.task_one_extra.value',
+        },
+      };
+      const nextDefinition = Workflow.safeRenameTaskInDefinition(
+        definition,
+        'task_one',
+        'renamed_task',
+      );
+
+      expect(nextDefinition.tasks.task_one).toBeUndefined();
+      expect(nextDefinition.tasks.renamed_task).toEqual({ action: 'noop' });
+      expect(nextDefinition.flow).toEqual([
+        { do: 'renamed_task' },
+        {
+          conditional: {
+            when: [
+              { condition: '=true', steps: [{ do: 'renamed_task' }] },
+              {
+                else: true,
+                steps: [
+                  {
+                    loop: {
+                      for_each: {
+                        item: 'item',
+                        in: '=[]',
+                      },
+                      steps: [{ do: 'renamed_task' }],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ]);
+      expect(nextDefinition.tasks.task_two.inputs).toEqual({
+        from_dot: '=$output.renamed_task.value',
+        from_single: "=$output['renamed_task']",
+        from_double: '=$output["renamed_task"]',
+        untouched: '=$output.task_one_extra.value',
+      });
+      expect(nextDefinition.outputs).toEqual({
+        dot: '=$output.renamed_task.value',
+        single: "=$output['renamed_task'].value",
+        double: '=$output["renamed_task"].value',
+        untouched: '=$output.task_one_extra.value',
+      });
+    });
+
+    it('returns the original definition when rename is a no-op', () => {
+      const definition = createDefinition();
+
+      expect(
+        Workflow.safeRenameTaskInDefinition(definition, 'task_one', 'task_one'),
+      ).toBe(definition);
+      expect(
+        Workflow.safeRenameTaskInDefinition(
+          definition,
+          'missing_task',
+          'renamed_task',
+        ),
+      ).toBe(definition);
+    });
+  });
 });

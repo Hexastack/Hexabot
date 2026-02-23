@@ -393,7 +393,7 @@ const addAgentGraph = (
 ) => {
   const { taskNodeId, taskName, stepId, level, groupName, stepPath } =
     taskNodeArgs;
-  const action = getTaskAction(taskName, ctx.tasks);
+  const actionName = getTaskAction(taskName, ctx.tasks);
 
   ctx.nodes.push({
     ...getNodeDimensions(ENodeType.AGENT, config),
@@ -406,7 +406,7 @@ const addAgentGraph = (
       description: getTaskDescription(taskName, ctx.tasks),
       ...config.nodes[ENodeType.AGENT],
       stepId,
-      action,
+      actionName,
       level,
       groupName,
       stepPath,
