@@ -5,7 +5,6 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
-import { jsonSchemaToZod } from '@n8n/json-schema-to-zod';
 import {
   BadRequestException,
   Injectable,
@@ -13,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
 import { FindOneOptions } from 'typeorm';
-import { ZodType } from 'zod';
+import { z, ZodType } from 'zod';
 
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
@@ -115,7 +114,9 @@ export class WorkflowService extends BaseOrmService<
   ): Record<string, unknown> {
     let schema: ZodType;
     try {
-      schema = jsonSchemaToZod(inputSchema);
+      schema = z.fromJSONSchema(
+        inputSchema as Parameters<typeof z.fromJSONSchema>[0],
+      );
     } catch {
       throw new BadRequestException({
         ...this.MANUAL_INPUT_VALIDATION_ERROR,

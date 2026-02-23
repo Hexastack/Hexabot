@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { jsonSchemaToZod } from '@n8n/json-schema-to-zod';
 import { ZodSchema, z } from 'zod';
 
 import { cloneObject } from '@/utils/helpers/clone';
@@ -61,7 +60,12 @@ export class MemoryStore {
   ): Map<string, ZodSchema> {
     const cache = new Map<string, ZodSchema>();
     for (const [slug, definition] of definitionCache.entries()) {
-      cache.set(slug, jsonSchemaToZod(definition.schema));
+      cache.set(
+        slug,
+        z.fromJSONSchema(
+          definition.schema as Parameters<typeof z.fromJSONSchema>[0],
+        ),
+      );
     }
 
     return cache;
