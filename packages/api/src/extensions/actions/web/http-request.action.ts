@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JsonValueSchema, SettingsSchema } from '@hexabot-ai/agentic';
+import { BaseSettingsSchema, JsonValueSchema } from '@hexabot-ai/agentic';
 import axios from 'axios';
 import { z } from 'zod';
 
@@ -27,7 +27,7 @@ const httpRequestInputSchema = z.object({
       'Optional request body string sent for POST requests, defaults to an empty JSON object.',
   }),
 });
-const httpRequestSettingsSchema = SettingsSchema.extend({
+const httpRequestSettingsSchema = BaseSettingsSchema.extend({
   method: z.enum(['GET', 'POST']).default('GET').meta({
     title: 'Method',
     description: 'HTTP method used for the request.',

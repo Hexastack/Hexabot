@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingsSchema } from '@hexabot-ai/agentic';
+import { BaseSettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -66,7 +66,7 @@ interface PreparedMessageContext {
   envelopeFactory: EnvelopeFactory;
 }
 
-export const messageActionSettingsSchema = SettingsSchema.extend({
+export const messageActionSettingsSchema = BaseSettingsSchema.extend({
   typing: z
     .int()
     .nonnegative()
