@@ -20,8 +20,14 @@ import { WorkflowVersionsTimeline } from "./WorkflowVersionsTimeline";
 
 export const WorkflowVersions = () => {
   const { t, i18n } = useTranslate();
-  const { workflow, restoreVersion, publishVersion, unpublishVersion, isSaving } =
-    useWorkflow();
+  const {
+    workflow,
+    restoreVersion,
+    publishVersion,
+    unpublishVersion,
+    updateVersionMessage,
+    isSaving,
+  } = useWorkflow();
   const getUserFromCache = useGetFromCache(EntityType.USER);
   const {
     data: versions = [],
@@ -80,6 +86,7 @@ export const WorkflowVersions = () => {
             onRestore={restoreVersion}
             onPublish={publishVersion}
             onUnpublish={unpublishVersion}
+            onUpdateMessage={updateVersionMessage}
             getUserLabel={getUserLabel}
             language={i18n.language}
           />

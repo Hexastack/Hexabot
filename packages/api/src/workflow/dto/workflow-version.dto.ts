@@ -126,7 +126,18 @@ export type WorkflowVersionTransformerDto = DtoTransformerConfig<{
 
 export type WorkflowVersionDtoConfig = DtoActionConfig<{
   create: WorkflowVersionCreateDto;
+  update: WorkflowVersionUpdateDto;
 }>;
+
+export class WorkflowVersionUpdateDto {
+  @ApiPropertyOptional({
+    description: 'Workflow version message',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  message?: string;
+}
 
 export class WorkflowVersionRestoreDto {
   @ApiPropertyOptional({

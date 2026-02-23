@@ -776,6 +776,18 @@
         },
         "action_label": {
           "none": "No action selected"
+        },
+        "step_id": {
+          "label": "Step ID",
+          "placeholder": "step_id",
+          "errors": {
+            "required": "Step ID is required.",
+            "snake_case": "Step ID must be snake_case and include an underscore.",
+            "unique": "Step ID already exists in this workflow."
+          }
+        },
+        "description": {
+          "placeholder": "Optional step description."
         }
       }
     },
@@ -868,7 +880,7 @@
       "empty": "No versions yet.",
       "empty_selection": "Select a workflow to view its versions.",
       "current": "Current",
-      "message_fallback": "No message",
+      "add_note": "Add note...",
       "system": "System",
       "unknown_user": "Unknown user",
       "by": "by {{0}}",

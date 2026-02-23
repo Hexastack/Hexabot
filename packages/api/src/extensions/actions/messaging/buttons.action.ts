@@ -55,8 +55,7 @@ export class SendButtonsAction extends MessageAction<
     super(
       {
         name: 'send_buttons',
-        description:
-          'Sends a text message with buttons to the subscriber and optionally waits for the reply.',
+        description: 'Sends a text message with buttons to the subscriber.',
         inputSchema: buttonsInputSchema,
         outputSchema: messageActionOutputSchema,
         settingsSchema: buttonsSettingsSchema,

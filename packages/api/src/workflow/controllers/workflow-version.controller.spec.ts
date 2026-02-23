@@ -182,4 +182,58 @@ describe('WorkflowVersionController (TypeORM)', () => {
       );
     });
   });
+
+  describe('updateOne', () => {
+    it('updates workflow version message when version exists', async () => {
+      const payload = buildWorkflowPayload();
+      const created = await workflowService.create({
+        ...payload,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+      const latest = (await workflowVersionService.findOne({
+        where: { workflow: { id: created.id } },
+      }))!;
+      const message = 'Updated onboarding prompt tone';
+      const updated = await controller.updateOne(created.id, latest.id, {
+        message,
+      });
+
+      expect(updated.id).toBe(latest.id);
+      expect(updated.message).toBe(message);
+    });
+
+    it('throws NotFoundException when workflow is missing', async () => {
+      const id = randomUUID();
+      const versionId = randomUUID();
+      const warnSpy = jest.spyOn(logger, 'warn');
+
+      await expect(
+        controller.updateOne(id, versionId, { message: 'New note' }),
+      ).rejects.toThrow(
+        new NotFoundException(`Workflow with ID ${id} not found`),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        `Unable to find Workflow by id ${id}`,
+      );
+    });
+
+    it('throws NotFoundException when version is missing', async () => {
+      const payload = buildWorkflowPayload();
+      const created = await workflowService.create({
+        ...payload,
+        createdBy: userFixtureIds.admin,
+      });
+      createdWorkflowIds.add(created.id);
+      const versionId = randomUUID();
+
+      await expect(
+        controller.updateOne(created.id, versionId, { message: 'New note' }),
+      ).rejects.toThrow(
+        new NotFoundException(
+          `Workflow version with ID ${versionId} not found`,
+        ),
+      );
+    });
+  });
 });

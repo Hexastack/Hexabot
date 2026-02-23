@@ -774,6 +774,18 @@
         },
         "action_label": {
           "none": "Aucune action sélectionnée"
+        },
+        "step_id": {
+          "label": "ID de l'étape",
+          "placeholder": "id_etape",
+          "errors": {
+            "required": "L'ID de l'étape est obligatoire.",
+            "snake_case": "L'ID de l'étape doit être en snake_case avec un underscore.",
+            "unique": "Cet ID d'étape existe déjà dans ce workflow."
+          }
+        },
+        "description": {
+          "placeholder": "Description optionnelle de l'étape."
         }
       }
     },
@@ -866,7 +878,7 @@
       "empty": "Aucune version pour le moment.",
       "empty_selection": "Sélectionnez un workflow pour voir ses versions.",
       "current": "Actuelle",
-      "message_fallback": "Aucun message",
+      "add_note": "Ajouter une note...",
       "system": "Système",
       "unknown_user": "Utilisateur inconnu",
       "by": "par {{0}}",
