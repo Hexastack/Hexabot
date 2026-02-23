@@ -4,9 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
+import EditOutlined from "@mui/icons-material/EditOutlined";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import type { TypographyProps } from "@mui/material/Typography";
 import Typography from "@mui/material/Typography";
-import * as React from "react";
+import {
+  forwardRef,
+  memo,
+  MutableRefObject,
+  Ref,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 type EditableTypographyProps = Omit<TypographyProps, "children"> & {
   /**
@@ -49,22 +66,22 @@ type EditableTypographyProps = Omit<TypographyProps, "children"> & {
   disabled?: boolean;
 };
 
-function useForkRef<T>(...refs: Array<React.Ref<T> | undefined>) {
-  return React.useMemo(
+function useForkRef<T>(...refs: Array<Ref<T> | undefined>) {
+  return useMemo(
     () => (value: T) => {
       refs.forEach((ref) => {
         if (!ref) return;
         if (typeof ref === "function") ref(value);
-        else (ref as React.MutableRefObject<T | null>).current = value;
+        else (ref as MutableRefObject<T | null>).current = value;
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    refs
+    refs,
   );
 }
 
-export const EditableTypography = React.memo(
-  React.forwardRef<HTMLElement, EditableTypographyProps>(function EditableTypography(
+export const EditableTypography = memo(
+  forwardRef<HTMLElement, EditableTypographyProps>(function EditableTypography(
     {
       value: valueProp,
       defaultValue = "",
@@ -80,20 +97,21 @@ export const EditableTypography = React.memo(
       sx,
       ...typographyProps
     },
-    forwardedRef
+    forwardedRef,
   ) {
+    const { t } = useTranslate();
     // Typography forwards the ref to the root element. :contentReference[oaicite:1]{index=1}
-    const rootRef = React.useRef<HTMLElement | null>(null);
+    const rootRef = useRef<HTMLElement | null>(null);
     const handleRef = useForkRef<HTMLElement>(rootRef, forwardedRef);
     const isControlled = valueProp !== undefined;
     // We keep a "renderValue" so controlled mode can be optimistic (no flicker after commit).
-    const [renderValue, setRenderValue] = React.useState<string>(
-      isControlled ? (valueProp as string) : defaultValue
+    const [renderValue, setRenderValue] = useState<string>(
+      isControlled ? (valueProp as string) : defaultValue,
     );
-    const [isEditing, setIsEditing] = React.useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     // When not editing, keep renderValue in sync with controlled prop changes.
-    React.useEffect(() => {
+    useEffect(() => {
       if (!isControlled) return;
       if (isEditing) return;
       setRenderValue(valueProp as string);
@@ -101,18 +119,18 @@ export const EditableTypography = React.memo(
 
     // Snapshot value at the moment editing starts, and keep it stable in render
     // so React won't overwrite user typing (even if parent re-renders).
-    const editStartValueRef = React.useRef<string>(renderValue);
+    const editStartValueRef = useRef<string>(renderValue);
     // Latest typed text (no re-renders on each keystroke).
-    const draftRef = React.useRef<string>(renderValue);
+    const draftRef = useRef<string>(renderValue);
     // Used to avoid blur-commit right after Escape cancel.
-    const skipNextBlurCommitRef = React.useRef(false);
-    const startEditing = React.useCallback(() => {
+    const skipNextBlurCommitRef = useRef(false);
+    const startEditing = useCallback(() => {
       if (disabled) return;
       editStartValueRef.current = renderValue;
       draftRef.current = renderValue;
       setIsEditing(true);
     }, [disabled, renderValue]);
-    const cancelEditing = React.useCallback(() => {
+    const cancelEditing = useCallback(() => {
       skipNextBlurCommitRef.current = true;
       setIsEditing(false);
       draftRef.current = editStartValueRef.current;
@@ -121,12 +139,15 @@ export const EditableTypography = React.memo(
         skipNextBlurCommitRef.current = false;
       });
     }, [onCancel]);
-    const readElementValue = React.useCallback(
+    const readElementValue = useCallback(
       (el: HTMLElement) =>
-        (multiline ? el.innerText : el.textContent ?? "").replace(/\u00A0/g, ""),
-      [multiline]
+        (multiline ? el.innerText : (el.textContent ?? "")).replace(
+          /\u00A0/g,
+          "",
+        ),
+      [multiline],
     );
-    const commitEditing = React.useCallback(() => {
+    const commitEditing = useCallback(() => {
       const el = rootRef.current;
 
       if (!el) return;
@@ -143,7 +164,7 @@ export const EditableTypography = React.memo(
       onCommit?.(next);
     }, [onChange, onCommit, readElementValue]);
 
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
       if (!isEditing) return;
       const el = rootRef.current;
 
@@ -190,110 +211,154 @@ export const EditableTypography = React.memo(
       ? editStartValueRef.current
       : renderValue || placeholder || "";
     const showPlaceholder = !isEditing && !renderValue && !!placeholder;
+    const editIconButtonClass = "editable-typography-edit-icon";
+    const editLabel = t("button.edit");
 
     return (
-      <Typography
-        {...typographyProps}
-        ref={handleRef}
-        component={component as any}
-        contentEditable={isEditing && !disabled}
-        suppressContentEditableWarning
-        tabIndex={disabled ? -1 : 0}
-        role="textbox"
-        aria-readonly={!isEditing}
-        aria-multiline={multiline || undefined}
-        aria-disabled={disabled || undefined}
-        onClick={(e) => {
-          typographyProps.onClick?.(e);
-          if (!isEditing) startEditing();
-        }}
-        onKeyDown={(e) => {
-          typographyProps.onKeyDown?.(e);
-          if (disabled) return;
+      <Box
+        sx={(theme) => ({
+          display: "flex",
+          alignItems: multiline ? "flex-start" : "center",
+          gap: 0.25,
+          width: "100%",
+          minWidth: 0,
+          [`& .${editIconButtonClass}`]: {
+            opacity: 0,
+            pointerEvents: "none",
+            transition: theme.transitions.create("opacity", {
+              duration: theme.transitions.duration.shortest,
+            }),
+          },
+          ...(!disabled && !isEditing
+            ? {
+                [`&:hover .${editIconButtonClass}, &:focus-within .${editIconButtonClass}`]:
+                  {
+                    opacity: 1,
+                    pointerEvents: "auto",
+                  },
+              }
+            : null),
+        })}
+      >
+        <Typography
+          {...typographyProps}
+          ref={handleRef}
+          component={component as any}
+          contentEditable={isEditing && !disabled}
+          suppressContentEditableWarning
+          tabIndex={disabled ? -1 : 0}
+          role="textbox"
+          aria-readonly={!isEditing}
+          aria-multiline={multiline || undefined}
+          aria-disabled={disabled || undefined}
+          onClick={(e) => {
+            typographyProps.onClick?.(e);
+            if (!isEditing) startEditing();
+          }}
+          onKeyDown={(e) => {
+            typographyProps.onKeyDown?.(e);
+            if (disabled) return;
 
-          if (!isEditing) {
-            if (e.key === "Enter" || e.key === "F2") {
-              e.preventDefault();
-              startEditing();
+            if (!isEditing) {
+              if (e.key === "Enter" || e.key === "F2") {
+                e.preventDefault();
+                startEditing();
+              }
+
+              return;
             }
 
-            return;
-          }
+            if (e.key === "Escape") {
+              e.preventDefault();
+              cancelEditing();
 
-          if (e.key === "Escape") {
+              return;
+            }
+
+            if (!multiline && e.key === "Enter") {
+              e.preventDefault();
+              commitEditing();
+              rootRef.current?.blur();
+            }
+          }}
+          onInput={(e) => {
+            typographyProps.onInput?.(e);
+            const el = rootRef.current;
+
+            if (!el) return;
+            draftRef.current = readElementValue(el);
+            onChange?.(draftRef.current);
+          }}
+          onBeforeInput={(e) => {
+            // Prevent line breaks in single-line mode (covers IME and mobile keyboards)
+            const inputType = e.nativeEvent?.inputType as string | undefined;
+
+            if (
+              !multiline &&
+              (inputType === "insertParagraph" ||
+                inputType === "insertLineBreak")
+            ) {
+              e.preventDefault();
+              commitEditing();
+              rootRef.current?.blur();
+            }
+          }}
+          onPaste={(e) => {
+            typographyProps.onPaste?.(e);
+            if (!isEditing) return;
             e.preventDefault();
-            cancelEditing();
-
-            return;
-          }
-
-          if (!multiline && e.key === "Enter") {
-            e.preventDefault();
+            insertTextAtCursor(e.clipboardData.getData("text/plain"));
+          }}
+          onBlur={(e) => {
+            typographyProps.onBlur?.(e);
+            if (!isEditing) return;
+            if (skipNextBlurCommitRef.current) return;
             commitEditing();
-            rootRef.current?.blur();
-          }
-        }}
-        onInput={(e) => {
-          typographyProps.onInput?.(e);
-          const el = rootRef.current;
-
-          if (!el) return;
-          draftRef.current = readElementValue(el);
-          onChange?.(draftRef.current);
-        }}
-        onBeforeInput={(e) => {
-          // Prevent line breaks in single-line mode (covers IME and mobile keyboards)
-          const inputType = e.nativeEvent?.inputType as string | undefined;
-
-          if (
-            !multiline &&
-            (inputType === "insertParagraph" || inputType === "insertLineBreak")
-          ) {
-            e.preventDefault();
-            commitEditing();
-            rootRef.current?.blur();
-          }
-        }}
-        onPaste={(e) => {
-          typographyProps.onPaste?.(e);
-          if (!isEditing) return;
-          e.preventDefault();
-          insertTextAtCursor(e.clipboardData.getData("text/plain"));
-        }}
-        onBlur={(e) => {
-          typographyProps.onBlur?.(e);
-          if (!isEditing) return;
-          if (skipNextBlurCommitRef.current) return;
-          commitEditing();
-        }}
-        p={0.5}
-        mx={-0.5}
-        sx={{
-          display: "inline-block",
-          width: "100%",
-          cursor: disabled ? "default" : isEditing ? "text" : "pointer",
-          userSelect: isEditing ? "text" : "none",
-          outline: "none",
-          whiteSpace: multiline ? "pre-wrap" : "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          ...(showPlaceholder ? { color: "text.secondary" } : null),
-          "&:hover":
-            disabled || isEditing
+          }}
+          p={0.25}
+          mx={-0.25}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            cursor: disabled ? "default" : isEditing ? "text" : "pointer",
+            userSelect: isEditing ? "text" : "none",
+            outline: "none",
+            whiteSpace: multiline ? "pre-wrap" : "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            ...(showPlaceholder ? { color: "text.secondary" } : null),
+            "&:hover":
+              disabled || isEditing
+                ? undefined
+                : { backgroundColor: "action.hover" },
+            "&:focus-visible": disabled
               ? undefined
-              : { backgroundColor: "action.hover" },
-          "&:focus-visible": disabled
-            ? undefined
-            : {
-                outline: "1px solid",
-                outlineColor: "primary.main",
-                borderRadius: 0.5,
-              },
-          ...sx,
-        }}
-      >
-        {displayText}
-      </Typography>
+              : {
+                  outline: "1px solid",
+                  outlineColor: "primary.main",
+                  borderRadius: 0.5,
+                },
+            ...sx,
+          }}
+        >
+          {displayText}
+        </Typography>
+        <Tooltip title={editLabel}>
+          <span>
+            <IconButton
+              size="small"
+              disabled={disabled}
+              aria-label={editLabel}
+              className={editIconButtonClass}
+              onClick={() => {
+                if (!isEditing) startEditing();
+              }}
+            >
+              <EditOutlined fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Box>
     );
-  })
+  }),
 );
