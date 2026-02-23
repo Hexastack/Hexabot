@@ -20,7 +20,7 @@ import { ActionMetadata, ActionName } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
-import { CredentialOrmEntity } from '@/user';
+import { Credential } from '@/user';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
@@ -87,7 +87,7 @@ export abstract class LlmBaseAction<
   protected buildProviderInitOptions(
     provider: string,
     settings: S,
-    credential?: CredentialOrmEntity | null,
+    credential?: Credential | null,
   ): ProviderInitOptions {
     const providerId = this.getProviderId(provider);
     const apiKey = settings.api_key;

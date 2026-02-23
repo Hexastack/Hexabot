@@ -70,7 +70,7 @@ export abstract class WorkflowRuntimeContext<
       contentType: this.contentType,
       message: this.message,
       actions: this.actionService,
-      credential: this.credentialService,
+      credentials: this.credentialService,
     };
   }
 

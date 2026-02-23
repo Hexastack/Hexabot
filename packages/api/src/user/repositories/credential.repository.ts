@@ -30,12 +30,4 @@ export class CredentialRepository extends BaseOrmRepository<
   ) {
     super(repository);
   }
-
-  async findOneByIdWithPassword(
-    id: string,
-  ): Promise<CredentialOrmEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-    });
-  }
 }

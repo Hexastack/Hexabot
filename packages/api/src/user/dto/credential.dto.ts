@@ -21,6 +21,9 @@ import { User } from './user.dto';
 export class CredentialStub extends BaseStub {
   @Expose()
   name!: string;
+
+  @Expose()
+  value!: string;
 }
 
 @Exclude()
