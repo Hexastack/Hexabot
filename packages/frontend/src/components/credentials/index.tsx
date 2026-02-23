@@ -91,6 +91,7 @@ export const Credentials = () => {
       headerName: t("label.value"),
       disableColumnMenu: true,
       headerAlign: "left",
+      valueGetter: () => "*************",
     },
     {
       minWidth: 140,

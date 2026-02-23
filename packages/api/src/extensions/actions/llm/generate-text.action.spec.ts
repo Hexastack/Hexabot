@@ -67,7 +67,7 @@ describe('LlmGenerateTextAction', () => {
     multiplier: 1,
   };
   const createCredentialsService = (value = 'test-key') => ({
-    findOne: jest.fn().mockResolvedValue({ value }),
+    findOneValue: jest.fn().mockResolvedValue(value),
   });
   const createContext = (services: Record<string, unknown> = {}) =>
     ({

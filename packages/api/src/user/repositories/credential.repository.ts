@@ -30,4 +30,12 @@ export class CredentialRepository extends BaseOrmRepository<
   ) {
     super(repository);
   }
+
+  async findOneValue(id?: string): Promise<string> {
+    const credentials = await this.repository.findOne({
+      where: { id },
+    });
+
+    return credentials?.value || '';
+  }
 }

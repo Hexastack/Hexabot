@@ -20,4 +20,8 @@ export class CredentialService extends BaseOrmService<
   constructor(readonly repository: CredentialRepository) {
     super(repository);
   }
+
+  async findOneValue(id?: string) {
+    return await this.repository.findOneValue(id);
+  }
 }

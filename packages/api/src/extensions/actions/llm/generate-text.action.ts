@@ -54,13 +54,13 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);
-    const credentialRepository = await context.services.credentials.findOne(
-      settings.api_key || '',
+    const credentials = await context.services.credentials.findOneValue(
+      settings.api_key,
     );
     const providerOptions = this.buildProviderInitOptions(
       providerName,
       settings,
-      credentialRepository,
+      credentials,
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);

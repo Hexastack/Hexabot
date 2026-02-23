@@ -58,7 +58,7 @@ describe('LlmAgentAction', () => {
     multiplier: 1,
   };
   const createCredentialService = (value = 'test-key') => ({
-    findOne: jest.fn().mockResolvedValue({ value }),
+    findOneValue: jest.fn().mockResolvedValue(value),
   });
   const createContext = (services: Record<string, unknown> = {}) =>
     ({

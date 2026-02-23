@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { ALL_WORKFLOW_TYPES } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
-import { Credential } from '@/user';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {
@@ -73,7 +72,7 @@ class TestLlmBaseAction extends LlmBaseAction<
   public buildProviderInitOptionsPublic(
     provider: string,
     settings: LlmCommonSettings,
-    credential?: Credential | null,
+    credential: string,
   ) {
     return this.buildProviderInitOptions(provider, settings, credential);
   }
@@ -165,7 +164,6 @@ describe('LlmBaseAction', () => {
 
   describe('buildProviderInitOptions', () => {
     it('returns init options when provided', () => {
-      const credential = { value: 'key' } as Credential;
       const options = action.buildProviderInitOptionsPublic(
         'custom',
         {
@@ -173,7 +171,7 @@ describe('LlmBaseAction', () => {
           base_url: 'https://example.com',
           organization: 'org',
         } as LlmCommonSettings,
-        credential,
+        'key',
       );
 
       expect(options).toEqual({
@@ -184,12 +182,11 @@ describe('LlmBaseAction', () => {
     });
 
     it('throws when api key is required but missing', () => {
-      const credential = { value: 'key' } as Credential;
       expect(() =>
         action.buildProviderInitOptionsPublic(
           'openai',
           {} as LlmCommonSettings,
-          credential,
+          'key',
         ),
       ).toThrow(
         'No API key provided for provider "openai". Set settings.api_key.',
