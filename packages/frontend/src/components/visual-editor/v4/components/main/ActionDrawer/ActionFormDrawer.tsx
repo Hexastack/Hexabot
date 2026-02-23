@@ -97,7 +97,7 @@ const ActionFormDrawerContent = ({
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
 
-  if (!isOpen || !Object.keys(inputData).length) return null;
+  if (!isOpen) return null;
 
   if (!actionSchema) {
     return (
