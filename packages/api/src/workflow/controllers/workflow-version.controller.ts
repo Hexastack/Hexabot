@@ -10,6 +10,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +27,7 @@ import {
   WorkflowNewVersionDto,
   WorkflowVersion,
   WorkflowVersionDtoConfig,
+  WorkflowVersionUpdateDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionService } from '../services/workflow-version.service';
@@ -180,5 +182,39 @@ export class WorkflowVersionController extends BaseOrmController<
     }
 
     return version;
+  }
+
+  /**
+   * Updates metadata of a specific workflow version.
+   *
+   * @param id - The workflow ID.
+   * @param versionId - The version identifier.
+   * @param dto - Updatable version metadata payload.
+   */
+  @Patch(':id/versions/:versionId')
+  async updateOne(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() dto: WorkflowVersionUpdateDto,
+  ): Promise<WorkflowVersion> {
+    const workflow = await this.workflowService.findOne(id);
+    if (!workflow) {
+      this.logger.warn(`Unable to find Workflow by id ${id}`);
+      throw new NotFoundException(`Workflow with ID ${id} not found`);
+    }
+
+    const version = await this.workflowVersionService.findOne({
+      where: {
+        id: versionId,
+        workflow: { id },
+      },
+    });
+    if (!version) {
+      throw new NotFoundException(
+        `Workflow version with ID ${versionId} not found`,
+      );
+    }
+
+    return await this.workflowVersionService.updateOne(versionId, dto);
   }
 }

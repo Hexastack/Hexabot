@@ -860,7 +860,7 @@
       "empty": "Aucune version pour le moment.",
       "empty_selection": "Sélectionnez un workflow pour voir ses versions.",
       "current": "Actuelle",
-      "message_fallback": "Aucun message",
+      "add_note": "Ajouter une note...",
       "system": "Système",
       "unknown_user": "Utilisateur inconnu",
       "by": "par {{0}}",

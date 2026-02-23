@@ -40,6 +40,10 @@ export const useWorkflowDefinitionState = ({
   const queryClient = useTanstackQueryClient();
   const { apiClient } = useApiClient();
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW);
+  const { mutate: updateWorkflowVersion, isPending: isUpdatingVersionMessage } =
+    useUpdate(EntityType.WORKFLOW_VERSION, {
+      routeParams: workflow ? { id: workflow.id } : undefined,
+    });
   const updateWorkflowCache = useCallback(
     (updates: Partial<IWorkflow>) => {
       queryClient.setQueryData(
@@ -290,6 +294,21 @@ export const useWorkflowDefinitionState = ({
     },
     [debouncedDefinitionUpdate, workflow?.id, commitVersion],
   );
+  const updateVersionMessage = useCallback(
+    (versionId: string, message: string) => {
+      if (!workflow?.id || !versionId) {
+        return;
+      }
+
+      updateWorkflowVersion({
+        id: versionId,
+        params: {
+          message,
+        },
+      });
+    },
+    [updateWorkflowVersion, workflow?.id],
+  );
 
   useEffect(() => {
     const nextYaml = currentVersion?.definitionYml ?? "";
@@ -316,12 +335,14 @@ export const useWorkflowDefinitionState = ({
     publishVersion,
     unpublishVersion,
     restoreVersion,
+    updateVersionMessage,
     isDefinitionDirty,
     updateWorkflow,
     isSaving:
       isCommitting ||
       isPublishing ||
       isPublishingVersion ||
-      isUnpublishing,
+      isUnpublishing ||
+      isUpdatingVersionMessage,
   };
 };

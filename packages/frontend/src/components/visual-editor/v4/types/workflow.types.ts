@@ -56,6 +56,7 @@ export interface IWorkflowContext {
   publishVersion: (versionId?: string) => void;
   unpublishVersion: () => void;
   restoreVersion: (parentVersion: string, definitionYml: string) => void;
+  updateVersionMessage: (versionId: string, message: string) => void;
   isDefinitionDirty: boolean;
   isSaving: boolean;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
