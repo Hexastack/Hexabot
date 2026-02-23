@@ -18,6 +18,7 @@ type BuildJsonataGlobalsSchemaArgs = {
   definition?: WorkflowDefinition;
   actionsByName: ReadonlyMap<string, IAction>;
   memoryDefinitions?: IMemoryDefinition[];
+  inputSchema?: unknown;
 };
 
 const createOpenObjectSchema = (): JsonSchemaLike => ({
@@ -87,6 +88,7 @@ export const buildJsonataGlobalsSchema = ({
   definition,
   actionsByName,
   memoryDefinitions,
+  inputSchema,
 }: BuildJsonataGlobalsSchemaArgs): GlobalsSchema => {
   const outputProperties = Object.entries(definition?.tasks ?? {}).reduce<
     Record<string, JsonSchemaLike>
@@ -102,7 +104,9 @@ export const buildJsonataGlobalsSchema = ({
   return {
     type: "object",
     properties: {
-      $input: createOpenObjectSchema(),
+      $input: isJsonSchemaLike(inputSchema)
+        ? inputSchema
+        : createOpenObjectSchema(),
       $output: {
         type: "object",
         properties: outputProperties,

@@ -40,8 +40,9 @@ export const WorkflowJsonataGlobalsSchemaProvider = ({
         definition,
         actionsByName,
         memoryDefinitions,
+        inputSchema: workflow?.inputSchema,
       }),
-    [actionsByName, definition, memoryDefinitions],
+    [actionsByName, definition, memoryDefinitions, workflow?.inputSchema],
   );
 
   return (
