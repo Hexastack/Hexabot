@@ -164,9 +164,9 @@ export const navigationCustomizations: Components<Theme> = {
       paper: ({ theme }) => ({
         backgroundColor: (theme.vars || theme).palette.background.default,
         padding: 0,
-        "& .MuiList-root": {
-          padding: theme.spacing(1),
-        },
+        // "& .MuiList-root": {
+        //   padding: theme.spacing(1),
+        // },
       }),
     },
   },

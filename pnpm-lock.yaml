@@ -560,9 +560,6 @@ importers:
       '@rjsf/utils':
         specifier: ^6.2.5
         version: 6.2.5(react@18.3.1)
-      '@rjsf/validator-ajv8':
-        specifier: ^6.2.5
-        version: 6.2.5(@rjsf/utils@6.2.5(react@18.3.1))
       '@tanstack/react-query':
         specifier: ^5.90.8
         version: 5.90.8(react@18.3.1)
@@ -638,6 +635,9 @@ importers:
       yaml:
         specifier: ^2.5.0
         version: 2.8.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@tanstack/react-query-devtools':
         specifier: ^5.90.2

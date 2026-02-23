@@ -6,9 +6,10 @@
 
 import { JsonValue } from "@hexabot-ai/agentic";
 import { getDefaultFormState, RJSFSchema, UiSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import { JSONSchema7 } from "json-schema";
 import { JSONSchema } from "monaco-yaml";
+
+import validator from "@/utils/rjsf-zod-validator";
 
 export const getSchemaDefaults = <T extends Record<string, JsonValue>>(
   schema: JSONSchema,
