@@ -62,7 +62,6 @@ describe('Workflow execution', () => {
           },
           settings: {
             timeout_ms: 20,
-            audit: true,
             retries: {
               max_attempts: 2,
               backoff_ms: 10,
@@ -78,7 +77,6 @@ describe('Workflow execution', () => {
         final: "='Hello ' & $output.greet_user.name",
         timeout_ms: '=$output.greet_user.settings.timeout_ms',
         max_attempts: '=$output.greet_user.settings.retries.max_attempts',
-        audit_flag: '=$output.greet_user.settings.audit',
       },
       inputs: {
         schema: {
@@ -94,7 +92,6 @@ describe('Workflow execution', () => {
     expect(result.final).toBe('Hello Ada');
     expect(result.timeout_ms).toBe(20);
     expect(result.max_attempts).toBe(2);
-    expect(result.audit_flag).toBe(true);
   });
 
   it('supports suspension and resume through the WorkflowRunner', async () => {

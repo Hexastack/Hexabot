@@ -170,7 +170,7 @@ const RetriesSchema = z.strictObject({
     }),
 });
 
-// Execution guardrails applied to every action invocation.
+// Shared execution settings applied to every action invocation.
 export const BaseSettingsSchema = z.strictObject({
   timeout_ms: z
     .int()
@@ -185,14 +185,6 @@ export const BaseSettingsSchema = z.strictObject({
   retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })).meta({
     title: 'Retries',
     description: 'Retry policy applied when an action fails.',
-  }),
-  audit: z.boolean().optional().meta({
-    title: 'Audit',
-    description: 'Enable auditing for the action invocation.',
-  }),
-  guardrails: z.strictObject({ mode: z.string() }).optional().meta({
-    title: 'Guardrails',
-    description: 'Optional guardrail mode configuration.',
   }),
 });
 
