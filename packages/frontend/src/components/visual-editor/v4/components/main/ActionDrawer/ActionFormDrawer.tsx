@@ -168,9 +168,6 @@ export const ActionFormDrawer = () => {
   const [taskDescriptionValue, setTaskDescriptionValue] = useState("");
   const open = Boolean(isActionNode && selectedNodeId);
   const panelKeyBase = selectedNodeId ?? actionName ?? "action";
-  const emptyStateLabel = actionName
-    ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
-    : t("visual_editor.actions_drawer.form.empty_state.no_action");
   const normalizedTaskName = useMemo(
     () => normalizeTaskName(taskNameValue),
     [taskNameValue],
@@ -296,62 +293,6 @@ export const ActionFormDrawer = () => {
     updateDefinitionState(nextDefinition);
     handleClose();
   };
-  const descriptionPlaceholder = t(
-    "visual_editor.actions_drawer.form.description.placeholder",
-  );
-  const headerContent = (
-    <Box minWidth={0}>
-      <Stack spacing={0.25} minWidth={0}>
-        <EditableTypography
-          component="div"
-          variant="subtitle1"
-          value={taskNameValue}
-          onCommit={handleTaskNameCommit}
-          onCancel={handleTaskNameCancel}
-          placeholder={t(
-            "visual_editor.actions_drawer.form.step_id.placeholder",
-          )}
-          disabled={!taskName || isSaving}
-          sx={{
-            minWidth: 0,
-            fontFamily: "monospace",
-            px: 0.25,
-            mx: -0.25,
-            borderRadius: 0.5,
-          }}
-        />
-        {taskNameValidationError ? (
-          <Typography variant="caption" color="error.main">
-            {taskNameValidationError}
-          </Typography>
-        ) : null}
-        <EditableTypography
-          component="div"
-          variant="body2"
-          multiline
-          value={taskDescriptionValue}
-          onCommit={handleDescriptionCommit}
-          onCancel={handleDescriptionCancel}
-          placeholder={descriptionPlaceholder}
-          disabled={!taskName || isSaving}
-          color={
-            taskDescriptionValue.trim() ? "text.primary" : "text.secondary"
-          }
-          sx={{
-            minWidth: 0,
-            px: 0.25,
-            mx: -0.25,
-            borderRadius: 0.5,
-            wordBreak: "break-word",
-            whiteSpace: "pre-wrap",
-            overflow: "visible",
-            textOverflow: "clip",
-          }}
-        />
-      </Stack>
-    </Box>
-  );
-  const saveLabel = t("button.save");
   const saveDisabled =
     !definition ||
     !taskName ||
@@ -367,12 +308,53 @@ export const ActionFormDrawer = () => {
       inputData={inputData}
       settingsData={settingsData}
       panelKeyBase={panelKeyBase}
-      emptyStateLabel={emptyStateLabel}
+      emptyStateLabel={
+        actionName
+          ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
+          : t("visual_editor.actions_drawer.form.empty_state.no_action")
+      }
       onInputDataChange={setInputData}
       onSettingsDataChange={setSettingsData}
       open={open}
       onClose={handleClose}
-      headerContent={headerContent}
+      headerContent={
+        <Stack spacing={0.25} minWidth={0}>
+          <EditableTypography
+            component="div"
+            variant="subtitle1"
+            value={taskNameValue}
+            onCommit={handleTaskNameCommit}
+            onCancel={handleTaskNameCancel}
+            placeholder={t(
+              "visual_editor.actions_drawer.form.step_id.placeholder",
+            )}
+            disabled={!taskName || isSaving}
+            sx={{
+              fontFamily: "monospace",
+            }}
+          />
+          {taskNameValidationError ? (
+            <Typography variant="caption" color="error.main">
+              {taskNameValidationError}
+            </Typography>
+          ) : null}
+          <EditableTypography
+            component="div"
+            variant="body2"
+            multiline
+            value={taskDescriptionValue}
+            onCommit={handleDescriptionCommit}
+            onCancel={handleDescriptionCancel}
+            placeholder={t(
+              "visual_editor.actions_drawer.form.description.placeholder",
+            )}
+            disabled={!taskName || isSaving}
+            color={
+              taskDescriptionValue.trim() ? "text.primary" : "text.secondary"
+            }
+          />
+        </Stack>
+      }
       footerContent={
         <Box display="flex" justifyContent="center">
           <Button
@@ -380,11 +362,10 @@ export const ActionFormDrawer = () => {
             size="large"
             onClick={handleSave}
             disabled={saveDisabled}
-            aria-label={saveLabel}
             startIcon={<Save size={18} />}
             sx={{ minWidth: 200 }}
           >
-            {saveLabel}
+            {t("button.save")}
           </Button>
         </Box>
       }

@@ -121,12 +121,17 @@ export const EditableTypography = React.memo(
         skipNextBlurCommitRef.current = false;
       });
     }, [onCancel]);
+    const readElementValue = React.useCallback(
+      (el: HTMLElement) =>
+        (multiline ? el.innerText : el.textContent ?? "").replace(/\u00A0/g, ""),
+      [multiline]
+    );
     const commitEditing = React.useCallback(() => {
       const el = rootRef.current;
 
       if (!el) return;
 
-      const next = (el.textContent ?? "").replace(/\u00A0/g, ""); // strip nbsp if any
+      const next = readElementValue(el);
 
       setIsEditing(false);
 
@@ -136,7 +141,7 @@ export const EditableTypography = React.memo(
 
       onChange?.(next);
       onCommit?.(next);
-    }, [onChange, onCommit]);
+    }, [onChange, onCommit, readElementValue]);
 
     React.useLayoutEffect(() => {
       if (!isEditing) return;
@@ -211,15 +216,15 @@ export const EditableTypography = React.memo(
               e.preventDefault();
               startEditing();
             }
-            
-return;
+
+            return;
           }
 
           if (e.key === "Escape") {
             e.preventDefault();
             cancelEditing();
-            
-return;
+
+            return;
           }
 
           if (!multiline && e.key === "Enter") {
@@ -233,7 +238,7 @@ return;
           const el = rootRef.current;
 
           if (!el) return;
-          draftRef.current = el.textContent ?? "";
+          draftRef.current = readElementValue(el);
           onChange?.(draftRef.current);
         }}
         onBeforeInput={(e) => {
@@ -261,7 +266,11 @@ return;
           if (skipNextBlurCommitRef.current) return;
           commitEditing();
         }}
+        p={0.5}
+        mx={-0.5}
         sx={{
+          display: "inline-block",
+          width: "100%",
           cursor: disabled ? "default" : isEditing ? "text" : "pointer",
           userSelect: isEditing ? "text" : "none",
           outline: "none",
@@ -269,10 +278,17 @@ return;
           overflow: "hidden",
           textOverflow: "ellipsis",
           ...(showPlaceholder ? { color: "text.secondary" } : null),
-          "&:hover": disabled || isEditing ? undefined : { backgroundColor: "action.hover" },
+          "&:hover":
+            disabled || isEditing
+              ? undefined
+              : { backgroundColor: "action.hover" },
           "&:focus-visible": disabled
             ? undefined
-            : { outline: "2px solid", outlineColor: "primary.main", borderRadius: 0.5 },
+            : {
+                outline: "1px solid",
+                outlineColor: "primary.main",
+                borderRadius: 0.5,
+              },
           ...sx,
         }}
       >
