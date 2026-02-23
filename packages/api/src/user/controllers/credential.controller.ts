@@ -21,6 +21,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
+import { PopulatePipe } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -29,6 +30,7 @@ import {
   Credential,
   CredentialCreateDto,
   CredentialDtoConfig,
+  CredentialFull,
   CredentialUpdateDto,
 } from '../dto/credential.dto';
 import { CredentialOrmEntity } from '../entities/credential.entity';
@@ -62,6 +64,8 @@ export class CredentialController extends BaseOrmController<
 
   @Get()
   async find(
+    @Query(PopulatePipe)
+    populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<CredentialOrmEntity>({
         allowedFields: ['name', 'value', 'owner.id'],
@@ -69,8 +73,12 @@ export class CredentialController extends BaseOrmController<
       }),
     )
     options: FindManyOptions<CredentialOrmEntity> = {},
-  ) {
-    return await this.credentialService.find(options ?? {});
+  ): Promise<Credential[] | CredentialFull[]> {
+    const shouldPopulate = this.canPopulate(populate);
+
+    return shouldPopulate
+      ? await this.credentialService.findAndPopulate(options)
+      : await this.credentialService.find(options);
   }
 
   @Get('count')
@@ -86,8 +94,16 @@ export class CredentialController extends BaseOrmController<
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Credential> {
-    const record = await this.credentialService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Query(PopulatePipe)
+    populate: string[],
+  ): Promise<Credential | CredentialFull> {
+    const shouldPopulate = this.canPopulate(populate);
+    const record = shouldPopulate
+      ? await this.credentialService.findOneAndPopulate(id)
+      : await this.credentialService.findOne(id);
+
     if (!record) {
       this.logger.warn(`Unable to find Credential by id ${id}`);
       throw new NotFoundException(`Credential with ID ${id} not found`);

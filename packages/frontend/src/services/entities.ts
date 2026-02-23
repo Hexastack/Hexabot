@@ -128,7 +128,7 @@ export const ModelEntity = new schema.Entity(
 
 export const CredentialEntity = new schema.Entity(
   EntityType.CREDENTIAL,
-  undefined,
+  { owner: UserEntity },
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,

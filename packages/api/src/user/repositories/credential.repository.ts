@@ -28,7 +28,7 @@ export class CredentialRepository extends BaseOrmRepository<
     @InjectRepository(CredentialOrmEntity)
     repository: Repository<CredentialOrmEntity>,
   ) {
-    super(repository);
+    super(repository, ['owner']);
   }
 
   async findOneValue(id?: string): Promise<string> {
