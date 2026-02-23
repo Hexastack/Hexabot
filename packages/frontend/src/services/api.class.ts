@@ -72,6 +72,7 @@ export const ROUTES = {
   [EntityType.USER]: "/user",
   [EntityType.PERMISSION]: "/permission",
   [EntityType.MODEL]: "/model",
+  [EntityType.CREDENTIAL]: "/credential",
   [EntityType.MENU]: "/menu",
   [EntityType.MENUTREE]: "/menu/tree",
   [EntityType.CONTENT]: "/content",

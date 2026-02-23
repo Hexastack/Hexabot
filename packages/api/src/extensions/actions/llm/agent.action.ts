@@ -54,9 +54,14 @@ export class LlmAgentAction extends LlmBaseAction<
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);
+    const credentialRepository =
+      await context.services.credential.repository.findOneByIdWithPassword(
+        settings.api_key || '',
+      );
     const providerOptions = this.buildProviderInitOptions(
       providerName,
       settings,
+      credentialRepository,
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);

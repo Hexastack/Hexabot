@@ -17,6 +17,7 @@ export enum EntityType {
   USER = "User",
   PERMISSION = "Permission",
   MODEL = "Model",
+  CREDENTIAL = "Credential",
   MENUTREE = "Menu/tree",
   CONTENT = "Content",
   CONTENT_TYPE = "ContentType",

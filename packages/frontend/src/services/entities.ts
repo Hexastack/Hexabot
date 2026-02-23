@@ -126,6 +126,15 @@ export const ModelEntity = new schema.Entity(
   },
 );
 
+export const CredentialEntity = new schema.Entity(
+  EntityType.CREDENTIAL,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const MenuLeafEntity = new schema.Entity(EntityType.MENU, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -327,6 +336,7 @@ export const ENTITY_MAP = {
   [EntityType.USER]: UserEntity,
   [EntityType.PERMISSION]: PermissionEntity,
   [EntityType.MODEL]: ModelEntity,
+  [EntityType.CREDENTIAL]: CredentialEntity,
   [EntityType.MENU]: MenuItemEntity,
   [EntityType.MESSAGE]: MessageEntity,
   [EntityType.MENUTREE]: MenuNodeEntity,
