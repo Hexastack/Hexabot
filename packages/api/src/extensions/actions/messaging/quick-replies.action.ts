@@ -52,7 +52,7 @@ export class SendQuickRepliesAction extends MessageAction<
       {
         name: 'send_quick_replies',
         description:
-          'Sends a text message with quick replies to the subscriber and optionally waits for the reply.',
+          'Sends a text message with quick replies to the subscriber.',
         inputSchema: quickRepliesInputSchema,
         outputSchema: messageActionOutputSchema,
         settingsSchema: quickRepliesSettingsSchema,
