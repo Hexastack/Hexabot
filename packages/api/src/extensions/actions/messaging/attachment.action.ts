@@ -55,8 +55,7 @@ export class SendAttachmentAction extends MessageAction<
     super(
       {
         name: 'send_attachment',
-        description:
-          'Sends an attachment message to the subscriber and optionally waits for the reply.',
+        description: 'Sends an attachment message to the subscriber.',
         inputSchema: attachmentInputSchema,
         outputSchema: messageActionOutputSchema,
         settingsSchema: attachmentSettingsSchema,
