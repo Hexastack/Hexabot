@@ -4,25 +4,31 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JsonValue, TaskDefinition } from "@hexabot-ai/agentic";
+import {
+  JsonValue,
+  TaskDefinition,
+  Workflow as WorkflowHelper,
+  type WorkflowDefinition,
+} from "@hexabot-ai/agentic";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
+import { EditableTypography } from "@/app-components/inputs/EditableTypography";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import { humanizeTaskName } from "../../../utils/graph.utils";
 import {
   extractUiSchema,
   getSchemaPropertyNames,
 } from "../../../utils/schema-defaults.utils";
+import { normalizeTaskName } from "../../../utils/workflow-definition.utils";
 
 import { ActionSchemaPanel } from "./ActionSchemaPanel";
 
@@ -149,11 +155,8 @@ export const ActionFormDrawer = () => {
   const isActionNode =
     selectedNode?.type === ENodeType.TASK ||
     selectedNode?.type === ENodeType.AGENT;
-  const actionName = isActionNode
-    ? selectedNode?.type === ENodeType.TASK
-      ? (selectedNode?.data as { actionName?: string })?.actionName
-      : (selectedNode?.data as { action?: string })?.action
-    : undefined;
+  const actionName = (selectedNode?.data as { actionName?: string })
+    ?.actionName;
   const taskName = isActionNode
     ? (selectedNode?.data as { title?: string })?.title
     : undefined;
@@ -161,11 +164,39 @@ export const ActionFormDrawer = () => {
   const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});
   const [settingsData, setSettingsData] = useState<Record<string, unknown>>({});
+  const [taskNameValue, setTaskNameValue] = useState("");
+  const [taskDescriptionValue, setTaskDescriptionValue] = useState("");
   const open = Boolean(isActionNode && selectedNodeId);
   const panelKeyBase = selectedNodeId ?? actionName ?? "action";
-  const emptyStateLabel = actionName
-    ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
-    : t("visual_editor.actions_drawer.form.empty_state.no_action");
+  const normalizedTaskName = useMemo(
+    () => normalizeTaskName(taskNameValue),
+    [taskNameValue],
+  );
+  const taskNameValidationError = useMemo(() => {
+    if (!taskName) {
+      return null;
+    }
+
+    if (!taskNameValue.trim()) {
+      return t("visual_editor.actions_drawer.form.step_id.errors.required");
+    }
+
+    if (!normalizedTaskName) {
+      return t("visual_editor.actions_drawer.form.step_id.errors.snake_case");
+    }
+
+    if (
+      normalizedTaskName !== taskName &&
+      Object.prototype.hasOwnProperty.call(
+        definition?.tasks ?? {},
+        normalizedTaskName,
+      )
+    ) {
+      return t("visual_editor.actions_drawer.form.step_id.errors.unique");
+    }
+
+    return null;
+  }, [definition?.tasks, normalizedTaskName, taskName, taskNameValue, t]);
 
   useEffect(() => {
     if (!open) {
@@ -175,6 +206,8 @@ export const ActionFormDrawer = () => {
     setSettingsData(
       (taskDefinition?.settings as Record<string, unknown>) ?? {},
     );
+    setTaskNameValue(taskName ?? "");
+    setTaskDescriptionValue(taskDefinition?.description ?? "");
   }, [open, taskName, actionName]);
 
   const handleClose = () => {
@@ -182,8 +215,35 @@ export const ActionFormDrawer = () => {
       updateWorkflowURL(selectedFlowId);
     }
   };
+  const handleTaskNameCommit = useCallback((nextTaskName: string) => {
+    const nextNormalizedTaskName = normalizeTaskName(nextTaskName);
+
+    setTaskNameValue(nextNormalizedTaskName || "");
+  }, []);
+  const handleTaskNameCancel = useCallback(() => {
+    setTaskNameValue(taskName ?? "");
+  }, [taskName]);
+  const handleDescriptionCommit = useCallback((nextDescription: string) => {
+    setTaskDescriptionValue(nextDescription);
+  }, []);
+  const handleDescriptionCancel = useCallback(() => {
+    setTaskDescriptionValue(taskDefinition?.description ?? "");
+  }, [taskDefinition?.description]);
   const handleSave = () => {
     if (!definition || !taskName) {
+      return;
+    }
+
+    const nextTaskName = normalizeTaskName(taskNameValue);
+
+    if (!nextTaskName || taskNameValidationError) {
+      return;
+    }
+
+    if (
+      nextTaskName !== taskName &&
+      Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)
+    ) {
       return;
     }
 
@@ -193,6 +253,7 @@ export const ActionFormDrawer = () => {
       return;
     }
 
+    const normalizedDescription = taskDescriptionValue.trim();
     const hasInputValues = Object.keys(inputData).length > 0;
     const hasSettingValues = Object.keys(settingsData).length > 0;
     const shouldIncludeInputs =
@@ -201,6 +262,7 @@ export const ActionFormDrawer = () => {
       hasSettingValues || currentTask.settings !== undefined;
     const nextTask: TaskDefinition = {
       ...currentTask,
+      ...(normalizedDescription ? { description: normalizedDescription } : {}),
       ...(shouldIncludeInputs
         ? { inputs: inputData as Record<string, JsonValue> }
         : {}),
@@ -208,37 +270,36 @@ export const ActionFormDrawer = () => {
         ? { settings: settingsData as TaskDefinition["settings"] }
         : {}),
     };
-
-    updateDefinitionState({
+    let nextDefinition: WorkflowDefinition = {
       ...definition,
       tasks: {
         ...(definition.tasks ?? {}),
         [taskName]: nextTask,
       },
-    });
+    };
+
+    if (!normalizedDescription) {
+      delete nextDefinition.tasks[taskName].description;
+    }
+
+    if (nextTaskName !== taskName) {
+      nextDefinition = WorkflowHelper.safeRenameTaskInDefinition(
+        nextDefinition,
+        taskName,
+        nextTaskName,
+      );
+    }
+
+    updateDefinitionState(nextDefinition);
     handleClose();
   };
-  const actionLabel =
-    actionName ?? t("visual_editor.actions_drawer.form.action_label.none");
-  const headerContent = (
-    <Box minWidth={0}>
-      <Typography variant="subtitle1" noWrap>
-        {taskName ? humanizeTaskName(taskName) : actionLabel}&nbsp;
-        <Typography variant="caption" color="text.secondary" noWrap>
-          ({actionLabel})
-        </Typography>
-      </Typography>
-
-      {actionSchema?.description ? (
-        <Typography variant="body2" color="text.secondary">
-          {actionSchema.description}
-        </Typography>
-      ) : null}
-    </Box>
-  );
-  const saveLabel = t("button.save");
   const saveDisabled =
-    !definition || !taskName || !isActionNode || !taskDefinition || isSaving;
+    !definition ||
+    !taskName ||
+    !isActionNode ||
+    !taskDefinition ||
+    isSaving ||
+    Boolean(taskNameValidationError);
 
   return (
     <ActionFormDrawerLayout
@@ -247,12 +308,53 @@ export const ActionFormDrawer = () => {
       inputData={inputData}
       settingsData={settingsData}
       panelKeyBase={panelKeyBase}
-      emptyStateLabel={emptyStateLabel}
+      emptyStateLabel={
+        actionName
+          ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
+          : t("visual_editor.actions_drawer.form.empty_state.no_action")
+      }
       onInputDataChange={setInputData}
       onSettingsDataChange={setSettingsData}
       open={open}
       onClose={handleClose}
-      headerContent={headerContent}
+      headerContent={
+        <Stack spacing={0.25} minWidth={0}>
+          <EditableTypography
+            component="div"
+            variant="subtitle1"
+            value={taskNameValue}
+            onCommit={handleTaskNameCommit}
+            onCancel={handleTaskNameCancel}
+            placeholder={t(
+              "visual_editor.actions_drawer.form.step_id.placeholder",
+            )}
+            disabled={!taskName || isSaving}
+            sx={{
+              fontFamily: "monospace",
+            }}
+          />
+          {taskNameValidationError ? (
+            <Typography variant="caption" color="error.main">
+              {taskNameValidationError}
+            </Typography>
+          ) : null}
+          <EditableTypography
+            component="div"
+            variant="body2"
+            multiline
+            value={taskDescriptionValue}
+            onCommit={handleDescriptionCommit}
+            onCancel={handleDescriptionCancel}
+            placeholder={t(
+              "visual_editor.actions_drawer.form.description.placeholder",
+            )}
+            disabled={!taskName || isSaving}
+            color={
+              taskDescriptionValue.trim() ? "text.primary" : "text.secondary"
+            }
+          />
+        </Stack>
+      }
       footerContent={
         <Box display="flex" justifyContent="center">
           <Button
@@ -260,11 +362,10 @@ export const ActionFormDrawer = () => {
             size="large"
             onClick={handleSave}
             disabled={saveDisabled}
-            aria-label={saveLabel}
             startIcon={<Save size={18} />}
             sx={{ minWidth: 200 }}
           >
-            {saveLabel}
+            {t("button.save")}
           </Button>
         </Box>
       }

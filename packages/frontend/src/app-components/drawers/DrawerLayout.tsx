@@ -12,12 +12,19 @@ import type { ComponentType, ReactNode } from "react";
 const headerOffset = 65;
 const drawerWidth = 520;
 const DrawerHeader = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: theme.spacing(2, 2, 1.5),
+  position: "relative",
+  padding: theme.spacing(2, 8, 1.5, 2),
   borderBottom: `1px solid ${theme.palette.divider}`,
   flexShrink: 0,
+}));
+const DrawerHeaderContent = styled(Box)({
+  minWidth: 0,
+  width: "100%",
+});
+const DrawerCloseButton = styled(IconButton)(({ theme }) => ({
+  position: "absolute",
+  top: theme.spacing(2),
+  right: theme.spacing(2),
 }));
 const DrawerBody = styled(Box)(({ theme }) => ({
   flex: 1,
@@ -91,10 +98,10 @@ export const DrawerLayout = ({
     >
       {hasHeader ? (
         <DrawerHeader>
-          <Box minWidth={0}>{resolvedHeaderContent}</Box>
-          <IconButton aria-label={closeLabel} onClick={onClose}>
+          <DrawerHeaderContent>{resolvedHeaderContent}</DrawerHeaderContent>
+          <DrawerCloseButton aria-label={closeLabel} onClick={onClose}>
             <X size={18} />
-          </IconButton>
+          </DrawerCloseButton>
         </DrawerHeader>
       ) : null}
       <DrawerBody>{children}</DrawerBody>

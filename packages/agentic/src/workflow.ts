@@ -14,6 +14,7 @@ import {
   type FlowStep,
 } from './dsl.types';
 import { WorkflowSuspendedError } from './runtime-error';
+import { safeRenameTaskInDefinition as safeRenameTaskInDefinitionHelper } from './utils/workflow-definition';
 import {
   compileWorkflow,
   type WorkflowCompileOptions,
@@ -277,6 +278,21 @@ export class Workflow {
     nextSteps.splice(safeIndex, 0, step);
 
     return Workflow.setValueAtPath(definition, stepsPath, nextSteps);
+  }
+
+  /**
+   * Rename a task key and update references in flow steps and output expressions.
+   */
+  static safeRenameTaskInDefinition(
+    definition: WorkflowDefinition,
+    currentTaskName: string,
+    nextTaskName: string,
+  ): WorkflowDefinition {
+    return safeRenameTaskInDefinitionHelper(
+      definition,
+      currentTaskName,
+      nextTaskName,
+    );
   }
 
   /**

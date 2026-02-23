@@ -185,16 +185,6 @@ export const WorkflowVersionMetaRow = ({
           title={trimmedMessage || undefined}
           variant="body2"
           color={trimmedMessage ? "text.primary" : "text.secondary"}
-          sx={{
-            minWidth: 0,
-            px: 0.25,
-            mx: -0.25,
-            borderRadius: 0.5,
-            wordBreak: "break-word",
-            whiteSpace: "pre-wrap",
-            overflow: "visible",
-            textOverflow: "clip",
-          }}
         />
       )}
 

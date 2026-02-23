@@ -81,7 +81,7 @@ export type AgentData = CommonNodeData<ENodeType.AGENT> & {
   tools: string[];
   model: string;
   memory: string;
-  action?: string;
+  actionName?: string;
 };
 
 // Task types
