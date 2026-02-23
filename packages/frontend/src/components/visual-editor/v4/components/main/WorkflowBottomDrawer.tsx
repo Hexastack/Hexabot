@@ -7,7 +7,6 @@
 import { Divider, Drawer, Paper, Stack, useMediaQuery } from "@mui/material";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import { getDefaultFormState, type RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import {
   useCallback,
   useEffect,
@@ -22,6 +21,7 @@ import { WorkflowRunDebugger } from "@/components/workflow-run-debugger/componen
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslate } from "@/hooks/useTranslate";
 import { WorkflowType } from "@/types/workfow.types";
+import validator from "@/utils/rjsf-zod-validator";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 

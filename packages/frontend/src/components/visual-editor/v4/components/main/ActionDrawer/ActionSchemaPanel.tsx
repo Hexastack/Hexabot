@@ -20,6 +20,7 @@ export type ActionSchemaPanelProps = {
   schema?: unknown;
   formData: Record<string, unknown>;
   onFormDataChange: (data: Record<string, unknown>) => void;
+  onVisibleErrorsChange?: (hasVisibleErrors: boolean) => void;
   panelKey: string;
   emptyLabel: string;
   uiSchema?: UiSchema;
@@ -30,6 +31,7 @@ export const ActionSchemaPanel = ({
   schema,
   formData,
   onFormDataChange,
+  onVisibleErrorsChange,
   panelKey,
   emptyLabel,
   uiSchema,
@@ -46,6 +48,7 @@ export const ActionSchemaPanel = ({
           schema={schema as RJSFSchema}
           formData={formData}
           onFormDataChange={onFormDataChange}
+          onVisibleErrorsChange={onVisibleErrorsChange}
           uiSchema={uiSchema}
           idPrefix={`action-${panelKey}`}
         />

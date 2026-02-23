@@ -16,6 +16,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@rjsf/validator-ajv8": path.resolve(
+        __dirname,
+        "./src/utils/rjsf-zod-validator.ts",
+      ),
     },
   },
   server: {

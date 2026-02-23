@@ -38,7 +38,6 @@
     "@rjsf/core": "^6.2.5",
     "@rjsf/mui": "^6.2.5",
     "@rjsf/utils": "^6.2.5",
-    "@rjsf/validator-ajv8": "^6.2.5",
     "@tanstack/react-query": "^5.90.8",
     "@xyflow/react": "^12.10.0",
     "axios": "^1.12.2",
@@ -63,7 +62,8 @@
     "react-router-dom": "^6.26.2",
     "react-window": "^1.8.5",
     "socket.io-client": "^4.7.5",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.90.2",

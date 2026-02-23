@@ -26,6 +26,8 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     required,
     value,
     onChange,
+    onBlur,
+    onFocus,
     globalsSchema,
     disabled,
     helperText,
@@ -52,10 +54,17 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
   const [internalError, setInternalError] = React.useState<string | null>(null);
   const [height, setHeight] = React.useState<number>(minHeightPx);
   const prevIsJsonataMode = React.useRef<boolean>(isJsonataMode);
+  const onBlurRef = React.useRef(onBlur);
+  const onFocusRef = React.useRef(onFocus);
 
   React.useEffect(() => {
     prevIsJsonataMode.current = isJsonataMode;
   }, [isJsonataMode]);
+
+  React.useEffect(() => {
+    onBlurRef.current = onBlur;
+    onFocusRef.current = onFocus;
+  }, [onBlur, onFocus]);
 
   const onMount: OnMount = (editor, monaco) => {
     monacoRef.current = monaco as any;
@@ -100,10 +109,18 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     updateHeight();
 
     const sub = editor.onDidContentSizeChange(updateHeight);
+    const blurSub = editor.onDidBlurEditorText(() => {
+      onBlurRef.current?.(editor.getValue());
+    });
+    const focusSub = editor.onDidFocusEditorText(() => {
+      onFocusRef.current?.(editor.getValue());
+    });
 
     // clicking wrapper should focus editor (handled by wrapper onClick)
     return () => {
       sub.dispose();
+      blurSub.dispose();
+      focusSub.dispose();
     };
   };
 
@@ -259,7 +276,6 @@ return (
         {label}
       </FormLabel>
     ) : null}
-
     <Box
       className="nokey"
       onClick={() => editorRef.current?.focus()}
@@ -355,8 +371,7 @@ return (
         }}
       />
     </Box>
-
-    <FormHelperText sx={{ mt: 0.75 }}>
+    <FormHelperText sx={{ mt: 0.25 }}>
       {showError
         ? internalError
         : (helperText ??
