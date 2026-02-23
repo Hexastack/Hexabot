@@ -12,24 +12,69 @@ import { createAction } from '@/actions/create-action';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 const httpRequestInputSchema = z.object({
-  url: z.url(),
-  headers: z.record(z.string(), z.string()).optional(),
-  body: JsonValueSchema.optional(),
+  url: z.url().meta({
+    title: 'URL',
+    description: 'Destination URL for the HTTP request.',
+  }),
+  headers: z.record(z.string(), z.string()).optional().meta({
+    title: 'Headers',
+    description:
+      'Optional request headers as key/value pairs that override defaults.',
+  }),
+  body: z.string().default('{}').optional().meta({
+    title: 'Body',
+    description:
+      'Optional request body string sent for POST requests, defaults to an empty JSON object.',
+  }),
 });
 const httpRequestSettingsSchema = SettingsSchema.extend({
-  method: z.enum(['GET', 'POST']).prefault('GET'),
-  timeout_ms: z.int().positive().max(60000).prefault(10000),
+  method: z.enum(['GET', 'POST']).default('GET').meta({
+    title: 'Method',
+    description: 'HTTP method used for the request.',
+  }),
+  timeout_ms: z.int().positive().max(60000).default(10000).meta({
+    title: 'Timeout (ms)',
+    description:
+      'Request timeout in milliseconds, between 1 and 60000, defaulting to 10000.',
+  }),
 });
 const httpRequestOutputSchema = z.object({
-  ok: z.boolean(),
-  status: z.int(),
-  status_text: z.string(),
-  url: z.string(),
-  final_url: z.string().optional(),
-  body: JsonValueSchema,
-  content_type: z.string().optional(),
-  truncated: z.boolean(),
-  error: z.string().optional(),
+  ok: z.boolean().meta({
+    title: 'OK',
+    description: 'Whether the HTTP response status indicates success.',
+  }),
+  status: z.int().meta({
+    title: 'Status',
+    description: 'HTTP response status code.',
+  }),
+  status_text: z.string().meta({
+    title: 'Status Text',
+    description: 'HTTP response status text.',
+  }),
+  url: z.string().meta({
+    title: 'URL',
+    description: 'Original request URL.',
+  }),
+  final_url: z.string().optional().meta({
+    title: 'Final URL',
+    description: 'Final URL after redirects, when available.',
+  }),
+  body: JsonValueSchema.meta({
+    title: 'Body',
+    description: 'Parsed or raw response body.',
+  }),
+  content_type: z.string().optional().meta({
+    title: 'Content Type',
+    description: 'Response Content-Type header value, when present.',
+  }),
+  truncated: z.boolean().meta({
+    title: 'Truncated',
+    description: 'Whether the response body was truncated.',
+  }),
+  error: z.string().optional().meta({
+    title: 'Error',
+    description: 'Error message when the request fails.',
+  }),
 });
 
 type HttpRequestInput = z.infer<typeof httpRequestInputSchema>;
@@ -76,6 +121,28 @@ function resolveFinalUrl(response: {
   return response.request?.res?.responseUrl ?? response.request?.responseUrl;
 }
 
+function parseRequestBody(
+  body: string,
+): string | Record<string, unknown> | unknown[] {
+  const trimmed = body.trim();
+
+  if (!trimmed) {
+    return body;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+
+    if (parsed !== null && typeof parsed === 'object') {
+      return parsed as Record<string, unknown> | unknown[];
+    }
+  } catch {
+    return body;
+  }
+
+  return body;
+}
+
 export const HttpRequestAction = createAction<
   HttpRequestInput,
   HttpRequestOutput,
@@ -93,6 +160,10 @@ export const HttpRequestAction = createAction<
     const logger = context.services.logger;
     const timeoutMs = settings.timeout_ms ?? 10000;
     const method = settings.method ?? 'GET';
+    const requestData =
+      method === 'POST' && input.body !== undefined
+        ? parseRequestBody(input.body)
+        : undefined;
     const headers = {
       'user-agent': DEFAULT_USER_AGENT,
       accept: 'application/json',
@@ -107,9 +178,7 @@ export const HttpRequestAction = createAction<
         headers,
         timeout: timeoutMs,
         validateStatus: () => true,
-        ...(method === 'POST' && input.body !== undefined
-          ? { data: input.body }
-          : {}),
+        ...(requestData !== undefined ? { data: requestData } : {}),
       });
       const contentTypeHeader = response.headers?.['content-type'];
       const contentType = Array.isArray(contentTypeHeader)

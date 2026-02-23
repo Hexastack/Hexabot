@@ -94,11 +94,11 @@ describe('HttpRequestAction', () => {
     });
   });
 
-  it('includes request body for POST and returns object responses', async () => {
+  it('parses JSON string request body for POST and returns object responses', async () => {
     const requestMock = getRequestMock();
     const input = {
       url: 'https://example.com/submit',
-      body: { ping: 'pong' },
+      body: '{"ping":"pong"}',
     };
 
     requestMock.mockResolvedValueOnce({
@@ -119,7 +119,7 @@ describe('HttpRequestAction', () => {
         url: input.url,
         method: 'POST',
         timeout: 5000,
-        data: input.body,
+        data: { ping: 'pong' },
       }),
     );
 
@@ -133,6 +133,35 @@ describe('HttpRequestAction', () => {
       truncated: false,
     });
     expect(result.content_type).toBeUndefined();
+  });
+
+  it('keeps raw string when POST request body is not valid JSON', async () => {
+    const requestMock = getRequestMock();
+    const input = {
+      url: 'https://example.com/plain',
+      body: 'ping=pong',
+    };
+
+    requestMock.mockResolvedValueOnce({
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      data: { ok: true },
+    });
+
+    await action.execute({
+      input,
+      context,
+      settings: { method: 'POST' } as any,
+    });
+
+    expect(requestMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: input.url,
+        method: 'POST',
+        data: 'ping=pong',
+      }),
+    );
   });
 
   it('converts binary response data to utf8 strings', async () => {
