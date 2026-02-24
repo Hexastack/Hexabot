@@ -62,7 +62,6 @@ describe('compileWorkflow', () => {
         settings: {
           timeout_ms: 25,
           retries: baseRetries,
-          guardrails: { mode: 'default' },
         },
       },
       tasks: {
@@ -72,8 +71,6 @@ describe('compileWorkflow', () => {
           inputs: { source: '=$input.source', literal: 1 },
           settings: {
             timeout_ms: 50,
-            audit: true,
-            guardrails: { mode: 'strict' },
             retries: {
               max_attempts: 1,
               backoff_ms: 10,
@@ -134,12 +131,9 @@ describe('compileWorkflow', () => {
     expect(parseSettings).toHaveBeenCalledWith({
       timeout_ms: 50,
       retries: { ...baseRetries, max_attempts: 1 },
-      guardrails: { mode: 'strict' },
-      audit: true,
     });
     expect(compiled.tasks.worker_task.settings).toMatchObject({
       parsed: true,
-      audit: true,
     });
 
     expect(compiled.flow[0]).toMatchObject({

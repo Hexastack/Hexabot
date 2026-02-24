@@ -92,8 +92,10 @@ describe('workflow values', () => {
           jitter: 0,
           multiplier: 2,
         },
-        audit: false,
-        guardrails: { mode: 'default' },
+        llm: {
+          model: 'gpt-4o',
+          options: { temperature: 0.2, top_p: 0.9 },
+        },
       } satisfies Partial<Settings>,
       {
         retries: {
@@ -103,8 +105,9 @@ describe('workflow values', () => {
           jitter: 0,
           multiplier: 1,
         },
-        audit: true,
-        guardrails: { mode: 'strict' },
+        llm: {
+          options: { temperature: 0.5 },
+        },
       },
     );
 
@@ -117,8 +120,10 @@ describe('workflow values', () => {
         jitter: 0,
         multiplier: 1,
       },
-      audit: true,
-      guardrails: { mode: 'strict' },
+      llm: {
+        model: 'gpt-4o',
+        options: { temperature: 0.5, top_p: 0.9 },
+      },
     });
   });
 });

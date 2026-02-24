@@ -6,7 +6,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
 - `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
-- `defaults`: settings inherited by every task unless overridden (timeouts, retries, guardrails, audit flags).
+- `defaults`: settings inherited by every task unless overridden (timeouts, retries, and action-specific knobs).
 - `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs, and per-task settings.
 - `flow`: ordered execution plan composed of `do`, `parallel`, `conditional`, and `loop` blocks.
 - `outputs`: expressions that expose final artifacts from the run back to the caller.
@@ -30,7 +30,7 @@ Each entry under `tasks` has:
 - `description`: human-readable purpose.
 - `action`: engine-specific operation to call (`call_llm`, `search_web`, `await_user_input`, etc.). The DSL does not fix action semantics; the runtime must bind them.
 - `inputs`: map of parameters passed to the action. Values can be literals or expressions (prefixed with `=`).
-- `settings`: execution hints (timeout, retries, model choice, temperature, guardrails, audit flags). Settings merge with `defaults.settings`, with task-level keys taking precedence.
+- `settings`: execution hints (timeout, retries, model choice, temperature, and action-specific options). Settings merge with `defaults.settings`, with task-level keys taking precedence.
 
 Task results are stored automatically under `$output.<task>` for downstream steps.
 
@@ -66,7 +66,7 @@ All branches and loop bodies can themselves contain nested `conditional` or `par
 
 ## Execution model and error handling
 
-- Tasks inherit `defaults.settings` unless overridden. Common knobs: `timeout_ms`, `retries.max_attempts`, `retries.backoff_ms`, `guardrails.mode`, `audit`, and action-specific parameters like `model`/`temperature`.
+- Tasks inherit `defaults.settings` unless overridden. Common knobs: `timeout_ms`, `retries.max_attempts`, `retries.backoff_ms`, and action-specific parameters like `model`/`temperature`.
 - Engines should surface action failures and retry attempts; a task failing after retries should abort the workflow unless the engine supports optional continuation semantics.
 - Parallel blocks honor task-level retries independently; the block completes based on its `strategy` (e.g., all tasks finishing for `wait_all`).
 

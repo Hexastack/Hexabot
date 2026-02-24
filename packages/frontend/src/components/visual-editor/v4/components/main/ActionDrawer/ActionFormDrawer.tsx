@@ -45,12 +45,7 @@ type ActionFormDrawerContentProps = {
   onSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
 };
 
-const COMMON_SETTING_KEYS = [
-  "timeout_ms",
-  "retries",
-  "guardrails",
-  "audit",
-] as const;
+const COMMON_SETTING_KEYS = ["timeout_ms", "retries"] as const;
 // @todo : refactor, rename and move to the json schema form component folder (so that it would work for any schema).
 const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
   const properties = getSchemaPropertyNames(schema);
@@ -71,12 +66,6 @@ const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
 
   if (properties.includes("retries")) {
     uiSchema.retries = {
-      "ui:options": { collapsible: true, defaultExpanded: false },
-    };
-  }
-
-  if (properties.includes("guardrails")) {
-    uiSchema.guardrails = {
       "ui:options": { collapsible: true, defaultExpanded: false },
     };
   }
