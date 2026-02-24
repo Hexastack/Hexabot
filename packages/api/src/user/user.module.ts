@@ -13,10 +13,12 @@ import { AttachmentModule } from '@/attachment/attachment.module';
 import { MailerModule } from '@/mailer/mailer.module';
 
 import { LocalAuthController } from './controllers/auth.controller';
+import { CredentialController } from './controllers/credential.controller';
 import { ModelController } from './controllers/model.controller';
 import { PermissionController } from './controllers/permission.controller';
 import { RoleController } from './controllers/role.controller';
 import { ReadWriteUserController } from './controllers/user.controller';
+import { CredentialOrmEntity } from './entities/credential.entity';
 import { InvitationOrmEntity } from './entities/invitation.entity';
 import { ModelOrmEntity } from './entities/model.entity';
 import { PermissionOrmEntity } from './entities/permission.entity';
@@ -25,6 +27,7 @@ import { UserOrmEntity } from './entities/user.entity';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LocalStrategy } from './passport/auth-strategy/local.strategy';
 import { AuthSerializer } from './passport/session.serializer';
+import { CredentialRepository } from './repositories/credential.repository';
 import { InvitationRepository } from './repositories/invitation.repository';
 import { ModelRepository } from './repositories/model.repository';
 import { PermissionRepository } from './repositories/permission.repository';
@@ -35,6 +38,7 @@ import { PermissionSeeder } from './seeds/permission.seed';
 import { RoleSeeder } from './seeds/role.seed';
 import { UserSeeder } from './seeds/user.seed';
 import { AuthService } from './services/auth.service';
+import { CredentialService } from './services/credential.service';
 import { InvitationService } from './services/invitation.service';
 import { ModelService } from './services/model.service';
 import { PasswordResetService } from './services/passwordReset.service';
@@ -52,6 +56,7 @@ import { ValidateAccountService } from './services/validate-account.service';
       InvitationOrmEntity,
       RoleOrmEntity,
       PermissionOrmEntity,
+      CredentialOrmEntity,
     ]),
     PassportModule.register({
       session: true,
@@ -72,6 +77,7 @@ import { ValidateAccountService } from './services/validate-account.service';
     RoleRepository,
     ModelRepository,
     PermissionRepository,
+    CredentialRepository,
     LocalStrategy,
     AuthService,
     LocalAuthGuard,
@@ -80,6 +86,7 @@ import { ValidateAccountService } from './services/validate-account.service';
     InvitationService,
     PasswordResetService,
     ValidateAccountService,
+    CredentialService,
   ],
   controllers: [
     LocalAuthController,
@@ -87,7 +94,8 @@ import { ValidateAccountService } from './services/validate-account.service';
     RoleController,
     PermissionController,
     ModelController,
+    CredentialController,
   ],
-  exports: [UserService, PermissionService, ModelService],
+  exports: [UserService, PermissionService, ModelService, CredentialService],
 })
 export class UserModule {}

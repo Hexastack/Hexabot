@@ -11,6 +11,7 @@ import {
   Flag,
   FolderUp,
   Home,
+  KeyRound,
   Languages,
   LayoutGrid,
   MemoryStick,
@@ -153,6 +154,14 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
             } satisfies TMenu,
           ]
         : []),
+      {
+        text: "menu.credentials",
+        href: "/credentials",
+        Icon: KeyRound,
+        requires: {
+          [EntityType.CREDENTIAL]: [PermissionAction.READ],
+        },
+      },
     ],
   },
   {

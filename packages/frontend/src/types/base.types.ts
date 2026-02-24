@@ -23,6 +23,7 @@ import {
   IContentFilters,
   IContentFull,
 } from "./content.types";
+import { ICredential, ICredentialAttributes } from "./credential.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
@@ -100,6 +101,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.LABEL_GROUP]: [],
   [EntityType.MODEL]: ["permissions"],
   [EntityType.PERMISSION]: ["model", "role"],
+  [EntityType.CREDENTIAL]: [],
   [EntityType.SUBSCRIBER]: ["labels", "assignedTo"],
   [EntityType.CONTENT_TYPE]: [],
   [EntityType.CONTENT]: ["entity"],
@@ -188,6 +190,7 @@ export interface IEntityMapTypes {
     IMenuNodeFull
   >;
   [EntityType.MODEL]: IEntityTypes<IModel, IModelAttributes, never, IModelFull>;
+  [EntityType.CREDENTIAL]: IEntityTypes<ICredential, ICredentialAttributes>;
   [EntityType.PERMISSION]: IEntityTypes<
     IPermission,
     IPermissionAttributes,

@@ -6,7 +6,9 @@
 
 import { Form } from "@rjsf/mui";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import validator from "@/utils/rjsf-zod-validator";
 
 import { FORM_FIELDS } from "./fields";
 import { FORM_TEMPLATES } from "./templates";
@@ -24,9 +26,10 @@ type JsonSchemaFormProps = {
   onFormDataChange: (data: Record<string, unknown>) => void;
   idPrefix?: string;
   uiSchema?: UiSchema;
-  liveValidate?: boolean;
+  liveValidate?: "onChange" | "onBlur" | boolean;
   enableJsonataTextWidget?: boolean;
   formContext?: Record<string, unknown>;
+  onVisibleErrorsChange?: (hasVisibleErrors: boolean) => void;
 };
 
 export const JsonSchemaForm = ({
@@ -35,16 +38,56 @@ export const JsonSchemaForm = ({
   onFormDataChange,
   idPrefix,
   uiSchema,
-  liveValidate = false,
+  liveValidate = "onChange",
   enableJsonataTextWidget = true,
   formContext,
+  onVisibleErrorsChange,
 }: JsonSchemaFormProps) => {
+  const visibleErrorFieldIdsRef = useRef<Set<string>>(new Set());
+  const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
+  const reportFieldVisibleError = useCallback(
+    (fieldId: string, hasVisibleError: boolean) => {
+      if (!fieldId) {
+        return;
+      }
+
+      const next = visibleErrorFieldIdsRef.current;
+
+      if (hasVisibleError) {
+        next.add(fieldId);
+      } else {
+        next.delete(fieldId);
+      }
+
+      const nextHasVisibleErrors = next.size > 0;
+
+      setHasVisibleErrors((previous) =>
+        previous === nextHasVisibleErrors ? previous : nextHasVisibleErrors,
+      );
+    },
+    [],
+  );
+
+  useEffect(() => {
+    onVisibleErrorsChange?.(hasVisibleErrors);
+  }, [hasVisibleErrors, onVisibleErrorsChange]);
+
+  useEffect(() => {
+    return () => {
+      onVisibleErrorsChange?.(false);
+    };
+  }, [onVisibleErrorsChange]);
+
   return (
     <Form
       schema={schema}
       validator={validator}
       formData={formData}
-      formContext={{ ...(formContext ?? {}), formData }}
+      formContext={{
+        ...(formContext ?? {}),
+        formData,
+        reportFieldVisibleError,
+      }}
       onChange={(event) =>
         onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
       }

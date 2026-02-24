@@ -167,6 +167,9 @@ export const navigationCustomizations: Components<Theme> = {
         "& .MuiList-root": {
           padding: theme.spacing(1),
         },
+        "& form .MuiList-root": {
+          padding: 0,
+        },
       }),
     },
   },

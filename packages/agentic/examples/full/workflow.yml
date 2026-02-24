@@ -47,9 +47,6 @@ defaults:
       max_delay_ms: 10000
       jitter: 0
       multiplier: 1.5
-    audit: true                        # example flag an engine could log for compliance
-    guardrails:
-      mode: standard                    # e.g., optional safety setting the engine could enforce
 
 # Task catalog: each task has a unique name, description, action, inputs, settings.
 tasks:

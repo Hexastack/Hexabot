@@ -6,7 +6,6 @@
 
 import { Button, Stack } from "@mui/material";
 import type { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import { PlayCircle } from "lucide-react";
 import { useMemo } from "react";
 
@@ -20,6 +19,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
 import type { IWorkflow } from "@/types/workfow.types";
 import { WorkflowType } from "@/types/workfow.types";
+import validator from "@/utils/rjsf-zod-validator";
 
 type RunActionsProps = {
   workflow?: IWorkflow | null;

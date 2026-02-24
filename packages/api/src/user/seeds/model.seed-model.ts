@@ -112,4 +112,9 @@ export const modelModels: ModelCreateDto[] = [
     identity: 'model',
     attributes: {},
   },
+  {
+    name: 'Credential',
+    identity: 'credential',
+    attributes: {},
+  },
 ];

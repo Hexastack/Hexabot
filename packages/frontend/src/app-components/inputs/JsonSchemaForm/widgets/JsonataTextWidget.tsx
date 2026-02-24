@@ -24,12 +24,15 @@ type JsonataWidgetOptions = {
 };
 
 export const JsonataTextWidget = ({
+  id,
   label,
   required,
   disabled,
   readonly,
   value,
   onChange,
+  onBlur,
+  onFocus,
   options,
   schema,
   registry,
@@ -38,7 +41,12 @@ export const JsonataTextWidget = ({
   const context = registry.formContext as JsonataFormContext | undefined;
   const globalsSchema =
     widgetOptions?.globalsSchema ?? context?.globalsSchema;
-  const emptyValue = widgetOptions?.emptyValue;
+  const hasCustomEmptyValue =
+    widgetOptions !== undefined &&
+    Object.prototype.hasOwnProperty.call(widgetOptions, "emptyValue");
+  const emptyValue = hasCustomEmptyValue ? widgetOptions?.emptyValue : "";
+  const normalizeValue = (next: string) =>
+    next === "" ? emptyValue : next;
   const safeValue =
     typeof value === "string" ? value : value == null ? "" : String(value);
   const fieldLabel = label || undefined;
@@ -52,7 +60,9 @@ export const JsonataTextWidget = ({
       label={labelWithTooltip}
       required={required}
       value={safeValue}
-      onChange={(next) => onChange(next === "" ? emptyValue : next)}
+      onChange={(next) => onChange(normalizeValue(next))}
+      onBlur={(next) => onBlur?.(id, normalizeValue(next))}
+      onFocus={(next) => onFocus?.(id, normalizeValue(next))}
       globalsSchema={globalsSchema}
       disabled={disabled || readonly}
       fullWidth

@@ -86,6 +86,7 @@ export abstract class LlmBaseAction<
   protected buildProviderInitOptions(
     provider: string,
     settings: S,
+    credentials: string,
   ): ProviderInitOptions {
     const providerId = this.getProviderId(provider);
     const apiKey = settings.api_key;
@@ -99,7 +100,7 @@ export abstract class LlmBaseAction<
     }
 
     return {
-      apiKey,
+      apiKey: credentials,
       baseURL,
       organization,
     };

@@ -123,6 +123,27 @@ describe('MemoryStore', () => {
       expect(store.raw).toEqual({ profile: { name: 'Latest' } });
       expect(context.state.memory).toEqual({ profile: { name: 'Latest' } });
     });
+
+    it('throws when a memory definition schema is not valid JSON Schema', () => {
+      const invalidDefinition = createDefinition({
+        slug: 'profile',
+        schema: { type: 'wat' } as any,
+      });
+
+      expect(() =>
+        MemoryStore.createStore(
+          {
+            identifiers: { ownerId: 'owner-1' },
+            definitionCache: new Map([
+              [invalidDefinition.slug, invalidDefinition],
+            ]),
+            records: [],
+            upsertRecord: jest.fn(),
+          },
+          createContext(),
+        ),
+      ).toThrow();
+    });
   });
 
   describe('buildUpdateMemorySchema', () => {

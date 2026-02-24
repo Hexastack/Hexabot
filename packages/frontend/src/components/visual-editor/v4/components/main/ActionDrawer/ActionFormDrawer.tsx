@@ -41,14 +41,12 @@ type ActionFormDrawerContentProps = {
   emptyStateLabel: string;
   onInputDataChange: (data: Record<string, unknown>) => void;
   onSettingsDataChange: (data: Record<string, unknown>) => void;
+  onInputVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
+  onSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
 };
 
-const COMMON_SETTING_KEYS = [
-  "timeout_ms",
-  "retries",
-  "guardrails",
-  "audit",
-] as const;
+const COMMON_SETTING_KEYS = ["timeout_ms", "retries"] as const;
+// @todo : refactor, rename and move to the json schema form component folder (so that it would work for any schema).
 const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
   const properties = getSchemaPropertyNames(schema);
 
@@ -72,12 +70,6 @@ const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
     };
   }
 
-  if (properties.includes("guardrails")) {
-    uiSchema.guardrails = {
-      "ui:options": { collapsible: true, defaultExpanded: false },
-    };
-  }
-
   return uiSchema;
 };
 const ActionFormDrawerContent = ({
@@ -89,10 +81,12 @@ const ActionFormDrawerContent = ({
   emptyStateLabel,
   onInputDataChange,
   onSettingsDataChange,
+  onInputVisibleErrorsChange,
+  onSettingsVisibleErrorsChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
 
-  if (!isOpen || !Object.keys(inputData).length) return null;
+  if (!isOpen) return null;
 
   if (!actionSchema) {
     return (
@@ -110,6 +104,7 @@ const ActionFormDrawerContent = ({
           schema={actionSchema.inputSchema}
           formData={inputData}
           onFormDataChange={onInputDataChange}
+          onVisibleErrorsChange={onInputVisibleErrorsChange}
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
           uiSchema={extractUiSchema(actionSchema?.inputSchema as RJSFSchema)}
@@ -121,6 +116,7 @@ const ActionFormDrawerContent = ({
           schema={actionSchema.settingSchema}
           formData={settingsData}
           onFormDataChange={onSettingsDataChange}
+          onVisibleErrorsChange={onSettingsVisibleErrorsChange}
           panelKey={`${panelKeyBase}-settings`}
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
@@ -164,6 +160,9 @@ export const ActionFormDrawer = () => {
   const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});
   const [settingsData, setSettingsData] = useState<Record<string, unknown>>({});
+  const [hasInputVisibleErrors, setHasInputVisibleErrors] = useState(false);
+  const [hasSettingsVisibleErrors, setHasSettingsVisibleErrors] =
+    useState(false);
   const [taskNameValue, setTaskNameValue] = useState("");
   const [taskDescriptionValue, setTaskDescriptionValue] = useState("");
   const open = Boolean(isActionNode && selectedNodeId);
@@ -210,6 +209,31 @@ export const ActionFormDrawer = () => {
     setTaskDescriptionValue(taskDefinition?.description ?? "");
   }, [open, taskName, actionName]);
 
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+
+    setHasInputVisibleErrors(false);
+    setHasSettingsVisibleErrors(false);
+  }, [open]);
+
+  useEffect(() => {
+    if (actionSchema?.inputSchema) {
+      return;
+    }
+
+    setHasInputVisibleErrors(false);
+  }, [actionSchema?.inputSchema]);
+
+  useEffect(() => {
+    if (actionSchema?.settingSchema) {
+      return;
+    }
+
+    setHasSettingsVisibleErrors(false);
+  }, [actionSchema?.settingSchema]);
+
   const handleClose = () => {
     if (selectedFlowId) {
       updateWorkflowURL(selectedFlowId);
@@ -231,6 +255,10 @@ export const ActionFormDrawer = () => {
   }, [taskDefinition?.description]);
   const handleSave = () => {
     if (!definition || !taskName) {
+      return;
+    }
+
+    if (hasInputVisibleErrors || hasSettingsVisibleErrors) {
       return;
     }
 
@@ -294,6 +322,8 @@ export const ActionFormDrawer = () => {
     handleClose();
   };
   const saveDisabled =
+    hasInputVisibleErrors ||
+    hasSettingsVisibleErrors ||
     !definition ||
     !taskName ||
     !isActionNode ||
@@ -315,6 +345,8 @@ export const ActionFormDrawer = () => {
       }
       onInputDataChange={setInputData}
       onSettingsDataChange={setSettingsData}
+      onInputVisibleErrorsChange={setHasInputVisibleErrors}
+      onSettingsVisibleErrorsChange={setHasSettingsVisibleErrors}
       open={open}
       onClose={handleClose}
       headerContent={
