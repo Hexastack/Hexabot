@@ -65,7 +65,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot admi
 ## Environment + config
 - `ConfigProvider` reads `VITE_API_ORIGIN`, `VITE_SSO_ENABLED`, and `VITE_UPLOAD_MAX_SIZE_IN_BYTES`; it fetches `/config` at runtime and shows `Progress` while loading.
 - `runtimeConfig` uses `VITE_DEFAULT_LANGUAGE` for i18n defaults.
-- Vite dev server proxies `/api` and `/socket.io` to `http://localhost:3000` (`packages/frontend/vite.config.ts`).
+- Vite dev server proxies `/api` and `/socket.io` to `http://localhost:3000` (`packages/frontend/vite.config.mts`).
 
 ## Conventions and gotchas
 - Path alias: `@/` maps to `packages/frontend/src` (TS + Vite).
