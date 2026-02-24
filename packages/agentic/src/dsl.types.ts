@@ -178,17 +178,12 @@ const RetriesSchema = z.strictObject({
 
 // Shared execution settings applied to every action invocation.
 export const BaseSettingsSchema = z.strictObject({
-  timeout_ms: z
-    .int()
-    .nonnegative()
-    .default(DEFAULT_TIMEOUT_MS)
-    .optional()
-    .meta({
-      title: 'Timeout (ms)',
-      description:
-        'Maximum runtime in milliseconds for a single action invocation (0 = disabled).',
-    }),
-  retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })).meta({
+  timeout_ms: z.int().nonnegative().optional().meta({
+    title: 'Timeout (ms)',
+    description:
+      'Maximum runtime in milliseconds for a single action invocation (0 = disabled).',
+  }),
+  retries: RetriesSchema.optional().meta({
     title: 'Retries',
     description: 'Retry policy applied when an action fails.',
   }),

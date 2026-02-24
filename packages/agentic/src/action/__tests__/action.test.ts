@@ -7,11 +7,7 @@
 import { z } from 'zod';
 
 import { BaseWorkflowContext } from '../../context';
-import {
-  DEFAULT_RETRY_SETTINGS,
-  DEFAULT_TIMEOUT_MS,
-  SettingsSchema,
-} from '../../dsl.types';
+import { SettingsSchema } from '../../dsl.types';
 import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import {
@@ -138,14 +134,6 @@ class FlakyDoubleAction extends DoubleAction {
 }
 
 describe('workflow step primitives', () => {
-  it('applies default action settings from the schema', () => {
-    const parsed = SettingsSchema.parse({});
-
-    expect(parsed.timeout_ms).toBe(DEFAULT_TIMEOUT_MS);
-    expect(parsed.retries).toEqual(DEFAULT_RETRY_SETTINGS);
-    expect(parsed.retries).not.toBe(DEFAULT_RETRY_SETTINGS);
-  });
-
   it('rejects invalid retry configuration via schema validation', () => {
     expect(() =>
       SettingsSchema.parse({ retries: { max_attempts: 0, backoff_ms: 10 } }),

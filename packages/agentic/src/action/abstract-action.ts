@@ -88,8 +88,15 @@ export abstract class AbstractAction<
   async run(payload: unknown, context: C, settings?: Partial<S>): Promise<O> {
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
-    const timeoutMs = parsedSettings.timeout_ms;
-    const retrySettings = parsedSettings.retries;
+    const timeoutMs = parsedSettings.timeout_ms ?? 0;
+    const retrySettings = parsedSettings.retries ?? {
+      enabled: false,
+      max_attempts: 1,
+      backoff_ms: 0,
+      max_delay_ms: 0,
+      jitter: 0,
+      multiplier: 1,
+    };
     const retriesEnabled = retrySettings.enabled ?? true;
     const maxAttempts = retriesEnabled ? retrySettings.max_attempts : 1;
 
