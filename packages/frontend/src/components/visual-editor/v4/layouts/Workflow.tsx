@@ -6,8 +6,8 @@
 
 import {
   StepType,
-  type Settings,
   Workflow as WorkflowHelper,
+  type Settings,
 } from "@hexabot-ai/agentic";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { Background, Controls } from "@xyflow/react";
@@ -34,7 +34,7 @@ import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
-import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
+import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
