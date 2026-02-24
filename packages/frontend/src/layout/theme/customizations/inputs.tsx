@@ -337,11 +337,10 @@ export const inputsCustomizations: Components<Theme> = {
           transform: "none",
           marginBottom: theme.spacing(0.5),
         },
-        [
-          `&:has(.MuiInputBase-root.${inputBaseClasses.readOnly}) .MuiInputLabel-root.Mui-focused`
-        ]: {
-          color: (theme.vars || theme).palette.text.secondary,
-        },
+        [`&:has(.MuiInputBase-root.${inputBaseClasses.readOnly}) .MuiInputLabel-root.Mui-focused`]:
+          {
+            color: (theme.vars || theme).palette.text.secondary,
+          },
         "& .MuiInputLabel-root.Mui-focused.Mui-disabled": {
           color: (theme.vars || theme).palette.text.disabled,
         },
@@ -385,41 +384,35 @@ export const inputsCustomizations: Components<Theme> = {
           color: (theme.vars || theme).palette.text.secondary,
           backgroundColor: (theme.vars || theme).palette.action.hover,
         },
-        [
-          `&.${inputBaseClasses.disabled} .${outlinedInputClasses.input}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.input}`
-        ]: {
-          color: (theme.vars || theme).palette.text.secondary,
-          WebkitTextFillColor: (theme.vars || theme).palette.text.secondary,
-        },
-        [
-          `&.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`
-        ]: {
-          borderColor: (theme.vars || theme).palette.divider,
-        },
+        [`&.${inputBaseClasses.disabled} .${outlinedInputClasses.input}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.input}`]:
+          {
+            color: (theme.vars || theme).palette.text.secondary,
+            WebkitTextFillColor: (theme.vars || theme).palette.text.secondary,
+          },
+        [`&.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`]:
+          {
+            borderColor: (theme.vars || theme).palette.divider,
+          },
         "&:hover": {
           borderColor: gray[400],
         },
-        [
-          `&.${inputBaseClasses.disabled}:hover .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly}:hover .${outlinedInputClasses.notchedOutline}`
-        ]: {
-          borderColor: (theme.vars || theme).palette.divider,
-        },
-        [
-          `&.${outlinedInputClasses.focused}:not(.${inputBaseClasses.disabled}):not(.${inputBaseClasses.readOnly}) .${outlinedInputClasses.notchedOutline}`
-        ]: {
-          borderColor: brand[400],
-        },
-        [
-          `&.${outlinedInputClasses.focused}.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`
-        ]: {
-          borderColor: (theme.vars || theme).palette.divider,
-          borderWidth: 1,
-        },
-        [
-          `&.${outlinedInputClasses.focused}.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}`
-        ]: {
-          borderWidth: 1,
-        },
+        [`&.${inputBaseClasses.disabled}:hover .${outlinedInputClasses.notchedOutline}, &.${inputBaseClasses.readOnly}:hover .${outlinedInputClasses.notchedOutline}`]:
+          {
+            borderColor: (theme.vars || theme).palette.divider,
+          },
+        [`&.${outlinedInputClasses.focused}:not(.${inputBaseClasses.disabled}):not(.${inputBaseClasses.readOnly}) .${outlinedInputClasses.notchedOutline}`]:
+          {
+            borderColor: brand[400],
+          },
+        [`&.${outlinedInputClasses.focused}.${inputBaseClasses.readOnly} .${outlinedInputClasses.notchedOutline}`]:
+          {
+            borderColor: (theme.vars || theme).palette.divider,
+            borderWidth: 1,
+          },
+        [`&.${outlinedInputClasses.focused}.${inputBaseClasses.disabled} .${outlinedInputClasses.notchedOutline}`]:
+          {
+            borderWidth: 1,
+          },
         ...theme.applyStyles("dark", {
           "&:hover": {
             borderColor: gray[500],
@@ -468,6 +461,7 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         typography: theme.typography.caption,
         marginBottom: 8,
+        lineHeight: 1.25,
         // //Action schema
         // display: "inline-flex",
         // alignItems: "center",

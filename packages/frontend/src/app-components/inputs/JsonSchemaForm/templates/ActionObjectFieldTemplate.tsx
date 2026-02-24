@@ -23,7 +23,6 @@ import {
   type ObjectFieldTemplateProps,
   type RJSFSchema,
 } from "@rjsf/utils";
-import { ChevronDown } from "lucide-react";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";
 
@@ -225,14 +224,14 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
 
   return (
     <Accordion variant="elevation" defaultExpanded={defaultExpanded}>
-      <AccordionSummary expandIcon={<ChevronDown size={16} />}>
+      <AccordionSummary>
         <Box
           display="flex"
           alignItems="center"
           justifyContent="space-between"
           width="100%"
         >
-          <Typography variant="subtitle1">{label}</Typography>
+          <Typography variant="subtitle2">{label}</Typography>
           {showOptionalDataControlInTitle ? (
             <Box onClick={(event) => event.stopPropagation()}>
               {optionalDataControl}

@@ -18,6 +18,7 @@ type LabelWithTooltipProps = {
 export const labelTooltipSx = {
   display: "inline-flex",
   alignItems: "center",
+  gap: 2,
   "& .MuiFormLabel-asterisk": {
     order: 2,
   },
@@ -64,11 +65,18 @@ export const LabelWithTooltip = ({
           className="action-field-label-icon"
           sx={{
             display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             color: "text.secondary",
-            marginLeft: "4px",
+            marginLeft: ".25rem",
+            lineHeight: 0,
+            verticalAlign: "middle",
+            "& svg": {
+              display: "block",
+            },
           }}
         >
-          <Info size={iconSize} aria-hidden />
+          <Info size={iconSize} />
         </Box>
       </Tooltip>
     </>

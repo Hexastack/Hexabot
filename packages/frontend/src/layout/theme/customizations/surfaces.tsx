@@ -6,6 +6,7 @@
 
 import { PaperOwnProps } from "@mui/material";
 import { alpha, Components, Interpolation, Theme } from "@mui/material/styles";
+import { ChevronRightIcon } from "lucide-react";
 
 import { gray } from "../themePrimitives";
 
@@ -26,45 +27,85 @@ const getPaperDefaultValues = (
 export const surfacesCustomizations: Components<Theme> = {
   MuiAccordion: {
     defaultProps: {
-      elevation: 0,
       disableGutters: true,
+      elevation: 0,
+      square: true,
     },
     styleOverrides: {
       root: ({ theme }) => ({
-        padding: 2,
-        overflow: "clip",
-        backgroundColor: (theme.vars || theme).palette.background.paper,
-        border: "1px solid",
-        borderColor: (theme.vars || theme).palette.divider,
-        ":before": {
-          backgroundColor: "transparent",
+        backgroundColor: "transparent",
+        boxShadow: "none",
+        border: `1px solid ${alpha(gray[200], 0.5)}`,
+        borderRadius: theme.shape.borderRadius,
+        overflow: "hidden",
+
+        // remove the default top hairline
+        "&::before": { display: "none" },
+
+        // subtle hover (optional)
+        transition: theme.transitions.create(["border-color"], {
+          duration: theme.transitions.duration.shortest,
+        }),
+        "&:hover": {
+          borderColor: alpha(gray[200], 0.8),
         },
+        // ...theme.applyStyles("dark", {
+        //   borderColor: alpha(gray[100], 0.05),
+        // }),
       }),
     },
   },
   MuiAccordionSummary: {
+    defaultProps: {
+      expandIcon: <ChevronRightIcon size={16} />,
+    },
     styleOverrides: {
       root: ({ theme }) => ({
-        border: "none",
-        borderRadius: 8,
-        "&:hover": { backgroundColor: gray[100] },
-        "&:focus-visible": { backgroundColor: "transparent" },
-        ...theme.applyStyles("dark", {
-          "&:hover": { backgroundColor: gray[600] },
+        borderRadius: theme.shape.borderRadius,
+        // chevron on the left
+        flexDirection: "row-reverse",
+        alignItems: "center",
+
+        // compact header
+        minHeight: 32,
+        padding: 0,
+
+        // smooth feel
+        transition: theme.transitions.create(["background-color"], {
+          duration: theme.transitions.duration.shortest,
         }),
-        ".MuiAccordionSummary-content": {
-          margin: 1,
+        "&:hover": {
+          backgroundColor: theme.palette.action.hover,
+          borderRadius: theme.shape.borderRadius,
         },
-        ".MuiTypography-root": {
-          fontSize: "1rem",
-          lineHeight: 1,
+
+        // keep height compact when expanded
+        "&.Mui-expanded": { minHeight: 32 },
+      }),
+      content: ({ theme }) => ({
+        margin: theme.spacing(1),
+        // "&.Mui-expanded": { margin: 0 },
+      }),
+      expandIconWrapper: ({ theme }) => ({
+        // because we reversed direction, this becomes the left icon
+        margin: theme.spacing(0, 0, 0, 1),
+
+        // smooth rotation
+        transition: theme.transitions.create("transform", {
+          duration: theme.transitions.duration.shortest,
+        }),
+        transform: "rotate(90deg)",
+        "&.Mui-expanded": {
+          transform: "rotate(-90deg)",
         },
       }),
     },
   },
   MuiAccordionDetails: {
     styleOverrides: {
-      root: { marginBottom: 4, border: "none" },
+      root: ({ theme }) => ({
+        padding: theme.spacing(1.5),
+      }),
     },
   },
   MuiPaper: {
