@@ -38,7 +38,6 @@ export { MenuType };
   )
 `,
 )
-@Check(`"parent_id" IS NULL OR "id" <> "parent_id"`)
 export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
   plainCls = Menu;
 
@@ -98,6 +97,12 @@ export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
   private async ensureValidParent(): Promise<void> {
     const parentId = this.parent?.id;
     if (parentId) {
+      if (this.id && parentId === this.id) {
+        throw new Error(
+          'Menu Validation Error: parent should not reference itself',
+        );
+      }
+
       // Ensure parent is nested
       const manager = MenuOrmEntity.getEntityManager();
       const parent = await manager.findOne(MenuOrmEntity, {
