@@ -673,7 +673,9 @@
     "clear": "Effacer"
   },
   "input": {
-    "search": "Recherche"
+    "search": "Recherche",
+    "jsonata_formula_mode": "Mode JSONata (commence par '=')",
+    "plain_text_mode": "Texte brut"
   },
   "link": {
     "reset": "Mot de passe oublié?"

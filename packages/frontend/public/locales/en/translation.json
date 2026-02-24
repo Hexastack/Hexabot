@@ -675,7 +675,9 @@
     "clear": "Clear"
   },
   "input": {
-    "search": "Search"
+    "search": "Search",
+    "jsonata_formula_mode": "JSONata mode (starts with '=')",
+    "plain_text_mode": "Plain text"
   },
   "link": {
     "reset": "Forgot your password?"
