@@ -201,7 +201,16 @@ describe('workflow step primitives', () => {
     try {
       const step = new FlakyDoubleAction();
       const context = new DoubleContext({ factor: 2 });
-      const runPromise = step.run({ value: 1 }, context, {});
+      const runPromise = step.run({ value: 1 }, context, {
+        retries: {
+          enabled: true,
+          max_attempts: 3,
+          backoff_ms: 25,
+          max_delay_ms: 10_000,
+          jitter: 0,
+          multiplier: 1,
+        },
+      });
 
       // First attempt happens immediately and fails
       await Promise.resolve();
@@ -221,5 +230,24 @@ describe('workflow step primitives', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it('does not retry when retries are disabled', async () => {
+    const step = new FlakyDoubleAction();
+    const context = new DoubleContext({ factor: 2 });
+
+    await expect(
+      step.run({ value: 1 }, context, {
+        retries: {
+          enabled: false,
+          max_attempts: 5,
+          backoff_ms: 25,
+          max_delay_ms: 1_000,
+          jitter: 0,
+          multiplier: 2,
+        },
+      }),
+    ).rejects.toThrow('Intermittent failure');
+    expect(step.attemptCount).toBe(1);
   });
 });

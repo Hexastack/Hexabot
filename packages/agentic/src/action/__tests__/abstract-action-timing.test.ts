@@ -66,6 +66,7 @@ describe('AbstractAction timing and retries', () => {
     const settings: Partial<Settings> = {
       timeout_ms: 50,
       retries: {
+        enabled: true,
         max_attempts: 1,
         backoff_ms: 0,
         max_delay_ms: 0,
@@ -100,6 +101,7 @@ describe('AbstractAction timing and retries', () => {
     const runPromise = action.run({ value: 1 }, new TestContext(), {
       timeout_ms: 0,
       retries: {
+        enabled: true,
         max_attempts: 3,
         backoff_ms: 10,
         max_delay_ms: 15,
@@ -146,6 +148,7 @@ describe('AbstractAction timing and retries', () => {
     const runPromise = action.run({ value: 1 }, new TestContext(), {
       timeout_ms: 0,
       retries: {
+        enabled: true,
         max_attempts: 2,
         backoff_ms: 100,
         max_delay_ms: 0,

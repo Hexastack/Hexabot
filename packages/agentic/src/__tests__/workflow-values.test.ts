@@ -86,6 +86,7 @@ describe('workflow values', () => {
       {
         timeout_ms: 10,
         retries: {
+          enabled: true,
           max_attempts: 3,
           backoff_ms: 10,
           max_delay_ms: 100,
@@ -99,6 +100,7 @@ describe('workflow values', () => {
       } satisfies Partial<Settings>,
       {
         retries: {
+          enabled: true,
           max_attempts: 5,
           backoff_ms: 10,
           max_delay_ms: 100,
@@ -114,6 +116,7 @@ describe('workflow values', () => {
     expect(merged).toEqual({
       timeout_ms: 10,
       retries: {
+        enabled: true,
         max_attempts: 5,
         backoff_ms: 10,
         max_delay_ms: 100,

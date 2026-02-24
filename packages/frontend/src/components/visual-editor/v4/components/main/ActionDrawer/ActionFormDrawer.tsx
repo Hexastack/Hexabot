@@ -11,7 +11,7 @@ import {
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import type { RJSFSchema } from "@rjsf/utils";
 import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -24,10 +24,11 @@ import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
+import { extractUiSchema } from "../../../utils/schema-defaults.utils";
 import {
-  extractUiSchema,
-  getSchemaPropertyNames,
-} from "../../../utils/schema-defaults.utils";
+  buildSettingsUiSchema,
+  normalizeSettingsFormData,
+} from "../../../utils/settings-ui-schema.utils";
 import { normalizeTaskName } from "../../../utils/workflow-definition.utils";
 
 import { ActionSchemaPanel } from "./ActionSchemaPanel";
@@ -45,33 +46,6 @@ type ActionFormDrawerContentProps = {
   onSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
 };
 
-const COMMON_SETTING_KEYS = ["timeout_ms", "retries"] as const;
-// @todo : refactor, rename and move to the json schema form component folder (so that it would work for any schema).
-const buildSettingsUiSchema = (schema?: RJSFSchema): UiSchema | undefined => {
-  const properties = getSchemaPropertyNames(schema);
-
-  if (properties.length === 0) {
-    return undefined;
-  }
-
-  const commonSet = new Set<string>(COMMON_SETTING_KEYS);
-  const actionSpecific = properties.filter((key) => !commonSet.has(key));
-  const commonOrdered = COMMON_SETTING_KEYS.filter((key) =>
-    properties.includes(key),
-  );
-  const uiSchema: UiSchema = {
-    ...extractUiSchema(schema),
-    "ui:order": [...actionSpecific, ...commonOrdered, "*"],
-  };
-
-  if (properties.includes("retries")) {
-    uiSchema.retries = {
-      "ui:options": { collapsible: true, defaultExpanded: false },
-    };
-  }
-
-  return uiSchema;
-};
 const ActionFormDrawerContent = ({
   isOpen,
   actionSchema,
@@ -123,6 +97,8 @@ const ActionFormDrawerContent = ({
           )}
           uiSchema={buildSettingsUiSchema(
             actionSchema?.settingSchema as RJSFSchema | undefined,
+            false,
+            settingsData,
           )}
         />
       ) : null}
@@ -203,7 +179,9 @@ export const ActionFormDrawer = () => {
     }
     setInputData((taskDefinition?.inputs as Record<string, unknown>) ?? {});
     setSettingsData(
-      (taskDefinition?.settings as Record<string, unknown>) ?? {},
+      normalizeSettingsFormData(
+        (taskDefinition?.settings as Record<string, unknown>) ?? {},
+      ),
     );
     setTaskNameValue(taskName ?? "");
     setTaskDescriptionValue(taskDefinition?.description ?? "");

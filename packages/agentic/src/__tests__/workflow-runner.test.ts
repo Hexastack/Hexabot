@@ -73,6 +73,7 @@ class TestContext extends BaseWorkflowContext<
 }
 
 const baseRetries = {
+  enabled: true,
   max_attempts: 1,
   backoff_ms: 0,
   max_delay_ms: 0,

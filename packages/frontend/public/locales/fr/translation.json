@@ -893,7 +893,12 @@
       }
     },
     "workflow_title_bar": {
-      "last_saved": "Dernière sauvegarde {{0}}"
+      "last_saved": "Dernière sauvegarde {{0}}",
+      "settings": {
+        "open": "Paramètres",
+        "title": "Paramètre Globaux",
+        "description": "Ces paramètres sont des valeurs par défaut globales pour ce workflow et peuvent être remplacés au niveau des étapes."
+      }
     }
   }
 }

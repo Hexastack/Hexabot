@@ -42,6 +42,7 @@ defaults:
   settings:
     timeout_ms: 10000
     retries:
+      enabled: true
       max_attempts: 2
       backoff_ms: 400
       max_delay_ms: 10000
@@ -67,6 +68,7 @@ tasks:
       temperature: 0.2
       timeout_ms: 6000
       retries:
+        enabled: true
         max_attempts: 1
         backoff_ms: 400
         max_delay_ms: 3000

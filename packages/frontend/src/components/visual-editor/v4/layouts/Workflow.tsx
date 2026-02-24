@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
+import {
+  StepType,
+  type Settings,
+  Workflow as WorkflowHelper,
+} from "@hexabot-ai/agentic";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { Background, Controls } from "@xyflow/react";
 import { CloudOff, CloudUpload } from "lucide-react";
@@ -40,6 +44,7 @@ import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
+import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
@@ -96,6 +101,7 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
+    updateDefinitionState,
     persistDefinition,
     publishVersion,
     unpublishVersion,
@@ -122,6 +128,7 @@ export const Workflow = () => {
   );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
@@ -370,6 +377,29 @@ export const Workflow = () => {
       },
     });
   };
+  const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+  const handleCloseSettingsDialog = () => {
+    setSettingsDialogOpen(false);
+  };
+  const handleSaveWorkflowSettings = useCallback(
+    (settings: Settings) => {
+      if (!definition) {
+        return;
+      }
+
+      updateDefinitionState({
+        ...definition,
+        defaults: {
+          ...(definition.defaults ?? {}),
+          settings,
+        },
+      });
+      setSettingsDialogOpen(false);
+    },
+    [definition, updateDefinitionState],
+  );
 
   return (
     <div className="visual-editor-v4">
@@ -407,6 +437,9 @@ export const Workflow = () => {
               saveDisabled={!definition || !isDefinitionDirty}
               saveLoading={isDefinitionSaving}
               saveLabel={t("button.save")}
+              onOpenSettings={handleOpenSettingsDialog}
+              settingsLabel={t("visual_editor.workflow_title_bar.settings.open")}
+              settingsDisabled={!definition || isDefinitionSaving}
               renameLabel={t("button.rename")}
               moreLabel={t("button.more")}
             />
@@ -464,6 +497,13 @@ export const Workflow = () => {
         />
         <WorkflowBottomDrawer />
       </StyledBox>
+      <WorkflowSettingsDialog
+        open={settingsDialogOpen}
+        settings={definition?.defaults?.settings}
+        onClose={handleCloseSettingsDialog}
+        onSave={handleSaveWorkflowSettings}
+        saveDisabled={!definition || isDefinitionSaving}
+      />
       <ActionFormDrawer />
       <ConditionalFormDrawer />
       <LoopFormDrawer />

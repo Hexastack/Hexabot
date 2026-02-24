@@ -895,7 +895,12 @@
       }
     },
     "workflow_title_bar": {
-      "last_saved": "Last saved {{0}}"
+      "last_saved": "Last saved {{0}}",
+      "settings": {
+        "open": "Settings",
+        "title": "Global Settings",
+        "description": "These settings are global defaults for this workflow and can be overridden at the step level."
+      }
     }
   }
 }

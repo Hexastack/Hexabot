@@ -90,7 +90,8 @@ export abstract class AbstractAction<
     const parsedSettings = this.parseSettings(settings);
     const timeoutMs = parsedSettings.timeout_ms;
     const retrySettings = parsedSettings.retries;
-    const maxAttempts = retrySettings.max_attempts;
+    const retriesEnabled = retrySettings.enabled ?? true;
+    const maxAttempts = retriesEnabled ? retrySettings.max_attempts : 1;
 
     let attempt = 0;
     let currentDelay = retrySettings.backoff_ms ?? 0;
