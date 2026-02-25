@@ -10,10 +10,8 @@ import { checkPrerequisites } from './core/prerequisites.js';
 import { printBanner } from './ui/banner.js';
 
 const cliArgs = process.argv.slice(2);
-const suppressIdleOutput =
-  process.env.HEXABOT_CLI_DEV_IDLE === '1' && cliArgs.length === 0;
 
-if (suppressIdleOutput) {
+if (process.env.HEXABOT_CLI !== '1') {
   process.exit(0);
 }
 

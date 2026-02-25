@@ -14,7 +14,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
-    "dev": "cross-env HEXABOT_CLI_DEV_IDLE=1 tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "prepare": "npm run build",
     "release:patch": "npm version patch && git push origin main --tags",
