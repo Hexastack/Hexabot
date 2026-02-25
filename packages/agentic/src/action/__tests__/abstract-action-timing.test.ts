@@ -17,6 +17,8 @@ const OutputSchema = z.object({ result: z.number() });
 
 type Input = z.infer<typeof InputSchema>;
 type Output = z.infer<typeof OutputSchema>;
+const NoSettingsSchema = z.any();
+type NoSettings = unknown;
 
 class TestContext extends BaseWorkflowContext {
   public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
@@ -26,23 +28,31 @@ class TestContext extends BaseWorkflowContext {
   }
 }
 
-class HarnessedAction extends AbstractAction<Input, Output, TestContext> {
+class HarnessedAction extends AbstractAction<
+  Input,
+  Output,
+  TestContext,
+  NoSettings
+> {
   constructor(
     private readonly executor: (
-      args: ActionExecutionArgs<Input, TestContext>,
+      args: ActionExecutionArgs<Input, TestContext, NoSettings>,
     ) => Promise<Output>,
   ) {
-    const metadata: ActionMetadata<Input, Output> = {
+    const metadata: ActionMetadata<Input, Output, NoSettings> = {
       name: 'timing_action',
       description: 'Action used to validate retry and timeout behavior.',
       inputSchema: InputSchema,
       outputSchema: OutputSchema,
+      settingsSchema: NoSettingsSchema,
     };
 
     super(metadata);
   }
 
-  execute(args: ActionExecutionArgs<Input, TestContext>): Promise<Output> {
+  execute(
+    args: ActionExecutionArgs<Input, TestContext, NoSettings>,
+  ): Promise<Output> {
     return this.executor(args);
   }
 }
@@ -66,6 +76,7 @@ describe('AbstractAction timing and retries', () => {
     const settings: Partial<Settings> = {
       timeout_ms: 50,
       retries: {
+        enabled: true,
         max_attempts: 1,
         backoff_ms: 0,
         max_delay_ms: 0,
@@ -100,6 +111,7 @@ describe('AbstractAction timing and retries', () => {
     const runPromise = action.run({ value: 1 }, new TestContext(), {
       timeout_ms: 0,
       retries: {
+        enabled: true,
         max_attempts: 3,
         backoff_ms: 10,
         max_delay_ms: 15,
@@ -146,6 +158,7 @@ describe('AbstractAction timing and retries', () => {
     const runPromise = action.run({ value: 1 }, new TestContext(), {
       timeout_ms: 0,
       retries: {
+        enabled: true,
         max_attempts: 2,
         backoff_ms: 100,
         max_delay_ms: 0,

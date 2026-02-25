@@ -111,7 +111,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
     const settingDefaults = getSchemaDefaults<TaskSettings>(
       action.settingSchema,
-    );
+    )!;
     const nextTasks = {
       ...baseDefinition.tasks,
       [nextTaskName]: {

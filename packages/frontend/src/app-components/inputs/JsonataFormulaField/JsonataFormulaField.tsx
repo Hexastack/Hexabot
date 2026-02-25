@@ -5,10 +5,19 @@
  */
 
 import Editor, { OnMount } from "@monaco-editor/react";
-import { Box, FormControl, FormHelperText, FormLabel } from "@mui/material";
+import FunctionsRoundedIcon from "@mui/icons-material/FunctionsRounded";
+import {
+  Box,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Tooltip,
+} from "@mui/material";
 import { useColorScheme, useTheme } from "@mui/material/styles";
 import jsonata from "jsonata";
 import * as React from "react";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { useJsonataGlobalsSchema } from "./globals-schema.context";
 import { indexToLineCol } from "./jsonataUtils";
@@ -36,6 +45,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     maxHeightPx = 220,
     sx,
   } = props;
+  const { t } = useTranslate();
   const theme = useTheme();
   const contextGlobalsSchema = useJsonataGlobalsSchema();
   const resolvedGlobalsSchema = globalsSchema ?? contextGlobalsSchema;
@@ -245,138 +255,162 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
 
   const showError = Boolean(internalError);
   const { mode } = useColorScheme();
-  
-return (
-  <FormControl
-    fullWidth={fullWidth}
-    disabled={disabled}
-    error={showError}
-    required={required}
-    sx={sx}
-    component="fieldset"
-    variant="standard"
-  >
-    {label ? (
-      <FormLabel
-        sx={{
-          mb: 0.5,
-          fontSize: 13,
-          color: "text.secondary",
-          display: "inline-flex",
-          alignItems: "center",
-          "& .MuiFormLabel-asterisk": {
-            order: 2,
-          },
-          "& .action-field-label-icon": {
-            order: 3,
-          },
-        }}
-        required={required}
-      >
-        {label}
-      </FormLabel>
-    ) : null}
-    <Box
-      className="nokey"
-      onClick={() => editorRef.current?.focus()}
-      sx={(theme) => {
-        const resolvedTheme = theme.vars || theme;
-        const errorBorderColor = resolvedTheme.palette.error.main;
-        const borderColor = showError
-          ? errorBorderColor
-          : resolvedTheme.palette.divider;
-        const focusBorderColor = showError
-          ? errorBorderColor
-          : resolvedTheme.palette.primary.main;
-        const hoverBorderColor = showError
-          ? errorBorderColor
-          : resolvedTheme.palette.grey[400];
-        const disabledBackground =
-          resolvedTheme.palette.action?.disabledBackground ??
-          resolvedTheme.palette.background.default;
+  const showModeIcon = isJsonataMode;
+  const modeLabel = t("input.jsonata_formula_mode");
+  const resolvedHelperText = showError ? internalError : helperText;
 
-        return {
-          position: "relative",
-          width: "100%",
-          borderRadius: resolvedTheme.shape.borderRadius,
-          border: "1px solid",
-          paddingX: theme.spacing(1),
-          borderColor,
-          backgroundColor: disabled
-            ? disabledBackground
-            : resolvedTheme.palette.background.default,
-          transition:
-            "border-color 120ms ease-in, background-color 120ms ease-in",
-          boxSizing: "border-box",
-          overflow: "hidden",
-          cursor: disabled ? "not-allowed" : "text",
-          "&:hover": {
-            borderColor: disabled ? borderColor : hoverBorderColor,
-          },
-          "&:focus-within": {
-            borderColor: focusBorderColor,
-          },
-          ...theme.applyStyles("dark", {
-            "&:hover": {
-              borderColor: disabled
-                ? borderColor
-                : showError
-                  ? errorBorderColor
-                  : resolvedTheme.palette.grey[500],
-            },
-          }),
-        };
-      }}
+  return (
+    <FormControl
+      fullWidth={fullWidth}
+      disabled={disabled}
+      error={showError}
+      required={required}
+      sx={sx}
+      component="fieldset"
+      variant="standard"
     >
-      <Editor
-        value={value}
-        onChange={(v) => onChange(v ?? "")}
-        onMount={onMount}
-        theme={mode}
-        beforeMount={handleEditorWillMount}
-        language={isJsonataMode ? "jsonata" : "plaintext"}
-        height={`${height}px`}
-        options={{
-          readOnly: Boolean(disabled),
-          minimap: { enabled: false },
-          lineNumbers: "off",
-          folding: false,
-          wordWrap: "on",
-          scrollBeyondLastLine: false,
-          scrollbar: {
-            vertical: "hidden",
-            horizontal: "hidden",
-            handleMouseWheel: true,
-          },
-          overviewRulerLanes: 0,
-          renderLineHighlight: "none",
-          glyphMargin: false,
-          lineDecorationsWidth: 0,
-          lineNumbersMinChars: 0,
-          tabSize: 2,
-          fontFamily: theme.typography.fontFamily,
-          fontSize: theme.typography.htmlFontSize,
-          lineHeight: theme.typography.htmlFontSize * 1.25,
-          fontWeight: String(theme.typography.fontWeightRegular),
-          padding: {
-            top: theme.typography.htmlFontSize / 2,
-            bottom: theme.typography.htmlFontSize / 2,
-          },
-          suggestOnTriggerCharacters: true,
-          quickSuggestions: true,
-          parameterHints: { enabled: true },
-          // Keep spacebar usable when suggestions are open.
-          acceptSuggestionOnCommitCharacter: false,
-          fixedOverflowWidgets: true,
+      {label ? (
+        <FormLabel
+          sx={{
+            mb: 0.5,
+            fontSize: 13,
+            color: "text.secondary",
+            display: "inline-flex",
+            alignItems: "center",
+            "& .MuiFormLabel-asterisk": {
+              order: 2,
+            },
+            "& .action-field-label-icon": {
+              order: 3,
+            },
+          }}
+          required={required}
+        >
+          {label}
+        </FormLabel>
+      ) : null}
+      <Box
+        className="nokey"
+        onClick={() => editorRef.current?.focus()}
+        sx={(theme) => {
+          const resolvedTheme = theme.vars || theme;
+          const errorBorderColor = resolvedTheme.palette.error.main;
+          const borderColor = showError
+            ? errorBorderColor
+            : resolvedTheme.palette.divider;
+          const focusBorderColor = showError
+            ? errorBorderColor
+            : resolvedTheme.palette.primary.main;
+          const hoverBorderColor = showError
+            ? errorBorderColor
+            : resolvedTheme.palette.grey[400];
+          const disabledBackground =
+            resolvedTheme.palette.action?.disabledBackground ??
+            resolvedTheme.palette.background.default;
+
+          return {
+            position: "relative",
+            width: "100%",
+            borderRadius: resolvedTheme.shape.borderRadius,
+            border: "1px solid",
+            paddingLeft: theme.spacing(1),
+            paddingRight: showModeIcon
+              ? theme.spacing(4.5)
+              : theme.spacing(1),
+            borderColor,
+            backgroundColor: disabled
+              ? disabledBackground
+              : resolvedTheme.palette.background.default,
+            transition:
+              "border-color 120ms ease-in, background-color 120ms ease-in",
+            boxSizing: "border-box",
+            overflow: "hidden",
+            cursor: disabled ? "not-allowed" : "text",
+            "&:hover": {
+              borderColor: disabled ? borderColor : hoverBorderColor,
+            },
+            "&:focus-within": {
+              borderColor: focusBorderColor,
+            },
+            ...theme.applyStyles("dark", {
+              "&:hover": {
+                borderColor: disabled
+                  ? borderColor
+                  : showError
+                    ? errorBorderColor
+                    : resolvedTheme.palette.grey[500],
+              },
+            }),
+          };
         }}
-      />
-    </Box>
-    <FormHelperText sx={{ mt: 0.25 }}>
-      {showError
-        ? internalError
-        : (helperText ??
-          (isJsonataMode ? "JSONata mode (starts with '=')" : "Plain text"))}
-    </FormHelperText>
-  </FormControl>
-);
+      >
+        {showModeIcon ? (
+          <Tooltip title={modeLabel} arrow>
+            <Box
+              component="span"
+              aria-label={modeLabel}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "inline-flex",
+                alignItems: "center",
+                color: disabled ? "text.disabled" : "text.secondary",
+                zIndex: 1,
+                pointerEvents: "auto",
+              }}
+            >
+              <FunctionsRoundedIcon sx={{ fontSize: 16 }} />
+            </Box>
+          </Tooltip>
+        ) : null}
+        <Editor
+          value={value}
+          onChange={(v) => onChange(v ?? "")}
+          onMount={onMount}
+          theme={mode}
+          beforeMount={handleEditorWillMount}
+          language={isJsonataMode ? "jsonata" : "plaintext"}
+          height={`${height}px`}
+          options={{
+            readOnly: Boolean(disabled),
+            minimap: { enabled: false },
+            lineNumbers: "off",
+            folding: false,
+            wordWrap: "on",
+            scrollBeyondLastLine: false,
+            scrollbar: {
+              vertical: "hidden",
+              horizontal: "hidden",
+              handleMouseWheel: true,
+            },
+            overviewRulerLanes: 0,
+            renderLineHighlight: "none",
+            glyphMargin: false,
+            lineDecorationsWidth: 0,
+            lineNumbersMinChars: 0,
+            tabSize: 2,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: theme.typography.htmlFontSize,
+            lineHeight: theme.typography.htmlFontSize * 1.25,
+            fontWeight: String(theme.typography.fontWeightRegular),
+            padding: {
+              top: theme.typography.htmlFontSize / 2,
+              bottom: theme.typography.htmlFontSize / 2,
+            },
+            suggestOnTriggerCharacters: true,
+            quickSuggestions: true,
+            parameterHints: { enabled: true },
+            // Keep spacebar usable when suggestions are open.
+            acceptSuggestionOnCommitCharacter: false,
+            fixedOverflowWidgets: true,
+          }}
+        />
+      </Box>
+      {resolvedHelperText != null ? (
+        <FormHelperText sx={{ mt: 0.5 }}>{resolvedHelperText}</FormHelperText>
+      ) : null}
+    </FormControl>
+  );
 }

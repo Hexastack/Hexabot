@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType, Workflow as WorkflowHelper } from "@hexabot-ai/agentic";
+import {
+  StepType,
+  Workflow as WorkflowHelper,
+  type Settings,
+} from "@hexabot-ai/agentic";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { Background, Controls } from "@xyflow/react";
 import { CloudOff, CloudUpload } from "lucide-react";
@@ -30,7 +34,7 @@ import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
-import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer";
+import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
@@ -40,6 +44,7 @@ import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
+import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
@@ -96,6 +101,7 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
+    updateDefinitionState,
     persistDefinition,
     publishVersion,
     unpublishVersion,
@@ -370,6 +376,39 @@ export const Workflow = () => {
       },
     });
   };
+  const handleSaveWorkflowSettings = useCallback(
+    (settings: Settings) => {
+      if (!definition) {
+        return;
+      }
+
+      updateDefinitionState({
+        ...definition,
+        defaults: {
+          ...(definition.defaults ?? {}),
+          settings,
+        },
+      });
+    },
+    [definition, updateDefinitionState],
+  );
+  const handleOpenSettingsDialog = useCallback(() => {
+    if (!definition) {
+      return;
+    }
+
+    dialogs.open(
+      WorkflowSettingsDialog,
+      {
+        defaultValues: definition.defaults?.settings,
+        presetValues: {
+          onSave: handleSaveWorkflowSettings,
+          saveDisabled: isDefinitionSaving,
+        },
+      },
+      { maxWidth: "sm" },
+    );
+  }, [definition, dialogs, handleSaveWorkflowSettings, isDefinitionSaving]);
 
   return (
     <div className="visual-editor-v4">
@@ -407,6 +446,9 @@ export const Workflow = () => {
               saveDisabled={!definition || !isDefinitionDirty}
               saveLoading={isDefinitionSaving}
               saveLabel={t("button.save")}
+              onOpenSettings={handleOpenSettingsDialog}
+              settingsLabel={t("visual_editor.workflow_title_bar.settings.open")}
+              settingsDisabled={!definition || isDefinitionSaving}
               renameLabel={t("button.rename")}
               moreLabel={t("button.more")}
             />

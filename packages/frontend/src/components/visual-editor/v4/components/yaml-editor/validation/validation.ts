@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinitionSchema } from "@hexabot-ai/agentic";
+import { BaseSettingsSchema, WorkflowDefinitionSchema } from "@hexabot-ai/agentic";
 import type { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { LineCounter, parseDocument } from "yaml";
@@ -24,6 +24,29 @@ type ApplyWorkflowValidationMarkersOptions = {
   actions?: IAction[];
 };
 
+const EXECUTION_SETTING_KEYS = new Set(Object.keys(BaseSettingsSchema.shape));
+const EXECUTION_SETTINGS_SCHEMA = BaseSettingsSchema.toJSONSchema({
+  target: "draft-07",
+});
+const splitTaskSettings = (settings: unknown) => {
+  const actionSettings: Record<string, unknown> = {};
+  const executionSettings: Record<string, unknown> = {};
+
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+    return { actionSettings, executionSettings };
+  }
+
+  for (const [key, value] of Object.entries(settings)) {
+    if (EXECUTION_SETTING_KEYS.has(key)) {
+      executionSettings[key] = value;
+      continue;
+    }
+
+    actionSettings[key] = value;
+  }
+
+  return { actionSettings, executionSettings };
+};
 // YAML paths only support string/number keys, so drop symbol segments.
 const toReferencePath = (path: readonly PropertyKey[]): ReferencePath =>
   path.filter(
@@ -125,6 +148,9 @@ export const applyWorkflowValidationMarkers = ({
 
       const inputSchema = actionDefinition.inputSchema;
       const settingSchema = actionDefinition.settingSchema;
+      const { actionSettings, executionSettings } = splitTaskSettings(
+        task.settings,
+      );
 
       if (isSchemaLike(inputSchema)) {
         appendSchemaMarkers({
@@ -143,7 +169,24 @@ export const applyWorkflowValidationMarkers = ({
         appendSchemaMarkers({
           section: "settings",
           schema: settingSchema,
-          instance: task.settings,
+          instance: actionSettings,
+          basePath: [...taskPath, "settings"],
+          doc,
+          lineCounter,
+          markers,
+          monacoInstance,
+        });
+      }
+
+      if (
+        task.settings !== undefined &&
+        Object.keys(executionSettings).length > 0 &&
+        isSchemaLike(EXECUTION_SETTINGS_SCHEMA)
+      ) {
+        appendSchemaMarkers({
+          section: "settings",
+          schema: EXECUTION_SETTINGS_SCHEMA,
+          instance: executionSettings,
           basePath: [...taskPath, "settings"],
           doc,
           lineCounter,

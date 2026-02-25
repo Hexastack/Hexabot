@@ -19,11 +19,15 @@ import { WorkflowActionButtons } from "../WorkflowActionButtons";
 import { TitleBarCard } from "./TitleBarCard";
 import { WorkflowMetaInfo } from "./WorkflowMetaInfo";
 import { WorkflowSaveButton } from "./WorkflowSaveButton";
+import { WorkflowSettingsButton } from "./WorkflowSettingsButton";
 
 type WorkflowTitleBarProps = {
   workflow: IWorkflow;
   onEdit?: (workflow: IWorkflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
+  onOpenSettings?: () => void;
+  settingsLabel: string;
+  settingsDisabled?: boolean;
   onSave?: () => void;
   saveLabel: string;
   saveDisabled?: boolean;
@@ -36,6 +40,9 @@ export const WorkflowTitleBar = ({
   workflow,
   onEdit,
   onOpenMenu,
+  onOpenSettings,
+  settingsLabel,
+  settingsDisabled = false,
   onSave,
   saveLabel,
   saveDisabled = false,
@@ -143,6 +150,12 @@ export const WorkflowTitleBar = ({
         onSave={onSave}
         loading={saveLoading}
         disabled={saveDisabled}
+      />
+
+      <WorkflowSettingsButton
+        label={settingsLabel}
+        disabled={settingsDisabled}
+        onOpen={onOpenSettings}
       />
 
       <WorkflowMetaInfo

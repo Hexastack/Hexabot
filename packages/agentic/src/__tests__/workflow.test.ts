@@ -46,6 +46,7 @@ describe('Workflow execution', () => {
         settings: {
           timeout_ms: 50,
           retries: {
+            enabled: true,
             max_attempts: 3,
             backoff_ms: 10,
             max_delay_ms: 1000,
@@ -63,6 +64,7 @@ describe('Workflow execution', () => {
           settings: {
             timeout_ms: 20,
             retries: {
+              enabled: true,
               max_attempts: 2,
               backoff_ms: 10,
               max_delay_ms: 1000,

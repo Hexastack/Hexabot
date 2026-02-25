@@ -6,7 +6,11 @@
 
 import { isDeepStrictEqual } from 'node:util';
 
-import { Workflow as AgenticWorkflow } from '@hexabot-ai/agentic';
+import {
+  DEFAULT_RETRY_SETTINGS,
+  DEFAULT_TIMEOUT_MS,
+  Workflow as AgenticWorkflow,
+} from '@hexabot-ai/agentic';
 import { CronJob } from 'cron';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import {
@@ -54,6 +58,12 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
 
   private static readonly BLANK_DEFINITION_YML =
     AgenticWorkflow.stringifyDefinition({
+      defaults: {
+        settings: {
+          timeout_ms: DEFAULT_TIMEOUT_MS,
+          retries: { ...DEFAULT_RETRY_SETTINGS },
+        },
+      },
       tasks: {},
       flow: [],
       outputs: {},

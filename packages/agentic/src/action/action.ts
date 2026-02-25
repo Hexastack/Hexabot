@@ -11,30 +11,21 @@ import { Settings } from '../dsl.types';
 
 import { AbstractAction } from './abstract-action';
 
-export interface ActionMetadata<I, O, S = undefined> {
+export interface ActionMetadata<I, O, S> {
   name: string;
   description: string;
   inputSchema: ZodType<I>;
   outputSchema: ZodType<O>;
-  settingsSchema?: ZodType<S>;
+  settingsSchema: ZodType<S>;
 }
 
-export interface ActionExecutionArgs<
-  I,
-  C extends BaseWorkflowContext,
-  S = undefined,
-> {
+export interface ActionExecutionArgs<I, C extends BaseWorkflowContext, S> {
   input: I;
   context: C;
-  settings: S;
+  settings: Settings & S;
 }
 
-export type DefineActionParams<
-  I,
-  O,
-  Ctx extends BaseWorkflowContext,
-  S = undefined,
-> = {
+export type DefineActionParams<I, O, Ctx extends BaseWorkflowContext, S> = {
   name: string;
   description?: string;
   inputSchema?: ZodType<I>;
@@ -52,12 +43,9 @@ export type DefineActionParams<
  * @typeParam O - Action output type.
  * @typeParam Ctx - Workflow context type.
  */
-export function defineAction<
-  I,
-  O,
-  Ctx extends BaseWorkflowContext,
-  S extends Settings,
->(params: DefineActionParams<I, O, Ctx, S>) {
+export function defineAction<I, O, Ctx extends BaseWorkflowContext, S>(
+  params: DefineActionParams<I, O, Ctx, S>,
+) {
   /**
    * Concrete action generated for the supplied configuration options.
    */
@@ -70,7 +58,8 @@ export function defineAction<
           (z.any() as ZodType<I>)) as ZodType<I>,
         outputSchema: (params.outputSchema ??
           (z.any() as ZodType<O>)) as ZodType<O>,
-        settingsSchema: params.settingSchema as ZodType<S> | undefined,
+        settingsSchema: (params.settingSchema ??
+          (z.any() as ZodType<O>)) as ZodType<S>,
       };
 
       super(metadata);

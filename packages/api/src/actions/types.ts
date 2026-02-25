@@ -8,8 +8,8 @@ import {
   Action,
   ActionMetadata as BaseActionMetadata,
   BaseWorkflowContext,
-  Settings,
 } from '@hexabot-ai/agentic';
+import type { ZodType } from 'zod';
 
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
@@ -26,11 +26,13 @@ export const ALL_WORKFLOW_TYPES = Object.values(WorkflowType);
 
 export type ActionWorkflowTypes = WorkflowType[];
 
-export type ActionMetadata<
-  I,
-  O,
-  S extends Settings = Settings,
-> = BaseActionMetadata<I, O, S> & {
+export type ActionMetadata<I, O, S = unknown> = Omit<
+  BaseActionMetadata<I, O, S>,
+  'inputSchema' | 'outputSchema' | 'settingsSchema'
+> & {
+  inputSchema?: ZodType<I>;
+  outputSchema?: ZodType<O>;
+  settingsSchema?: ZodType<S>;
   icon?: string;
   color?: string;
   group?: string;
@@ -41,9 +43,9 @@ export type AnyAction = Action<
   unknown,
   unknown,
   ConversationalWorkflowContext,
-  Settings
+  unknown
 >;
 
 export type ActionRegistry<
-  A extends Action<unknown, unknown, BaseWorkflowContext, Settings> = AnyAction,
+  A extends Action<unknown, unknown, BaseWorkflowContext, unknown> = AnyAction,
 > = Map<ActionName, A>;

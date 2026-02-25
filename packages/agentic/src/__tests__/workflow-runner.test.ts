@@ -73,6 +73,7 @@ class TestContext extends BaseWorkflowContext<
 }
 
 const baseRetries = {
+  enabled: true,
   max_attempts: 1,
   backoff_ms: 0,
   max_delay_ms: 0,
@@ -80,6 +81,101 @@ const baseRetries = {
   multiplier: 1,
 };
 describe('WorkflowRunner', () => {
+  it('applies global defaults and per-task overrides to runtime settings', async () => {
+    const runtimeSettings: Settings[] = [];
+    const inspectExecute = jest.fn(async ({ input, settings }) => {
+      runtimeSettings.push(settings);
+
+      return { label: input.label };
+    });
+    const inspectAction = defineAction<
+      { label: string },
+      { label: string },
+      TestContext,
+      Settings
+    >({
+      name: 'inspect_settings_action',
+      inputSchema: z.object({ label: z.string() }),
+      outputSchema: z.object({ label: z.string() }),
+      execute: inspectExecute,
+    });
+    const defaultRetries = {
+      enabled: true,
+      max_attempts: 4,
+      backoff_ms: 25,
+      max_delay_ms: 2000,
+      jitter: 0,
+      multiplier: 1.2,
+    };
+    const definition: WorkflowDefinition = {
+      defaults: {
+        settings: {
+          timeout_ms: 200,
+          retries: defaultRetries,
+        },
+      },
+      tasks: {
+        inherit_task: {
+          action: 'inspect_settings_action',
+          inputs: { label: '="inherit"' },
+        },
+        override_timeout_task: {
+          action: 'inspect_settings_action',
+          inputs: { label: '="timeout_override"' },
+          settings: {
+            timeout_ms: 50,
+          },
+        },
+        override_retries_task: {
+          action: 'inspect_settings_action',
+          inputs: { label: '="retries_override"' },
+          settings: {
+            retries: {
+              ...defaultRetries,
+              max_attempts: 1,
+              multiplier: 1,
+            },
+          },
+        },
+      },
+      flow: [
+        { do: 'inherit_task' },
+        { do: 'override_timeout_task' },
+        { do: 'override_retries_task' },
+      ],
+      outputs: {
+        last: '=$output.override_retries_task.label',
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { inspect_settings_action: inspectAction },
+    });
+    const runner = new WorkflowRunner(compiled, { runId: 'run-settings' });
+    const result = await runner.start({
+      inputData: {},
+      context: new TestContext({}),
+    });
+
+    expect(result.status).toBe('finished');
+    expect(inspectExecute).toHaveBeenCalledTimes(3);
+    expect(runtimeSettings[0]).toEqual({
+      timeout_ms: 200,
+      retries: defaultRetries,
+    });
+    expect(runtimeSettings[1]).toEqual({
+      timeout_ms: 50,
+      retries: defaultRetries,
+    });
+    expect(runtimeSettings[2]).toEqual({
+      timeout_ms: 200,
+      retries: {
+        ...defaultRetries,
+        max_attempts: 1,
+        multiplier: 1,
+      },
+    });
+  });
+
   it('executes parallel, conditional, and loop steps while tracking snapshots', async () => {
     const firstExecute = jest.fn(async () => ({ value: 'alpha' }));
     const secondExecute = jest.fn(async () => ({ value: 'beta' }));

@@ -62,13 +62,7 @@ class ManualOnlyAction extends BaseAction<
         inputSchema: z.object({}),
         outputSchema: z.object({}),
         settingsSchema: z.object({
-          retries: z.object({
-            max_attempts: z.number(),
-            backoff_ms: z.number(),
-            max_delay_ms: z.number(),
-            jitter: z.number(),
-            multiplier: z.number(),
-          }),
+          custom_flag: z.boolean().optional(),
         }),
         workflowTypes: [WorkflowType.manual],
       },

@@ -24,7 +24,6 @@ import {
 import {
   Plus as AddIcon,
   Trash2 as DeleteIcon,
-  ChevronDown as ExpandMoreIcon,
   Lock as LockIcon,
 } from "lucide-react";
 import * as React from "react";
@@ -589,7 +588,7 @@ function PropertyEntryEditor({
 
   return (
     <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary>
         <Typography variant="subtitle2">{summary}</Typography>
       </AccordionSummary>
 

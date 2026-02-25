@@ -4,26 +4,24 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ZodType } from 'zod';
+import { z, ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
-import { Settings, SettingsSchema } from '../dsl.types';
+import { BaseSettingsSchema } from '../dsl.types';
 import { WorkflowSuspendedError } from '../runtime-error';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 
 import { ActionExecutionArgs } from './action';
-import { Action, ActionMetadata } from './action.types';
+import { Action, ActionMetadata, RuntimeSettings } from './action.types';
+
+const BASE_SETTINGS_KEYS = Object.keys(BaseSettingsSchema.shape);
 
 /**
  * Base implementation that enforces schema-validated input/output.
  */
-export abstract class AbstractAction<
-  I,
-  O,
-  C extends BaseWorkflowContext,
-  S extends Settings = Settings,
-> implements Action<I, O, C, S>
+export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
+  implements Action<I, O, C, S>
 {
   public readonly name: string;
 
@@ -42,13 +40,25 @@ export abstract class AbstractAction<
    * @param options - Optional configuration or definition override.
    */
   protected constructor(metadata: ActionMetadata<I, O, S>) {
+    if (metadata.settingsSchema instanceof z.ZodObject) {
+      const actionSettingsKeys = Object.keys(metadata.settingsSchema.shape);
+      const overlappingKeys = actionSettingsKeys.filter((key) =>
+        BASE_SETTINGS_KEYS.includes(key),
+      );
+
+      if (overlappingKeys.length > 0) {
+        throw new Error(
+          `settingsSchema cannot redefine base settings keys: ${overlappingKeys.join(', ')}`,
+        );
+      }
+    }
+
     assertSnakeCaseName(metadata.name, 'action');
     this.name = metadata.name;
     this.description = metadata.description;
     this.inputSchema = metadata.inputSchema;
     this.outputSchema = metadata.outputSchema;
-    this.settingSchema =
-      metadata.settingsSchema ?? (SettingsSchema as unknown as ZodType<S>);
+    this.settingSchema = metadata.settingsSchema;
   }
 
   /**
@@ -79,18 +89,32 @@ export abstract class AbstractAction<
    * @returns Validated output produced by the action.
    * @throws Error when retries are exhausted or validation fails.
    */
-  parseSettings(payload: unknown): S {
-    const settings = this.settingSchema.parse(payload ?? {});
+  parseSettings(payload: unknown): RuntimeSettings<S> {
+    const settings = z
+      .intersection(BaseSettingsSchema, this.settingSchema)
+      .parse(payload ?? {});
 
-    return (settings ?? {}) as S;
+    return (settings ?? {}) as RuntimeSettings<S>;
   }
 
-  async run(payload: unknown, context: C, settings?: Partial<S>): Promise<O> {
+  async run(
+    payload: unknown,
+    context: C,
+    settings?: Partial<RuntimeSettings<S>>,
+  ): Promise<O> {
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
-    const timeoutMs = parsedSettings.timeout_ms;
-    const retrySettings = parsedSettings.retries;
-    const maxAttempts = retrySettings.max_attempts;
+    const timeoutMs = parsedSettings.timeout_ms ?? 0;
+    const retrySettings = parsedSettings.retries ?? {
+      enabled: false,
+      max_attempts: 1,
+      backoff_ms: 0,
+      max_delay_ms: 0,
+      jitter: 0,
+      multiplier: 1,
+    };
+    const retriesEnabled = retrySettings.enabled ?? true;
+    const maxAttempts = retriesEnabled ? retrySettings.max_attempts : 1;
 
     let attempt = 0;
     let currentDelay = retrySettings.backoff_ms ?? 0;
