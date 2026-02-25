@@ -61,6 +61,13 @@ export class MigrationService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    const [command] = process.argv.slice(2);
+    const isMigrationCliContext = this.isCLI && command === 'migration';
+    const isMigrationAppContext = !this.isCLI;
+
+    if (!isMigrationAppContext && !isMigrationCliContext) {
+      return;
+    }
     await this.ensureMigrationPathExists();
 
     if (!this.dataSource.isInitialized) {
@@ -68,7 +75,7 @@ export class MigrationService implements OnApplicationBootstrap {
     }
     this.logger.log('TypeORM connection established!');
 
-    if (!this.isCLI && config.database.autoMigrate) {
+    if (isMigrationAppContext && config.database.autoMigrate) {
       this.logger.log('Executing migrations ...');
       await this.run({
         action: MigrationAction.UP,

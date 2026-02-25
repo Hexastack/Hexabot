@@ -17,6 +17,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Mutex } from 'async-mutex';
 import { Socket } from 'socket.io';
 
+import { AppInstance } from '@/app.instance';
 import { LoggerService } from '@/logger/logger.service';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
@@ -106,6 +107,10 @@ export class SocketEventDispatcherService implements OnModuleInit {
   }
 
   onModuleInit() {
+    if (!AppInstance.isReady()) {
+      return;
+    }
+
     const allProviders = Array.from(this.modulesContainer.values())
       .map(
         (module) =>

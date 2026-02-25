@@ -10,6 +10,8 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
+import { AppInstance } from '@/app.instance';
+import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
 
@@ -44,6 +46,9 @@ export class WorkflowSchedulerService implements OnModuleInit {
    * Register scheduled workflows when the module boots.
    */
   async onModuleInit(): Promise<void> {
+    if (!AppInstance.isReady() && config.env !== 'test') {
+      return;
+    }
     await this.registerScheduledWorkflows();
   }
 

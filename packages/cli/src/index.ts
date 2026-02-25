@@ -9,6 +9,12 @@ import { createCliProgram } from './cli.js';
 import { checkPrerequisites } from './core/prerequisites.js';
 import { printBanner } from './ui/banner.js';
 
+const cliArgs = process.argv.slice(2);
+
+if (process.env.HEXABOT_CLI !== '1') {
+  process.exit(0);
+}
+
 printBanner();
 checkPrerequisites({ silent: true });
 
@@ -16,6 +22,6 @@ const program = createCliProgram();
 
 program.parse(process.argv);
 
-if (!process.argv.slice(2).length) {
+if (!cliArgs.length) {
   program.outputHelp();
 }
