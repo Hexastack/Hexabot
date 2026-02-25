@@ -27,5 +27,5 @@
     "**/*.tsx",
     "global.d.ts"
   ],
-  "exclude": ["node_modules", "vite.config.ts", "../widget"]
+  "exclude": ["node_modules", "vite.config.mts", "../widget"]
 }
