@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingsSchema as BaseSettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { createAction } from '@/actions/create-action';
@@ -20,7 +19,7 @@ const OutputSchema = z.object({
 });
 type Output = z.infer<typeof OutputSchema>;
 
-const ActionSettingsSchema = BaseSettingsSchema.extend({
+const ActionSettingsSchema = z.strictObject({
   prefix: z.string().prefault('Echo: '),
 });
 type ActionSettings = z.infer<typeof ActionSettingsSchema>;

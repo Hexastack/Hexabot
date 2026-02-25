@@ -5,6 +5,8 @@
  */
 
 import {
+  DEFAULT_RETRY_SETTINGS,
+  DEFAULT_TIMEOUT_MS,
   type WorkflowDefinition,
   isSnakeCaseName,
   toSnakeCase,
@@ -14,6 +16,12 @@ import {
  * Build a minimal workflow definition with defaults and optional metadata.
  */
 export const createBaseDefinition = (): WorkflowDefinition => ({
+  defaults: {
+    settings: {
+      timeout_ms: DEFAULT_TIMEOUT_MS,
+      retries: { ...DEFAULT_RETRY_SETTINGS },
+    },
+  },
   tasks: {},
   flow: [],
   outputs: {},

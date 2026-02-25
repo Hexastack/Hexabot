@@ -7,7 +7,7 @@
 import { z } from 'zod';
 
 import { BaseWorkflowContext } from '../../context';
-import { SettingsSchema } from '../../dsl.types';
+import { Settings, SettingsSchema } from '../../dsl.types';
 import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import {
@@ -34,21 +34,25 @@ class DoubleContext extends BaseWorkflowContext<{ factor: number }> {
 
 const InputSchema = z.object({ value: z.number() });
 const OutputSchema = z.object({ result: z.number() });
+const NoSettingsSchema = z.any();
 
 class DoubleAction extends AbstractAction<
   z.infer<typeof InputSchema>,
   z.infer<typeof OutputSchema>,
-  DoubleContext
+  DoubleContext,
+  unknown
 > {
   constructor() {
     const metadata: ActionMetadata<
       z.infer<typeof InputSchema>,
-      z.infer<typeof OutputSchema>
+      z.infer<typeof OutputSchema>,
+      unknown
     > = {
       name: 'double_step',
       description: 'Doubles the incoming value by a context-defined factor.',
       inputSchema: InputSchema,
       outputSchema: OutputSchema,
+      settingsSchema: NoSettingsSchema,
     };
 
     super(metadata);
@@ -57,16 +61,18 @@ class DoubleAction extends AbstractAction<
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<z.infer<typeof InputSchema>, DoubleContext>): Promise<
-    z.infer<typeof OutputSchema>
-  > {
+  }: ActionExecutionArgs<
+    z.infer<typeof InputSchema>,
+    DoubleContext,
+    unknown
+  >): Promise<z.infer<typeof OutputSchema>> {
     return {
       result: input.value * context.state.factor * 2,
     };
   }
 }
 
-const DoubleSettingsSchema = SettingsSchema.extend({
+const DoubleSettingsSchema = z.strictObject({
   multiplier: z.int().min(1),
 });
 
@@ -110,6 +116,46 @@ class ConfigurableDoubleAction extends AbstractAction<
   }
 }
 
+const InvalidSettingsSchema = z.strictObject({
+  timeout_ms: z.int().positive().max(5_000),
+});
+
+class InvalidSettingsAction extends AbstractAction<
+  z.infer<typeof InputSchema>,
+  z.infer<typeof OutputSchema>,
+  DoubleContext,
+  z.infer<typeof InvalidSettingsSchema>
+> {
+  constructor() {
+    const metadata: ActionMetadata<
+      z.infer<typeof InputSchema>,
+      z.infer<typeof OutputSchema>,
+      z.infer<typeof InvalidSettingsSchema>
+    > = {
+      name: 'invalid_settings_step',
+      description: 'Invalid action that redefines base settings keys.',
+      inputSchema: InputSchema,
+      outputSchema: OutputSchema,
+      settingsSchema: InvalidSettingsSchema,
+    };
+
+    super(metadata);
+  }
+
+  async execute({
+    input,
+    context,
+  }: ActionExecutionArgs<
+    z.infer<typeof InputSchema>,
+    DoubleContext,
+    z.infer<typeof InvalidSettingsSchema>
+  >): Promise<z.infer<typeof OutputSchema>> {
+    return {
+      result: input.value * context.state.factor * 2,
+    };
+  }
+}
+
 class FlakyDoubleAction extends DoubleAction {
   public attemptCount = 0;
 
@@ -121,9 +167,11 @@ class FlakyDoubleAction extends DoubleAction {
     input,
     context,
     settings,
-  }: ActionExecutionArgs<z.infer<typeof InputSchema>, DoubleContext>): Promise<
-    z.infer<typeof OutputSchema>
-  > {
+  }: ActionExecutionArgs<
+    z.infer<typeof InputSchema>,
+    DoubleContext,
+    unknown
+  >): Promise<z.infer<typeof OutputSchema>> {
     this.attemptCount += 1;
     if (this.attemptCount < 3) {
       throw new Error('Intermittent failure');
@@ -163,6 +211,47 @@ describe('workflow step primitives', () => {
     ).rejects.toThrow();
   });
 
+  it('accepts base settings without requiring action schemas to extend them', async () => {
+    const step = new ConfigurableDoubleAction();
+    const context = new DoubleContext({ factor: 3 });
+
+    await expect(
+      step.run({ value: 2 }, context, {
+        multiplier: 2,
+        timeout_ms: 10,
+        retries: {
+          enabled: false,
+          max_attempts: 3,
+          backoff_ms: 25,
+          max_delay_ms: 1_000,
+          jitter: 0,
+          multiplier: 1,
+        },
+      }),
+    ).resolves.toEqual({ result: 24 });
+
+    expect(() => step.settingSchema.parse({ multiplier: 2 })).not.toThrow();
+    expect(() =>
+      step.settingSchema.parse({
+        multiplier: 2,
+        retries: {
+          enabled: false,
+          max_attempts: 3,
+          backoff_ms: 25,
+          max_delay_ms: 1_000,
+          jitter: 0,
+          multiplier: 1,
+        },
+      }),
+    ).toThrow();
+  });
+
+  it('rejects action schemas that redefine base setting keys', () => {
+    expect(() => new InvalidSettingsAction()).toThrow(
+      'settingsSchema cannot redefine base settings keys: timeout_ms',
+    );
+  });
+
   it('exposes accurate compile-time types', () => {
     type ActionType = Action<
       InferActionInput<DoubleAction>,
@@ -176,7 +265,7 @@ describe('workflow step primitives', () => {
     expectType<
       Equal<
         InferActionSettings<ConfigurableDoubleAction>,
-        z.infer<typeof DoubleSettingsSchema>
+        Settings & z.infer<typeof DoubleSettingsSchema>
       >
     >();
 

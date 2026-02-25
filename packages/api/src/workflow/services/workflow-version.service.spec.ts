@@ -6,6 +6,11 @@
 
 import { randomUUID } from 'crypto';
 
+import {
+  DEFAULT_RETRY_SETTINGS,
+  DEFAULT_TIMEOUT_MS,
+  validateWorkflow,
+} from '@hexabot-ai/agentic';
 import { TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 
@@ -79,6 +84,37 @@ describe('WorkflowVersionService (TypeORM)', () => {
   });
 
   describe('createSnapshot', () => {
+    it('creates a blank version with global defaults when workflow is created', async () => {
+      const workflow = await createWorkflow();
+      const blank = await workflowVersionService.findOne({
+        where: { workflow: { id: workflow.id }, version: 0 },
+      });
+
+      expect(blank).toBeDefined();
+      expect(blank?.version).toBe(0);
+      expect(blank?.action).toBe(WorkflowVersionAction.create);
+
+      const parsed = validateWorkflow(blank!.definitionYml);
+
+      expect(parsed.success).toBe(true);
+
+      if (!parsed.success) {
+        return;
+      }
+
+      expect(parsed.data).toEqual({
+        defaults: {
+          settings: {
+            timeout_ms: DEFAULT_TIMEOUT_MS,
+            retries: { ...DEFAULT_RETRY_SETTINGS },
+          },
+        },
+        tasks: {},
+        flow: [],
+        outputs: {},
+      });
+    });
+
     it('creates the first version when none exist', async () => {
       const workflow = await createWorkflow();
       const definitionYml = 'version: 1';

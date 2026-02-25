@@ -17,6 +17,8 @@ const OutputSchema = z.object({ result: z.number() });
 
 type Input = z.infer<typeof InputSchema>;
 type Output = z.infer<typeof OutputSchema>;
+const NoSettingsSchema = z.any();
+type NoSettings = unknown;
 
 class TestContext extends BaseWorkflowContext {
   public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
@@ -26,23 +28,31 @@ class TestContext extends BaseWorkflowContext {
   }
 }
 
-class HarnessedAction extends AbstractAction<Input, Output, TestContext> {
+class HarnessedAction extends AbstractAction<
+  Input,
+  Output,
+  TestContext,
+  NoSettings
+> {
   constructor(
     private readonly executor: (
-      args: ActionExecutionArgs<Input, TestContext>,
+      args: ActionExecutionArgs<Input, TestContext, NoSettings>,
     ) => Promise<Output>,
   ) {
-    const metadata: ActionMetadata<Input, Output> = {
+    const metadata: ActionMetadata<Input, Output, NoSettings> = {
       name: 'timing_action',
       description: 'Action used to validate retry and timeout behavior.',
       inputSchema: InputSchema,
       outputSchema: OutputSchema,
+      settingsSchema: NoSettingsSchema,
     };
 
     super(metadata);
   }
 
-  execute(args: ActionExecutionArgs<Input, TestContext>): Promise<Output> {
+  execute(
+    args: ActionExecutionArgs<Input, TestContext, NoSettings>,
+  ): Promise<Output> {
     return this.executor(args);
   }
 }
