@@ -759,6 +759,7 @@
         "section": {
           "input": "Entrée",
           "settings": "Paramètres",
+          "execution_settings": "Paramètres d'exécution",
           "output": "Sortie"
         },
         "empty_schema": {
@@ -784,6 +785,11 @@
             "required": "L'ID de l'étape est obligatoire.",
             "snake_case": "L'ID de l'étape doit être en snake_case avec un underscore.",
             "unique": "Cet ID d'étape existe déjà dans ce workflow."
+          }
+        },
+        "execution_settings": {
+          "mode": {
+            "override_global_settings": "Remplacer les paramètres globaux"
           }
         },
         "description": {

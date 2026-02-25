@@ -761,6 +761,7 @@
         "section": {
           "input": "Input",
           "settings": "Settings",
+          "execution_settings": "Overrides",
           "output": "Output"
         },
         "empty_schema": {
@@ -786,6 +787,11 @@
             "required": "Step ID is required.",
             "snake_case": "Step ID must be snake_case and include an underscore.",
             "unique": "Step ID already exists in this workflow."
+          }
+        },
+        "execution_settings": {
+          "mode": {
+            "override_global_settings": "Override global settings"
           }
         },
         "description": {

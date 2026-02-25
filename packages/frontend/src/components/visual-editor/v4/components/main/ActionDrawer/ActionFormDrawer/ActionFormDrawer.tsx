@@ -18,13 +18,18 @@ export const ActionFormDrawer = () => {
     open,
     actionSchema,
     inputData,
-    settingsData,
+    actionSettingsData,
+    executionSettingsData,
+    isUsingWorkflowExecutionDefaults,
     panelKeyBase,
     emptyStateLabel,
     onInputDataChange,
-    onSettingsDataChange,
+    onActionSettingsDataChange,
+    onExecutionSettingsDataChange,
+    onExecutionSettingsModeChange,
     onInputVisibleErrorsChange,
-    onSettingsVisibleErrorsChange,
+    onActionSettingsVisibleErrorsChange,
+    onExecutionSettingsVisibleErrorsChange,
     onClose,
     headerProps,
     footerProps,
@@ -35,13 +40,20 @@ export const ActionFormDrawer = () => {
       isOpen={open}
       actionSchema={actionSchema}
       inputData={inputData}
-      settingsData={settingsData}
+      actionSettingsData={actionSettingsData}
+      executionSettingsData={executionSettingsData}
+      isUsingWorkflowExecutionDefaults={isUsingWorkflowExecutionDefaults}
       panelKeyBase={panelKeyBase}
       emptyStateLabel={emptyStateLabel}
       onInputDataChange={onInputDataChange}
-      onSettingsDataChange={onSettingsDataChange}
+      onActionSettingsDataChange={onActionSettingsDataChange}
+      onExecutionSettingsDataChange={onExecutionSettingsDataChange}
+      onExecutionSettingsModeChange={onExecutionSettingsModeChange}
       onInputVisibleErrorsChange={onInputVisibleErrorsChange}
-      onSettingsVisibleErrorsChange={onSettingsVisibleErrorsChange}
+      onActionSettingsVisibleErrorsChange={onActionSettingsVisibleErrorsChange}
+      onExecutionSettingsVisibleErrorsChange={
+        onExecutionSettingsVisibleErrorsChange
+      }
       open={open}
       onClose={onClose}
       headerContent={<ActionFormDrawerHeader {...headerProps} />}

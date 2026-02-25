@@ -14,30 +14,42 @@ import { extractUiSchema } from "../../../../utils/schema-defaults.utils";
 import { buildSettingsUiSchema } from "../../../../utils/settings-ui-schema.utils";
 import { ActionSchemaPanel } from "../ActionSchemaPanel";
 
+import { ExecutionSettingsPanel } from "./ExecutionSettingsPanel";
+
 export type ActionFormDrawerContentProps = {
   isOpen: boolean;
   actionSchema?: IAction;
   inputData: Record<string, unknown>;
-  settingsData: Record<string, unknown>;
+  actionSettingsData: Record<string, unknown>;
+  executionSettingsData: Record<string, unknown>;
+  isUsingWorkflowExecutionDefaults: boolean;
   panelKeyBase: string;
   emptyStateLabel: string;
   onInputDataChange: (data: Record<string, unknown>) => void;
-  onSettingsDataChange: (data: Record<string, unknown>) => void;
+  onActionSettingsDataChange: (data: Record<string, unknown>) => void;
+  onExecutionSettingsDataChange: (data: Record<string, unknown>) => void;
+  onExecutionSettingsModeChange: (useWorkflowDefaults: boolean) => void;
   onInputVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
-  onSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
+  onActionSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
+  onExecutionSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
 };
 
 export const ActionFormDrawerContent = ({
   isOpen,
   actionSchema,
   inputData,
-  settingsData,
+  actionSettingsData,
+  executionSettingsData,
+  isUsingWorkflowExecutionDefaults,
   panelKeyBase,
   emptyStateLabel,
   onInputDataChange,
-  onSettingsDataChange,
+  onActionSettingsDataChange,
+  onExecutionSettingsDataChange,
+  onExecutionSettingsModeChange,
   onInputVisibleErrorsChange,
-  onSettingsVisibleErrorsChange,
+  onActionSettingsVisibleErrorsChange,
+  onExecutionSettingsVisibleErrorsChange,
 }: ActionFormDrawerContentProps) => {
   const { t } = useTranslate();
 
@@ -69,19 +81,29 @@ export const ActionFormDrawerContent = ({
         <ActionSchemaPanel
           title={t("visual_editor.actions_drawer.form.section.settings")}
           schema={actionSchema.settingSchema}
-          formData={settingsData}
-          onFormDataChange={onSettingsDataChange}
-          onVisibleErrorsChange={onSettingsVisibleErrorsChange}
+          formData={actionSettingsData}
+          onFormDataChange={onActionSettingsDataChange}
+          onVisibleErrorsChange={onActionSettingsVisibleErrorsChange}
           panelKey={`${panelKeyBase}-settings`}
           emptyLabel={t(
             "visual_editor.actions_drawer.form.empty_schema.settings",
           )}
           uiSchema={buildSettingsUiSchema(
             actionSchema.settingSchema as RJSFSchema | undefined,
-            settingsData,
+            actionSettingsData,
           )}
         />
       ) : null}
+      <ExecutionSettingsPanel
+        executionSettingsData={executionSettingsData}
+        isUsingWorkflowExecutionDefaults={isUsingWorkflowExecutionDefaults}
+        panelKeyBase={panelKeyBase}
+        onExecutionSettingsDataChange={onExecutionSettingsDataChange}
+        onExecutionSettingsModeChange={onExecutionSettingsModeChange}
+        onExecutionSettingsVisibleErrorsChange={
+          onExecutionSettingsVisibleErrorsChange
+        }
+      />
     </Stack>
   );
 };
