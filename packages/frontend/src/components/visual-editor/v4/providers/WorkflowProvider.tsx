@@ -109,11 +109,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     );
     const taskDescription = action.description?.trim();
     const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
-    const {
-      timeout_ms: _t,
-      retries: _r,
-      ...settingDefaults
-    } = getSchemaDefaults<TaskSettings>(action.settingSchema)!;
+    const settingDefaults = getSchemaDefaults<TaskSettings>(
+      action.settingSchema,
+    )!;
     const nextTasks = {
       ...baseDefinition.tasks,
       [nextTaskName]: {

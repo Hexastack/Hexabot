@@ -9,7 +9,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Collapse,
   Grid,
   Typography,
 } from "@mui/material";
@@ -25,57 +24,6 @@ import {
 } from "@rjsf/utils";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";
-
-type AnimatedVisibilityUiOptions = {
-  controllerField: string;
-  detailFields: string[];
-  expandedValue: unknown;
-  transitionMs: number;
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === "object" && !Array.isArray(value);
-const getAnimatedVisibilityOptions = (
-  uiOptions: Record<string, unknown>,
-): AnimatedVisibilityUiOptions | undefined => {
-  const animatedVisibility = uiOptions.animatedVisibility;
-
-  if (!isRecord(animatedVisibility)) {
-    return undefined;
-  }
-
-  const controllerField =
-    typeof animatedVisibility.controllerField === "string" &&
-    animatedVisibility.controllerField.length > 0
-      ? animatedVisibility.controllerField
-      : "enabled";
-  const detailFields = Array.isArray(animatedVisibility.detailFields)
-    ? animatedVisibility.detailFields.filter(
-        (field): field is string =>
-          typeof field === "string" && field.length > 0,
-      )
-    : [];
-
-  if (detailFields.length === 0) {
-    return undefined;
-  }
-
-  const transitionMs =
-    typeof animatedVisibility.transitionMs === "number" &&
-    Number.isFinite(animatedVisibility.transitionMs)
-      ? animatedVisibility.transitionMs
-      : 250;
-
-  return {
-    controllerField,
-    detailFields,
-    expandedValue:
-      "expandedValue" in animatedVisibility
-        ? animatedVisibility.expandedValue
-        : true,
-    transitionMs,
-  };
-};
 
 export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
   const {
@@ -94,17 +42,6 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
     registry,
   } = props;
   const uiOptions = getUiOptions(uiSchema, registry.globalUiOptions);
-  const animatedVisibilityOptions = getAnimatedVisibilityOptions(
-    uiOptions as Record<string, unknown>,
-  );
-  const detailFieldSet = animatedVisibilityOptions
-    ? new Set(animatedVisibilityOptions.detailFields)
-    : undefined;
-  const detailsExpanded =
-    animatedVisibilityOptions && isRecord(formData)
-      ? formData[animatedVisibilityOptions.controllerField] ===
-        animatedVisibilityOptions.expandedValue
-      : false;
   const collapsible = uiOptions?.collapsible === true;
   const defaultExpanded = uiOptions?.defaultExpanded === true;
   const TitleFieldTemplate = getTemplate(
@@ -141,48 +78,21 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
           registry={registry}
         />
       ) : null}
-      <Grid container spacing={0.5}>
+      <Grid container spacing={2} style={{ marginTop: "10px" }}>
         {!showOptionalDataControlInTitle ? optionalDataControl : undefined}
-        {properties.map((element, index) => {
-          if (element.hidden) {
-            return element.content;
-          }
-
-          const isAnimatedDetailField =
-            detailFieldSet?.has(element.name) === true;
-
-          if (!isAnimatedDetailField || !animatedVisibilityOptions) {
-            return (
-              <Grid
-                size={{ xs: 12 }}
-                style={{ marginBottom: ".5rem" }}
-                key={index}
-              >
-                {element.content}
-              </Grid>
-            );
-          }
-
-          return (
+        {properties.map((element, index) =>
+          element.hidden ? (
+            element.content
+          ) : (
             <Grid
               size={{ xs: 12 }}
-              style={{
-                marginBottom: detailsExpanded ? ".5rem" : 0,
-                paddingTop: detailsExpanded ? undefined : 0,
-                paddingBottom: detailsExpanded ? undefined : 0,
-              }}
+              style={{ marginBottom: "10px" }}
               key={index}
             >
-              <Collapse
-                in={detailsExpanded}
-                timeout={animatedVisibilityOptions.transitionMs}
-                unmountOnExit
-              >
-                {element.content}
-              </Collapse>
+              {element.content}
             </Grid>
-          );
-        })}
+          ),
+        )}
       </Grid>
       {canExpand(schema, uiSchema, formData) ? (
         <Grid container justifyContent="flex-end">

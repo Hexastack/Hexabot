@@ -128,7 +128,6 @@ export const Workflow = () => {
   );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const actionsDrawerId = "workflow-actions-drawer";
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
@@ -377,12 +376,6 @@ export const Workflow = () => {
       },
     });
   };
-  const handleOpenSettingsDialog = () => {
-    setSettingsDialogOpen(true);
-  };
-  const handleCloseSettingsDialog = () => {
-    setSettingsDialogOpen(false);
-  };
   const handleSaveWorkflowSettings = useCallback(
     (settings: Settings) => {
       if (!definition) {
@@ -396,10 +389,26 @@ export const Workflow = () => {
           settings,
         },
       });
-      setSettingsDialogOpen(false);
     },
     [definition, updateDefinitionState],
   );
+  const handleOpenSettingsDialog = useCallback(() => {
+    if (!definition) {
+      return;
+    }
+
+    dialogs.open(
+      WorkflowSettingsDialog,
+      {
+        defaultValues: definition.defaults?.settings,
+        presetValues: {
+          onSave: handleSaveWorkflowSettings,
+          saveDisabled: isDefinitionSaving,
+        },
+      },
+      { maxWidth: "sm" },
+    );
+  }, [definition, dialogs, handleSaveWorkflowSettings, isDefinitionSaving]);
 
   return (
     <div className="visual-editor-v4">
@@ -497,13 +506,6 @@ export const Workflow = () => {
         />
         <WorkflowBottomDrawer />
       </StyledBox>
-      <WorkflowSettingsDialog
-        open={settingsDialogOpen}
-        settings={definition?.defaults?.settings}
-        onClose={handleCloseSettingsDialog}
-        onSave={handleSaveWorkflowSettings}
-        saveDisabled={!definition || isDefinitionSaving}
-      />
       <ActionFormDrawer />
       <ConditionalFormDrawer />
       <LoopFormDrawer />

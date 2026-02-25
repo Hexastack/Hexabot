@@ -18,10 +18,10 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../../types/workflow-node.types";
 import {
-  normalizeSettingsFormData,
-} from "../../../../utils/settings-ui-schema.utils";
+  ENodeType,
+  type GraphNode,
+} from "../../../../types/workflow-node.types";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";
 import type { ActionFormDrawerHeaderProps } from "./ActionFormDrawerHeader";
@@ -103,9 +103,7 @@ export const useActionFormDrawerController =
       }
       setInputData((taskDefinition?.inputs as Record<string, unknown>) ?? {});
       setSettingsData(
-        normalizeSettingsFormData(
-          (taskDefinition?.settings as Record<string, unknown>) ?? {},
-        ),
+        (taskDefinition?.settings as Record<string, unknown>) ?? {},
       );
     }, [open, taskName, actionName]);
 

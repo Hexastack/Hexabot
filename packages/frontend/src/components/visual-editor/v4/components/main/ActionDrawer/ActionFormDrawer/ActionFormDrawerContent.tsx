@@ -78,7 +78,6 @@ export const ActionFormDrawerContent = ({
           )}
           uiSchema={buildSettingsUiSchema(
             actionSchema.settingSchema as RJSFSchema | undefined,
-            false,
             settingsData,
           )}
         />
