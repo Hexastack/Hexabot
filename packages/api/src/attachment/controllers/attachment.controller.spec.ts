@@ -5,6 +5,7 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 
 import {
   BadRequestException,
@@ -180,6 +181,44 @@ describe('AttachmentController', () => {
         ],
         [...IGNORED_TEST_FIELDS, 'location', 'url', 'channel'],
       );
+    });
+
+    it('should upload attachment when temp dir resolves through symlink aliases', async () => {
+      jest.spyOn(os, 'tmpdir').mockReturnValue('/tmp');
+      jest.spyOn(fs, 'realpathSync').mockImplementation(((
+        filePath: fs.PathLike,
+      ) => {
+        const value = filePath.toString();
+
+        if (value === '/tmp') {
+          return '/private/tmp';
+        }
+        if (value === '/tmp/uploaded-file') {
+          return '/private/tmp/uploaded-file';
+        }
+
+        return value;
+      }) as typeof fs.realpathSync);
+      const copyFileSpy = jest
+        .spyOn(fs.promises, 'copyFile')
+        .mockResolvedValue();
+      const unlinkSpy = jest.spyOn(fs.promises, 'unlink').mockResolvedValue();
+      const result = await attachmentController.uploadFile(
+        {
+          file: [{ ...attachmentFile, path: '/tmp/uploaded-file' }],
+        },
+        {
+          session: { passport: { user: { id: TEST_USER_ID } } },
+        } as unknown as Request,
+        { resourceRef: AttachmentResourceRef.MessageAttachment },
+      );
+
+      expect(copyFileSpy).toHaveBeenCalledWith(
+        '/private/tmp/uploaded-file',
+        expect.any(String),
+      );
+      expect(unlinkSpy).toHaveBeenCalledWith('/private/tmp/uploaded-file');
+      expect(result).toHaveLength(1);
     });
   });
 
