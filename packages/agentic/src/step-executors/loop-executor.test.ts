@@ -5,6 +5,7 @@
  */
 
 import { BaseWorkflowContext } from '../context';
+import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
 import {
   StepType,
   type EventEmitterLike,
@@ -56,6 +57,13 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     recordStepExecution: jest.fn(),
     emit: jest.fn(),
     setCurrentStep: jest.fn(),
+    waitForStepSuspension: jest
+      .fn()
+      .mockImplementation(
+        () => new Promise<RuntimeSuspensionRequest>(() => undefined),
+      ),
+    clearStepSuspensions: jest.fn(),
+    primeStepResumeData: jest.fn(),
     captureTaskOutput: jest.fn(),
     executeFlow,
     executeStep: jest.fn(),

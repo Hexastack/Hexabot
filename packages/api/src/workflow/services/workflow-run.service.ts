@@ -66,16 +66,34 @@ export class WorkflowRunService extends BaseOrmService<
       stepId?: string | null;
       reason?: string | null;
       data?: unknown;
+      stepExecId?: string | null;
+      suspendIndex?: number | null;
+      suspendKey?: string | null;
+      awaitResults?: Record<string, unknown> | null;
       lastResumeData?: unknown;
     } & StateUpdate,
   ): Promise<WorkflowRun> {
-    const { stepId, reason, data, lastResumeData, ...state } = payload;
+    const {
+      stepId,
+      reason,
+      data,
+      stepExecId,
+      suspendIndex,
+      suspendKey,
+      awaitResults,
+      lastResumeData,
+      ...state
+    } = payload;
 
     return await this.updateOne(runId, {
       status: 'suspended',
       suspendedStep: stepId ?? null,
       suspensionReason: reason ?? null,
       suspensionData: data,
+      suspensionStepExecId: stepExecId ?? null,
+      suspensionIndex: suspendIndex ?? null,
+      suspensionKey: suspendKey ?? null,
+      suspensionAwaitResults: awaitResults ?? null,
       lastResumeData,
       suspendedAt: new Date(),
       ...state,

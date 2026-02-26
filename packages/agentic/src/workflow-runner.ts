@@ -32,6 +32,7 @@ import type {
   CompiledTask,
   CompiledWorkflow,
   ExecutionState,
+  PersistedSuspension,
   ResumeResult,
   RunnerResumeArgs,
   RunnerStartArgs,
@@ -242,6 +243,10 @@ export class WorkflowRunner {
           step: suspension.step,
           reason: suspension.reason,
           data: suspension.data,
+          stepExecId: suspension.stepExecId,
+          suspendIndex: suspension.suspendIndex,
+          suspendKey: suspension.suspendKey,
+          awaitResults: suspension.awaitResults,
           snapshot: this.getSnapshot(),
         };
       }
@@ -280,7 +285,7 @@ export class WorkflowRunner {
       state: ExecutionState;
       context: BaseWorkflowContext;
       snapshot: WorkflowSnapshot;
-      suspension?: { stepId: string; reason?: string | null; data?: unknown };
+      suspension?: PersistedSuspension;
       runId?: string;
       lastResumeData?: unknown;
     },
@@ -312,6 +317,10 @@ export class WorkflowRunner {
           stepId: options.suspension.stepId,
           reason: options.suspension.reason ?? undefined,
           data: options.suspension.data,
+          stepExecId: options.suspension.stepExecId,
+          suspendIndex: options.suspension.suspendIndex,
+          suspendKey: options.suspension.suspendKey,
+          awaitResults: options.suspension.awaitResults,
         },
       );
 
@@ -454,6 +463,32 @@ export class WorkflowRunner {
       emit: (event, payload) => this.emit(event, payload),
       setCurrentStep: (step?: StepInfo) => {
         this.currentStep = step;
+      },
+      beginStepExecution: (stepId) => {
+        if (!this.runtimeControl) {
+          return `${stepId}#1`;
+        }
+
+        return this.runtimeControl.beginStepExecution(stepId);
+      },
+      waitForStepSuspension: (stepId) => {
+        if (!this.runtimeControl) {
+          throw new Error('Workflow runtime control is not initialized.');
+        }
+
+        return this.runtimeControl.waitForStepSuspension(stepId);
+      },
+      clearStepSuspensions: (stepId, error) => {
+        this.runtimeControl?.clearStepSuspensions(stepId, error);
+      },
+      primeStepResumeData: (stepId, resumeData) => {
+        this.runtimeControl?.primeStepResumeData(stepId, resumeData);
+      },
+      prepareStepReplay: (seed) => {
+        this.runtimeControl?.prepareStepReplay(seed);
+      },
+      recordStepSuspendResult: (params) => {
+        this.runtimeControl?.recordStepSuspendResult(params);
       },
       captureTaskOutput: (task, state, result) =>
         this.captureTaskOutput(task, state, result),

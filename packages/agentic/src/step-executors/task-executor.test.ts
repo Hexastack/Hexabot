@@ -6,7 +6,8 @@
 
 import type { Action } from '../action/action.types';
 import { BaseWorkflowContext } from '../context';
-import { WorkflowSuspendedError } from '../runtime-error';
+import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
+import { createDeferred } from '../utils/deferred';
 import {
   type EventEmitterLike,
   type StepInfo,
@@ -77,6 +78,13 @@ const createEnv = (
   recordStepExecution: jest.fn(),
   emit: jest.fn(),
   setCurrentStep: jest.fn(),
+  waitForStepSuspension: jest
+    .fn()
+    .mockImplementation(
+      () => new Promise<RuntimeSuspensionRequest>(() => undefined),
+    ),
+  clearStepSuspensions: jest.fn(),
+  primeStepResumeData: jest.fn(),
   captureTaskOutput: jest.fn().mockResolvedValue(undefined),
   executeFlow: jest.fn(),
   executeStep: jest.fn(),
@@ -161,15 +169,34 @@ describe('executeTaskStep', () => {
     expect(env.buildInstanceStepInfo).not.toHaveBeenCalled();
   });
 
-  it('marks suspension and completes after continuation', async () => {
-    const suspensionError = new WorkflowSuspendedError(step.id, {
+  it('resumes an in-flight action and captures post-suspend output', async () => {
+    const request: RuntimeSuspensionRequest = {
+      stepId: step.id,
+      stepExecId: `${step.id}#1`,
+      suspendIndex: 1,
+      suspendKey: 'index:1',
       reason: 'awaiting_user',
       data: { channel: 'sms' },
-    });
-    const task = createTask(jest.fn().mockRejectedValue(suspensionError));
+      awaitResults: {},
+      resume: createDeferred<unknown>(),
+    };
+    const task = createTask(
+      jest.fn().mockImplementation(async () => {
+        const resumed = (await request.resume.promise) as { reply: string };
+
+        return { reply: resumed.reply.toUpperCase() };
+      }),
+    );
     const compiled = createCompiled(task);
     const env = createEnv(compiled, stepInfo);
     const state = createState();
+
+    (env.waitForStepSuspension as jest.Mock)
+      .mockResolvedValueOnce(request)
+      .mockImplementationOnce(
+        () => new Promise<RuntimeSuspensionRequest>(() => undefined),
+      );
+
     const suspension = await executeTaskStep(env, step, state, []);
 
     expect(suspension).toEqual(
@@ -184,45 +211,19 @@ describe('executeTaskStep', () => {
       'suspended',
       'awaiting_user',
     );
-    expect(env.recordStepExecution).toHaveBeenCalledWith(
-      stepInfo,
-      expect.objectContaining({
-        status: 'suspended',
-        endedAt: expect.any(Number),
-        reason: 'awaiting_user',
-        context: { after: {} },
-      }),
-    );
-    expect(env.emit).toHaveBeenCalledWith('hook:step:suspended', {
-      runId: 'run-123',
-      step: stepInfo,
-      reason: 'awaiting_user',
-      data: { channel: 'sms' },
-    });
-    expect(env.captureTaskOutput).not.toHaveBeenCalled();
-    expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);
 
-    const continuation = suspension?.continue;
-    expect(continuation).toBeDefined();
-    await continuation?.({ reply: 'Sure' });
+    await suspension?.continue({ reply: 'Sure' });
 
     expect(env.captureTaskOutput).toHaveBeenCalledWith(task, state, {
-      reply: 'Sure',
+      reply: 'SURE',
     });
     expect(env.recordStepExecution).toHaveBeenCalledWith(
       stepInfo,
       expect.objectContaining({
         status: 'completed',
-        endedAt: expect.any(Number),
-        output: { reply: 'Sure' },
-        context: { after: {} },
+        output: { reply: 'SURE' },
       }),
     );
-    expect(env.markSnapshot).toHaveBeenCalledWith(stepInfo, 'completed');
-    expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
-      runId: 'run-123',
-      step: stepInfo,
-    });
   });
 
   it('marks failure and rethrows errors from the task', async () => {

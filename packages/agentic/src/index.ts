@@ -37,8 +37,6 @@ export {
 
 export * from './dsl.types';
 
-export { WorkflowSuspendedError } from './runtime-error';
-
 export {
   compileWorkflow,
   Workflow as Workflow,
@@ -73,12 +71,15 @@ export type {
   CompiledWorkflow,
   EvaluationScope,
   ExecutionState,
+  PersistedSuspension,
   RunnerResumeArgs,
   RunnerStartArgs,
   Suspension,
   ResumeResult as WorkflowResumeOutcome,
   StartResult as WorkflowStartOutcome,
 } from './workflow-types';
+
+export { NonDeterministicWorkflowError } from './runner-runtime-control';
 
 export {
   compileValue,

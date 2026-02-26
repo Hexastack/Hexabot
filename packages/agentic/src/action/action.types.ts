@@ -8,7 +8,6 @@ import { ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
-import { WorkflowSuspendedError } from '../runtime-error';
 import { Deferred } from '../utils/deferred';
 
 export type RuntimeSettings<S = unknown> = Settings & S;
@@ -71,10 +70,12 @@ export type InferActionSettings<S extends Action> =
   InferActionArgs<S>['settings'];
 
 export interface SuspensionNotice {
-  error: WorkflowSuspendedError;
+  stepId: string;
+  reason?: string;
+  data?: unknown;
   resume: Deferred<unknown>;
 }
 
 export type ActionExecutionOutcome<T> =
   | { type: 'completed'; value: T }
-  | { type: 'suspended'; error: WorkflowSuspendedError };
+  | { type: 'suspended'; notice: SuspensionNotice };

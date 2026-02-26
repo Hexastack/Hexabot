@@ -130,6 +130,32 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunTransformerDt
   @JsonColumn({ name: 'suspension_data', nullable: true })
   suspensionData?: unknown;
 
+  /** Step execution attempt identifier for deterministic suspension replay. */
+  @Column({
+    name: 'suspension_step_exec_id',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  suspensionStepExecId?: string | null;
+
+  /** 1-based suspension index reached within the step execution. */
+  @Column({ name: 'suspension_index', type: 'int', nullable: true })
+  suspensionIndex?: number | null;
+
+  /** Normalized key identifying the suspension point inside the step. */
+  @Column({
+    name: 'suspension_key',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  suspensionKey?: string | null;
+
+  /** Previously resolved suspension values required for durable replay. */
+  @JsonColumn({ name: 'suspension_await_results', nullable: true })
+  suspensionAwaitResults?: Record<string, unknown> | null;
+
   /** Payload stored to resume the run after suspension. */
   @JsonColumn({ name: 'last_resume_data', nullable: true })
   lastResumeData?: unknown;
