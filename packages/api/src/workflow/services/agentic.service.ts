@@ -239,7 +239,7 @@ export class AgenticService {
 
     const latestInput = context.event.buildInput();
     const runner = await workflowInstance.buildRunnerFromState({
-      state: this.buildExecutionState(run, latestInput),
+      state: this.buildExecutionState(run),
       context,
       snapshot: run.snapshot ?? { status: run.status, actions: {} },
       suspension: run.suspendedStep
@@ -394,17 +394,9 @@ export class AgenticService {
   /**
    * Build the ExecutionState used to rebuild a runner.
    */
-  private buildExecutionState(
-    run: WorkflowRunFull,
-    latestInput?: Record<string, unknown>,
-  ): ExecutionState {
-    const baseInput = run.input ?? {};
-    const mergedInput =
-      latestInput && Object.keys(latestInput).length > 0
-        ? { ...baseInput, ...latestInput }
-        : baseInput;
+  private buildExecutionState(run: WorkflowRunFull): ExecutionState {
     const state: ExecutionState = {
-      input: mergedInput,
+      input: run.input ?? {},
       output: run.output ?? {},
       iterationStack: [],
     };
