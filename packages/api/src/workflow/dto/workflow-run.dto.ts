@@ -14,6 +14,7 @@ import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsDate,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -64,6 +65,18 @@ export class WorkflowRunStub extends BaseStub {
 
   @Expose()
   suspensionData?: unknown;
+
+  @Expose()
+  suspensionStepExecId?: string | null;
+
+  @Expose()
+  suspensionIndex?: number | null;
+
+  @Expose()
+  suspensionKey?: string | null;
+
+  @Expose()
+  suspensionAwaitResults?: Record<string, unknown> | null;
 
   @Expose()
   lastResumeData?: unknown;
@@ -196,6 +209,39 @@ export class WorkflowRunCreateDto {
   @ApiPropertyOptional({ description: 'Suspension payload', type: Object })
   @IsOptional()
   suspensionData?: unknown;
+
+  @ApiPropertyOptional({
+    description: 'Step execution attempt id for suspension replay',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  suspensionStepExecId?: string | null;
+
+  @ApiPropertyOptional({
+    description: '1-based suspension index within the step',
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  suspensionIndex?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Normalized key of the active suspension point',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  suspensionKey?: string | null;
+
+  @ApiPropertyOptional({
+    description:
+      'Previously resumed suspension values for deterministic replay',
+    type: Object,
+  })
+  @IsOptional()
+  @IsObject()
+  suspensionAwaitResults?: Record<string, unknown> | null;
 
   @ApiPropertyOptional({ description: 'Last resume payload', type: Object })
   @IsOptional()

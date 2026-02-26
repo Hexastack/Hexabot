@@ -179,6 +179,10 @@ describe('WorkflowRunService (TypeORM)', () => {
         stepId: 'greet',
         reason: 'awaiting input',
         data: { question: 'name' },
+        stepExecId: 'greet#1',
+        suspendIndex: 2,
+        suspendKey: 'index:2',
+        awaitResults: { 'index:1': { answer: 'Alice' } },
         lastResumeData: { source: 'suspend' },
         snapshot,
         context: { lang: 'en' },
@@ -196,6 +200,10 @@ describe('WorkflowRunService (TypeORM)', () => {
           suspendedStep: payload.stepId,
           suspensionReason: payload.reason,
           suspensionData: payload.data,
+          suspensionStepExecId: payload.stepExecId,
+          suspensionIndex: payload.suspendIndex,
+          suspensionKey: payload.suspendKey,
+          suspensionAwaitResults: payload.awaitResults,
           lastResumeData: payload.lastResumeData,
           suspendedAt: now,
           snapshot,
@@ -207,6 +215,10 @@ describe('WorkflowRunService (TypeORM)', () => {
       expect(updated.suspendedStep).toBe(payload.stepId);
       expect(updated.suspensionReason).toBe(payload.reason);
       expect(updated.suspensionData).toEqual(payload.data);
+      expect(updated.suspensionStepExecId).toBe(payload.stepExecId);
+      expect(updated.suspensionIndex).toBe(payload.suspendIndex);
+      expect(updated.suspensionKey).toBe(payload.suspendKey);
+      expect(updated.suspensionAwaitResults).toEqual(payload.awaitResults);
       expect(updated.lastResumeData).toEqual(payload.lastResumeData);
       expect(updated.suspendedAt?.getTime()).toBe(now.getTime());
     });

@@ -291,6 +291,12 @@ describe('AgenticService (TypeORM)', () => {
         suspendedStep: 'wait_input',
         suspensionReason: 'waiting',
         suspensionData: { previous: true },
+        suspensionStepExecId: 'wait_input#3',
+        suspensionIndex: 2,
+        suspensionKey: 'index:2',
+        suspensionAwaitResults: {
+          'index:1': { message: 'first answer' },
+        },
         stepLog: {
           wait_input: {
             id: 'wait_input',
@@ -333,6 +339,10 @@ describe('AgenticService (TypeORM)', () => {
         step: { id: 'prompt_user', name: 'prompt_user', type: StepType.Task },
         reason: 'needs input',
         data: { prompt: true },
+        stepExecId: 'prompt_user#1',
+        suspendIndex: 1,
+        suspendKey: 'key:await-user-input',
+        awaitResults: {},
         snapshot: runnerSnapshot,
       };
       const runner = buildRunnerMock({
@@ -368,6 +378,10 @@ describe('AgenticService (TypeORM)', () => {
           stepId: baseRun.suspendedStep,
           reason: baseRun.suspensionReason,
           data: baseRun.suspensionData ?? undefined,
+          stepExecId: baseRun.suspensionStepExecId ?? undefined,
+          suspendIndex: baseRun.suspensionIndex ?? undefined,
+          suspendKey: baseRun.suspensionKey ?? undefined,
+          awaitResults: baseRun.suspensionAwaitResults ?? undefined,
         },
         runId: baseRun.id,
         lastResumeData: event.buildInput(),
@@ -378,6 +392,12 @@ describe('AgenticService (TypeORM)', () => {
       expect(updatedRun.status).toBe('suspended');
       expect(updatedRun.suspendedStep).toBe(resumeResult.step.id);
       expect(updatedRun.suspensionReason).toBe(resumeResult.reason);
+      expect(updatedRun.suspensionStepExecId).toBe(resumeResult.stepExecId);
+      expect(updatedRun.suspensionIndex).toBe(resumeResult.suspendIndex);
+      expect(updatedRun.suspensionKey).toBe(resumeResult.suspendKey);
+      expect(updatedRun.suspensionAwaitResults).toEqual(
+        resumeResult.awaitResults,
+      );
       expect(updatedRun.lastResumeData).toEqual(event.buildInput());
       expect(updatedRun.output).toEqual(runnerState.output);
       expect(updatedRun.context).toEqual(runtimeContext.state);

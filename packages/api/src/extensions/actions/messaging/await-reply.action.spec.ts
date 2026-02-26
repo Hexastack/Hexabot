@@ -5,7 +5,6 @@
  */
 
 import { ActionService } from '@/actions/actions.service';
-import { OutgoingMessageFormat } from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { AwaitReplyAction } from './await-reply.action';
@@ -41,79 +40,56 @@ describe('AwaitReplyAction', () => {
     jest.clearAllMocks();
   });
 
-  it('suspends the workflow and returns the parsed reply message', async () => {
-    const envelope = {
-      format: OutgoingMessageFormat.text as const,
-      message: { text: 'hello' },
+  it('suspends the workflow and returns parsed conversational input', async () => {
+    const resume = {
+      message: { text: 'user reply' },
+      text: 'user reply',
     };
-    const input = {
-      action: 'send_text_message',
-      channel: 'web',
-      recipient: 'sub-1',
-      workflowRunId: 'run-1',
-      messageId: 'mid-1',
-      format: OutgoingMessageFormat.text,
-      envelope,
-    };
-    const resume = { message: { text: 'user reply' } };
     workflow.suspend.mockResolvedValue(resume);
 
     const result = await action.execute({
-      input,
+      input: undefined,
       context,
       settings: action.parseSettings({}),
     });
 
     expect(workflow.suspend).toHaveBeenCalledWith({
       reason: 'awaiting_user_response',
-      data: input,
+      data: null,
     });
-    expect(result).toEqual(resume.message);
+    expect(result).toEqual(resume);
   });
 
-  it('throws when resume data does not include a valid message payload', async () => {
+  it('throws when resume data is not compliant with conversational input schema', async () => {
     workflow.suspend.mockResolvedValue({ unexpected: true });
 
     await expect(
       action.execute({
-        input: {
-          action: 'send_text_message',
-          channel: 'web',
-          recipient: 'sub-1',
-          format: OutgoingMessageFormat.text,
-          envelope: {
-            format: OutgoingMessageFormat.text as const,
-            message: { text: 'hello' },
-          },
-        },
+        input: undefined,
         context,
         settings: action.parseSettings({}),
       }),
-    ).rejects.toThrow('resumeData must include a message payload');
+    ).rejects.toThrow(
+      'resumeData must be compliant with the workflow input schema (conversational)',
+    );
   });
 
-  it('auto-fills missing suspension payload fields from context/event', async () => {
-    const resume = { message: { text: 'user reply' } };
-    workflow.suspend.mockResolvedValue(resume);
+  it('accepts optional conversational fields in resume data', async () => {
+    const resumeWithOptionalFields = {
+      message: { text: 'user reply' },
+      text: 'user reply',
+      message_type: 'message',
+      payload: 'quick-reply',
+      mid: 'mid-1',
+    };
+    workflow.suspend.mockResolvedValue(resumeWithOptionalFields);
 
-    const result = await action.execute({
-      input: {},
+    const resultWithOptionalFields = await action.execute({
+      input: undefined,
       context,
       settings: action.parseSettings({}),
     });
 
-    expect(workflow.suspend).toHaveBeenCalledWith({
-      reason: 'awaiting_user_response',
-      data: {
-        action: 'await_reply',
-        channel: 'web',
-        recipient: 'sub-ctx',
-        workflowRunId: 'run-ctx',
-        messageId: undefined,
-        format: undefined,
-        envelope: undefined,
-      },
-    });
-    expect(result).toEqual(resume.message);
+    expect(resultWithOptionalFields).toEqual(resumeWithOptionalFields);
   });
 });
