@@ -314,7 +314,7 @@ describe('AgenticService (TypeORM)', () => {
       } as any;
       workflowContextFactoryMock.create.mockResolvedValue(runtimeContext);
       const runnerState: ExecutionState = {
-        input: { merged: true },
+        input: { original: true },
         output: { next: 'output' },
         iterationStack: [0],
         iteration: { item: 'loop', index: 0 },
@@ -366,7 +366,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(fromDefinitionSpy).toHaveBeenCalledTimes(1);
       expect(workflowInstance.buildRunnerFromState).toHaveBeenCalledWith({
         state: {
-          input: { original: true, latest: 'payload' },
+          input: { original: true },
           output: { saved: true },
           iterationStack: [0],
           iteration: { item: 'loop', index: 0 },
@@ -399,6 +399,7 @@ describe('AgenticService (TypeORM)', () => {
         resumeResult.awaitResults,
       );
       expect(updatedRun.lastResumeData).toEqual(event.buildInput());
+      expect(updatedRun.input).toEqual({ original: true });
       expect(updatedRun.output).toEqual(runnerState.output);
       expect(updatedRun.context).toEqual(runtimeContext.state);
       expect(updatedRun.stepLog).toEqual(
