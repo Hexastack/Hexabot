@@ -243,6 +243,41 @@ const addGroupEdge = (
 
   return false;
 };
+const GROUP_EDGE_ELIGIBLE_NODE_TYPES = new Set<ENodeType>([
+  ENodeType.INDICATOR,
+  ENodeType.TASK,
+  ENodeType.AGENT,
+  ENodeType.OPERATOR,
+  ENodeType.BRANCH_PLACEHOLDER,
+]);
+const GROUP_EDGE_BYPASS_SOURCE_HANDLES = new Set<string>([
+  ELinkType.AGENT_MODEL,
+  ELinkType.AGENT_MEMORY,
+  ELinkType.AGENT_TOOL,
+]);
+const shouldCreateGroupEdge = (
+  ctx: TraversalContext,
+  source: string,
+  target: string,
+  sourceHandle?: string,
+) => {
+  if (sourceHandle && GROUP_EDGE_BYPASS_SOURCE_HANDLES.has(sourceHandle)) {
+    return false;
+  }
+
+  const sourceType = ctx.nodes.find((node) => node.id === source)?.type;
+  const targetType = ctx.nodes.find((node) => node.id === target)?.type;
+
+  if (sourceType && !GROUP_EDGE_ELIGIBLE_NODE_TYPES.has(sourceType)) {
+    return false;
+  }
+
+  if (targetType && !GROUP_EDGE_ELIGIBLE_NODE_TYPES.has(targetType)) {
+    return false;
+  }
+
+  return true;
+};
 
 function addEdge(
   ctx: TraversalContext,
@@ -252,7 +287,14 @@ function addEdge(
   label?: string,
   insertPath?: FlowStepPath,
 ) {
-  const hasGroupEdge = addGroupEdge(ctx, source, target, label, insertPath);
+  const hasGroupEdge = shouldCreateGroupEdge(
+    ctx,
+    source,
+    target,
+    sourceHandle,
+  )
+    ? addGroupEdge(ctx, source, target, label, insertPath)
+    : false;
   const edgeInsertPath = hasGroupEdge ? undefined : insertPath;
   const isFromBranchPlaceholder = ctx.placeholderNodeIds.has(source);
   const isToBranchPlaceholder = ctx.placeholderNodeIds.has(target);
