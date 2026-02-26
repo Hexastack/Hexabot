@@ -27,6 +27,7 @@ import {
   ENodeType,
   type GraphNode,
 } from "../../../../types/workflow-node.types";
+import { getSchemaPropertyNames } from "../../../../utils/schema-defaults.utils";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";
 import type { ActionFormDrawerHeaderProps } from "./ActionFormDrawerHeader";
@@ -140,6 +141,20 @@ export const useActionFormDrawerController =
       useState(false);
     const open = Boolean(isActionNode && selectedNodeId);
     const panelKeyBase = selectedNodeId ?? actionName ?? "action";
+    const hasInputSchema = useMemo(
+      () =>
+        getSchemaPropertyNames(
+          actionSchema?.inputSchema as Record<string, unknown>,
+        ).length > 0,
+      [actionSchema?.inputSchema],
+    );
+    const hasActionSettingsSchema = useMemo(
+      () =>
+        getSchemaPropertyNames(
+          actionSchema?.settingSchema as Record<string, unknown>,
+        ).length > 0,
+      [actionSchema?.settingSchema],
+    );
     const workflowExecutionSettingsDefaults = useMemo<Partial<Settings>>(() => {
       const { executionSettings } = splitTaskSettings(
         definition?.defaults?.settings as Record<string, unknown> | undefined,
@@ -208,20 +223,16 @@ export const useActionFormDrawerController =
     }, [open]);
 
     useEffect(() => {
-      if (actionSchema?.inputSchema) {
-        return;
+      if (!hasInputSchema) {
+        setHasInputVisibleErrors(false);
       }
-
-      setHasInputVisibleErrors(false);
-    }, [actionSchema?.inputSchema]);
+    }, [hasInputSchema]);
 
     useEffect(() => {
-      if (actionSchema?.settingSchema) {
-        return;
+      if (!hasActionSettingsSchema) {
+        setHasActionSettingsVisibleErrors(false);
       }
-
-      setHasActionSettingsVisibleErrors(false);
-    }, [actionSchema?.settingSchema]);
+    }, [hasActionSettingsSchema]);
 
     useEffect(() => {
       if (isUsingWorkflowExecutionDefaults) {
