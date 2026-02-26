@@ -45,6 +45,13 @@ const GROUP_PADDING_DECAY_PER_LEVEL = 16;
 const GROUP_BASE_ALPHA = 0.22;
 const GROUP_ALPHA_DECAY_PER_LEVEL = 0.05;
 const GROUP_MIN_ALPHA = 0.08;
+const EXTRA_NODE_OFFSET = 80;
+const EXTRA_NODE_GAP = 20;
+const AGENT_ATTACHMENT_SOURCE_HANDLES = new Set<ELinkType>([
+  ELinkType.AGENT_TOOL,
+  ELinkType.AGENT_MODEL,
+  ELinkType.AGENT_MEMORY,
+]);
 const getGroupPadding = (basePadding: number, level: number) =>
   Math.max(
     GROUP_MIN_PADDING,
@@ -55,6 +62,10 @@ const getGroupBackgroundAlpha = (level: number) =>
     GROUP_MIN_ALPHA,
     GROUP_BASE_ALPHA - level * GROUP_ALPHA_DECAY_PER_LEVEL,
   );
+const isHorizontalDirection = (ctx: TraversalContext) =>
+  (ctx.config?.direction ?? "horizontal") === "horizontal";
+const isAgentAttachmentEdge = (edge: Edge) =>
+  AGENT_ATTACHMENT_SOURCE_HANDLES.has(edge.sourceHandle as ELinkType);
 const getElkSide = (position: Position) => {
   switch (position) {
     case Position.Top:
@@ -78,11 +89,66 @@ type ElkPort = {
 };
 
 const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
-  const isVertical = ctx.config?.direction === "vertical";
+  const isVertical = !isHorizontalDirection(ctx);
   const direction = ctx.config?.direction ?? "horizontal";
   const elkDirection = isVertical ? "DOWN" : "RIGHT";
   const nodeIds = new Set(nodes.map((n) => n.id));
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+  const nodeDimensions = new Map(
+    nodes.map((node) => [node.id, getNodeDimensions(node.type, ctx.config)]),
+  );
   const nodePorts = new Map<string, ElkPort[]>();
+  // Reserve vertical space under agent nodes for post-layout attachment nodes.
+
+  if (!isVertical) {
+    const attachmentTargetsBySource = edges.reduce((acc, edge) => {
+      if (!isAgentAttachmentEdge(edge)) {
+        return acc;
+      }
+
+      const src = nodeMap.get(edge.source);
+      const tgt = nodeMap.get(edge.target);
+
+      if (!src || !tgt) {
+        return acc;
+      }
+
+      acc.set(edge.source, [...(acc.get(edge.source) ?? []), tgt]);
+
+      return acc;
+    }, new Map<string, GraphNode[]>());
+
+    attachmentTargetsBySource.forEach((targets, sourceId) => {
+      if (!targets.length) {
+        return;
+      }
+
+      const sourceNode = nodeMap.get(sourceId);
+
+      if (!sourceNode) {
+        return;
+      }
+
+      const sourceDimensions =
+        nodeDimensions.get(sourceId) ??
+        getNodeDimensions(sourceNode.type, ctx.config);
+      const maxAttachmentHeight = Math.max(
+        ...targets.map((target) => {
+          const dimensions =
+            nodeDimensions.get(target.id) ??
+            getNodeDimensions(target.type, ctx.config);
+
+          return dimensions.height;
+        }),
+      );
+
+      nodeDimensions.set(sourceId, {
+        ...sourceDimensions,
+        height:
+          sourceDimensions.height + EXTRA_NODE_OFFSET + maxAttachmentHeight,
+      });
+    });
+  }
   const resolvePort = (
     ports: ElkPort[] | undefined,
     preferredHandle?: string | null,
@@ -141,9 +207,12 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
 
       nodePorts.set(n.id, ports);
 
+      const dimensions =
+        nodeDimensions.get(n.id) ?? getNodeDimensions(n.type, ctx.config);
+
       return {
         id: n.id,
-        ...getNodeDimensions(n.type, ctx.config),
+        ...dimensions,
         layoutOptions: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         },
@@ -199,9 +268,7 @@ const addExtraNodes = (
   ctx: TraversalContext,
 ) => {
   const nodesById = new Map(nodes.map((n) => [n.id, n]));
-  const isHorizontal = ctx.config?.direction === "horizontal";
-  const OFFSET = 80;
-  const GAP = 20;
+  const isHorizontal = isHorizontalDirection(ctx);
   const adjacencyMap = edges.reduce((acc, { source, target }) => {
     const src = nodesById.get(source);
     const tgt = nodesById.get(target);
@@ -232,7 +299,7 @@ const addExtraNodes = (
         (sum, t) => sum + (isHorizontal ? t.dim.width : t.dim.height),
         0,
       ) +
-      GAP * (targets.length - 1);
+      EXTRA_NODE_GAP * (targets.length - 1);
 
     let currentCursor = isHorizontal
       ? sourceNode.position.x + (srcDim.width - totalBreadth) / 2
@@ -243,13 +310,16 @@ const addExtraNodes = (
         position: isHorizontal
           ? {
               x: currentCursor,
-              y: sourceNode.position.y + srcDim.height + OFFSET,
+              y: sourceNode.position.y + srcDim.height + EXTRA_NODE_OFFSET,
             }
-          : { x: sourceNode.position.x - OFFSET - dim.width, y: currentCursor },
+          : {
+              x: sourceNode.position.x - EXTRA_NODE_OFFSET - dim.width,
+              y: currentCursor,
+            },
         targetPosition: isHorizontal ? Position.Top : Position.Right,
         sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
       });
-      currentCursor += (isHorizontal ? dim.width : dim.height) + GAP;
+      currentCursor += (isHorizontal ? dim.width : dim.height) + EXTRA_NODE_GAP;
     });
   });
 
@@ -416,13 +486,7 @@ export const buildNodesAndEdges = async ({
   const elkNodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
   const nodes = addExtraNodes(
     elkNodes,
-    ctx.edges.filter((e) =>
-      [
-        ELinkType.AGENT_TOOL,
-        ELinkType.AGENT_MODEL,
-        ELinkType.AGENT_MEMORY,
-      ].includes(e.sourceHandle as ELinkType),
-    ),
+    ctx.edges.filter(isAgentAttachmentEdge),
     ctx,
   );
   const groupNodes = getGroupNodes(nodes, ctx);
