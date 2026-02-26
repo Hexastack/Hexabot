@@ -10,7 +10,10 @@ import type { RJSFSchema } from "@rjsf/utils";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
-import { extractUiSchema } from "../../../../utils/schema-defaults.utils";
+import {
+  extractUiSchema,
+  getSchemaPropertyNames,
+} from "../../../../utils/schema-defaults.utils";
 import { buildSettingsUiSchema } from "../../../../utils/settings-ui-schema.utils";
 import { ActionSchemaPanel } from "../ActionSchemaPanel";
 
@@ -63,9 +66,14 @@ export const ActionFormDrawerContent = ({
     );
   }
 
+  const hasInputSchema =
+    getSchemaPropertyNames(actionSchema.inputSchema as RJSFSchema).length > 0;
+  const hasSettingsSchema =
+    getSchemaPropertyNames(actionSchema.settingSchema as RJSFSchema).length > 0;
+
   return (
     <Stack spacing={1}>
-      {actionSchema.inputSchema ? (
+      {hasInputSchema ? (
         <ActionSchemaPanel
           title={t("visual_editor.actions_drawer.form.section.input")}
           schema={actionSchema.inputSchema}
@@ -77,7 +85,7 @@ export const ActionFormDrawerContent = ({
           uiSchema={extractUiSchema(actionSchema.inputSchema as RJSFSchema)}
         />
       ) : null}
-      {actionSchema.settingSchema ? (
+      {hasSettingsSchema ? (
         <ActionSchemaPanel
           title={t("visual_editor.actions_drawer.form.section.settings")}
           schema={actionSchema.settingSchema}
