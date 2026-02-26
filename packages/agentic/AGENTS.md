@@ -27,7 +27,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 
 ## Runtime architecture (TS)
 - Entry points: `Workflow.fromYaml` / `Workflow.fromDefinition` validate via `validateWorkflow` then compile via `compileWorkflow` into a `CompiledWorkflow`.
-- Runner: `WorkflowRunner.start` executes the compiled flow; `resume` continues after a suspension. `Workflow.run` is a convenience that throws `WorkflowSuspendedError` on suspension.
+- Runner: `WorkflowRunner.start` executes the compiled flow; `resume` continues after a suspension. `Workflow.run` is a convenience that throws an error carrying suspension details (`stepId`, `reason`, `data`) on suspension.
 - Step ids: generated from the flow path (e.g., `0.branch.1:conditional`); loop iterations append `[i.j]` suffixes.
 - Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|skipped`).
 - Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
@@ -38,7 +38,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 ## Actions and settings
 - Create actions with `defineAction` (or extend `AbstractAction`): provide `name` (snake_case), optional `description`, `inputSchema`, `outputSchema`, optional `settingSchema`, and an async `execute`.
 - `AbstractAction.run` handles `parseInput`, merges/parses settings (defaults live in `SettingsSchema`, including `timeout_ms` and retry policy), wraps `execute` with timeout/retries, and validates the output.
-- Suspension: inside `execute`, call `context.workflow.suspend(options)`; the runner catches `WorkflowSuspendedError`, marks the step as `suspended`, and returns `{ status: 'suspended', step, reason?, data? }`. On resume, the provided data is passed back through `captureTaskOutput`.
+- Suspension: inside `execute`, `await context.workflow.suspend(options)`; the runner marks the step as `suspended` and returns `{ status: 'suspended', step, reason?, data? }`. On resume, the suspended action continues from the `await` with the provided data.
 - Settings merge: `mergeSettings` deep-merges `defaults.settings` with task-level overrides; undefined values do not clobber defaults.
 
 ## Conventions and gotchas

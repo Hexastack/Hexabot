@@ -8,7 +8,6 @@ import { z, ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { BaseSettingsSchema } from '../dsl.types';
-import { WorkflowSuspendedError } from '../runtime-error';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 
@@ -131,10 +130,6 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
 
         return this.parseOutput(result);
       } catch (error) {
-        if (error instanceof WorkflowSuspendedError) {
-          throw error;
-        }
-
         attempt += 1;
 
         if (attempt >= maxAttempts) {

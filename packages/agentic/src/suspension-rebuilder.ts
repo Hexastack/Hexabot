@@ -58,6 +58,14 @@ export type SuspensionRebuilderDeps = {
   ) => Promise<Suspension | void>;
 };
 
+type RebuildSuspensionMetadata = {
+  stepExecId?: string;
+  suspendIndex?: number;
+  suspendKey?: string;
+  reason?: string;
+  awaitResults?: Record<string, unknown>;
+};
+
 /**
  * Parse a suspended step id into its execution path and iteration stack.
  *
@@ -107,11 +115,19 @@ export function rebuildSuspension(
     stepId,
     reason,
     data,
+    stepExecId,
+    suspendIndex,
+    suspendKey,
+    awaitResults,
   }: {
     state?: ExecutionState;
     stepId: string;
     reason?: string;
     data?: unknown;
+    stepExecId?: string;
+    suspendIndex?: number;
+    suspendKey?: string;
+    awaitResults?: Record<string, unknown>;
   },
 ): Suspension | null {
   if (!state) {
@@ -124,12 +140,21 @@ export function rebuildSuspension(
     iterationStack:
       iterationStack.length > 0 ? iterationStack : (state.iterationStack ?? []),
   };
+  const suspensionMetadata: RebuildSuspensionMetadata = {
+    stepExecId,
+    suspendIndex,
+    suspendKey,
+    reason,
+    awaitResults,
+  };
   const suspension = buildSuspensionForPath(
     deps,
     deps.compiled.flow,
     executionState,
     path,
     [],
+    0,
+    suspensionMetadata,
   );
 
   if (!suspension) {
@@ -140,6 +165,10 @@ export function rebuildSuspension(
     ...suspension,
     reason,
     data,
+    stepExecId,
+    suspendIndex,
+    suspendKey,
+    awaitResults,
   };
 }
 
@@ -161,6 +190,7 @@ export function buildSuspensionForPath(
   targetPath: Array<number | string>,
   pathPrefix: Array<number | string>,
   iterationDepth = 0,
+  suspensionMetadata: RebuildSuspensionMetadata = {},
 ): Suspension | null {
   if (!deps.context) {
     throw new Error('Workflow context is not attached.');
@@ -189,15 +219,79 @@ export function buildSuspensionForPath(
     }
 
     const stepInfo = deps.buildInstanceStepInfo(step, state.iterationStack);
+    const replayStepExecId =
+      suspensionMetadata.stepExecId ?? `${stepInfo.id}#1`;
+    const replaySuspension =
+      suspensionMetadata.suspendIndex !== undefined ||
+      suspensionMetadata.suspendKey !== undefined
+        ? {
+            suspendIndex: suspensionMetadata.suspendIndex,
+            suspendKey: suspensionMetadata.suspendKey,
+            reason: suspensionMetadata.reason,
+          }
+        : undefined;
 
     return {
       step: stepInfo,
       continue: async (resumeData: unknown) => {
+        const executorEnv = deps.createExecutorEnv();
+        const prepareStepReplay = (executorEnv as Partial<StepExecutorEnv>)
+          .prepareStepReplay;
+        const recordStepSuspendResult = (
+          executorEnv as Partial<StepExecutorEnv>
+        ).recordStepSuspendResult;
+        const primeStepResumeData = (executorEnv as Partial<StepExecutorEnv>)
+          .primeStepResumeData;
+        const executeStep = (executorEnv as Partial<StepExecutorEnv>)
+          .executeStep;
+
+        if (typeof executeStep === 'function') {
+          if (typeof prepareStepReplay === 'function') {
+            prepareStepReplay({
+              stepId: stepInfo.id,
+              stepExecId: replayStepExecId,
+              awaitResults: suspensionMetadata.awaitResults,
+              activeSuspension: replaySuspension,
+            });
+          }
+
+          if (
+            typeof recordStepSuspendResult === 'function' &&
+            replaySuspension
+          ) {
+            recordStepSuspendResult({
+              stepId: stepInfo.id,
+              stepExecId: replayStepExecId,
+              suspendIndex: suspensionMetadata.suspendIndex,
+              suspendKey: suspensionMetadata.suspendKey,
+              resumeData,
+            });
+          } else if (typeof primeStepResumeData === 'function') {
+            primeStepResumeData(stepInfo.id, resumeData);
+          }
+
+          const resumed = await executeStep(step, state, currentPath);
+          if (resumed) {
+            return {
+              ...resumed,
+              continue: async (nextResumeData: unknown) => {
+                const next = await resumed.continue(nextResumeData);
+                if (next) {
+                  return next;
+                }
+
+                return deps.executeFlow(steps, state, pathPrefix, current + 1);
+              },
+            };
+          }
+
+          return deps.executeFlow(steps, state, pathPrefix, current + 1);
+        }
+
         const task = deps.compiled.tasks[step.taskName];
         if (!task) {
           throw new Error(`Task "${step.taskName}" is not defined.`);
         }
-
         await deps.captureTaskOutput(task, state, resumeData);
         deps.markSnapshot(stepInfo, 'completed');
         deps.emit('hook:step:success', { runId: deps.runId, step: stepInfo });
@@ -220,6 +314,7 @@ export function buildSuspensionForPath(
       childPath,
       [...currentPath, 'parallel'],
       iterationDepth,
+      suspensionMetadata,
     );
 
     if (!childSuspension) {
@@ -280,6 +375,7 @@ export function buildSuspensionForPath(
       childPath,
       [...currentPath, 'branch', branchIndex],
       iterationDepth,
+      suspensionMetadata,
     );
 
     if (!branchSuspension) {
@@ -335,6 +431,7 @@ export function buildSuspensionForPath(
       childPath,
       [...currentPath, loopToken],
       iterationDepth + 1,
+      suspensionMetadata,
     );
 
     if (!childSuspension) {

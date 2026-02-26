@@ -107,12 +107,12 @@ describe('Workflow execution', () => {
       inputSchema: z.object({ prompt: z.string() }),
       outputSchema: z.object({ reply: z.string().optional() }),
       execute: async ({ context }) => {
-        await context.workflow.suspend({
+        const resumeData = (await context.workflow.suspend({
           reason: 'waiting_for_user',
           data: { channel: 'email' },
-        });
+        })) as { reply?: string };
 
-        return { reply: 'never' };
+        return { reply: resumeData.reply };
       },
     });
     const definition: WorkflowDefinition = {
@@ -273,7 +273,7 @@ describe('Workflow execution', () => {
     );
   });
 
-  it('throws WorkflowSuspendedError from run when a task suspends', async () => {
+  it('throws suspension details from run when a task suspends', async () => {
     const suspendingAction = defineAction<
       unknown,
       { reply?: string },

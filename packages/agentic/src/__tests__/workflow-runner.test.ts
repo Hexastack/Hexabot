@@ -463,12 +463,12 @@ describe('WorkflowRunner', () => {
       inputSchema: z.object({ prompt: z.string() }),
       outputSchema: z.object({ reply: z.string() }),
       execute: async ({ context }) => {
-        await context.workflow.suspend({
+        const resumeData = (await context.workflow.suspend({
           reason: 'awaiting_user',
           data: { channel: 'sms' },
-        });
+        })) as { reply: string };
 
-        return { reply: 'ignored' };
+        return { reply: resumeData.reply };
       },
     });
     const definition: WorkflowDefinition = {
@@ -686,9 +686,11 @@ describe('WorkflowRunner', () => {
       inputSchema: z.object({ prompt: z.string() }),
       outputSchema: z.object({ reply: z.string() }),
       execute: async ({ context }) => {
-        await context.workflow.suspend({ reason: 'need_reply' });
+        const resumeData = (await context.workflow.suspend({
+          reason: 'need_reply',
+        })) as { reply: string };
 
-        return { reply: 'ignored' };
+        return { reply: resumeData.reply };
       },
     });
     const followExecute = jest.fn(async ({ input }) => ({
@@ -848,12 +850,12 @@ describe('WorkflowRunner', () => {
       inputSchema: z.object({ prompt: z.string() }),
       outputSchema: z.object({ reply: z.string() }),
       execute: async ({ input, context }) => {
-        await context.workflow.suspend({
+        const resumeData = (await context.workflow.suspend({
           reason: 'awaiting_reply',
           data: { prompt: input.prompt },
-        });
+        })) as { reply: string };
 
-        return { reply: 'ignored' };
+        return { reply: `ack:${resumeData.reply}` };
       },
     });
     const definition: WorkflowDefinition = {
@@ -921,7 +923,190 @@ describe('WorkflowRunner', () => {
     });
     expect(resumeResult.status).toBe('finished');
     if (resumeResult.status === 'finished') {
-      expect(resumeResult.output.reply).toBe('Pong');
+      expect(resumeResult.output.reply).toBe('ack:Pong');
+    }
+  });
+
+  it('rebuilds a task suspended on a later suspend() call using suspend metadata and await history', async () => {
+    const multiSuspendAction = defineAction<
+      unknown,
+      { firstReply: string; secondReply: string },
+      TestContext,
+      Settings
+    >({
+      name: 'multi_suspend_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({
+        firstReply: z.string(),
+        secondReply: z.string(),
+      }),
+      execute: async ({ context }) => {
+        const first = (await context.workflow.suspend({
+          reason: 'first_pause',
+          data: { order: 1 },
+        })) as { reply: string };
+        const second = (await context.workflow.suspend({
+          reason: 'second_pause',
+          data: { order: 2 },
+        })) as { reply: string };
+
+        return {
+          firstReply: first.reply,
+          secondReply: second.reply,
+        };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      tasks: {
+        wait_step: {
+          action: 'multi_suspend_action',
+          inputs: {},
+        },
+      },
+      flow: [{ do: 'wait_step' }],
+      outputs: {
+        firstReply: '=$output.wait_step.firstReply',
+        secondReply: '=$output.wait_step.secondReply',
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: {
+        multi_suspend_action: multiSuspendAction,
+      },
+    });
+    const runner = new WorkflowRunner(compiled);
+    const context = new TestContext({});
+    const firstSuspension = await runner.start({ inputData: {}, context });
+    expect(firstSuspension.status).toBe('suspended');
+    if (firstSuspension.status !== 'suspended') {
+      throw new Error('Workflow did not suspend on first await point');
+    }
+
+    expect(firstSuspension.suspendIndex).toBe(1);
+    expect(firstSuspension.suspendKey).toBe('index:1');
+    expect(firstSuspension.awaitResults).toEqual({});
+
+    const secondSuspension = await runner.resume({
+      resumeData: { reply: 'first-answer' },
+    });
+    expect(secondSuspension.status).toBe('suspended');
+    if (secondSuspension.status !== 'suspended') {
+      throw new Error('Workflow did not suspend on second await point');
+    }
+
+    expect(secondSuspension.suspendIndex).toBe(2);
+    expect(secondSuspension.suspendKey).toBe('index:2');
+    expect(secondSuspension.awaitResults).toEqual({
+      'index:1': { reply: 'first-answer' },
+    });
+
+    const runtimeState = runner.getState() as ExecutionState;
+    const persistedState: ExecutionState = {
+      input: { ...runtimeState.input },
+      output: { ...runtimeState.output },
+      iteration: runtimeState.iteration,
+      accumulator: runtimeState.accumulator,
+      iterationStack: [...runtimeState.iterationStack],
+    };
+    const rebuilt = await WorkflowRunner.fromPersistedState(compiled, {
+      state: persistedState,
+      context: new TestContext({}),
+      snapshot: secondSuspension.snapshot,
+      suspension: {
+        stepId: secondSuspension.step.id,
+        reason: secondSuspension.reason ?? null,
+        data: secondSuspension.data,
+        stepExecId: secondSuspension.stepExecId,
+        suspendIndex: secondSuspension.suspendIndex,
+        suspendKey: secondSuspension.suspendKey,
+        awaitResults: secondSuspension.awaitResults,
+      },
+    });
+    const finalResult = await rebuilt.resume({
+      resumeData: { reply: 'second-answer' },
+    });
+
+    expect(finalResult.status).toBe('finished');
+    if (finalResult.status === 'finished') {
+      expect(finalResult.output.firstReply).toBe('first-answer');
+      expect(finalResult.output.secondReply).toBe('second-answer');
+    }
+  });
+
+  it('fails resume when replay suspension metadata does not match the workflow code path', async () => {
+    const suspendAction = defineAction<
+      unknown,
+      { reply: string },
+      TestContext,
+      Settings
+    >({
+      name: 'single_suspend_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ reply: z.string() }),
+      execute: async ({ context }) => {
+        const resumeData = (await context.workflow.suspend({
+          reason: 'actual_reason',
+        })) as { reply: string };
+
+        return { reply: resumeData.reply };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      tasks: {
+        wait_step: {
+          action: 'single_suspend_action',
+          inputs: {},
+        },
+      },
+      flow: [{ do: 'wait_step' }],
+      outputs: { reply: '=$output.wait_step.reply' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { single_suspend_action: suspendAction },
+    });
+    const runner = new WorkflowRunner(compiled);
+    const startResult = await runner.start({
+      inputData: {},
+      context: new TestContext({}),
+    });
+    expect(startResult.status).toBe('suspended');
+    if (startResult.status !== 'suspended') {
+      throw new Error('Workflow did not suspend as expected');
+    }
+
+    const runtimeState = runner.getState() as ExecutionState;
+    const rebuilt = await WorkflowRunner.fromPersistedState(compiled, {
+      state: {
+        input: { ...runtimeState.input },
+        output: { ...runtimeState.output },
+        iteration: runtimeState.iteration,
+        accumulator: runtimeState.accumulator,
+        iterationStack: [...runtimeState.iterationStack],
+      },
+      context: new TestContext({}),
+      snapshot: startResult.snapshot,
+      suspension: {
+        stepId: startResult.step.id,
+        reason: 'different_reason',
+        data: startResult.data,
+        stepExecId: startResult.stepExecId,
+        suspendIndex: startResult.suspendIndex,
+        suspendKey: startResult.suspendKey,
+        awaitResults: startResult.awaitResults,
+      },
+    });
+    const resumeResult = await rebuilt.resume({
+      resumeData: { reply: 'value' },
+    });
+
+    expect(resumeResult.status).toBe('failed');
+    if (resumeResult.status === 'failed') {
+      expect((resumeResult.error as Error).name).toBe(
+        'NonDeterministicWorkflowError',
+      );
+      expect(String((resumeResult.error as Error).message)).toContain(
+        'expected reason \"different_reason\"',
+      );
     }
   });
 
