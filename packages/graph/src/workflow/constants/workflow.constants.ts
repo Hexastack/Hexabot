@@ -10,6 +10,7 @@ import {
   Bot,
   Brain,
   CircleStop,
+  ChartNoAxesGantt,
   Database,
   GitBranch,
   ListTree,
@@ -17,6 +18,7 @@ import {
   Plus,
   Repeat,
   Zap,
+  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -27,6 +29,7 @@ import {
   type INodeConfig,
   type WorkflowGraph,
 } from "../types/workflow-node.types";
+import type { EdgeInsertType } from "../types/workflow-path.types";
 import { getTaskAction, getTaskDescription } from "../utils/workflow-task.utils";
 
 const WORKFLOW_OPERATOR_GRAPH_THEME = {
@@ -58,6 +61,45 @@ const WORKFLOW_OPERATOR_GRAPH_THEME = {
     i18nTitle: "message.loop_indicator",
   },
 } as const;
+
+export type WorkflowInsertMenuItem = {
+  id: string;
+  type: EdgeInsertType;
+  Icon: LucideIcon;
+  color: string;
+  i18nTitle: string;
+};
+
+export const WORKFLOW_INSERT_MENU_ITEMS: WorkflowInsertMenuItem[] = [
+  {
+    id: "step",
+    type: "step",
+    Icon: ChartNoAxesGantt,
+    color: "#0288d1",
+    i18nTitle: "label.step_trace.type_step",
+  },
+  {
+    id: StepType.Conditional,
+    type: StepType.Conditional,
+    Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].Icon,
+    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].color,
+    i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].i18nTitle,
+  },
+  {
+    id: StepType.Loop,
+    type: StepType.Loop,
+    Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].Icon,
+    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].color,
+    i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].i18nTitle,
+  },
+  {
+    id: StepType.Parallel,
+    type: StepType.Parallel,
+    Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].Icon,
+    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].color,
+    i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].i18nTitle,
+  },
+];
 
 export const VIEWPORT_EPSILON = 0.01;
 export const EMPTY_WORKFLOW_GRAPH: WorkflowGraph = { nodes: [], edges: [] };

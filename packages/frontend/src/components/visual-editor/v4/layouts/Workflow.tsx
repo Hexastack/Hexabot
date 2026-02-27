@@ -14,7 +14,6 @@ import {
   type EdgeInsertType,
   type FlowStepPath,
   type MemoryDefinition,
-  type OnOpenInsertMenu,
   type WorkflowAction,
   type WorkflowGraphRef,
 } from "@hexabot-ai/graph";
@@ -51,11 +50,8 @@ import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
-import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
-
-import { WorkflowEmptyState } from "./WorkflowEmptyState";
 
 const StyledBox = styled(Box)(() => ({
   position: "relative",
@@ -116,15 +112,9 @@ export const Workflow = () => {
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
-  const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
-    useState<HTMLElement | null>(null);
-  const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
-    null,
-  );
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFlowId, setMenuFlowId] = useState<string | null>(null);
   const actionsDrawerId = "workflow-actions-drawer";
-  const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
   const unpublishLabel = t("button.unpublish");
   const workflowGraphRef = useRef<WorkflowGraphRef | null>(null);
@@ -174,27 +164,6 @@ export const Workflow = () => {
       handleInsert(insertType, null);
     },
     [handleInsert],
-  );
-  const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
-    (anchorEl, insertPath) => {
-      setInsertMenuAnchorEl(anchorEl);
-      setInsertMenuPath(insertPath);
-    },
-    [],
-  );
-  const handleCloseInsertMenu = useCallback(() => {
-    setInsertMenuAnchorEl(null);
-    setInsertMenuPath(null);
-  }, []);
-  const handleSharedInsert = useCallback(
-    (insertType: EdgeInsertType = "step") => {
-      if (!insertMenuPath) {
-        return;
-      }
-
-      handleInsert(insertType, insertMenuPath);
-    },
-    [handleInsert, insertMenuPath],
   );
   const handleActionSelect = useCallback(
     (action: IAction) => {
@@ -388,7 +357,8 @@ export const Workflow = () => {
           onViewportUpdate={debouncedWorkflowUpdate}
           definition={definition}
           memoryDefinitions={memoryDefinitions}
-          onOpenInsertMenu={handleOpenInsertMenu}
+          onInsertAtPath={handleInsert}
+          onInsertAtRoot={handleRootInsert}
           onSelectedNodeIdsChange={handleSelectedNodeIdsChange}
           translate={translateGraph}
           direction={direction}
@@ -402,11 +372,7 @@ export const Workflow = () => {
           selectedNodeIds={selectedNodeIds}
           onSelectNodes={selectNodes}
           workflow={workflow}
-        >
-          {isEmptyWorkflow && (
-            <WorkflowEmptyState onInsert={handleRootInsert} />
-          )}
-        </WorkflowGraphComponent>
+        />
         {workflow && (
           <WorkflowTitleOverlay>
             <WorkflowTitleBar
@@ -469,13 +435,6 @@ export const Workflow = () => {
             setPendingInsertPath(null);
             workflowGraphRef.current?.clearCenterAfterFirstInsert();
           }}
-        />
-        <WorkflowInsertMenu
-          id={sharedInsertMenuId}
-          anchorEl={insertMenuAnchorEl}
-          open={Boolean(insertMenuAnchorEl)}
-          onClose={handleCloseInsertMenu}
-          onInsert={handleSharedInsert}
         />
         <WorkflowBottomDrawer />
       </StyledBox>

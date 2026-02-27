@@ -57,6 +57,7 @@ import {
 } from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
+  EdgeInsertType,
   FlowStepPath,
   OnOpenInsertMenu,
 } from "../types/workflow-path.types";
@@ -70,11 +71,14 @@ import {
 } from "../utils/workflow-node.utils";
 
 import { WorkflowControls } from "./WorkflowControls";
+import { WorkflowEmptyState } from "./WorkflowEmptyState";
+import { WorkflowInsertContextMenu } from "./WorkflowInsertContextMenu";
 
 export type WorkflowGraphProps = {
   definition?: WorkflowDefinition;
   memoryDefinitions?: MemoryDefinition[];
-  onOpenInsertMenu?: OnOpenInsertMenu;
+  onInsertAtPath?: (insertType: EdgeInsertType, path: FlowStepPath) => void;
+  onInsertAtRoot?: (insertType: EdgeInsertType) => void;
   onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeClick?: NodeMouseHandler<Node>;
@@ -106,7 +110,8 @@ export const WorkflowGraphComponent = forwardRef<
     {
       definition,
       memoryDefinitions,
-      onOpenInsertMenu,
+      onInsertAtPath,
+      onInsertAtRoot,
       onViewportUpdate,
       onNodeClick,
       onSelectedNodeIdsChange,
@@ -151,6 +156,11 @@ export const WorkflowGraphComponent = forwardRef<
     );
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const selectedNodeIdsRef = useRef<string[]>([]);
+    const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
+      useState<HTMLElement | null>(null);
+    const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
+      null,
+    );
     const [graph, setGraph] = useState<WorkflowGraph>(EMPTY_WORKFLOW_GRAPH);
     const { animateFocus } = useFocusNode({
       queryNodeIds,
@@ -158,6 +168,27 @@ export const WorkflowGraphComponent = forwardRef<
       onSelectNodes,
       onFocused,
     });
+    const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
+      (anchorEl, path) => {
+        setInsertMenuAnchorEl(anchorEl);
+        setInsertMenuPath(path);
+      },
+      [],
+    );
+    const handleCloseInsertMenu = useCallback(() => {
+      setInsertMenuAnchorEl(null);
+      setInsertMenuPath(null);
+    }, []);
+    const handleInsertMenuItem = useCallback(
+      (insertType: EdgeInsertType) => {
+        if (!insertMenuPath || !onInsertAtPath) {
+          return;
+        }
+
+        onInsertAtPath(insertType, insertMenuPath);
+      },
+      [insertMenuPath, onInsertAtPath],
+    );
 
     useEffect(() => {
       let isCancelled = false;
@@ -216,8 +247,9 @@ export const WorkflowGraphComponent = forwardRef<
       isEmptyWorkflow,
       resolvedMemoryDefinitions,
     ]);
+    const insertMenuHandler = onInsertAtPath ? handleOpenInsertMenu : undefined;
     const edgesWithHandlers = useMemo(() => {
-      if (!onOpenInsertMenu) {
+      if (!insertMenuHandler) {
         return graph.edges;
       }
 
@@ -232,13 +264,13 @@ export const WorkflowGraphComponent = forwardRef<
           ...edge,
           data: {
             ...edgeData,
-            onOpenInsertMenu,
+            onOpenInsertMenu: insertMenuHandler,
           },
         };
       });
-    }, [graph.edges, onOpenInsertMenu]);
+    }, [graph.edges, insertMenuHandler]);
     const nodesWithHandlers = useMemo(() => {
-      if (!onOpenInsertMenu) {
+      if (!insertMenuHandler) {
         return graph.nodes;
       }
 
@@ -257,11 +289,11 @@ export const WorkflowGraphComponent = forwardRef<
           ...node,
           data: {
             ...nodeData,
-            onOpenInsertMenu,
+            onOpenInsertMenu: insertMenuHandler,
           },
         };
       });
-    }, [graph.nodes, onOpenInsertMenu]);
+    }, [graph.nodes, insertMenuHandler]);
     const {
       initialViewport,
       requestCenterAfterFirstInsert,
@@ -380,7 +412,18 @@ export const WorkflowGraphComponent = forwardRef<
             onRotate={onRotate}
           />
           <Background size={2} />
+
+          {isEmptyWorkflow && onInsertAtRoot ? (
+            <WorkflowEmptyState onInsert={onInsertAtRoot} />
+          ) : null}
           {children}
+          <WorkflowInsertContextMenu
+            id="workflow-insert-menu"
+            open={Boolean(insertMenuAnchorEl && insertMenuPath)}
+            anchorEl={insertMenuAnchorEl}
+            onClose={handleCloseInsertMenu}
+            onInsert={handleInsertMenuItem}
+          />
         </ReactFlow>
       </WorkflowGraphHostContext.Provider>
     );

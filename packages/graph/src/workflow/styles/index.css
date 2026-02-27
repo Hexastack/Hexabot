@@ -1,6 +1,7 @@
 @import url("./xy-theme.css");
 @import url("./button-edge.css");
 @import url("./node.css");
+@import url("./workflow-insert-menu.css");
 
 .react-flow__node-custom .react-flow__handle.connectable {
   border-color: var(--xy-theme-selected);

@@ -35,7 +35,6 @@ export const BranchPlaceholder: FC<
       if (!insertPath) {
         return;
       }
-
       onOpenInsertMenu?.(event.currentTarget, insertPath);
     },
     [insertPath, onOpenInsertMenu],
