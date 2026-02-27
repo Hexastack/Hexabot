@@ -13,31 +13,37 @@ import {
 } from "@hexabot-ai/agentic";
 import { alpha } from "@mui/material/styles";
 import { getNodesBounds, Position, type Edge } from "@xyflow/react";
+import type { ResizeControlDirection } from "@xyflow/system";
 import ELK from "elkjs/lib/elk.bundled.js";
 
-import { DEFAULT_NODE_PROPS } from "@/constants/workflow.constants";
+import {
+  DEFAULT_NODE_PROPS,
+  DIMENSIONS,
+  EDGES,
+  HIGHLIGHTS,
+  NODES,
+} from "@/constants/workflow.constants";
 
 import {
-  EEdgeType,
   EHandleType,
-  EIndicatorType,
   ELinkType,
   ENodeType,
   getWorkflowPortId,
   type GraphNode,
   type IBuildNodesAndEdgesProps,
+  type INodeConfig,
   type WorkflowNodePort,
   type WorkflowPort,
 } from "../types/workflow-node.types";
-import type { FlowStepPath } from "../types/workflow-path.types";
 
+import { decorateSemanticGraph } from "./graph-builder/decorate";
+import { projectSemanticGraph } from "./graph-builder/project";
+import { traverseWorkflow } from "./graph-builder/traverse";
+import type { GroupMeta } from "./graph-builder/types";
 import {
-  getGroupId,
-  getNodeDimensions,
-  walkSteps,
-  type TraversalContext,
-} from "./graph.utils";
-import { getHandleConfig } from "./handle.utils";
+  AGENT_ATTACHMENT_SOURCE_HANDLES,
+  resolveWorkflowPortRule,
+} from "./port-rules";
 
 const elk = new ELK();
 const GROUP_MIN_PADDING = 32;
@@ -47,11 +53,6 @@ const GROUP_ALPHA_DECAY_PER_LEVEL = 0.05;
 const GROUP_MIN_ALPHA = 0.08;
 const EXTRA_NODE_OFFSET = 80;
 const EXTRA_NODE_GAP = 20;
-const AGENT_ATTACHMENT_SOURCE_HANDLES = new Set<ELinkType>([
-  ELinkType.AGENT_TOOL,
-  ELinkType.AGENT_MODEL,
-  ELinkType.AGENT_MEMORY,
-]);
 const getGroupPadding = (basePadding: number, level: number) =>
   Math.max(
     GROUP_MIN_PADDING,
@@ -62,7 +63,14 @@ const getGroupBackgroundAlpha = (level: number) =>
     GROUP_MIN_ALPHA,
     GROUP_BASE_ALPHA - level * GROUP_ALPHA_DECAY_PER_LEVEL,
   );
-const isHorizontalDirection = (ctx: TraversalContext) =>
+
+type LayoutContext = {
+  config?: INodeConfig;
+};
+
+const getNodeDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
+  config?.dimensions?.[nodeType] || { height: 0, width: 0 };
+const isHorizontalDirection = (ctx: LayoutContext) =>
   (ctx.config?.direction ?? "horizontal") === "horizontal";
 const isAgentAttachmentEdge = (edge: Edge) =>
   AGENT_ATTACHMENT_SOURCE_HANDLES.has(edge.sourceHandle as ELinkType);
@@ -88,17 +96,16 @@ type ElkPort = {
   type: EHandleType;
 };
 
-const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
+const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
   const isVertical = !isHorizontalDirection(ctx);
   const direction = ctx.config?.direction ?? "horizontal";
   const elkDirection = isVertical ? "DOWN" : "RIGHT";
-  const nodeIds = new Set(nodes.map((n) => n.id));
+  const nodeIds = new Set(nodes.map((node) => node.id));
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
   const nodeDimensions = new Map(
     nodes.map((node) => [node.id, getNodeDimensions(node.type, ctx.config)]),
   );
   const nodePorts = new Map<string, ElkPort[]>();
-  // Reserve vertical space under agent nodes for post-layout attachment nodes.
 
   if (!isVertical) {
     const attachmentTargetsBySource = edges.reduce((acc, edge) => {
@@ -106,14 +113,14 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
         return acc;
       }
 
-      const src = nodeMap.get(edge.source);
-      const tgt = nodeMap.get(edge.target);
+      const sourceNode = nodeMap.get(edge.source);
+      const targetNode = nodeMap.get(edge.target);
 
-      if (!src || !tgt) {
+      if (!sourceNode || !targetNode) {
         return acc;
       }
 
-      acc.set(edge.source, [...(acc.get(edge.source) ?? []), tgt]);
+      acc.set(edge.source, [...(acc.get(edge.source) ?? []), targetNode]);
 
       return acc;
     }, new Map<string, GraphNode[]>());
@@ -149,15 +156,18 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       });
     });
   }
+
   const resolvePort = (
     ports: ElkPort[] | undefined,
     preferredHandle?: string | null,
     preferredType?: EHandleType,
   ) => {
-    if (!ports?.length) return;
+    if (!ports?.length) {
+      return;
+    }
 
     if (preferredHandle) {
-      const handlePort = ports.find((p) => p.handleId === preferredHandle);
+      const handlePort = ports.find((port) => port.handleId === preferredHandle);
 
       if (handlePort) {
         return handlePort.elkId;
@@ -165,7 +175,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
     }
 
     if (preferredType) {
-      const typedPort = ports.find((p) => p.type === preferredType);
+      const typedPort = ports.find((port) => port.type === preferredType);
 
       if (typedPort) {
         return typedPort.elkId;
@@ -189,29 +199,29 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
         "0.001",
       "org.eclipse.elk.randomSeed": "1",
     },
-    children: nodes.map((n) => {
+    children: nodes.map((node) => {
       const ports =
-        (n.data as { ports?: WorkflowNodePort<ENodeType>[] })?.ports?.map(
+        (node.data as { ports?: WorkflowNodePort<ENodeType>[] })?.ports?.map(
           (portDef) => {
             const handleId = getWorkflowPortId(portDef);
-            const handle = getHandleConfig(handleId, direction);
+            const portRule = resolveWorkflowPortRule(handleId, direction);
 
             return {
               handleId,
-              elkId: `${n.id}__${handleId}`,
-              side: getElkSide(handle.position),
-              type: handle.type,
+              elkId: `${node.id}__${handleId}`,
+              side: getElkSide(portRule.position),
+              type: portRule.type,
             } as ElkPort;
           },
         ) ?? [];
 
-      nodePorts.set(n.id, ports);
+      nodePorts.set(node.id, ports);
 
       const dimensions =
-        nodeDimensions.get(n.id) ?? getNodeDimensions(n.type, ctx.config);
+        nodeDimensions.get(node.id) ?? getNodeDimensions(node.type, ctx.config);
 
       return {
-        id: n.id,
+        id: node.id,
         ...dimensions,
         layoutOptions: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
@@ -223,64 +233,66 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: TraversalContext) => {
       };
     }),
     edges: edges
-      .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
-      .map((e) => {
+      .filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target))
+      .map((edge) => {
         return {
-          id: e.id,
+          id: edge.id,
           sources: [
             resolvePort(
-              nodePorts.get(e.source),
-              e.sourceHandle,
+              nodePorts.get(edge.source),
+              edge.sourceHandle,
               EHandleType.SOURCE,
-            ) ?? `${e.source}__out`,
+            ) ?? `${edge.source}__out`,
           ],
           targets: [
             resolvePort(
-              nodePorts.get(e.target),
-              e.targetHandle,
+              nodePorts.get(edge.target),
+              edge.targetHandle,
               EHandleType.TARGET,
-            ) ?? `${e.target}__in`,
+            ) ?? `${edge.target}__in`,
           ],
         };
       }),
   };
 };
-
-export const layoutNodesWithElk = async (
+const layoutNodesWithElk = async (
   nodes: GraphNode[],
   edges: Edge[],
-  ctx: TraversalContext,
+  ctx: LayoutContext,
 ) => {
-  const g = await elk.layout(toElk(nodes, edges, ctx));
-  const pos = new Map<string, { x: number; y: number }>();
+  const graph = await elk.layout(toElk(nodes, edges, ctx));
+  const positions = new Map<string, { x: number; y: number }>();
 
-  g.children?.forEach((c: any) => pos.set(c.id, { x: c.x, y: c.y }));
+  graph.children?.forEach((child: any) =>
+    positions.set(child.id, { x: child.x, y: child.y }),
+  );
 
-  return nodes.map((n) => ({
-    ...n,
-    position: pos.get(n.id) ?? n.position,
+  return nodes.map((node) => ({
+    ...node,
+    position: positions.get(node.id) ?? node.position,
   }));
 };
-
 const addExtraNodes = (
   nodes: GraphNode[],
   edges: Edge[],
-  ctx: TraversalContext,
+  ctx: LayoutContext,
 ) => {
-  const nodesById = new Map(nodes.map((n) => [n.id, n]));
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const isHorizontal = isHorizontalDirection(ctx);
   const adjacencyMap = edges.reduce((acc, { source, target }) => {
-    const src = nodesById.get(source);
-    const tgt = nodesById.get(target);
+    const sourceNode = nodesById.get(source);
+    const targetNode = nodesById.get(target);
 
-    if (src && tgt) {
-      acc.set(source, [...(acc.get(source) || []), tgt]);
+    if (sourceNode && targetNode) {
+      acc.set(source, [...(acc.get(source) || []), targetNode]);
     }
 
     return acc;
   }, new Map<string, GraphNode[]>());
 
-  if (adjacencyMap.size === 0) return nodes;
+  if (adjacencyMap.size === 0) {
+    return nodes;
+  }
 
   const overrides = new Map<
     string,
@@ -288,98 +300,96 @@ const addExtraNodes = (
   >();
 
   adjacencyMap.forEach((targets, sourceId) => {
-    const sourceNode = nodesById.get(sourceId)!;
-    const srcDim = getNodeDimensions(sourceNode.type, ctx.config);
-    const targetsWithDim = targets.map((t) => ({
-      node: t,
-      dim: getNodeDimensions(t.type, ctx.config),
+    const sourceNode = nodesById.get(sourceId);
+
+    if (!sourceNode) {
+      return;
+    }
+
+    const sourceDimensions = getNodeDimensions(sourceNode.type, ctx.config);
+    const targetsWithDimensions = targets.map((target) => ({
+      node: target,
+      dimensions: getNodeDimensions(target.type, ctx.config),
     }));
     const totalBreadth =
-      targetsWithDim.reduce(
-        (sum, t) => sum + (isHorizontal ? t.dim.width : t.dim.height),
+      targetsWithDimensions.reduce(
+        (sum, target) =>
+          sum + (isHorizontal ? target.dimensions.width : target.dimensions.height),
         0,
       ) +
       EXTRA_NODE_GAP * (targets.length - 1);
 
-    let currentCursor = isHorizontal
-      ? sourceNode.position.x + (srcDim.width - totalBreadth) / 2
-      : sourceNode.position.y + (srcDim.height - totalBreadth) / 2;
+    let cursor = isHorizontal
+      ? sourceNode.position.x + (sourceDimensions.width - totalBreadth) / 2
+      : sourceNode.position.y + (sourceDimensions.height - totalBreadth) / 2;
 
-    targetsWithDim.forEach(({ node, dim }) => {
+    targetsWithDimensions.forEach(({ node, dimensions }) => {
       overrides.set(node.id, {
         position: isHorizontal
           ? {
-              x: currentCursor,
-              y: sourceNode.position.y + srcDim.height + EXTRA_NODE_OFFSET,
+              x: cursor,
+              y: sourceNode.position.y + sourceDimensions.height + EXTRA_NODE_OFFSET,
             }
           : {
-              x: sourceNode.position.x - EXTRA_NODE_OFFSET - dim.width,
-              y: currentCursor,
+              x: sourceNode.position.x - EXTRA_NODE_OFFSET - dimensions.width,
+              y: cursor,
             },
         targetPosition: isHorizontal ? Position.Top : Position.Right,
         sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
       });
-      currentCursor += (isHorizontal ? dim.width : dim.height) + EXTRA_NODE_GAP;
+      cursor += (isHorizontal ? dimensions.width : dimensions.height) + EXTRA_NODE_GAP;
     });
   });
 
-  return nodes.map((n) => ({ ...n, ...overrides.get(n.id) }));
+  return nodes.map((node) => ({
+    ...node,
+    ...overrides.get(node.id),
+  }));
 };
+const getGroupNodes = (
+  nodes: GraphNode[],
+  groups: Map<string, GroupMeta>,
+  config: INodeConfig,
+) => {
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const groupNodes: GraphNode<ENodeType.GROUP>[] = [];
 
-export const getGroupNodes = (nodes: GraphNode[], ctx: TraversalContext) => {
-  const groups: GraphNode<ENodeType.GROUP>[] = [];
+  groups.forEach((group) => {
+    const groupMembers = [...group.memberNodeIds]
+      .map((nodeId) => nodesById.get(nodeId))
+      .filter((node): node is GraphNode => Boolean(node));
 
-  (nodes as GraphNode<ENodeType.OPERATOR>[])
-    .filter(
-      ({ data }) =>
-        data.operatorType &&
-        ctx.config?.highlights?.[data.operatorType],
-    )
-    .forEach((n) => {
-      if (!ctx.config) {
-        return;
-      }
-      const groupId = n.id;
-      const groupNodeId =
-        n.data.groupName || getGroupId(groupId, ctx.config.highlights);
+    if (!groupMembers.length) {
+      return;
+    }
 
-      if (!groupNodeId) {
-        return;
-      }
-      const color =
-        n.data.operatorType &&
-        ctx.config?.highlights?.[n.data.operatorType]?.color;
-      const basePadding =
-        (n.data.operatorType &&
-          ctx.config?.highlights?.[n.data.operatorType]?.padding) ||
-        0;
-      const level = n.data.level || 0;
-      const padding = getGroupPadding(basePadding, level);
-      const backgroundAlpha = getGroupBackgroundAlpha(level);
-      const groupNodes = nodes.filter((n) => n.id.startsWith(groupId));
-      const groupBounds = getNodesBounds(groupNodes);
+    const color = config.highlights?.[group.operatorType]?.color;
+    const basePadding = config.highlights?.[group.operatorType]?.padding || 0;
+    const padding = getGroupPadding(basePadding, group.level);
+    const backgroundAlpha = getGroupBackgroundAlpha(group.level);
+    const bounds = getNodesBounds(groupMembers);
 
-      groups.push({
-        ...DEFAULT_NODE_PROPS,
-        id: groupNodeId,
-        type: ENodeType.GROUP,
-        position: {
-          x: groupBounds.x - padding / 2,
-          y: groupBounds.y - padding / 2,
-        },
-        data: ctx.config?.nodes[ENodeType.GROUP],
-        style: {
-          width: groupBounds.width + padding,
-          height: groupBounds.height + padding,
-          zIndex: -1,
-          borderRadius: "1rem",
-          backgroundColor: color ? alpha(color, backgroundAlpha) : undefined,
-          border: `1px solid ${alpha("#0004", backgroundAlpha)}`,
-        },
-      });
+    groupNodes.push({
+      ...DEFAULT_NODE_PROPS,
+      id: group.id,
+      type: ENodeType.GROUP,
+      position: {
+        x: bounds.x - padding / 2,
+        y: bounds.y - padding / 2,
+      },
+      data: config.nodes[ENodeType.GROUP],
+      style: {
+        width: bounds.width + padding,
+        height: bounds.height + padding,
+        zIndex: -1,
+        borderRadius: "1rem",
+        backgroundColor: color ? alpha(color, backgroundAlpha) : undefined,
+        border: `1px solid ${alpha("#0004", backgroundAlpha)}`,
+      },
     });
+  });
 
-  return groups;
+  return groupNodes;
 };
 
 export const buildNodesAndEdges = async ({
@@ -390,113 +400,46 @@ export const buildNodesAndEdges = async ({
 }: IBuildNodesAndEdgesProps): Promise<
   { nodes: GraphNode[]; edges: Edge[] } | undefined
 > => {
-  if (!flow?.length) return;
-  const ctx: TraversalContext = {
-    tasks,
-    memoryDefinitions,
-    nodes: [],
-    edges: [],
-    nodePaths: new Map(),
-    placeholderNodeIds: new Set(),
-    config,
-  };
-  const endStepIds = walkSteps({
-    steps: flow,
-    level: 0,
-    prefix: "step",
-    incoming: [],
-    ctx,
-    path: ["flow"],
-  });
-
-  if (!ctx.config) {
-    return { nodes: [], edges: [] };
+  if (!flow?.length) {
+    return;
   }
 
-  const endIndicatorId = `${EIndicatorType.WORKFLOW_END}-${endStepIds.at(-1)}`;
-
-  ctx.nodes.push({
-    ...getNodeDimensions(ENodeType.INDICATOR, ctx.config),
-    ...DEFAULT_NODE_PROPS,
-    id: endIndicatorId,
-    type: ENodeType.INDICATOR,
-    position: { x: 0, y: 0 },
-    data: {
-      ...ctx.config?.nodes[ENodeType.INDICATOR][EIndicatorType.WORKFLOW_END],
-      indicator: EIndicatorType.WORKFLOW_END,
-    },
+  const traversal = traverseWorkflow({
+    flow,
+    config,
+    tasks,
+    memoryDefinitions,
   });
 
-  endStepIds.forEach((endEdgesId) => {
-    const isFromBranchPlaceholder = ctx.placeholderNodeIds.has(endEdgesId);
-    const groupName = getGroupId(endEdgesId, ctx.config?.highlights);
-    const groupPrefix = `${ENodeType.GROUP}-`;
-    const groupStepId =
-      groupName && groupName.startsWith(groupPrefix)
-        ? groupName.slice(groupPrefix.length)
-        : undefined;
-    const sourcePath = ctx.nodePaths.get(endEdgesId);
-    const baseInsertPath =
-      groupStepId && ctx.nodePaths.has(groupStepId)
-        ? ctx.nodePaths.get(groupStepId)
-        : sourcePath;
-    const lastIndex = baseInsertPath?.[baseInsertPath.length - 1];
-    const insertPath =
-      baseInsertPath && typeof lastIndex === "number"
-        ? [...baseInsertPath.slice(0, -1), lastIndex + 1]
-        : undefined;
-    const directEdgeInsertPath = groupName ? undefined : insertPath;
+  decorateSemanticGraph(traversal.registry);
 
-    ctx.edges.push({
-      id: `e-${endEdgesId}-${endIndicatorId}`,
-      source: endEdgesId,
-      target: endIndicatorId,
-      type: EEdgeType.EDGE_WITH_BUTTON,
-      ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-      hidden: isFromBranchPlaceholder,
-      data: directEdgeInsertPath
-        ? { insertPath: directEdgeInsertPath }
-        : undefined,
-    });
-
-    if (groupName) {
-      const groupToEndId = `e-${groupName}-${endIndicatorId}`;
-      const existingGroupEdge = ctx.edges.find((edge) => edge.id === groupToEndId);
-
-      if (existingGroupEdge) {
-        const edgeData = existingGroupEdge.data as
-          | { insertPath?: FlowStepPath }
-          | undefined;
-
-        if (!edgeData?.insertPath && insertPath) {
-          existingGroupEdge.data = { ...(edgeData || {}), insertPath };
-        }
-      } else {
-        ctx.edges.push({
-          id: groupToEndId,
-          source: groupName,
-          target: endIndicatorId,
-          type: EEdgeType.EDGE_WITH_BUTTON,
-          ...ctx.config?.edges?.[EEdgeType.EDGE_WITH_BUTTON],
-          data: insertPath ? { insertPath } : undefined,
-        });
-      }
-    }
+  const projected = projectSemanticGraph(traversal.registry, config);
+  const elkNodes = await layoutNodesWithElk(projected.nodes, projected.edges, {
+    config,
   });
-  const elkNodes = await layoutNodesWithElk(ctx.nodes, ctx.edges, ctx);
-  const nodes = addExtraNodes(
+  const positionedNodes = addExtraNodes(
     elkNodes,
-    ctx.edges.filter(isAgentAttachmentEdge),
-    ctx,
+    projected.edges.filter(isAgentAttachmentEdge),
+    {
+      config,
+    },
   );
-  const groupNodes = getGroupNodes(nodes, ctx);
-  const anchoredNodes = [...groupNodes, ...nodes];
+  const groupNodes = getGroupNodes(positionedNodes, traversal.groups, config);
 
   return {
-    edges: ctx.edges,
-    nodes: anchoredNodes,
+    edges: projected.edges,
+    nodes: [...groupNodes, ...positionedNodes],
   };
 };
+
+export const getWorkflowDefaultConfig = (direction?: ResizeControlDirection) =>
+  ({
+    direction,
+    dimensions: DIMENSIONS,
+    highlights: HIGHLIGHTS,
+    edges: EDGES,
+    nodes: NODES,
+  }) satisfies INodeConfig;
 
 export const getDefinition = (
   yaml: string,
@@ -509,6 +452,7 @@ export const getDefinition = (
       `Workflow validation failed: ${validation.errors.join("; ")}`,
     );
   }
+
   const { definition, flow } = compileWorkflow(validation.data, options);
 
   return { definition, flow };

@@ -59,9 +59,11 @@ import type {
   FlowStepPath,
   OnOpenInsertMenu,
 } from "../types/workflow-path.types";
-import { getWorkflowDefaultConfig } from "../utils/graph.utils";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
-import { buildNodesAndEdges } from "../utils/workflow-node.utils";
+import {
+  buildNodesAndEdges,
+  getWorkflowDefaultConfig,
+} from "../utils/workflow-node.utils";
 
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
 

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType } from "@hexabot-ai/agentic";
+import { StepType, type TaskDefinitions } from "@hexabot-ai/agentic";
 import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
@@ -40,11 +40,16 @@ import {
   ENodeType,
   type INodeConfig,
 } from "../components/visual-editor/v4/types/workflow-node.types";
-import {
-  getGroupId,
-  getTaskAction,
-  getTaskDescription,
-} from "../components/visual-editor/v4/utils/graph.utils";
+
+const getTaskDescription = (
+  taskName: string,
+  tasks?: TaskDefinitions,
+): string => {
+  return tasks?.[taskName]?.description ?? "No description provided.";
+};
+const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
+  return tasks?.[taskName]?.action;
+};
 
 export const DEFAULT_NODE_PROPS = {
   draggable: false,
@@ -161,15 +166,12 @@ export const NODES = {
     },
   },
   [ENodeType.TASK]: (id, taskName, tasks) => {
-    const groupName = getGroupId(id, HIGHLIGHTS);
-
     return {
       title: taskName,
       actionName: getTaskAction(taskName, tasks),
       description: getTaskDescription(taskName, tasks),
       ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
       theme: {},
-      groupName,
     };
   },
   [ENodeType.GROUP]: {
