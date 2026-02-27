@@ -24,11 +24,14 @@ import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import {
+  useStepDrawerClose,
+  withStepDrawerLayout,
+} from "../StepDrawer/withStepDrawerLayout";
 
 const DEFAULT_FOR_EACH_ITEM = "item";
 const DEFAULT_FOR_EACH_IN = "=[]";
@@ -287,14 +290,12 @@ const LoopFormDrawerContent = ({
     </Stack>
   );
 };
-const LoopFormDrawerLayout = withDrawerLayout(LoopFormDrawerContent);
+const LoopFormDrawerLayout = withStepDrawerLayout(LoopFormDrawerContent);
 
 export const LoopFormDrawer = () => {
   const { t } = useTranslate();
   const {
     selectedNodeIds,
-    selectedFlowId,
-    updateWorkflowURL,
     definition,
     updateDefinitionState,
     isSaving,
@@ -455,11 +456,7 @@ export const LoopFormDrawer = () => {
       };
     });
   };
-  const handleClose = () => {
-    if (selectedFlowId) {
-      updateWorkflowURL(selectedFlowId);
-    }
-  };
+  const handleClose = useStepDrawerClose();
   const handleSave = () => {
     if (
       !definition ||
@@ -516,7 +513,6 @@ export const LoopFormDrawer = () => {
       errors={errors}
       onFieldChange={handleFieldChange}
       open={open}
-      onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>

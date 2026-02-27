@@ -12,7 +12,7 @@ import {
   Port,
   WorkflowNodePort,
 } from "../../types/workflow-node.types";
-import { GenericHandle } from "../handlers/GenericHandle";
+import { GenericHandle } from '../handles/GenericHandle';
 
 export const GenericNodePorts = <T extends ENodeType = ENodeType>({
   getDisabled,

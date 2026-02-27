@@ -150,16 +150,28 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       [memoryDefinitionsSignature],
     );
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
-    const selectedNodeIdsRef = useRef<string[]>([]);
+    const selectedNodeIdsRef = useRef<string[]>(selectedNodeIds);
     const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
       useState<HTMLElement | null>(null);
     const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
       null,
     );
     const [graph, setGraph] = useState<WorkflowGraph>(EMPTY_WORKFLOW_GRAPH);
+    const handleQuerySelectionResolved = useCallback(
+      (nodeIds: string[]) => {
+        if (isSameSelection(nodeIds, selectedNodeIdsRef.current)) {
+          return;
+        }
+
+        selectedNodeIdsRef.current = nodeIds;
+        onSelectedNodeIdsChange?.(nodeIds);
+      },
+      [onSelectedNodeIdsChange],
+    );
     const { animateFocus } = useFocusNode({
       queryNodeIds,
       selectedNodeIds,
+      onQueryNodeIdsResolved: handleQuerySelectionResolved,
       onFocused,
     });
     const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
@@ -326,10 +338,8 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       lastViewportRef.current = initialViewport;
     }, [initialViewport.x, initialViewport.y, initialViewport.zoom]);
     useEffect(() => {
-      selectedNodeIdsRef.current = nodesWithHandlers
-        .filter((node) => Boolean(node.selected))
-        .map((node) => node.id);
-    }, [nodesWithHandlers]);
+      selectedNodeIdsRef.current = selectedNodeIds;
+    }, [selectedNodeIds]);
 
     const handleMoveEnd = useCallback(
       (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {

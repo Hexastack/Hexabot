@@ -21,10 +21,13 @@ import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import {
+  useStepDrawerClose,
+  withStepDrawerLayout,
+} from "../StepDrawer/withStepDrawerLayout";
 
 type ParallelStep = Extract<FlowStep, { parallel: unknown }>;
 type ParallelStrategy = "wait_all" | "wait_any";
@@ -127,14 +130,12 @@ const ParallelFormDrawerContent = ({
     </FormControl>
   );
 };
-const ParallelFormDrawerLayout = withDrawerLayout(ParallelFormDrawerContent);
+const ParallelFormDrawerLayout = withStepDrawerLayout(ParallelFormDrawerContent);
 
 export const ParallelFormDrawer = () => {
   const { t } = useTranslate();
   const {
     selectedNodeIds,
-    selectedFlowId,
-    updateWorkflowURL,
     definition,
     updateDefinitionState,
     isSaving,
@@ -191,11 +192,7 @@ export const ParallelFormDrawer = () => {
     ],
     [t],
   );
-  const handleClose = () => {
-    if (selectedFlowId) {
-      updateWorkflowURL(selectedFlowId);
-    }
-  };
+  const handleClose = useStepDrawerClose();
   const handleSave = () => {
     if (!definition || !stepPath || !selectedStep) {
       return;
@@ -234,7 +231,6 @@ export const ParallelFormDrawer = () => {
       onStrategyChange={setStrategy}
       emptyStateLabel={t("visual_editor.parallel_drawer.form.empty_state")}
       open={open}
-      onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>

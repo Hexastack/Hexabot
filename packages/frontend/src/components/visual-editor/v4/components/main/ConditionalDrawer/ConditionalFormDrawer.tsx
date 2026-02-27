@@ -16,11 +16,14 @@ import { useReactFlow } from "@xyflow/react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import {
+  useStepDrawerClose,
+  withStepDrawerLayout,
+} from "../StepDrawer/withStepDrawerLayout";
 
 const DEFAULT_CONDITION = "=false";
 
@@ -154,14 +157,14 @@ const ConditionalFormDrawerContent = ({
     </Stack>
   );
 };
-const ConditionalFormDrawerLayout = withDrawerLayout(ConditionalFormDrawerContent);
+const ConditionalFormDrawerLayout = withStepDrawerLayout(
+  ConditionalFormDrawerContent,
+);
 
 export const ConditionalFormDrawer = () => {
   const { t } = useTranslate();
   const {
     selectedNodeIds,
-    selectedFlowId,
-    updateWorkflowURL,
     definition,
     updateDefinitionState,
     isSaving,
@@ -204,11 +207,7 @@ export const ConditionalFormDrawer = () => {
   const hasInvalidCondition = normalizedConditions.some(
     (condition) => !condition || !condition.startsWith("="),
   );
-  const handleClose = () => {
-    if (selectedFlowId) {
-      updateWorkflowURL(selectedFlowId);
-    }
-  };
+  const handleClose = useStepDrawerClose();
   const handleSave = () => {
     if (!definition || !stepPath || !selectedStep || hasInvalidCondition) {
       return;
@@ -282,7 +281,6 @@ export const ConditionalFormDrawer = () => {
         })
       }
       open={open}
-      onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>

@@ -25,6 +25,7 @@ import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
 import { getSchemaPropertyNames } from "../../../../utils/schema-defaults.utils";
+import { useStepDrawerClose } from "../../StepDrawer/withStepDrawerLayout";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";
 import type { ActionFormDrawerHeaderProps } from "./ActionFormDrawerHeader";
@@ -48,7 +49,6 @@ type UseActionFormDrawerControllerResult = {
   open: boolean;
   panelKeyBase: string;
   actionSettingsData: Record<string, unknown>;
-  onClose: () => void;
 };
 
 type SplitTaskSettingsResult = {
@@ -97,8 +97,6 @@ export const useActionFormDrawerController =
     const { t } = useTranslate();
     const {
       selectedNodeIds,
-      selectedFlowId,
-      updateWorkflowURL,
       definition,
       updateDefinitionState,
       isSaving,
@@ -237,11 +235,7 @@ export const useActionFormDrawerController =
       }
     }, [isUsingWorkflowExecutionDefaults]);
 
-    const handleClose = () => {
-      if (selectedFlowId) {
-        updateWorkflowURL(selectedFlowId);
-      }
-    };
+    const handleClose = useStepDrawerClose();
     const handleExecutionSettingsModeChange = (
       useWorkflowDefaults: boolean,
     ) => {
@@ -388,6 +382,5 @@ export const useActionFormDrawerController =
       open,
       panelKeyBase,
       actionSettingsData,
-      onClose: handleClose,
     };
   };

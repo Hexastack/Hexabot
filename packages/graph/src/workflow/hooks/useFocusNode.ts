@@ -6,19 +6,19 @@
 
 import {
   applyNodeChanges,
-  type Node,
   type NodeChange,
   useNodesInitialized,
   useReactFlow,
 } from '@xyflow/react';
 import type { Padding } from '@xyflow/system';
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { GraphNode } from '../types/workflow-node.types';
 
 type UseFocusNodeProps = {
   queryNodeIds?: string;
   selectedNodeIds: string[];
+  onQueryNodeIdsResolved?: (nodeIds: string[]) => void;
   onFocused?: () => void;
   fitViewPadding?: Padding;
   fitViewDuration?: number;
@@ -27,43 +27,42 @@ type UseFocusNodeProps = {
 export const useFocusNode = ({
   queryNodeIds,
   selectedNodeIds,
+  onQueryNodeIdsResolved,
   onFocused,
   fitViewPadding = '150px',
   fitViewDuration = 200,
 }: UseFocusNodeProps) => {
-  const { getNodes, setNodes } = useReactFlow<GraphNode>();
-  const onSelectNodes = (nodeIds: string[]): void => {
-    const changes = getNodes().map(({ id }) => ({
-      id,
-      type: 'select',
-      selected: nodeIds.includes(id),
-    })) as NodeChange<GraphNode>[];
+  const { getNode, getNodes, fitView, setNodes } = useReactFlow<GraphNode>();
+  const onSelectNodes = useCallback(
+    (nodeIds: string[]): void => {
+      const changes = getNodes().map(({ id }) => ({
+        id,
+        type: 'select',
+        selected: nodeIds.includes(id),
+      })) as NodeChange<GraphNode>[];
 
-    setNodes((nodes) => applyNodeChanges<GraphNode>(changes, nodes));
-  };
-  const { getNode, fitView } = useReactFlow();
+      setNodes((nodes) => applyNodeChanges<GraphNode>(changes, nodes));
+    },
+    [getNodes, setNodes],
+  );
   const nodesInitialized = useNodesInitialized();
-  const animateFocus = async (nodeIds: string[] = []) => {
-    onSelectNodes(nodeIds);
+  const queryRequestedNodeIds = useMemo(
+    () => queryNodeIds?.split(',').filter(Boolean) ?? [],
+    [queryNodeIds],
+  );
+  const resolveExistingNodes = useCallback(
+    (nodeIds: string[]): GraphNode[] =>
+      nodeIds
+        .map((selectedNodeId) => getNode(selectedNodeId))
+        .filter((node): node is GraphNode => Boolean(node)),
+    [getNode],
+  );
+  const animateFocus = async (nodeIds?: string[]) => {
+    const nodes = resolveExistingNodes(nodeIds ?? selectedNodeIds);
 
-    if (nodeIds.length === 1) {
-      const node = getNode(nodeIds[0]);
-
-      if (node) {
-        await fitView({
-          nodes: [node],
-          padding: fitViewPadding,
-          duration: fitViewDuration,
-        });
-        onFocused?.();
-      }
-
-      return;
+    if (nodeIds !== undefined) {
+      onSelectNodes(nodes.map(({ id }) => id));
     }
-
-    const nodes = selectedNodeIds
-      .map((selectedNodeId) => getNode(selectedNodeId))
-      .filter((node): node is Node => Boolean(node));
 
     if (!nodes.length) {
       return;
@@ -76,17 +75,33 @@ export const useFocusNode = ({
     });
     onFocused?.();
   };
-  const queryNodeIdsParams = useMemo(
+  const queryResolvedNodeIds = useMemo(
     () =>
-      !queryNodeIds?.length || !nodesInitialized
+      !queryRequestedNodeIds.length || !nodesInitialized
         ? []
-        : queryNodeIds.split(',').filter((nodeId) => Boolean(getNode(nodeId))),
-    [getNode, nodesInitialized, queryNodeIds],
+        : queryRequestedNodeIds.filter((nodeId) => Boolean(getNode(nodeId))),
+    [getNode, nodesInitialized, queryRequestedNodeIds],
   );
 
   useEffect(() => {
-    onSelectNodes(queryNodeIdsParams);
-  }, [onSelectNodes, queryNodeIdsParams]);
+    if (!nodesInitialized) {
+      return;
+    }
+
+    if (!queryRequestedNodeIds.length) {
+      onSelectNodes([]);
+
+      return;
+    }
+    onSelectNodes(queryResolvedNodeIds);
+    onQueryNodeIdsResolved?.(queryResolvedNodeIds);
+  }, [
+    nodesInitialized,
+    onQueryNodeIdsResolved,
+    onSelectNodes,
+    queryResolvedNodeIds,
+    queryRequestedNodeIds.length,
+  ]);
 
   return {
     animateFocus,
