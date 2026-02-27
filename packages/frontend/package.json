@@ -29,6 +29,7 @@
     "@emotion/styled": "^11.11.5",
     "@fontsource/roboto": "^5.1.0",
     "@hexabot-ai/agentic": "workspace:*",
+    "@hexabot-ai/graph": "workspace:*",
     "@hexabot-ai/widget": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.0.0",
