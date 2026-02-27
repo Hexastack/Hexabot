@@ -42,7 +42,12 @@ describe('ContentTypeRepository (TypeORM)', () => {
     it('removes related contents when deleting a content type', async () => {
       const created = await repository.create({
         name: `cascade-${randomUUID()}`,
-        schema: {},
+        schema: {
+          properties: {
+            title: { type: 'string', title: 'Title' },
+            status: { type: 'boolean', title: 'Status' },
+          },
+        },
       });
 
       await contentRepository.create({

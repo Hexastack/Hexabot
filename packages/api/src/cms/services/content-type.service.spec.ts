@@ -57,10 +57,7 @@ describe('ContentTypeService (TypeORM)', () => {
     it('applies default fields when none are provided', async () => {
       const payload = {
         name: 'Blog posts',
-        schema: {
-          type: 'object',
-          properties: {},
-        },
+        schema: {},
       } as ContentTypeDtoConfig['create'];
       const created = await service.create(payload);
       createdIds.push(created.id);

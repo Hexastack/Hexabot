@@ -65,7 +65,9 @@ describe('ContentTypeController (TypeORM)', () => {
         name: 'Articles',
         schema: {
           type: 'object',
-          properties: {},
+          properties: {
+            body: { type: 'string', title: 'Body' },
+          },
         },
       } as ContentTypeCreateDto;
       const created = await controller.create(payload);
@@ -119,7 +121,11 @@ describe('ContentTypeController (TypeORM)', () => {
     it('updates an existing content type', async () => {
       const created = await controller.create({
         name: 'Docs',
-        schema: {},
+        schema: {
+          properties: {
+            description: { type: 'string', title: 'Description' },
+          },
+        },
       });
       createdIds.add(created.id);
 
