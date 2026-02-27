@@ -72,7 +72,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
-  const [toFocusIds, setToFocusIds] = useState<string[]>([]);
   const getCentroid = (): XYPosition => {
     if (typeof window === "undefined") return { x: 0, y: 0 };
     const screenWidth = window.innerWidth;
@@ -290,10 +289,8 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     <WorkflowContext.Provider
       value={{
         getQuery,
-        toFocusIds,
         selectNodes,
         getCentroid,
-        setToFocusIds,
         openSearchPanel,
         selectedNodeIds,
         getWorkflowFromCache,

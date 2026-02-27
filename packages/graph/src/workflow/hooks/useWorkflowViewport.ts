@@ -1,42 +1,44 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowGraph } from "@hexabot-ai/graph";
 import {
   getNodesBounds,
   getViewportForBounds,
   useNodesInitialized,
   useReactFlow,
   useStore,
+  type Node,
   type Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { IWorkflow } from "@/types/workfow.types";
-
-import { useFocusNode } from "./useFocusNode";
-import { useWorkflow } from "./useWorkflow";
-
 const EMPTY_WORKFLOW_SYNC_KEY = "__workflow-empty__";
 
-export const useWorkflowViewport = ({
+export type WorkflowViewportState = {
+  id?: string | null;
+  x?: number | string | null;
+  y?: number | string | null;
+  zoom?: number | string | null;
+};
+
+type UseWorkflowViewportProps<TNode extends Node = Node> = {
+  workflow?: WorkflowViewportState | null;
+  isEmptyWorkflow: boolean;
+  graphNodes: TNode[];
+};
+
+export const useWorkflowViewport = <TNode extends Node = Node>({
   workflow,
   isEmptyWorkflow,
   graphNodes,
-}: {
-  workflow?: IWorkflow | null;
-  isEmptyWorkflow: boolean;
-  graphNodes: WorkflowGraph["nodes"];
-}) => {
+}: UseWorkflowViewportProps<TNode>) => {
   const { setViewport, getViewport } = useReactFlow();
   const workflowWidth = useStore((state) => state.domNode?.clientWidth ?? 0);
   const workflowHeight = useStore((state) => state.domNode?.clientHeight ?? 0);
   const nodesInitialized = useNodesInitialized();
-  const { toFocusIds } = useWorkflow();
-  const { animateFocus } = useFocusNode();
   const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
     useState(false);
   const viewportInitializedForFlowRef = useRef<string | null>(null);
@@ -80,24 +82,15 @@ export const useWorkflowViewport = ({
       return;
     }
 
-    if (toFocusIds.length) {
-      viewportInitializedForFlowRef.current = viewportSyncKey;
-      animateFocus(toFocusIds);
-
-      return;
-    }
-
     if (viewportInitializedForFlowRef.current === viewportSyncKey) {
       return;
     }
 
     syncViewportForFlow(initialViewport);
   }, [
-    animateFocus,
     initialViewport,
     nodesInitialized,
     syncViewportForFlow,
-    toFocusIds,
     viewportSyncKey,
   ]);
 
@@ -147,6 +140,5 @@ export const useWorkflowViewport = ({
     initialViewport,
     requestCenterAfterFirstInsert,
     clearCenterAfterFirstInsert,
-    animateFocus,
   };
 };

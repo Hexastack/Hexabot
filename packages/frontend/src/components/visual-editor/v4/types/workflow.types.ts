@@ -26,8 +26,6 @@ export interface IWorkflowContext {
   selectedNodeIds: string[];
   setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;
   selectedFlowId?: string;
-  toFocusIds: string[];
-  setToFocusIds: Dispatch<SetStateAction<string[]>>;
   openSearchPanel: boolean;
   setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;
   getQuery: (key: string) => string;

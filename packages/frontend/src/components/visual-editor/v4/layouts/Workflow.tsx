@@ -10,26 +10,21 @@ import {
   type Settings,
 } from "@hexabot-ai/agentic";
 import {
-  ENodeType,
   WorkflowGraphComponent,
-  buildNodesAndEdges,
-  getWorkflowDefaultConfig,
-  type BranchPlaceholderData,
-  type EdgeInsertData,
   type EdgeInsertType,
   type FlowStepPath,
   type MemoryDefinition,
   type OnOpenInsertMenu,
   type WorkflowAction,
-  type WorkflowGraph,
+  type WorkflowGraphRef,
 } from "@hexabot-ai/graph";
 import { Box, Button, Stack, styled } from "@mui/material";
-import { Background, Controls } from "@xyflow/react";
 import { CloudOff, CloudUpload } from "lucide-react";
 import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
@@ -38,14 +33,13 @@ import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
-import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
-import { RotateButton } from "../components/controls/RotateButton";
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
@@ -59,7 +53,6 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useWorkflow } from "../hooks/useWorkflow";
-import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
 
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
@@ -89,15 +82,19 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
 
 export const Workflow = () => {
   const { t } = useTranslate();
+  const { query } = useAppRouter();
+  const { nodeIds } = query;
   const {
     workflow,
     workflows,
     selectedFlowId,
     direction,
+    selectedNodeIds,
+    selectNodes,
     debouncedWorkflowUpdate,
+    updateWorkflow,
     updateWorkflowURL,
     definition,
-    flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
     executionStates,
@@ -115,11 +112,7 @@ export const Workflow = () => {
   const { actions, actionsByName } = useWorkflowActionsCatalog();
   const dialogs = useDialogs();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
-  const [graph, setGraph] = useState<WorkflowGraph>({
-    nodes: [],
-    edges: [],
-  });
-  const isEmptyWorkflow = graph.nodes.length < 3;
+  const isEmptyWorkflow = !definition?.flow?.length;
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
@@ -134,16 +127,7 @@ export const Workflow = () => {
   const sharedInsertMenuId = "workflow-insert-menu";
   const publishLabel = t("button.publish");
   const unpublishLabel = t("button.unpublish");
-  const {
-    initialViewport,
-    requestCenterAfterFirstInsert,
-    clearCenterAfterFirstInsert,
-    animateFocus,
-  } = useWorkflowViewport({
-    workflow,
-    isEmptyWorkflow,
-    graphNodes: graph.nodes,
-  });
+  const workflowGraphRef = useRef<WorkflowGraphRef | null>(null);
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
@@ -155,7 +139,6 @@ export const Workflow = () => {
     isDefinitionSaving ||
     isCurrentVersionPublished;
   const isUnpublishDisabled = !hasPublishedVersion || isDefinitionSaving;
-  const tasks = definition?.tasks;
   const handleInsert = useCallback(
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
       if (insertType === StepType.Conditional) {
@@ -187,10 +170,10 @@ export const Workflow = () => {
   );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
-      requestCenterAfterFirstInsert();
+      workflowGraphRef.current?.requestCenterAfterFirstInsert();
       handleInsert(insertType, null);
     },
-    [handleInsert, requestCenterAfterFirstInsert],
+    [handleInsert],
   );
   const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
     (anchorEl, insertPath) => {
@@ -224,91 +207,30 @@ export const Workflow = () => {
   const getMemoryDefinitionsFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
+  const memoryDefinitions = useMemo(
+    () =>
+      (workflow?.memoryDefinitions ?? []).reduce<MemoryDefinition[]>(
+        (acc, memoryDefinitionId) => {
+          const memoryDefinition = getMemoryDefinitionsFromCache(
+            memoryDefinitionId,
+          ) as MemoryDefinition | undefined;
 
-  useEffect(() => {
-    let isCancelled = false;
+          if (memoryDefinition) {
+            acc.push(memoryDefinition);
+          }
 
-    const layoutGraph = async () => {
-      if (!flow?.length) {
-        setGraph({ nodes: [], edges: [] });
-
-        return;
-      }
-
-      try {
-        const memoryDefinitions = (workflow?.memoryDefinitions || []).map(
-          getMemoryDefinitionsFromCache,
-        ) as MemoryDefinition[];
-        const config = getWorkflowDefaultConfig(direction);
-        const layoutedGraph = await buildNodesAndEdges({
-          config,
-          flow,
-          tasks,
-          memoryDefinitions,
-        });
-
-        if (!isCancelled) {
-          setGraph(layoutedGraph ?? { nodes: [], edges: [] });
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to layout workflow graph:", error);
-        if (!isCancelled) {
-          setGraph({ nodes: [], edges: [] });
-        }
-      }
-    };
-
-    layoutGraph();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [flow, direction, tasks]);
+          return acc;
+        },
+        [],
+      ),
+    [getMemoryDefinitionsFromCache, workflow?.memoryDefinitions],
+  );
 
   useEffect(() => {
     if (!isEmptyWorkflow) {
       setActionsDrawerOpen(false);
     }
   }, [isEmptyWorkflow]);
-  const edgesWithHandlers = useMemo(() => {
-    return graph.edges.map((edge) => {
-      const edgeData = edge.data as EdgeInsertData | undefined;
-
-      if (!edgeData?.insertPath) {
-        return edge;
-      }
-
-      return {
-        ...edge,
-        data: {
-          ...edgeData,
-          onOpenInsertMenu: handleOpenInsertMenu,
-        },
-      };
-    });
-  }, [graph.edges, handleOpenInsertMenu]);
-  const nodesWithHandlers = useMemo(() => {
-    return graph.nodes.map((node) => {
-      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
-        return node;
-      }
-
-      const nodeData = node.data as BranchPlaceholderData | undefined;
-
-      if (!nodeData?.insertPath) {
-        return node;
-      }
-
-      return {
-        ...node,
-        data: {
-          ...nodeData,
-          onOpenInsertMenu: handleOpenInsertMenu,
-        },
-      };
-    });
-  }, [graph.nodes, handleOpenInsertMenu]);
   const handleSelectedNodeIdsChange = useCallback(
     (nodeIds: string[]) => {
       setSelectedNodeIds(nodeIds);
@@ -317,6 +239,33 @@ export const Workflow = () => {
       }
     },
     [selectedFlowId, setSelectedNodeIds, updateWorkflowURL],
+  );
+  const handleRotate = useCallback(
+    async (nextDirection: "horizontal" | "vertical") => {
+      if (!selectedFlowId) {
+        return false;
+      }
+
+      return new Promise<boolean>((resolve) => {
+        updateWorkflow(
+          {
+            id: selectedFlowId,
+            params: {
+              direction: nextDirection,
+            },
+          },
+          {
+            onSuccess: () => {
+              resolve(true);
+            },
+            onError: () => {
+              resolve(false);
+            },
+          },
+        );
+      });
+    },
+    [selectedFlowId, updateWorkflow],
   );
   const translateGraph = useCallback(
     (key: string, options?: Record<string, unknown>) => {
@@ -435,10 +384,11 @@ export const Workflow = () => {
       <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
       <StyledBox>
         <WorkflowGraphComponent
-          onViewport={debouncedWorkflowUpdate}
-          defaultEdges={edgesWithHandlers || []}
-          defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
-          defaultViewport={initialViewport}
+          ref={workflowGraphRef}
+          onViewportUpdate={debouncedWorkflowUpdate}
+          definition={definition}
+          memoryDefinitions={memoryDefinitions}
+          onOpenInsertMenu={handleOpenInsertMenu}
           onSelectedNodeIdsChange={handleSelectedNodeIdsChange}
           translate={translateGraph}
           direction={direction}
@@ -447,19 +397,12 @@ export const Workflow = () => {
           }
           executionStates={executionStates}
           onRemoveStep={removeStepAtPath}
+          onRotate={handleRotate}
+          queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
+          selectedNodeIds={selectedNodeIds}
+          onSelectNodes={selectNodes}
+          workflow={workflow}
         >
-          <Controls
-            onFitView={animateFocus}
-            fitViewOptions={{ duration: 200 }}
-            style={{
-              overflow: "hidden",
-              borderRadius: theme.shape.borderRadius,
-            }}
-          >
-            <RotateButton />
-          </Controls>
-
-          <Background size={2} />
           {isEmptyWorkflow && (
             <WorkflowEmptyState onInsert={handleRootInsert} />
           )}
@@ -524,7 +467,7 @@ export const Workflow = () => {
           onClose={() => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
-            clearCenterAfterFirstInsert();
+            workflowGraphRef.current?.clearCenterAfterFirstInsert();
           }}
         />
         <WorkflowInsertMenu

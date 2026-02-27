@@ -5,9 +5,13 @@
  */
 
 export { WorkflowGraphComponent } from "./components/WorkflowGraph";
-export type { WorkflowGraphProps } from "./components/WorkflowGraph";
+export type { WorkflowGraphProps, WorkflowGraphRef } from "./components/WorkflowGraph";
 export * from "./components/PulseIconButton";
+export * from "./components/RotateButton";
+export * from "./components/WorkflowControls";
 export * from "./contexts/workflow-graph-host.context";
+export * from "./hooks/useFocusNode";
+export * from "./hooks/useWorkflowViewport";
 export * from "./types/workflow-node.types";
 export * from "./types/workflow-path.types";
 export * from "./utils/workflow-node.utils";

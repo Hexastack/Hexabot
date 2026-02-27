@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType, type TaskDefinitions } from "@hexabot-ai/agentic";
+import { StepType } from "@hexabot-ai/agentic";
 import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
@@ -25,7 +25,9 @@ import {
   ELinkType,
   ENodeType,
   type INodeConfig,
+  type WorkflowGraph,
 } from "../types/workflow-node.types";
+import { getTaskAction, getTaskDescription } from "../utils/workflow-task.utils";
 
 const WORKFLOW_OPERATOR_GRAPH_THEME = {
   [StepType.Parallel]: {
@@ -56,15 +58,9 @@ const WORKFLOW_OPERATOR_GRAPH_THEME = {
     i18nTitle: "message.loop_indicator",
   },
 } as const;
-const getTaskDescription = (
-  taskName: string,
-  tasks?: TaskDefinitions,
-): string => {
-  return tasks?.[taskName]?.description ?? "No description provided.";
-};
-const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
-  return tasks?.[taskName]?.action;
-};
+
+export const VIEWPORT_EPSILON = 0.01;
+export const EMPTY_WORKFLOW_GRAPH: WorkflowGraph = { nodes: [], edges: [] };
 
 export const DEFAULT_NODE_PROPS = {
   draggable: false,

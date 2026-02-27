@@ -24,6 +24,7 @@ import {
   type WorkflowNodePort,
 } from "../../types/workflow-node.types";
 import type { FlowStepPath } from "../../types/workflow-path.types";
+import { getTaskAction, getTaskDescription } from "../workflow-task.utils";
 
 import {
   END_INDICATOR_ID,
@@ -88,15 +89,6 @@ const getNextInsertPath = (stepPath: FlowStepPath): FlowStepPath | undefined => 
   return [...stepPath.slice(0, -1), tail + 1];
 };
 const getGroupName = (groupPath: string[]) => groupPath[groupPath.length - 1];
-const getTaskDescription = (
-  taskName: string,
-  tasks?: TaskDefinitions,
-): string => {
-  return tasks?.[taskName]?.description ?? "No description provided.";
-};
-const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
-  return tasks?.[taskName]?.action;
-};
 const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
   const settings = tasks?.[taskName]?.settings as Record<string, unknown> | undefined;
   const tools = Array.isArray(settings?.tools)
