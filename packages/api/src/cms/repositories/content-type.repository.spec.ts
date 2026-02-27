@@ -8,7 +8,6 @@ import { randomUUID } from 'crypto';
 
 import { TestingModule } from '@nestjs/testing';
 
-import { FieldType } from '@/setting/types';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -19,19 +18,6 @@ describe('ContentTypeRepository (TypeORM)', () => {
   let module: TestingModule;
   let repository: ContentTypeRepository;
   let contentRepository: ContentRepository;
-
-  const buildRequiredFields = () => [
-    {
-      name: 'title' as const,
-      label: 'Title',
-      type: FieldType.text as const,
-    },
-    {
-      name: 'status' as const,
-      label: 'Status',
-      type: FieldType.checkbox as const,
-    },
-  ];
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -56,20 +42,20 @@ describe('ContentTypeRepository (TypeORM)', () => {
     it('removes related contents when deleting a content type', async () => {
       const created = await repository.create({
         name: `cascade-${randomUUID()}`,
-        fields: buildRequiredFields(),
+        schema: {},
       });
 
       await contentRepository.create({
         title: 'related-content-a',
         contentType: created.id,
         status: true,
-        dynamicFields: {},
+        properties: {},
       });
       await contentRepository.create({
         title: 'related-content-b',
         contentType: created.id,
         status: true,
-        dynamicFields: {},
+        properties: {},
       });
 
       const result = await repository.deleteOne(created.id);

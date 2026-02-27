@@ -63,8 +63,8 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
   @Column({ default: true })
   status!: boolean;
 
-  @JsonColumn({ name: 'dynamic_fields', nullable: true })
-  dynamicFields!: Record<string, any> | null;
+  @JsonColumn({ name: 'properties', nullable: true })
+  properties!: Record<string, any> | null;
 
   @Column({ type: 'text', nullable: true })
   rag?: string | null;
@@ -93,18 +93,18 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
     return {
       id: content.id,
       title: content.title,
-      ...(content.dynamicFields ?? {}),
+      ...(content.properties ?? {}),
     };
   }
 
   @BeforeInsert()
   @BeforeUpdate()
-  applyDynamicFieldsTransformation(): void {
-    const dynamicFields = this.dynamicFields ?? {};
-    this.rag = this.stringifyDynamicFields(dynamicFields);
+  applyPropertiesTransformation(): void {
+    const properties = this.properties ?? {};
+    this.rag = this.stringifyProperties(properties);
   }
 
-  private stringifyDynamicFields(obj: Record<string, any>): string {
+  private stringifyProperties(obj: Record<string, any>): string {
     return Object.entries(obj).reduce(
       (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
       '',

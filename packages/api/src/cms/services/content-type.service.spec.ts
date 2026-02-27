@@ -6,7 +6,6 @@
 
 import { TestingModule } from '@nestjs/testing';
 
-import { FieldType } from '@/setting/types';
 import {
   contentTypeOrmFixtures,
   installContentTypeFixturesTypeOrm,
@@ -14,7 +13,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentField } from '../dto/contentType.dto';
+import { ContentTypeDtoConfig } from '../dto/contentType.dto';
 
 import { ContentTypeService } from './content-type.service';
 
@@ -56,7 +55,13 @@ describe('ContentTypeService (TypeORM)', () => {
 
   describe('create', () => {
     it('applies default fields when none are provided', async () => {
-      const payload = { name: 'Blog posts' };
+      const payload = {
+        name: 'Blog posts',
+        schema: {
+          type: 'object',
+          properties: {},
+        },
+      } as ContentTypeDtoConfig['create'];
       const created = await service.create(payload);
       createdIds.push(created.id);
 
@@ -64,17 +69,11 @@ describe('ContentTypeService (TypeORM)', () => {
         id: expect.any(String),
         name: payload.name,
       });
-      expect(created.fields).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            name: 'title',
-            type: FieldType.text,
-          }),
-          expect.objectContaining({
-            name: 'status',
-            type: FieldType.checkbox,
-          }),
-        ]),
+      expect(created.schema.properties).toEqual(
+        expect.objectContaining({
+          title: { type: 'string', title: 'Title' },
+          status: { type: 'boolean', title: 'Status' },
+        }),
       );
     });
   });
@@ -82,13 +81,12 @@ describe('ContentTypeService (TypeORM)', () => {
   describe('deleteCascadeOne', () => {
     it('removes the requested content type', async () => {
       const baseName = `${contentTypeOrmFixtures[0].name}-to-delete`;
-      const baseFields =
-        (contentTypeOrmFixtures[0].fields as ContentField[] | undefined)?.map(
-          (field) => ({ ...field }),
-        ) ?? [];
       const created = await service.create({
         name: baseName,
-        fields: baseFields,
+        schema: {
+          type: 'object',
+          properties: {},
+        },
       });
       createdIds.push(created.id);
 

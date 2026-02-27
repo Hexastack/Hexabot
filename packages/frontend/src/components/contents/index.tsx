@@ -114,7 +114,7 @@ export const Contents = () => {
   const columns: GridColDef<IContent>[] = [
     { field: "title", headerName: t("label.title"), flex: 1 },
     {
-      field: "entity",
+      field: "contentType",
       headerName: t("label.entity"),
       flex: 1,
       valueGetter: (entityId) => {
