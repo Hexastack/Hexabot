@@ -9,14 +9,8 @@ import {
   Workflow as WorkflowHelper,
   type FlowStep,
 } from "@hexabot-ai/agentic";
-import { type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
+import { type FlowStepPath } from "@hexabot-ai/graph";
 import debounce from "@mui/utils/debounce";
-import {
-  applyNodeChanges,
-  useReactFlow,
-  type NodeChange,
-  type XYPosition,
-} from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
@@ -64,25 +58,12 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const { screenToFlowPosition, getNodes, setNodes } =
-    useReactFlow<GraphNode>();
   const [executionStates, setExecutionStates] = useState<
     Record<string, { state: NodeExecutionState; t: number }[]>
   >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
-  const getCentroid = (): XYPosition => {
-    if (typeof window === "undefined") return { x: 0, y: 0 };
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const screenCenter = {
-      x: screenWidth / 2,
-      y: screenHeight / 2,
-    };
-
-    return screenToFlowPosition(screenCenter);
-  };
   const {
     yaml,
     definition,
@@ -197,7 +178,11 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       },
     };
     const insertedDefinition = insertPath
-      ? WorkflowHelper.insertStepAtPath(baseDefinition, insertPath, parallelStep)
+      ? WorkflowHelper.insertStepAtPath(
+          baseDefinition,
+          insertPath,
+          parallelStep,
+        )
       : null;
     const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
       ...baseDefinition,
@@ -205,16 +190,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     };
 
     updateDefinitionState(nextDefinition);
-  };
-  const selectNodes = (nodeIds: string[]): void => {
-    setSelectedNodeIds(nodeIds);
-    const changes = getNodes().map(({ id }) => ({
-      id,
-      type: "select",
-      selected: nodeIds.includes(id),
-    })) as NodeChange<GraphNode>[];
-
-    setNodes((nodes) => applyNodeChanges<GraphNode>(changes, nodes));
   };
   const getQuery = (key: string): string =>
     typeof router.query[key] === "string" ? router.query[key] : "";
@@ -257,8 +232,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       (selectedNodeId) => selectedNodeId !== nodeId,
     );
 
-    selectNodes(nextSelection);
-
     if (flowId) {
       updateWorkflowURL(flowId, nextSelection);
     }
@@ -289,8 +262,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     <WorkflowContext.Provider
       value={{
         getQuery,
-        selectNodes,
-        getCentroid,
         openSearchPanel,
         selectedNodeIds,
         getWorkflowFromCache,

@@ -54,7 +54,7 @@ import {
   type WorkflowAction,
   type WorkflowExecutionStateMap,
   type WorkflowGraph,
-} from "../types/workflow-node.types";
+} from '../types/workflow-node.types';
 import type {
   EdgeInsertData,
   EdgeInsertType,
@@ -91,7 +91,6 @@ export type WorkflowGraphProps = {
   onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
   queryNodeIds?: string;
   selectedNodeIds: string[];
-  onSelectNodes: (nodeIds: string[]) => void;
   onFocused?: () => void;
   workflow?: WorkflowViewportState | null;
 } & PropsWithChildren;
@@ -102,10 +101,7 @@ export type WorkflowGraphRef = {
   clearCenterAfterFirstInsert: () => void;
 };
 
-export const WorkflowGraphComponent = forwardRef<
-  WorkflowGraphRef,
-  WorkflowGraphProps
->(
+export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
   (
     {
       definition,
@@ -123,7 +119,6 @@ export const WorkflowGraphComponent = forwardRef<
       onRotate,
       queryNodeIds,
       selectedNodeIds,
-      onSelectNodes,
       onFocused,
       workflow,
       children,
@@ -165,7 +160,6 @@ export const WorkflowGraphComponent = forwardRef<
     const { animateFocus } = useFocusNode({
       queryNodeIds,
       selectedNodeIds,
-      onSelectNodes,
       onFocused,
     });
     const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(

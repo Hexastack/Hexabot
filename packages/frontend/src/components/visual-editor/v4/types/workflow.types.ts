@@ -12,7 +12,6 @@ import type {
 import type { FlowStepPath } from "@hexabot-ai/graph";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
-import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
@@ -20,8 +19,6 @@ import type { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
 export interface IWorkflowContext {
-  getCentroid: () => XYPosition;
-  selectNodes: (nodeIds: string[]) => void;
   getWorkflowFromCache: (id: string) => IWorkflow | undefined;
   selectedNodeIds: string[];
   setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;

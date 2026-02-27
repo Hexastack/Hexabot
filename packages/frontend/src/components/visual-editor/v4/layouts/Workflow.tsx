@@ -86,7 +86,6 @@ export const Workflow = () => {
     selectedFlowId,
     direction,
     selectedNodeIds,
-    selectNodes,
     debouncedWorkflowUpdate,
     updateWorkflow,
     updateWorkflowURL,
@@ -370,7 +369,6 @@ export const Workflow = () => {
           onRotate={handleRotate}
           queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
           selectedNodeIds={selectedNodeIds}
-          onSelectNodes={selectNodes}
           workflow={workflow}
         />
         {workflow && (

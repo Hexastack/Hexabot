@@ -4,14 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
-import type { Padding } from "@xyflow/system";
+import {
+  applyNodeChanges,
+  type Node,
+  type NodeChange,
+  useNodesInitialized,
+  useReactFlow,
+} from '@xyflow/react';
+import type { Padding } from '@xyflow/system';
 import { useEffect, useMemo } from "react";
+
+import { GraphNode } from '../types/workflow-node.types';
 
 type UseFocusNodeProps = {
   queryNodeIds?: string;
   selectedNodeIds: string[];
-  onSelectNodes: (nodeIds: string[]) => void;
   onFocused?: () => void;
   fitViewPadding?: Padding;
   fitViewDuration?: number;
@@ -20,11 +27,20 @@ type UseFocusNodeProps = {
 export const useFocusNode = ({
   queryNodeIds,
   selectedNodeIds,
-  onSelectNodes,
   onFocused,
-  fitViewPadding = "150px",
+  fitViewPadding = '150px',
   fitViewDuration = 200,
 }: UseFocusNodeProps) => {
+  const { getNodes, setNodes } = useReactFlow<GraphNode>();
+  const onSelectNodes = (nodeIds: string[]): void => {
+    const changes = getNodes().map(({ id }) => ({
+      id,
+      type: 'select',
+      selected: nodeIds.includes(id),
+    })) as NodeChange<GraphNode>[];
+
+    setNodes((nodes) => applyNodeChanges<GraphNode>(changes, nodes));
+  };
   const { getNode, fitView } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const animateFocus = async (nodeIds: string[] = []) => {
@@ -64,7 +80,7 @@ export const useFocusNode = ({
     () =>
       !queryNodeIds?.length || !nodesInitialized
         ? []
-        : queryNodeIds.split(",").filter((nodeId) => Boolean(getNode(nodeId))),
+        : queryNodeIds.split(',').filter((nodeId) => Boolean(getNode(nodeId))),
     [getNode, nodesInitialized, queryNodeIds],
   );
 
