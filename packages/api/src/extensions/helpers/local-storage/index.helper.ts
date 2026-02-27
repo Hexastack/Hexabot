@@ -6,7 +6,7 @@
 
 import fs from 'fs';
 import os from 'os';
-import { join, normalize, resolve } from 'path';
+import { isAbsolute, join, relative, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
 import {
@@ -91,11 +91,11 @@ export default class LocalStorageHelper
       if (file.path) {
         // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
         const srcFilePath = fs.realpathSync(resolve(file.path));
-        // Get the system's temporary directory in a cross-platform way
-        const tempDir = os.tmpdir();
-        const normalizedTempDir = normalize(tempDir);
+        // Resolve symlinks (e.g. /tmp -> /private/tmp on macOS) before validating boundaries.
+        const canonicalTempDir = fs.realpathSync(resolve(os.tmpdir()));
+        const relativePath = relative(canonicalTempDir, srcFilePath);
 
-        if (!srcFilePath.startsWith(normalizedTempDir)) {
+        if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
           throw new Error('Invalid file path');
         }
 
