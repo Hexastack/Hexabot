@@ -102,7 +102,7 @@ export class ContentService extends BaseOrmService<
    * Parses a CSV dataset and saves the content in the repository.
    *
    * @param data - The CSV data as a string to be parsed.
-   * @param contentType - The content type metadata, including fields to validate the parsed data.
+   * @param contentType - The content type metadata, including properties to validate the parsed data.
    * @return A promise resolving to the created content objects.
    */
   async parseAndSaveDataset(data: string, contentType: ContentType) {

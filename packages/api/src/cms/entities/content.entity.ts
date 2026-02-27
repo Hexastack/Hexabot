@@ -87,7 +87,7 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
    * Converts a content object to an element (A flat representation of a content)
    *
    * @param content
-   * @returns An object that has all dynamic fields accessible at top level
+   * @returns An object that has all content properties accessible at top level
    */
   static toElement(content: Content): ContentElement {
     return {
