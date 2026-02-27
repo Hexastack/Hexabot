@@ -9,6 +9,7 @@ import type {
   WorkflowDefinition,
   WorkflowEventMap,
 } from "@hexabot-ai/agentic";
+import type { FlowStepPath } from "@hexabot-ai/graph";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import type { XYPosition } from "@xyflow/react";
@@ -17,8 +18,6 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
-
-import type { FlowStepPath } from "./workflow-path.types";
 
 export interface IWorkflowContext {
   getCentroid: () => XYPosition;

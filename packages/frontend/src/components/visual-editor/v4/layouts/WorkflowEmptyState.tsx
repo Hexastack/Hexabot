@@ -4,6 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  PulseIconButton,
+  type EdgeInsertType,
+} from "@hexabot-ai/graph";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Plus } from "lucide-react";
@@ -11,9 +15,7 @@ import { useCallback, useState, type MouseEvent } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-import { PulseIconButton } from "../components/PulseIconButton";
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
-import type { EdgeInsertType } from "../types/workflow-path.types";
 
 const EmptyStateOverlay = styled(Box)(() => ({
   position: "absolute",

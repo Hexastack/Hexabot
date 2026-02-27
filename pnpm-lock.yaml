@@ -704,6 +704,22 @@ importers:
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.12.12)(jiti@2.6.1)(jsdom@28.0.0(@noble/hashes@1.8.0))(sass@1.93.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/graph:
+    dependencies:
+      '@hexabot-ai/agentic':
+        specifier: workspace:*
+        version: link:../agentic
+      '@mui/material':
+        specifier: ^7.0.0
+        version: 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@mui/utils':
+        specifier: ^7.0.0
+        version: 7.3.7(@types/react@18.3.2)(react@18.3.1)
+      elkjs:
+        specifier: ^0.11.0
+        version: 0.11.0
+      lucide-react:
+        specifier: ^0.562.0
+        version: 0.562.0(react@18.3.1)
     devDependencies:
       '@types/node':
         specifier: 20.12.12
@@ -11771,7 +11787,7 @@ snapshots:
       '@babel/runtime': 7.28.4
       '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mui/system': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)
-      '@mui/utils': 7.3.3(@types/react@18.3.2)(react@18.3.1)
+      '@mui/utils': 7.3.7(@types/react@18.3.2)(react@18.3.1)
       '@mui/x-charts-vendor': 7.20.0
       '@mui/x-internals': 7.29.0(@types/react@18.3.2)(react@18.3.1)
       '@react-spring/rafz': 9.7.5
@@ -11791,7 +11807,7 @@ snapshots:
       '@babel/runtime': 7.28.4
       '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mui/system': 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1)
-      '@mui/utils': 7.3.3(@types/react@18.3.2)(react@18.3.1)
+      '@mui/utils': 7.3.7(@types/react@18.3.2)(react@18.3.1)
       '@mui/x-internals': 7.29.0(@types/react@18.3.2)(react@18.3.1)
       clsx: 2.1.1
       prop-types: 15.8.1
@@ -11808,7 +11824,7 @@ snapshots:
   '@mui/x-internals@7.29.0(@types/react@18.3.2)(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.28.4
-      '@mui/utils': 7.3.3(@types/react@18.3.2)(react@18.3.1)
+      '@mui/utils': 7.3.7(@types/react@18.3.2)(react@18.3.1)
       react: 18.3.1
     transitivePeerDependencies:
       - '@types/react'

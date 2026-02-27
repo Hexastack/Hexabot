@@ -10,6 +10,7 @@ import {
   type ConditionalBranch,
   type FlowStep,
 } from "@hexabot-ai/agentic";
+import { ENodeType, type GraphNode, type FlowStepPath } from "@hexabot-ai/graph";
 import { Box, Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { Plus, Save, Trash2 } from "lucide-react";
@@ -20,8 +21,6 @@ import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import type { FlowStepPath } from "../../../types/workflow-path.types";
 
 const DEFAULT_CONDITION = "=false";
 

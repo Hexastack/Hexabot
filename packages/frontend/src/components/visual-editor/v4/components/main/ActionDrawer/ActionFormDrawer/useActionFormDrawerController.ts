@@ -15,6 +15,7 @@ import {
   mergeSettings,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
+import { ENodeType, type GraphNode } from "@hexabot-ai/graph";
 import { useReactFlow } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -23,10 +24,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
-import {
-  ENodeType,
-  type GraphNode,
-} from "../../../../types/workflow-node.types";
 import { getSchemaPropertyNames } from "../../../../utils/schema-defaults.utils";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";

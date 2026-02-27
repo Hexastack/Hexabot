@@ -6,10 +6,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import { GRAPH_PACKAGE_PLACEHOLDER } from "./index";
+import { ENodeType, getWorkflowDefaultConfig } from "./index";
 
 describe("@hexabot-ai/graph", () => {
-  it("exposes a package placeholder export", () => {
-    expect(GRAPH_PACKAGE_PLACEHOLDER).toBe("graph-package-placeholder");
+  it("exposes workflow graph utilities", () => {
+    const config = getWorkflowDefaultConfig("horizontal");
+
+    expect(config.nodes[ENodeType.AGENT]).toBeDefined();
+    expect(config.edges).toBeDefined();
   });
 });

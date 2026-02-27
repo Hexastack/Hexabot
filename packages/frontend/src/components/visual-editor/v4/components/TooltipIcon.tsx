@@ -4,12 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowIcon } from "@hexabot-ai/graph";
 import { Tooltip } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
-
-import type { WorkflowIcon } from "../types/workflow-node.types";
 
 export const TooltipIcon = ({
   icon: Icon,

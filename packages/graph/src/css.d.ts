@@ -4,4 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export * from "./workflow";
+declare module "*.css";

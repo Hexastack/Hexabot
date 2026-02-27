@@ -5,6 +5,7 @@
  */
 
 import { StepType, Workflow as WorkflowHelper, type FlowStep } from "@hexabot-ai/agentic";
+import { ENodeType, type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
 import {
   Box,
   Button,
@@ -24,8 +25,6 @@ import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import type { FlowStepPath } from "../../../types/workflow-path.types";
 
 type ParallelStep = Extract<FlowStep, { parallel: unknown }>;
 type ParallelStrategy = "wait_all" | "wait_any";

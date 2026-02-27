@@ -9,6 +9,7 @@ import {
   Workflow as WorkflowHelper,
   type FlowStep,
 } from "@hexabot-ai/agentic";
+import { type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
 import debounce from "@mui/utils/debounce";
 import {
   applyNodeChanges,
@@ -29,8 +30,6 @@ import type { IWorkflowAttributes } from "@/types/workfow.types";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
-import { GraphNode } from "../types/workflow-node.types";
-import type { FlowStepPath } from "../types/workflow-path.types";
 import type {
   NodeExecutionState,
   WorkflowContextProps,

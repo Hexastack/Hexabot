@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowGraph } from "@hexabot-ai/graph";
 import {
   getNodesBounds,
   getViewportForBounds,
@@ -15,8 +16,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { IWorkflow } from "@/types/workfow.types";
-
-import type { WorkflowGraph } from "../types/workflow-node.types";
 
 import { useFocusNode } from "./useFocusNode";
 import { useWorkflow } from "./useWorkflow";

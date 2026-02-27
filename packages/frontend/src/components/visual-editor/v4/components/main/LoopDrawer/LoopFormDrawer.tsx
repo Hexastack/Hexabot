@@ -10,6 +10,7 @@ import {
   type FlowStep,
   type JsonValue,
 } from "@hexabot-ai/agentic";
+import { ENodeType, type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
 import {
   Box,
   Button,
@@ -28,8 +29,6 @@ import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import type { FlowStepPath } from "../../../types/workflow-path.types";
 
 const DEFAULT_FOR_EACH_ITEM = "item";
 const DEFAULT_FOR_EACH_IN = "=[]";

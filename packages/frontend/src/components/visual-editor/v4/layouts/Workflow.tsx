@@ -9,6 +9,20 @@ import {
   Workflow as WorkflowHelper,
   type Settings,
 } from "@hexabot-ai/agentic";
+import {
+  ENodeType,
+  WorkflowGraphComponent,
+  buildNodesAndEdges,
+  getWorkflowDefaultConfig,
+  type BranchPlaceholderData,
+  type EdgeInsertData,
+  type EdgeInsertType,
+  type FlowStepPath,
+  type MemoryDefinition,
+  type OnOpenInsertMenu,
+  type WorkflowAction,
+  type WorkflowGraph,
+} from "@hexabot-ai/graph";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { Background, Controls } from "@xyflow/react";
 import { CloudOff, CloudUpload } from "lucide-react";
@@ -29,7 +43,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
-import { IMemoryDefinition } from "@/types/memory-definition.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { RotateButton } from "../components/controls/RotateButton";
@@ -40,7 +53,6 @@ import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/Cond
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { LoopFormDrawer } from "../components/main/LoopDrawer/LoopFormDrawer";
 import { ParallelFormDrawer } from "../components/main/ParallelDrawer/ParallelFormDrawer";
-import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { WorkflowBottomDrawer } from "../components/main/WorkflowBottomDrawer";
 import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
@@ -48,22 +60,7 @@ import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/Work
 import { WorkflowInsertMenu } from "../components/WorkflowInsertMenu";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowViewport } from "../hooks/useWorkflowViewport";
-import {
-  ENodeType,
-  type BranchPlaceholderData,
-  type WorkflowGraph,
-} from "../types/workflow-node.types";
-import type {
-  EdgeInsertData,
-  EdgeInsertType,
-  FlowStepPath,
-  OnOpenInsertMenu,
-} from "../types/workflow-path.types";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
-import {
-  buildNodesAndEdges,
-  getWorkflowDefaultConfig,
-} from "../utils/workflow-node.utils";
 
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
 
@@ -103,6 +100,9 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
+    executionStates,
+    removeStepAtPath,
+    setSelectedNodeIds,
     updateDefinitionState,
     persistDefinition,
     publishVersion,
@@ -112,7 +112,7 @@ export const Workflow = () => {
     addLoopStep,
     addParallelStep,
   } = useWorkflow();
-  const { actions } = useWorkflowActionsCatalog();
+  const { actions, actionsByName } = useWorkflowActionsCatalog();
   const dialogs = useDialogs();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const [graph, setGraph] = useState<WorkflowGraph>({
@@ -238,7 +238,7 @@ export const Workflow = () => {
       try {
         const memoryDefinitions = (workflow?.memoryDefinitions || []).map(
           getMemoryDefinitionsFromCache,
-        ) as IMemoryDefinition[];
+        ) as MemoryDefinition[];
         const config = getWorkflowDefaultConfig(direction);
         const layoutedGraph = await buildNodesAndEdges({
           config,
@@ -309,6 +309,24 @@ export const Workflow = () => {
       };
     });
   }, [graph.nodes, handleOpenInsertMenu]);
+  const handleSelectedNodeIdsChange = useCallback(
+    (nodeIds: string[]) => {
+      setSelectedNodeIds(nodeIds);
+      if (selectedFlowId) {
+        void updateWorkflowURL(selectedFlowId, nodeIds);
+      }
+    },
+    [selectedFlowId, setSelectedNodeIds, updateWorkflowURL],
+  );
+  const translateGraph = useCallback(
+    (key: string, options?: Record<string, unknown>) => {
+      return t(
+        key as Parameters<typeof t>[0],
+        options as Parameters<typeof t>[1],
+      );
+    },
+    [t],
+  );
   const handleNewWorkflow = () => {
     const baseDefinition = createBaseDefinition();
     const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
@@ -416,11 +434,19 @@ export const Workflow = () => {
     <div className="visual-editor-v4">
       <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
       <StyledBox>
-        <ReactFlowWrapper
+        <WorkflowGraphComponent
           onViewport={debouncedWorkflowUpdate}
           defaultEdges={edgesWithHandlers || []}
           defaultNodes={isEmptyWorkflow ? [] : nodesWithHandlers}
           defaultViewport={initialViewport}
+          onSelectedNodeIdsChange={handleSelectedNodeIdsChange}
+          translate={translateGraph}
+          direction={direction}
+          actionsByName={
+            actionsByName as unknown as Map<string, WorkflowAction>
+          }
+          executionStates={executionStates}
+          onRemoveStep={removeStepAtPath}
         >
           <Controls
             onFitView={animateFocus}
@@ -437,7 +463,7 @@ export const Workflow = () => {
           {isEmptyWorkflow && (
             <WorkflowEmptyState onInsert={handleRootInsert} />
           )}
-        </ReactFlowWrapper>
+        </WorkflowGraphComponent>
         {workflow && (
           <WorkflowTitleOverlay>
             <WorkflowTitleBar
@@ -449,7 +475,9 @@ export const Workflow = () => {
               saveLoading={isDefinitionSaving}
               saveLabel={t("button.save")}
               onOpenSettings={handleOpenSettingsDialog}
-              settingsLabel={t("visual_editor.workflow_title_bar.settings.open")}
+              settingsLabel={t(
+                "visual_editor.workflow_title_bar.settings.open",
+              )}
               settingsDisabled={!definition || isDefinitionSaving}
               renameLabel={t("button.rename")}
               moreLabel={t("button.more")}

@@ -5,6 +5,7 @@
  */
 
 import { StepType } from "@hexabot-ai/agentic";
+import type { EdgeInsertType } from "@hexabot-ai/graph";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { useCallback, useMemo, type MouseEvent } from "react";
 
@@ -14,7 +15,6 @@ import {
   WORKFLOW_OPERATOR_GRAPH_THEME,
   WORKFLOW_STEP_GRAPH_THEME,
 } from "../constants/workflow-graph-theme.constants";
-import type { EdgeInsertType } from "../types/workflow-path.types";
 
 type WorkflowInsertMenuProps = {
   id: string;
