@@ -126,14 +126,23 @@ export const decorateSemanticGraph = (registry: GraphRegistry): void => {
       );
 
       if (hasGroupEdge && endpoints) {
+        const overlaySourceHandle =
+          endpoints.source === sourceNode.id ? edge.sourceHandle : undefined;
+        const overlayTargetHandle =
+          endpoints.target === targetNode.id ? edge.targetHandle : undefined;
+
         registry.upsertEdge({
           id: createEdgeId({
             source: endpoints.source,
             target: endpoints.target,
+            sourceHandle: overlaySourceHandle,
+            targetHandle: overlayTargetHandle,
             kind: "group",
           }),
           source: endpoints.source,
           target: endpoints.target,
+          sourceHandle: overlaySourceHandle,
+          targetHandle: overlayTargetHandle,
           label: edge.label,
           insertPath: edge.insertPath,
           kind: "group",

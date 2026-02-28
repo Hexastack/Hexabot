@@ -156,6 +156,69 @@ describe("buildNodesAndEdges", () => {
     expect(secondToAfter?.hidden).toBe(true);
   });
 
+  it("preserves conditional branch source handles on overlay edges to nested conditional groups", async () => {
+    const nestedConditional: CompiledConditionalStep = {
+      id: "0.branch.1:nested_conditional",
+      label: "nested_conditional",
+      type: StepType.Conditional,
+      branches: [
+        {
+          id: "0.branch.1:nested_conditional:when:0",
+          condition: { kind: "literal", value: "no" },
+          steps: [],
+        },
+        {
+          id: "0.branch.1:nested_conditional:when:1",
+          steps: [],
+        },
+      ],
+    };
+    const outerConditional: CompiledConditionalStep = {
+      id: "0:conditional",
+      label: "conditional",
+      type: StepType.Conditional,
+      branches: [
+        {
+          id: "0:conditional:when:0",
+          condition: { kind: "literal", value: "false" },
+          steps: [],
+        },
+        {
+          id: "0:conditional:when:1",
+          steps: [nestedConditional],
+        },
+      ],
+    };
+    const graph = await buildGraph({
+      flow: [outerConditional],
+      tasks: {},
+    });
+    const outerOperatorNodeId = createStepNodeId(outerConditional.id, "operator");
+    const nestedGroupId = createGroupId(nestedConditional.id);
+    const firstBranchPlaceholderId = createPlaceholderNodeId(
+      outerConditional.id,
+      "conditional",
+      0,
+    );
+    const firstBranchEdge = graph.edges.find(
+      (edge) =>
+        edge.source === outerOperatorNodeId &&
+        edge.target === firstBranchPlaceholderId &&
+        !edge.hidden,
+    );
+    const nestedBranchOverlayEdge = graph.edges.find(
+      (edge) =>
+        edge.source === outerOperatorNodeId &&
+        edge.target === nestedGroupId &&
+        !edge.hidden,
+    );
+
+    expect(firstBranchEdge).toBeDefined();
+    expect(firstBranchEdge?.sourceHandle).toBe("operatorOut-0-2");
+    expect(nestedBranchOverlayEdge).toBeDefined();
+    expect(nestedBranchOverlayEdge?.sourceHandle).toBe("operatorOut-1-2");
+  });
+
   it("creates explicit parallel join edges from branch exits to a join placeholder", async () => {
     const parallelStep: CompiledParallelStep = {
       id: "0:parallel",
