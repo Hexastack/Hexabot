@@ -5,7 +5,6 @@
  */
 
 import { StepType, Workflow as WorkflowHelper, type FlowStep } from "@hexabot-ai/agentic";
-import { ENodeType, type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
 import {
   Box,
   Button,
@@ -17,13 +16,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import { useSelectedOperatorNode } from "../../../hooks/useWorkflowSelection";
 import {
   useStepDrawerClose,
   withStepDrawerLayout,
@@ -49,15 +48,6 @@ const isParallelStep = (step: unknown): step is ParallelStep => {
 };
 const isParallelStrategy = (value: string): value is ParallelStrategy =>
   value === "wait_all" || value === "wait_any";
-const getStepPath = (node: GraphNode | undefined): FlowStepPath | undefined => {
-  if (!node) {
-    return undefined;
-  }
-
-  const stepPath = (node.data as { stepPath?: FlowStepPath }).stepPath;
-
-  return Array.isArray(stepPath) ? stepPath : undefined;
-};
 const getParallelStrategyValue = (step?: ParallelStep): ParallelStrategy => {
   const strategy = step?.parallel.strategy;
 
@@ -134,23 +124,10 @@ const ParallelFormDrawerLayout = withStepDrawerLayout(ParallelFormDrawerContent)
 
 export const ParallelFormDrawer = () => {
   const { t } = useTranslate();
-  const {
-    selectedNodeIds,
-    definition,
-    updateDefinitionState,
-    isSaving,
-  } = useWorkflow();
-  const { getNode } = useReactFlow();
-  const selectedNodeId =
-    selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-  const selectedNode = selectedNodeId
-    ? (getNode(selectedNodeId) as GraphNode | undefined)
-    : undefined;
-  const isParallelOperatorNode =
-    selectedNode?.type === ENodeType.OPERATOR &&
-    (selectedNode.data as { operatorType?: string }).operatorType ===
-      StepType.Parallel;
-  const stepPath = isParallelOperatorNode ? getStepPath(selectedNode) : undefined;
+  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const selectedOperatorNode = useSelectedOperatorNode(StepType.Parallel);
+  const selectedNodeId = selectedOperatorNode?.id;
+  const stepPath = selectedOperatorNode?.stepPath;
   const selectedStep = useMemo(() => {
     if (!definition || !stepPath) {
       return undefined;
@@ -163,7 +140,7 @@ export const ParallelFormDrawer = () => {
   const [strategy, setStrategy] = useState<ParallelStrategy>(
     DEFAULT_PARALLEL_STRATEGY,
   );
-  const open = Boolean(isParallelOperatorNode && selectedNodeId);
+  const open = Boolean(selectedOperatorNode && selectedNodeId);
 
   useEffect(() => {
     if (!open) {

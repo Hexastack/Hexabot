@@ -10,7 +10,6 @@ import {
   type FlowStep,
   type JsonValue,
 } from "@hexabot-ai/agentic";
-import { ENodeType, type FlowStepPath, type GraphNode } from "@hexabot-ai/graph";
 import {
   Box,
   Button,
@@ -20,7 +19,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -28,6 +26,7 @@ import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import { useSelectedOperatorNode } from "../../../hooks/useWorkflowSelection";
 import {
   useStepDrawerClose,
   withStepDrawerLayout,
@@ -70,15 +69,6 @@ const isLoopStep = (step: unknown): step is LoopStep => {
   const loop = (step as { loop?: { steps?: unknown } }).loop;
 
   return Boolean(loop && Array.isArray(loop.steps));
-};
-const getStepPath = (node: GraphNode | undefined): FlowStepPath | undefined => {
-  if (!node) {
-    return undefined;
-  }
-
-  const stepPath = (node.data as { stepPath?: FlowStepPath }).stepPath;
-
-  return Array.isArray(stepPath) ? stepPath : undefined;
 };
 const parseJsonValue = (value: string): JsonValue | undefined => {
   try {
@@ -294,23 +284,10 @@ const LoopFormDrawerLayout = withStepDrawerLayout(LoopFormDrawerContent);
 
 export const LoopFormDrawer = () => {
   const { t } = useTranslate();
-  const {
-    selectedNodeIds,
-    definition,
-    updateDefinitionState,
-    isSaving,
-  } = useWorkflow();
-  const { getNode } = useReactFlow();
-  const selectedNodeId =
-    selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-  const selectedNode = selectedNodeId
-    ? (getNode(selectedNodeId) as GraphNode | undefined)
-    : undefined;
-  const isLoopOperatorNode =
-    selectedNode?.type === ENodeType.OPERATOR &&
-    (selectedNode.data as { operatorType?: string }).operatorType ===
-      StepType.Loop;
-  const stepPath = isLoopOperatorNode ? getStepPath(selectedNode) : undefined;
+  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const selectedOperatorNode = useSelectedOperatorNode(StepType.Loop);
+  const selectedNodeId = selectedOperatorNode?.id;
+  const stepPath = selectedOperatorNode?.stepPath;
   const selectedStep = useMemo(() => {
     if (!definition || !stepPath) {
       return undefined;
@@ -323,7 +300,7 @@ export const LoopFormDrawer = () => {
   const [formValues, setFormValues] = useState<LoopFormValues>(
     getLoopFormValues(),
   );
-  const open = Boolean(isLoopOperatorNode && selectedNodeId);
+  const open = Boolean(selectedOperatorNode && selectedNodeId);
 
   useEffect(() => {
     if (!open) {

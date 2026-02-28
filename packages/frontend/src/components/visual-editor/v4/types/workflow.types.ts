@@ -9,7 +9,10 @@ import type {
   WorkflowDefinition,
   WorkflowEventMap,
 } from "@hexabot-ai/agentic";
-import type { FlowStepPath } from "@hexabot-ai/graph";
+import type {
+  FlowStepPath,
+  WorkflowSelectionSnapshot,
+} from "@hexabot-ai/graph";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import type { ResizeControlDirection } from "@xyflow/system";
@@ -20,8 +23,9 @@ import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
 export interface IWorkflowContext {
   getWorkflowFromCache: (id: string) => IWorkflow | undefined;
+  graphSelection: WorkflowSelectionSnapshot;
   selectedNodeIds: string[];
-  setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;
+  setGraphSelection: (selection: WorkflowSelectionSnapshot) => void;
   selectedFlowId?: string;
   openSearchPanel: boolean;
   setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;

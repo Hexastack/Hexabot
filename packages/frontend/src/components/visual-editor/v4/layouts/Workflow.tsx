@@ -16,6 +16,7 @@ import {
   type MemoryDefinition,
   type WorkflowAction,
   type WorkflowGraphRef,
+  type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { CloudOff, CloudUpload } from "lucide-react";
@@ -94,7 +95,7 @@ export const Workflow = () => {
     isSaving: isDefinitionSaving,
     executionStates,
     removeStepAtPath,
-    setSelectedNodeIds,
+    setGraphSelection,
     updateDefinitionState,
     persistDefinition,
     publishVersion,
@@ -199,14 +200,11 @@ export const Workflow = () => {
       setActionsDrawerOpen(false);
     }
   }, [isEmptyWorkflow]);
-  const handleSelectedNodeIdsChange = useCallback(
-    (nodeIds: string[]) => {
-      setSelectedNodeIds(nodeIds);
-      if (selectedFlowId) {
-        void updateWorkflowURL(selectedFlowId, nodeIds);
-      }
+  const handleSelectionChange = useCallback(
+    (selection: WorkflowSelectionSnapshot) => {
+      setGraphSelection(selection);
     },
-    [selectedFlowId, setSelectedNodeIds, updateWorkflowURL],
+    [setGraphSelection],
   );
   const handleRotate = useCallback(
     async (nextDirection: "horizontal" | "vertical") => {
@@ -359,7 +357,7 @@ export const Workflow = () => {
           onInsertAtRoot={handleRootInsert}
           queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
           selectedNodeIds={selectedNodeIds}
-          onSelectedNodeIdsChange={handleSelectedNodeIdsChange}
+          onSelectionChange={handleSelectionChange}
           translate={translateGraph}
           actionsByName={
             actionsByName as unknown as Map<string, WorkflowAction>

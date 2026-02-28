@@ -16,5 +16,7 @@ export * from "./hooks/useFocusNode";
 export * from "./hooks/useWorkflowViewport";
 export * from "./types/workflow-node.types";
 export * from "./types/workflow-path.types";
+export * from "./types/workflow-selection.types";
+export * from "./utils/workflow-selection.utils";
 export * from "./utils/workflow-node.utils";
 export * from "./utils/workflow-theme.utils";

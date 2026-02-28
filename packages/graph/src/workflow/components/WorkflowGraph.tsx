@@ -17,8 +17,9 @@ import {
   type NodeMouseHandler,
   type OnNodesChange,
   ReactFlow,
+  ReactFlowProvider,
   type Viewport,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import {
   forwardRef,
@@ -43,24 +44,28 @@ import { useFocusNode } from "../hooks/useFocusNode";
 import {
   useWorkflowViewport,
   type ViewportState,
-} from '../hooks/useWorkflowViewport';
+} from "../hooks/useWorkflowViewport";
 import "../styles/index.css";
 import {
   type BranchPlaceholderData,
   EDGE_TYPES,
   ENodeType,
+  type GraphNode,
   type MemoryDefinition,
   NODE_TYPES,
   type WorkflowAction,
   type WorkflowExecutionStateMap,
   type WorkflowGraph,
-} from '../types/workflow-node.types';
+} from "../types/workflow-node.types";
 import type {
   EdgeInsertData,
   EdgeInsertType,
   FlowStepPath,
   OnOpenInsertMenu,
 } from "../types/workflow-path.types";
+import type {
+  WorkflowSelectionSnapshot,
+} from "../types/workflow-selection.types";
 import {
   isSameSelection,
   isSameViewport,
@@ -69,6 +74,10 @@ import {
   buildNodesAndEdges,
   getWorkflowDefaultConfig,
 } from "../utils/workflow-node.utils";
+import {
+  createWorkflowSelectionSnapshot,
+  isSameWorkflowSelection,
+} from "../utils/workflow-selection.utils";
 
 import { WorkflowControls } from "./WorkflowControls";
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
@@ -84,7 +93,11 @@ export type WorkflowGraphProps = {
   queryNodeIds?: string;
   selectedNodeIds: string[];
   onFocused?: () => void;
+  /**
+   * @deprecated Use onSelectionChange instead.
+   */
   onSelectedNodeIdsChange?: (nodeIds: string[]) => void;
+  onSelectionChange?: (selection: WorkflowSelectionSnapshot) => void;
   translate: WorkflowGraphTranslate;
   actionsByName: Map<string, WorkflowAction>;
   executionStates: WorkflowExecutionStateMap;
@@ -92,7 +105,7 @@ export type WorkflowGraphProps = {
   viewport?: ViewportState | null;
   onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
   direction?: ResizeControlDirection;
-  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
+  onRotate: (nextDirection: "horizontal" | "vertical") => Promise<boolean>;
 } & PropsWithChildren;
 
 export type WorkflowGraphRef = {
@@ -101,7 +114,7 @@ export type WorkflowGraphRef = {
   clearCenterAfterFirstInsert: () => void;
 };
 
-export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
+const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
   (
     {
       definition,
@@ -110,6 +123,7 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       onInsertAtRoot,
       onNodeClick,
       onSelectedNodeIdsChange,
+      onSelectionChange,
       translate,
       actionsByName,
       executionStates,
@@ -126,18 +140,18 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
     ref,
   ) => {
     const { mode } = useColorScheme();
-    const colorMode = mode === 'dark' ? 'dark' : 'light';
+    const colorMode = mode === "dark" ? "dark" : "light";
     const isEmptyWorkflow = !definition?.flow?.length;
     const compileActionsByName = useMemo(
       () =>
         Array.from(actionsByName.entries()).reduce(
           (acc, [name, action]) => {
             acc[name] =
-              action as unknown as WorkflowCompileOptions['actions'][string];
+              action as unknown as WorkflowCompileOptions["actions"][string];
 
             return acc;
           },
-          {} as WorkflowCompileOptions['actions'],
+          {} as WorkflowCompileOptions["actions"],
         ),
       [actionsByName],
     );
@@ -151,29 +165,16 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
     );
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const selectedNodeIdsRef = useRef<string[]>(selectedNodeIds);
+    const selectionRef = useRef<WorkflowSelectionSnapshot>({
+      nodeIds: [],
+      nodes: [],
+    });
     const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
       useState<HTMLElement | null>(null);
     const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
       null,
     );
     const [graph, setGraph] = useState<WorkflowGraph>(EMPTY_WORKFLOW_GRAPH);
-    const handleQuerySelectionResolved = useCallback(
-      (nodeIds: string[]) => {
-        if (isSameSelection(nodeIds, selectedNodeIdsRef.current)) {
-          return;
-        }
-
-        selectedNodeIdsRef.current = nodeIds;
-        onSelectedNodeIdsChange?.(nodeIds);
-      },
-      [onSelectedNodeIdsChange],
-    );
-    const { animateFocus } = useFocusNode({
-      queryNodeIds,
-      selectedNodeIds,
-      onQueryNodeIdsResolved: handleQuerySelectionResolved,
-      onFocused,
-    });
     const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
       (anchorEl, path) => {
         setInsertMenuAnchorEl(anchorEl);
@@ -234,7 +235,7 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
           }
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error('Failed to layout workflow graph:', error);
+          console.error("Failed to layout workflow graph:", error);
           if (!isCancelled) {
             setGraph(EMPTY_WORKFLOW_GRAPH);
           }
@@ -300,6 +301,50 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
         };
       });
     }, [graph.nodes, insertMenuHandler]);
+    const emitSelection = useCallback(
+      (requestedNodeIds: string[]) => {
+        if (
+          requestedNodeIds.length > 0 &&
+          !isEmptyWorkflow &&
+          nodesWithHandlers.length === 0
+        ) {
+          return;
+        }
+
+        const nextSelection = createWorkflowSelectionSnapshot(
+          requestedNodeIds,
+          nodesWithHandlers as GraphNode[],
+        );
+
+        if (isSameWorkflowSelection(nextSelection, selectionRef.current)) {
+          return;
+        }
+
+        const previousNodeIds = selectedNodeIdsRef.current;
+
+        selectionRef.current = nextSelection;
+        selectedNodeIdsRef.current = nextSelection.nodeIds;
+
+        if (!isSameSelection(nextSelection.nodeIds, previousNodeIds)) {
+          onSelectedNodeIdsChange?.(nextSelection.nodeIds);
+        }
+
+        onSelectionChange?.(nextSelection);
+      },
+      [isEmptyWorkflow, nodesWithHandlers, onSelectedNodeIdsChange, onSelectionChange],
+    );
+    const handleQuerySelectionResolved = useCallback(
+      (nodeIds: string[]) => {
+        emitSelection(nodeIds);
+      },
+      [emitSelection],
+    );
+    const { animateFocus } = useFocusNode({
+      queryNodeIds,
+      selectedNodeIds,
+      onQueryNodeIdsResolved: handleQuerySelectionResolved,
+      onFocused,
+    });
     const {
       initialViewport,
       requestCenterAfterFirstInsert,
@@ -338,8 +383,8 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       lastViewportRef.current = initialViewport;
     }, [initialViewport.x, initialViewport.y, initialViewport.zoom]);
     useEffect(() => {
-      selectedNodeIdsRef.current = selectedNodeIds;
-    }, [selectedNodeIds]);
+      emitSelection(selectedNodeIds);
+    }, [emitSelection, selectedNodeIds]);
 
     const handleMoveEnd = useCallback(
       (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
@@ -358,10 +403,10 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
           (
             change,
           ): change is NodeChange<Node> & {
-            type: 'select';
+            type: "select";
             id: string;
             selected: boolean;
-          } => change.type === 'select',
+          } => change.type === "select",
         );
 
         if (!selectionEvents.length) {
@@ -378,16 +423,9 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
           }
         });
 
-        const newSelectedNodeIds = Array.from(nextSelection);
-
-        if (isSameSelection(newSelectedNodeIds, selectedNodeIdsRef.current)) {
-          return;
-        }
-
-        selectedNodeIdsRef.current = newSelectedNodeIds;
-        onSelectedNodeIdsChange?.(newSelectedNodeIds);
+        emitSelection(Array.from(nextSelection));
       },
-      [onSelectedNodeIdsChange],
+      [emitSelection],
     );
 
     return (
@@ -430,6 +468,18 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
           />
         </ReactFlow>
       </WorkflowGraphHostContext.Provider>
+    );
+  },
+);
+
+WorkflowGraphInner.displayName = "WorkflowGraphInner";
+
+export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
+  (props, ref) => {
+    return (
+      <ReactFlowProvider>
+        <WorkflowGraphInner {...props} ref={ref} />
+      </ReactFlowProvider>
     );
   },
 );

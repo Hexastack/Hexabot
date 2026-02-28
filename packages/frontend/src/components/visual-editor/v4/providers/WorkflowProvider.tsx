@@ -9,9 +9,13 @@ import {
   Workflow as WorkflowHelper,
   type FlowStep,
 } from "@hexabot-ai/agentic";
-import { type FlowStepPath } from "@hexabot-ai/graph";
+import {
+  isSameWorkflowSelection,
+  type FlowStepPath,
+  type WorkflowSelectionSnapshot,
+} from "@hexabot-ai/graph";
 import debounce from "@mui/utils/debounce";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -38,6 +42,10 @@ type TaskInputs = NonNullable<WorkflowDefinition["tasks"][string]["inputs"]>;
 type TaskSettings = NonNullable<
   WorkflowDefinition["tasks"][string]["settings"]
 >;
+const EMPTY_GRAPH_SELECTION: WorkflowSelectionSnapshot = {
+  nodeIds: [],
+  nodes: [],
+};
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
@@ -62,7 +70,9 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     Record<string, { state: NodeExecutionState; t: number }[]>
   >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [graphSelection, setGraphSelectionState] =
+    useState<WorkflowSelectionSnapshot>(EMPTY_GRAPH_SELECTION);
+  const selectedNodeIds = graphSelection.nodeIds;
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
   const {
     yaml,
@@ -208,6 +218,26 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${flowId}`);
     }
   };
+  const setGraphSelection = useCallback(
+    (nextSelection: WorkflowSelectionSnapshot) => {
+      if (isSameWorkflowSelection(graphSelection, nextSelection)) {
+        return;
+      }
+
+      setGraphSelectionState(nextSelection);
+
+      const hasSameNodeIds =
+        graphSelection.nodeIds.length === nextSelection.nodeIds.length &&
+        graphSelection.nodeIds.every(
+          (nodeId, index) => nodeId === nextSelection.nodeIds[index],
+        );
+
+      if (flowId && !hasSameNodeIds) {
+        void updateWorkflowURL(flowId, nextSelection.nodeIds);
+      }
+    },
+    [flowId, graphSelection, updateWorkflowURL],
+  );
   const removeStepAtPath = (stepPath: FlowStepPath, nodeId?: string) => {
     if (!definition) {
       return;
@@ -232,9 +262,12 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       (selectedNodeId) => selectedNodeId !== nodeId,
     );
 
-    if (flowId) {
-      updateWorkflowURL(flowId, nextSelection);
-    }
+    setGraphSelection({
+      nodeIds: nextSelection,
+      nodes: graphSelection.nodes.filter(
+        (selectedNode) => selectedNode.id !== nodeId,
+      ),
+    });
   };
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -262,11 +295,12 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     <WorkflowContext.Provider
       value={{
         getQuery,
+        graphSelection,
         openSearchPanel,
         selectedNodeIds,
         getWorkflowFromCache,
         setOpenSearchPanel,
-        setSelectedNodeIds,
+        setGraphSelection,
         selectedFlowId: flowId,
         direction: directionMemo,
         updateWorkflowURL,

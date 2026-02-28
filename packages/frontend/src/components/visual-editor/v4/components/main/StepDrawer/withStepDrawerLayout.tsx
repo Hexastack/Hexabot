@@ -19,15 +19,15 @@ type StepDrawerLayoutWrapperProps = Omit<DrawerLayoutWrapperProps, "onClose"> & 
 };
 
 export const useStepDrawerClose = (onClose?: () => void) => {
-  const { selectedFlowId, setSelectedNodeIds, updateWorkflowURL } = useWorkflow();
+  const { setGraphSelection } = useWorkflow();
 
   return useCallback(() => {
-    setSelectedNodeIds([]);
-    if (selectedFlowId) {
-      void updateWorkflowURL(selectedFlowId);
-    }
+    setGraphSelection({
+      nodeIds: [],
+      nodes: [],
+    });
     onClose?.();
-  }, [onClose, selectedFlowId, setSelectedNodeIds, updateWorkflowURL]);
+  }, [onClose, setGraphSelection]);
 };
 
 export const withStepDrawerLayout = <P extends object>(

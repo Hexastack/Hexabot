@@ -15,8 +15,6 @@ import {
   mergeSettings,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
-import { ENodeType, type GraphNode } from "@hexabot-ai/graph";
-import { useReactFlow } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
@@ -24,6 +22,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
+import { useSelectedActionNode } from "../../../../hooks/useWorkflowSelection";
 import { getSchemaPropertyNames } from "../../../../utils/schema-defaults.utils";
 import { useStepDrawerClose } from "../../StepDrawer/withStepDrawerLayout";
 
@@ -95,27 +94,12 @@ const splitTaskSettings = (
 export const useActionFormDrawerController =
   (): UseActionFormDrawerControllerResult => {
     const { t } = useTranslate();
-    const {
-      selectedNodeIds,
-      definition,
-      updateDefinitionState,
-      isSaving,
-    } = useWorkflow();
+    const { definition, updateDefinitionState, isSaving } = useWorkflow();
     const { actionsByName } = useWorkflowActionsCatalog();
-    const { getNode } = useReactFlow();
-    const selectedNodeId =
-      selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-    const selectedNode = selectedNodeId
-      ? (getNode(selectedNodeId) as GraphNode | undefined)
-      : undefined;
-    const isActionNode =
-      selectedNode?.type === ENodeType.TASK ||
-      selectedNode?.type === ENodeType.AGENT;
-    const actionName = (selectedNode?.data as { actionName?: string })
-      ?.actionName;
-    const taskName = isActionNode
-      ? (selectedNode?.data as { title?: string })?.title
-      : undefined;
+    const selectedActionNode = useSelectedActionNode();
+    const selectedNodeId = selectedActionNode?.id;
+    const actionName = selectedActionNode?.actionName;
+    const taskName = selectedActionNode?.taskName;
     const actionSchema = actionName ? actionsByName.get(actionName) : undefined;
     const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
     const [inputData, setInputData] = useState<Record<string, unknown>>({});
@@ -134,7 +118,7 @@ export const useActionFormDrawerController =
       useState(false);
     const [hasExecutionSettingsVisibleErrors, setHasExecutionSettingsVisibleErrors] =
       useState(false);
-    const open = Boolean(isActionNode && selectedNodeId);
+    const open = Boolean(selectedActionNode && selectedNodeId);
     const panelKeyBase = selectedNodeId ?? actionName ?? "action";
     const hasInputSchema = useMemo(
       () =>
@@ -343,7 +327,7 @@ export const useActionFormDrawerController =
       hasExecutionSettingsVisibleErrors ||
       !definition ||
       !taskName ||
-      !isActionNode ||
+      !selectedActionNode ||
       !taskDefinition ||
       isSaving ||
       Boolean(taskNameValidationError);

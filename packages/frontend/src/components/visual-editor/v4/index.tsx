@@ -6,7 +6,6 @@
 
 import { styled } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { ReactFlowProvider } from "@xyflow/react";
 
 import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
 import { useGet } from "@/hooks/crud/useGet";
@@ -43,20 +42,18 @@ export const WorkflowEditor = () => {
   );
 
   return (
-    <ReactFlowProvider>
-      <WorkflowActionsProvider workflowType={workflow?.type}>
-        <WorkflowProvider workflow={workflow}>
-          <WorkflowJsonataGlobalsSchemaProvider>
-            <StyledContainerGrid container>
-              <Grid container height="100%" width="100%" wrap="nowrap">
-                <StyledGrid size="grow">
-                  <Workflow />
-                </StyledGrid>
-              </Grid>
-            </StyledContainerGrid>
-          </WorkflowJsonataGlobalsSchemaProvider>
-        </WorkflowProvider>
-      </WorkflowActionsProvider>
-    </ReactFlowProvider>
+    <WorkflowActionsProvider workflowType={workflow?.type}>
+      <WorkflowProvider workflow={workflow}>
+        <WorkflowJsonataGlobalsSchemaProvider>
+          <StyledContainerGrid container>
+            <Grid container height="100%" width="100%" wrap="nowrap">
+              <StyledGrid size="grow">
+                <Workflow />
+              </StyledGrid>
+            </Grid>
+          </StyledContainerGrid>
+        </WorkflowJsonataGlobalsSchemaProvider>
+      </WorkflowProvider>
+    </WorkflowActionsProvider>
   );
 };
