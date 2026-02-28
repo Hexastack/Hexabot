@@ -282,22 +282,22 @@ export const getWorkflowPortDimensions = (
 
   if (isHorizontalLeftRight) {
     return {
-      width: "10px",
-      height: "15px",
+      width: '6px',
+      height: '14px',
     };
   }
 
   if (isVerticalTopBottom) {
     return {
-      width: "15px",
-      height: "10px",
+      width: '14px',
+      height: '6px',
     };
   }
 
   if (SPECIAL_DIMENSION_HANDLES.has(baseId)) {
-    return direction === "horizontal"
-      ? { width: "15px", height: "10px" }
-      : { width: "10px", height: "15px" };
+    return direction === 'horizontal'
+      ? { width: '14px', height: '6px' }
+      : { width: '6px', height: '14px' };
   }
 };
 

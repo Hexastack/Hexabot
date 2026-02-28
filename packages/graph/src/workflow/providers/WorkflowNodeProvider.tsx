@@ -5,7 +5,7 @@
  */
 
 import { useNodeConnections, useReactFlow } from "@xyflow/react";
-import { type FC, useMemo } from "react";
+import { type FC } from "react";
 
 import { useWorkflowGraphHost } from "../contexts/workflow-graph-host.context";
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
@@ -19,7 +19,7 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   children,
 }) => {
   const { getNode } = useReactFlow();
-  const node = useMemo(() => getNode(id) as GraphNode | undefined, [getNode, id]);
+  const node = getNode(id) as GraphNode | undefined;
   const connections = useNodeConnections({ id });
   const { actionCatalog, executionStates } = useWorkflowGraphHost();
 
