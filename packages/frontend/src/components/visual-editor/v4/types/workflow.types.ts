@@ -71,8 +71,6 @@ export interface WorkflowContextProps {
   workflow?: IWorkflow;
 }
 
-export type TCb<T> = ((props: T) => void | undefined) & Cancelable;
-
 export type WorkflowEvent<
   T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
 > = T extends `${string}:${infer Rest}` ? Rest : T;
@@ -84,10 +82,3 @@ export type NodeExecutionState =
   | "finish"
   | "suspended"
   | "error";
-
-export type SubscribeWorkflowProps =
-  WorkflowEventMap[keyof WorkflowEventMap] & {
-    workflowId: string;
-    workflowEvent: WorkflowEvent;
-    t: number;
-  };

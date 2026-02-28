@@ -17,8 +17,6 @@ import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context
 import type { EdgeInsertData } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
 
-export const EDGE_HOVER_CLASSNAME = "hovered" as const;
-
 export const EdgeWithButton = ({
   sourceX,
   sourceY,
