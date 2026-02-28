@@ -34,6 +34,7 @@
   gap: 9px;
   align-items: center;
   min-height: 20px;
+  height: 100%;
 }
 
 .workflow-node-icon {
