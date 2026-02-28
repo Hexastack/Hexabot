@@ -5,7 +5,6 @@
  */
 
 import type { CompiledStep, WorkflowDefinition } from '@hexabot-ai/agentic';
-import { useColorScheme } from "@mui/material/styles";
 import {
   Background,
   type Node,
@@ -23,6 +22,7 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 
 import "@xyflow/react/dist/style.css";
@@ -93,6 +93,8 @@ export type WorkflowGraphCallbacks = {
   onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
 };
 
+export type WorkflowGraphColorMode = "light" | "dark" | "system";
+
 export type WorkflowGraphProps = PropsWithChildren<{
   t: WorkflowGraphTranslate;
   model: WorkflowGraphModel;
@@ -100,6 +102,7 @@ export type WorkflowGraphProps = PropsWithChildren<{
   insertion?: WorkflowGraphInsertion;
   viewport: WorkflowGraphViewport;
   callbacks: WorkflowGraphCallbacks;
+  colorMode?: WorkflowGraphColorMode;
 }>;
 
 export type WorkflowGraphHandle = {
@@ -108,10 +111,40 @@ export type WorkflowGraphHandle = {
   clearCenterAfterFirstInsert: () => void;
 };
 
+const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
+const resolveSystemColorMode = (): "light" | "dark" => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return "light";
+  }
+
+  return window.matchMedia(SYSTEM_DARK_QUERY).matches ? "dark" : "light";
+};
+const resolveColorMode = (
+  mode: WorkflowGraphColorMode,
+): "light" | "dark" => {
+  if (mode === "system") {
+    return resolveSystemColorMode();
+  }
+
+  return mode;
+};
 const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
-  ({ t, model, selection, insertion, viewport, callbacks, children }, ref) => {
-    const { mode } = useColorScheme();
-    const colorMode = mode === 'dark' ? 'dark' : 'light';
+  (
+    {
+      t,
+      model,
+      selection,
+      insertion,
+      viewport,
+      callbacks,
+      colorMode = "system",
+      children,
+    },
+    ref,
+  ) => {
+    const [resolvedColorMode, setResolvedColorMode] = useState<"light" | "dark">(
+      () => resolveColorMode(colorMode),
+    );
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
       compiledFlow: model.compiledFlow,
@@ -160,6 +193,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     const hostContextValue = useMemo<WorkflowGraphHostContextValue>(
       () => ({
         translate: t,
+        colorMode: resolvedColorMode,
         direction: model.layoutDirection,
         actionCatalog: model.actionCatalog,
         executionStates: model.executionStates,
@@ -170,6 +204,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
         model.actionCatalog,
         model.executionStates,
         model.layoutDirection,
+        resolvedColorMode,
         t,
       ],
     );
@@ -192,6 +227,32 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
       lastViewportRef.current = initialViewport;
     }, [initialViewport.x, initialViewport.y, initialViewport.zoom]);
 
+    useEffect(() => {
+      if (colorMode !== "system") {
+        setResolvedColorMode(colorMode);
+
+        return;
+      }
+
+      if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+        setResolvedColorMode("light");
+
+        return;
+      }
+
+      const media = window.matchMedia(SYSTEM_DARK_QUERY);
+      const handleChange = () => {
+        setResolvedColorMode(media.matches ? "dark" : "light");
+      };
+
+      handleChange();
+      media.addEventListener("change", handleChange);
+
+      return () => {
+        media.removeEventListener("change", handleChange);
+      };
+    }, [colorMode]);
+
     const handleMoveEnd = useCallback(
       (_event: MouseEvent | TouchEvent | null, nextViewport: Viewport) => {
         if (isSameViewport(lastViewportRef.current, nextViewport)) {
@@ -207,6 +268,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     return (
       <WorkflowGraphHostContext.Provider value={hostContextValue}>
         <ReactFlow
+          className="workflow-graph"
           edges={edges}
           nodes={nodes}
           defaultViewport={initialViewport}
@@ -218,7 +280,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
           onMoveEnd={handleMoveEnd}
           onNodeClick={callbacks.onNodeClick}
           onlyRenderVisibleElements
-          colorMode={colorMode}
+          colorMode={resolvedColorMode}
         >
           <WorkflowControls
             direction={model.layoutDirection}

@@ -76,12 +76,9 @@ export const EdgeWithButton = ({
             className="button-edge__label nodrag nopan"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              display: "flex",
-              alignItems: "center",
-              gap: 0,
             }}
           >
-            <span style={{ display: "inline-flex" }}>
+            <span className="button-edge__label-content">
               <PulseIconButton
                 type="button"
                 size={25}

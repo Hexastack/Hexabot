@@ -26,6 +26,10 @@ export const RotateButton = ({
   onRotate,
 }: RotateButtonProps) => {
   const { fitView } = useReactFlow();
+  const iconClassName =
+    direction === "horizontal"
+      ? "workflow-rotate-icon workflow-rotate-icon--horizontal"
+      : "workflow-rotate-icon workflow-rotate-icon--vertical";
 
   return (
     <ControlButton
@@ -49,13 +53,7 @@ export const RotateButton = ({
         }, fitViewDelay);
       }}
     >
-      <RotateCw
-        size={14}
-        style={{
-          transition: "transform 0.2s",
-          transform: `rotate(${direction === "horizontal" ? "50deg" : "140deg"})`,
-        }}
-      />
+      <RotateCw size={14} className={iconClassName} />
     </ControlButton>
   );
 };

@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { alpha } from "@mui/material/styles";
 import { getNodesBounds, Position, type Edge } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import ELK from "elkjs/lib/elk.bundled.js";
@@ -28,6 +27,7 @@ import {
   type WorkflowPort,
 } from "../types/workflow-node.types";
 
+import { withAlpha } from "./color.utils";
 import { decorateSemanticGraph } from "./graph-builder/decorate";
 import { projectSemanticGraph } from "./graph-builder/project";
 import { traverseWorkflow } from "./graph-builder/traverse";
@@ -375,8 +375,8 @@ const getGroupNodes = (
         height: bounds.height + padding,
         zIndex: -1,
         borderRadius: "1rem",
-        backgroundColor: color ? alpha(color, backgroundAlpha) : undefined,
-        border: `1px solid ${alpha("#0004", backgroundAlpha)}`,
+        backgroundColor: color ? withAlpha(color, backgroundAlpha) : undefined,
+        border: `1px solid ${withAlpha("#0004", backgroundAlpha)}`,
       },
     });
   });

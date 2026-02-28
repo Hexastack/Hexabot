@@ -9,8 +9,8 @@ import { MarkerType, type Node } from "@xyflow/react";
 import {
   Bot,
   Brain,
-  CircleStop,
   ChartNoAxesGantt,
+  CircleStop,
   Database,
   GitBranch,
   ListTree,
@@ -19,7 +19,7 @@ import {
   Repeat,
   Zap,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   EEdgeType,
@@ -35,7 +35,6 @@ import { getTaskAction, getTaskDescription } from "../utils/workflow-task.utils"
 const WORKFLOW_OPERATOR_GRAPH_THEME = {
   [StepType.Parallel]: {
     Icon: ListTree,
-    color: "#0c9ba0",
     nodeTheme: {
       Icon: ListTree,
       borderColor: "#0c9ba0",
@@ -44,7 +43,6 @@ const WORKFLOW_OPERATOR_GRAPH_THEME = {
   },
   [StepType.Conditional]: {
     Icon: GitBranch,
-    color: "#2162fb",
     nodeTheme: {
       Icon: GitBranch,
       borderColor: "#2162fb",
@@ -53,7 +51,6 @@ const WORKFLOW_OPERATOR_GRAPH_THEME = {
   },
   [StepType.Loop]: {
     Icon: Repeat,
-    color: "#0c9ba0",
     nodeTheme: {
       Icon: Repeat,
       borderColor: "#0c9ba0",
@@ -66,7 +63,6 @@ export type WorkflowInsertMenuItem = {
   id: string;
   type: EdgeInsertType;
   Icon: LucideIcon;
-  color: string;
   i18nTitle: string;
 };
 
@@ -75,28 +71,24 @@ export const WORKFLOW_INSERT_MENU_ITEMS: WorkflowInsertMenuItem[] = [
     id: "step",
     type: "step",
     Icon: ChartNoAxesGantt,
-    color: "#0288d1",
     i18nTitle: "label.step_trace.type_step",
   },
   {
     id: StepType.Conditional,
     type: StepType.Conditional,
     Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].Icon,
-    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].color,
     i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Conditional].i18nTitle,
   },
   {
     id: StepType.Loop,
     type: StepType.Loop,
     Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].Icon,
-    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].color,
     i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Loop].i18nTitle,
   },
   {
     id: StepType.Parallel,
     type: StepType.Parallel,
     Icon: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].Icon,
-    color: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].color,
     i18nTitle: WORKFLOW_OPERATOR_GRAPH_THEME[StepType.Parallel].i18nTitle,
   },
 ];
@@ -111,15 +103,15 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 180, height: 55 },
+  [ENodeType.MODEL]: { width: 180, height: 68 },
   [ENodeType.TOOL]: { width: 180, height: 55 },
-  [ENodeType.AGENT]: { width: 256, height: 75 },
-  [ENodeType.INDICATOR]: { width: 100, height: 56 },
-  [ENodeType.TASK]: { width: 256, height: 75 },
-  [ENodeType.OPERATOR]: { width: 150, height: 55 },
-  [ENodeType.MEMORY]: { width: 256, height: 75 },
+  [ENodeType.AGENT]: { width: 256, height: 86 },
+  [ENodeType.INDICATOR]: { width: 128, height: 68 },
+  [ENodeType.TASK]: { width: 256, height: 86 },
+  [ENodeType.OPERATOR]: { width: 156, height: 68 },
+  [ENodeType.MEMORY]: { width: 256, height: 86 },
   [ENodeType.BRANCH_PLACEHOLDER]: { width: 64, height: 64 },
-} satisfies INodeConfig["dimensions"];
+} satisfies INodeConfig['dimensions'];
 
 export const HIGHLIGHTS = {
   [StepType.Loop]: { color: "#fefbe8", padding: 64 },

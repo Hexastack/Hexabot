@@ -11,6 +11,7 @@ import {
 } from "@hexabot-ai/agentic";
 import {
   WorkflowGraph,
+  type WorkflowGraphColorMode,
   type EdgeInsertType,
   type FlowStepPath,
   type MemoryDefinition,
@@ -18,6 +19,7 @@ import {
   type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
 import { Box, Button, Stack, styled } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
 import { CloudOff, CloudUpload } from "lucide-react";
 import {
   useCallback,
@@ -52,6 +54,7 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
+import "./workflow-layout.css";
 
 const StyledBox = styled(Box)(() => ({
   position: "relative",
@@ -78,6 +81,7 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
 
 export const Workflow = () => {
   const { t } = useTranslate();
+  const { mode } = useColorScheme();
   const { query } = useAppRouter();
   const { nodeIds } = query;
   const {
@@ -117,6 +121,8 @@ export const Workflow = () => {
   const actionsDrawerId = "workflow-actions-drawer";
   const publishLabel = t("button.publish");
   const unpublishLabel = t("button.unpublish");
+  const graphColorMode: WorkflowGraphColorMode =
+    mode === "light" || mode === "dark" ? mode : "system";
   const workflowGraphRef = useRef<WorkflowGraphHandle | null>(null);
   const focusNodeIds = useMemo(
     () =>
@@ -358,6 +364,7 @@ export const Workflow = () => {
       <StyledBox>
         <WorkflowGraph
           ref={workflowGraphRef}
+          colorMode={graphColorMode}
           t={translateGraph}
           model={{
             definition,

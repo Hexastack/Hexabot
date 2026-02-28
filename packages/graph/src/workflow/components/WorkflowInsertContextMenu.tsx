@@ -172,14 +172,12 @@ export const WorkflowInsertContextMenu = ({
               type="button"
               role="menuitem"
               className="workflow-insert-menu__item nodrag nopan"
+              data-item-id={item.id}
               onClick={(event) => {
                 handleMenuItemClick(event, item.type);
               }}
             >
-              <span
-                className="workflow-insert-menu__icon"
-                style={{ color: item.color }}
-              >
+              <span className="workflow-insert-menu__icon">
                 <item.Icon size={18} />
               </span>
               <span className="workflow-insert-menu__label">

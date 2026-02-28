@@ -1,134 +1,126 @@
-/* xyflow theme files. Delete these to start from our base */
+.workflow-graph {
+  --workflow-accent: #1dc7fc;
+  --workflow-hover-surface: #cbd5e1;
+  --workflow-focus-ring: #e2e8f0;
+  --workflow-controls-radius: 10px;
+  --workflow-controls-shadow: 0 10px 24px #0f172a1c;
+  --workflow-pulse-border: #94a3b8;
+  --workflow-pulse-bg: #ffffff;
+  --workflow-pulse-color: #0f172a;
+  --workflow-pulse-ring-color: #0ea5e9;
+  --workflow-pulse-shadow: 0 3px 6px #0000001a;
+  --workflow-pulse-hover-mix: #000000;
+  --workflow-node-selection-border: var(--workflow-accent);
+  --workflow-node-selection-scale: 1.03;
+  --workflow-node-selected-outline: 0 0 0 1px #1dc7fc66;
 
-.react-flow {
-  --xy-background-color: #f7f9fb;
-  /* Custom Variables */
-  --xy-theme-selected: #1dc7fc;
-  --xy-theme-hover: #c5c5c5;
-  --xy-theme-edge-hover: black;
-  --xy-theme-color-focus: #e8e8e8;
-
-  /* Built-in Variables see https://reactflow.dev/learn/customization/theming */
-  --xy-node-border-default: 1px solid #ededed;
-
-  --xy-node-boxshadow-default:
-    0px 3.54px 4.55px 0px #00000005, 0px 3.54px 4.55px 0px #0000000d,
-    0px 0.51px 1.01px 0px #0000001a;
-
-  --xy-node-border-radius-default: 6px;
-
-  --xy-handle-background-color-default: #ffffff;
-  --xy-handle-border-color-default: #aaaaaa;
-
-  --xy-edge-label-color-default: #505050;
-
+  --xy-node-border-default: 1px solid #e2e8f0;
+  --xy-node-border-radius-default: 8px;
+  --xy-node-boxshadow-default: 0 3px 6px #00000014;
+  --xy-edge-label-color-default: #51627a;
   --xy-background-color-default: transparent;
-  --xy-background-pattern-dots-color-default: #91919a;
-  --xy-background-pattern-lines-color-default: #eee;
-  --xy-background-pattern-cross-color-default: #e2e2e2;
-  background-color: var(
-    --xy-background-color,
-    var(--xy-background-color-default)
-  );
+  --xy-background-pattern-dots-color-default: #a3afc2;
+  --xy-background-pattern-lines-color-default: #e5e7eb;
+  --xy-background-pattern-cross-color-default: #dbe3ef;
+  --xy-controls-button-background-color-default: #ffffff;
+  --xy-controls-button-background-color-hover-default: #f1f5f9;
+  --xy-controls-button-color-default: #334155;
+  --xy-controls-button-color-hover-default: #0f172a;
+  --xy-controls-button-border-color-default: #d8dee8;
+  --xy-controls-box-shadow-default: var(--workflow-controls-shadow);
 }
 
-.react-flow.dark {
-  --xy-edge-stroke-default: #3e3e3e;
+.workflow-graph.dark {
+  --workflow-hover-surface: #475569;
+  --workflow-focus-ring: #334155;
+  --workflow-controls-shadow: 0 16px 32px #0206178f;
+  --workflow-pulse-border: #475569;
+  --workflow-pulse-bg: #0b1220;
+  --workflow-pulse-color: #e2e8f0;
+  --workflow-pulse-ring-color: #38bdf8;
+  --workflow-pulse-shadow: 0 4px 8px #00000052;
+  --workflow-pulse-hover-mix: #ffffff;
+  --workflow-node-selected-outline: 0 0 0 1px #1dc7fc8c;
+
+  --xy-edge-stroke-default: #475569;
   --xy-edge-stroke-width-default: 1;
-  --xy-edge-stroke-selected-default: #727272;
-  --xy-connectionline-stroke-default: #b1b1b7;
+  --xy-edge-stroke-selected-default: #94a3b8;
+  --xy-connectionline-stroke-default: #94a3b8;
   --xy-connectionline-stroke-width-default: 1;
-  --xy-attribution-background-color-default: rgba(150, 150, 150, 0.25);
-  --xy-minimap-background-color-default: #141414;
-  --xy-minimap-mask-background-color-default: rgba(60, 60, 60, 0.6);
-  --xy-minimap-mask-stroke-color-default: transparent;
-  --xy-minimap-mask-stroke-width-default: 1;
-  --xy-minimap-node-background-color-default: #2b2b2b;
-  --xy-minimap-node-stroke-color-default: transparent;
-  --xy-minimap-node-stroke-width-default: 2;
-  --xy-background-color-default: #141414;
-  --xy-background-pattern-dots-color-default: #777;
-  --xy-background-pattern-lines-color-default: #777;
-  --xy-background-pattern-cross-color-default: #777;
-  --xy-node-color-default: #f8f8f8;
-  --xy-node-border-default: 1px solid #3c3c3c;
-  --xy-node-background-color-default: #1e1e1e;
-  --xy-node-group-background-color-default: rgba(255, 248, 151, 0.796);
-  --xy-node-boxshadow-hover-default: 0 1px 4px 1px rgba(255, 255, 255, 0.08);
-  --xy-node-boxshadow-selected-default: 0 0 0 0.5px #999;
-  --xy-handle-background-color-default: #bebebe;
-  --xy-handle-border-color-default: #1e1e1e;
-  --xy-selection-background-color-default: rgba(200, 200, 220, 0.08);
-  --xy-selection-border-default: 1px dotted rgba(200, 200, 220, 0.8);
-  --xy-controls-button-background-color-default: #2b2b2b;
-  --xy-controls-button-background-color-hover-default: #3e3e3e;
-  --xy-controls-button-color-default: #f8f8f8;
-  --xy-controls-button-color-hover-default: #fff;
-  --xy-controls-button-border-color-default: #5b5b5b;
-  --xy-controls-box-shadow-default: 0 0 2px 1px rgba(0, 0, 0, 0.08);
-  --xy-edge-label-background-color-default: #141414;
-  --xy-edge-label-color-default: #f8f8f8;
-  --xy-background-color-props: #000000;
+  --xy-background-color-default: #0b1220;
+  --xy-background-pattern-dots-color-default: #46556d;
+  --xy-background-pattern-lines-color-default: #334155;
+  --xy-background-pattern-cross-color-default: #334155;
+  --xy-node-color-default: #e2e8f0;
+  --xy-node-border-default: 1px solid #334155;
+  --xy-node-background-color-default: #111827;
+  --xy-node-boxshadow-hover-default: 0 1px 4px 1px #ffffff14;
+  --xy-node-boxshadow-selected-default: 0 0 0 0.5px #94a3b8;
+  --xy-handle-background-color-default: #94a3b8;
+  --xy-handle-border-color-default: #111827;
+  --xy-selection-background-color-default: #94a3b81f;
+  --xy-selection-border-default: 1px dotted #94a3b8b8;
+  --xy-controls-button-background-color-default: #1e293b;
+  --xy-controls-button-background-color-hover-default: #334155;
+  --xy-controls-button-color-default: #e2e8f0;
+  --xy-controls-button-color-hover-default: #ffffff;
+  --xy-controls-button-border-color-default: #475569;
+  --xy-edge-label-background-color-default: #0b1220;
+  --xy-edge-label-color-default: #e2e8f0;
 }
 
-.visual-editor-v4 {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* node */
-.react-flow__node {
+.workflow-graph .react-flow__node {
   border-radius: var(--xy-node-border-radius-default);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-  margin: 0;
-  font-size: 12px;
-  flex-direction: column;
   border: var(--xy-node-border-default);
   color: var(--xy-node-color, var(--xy-node-color-default));
   border-color: transparent;
   border-width: 2px;
 }
 
-.react-flow__node.selectable:focus {
-  box-shadow: 0px 0px 0px 4px var(--xy-theme-color-focus);
-  border-color: #d9d9d9;
+.workflow-graph .react-flow__node.selectable:focus {
+  box-shadow: 0 0 0 4px var(--workflow-focus-ring);
+  border-color: #cbd5e1;
 }
 
-.react-flow__node.selectable:focus:active {
+.workflow-graph .react-flow__node.selectable:focus:active {
   box-shadow: var(--xy-node-boxshadow-default);
 }
 
-.react-flow__node.selectable:hover,
-.react-flow__node.draggable:hover {
+.workflow-graph .react-flow__node.selectable:hover,
+.workflow-graph .react-flow__node.draggable:hover {
   border-color: transparent;
   border-width: 2px;
 }
 
-.react-flow__node.selectable.selected .custom-node2 {
-  border-radius: 12px !important;
-  transform: scale(1.06);
-  transition: 0.2s;
-  border-color: var(--xy-theme-selected) !important;
-  border-width: 3px !important;
+.workflow-graph .react-flow__node.selectable.selected {
+  transform: scale(var(--workflow-node-selection-scale));
 }
 
-.react-flow__node.selectable.selected .node-title {
-  border-radius: 9px 0 0 0 !important;
+.workflow-graph .react-flow__node.selectable.selected .workflow-node-card {
+  border-color: var(--workflow-node-selection-border);
+  border-width: 3px;
+  box-shadow:
+    var(--workflow-node-selected-outline),
+    0 3px 6px #0000001f;
 }
 
-.react-flow__node > div:first-child > div:first-child {
-  transition:
-    in 0.4s,
-    out 0.5s;
-}
-
-.react-flow__edgelabel-renderer {
+.workflow-graph .react-flow__edgelabel-renderer {
   z-index: 10000;
+}
+
+.workflow-graph .workflow-controls {
+  overflow: hidden;
+  border-radius: var(--workflow-controls-radius);
+}
+
+.workflow-rotate-icon {
+  transition: transform 0.2s ease;
+}
+
+.workflow-rotate-icon--horizontal {
+  transform: rotate(50deg);
+}
+
+.workflow-rotate-icon--vertical {
+  transform: rotate(140deg);
 }

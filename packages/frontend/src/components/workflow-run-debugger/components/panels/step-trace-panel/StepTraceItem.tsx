@@ -34,6 +34,7 @@ export const StepTraceItem = ({
   const resolvedTheme = resolveWorkflowStepTheme({
     action: actionDefinition,
     status: step.status,
+    mode: theme.palette.mode,
   });
   const groupLabel = actionDefinition?.group?.trim();
   const accentColor =

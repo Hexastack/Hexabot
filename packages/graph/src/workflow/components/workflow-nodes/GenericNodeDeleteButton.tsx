@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IconButton, Tooltip } from "@mui/material";
 import { Trash2 } from "lucide-react";
 import { useCallback, type MouseEvent } from "react";
 
@@ -32,30 +31,17 @@ export const GenericNodeDeleteButton = () => {
     return null;
   }
 
+  const label = translate("button.delete");
+
   return (
-    <Tooltip title={translate("button.delete")}>
-      <IconButton
-        className="nodrag nopan workflow-node-delete"
-        size="small"
-        color="error"
-        aria-label={translate("button.delete")}
-        onClick={handleDelete}
-        sx={{
-          position: "absolute",
-          top: 6,
-          right: 6,
-          zIndex: 5,
-          backgroundColor: "background.paper",
-          border: "1px solid",
-          borderColor: "divider",
-          boxShadow: 1,
-          "&:hover": {
-            backgroundColor: "background.paper",
-          },
-        }}
-      >
-        <Trash2 size={14} />
-      </IconButton>
-    </Tooltip>
+    <button
+      type="button"
+      className="nodrag nopan workflow-node-delete workflow-node-delete-button"
+      aria-label={label}
+      title={label}
+      onClick={handleDelete}
+    >
+      <Trash2 size={14} />
+    </button>
   );
 };

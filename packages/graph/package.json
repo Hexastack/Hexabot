@@ -38,8 +38,6 @@
   },
   "dependencies": {
     "@hexabot-ai/agentic": "workspace:*",
-    "@mui/material": "^7.0.0",
-    "@mui/utils": "^7.0.0",
     "elkjs": "^0.11.0",
     "lucide-react": "^0.562.0"
   },

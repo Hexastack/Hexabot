@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useTheme } from "@mui/material/styles";
 import { Controls } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 
@@ -25,16 +24,11 @@ export const WorkflowControls = ({
   onFitView,
   fitViewDuration = 200,
 }: WorkflowControlsProps) => {
-  const theme = useTheme();
-
   return (
     <Controls
+      className="workflow-controls"
       onFitView={onFitView}
       fitViewOptions={{ duration: fitViewDuration }}
-      style={{
-        overflow: "hidden",
-        borderRadius: theme.shape.borderRadius,
-      }}
     >
       <RotateButton direction={direction} onRotate={onRotate} />
     </Controls>

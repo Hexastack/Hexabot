@@ -151,12 +151,14 @@ export const WorkflowGraphExample = ({
 | `insertion` | No | Insert handlers for edge insert points and empty-state root insertion. |
 | `viewport` | Yes | Controlled viewport input (`value`) and `onChange` callback when pan/zoom changes. |
 | `callbacks` | Yes | Interaction callbacks (`onNodeClick`, `onRemoveStep`, `onRotate`). |
+| `colorMode` | No | Graph color mode (`"light" | "dark" | "system"`). Defaults to `"system"`. |
 
 Behavior notes:
 
 - `WorkflowGraph` wraps its canvas in an internal `ReactFlowProvider`; you do not need to add one around it.
 - Selection is controlled: pass `selectedNodeIds`, and consume `selection.onChange` to keep your source of truth in sync.
 - Viewport is controlled through `viewport.value` + `viewport.onChange`.
+- `colorMode` controls xyflow light/dark styling; `"system"` tracks `prefers-color-scheme`.
 - If `compiledFlow` is empty and `insertion.onInsertAtRoot` is provided, the empty-state insert button is rendered.
 - The `WorkflowGraphHandle` ref exposes `animateFocus(nodeIds?)`, `requestCenterAfterFirstInsert()`, and `clearCenterAfterFirstInsert()`.
 
@@ -183,11 +185,6 @@ All exports come from `@hexabot-ai/graph` via `src/index.ts -> src/workflow/inde
 Components:
 
 - `WorkflowGraph`
-- `PulseIconButton`
-- `RotateButton`
-- `WorkflowEmptyState`
-- `WorkflowControls`
-- `WorkflowInsertContextMenu`
 
 Hooks and context:
 
@@ -201,6 +198,7 @@ Hooks and context:
 Core graph types and enums:
 
 - `WorkflowGraphProps`
+- `WorkflowGraphColorMode`
 - `WorkflowGraphHandle`
 - `EdgeInsertType`
 - `FlowStepPath`

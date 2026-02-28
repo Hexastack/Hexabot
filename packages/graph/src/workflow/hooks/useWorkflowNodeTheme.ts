@@ -5,21 +5,16 @@
  */
 
 import { ActionStatus } from "@hexabot-ai/agentic";
-import { styled, useColorScheme, useTheme } from "@mui/material/styles";
 
+import { useWorkflowGraphHost } from "../contexts/workflow-graph-host.context";
 import {
   ENodeType,
   type NodeExecutionState,
-  type WorkflowNodeTheme,
 } from "../types/workflow-node.types";
 import { resolveWorkflowStepTheme } from "../utils/workflow-theme.utils";
 
 import { useWorkflowNode } from "./useWorkflowNode";
 
-const ICON_STYLE = {
-  width: "20px",
-  height: "20px",
-} as const;
 const toActionStatus = (
   executionState?: NodeExecutionState,
 ): ActionStatus | undefined => {
@@ -39,20 +34,13 @@ const toActionStatus = (
 };
 
 export const useWorkflowNodeTheme = <T extends ENodeType = ENodeType>() => {
-  const muiTheme = useTheme();
-  const { mode } = useColorScheme();
+  const { colorMode } = useWorkflowGraphHost();
   const { theme: baseTheme, action, executionState } = useWorkflowNode<T>();
-  const resolvedTheme = resolveWorkflowStepTheme({
+
+  return resolveWorkflowStepTheme({
     baseTheme,
     action,
     status: toActionStatus(executionState),
-    mode,
-    theme: muiTheme,
+    mode: colorMode,
   });
-  const StyledIcon = styled(resolvedTheme.Icon)(() => ICON_STYLE);
-
-  return {
-    ...resolvedTheme,
-    Icon: StyledIcon,
-  } satisfies WorkflowNodeTheme;
 };

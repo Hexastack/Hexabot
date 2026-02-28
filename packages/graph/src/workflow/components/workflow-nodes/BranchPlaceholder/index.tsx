@@ -47,7 +47,7 @@ export const BranchPlaceholder: FC<
           <PulseIconButton
             type="button"
             tabIndex={-1}
-            size={42}
+            size={32}
             className="workflow-branch-placeholder__pulse"
             aria-label={addLabel}
             aria-haspopup="menu"

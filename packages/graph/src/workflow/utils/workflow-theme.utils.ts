@@ -5,10 +5,11 @@
  */
 
 import { ActionStatus } from "@hexabot-ai/agentic";
-import { CircularProgress, type Theme } from "@mui/material";
 import * as Icons from "lucide-react";
+import { createElement, type ComponentProps } from "react";
 
-import type { WorkflowAction ,
+import type {
+  WorkflowAction,
   WorkflowIcon,
   WorkflowNodeTheme,
 } from "../types/workflow-node.types";
@@ -23,17 +24,32 @@ type WorkflowThemeInput = {
   action?: WorkflowAction;
   status?: ActionStatus;
   mode?: "light" | "dark" | "system";
-  theme?: Theme;
 };
 
 export type ResolvedWorkflowTheme = WorkflowNodeTheme & { Icon: WorkflowIcon };
+
+const DEFAULT_NODE_TEXT_COLOR = "#51627a";
+const DEFAULT_LIGHT_MIX_TARGET = "#ffffff";
+const DEFAULT_DARK_MIX_TARGET = "#000000";
+const appendClassName = (className: string | undefined, name: string) => {
+  return className ? `${className} ${name}` : name;
+};
+const WorkflowRunningIcon: WorkflowIcon = ({
+  className,
+  ...props
+}: ComponentProps<typeof Icons.LoaderCircle>) => {
+  return createElement(Icons.LoaderCircle, {
+    ...props,
+    className: appendClassName(className, "workflow-icon-spin"),
+  });
+};
 
 export const getWorkflowStateConfig = (
   status?: ActionStatus,
 ): WorkflowStateConfig | undefined => {
   switch (status) {
     case "running":
-      return { icon: CircularProgress, color: "#4dc4e6" };
+      return { icon: WorkflowRunningIcon, color: "#4dc4e6" };
     case "completed":
       return undefined;
     case "failed":
@@ -50,7 +66,6 @@ export const resolveWorkflowStepTheme = ({
   action,
   status,
   mode,
-  theme,
 }: WorkflowThemeInput): ResolvedWorkflowTheme => {
   const iconName = action?.icon;
   const apiIcon =
@@ -67,11 +82,11 @@ export const resolveWorkflowStepTheme = ({
 
   return {
     Icon,
-    color: baseTheme?.color || theme?.typography.caption.color,
+    color: baseTheme?.color || DEFAULT_NODE_TEXT_COLOR,
     bgColor:
       baseTheme?.bgColor ||
       (accentColor
-        ? `color-mix(in srgb, ${accentColor}, ${isDarkMode ? theme?.palette.common.black : theme?.palette.common.white} ${isDarkMode ? "85%" : "95%"})`
+        ? `color-mix(in srgb, ${accentColor}, ${isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET} ${isDarkMode ? "85%" : "95%"})`
         : undefined),
     iconColor: accentColor || baseTheme?.iconColor,
     borderColor: accentColor || baseTheme?.borderColor,

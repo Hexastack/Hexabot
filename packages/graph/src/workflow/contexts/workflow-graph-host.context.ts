@@ -20,6 +20,7 @@ export type WorkflowGraphTranslate = (
 
 export type WorkflowGraphHostContextValue = {
   translate: WorkflowGraphTranslate;
+  colorMode: "light" | "dark";
   direction?: ResizeControlDirection;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   executionStates: WorkflowExecutionStateMap;

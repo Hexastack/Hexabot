@@ -49,6 +49,7 @@ export const WorkflowEmptyState = ({
         <span className="workflow-empty-state-action">
           <PulseIconButton
             type="button"
+            size={64}
             className="nodrag nopan"
             aria-label={translate("button.add")}
             aria-controls={isMenuOpen ? menuId : undefined}

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Tooltip } from "@mui/material";
+import type { CSSProperties } from "react";
 
 import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context";
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
@@ -26,38 +26,15 @@ export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
     : normalizeTitle(title);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        height: "20px",
-        gap: "9px",
-      }}
-    >
+    <div className="workflow-node-title-row">
       <GenericNodeIcon />
       <div
-        style={{
-          color,
-          display: "flex",
-          placeItems: "center",
-          overflow: "hidden",
-        }}
+        className="workflow-node-title-text-wrap"
+        style={{ "--workflow-node-title-color": color } as CSSProperties}
       >
-        <Tooltip arrow title={normalizedTitle} placement="top">
-          <div
-            style={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              fontWeight: 600,
-              textOverflow: "ellipsis",
-              fontSize: "0.875rem",
-              zIndex: 4,
-              textTransform: "capitalize",
-            }}
-          >
-            {normalizedTitle}
-          </div>
-        </Tooltip>
+        <div className="workflow-node-title-text" title={normalizedTitle}>
+          {normalizedTitle}
+        </div>
       </div>
     </div>
   );
