@@ -708,12 +708,6 @@ importers:
       '@hexabot-ai/agentic':
         specifier: workspace:*
         version: link:../agentic
-      '@mui/material':
-        specifier: ^7.0.0
-        version: 7.3.7(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react@18.3.1))(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@mui/utils':
-        specifier: ^7.0.0
-        version: 7.3.7(@types/react@18.3.2)(react@18.3.1)
       elkjs:
         specifier: ^0.11.0
         version: 0.11.0
