@@ -29,6 +29,7 @@ type WorkflowThemeInput = {
 export type ResolvedWorkflowTheme = WorkflowNodeTheme & { Icon: WorkflowIcon };
 
 const DEFAULT_NODE_TEXT_COLOR = "#51627a";
+const DEFAULT_DARK_NODE_TEXT_COLOR = "#ffffff";
 const DEFAULT_LIGHT_MIX_TARGET = "#ffffff";
 const DEFAULT_DARK_MIX_TARGET = "#000000";
 const appendClassName = (className: string | undefined, name: string) => {
@@ -74,21 +75,27 @@ export const resolveWorkflowStepTheme = ({
       : undefined;
   const isDarkMode = mode === "dark";
   const stateConfig = getWorkflowStateConfig(status);
-  const uiColor = baseTheme?.borderColor;
-  const apiColor = action?.color;
-  const accentColor = stateConfig?.color || uiColor || apiColor;
+  const stateColor = stateConfig?.color;
+  const borderColor = stateColor ?? baseTheme?.borderColor ?? action?.color;
+  const iconColor =
+    stateColor ??
+    baseTheme?.iconColor ??
+    baseTheme?.borderColor ??
+    action?.color;
   const uiIcon = baseTheme?.Icon;
   const Icon = stateConfig?.icon || uiIcon || apiIcon || Icons.Zap;
 
   return {
     Icon,
-    color: baseTheme?.color || DEFAULT_NODE_TEXT_COLOR,
+    color:
+      baseTheme?.color ||
+      (isDarkMode ? DEFAULT_DARK_NODE_TEXT_COLOR : DEFAULT_NODE_TEXT_COLOR),
     bgColor:
       baseTheme?.bgColor ||
-      (accentColor
-        ? `color-mix(in srgb, ${accentColor}, ${isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET} ${isDarkMode ? "85%" : "95%"})`
+      (borderColor
+        ? `color-mix(in srgb, ${borderColor}, ${isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET} ${isDarkMode ? "85%" : "95%"})`
         : undefined),
-    iconColor: accentColor || baseTheme?.iconColor,
-    borderColor: accentColor || baseTheme?.borderColor,
+    iconColor,
+    borderColor,
   };
 };

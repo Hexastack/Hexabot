@@ -48,6 +48,14 @@ describe("workflow-theme.utils", () => {
     expect(resolved.bgColor).toContain("#000000 85%");
   });
 
+  it("uses white text color fallback in dark mode", () => {
+    const resolved = resolveWorkflowStepTheme({
+      mode: "dark",
+    });
+
+    expect(resolved.color).toBe("#ffffff");
+  });
+
   it("keeps base theme values when provided", () => {
     const resolved = resolveWorkflowStepTheme({
       baseTheme: {
