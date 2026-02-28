@@ -66,10 +66,7 @@ import type {
 import type {
   WorkflowSelectionSnapshot,
 } from "../types/workflow-selection.types";
-import {
-  isSameSelection,
-  isSameViewport,
-} from "../utils/workflow-graph.utils";
+import { isSameViewport } from '../utils/workflow-graph.utils';
 import {
   buildNodesAndEdges,
   getWorkflowDefaultConfig,
@@ -93,10 +90,6 @@ export type WorkflowGraphProps = {
   queryNodeIds?: string;
   selectedNodeIds: string[];
   onFocused?: () => void;
-  /**
-   * @deprecated Use onSelectionChange instead.
-   */
-  onSelectedNodeIdsChange?: (nodeIds: string[]) => void;
   onSelectionChange?: (selection: WorkflowSelectionSnapshot) => void;
   translate: WorkflowGraphTranslate;
   actionsByName: Map<string, WorkflowAction>;
@@ -105,7 +98,7 @@ export type WorkflowGraphProps = {
   viewport?: ViewportState | null;
   onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
   direction?: ResizeControlDirection;
-  onRotate: (nextDirection: "horizontal" | "vertical") => Promise<boolean>;
+  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
 } & PropsWithChildren;
 
 export type WorkflowGraphRef = {
@@ -122,7 +115,6 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
       onInsertAtPath,
       onInsertAtRoot,
       onNodeClick,
-      onSelectedNodeIdsChange,
       onSelectionChange,
       translate,
       actionsByName,
@@ -140,18 +132,18 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
     ref,
   ) => {
     const { mode } = useColorScheme();
-    const colorMode = mode === "dark" ? "dark" : "light";
+    const colorMode = mode === 'dark' ? 'dark' : 'light';
     const isEmptyWorkflow = !definition?.flow?.length;
     const compileActionsByName = useMemo(
       () =>
         Array.from(actionsByName.entries()).reduce(
           (acc, [name, action]) => {
             acc[name] =
-              action as unknown as WorkflowCompileOptions["actions"][string];
+              action as unknown as WorkflowCompileOptions['actions'][string];
 
             return acc;
           },
-          {} as WorkflowCompileOptions["actions"],
+          {} as WorkflowCompileOptions['actions'],
         ),
       [actionsByName],
     );
@@ -235,7 +227,7 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
           }
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error("Failed to layout workflow graph:", error);
+          console.error('Failed to layout workflow graph:', error);
           if (!isCancelled) {
             setGraph(EMPTY_WORKFLOW_GRAPH);
           }
@@ -320,18 +312,12 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
           return;
         }
 
-        const previousNodeIds = selectedNodeIdsRef.current;
-
         selectionRef.current = nextSelection;
         selectedNodeIdsRef.current = nextSelection.nodeIds;
 
-        if (!isSameSelection(nextSelection.nodeIds, previousNodeIds)) {
-          onSelectedNodeIdsChange?.(nextSelection.nodeIds);
-        }
-
         onSelectionChange?.(nextSelection);
       },
-      [isEmptyWorkflow, nodesWithHandlers, onSelectedNodeIdsChange, onSelectionChange],
+      [isEmptyWorkflow, nodesWithHandlers, onSelectionChange],
     );
     const handleQuerySelectionResolved = useCallback(
       (nodeIds: string[]) => {
@@ -403,10 +389,10 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
           (
             change,
           ): change is NodeChange<Node> & {
-            type: "select";
+            type: 'select';
             id: string;
             selected: boolean;
-          } => change.type === "select",
+          } => change.type === 'select',
         );
 
         if (!selectionEvents.length) {
