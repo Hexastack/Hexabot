@@ -20,7 +20,7 @@
     "build": "tsc -p tsconfig.build.json && pnpm run copy:styles",
     "copy:styles": "mkdir -p dist/workflow/styles && cp src/workflow/styles/*.css dist/workflow/styles/",
     "dev": "pnpm run copy:styles && tsc -p tsconfig.build.json --watch",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "test": "vitest run",
