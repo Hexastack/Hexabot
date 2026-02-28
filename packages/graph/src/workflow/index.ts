@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-export { WorkflowGraphComponent } from "./components/WorkflowGraph";
-export type { WorkflowGraphProps, WorkflowGraphRef } from "./components/WorkflowGraph";
+export { WorkflowGraph } from "./components/WorkflowGraph";
+export type { WorkflowGraphHandle, WorkflowGraphProps } from "./components/WorkflowGraph";
 export * from "./components/PulseIconButton";
 export * from "./components/RotateButton";
 export * from "./components/WorkflowEmptyState";

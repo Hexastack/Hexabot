@@ -27,7 +27,7 @@ import {
   ELinkType,
   ENodeType,
   type INodeConfig,
-  type WorkflowGraph,
+  type WorkflowGraphData,
 } from "../types/workflow-node.types";
 import type { EdgeInsertType } from "../types/workflow-path.types";
 import { getTaskAction, getTaskDescription } from "../utils/workflow-task.utils";
@@ -102,7 +102,7 @@ export const WORKFLOW_INSERT_MENU_ITEMS: WorkflowInsertMenuItem[] = [
 ];
 
 export const VIEWPORT_EPSILON = 0.01;
-export const EMPTY_WORKFLOW_GRAPH: WorkflowGraph = { nodes: [], edges: [] };
+export const EMPTY_WORKFLOW_GRAPH: WorkflowGraphData = { nodes: [], edges: [] };
 
 export const DEFAULT_NODE_PROPS = {
   draggable: false,

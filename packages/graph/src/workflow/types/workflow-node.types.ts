@@ -313,4 +313,4 @@ export interface IWorkflowNodeProps {
   children: ReactNode;
 }
 
-export type WorkflowGraph = { nodes: GraphNode[]; edges: Edge[] };
+export type WorkflowGraphData = { nodes: GraphNode[]; edges: Edge[] };

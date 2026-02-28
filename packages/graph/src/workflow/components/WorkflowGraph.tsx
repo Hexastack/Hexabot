@@ -4,22 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  compileWorkflow,
-  type WorkflowCompileOptions,
-  type WorkflowDefinition,
-} from "@hexabot-ai/agentic";
+import type { CompiledStep, WorkflowDefinition } from '@hexabot-ai/agentic';
 import { useColorScheme } from "@mui/material/styles";
 import {
   Background,
   type Node,
-  type NodeChange,
   type NodeMouseHandler,
-  type OnNodesChange,
   ReactFlow,
   ReactFlowProvider,
   type Viewport,
-} from "@xyflow/react";
+} from '@xyflow/react';
 import type { ResizeControlDirection } from "@xyflow/system";
 import {
   forwardRef,
@@ -29,326 +23,155 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
-} from "react";
+} from 'react';
 
 import "@xyflow/react/dist/style.css";
 
-import { EMPTY_WORKFLOW_GRAPH } from "../constants/workflow.constants";
 import type {
   WorkflowGraphHostContextValue,
   WorkflowGraphTranslate,
 } from "../contexts/workflow-graph-host.context";
 import { WorkflowGraphHostContext } from "../contexts/workflow-graph-host.context";
 import { useFocusNode } from "../hooks/useFocusNode";
+import { useInsertMenuBindings } from '../hooks/useInsertMenuBindings';
+import { useWorkflowGraphLayout } from '../hooks/useWorkflowGraphLayout';
+import { useWorkflowSelectionController } from '../hooks/useWorkflowSelectionController';
 import {
   useWorkflowViewport,
   type ViewportState,
 } from "../hooks/useWorkflowViewport";
 import "../styles/index.css";
 import {
-  type BranchPlaceholderData,
   EDGE_TYPES,
-  ENodeType,
-  type GraphNode,
   type MemoryDefinition,
   NODE_TYPES,
   type WorkflowAction,
   type WorkflowExecutionStateMap,
-  type WorkflowGraph,
-} from "../types/workflow-node.types";
+} from '../types/workflow-node.types';
 import type {
-  EdgeInsertData,
   EdgeInsertType,
   FlowStepPath,
-  OnOpenInsertMenu,
-} from "../types/workflow-path.types";
+} from '../types/workflow-path.types';
 import type {
   WorkflowSelectionSnapshot,
 } from "../types/workflow-selection.types";
 import { isSameViewport } from '../utils/workflow-graph.utils';
-import {
-  buildNodesAndEdges,
-  getWorkflowDefaultConfig,
-} from "../utils/workflow-node.utils";
-import {
-  createWorkflowSelectionSnapshot,
-  isSameWorkflowSelection,
-} from "../utils/workflow-selection.utils";
 
 import { WorkflowControls } from "./WorkflowControls";
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
 import { WorkflowInsertContextMenu } from "./WorkflowInsertContextMenu";
 
-export type WorkflowGraphProps = {
+export type WorkflowGraphModel = {
   definition?: WorkflowDefinition;
+  compiledFlow?: CompiledStep[];
   memoryDefinitions?: MemoryDefinition[];
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  executionStates: WorkflowExecutionStateMap;
+  layoutDirection?: ResizeControlDirection;
+};
+
+export type WorkflowGraphSelection = {
+  selectedNodeIds: string[];
+  focusNodeIds?: string[];
+  onChange?: (selection: WorkflowSelectionSnapshot) => void;
+  onFocusComplete?: () => void;
+};
+
+export type WorkflowGraphInsertion = {
   onInsertAtPath?: (insertType: EdgeInsertType, path: FlowStepPath) => void;
   onInsertAtRoot?: (insertType: EdgeInsertType) => void;
-  onDeleteNodes?: (ids: string[]) => void;
-  onNodeClick?: NodeMouseHandler<Node>;
-  queryNodeIds?: string;
-  selectedNodeIds: string[];
-  onFocused?: () => void;
-  onSelectionChange?: (selection: WorkflowSelectionSnapshot) => void;
-  translate: WorkflowGraphTranslate;
-  actionsByName: Map<string, WorkflowAction>;
-  executionStates: WorkflowExecutionStateMap;
-  onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
-  viewport?: ViewportState | null;
-  onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
-  direction?: ResizeControlDirection;
-  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
-} & PropsWithChildren;
+};
 
-export type WorkflowGraphRef = {
+export type WorkflowGraphViewport = {
+  value?: ViewportState | null;
+  onChange: ({ zoom, x, y }: Viewport) => void;
+};
+
+export type WorkflowGraphCallbacks = {
+  onNodeClick?: NodeMouseHandler<Node>;
+  onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
+  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
+};
+
+export type WorkflowGraphProps = PropsWithChildren<{
+  t: WorkflowGraphTranslate;
+  model: WorkflowGraphModel;
+  selection: WorkflowGraphSelection;
+  insertion?: WorkflowGraphInsertion;
+  viewport: WorkflowGraphViewport;
+  callbacks: WorkflowGraphCallbacks;
+}>;
+
+export type WorkflowGraphHandle = {
   animateFocus: (nodeIds?: string[]) => Promise<void>;
   requestCenterAfterFirstInsert: () => void;
   clearCenterAfterFirstInsert: () => void;
 };
 
-const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
-  (
-    {
-      definition,
-      memoryDefinitions,
-      onInsertAtPath,
-      onInsertAtRoot,
-      onNodeClick,
-      onSelectionChange,
-      translate,
-      actionsByName,
-      executionStates,
-      onRemoveStep,
-      queryNodeIds,
-      selectedNodeIds,
-      onFocused,
-      viewport,
-      onViewportUpdate,
-      direction,
-      onRotate,
-      children,
-    },
-    ref,
-  ) => {
+const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
+  ({ t, model, selection, insertion, viewport, callbacks, children }, ref) => {
     const { mode } = useColorScheme();
     const colorMode = mode === 'dark' ? 'dark' : 'light';
-    const isEmptyWorkflow = !definition?.flow?.length;
-    const compileActionsByName = useMemo(
-      () =>
-        Array.from(actionsByName.entries()).reduce(
-          (acc, [name, action]) => {
-            acc[name] =
-              action as unknown as WorkflowCompileOptions['actions'][string];
-
-            return acc;
-          },
-          {} as WorkflowCompileOptions['actions'],
-        ),
-      [actionsByName],
-    );
-    const memoryDefinitionsSignature = useMemo(
-      () => JSON.stringify(memoryDefinitions ?? []),
-      [memoryDefinitions],
-    );
-    const resolvedMemoryDefinitions = useMemo(
-      () => JSON.parse(memoryDefinitionsSignature) as MemoryDefinition[],
-      [memoryDefinitionsSignature],
-    );
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
-    const selectedNodeIdsRef = useRef<string[]>(selectedNodeIds);
-    const selectionRef = useRef<WorkflowSelectionSnapshot>({
-      nodeIds: [],
-      nodes: [],
+    const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
+      compiledFlow: model.compiledFlow,
+      tasks: model.definition?.tasks,
+      memoryDefinitions: model.memoryDefinitions,
+      layoutDirection: model.layoutDirection,
     });
-    const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
-      useState<HTMLElement | null>(null);
-    const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
-      null,
-    );
-    const [graph, setGraph] = useState<WorkflowGraph>(EMPTY_WORKFLOW_GRAPH);
-    const handleOpenInsertMenu = useCallback<OnOpenInsertMenu>(
-      (anchorEl, path) => {
-        setInsertMenuAnchorEl(anchorEl);
-        setInsertMenuPath(path);
-      },
-      [],
-    );
-    const handleCloseInsertMenu = useCallback(() => {
-      setInsertMenuAnchorEl(null);
-      setInsertMenuPath(null);
-    }, []);
-    const handleInsertMenuItem = useCallback(
-      (insertType: EdgeInsertType) => {
-        if (!insertMenuPath || !onInsertAtPath) {
-          return;
-        }
-
-        onInsertAtPath(insertType, insertMenuPath);
-      },
-      [insertMenuPath, onInsertAtPath],
-    );
-
-    useEffect(() => {
-      let isCancelled = false;
-
-      const layoutGraph = async () => {
-        if (!definition || isEmptyWorkflow) {
-          if (!isCancelled) {
-            setGraph(EMPTY_WORKFLOW_GRAPH);
-          }
-
-          return;
-        }
-
-        try {
-          const { flow } = compileWorkflow(definition, {
-            actions: compileActionsByName,
-          });
-
-          if (!flow.length) {
-            if (!isCancelled) {
-              setGraph(EMPTY_WORKFLOW_GRAPH);
-            }
-
-            return;
-          }
-
-          const config = getWorkflowDefaultConfig(direction);
-          const layoutedGraph = await buildNodesAndEdges({
-            config,
-            flow,
-            tasks: definition.tasks,
-            memoryDefinitions: resolvedMemoryDefinitions,
-          });
-
-          if (!isCancelled) {
-            setGraph(layoutedGraph ?? EMPTY_WORKFLOW_GRAPH);
-          }
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to layout workflow graph:', error);
-          if (!isCancelled) {
-            setGraph(EMPTY_WORKFLOW_GRAPH);
-          }
-        }
-      };
-
-      void layoutGraph();
-
-      return () => {
-        isCancelled = true;
-      };
-    }, [
-      compileActionsByName,
-      definition,
-      direction,
+    const {
+      edges,
+      nodes,
+      insertMenuAnchorEl,
+      isInsertMenuOpen,
+      closeInsertMenu,
+      insertFromMenu,
+    } = useInsertMenuBindings({
+      graphData,
+      onInsertAtPath: insertion?.onInsertAtPath,
+    });
+    const { onNodesChange, emitSelection } = useWorkflowSelectionController({
       isEmptyWorkflow,
-      resolvedMemoryDefinitions,
-    ]);
-    const insertMenuHandler = onInsertAtPath ? handleOpenInsertMenu : undefined;
-    const edgesWithHandlers = useMemo(() => {
-      if (!insertMenuHandler) {
-        return graph.edges;
-      }
-
-      return graph.edges.map((edge) => {
-        const edgeData = edge.data as EdgeInsertData | undefined;
-
-        if (!edgeData?.insertPath) {
-          return edge;
-        }
-
-        return {
-          ...edge,
-          data: {
-            ...edgeData,
-            onOpenInsertMenu: insertMenuHandler,
-          },
-        };
-      });
-    }, [graph.edges, insertMenuHandler]);
-    const nodesWithHandlers = useMemo(() => {
-      if (!insertMenuHandler) {
-        return graph.nodes;
-      }
-
-      return graph.nodes.map((node) => {
-        if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
-          return node;
-        }
-
-        const nodeData = node.data as BranchPlaceholderData | undefined;
-
-        if (!nodeData?.insertPath) {
-          return node;
-        }
-
-        return {
-          ...node,
-          data: {
-            ...nodeData,
-            onOpenInsertMenu: insertMenuHandler,
-          },
-        };
-      });
-    }, [graph.nodes, insertMenuHandler]);
-    const emitSelection = useCallback(
-      (requestedNodeIds: string[]) => {
-        if (
-          requestedNodeIds.length > 0 &&
-          !isEmptyWorkflow &&
-          nodesWithHandlers.length === 0
-        ) {
-          return;
-        }
-
-        const nextSelection = createWorkflowSelectionSnapshot(
-          requestedNodeIds,
-          nodesWithHandlers as GraphNode[],
-        );
-
-        if (isSameWorkflowSelection(nextSelection, selectionRef.current)) {
-          return;
-        }
-
-        selectionRef.current = nextSelection;
-        selectedNodeIdsRef.current = nextSelection.nodeIds;
-
-        onSelectionChange?.(nextSelection);
-      },
-      [isEmptyWorkflow, nodesWithHandlers, onSelectionChange],
-    );
-    const handleQuerySelectionResolved = useCallback(
+      nodes,
+      selectedNodeIds: selection.selectedNodeIds,
+      onChange: selection.onChange,
+    });
+    const handleFocusedSelectionResolved = useCallback(
       (nodeIds: string[]) => {
         emitSelection(nodeIds);
       },
       [emitSelection],
     );
     const { animateFocus } = useFocusNode({
-      queryNodeIds,
-      selectedNodeIds,
-      onQueryNodeIdsResolved: handleQuerySelectionResolved,
-      onFocused,
+      focusNodeIds: selection.focusNodeIds,
+      selectedNodeIds: selection.selectedNodeIds,
+      onFocusNodeIdsResolved: handleFocusedSelectionResolved,
+      onFocused: selection.onFocusComplete,
     });
     const {
       initialViewport,
       requestCenterAfterFirstInsert,
       clearCenterAfterFirstInsert,
     } = useWorkflowViewport({
-      viewport,
+      viewport: viewport.value,
       isEmptyWorkflow,
-      graphNodes: nodesWithHandlers,
+      graphNodes: nodes,
     });
     const hostContextValue = useMemo<WorkflowGraphHostContextValue>(
       () => ({
-        translate,
-        direction,
-        actionsByName,
-        executionStates,
-        onRemoveStep,
+        translate: t,
+        direction: model.layoutDirection,
+        actionCatalog: model.actionCatalog,
+        executionStates: model.executionStates,
+        onRemoveStep: callbacks.onRemoveStep,
       }),
-      [translate, direction, actionsByName, executionStates, onRemoveStep],
+      [
+        callbacks.onRemoveStep,
+        model.actionCatalog,
+        model.executionStates,
+        model.layoutDirection,
+        t,
+      ],
     );
 
     useImperativeHandle(
@@ -368,89 +191,54 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
     useEffect(() => {
       lastViewportRef.current = initialViewport;
     }, [initialViewport.x, initialViewport.y, initialViewport.zoom]);
-    useEffect(() => {
-      emitSelection(selectedNodeIds);
-    }, [emitSelection, selectedNodeIds]);
 
     const handleMoveEnd = useCallback(
-      (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
-        if (isSameViewport(lastViewportRef.current, viewport)) {
+      (_event: MouseEvent | TouchEvent | null, nextViewport: Viewport) => {
+        if (isSameViewport(lastViewportRef.current, nextViewport)) {
           return;
         }
 
-        lastViewportRef.current = viewport;
-        onViewportUpdate(viewport);
+        lastViewportRef.current = nextViewport;
+        viewport.onChange(nextViewport);
       },
-      [onViewportUpdate],
-    );
-    const handleNodesChange: OnNodesChange<Node> = useCallback(
-      (changes) => {
-        const selectionEvents = changes.filter(
-          (
-            change,
-          ): change is NodeChange<Node> & {
-            type: 'select';
-            id: string;
-            selected: boolean;
-          } => change.type === 'select',
-        );
-
-        if (!selectionEvents.length) {
-          return;
-        }
-
-        const nextSelection = new Set(selectedNodeIdsRef.current);
-
-        selectionEvents.forEach(({ id, selected }) => {
-          if (selected) {
-            nextSelection.add(id);
-          } else {
-            nextSelection.delete(id);
-          }
-        });
-
-        emitSelection(Array.from(nextSelection));
-      },
-      [emitSelection],
+      [viewport],
     );
 
     return (
       <WorkflowGraphHostContext.Provider value={hostContextValue}>
         <ReactFlow
-          defaultEdges={edgesWithHandlers}
-          edges={edgesWithHandlers}
-          defaultNodes={nodesWithHandlers}
-          nodes={nodesWithHandlers}
+          edges={edges}
+          nodes={nodes}
           defaultViewport={initialViewport}
           maxZoom={4}
           minZoom={-2}
           nodeTypes={NODE_TYPES}
           edgeTypes={EDGE_TYPES}
-          onNodesChange={handleNodesChange}
+          onNodesChange={onNodesChange}
           onMoveEnd={handleMoveEnd}
-          onNodeClick={onNodeClick}
+          onNodeClick={callbacks.onNodeClick}
           onlyRenderVisibleElements
           colorMode={colorMode}
         >
           <WorkflowControls
-            direction={direction}
+            direction={model.layoutDirection}
             onFitView={() => {
               void animateFocus();
             }}
-            onRotate={onRotate}
+            onRotate={callbacks.onRotate}
           />
           <Background size={2} />
 
-          {isEmptyWorkflow && onInsertAtRoot ? (
-            <WorkflowEmptyState onInsert={onInsertAtRoot} />
+          {isEmptyWorkflow && insertion?.onInsertAtRoot ? (
+            <WorkflowEmptyState onInsert={insertion.onInsertAtRoot} />
           ) : null}
           {children}
           <WorkflowInsertContextMenu
             id="workflow-insert-menu"
-            open={Boolean(insertMenuAnchorEl && insertMenuPath)}
+            open={isInsertMenuOpen}
             anchorEl={insertMenuAnchorEl}
-            onClose={handleCloseInsertMenu}
-            onInsert={handleInsertMenuItem}
+            onClose={closeInsertMenu}
+            onInsert={insertFromMenu}
           />
         </ReactFlow>
       </WorkflowGraphHostContext.Provider>
@@ -458,16 +246,17 @@ const WorkflowGraphInner = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
   },
 );
 
-WorkflowGraphInner.displayName = "WorkflowGraphInner";
+WorkflowGraphCanvas.displayName = 'WorkflowGraphCanvas';
 
-export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraphProps>(
-  (props, ref) => {
-    return (
-      <ReactFlowProvider>
-        <WorkflowGraphInner {...props} ref={ref} />
-      </ReactFlowProvider>
-    );
-  },
-);
+export const WorkflowGraph = forwardRef<
+  WorkflowGraphHandle,
+  WorkflowGraphProps
+>((props, ref) => {
+  return (
+    <ReactFlowProvider>
+      <WorkflowGraphCanvas {...props} ref={ref} />
+    </ReactFlowProvider>
+  );
+});
 
-WorkflowGraphComponent.displayName = "WorkflowGraphComponent";
+WorkflowGraph.displayName = 'WorkflowGraph';

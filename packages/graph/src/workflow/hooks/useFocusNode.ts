@@ -16,18 +16,18 @@ import { useCallback, useEffect, useMemo } from "react";
 import { GraphNode } from '../types/workflow-node.types';
 
 type UseFocusNodeProps = {
-  queryNodeIds?: string;
+  focusNodeIds?: string[];
   selectedNodeIds: string[];
-  onQueryNodeIdsResolved?: (nodeIds: string[]) => void;
+  onFocusNodeIdsResolved?: (nodeIds: string[]) => void;
   onFocused?: () => void;
   fitViewPadding?: Padding;
   fitViewDuration?: number;
 };
 
 export const useFocusNode = ({
-  queryNodeIds,
+  focusNodeIds,
   selectedNodeIds,
-  onQueryNodeIdsResolved,
+  onFocusNodeIdsResolved,
   onFocused,
   fitViewPadding = '150px',
   fitViewDuration = 200,
@@ -46,9 +46,9 @@ export const useFocusNode = ({
     [getNodes, setNodes],
   );
   const nodesInitialized = useNodesInitialized();
-  const queryRequestedNodeIds = useMemo(
-    () => queryNodeIds?.split(',').filter(Boolean) ?? [],
-    [queryNodeIds],
+  const requestedFocusNodeIds = useMemo(
+    () => focusNodeIds?.filter(Boolean) ?? [],
+    [focusNodeIds],
   );
   const resolveExistingNodes = useCallback(
     (nodeIds: string[]): GraphNode[] =>
@@ -75,12 +75,12 @@ export const useFocusNode = ({
     });
     onFocused?.();
   };
-  const queryResolvedNodeIds = useMemo(
+  const resolvedFocusNodeIds = useMemo(
     () =>
-      !queryRequestedNodeIds.length || !nodesInitialized
+      !requestedFocusNodeIds.length || !nodesInitialized
         ? []
-        : queryRequestedNodeIds.filter((nodeId) => Boolean(getNode(nodeId))),
-    [getNode, nodesInitialized, queryRequestedNodeIds],
+        : requestedFocusNodeIds.filter((nodeId) => Boolean(getNode(nodeId))),
+    [getNode, nodesInitialized, requestedFocusNodeIds],
   );
 
   useEffect(() => {
@@ -88,19 +88,19 @@ export const useFocusNode = ({
       return;
     }
 
-    if (!queryRequestedNodeIds.length) {
+    if (!requestedFocusNodeIds.length) {
       onSelectNodes([]);
 
       return;
     }
-    onSelectNodes(queryResolvedNodeIds);
-    onQueryNodeIdsResolved?.(queryResolvedNodeIds);
+    onSelectNodes(resolvedFocusNodeIds);
+    onFocusNodeIdsResolved?.(resolvedFocusNodeIds);
   }, [
     nodesInitialized,
-    onQueryNodeIdsResolved,
+    onFocusNodeIdsResolved,
     onSelectNodes,
-    queryResolvedNodeIds,
-    queryRequestedNodeIds.length,
+    requestedFocusNodeIds.length,
+    resolvedFocusNodeIds,
   ]);
 
   return {

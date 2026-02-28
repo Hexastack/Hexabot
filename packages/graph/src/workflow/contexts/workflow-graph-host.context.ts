@@ -21,7 +21,7 @@ export type WorkflowGraphTranslate = (
 export type WorkflowGraphHostContextValue = {
   translate: WorkflowGraphTranslate;
   direction?: ResizeControlDirection;
-  actionsByName: Map<string, WorkflowAction>;
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
   executionStates: WorkflowExecutionStateMap;
   onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
 };

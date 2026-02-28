@@ -12,6 +12,3 @@ export const isSameViewport = (a: Viewport, b: Viewport): boolean =>
   Math.abs(a.x - b.x) <= VIEWPORT_EPSILON &&
   Math.abs(a.y - b.y) <= VIEWPORT_EPSILON &&
   Math.abs(a.zoom - b.zoom) <= VIEWPORT_EPSILON;
-
-export const isSameSelection = (left: string[], right: string[]): boolean =>
-  left.length === right.length && left.every((id, idx) => id === right[idx]);

@@ -10,12 +10,11 @@ import {
   type Settings,
 } from "@hexabot-ai/agentic";
 import {
-  WorkflowGraphComponent,
+  WorkflowGraph,
   type EdgeInsertType,
   type FlowStepPath,
   type MemoryDefinition,
-  type WorkflowAction,
-  type WorkflowGraphRef,
+  type WorkflowGraphHandle,
   type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
 import { Box, Button, Stack, styled } from "@mui/material";
@@ -91,6 +90,7 @@ export const Workflow = () => {
     updateWorkflow,
     updateWorkflowURL,
     definition,
+    flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
     executionStates,
@@ -117,7 +117,14 @@ export const Workflow = () => {
   const actionsDrawerId = "workflow-actions-drawer";
   const publishLabel = t("button.publish");
   const unpublishLabel = t("button.unpublish");
-  const workflowGraphRef = useRef<WorkflowGraphRef | null>(null);
+  const workflowGraphRef = useRef<WorkflowGraphHandle | null>(null);
+  const focusNodeIds = useMemo(
+    () =>
+      typeof nodeIds === "string"
+        ? nodeIds.split(",").filter(Boolean)
+        : undefined,
+    [nodeIds],
+  );
   const isCurrentVersionPublished =
     Boolean(workflow?.currentVersion) &&
     workflow?.currentVersion === workflow?.publishedVersion;
@@ -349,30 +356,39 @@ export const Workflow = () => {
     <div className="visual-editor-v4">
       <FlowsDrawer onNew={handleNewWorkflow} onEdit={handleEditWorkflow} />
       <StyledBox>
-        <WorkflowGraphComponent
+        <WorkflowGraph
           ref={workflowGraphRef}
-          definition={definition}
-          memoryDefinitions={memoryDefinitions}
-          onInsertAtPath={handleInsert}
-          onInsertAtRoot={handleRootInsert}
-          queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
-          selectedNodeIds={selectedNodeIds}
-          onSelectionChange={handleSelectionChange}
-          translate={translateGraph}
-          actionsByName={
-            actionsByName as unknown as Map<string, WorkflowAction>
-          }
-          executionStates={executionStates}
-          onRemoveStep={removeStepAtPath}
-          viewport={{
-            id: workflow?.id,
-            x: workflow?.x,
-            y: workflow?.y,
-            zoom: workflow?.zoom,
+          t={translateGraph}
+          model={{
+            definition,
+            compiledFlow: flow,
+            memoryDefinitions,
+            actionCatalog: actionsByName,
+            executionStates,
+            layoutDirection: direction,
           }}
-          onViewportUpdate={debouncedWorkflowUpdate}
-          direction={direction}
-          onRotate={handleRotate}
+          selection={{
+            selectedNodeIds,
+            focusNodeIds,
+            onChange: handleSelectionChange,
+          }}
+          insertion={{
+            onInsertAtPath: handleInsert,
+            onInsertAtRoot: handleRootInsert,
+          }}
+          viewport={{
+            value: {
+              id: workflow?.id,
+              x: workflow?.x,
+              y: workflow?.y,
+              zoom: workflow?.zoom,
+            },
+            onChange: debouncedWorkflowUpdate,
+          }}
+          callbacks={{
+            onRemoveStep: removeStepAtPath,
+            onRotate: handleRotate,
+          }}
         />
         {workflow && (
           <WorkflowTitleOverlay>

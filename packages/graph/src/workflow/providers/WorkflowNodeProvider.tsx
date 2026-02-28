@@ -21,7 +21,7 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   const { getNode } = useReactFlow();
   const node = useMemo(() => getNode(id) as GraphNode | undefined, [getNode, id]);
   const connections = useNodeConnections({ id });
-  const { actionsByName, executionStates } = useWorkflowGraphHost();
+  const { actionCatalog, executionStates } = useWorkflowGraphHost();
 
   if (!node) {
     return null;
@@ -33,7 +33,7 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
     typeof nodeData.actionName === "string"
       ? nodeData.actionName
       : undefined;
-  const action = actionName ? actionsByName.get(actionName) : undefined;
+  const action = actionName ? actionCatalog.get(actionName) : undefined;
   const executionState = [...(executionStates[id] ?? [])]
     .sort((e1, e2) => (e1.t - e2.t > 0 ? 1 : -1))
     .at(-1)?.state;
