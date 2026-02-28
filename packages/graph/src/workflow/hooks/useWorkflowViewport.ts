@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const EMPTY_WORKFLOW_SYNC_KEY = "__workflow-empty__";
 
-export type WorkflowViewportState = {
+export type ViewportState = {
   id?: string | null;
   x?: number | string | null;
   y?: number | string | null;
@@ -25,13 +25,13 @@ export type WorkflowViewportState = {
 };
 
 type UseWorkflowViewportProps<TNode extends Node = Node> = {
-  workflow?: WorkflowViewportState | null;
+  viewport?: ViewportState | null;
   isEmptyWorkflow: boolean;
   graphNodes: TNode[];
 };
 
 export const useWorkflowViewport = <TNode extends Node = Node>({
-  workflow,
+  viewport,
   isEmptyWorkflow,
   graphNodes,
 }: UseWorkflowViewportProps<TNode>) => {
@@ -44,13 +44,13 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
   const viewportInitializedForFlowRef = useRef<string | null>(null);
   const defaultViewport = useMemo(() => {
     const [x = 0, y = 0, zoom = 1] = [
-      Number(workflow?.x),
-      Number(workflow?.y),
-      Number(workflow?.zoom),
+      Number(viewport?.x),
+      Number(viewport?.y),
+      Number(viewport?.zoom),
     ].map((value) => (Number.isFinite(value) ? value : undefined));
 
     return { x, y, zoom };
-  }, [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom]);
+  }, [viewport?.id, viewport?.x, viewport?.y, viewport?.zoom]);
   const emptyViewport = useMemo(
     () => ({
       x: workflowWidth / 2,
@@ -68,7 +68,7 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
     () => (shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport),
     [defaultViewport, emptyViewport, shouldUseComputedEmptyViewport],
   );
-  const viewportSyncKey = workflow?.id ?? EMPTY_WORKFLOW_SYNC_KEY;
+  const viewportSyncKey = viewport?.id ?? EMPTY_WORKFLOW_SYNC_KEY;
   const syncViewportForFlow = useCallback(
     (viewport: Viewport) => {
       setViewport(viewport);
@@ -87,12 +87,7 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
     }
 
     syncViewportForFlow(initialViewport);
-  }, [
-    initialViewport,
-    nodesInitialized,
-    syncViewportForFlow,
-    viewportSyncKey,
-  ]);
+  }, [initialViewport, nodesInitialized, syncViewportForFlow, viewportSyncKey]);
 
   useEffect(() => {
     if (

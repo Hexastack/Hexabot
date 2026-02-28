@@ -353,23 +353,28 @@ export const Workflow = () => {
       <StyledBox>
         <WorkflowGraphComponent
           ref={workflowGraphRef}
-          onViewportUpdate={debouncedWorkflowUpdate}
           definition={definition}
           memoryDefinitions={memoryDefinitions}
           onInsertAtPath={handleInsert}
           onInsertAtRoot={handleRootInsert}
+          queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
+          selectedNodeIds={selectedNodeIds}
           onSelectedNodeIdsChange={handleSelectedNodeIdsChange}
           translate={translateGraph}
-          direction={direction}
           actionsByName={
             actionsByName as unknown as Map<string, WorkflowAction>
           }
           executionStates={executionStates}
           onRemoveStep={removeStepAtPath}
+          viewport={{
+            id: workflow?.id,
+            x: workflow?.x,
+            y: workflow?.y,
+            zoom: workflow?.zoom,
+          }}
+          onViewportUpdate={debouncedWorkflowUpdate}
+          direction={direction}
           onRotate={handleRotate}
-          queryNodeIds={typeof nodeIds === "string" ? nodeIds : undefined}
-          selectedNodeIds={selectedNodeIds}
-          workflow={workflow}
         />
         {workflow && (
           <WorkflowTitleOverlay>

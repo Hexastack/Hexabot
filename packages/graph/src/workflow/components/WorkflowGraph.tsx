@@ -42,8 +42,8 @@ import { WorkflowGraphHostContext } from "../contexts/workflow-graph-host.contex
 import { useFocusNode } from "../hooks/useFocusNode";
 import {
   useWorkflowViewport,
-  type WorkflowViewportState,
-} from "../hooks/useWorkflowViewport";
+  type ViewportState,
+} from '../hooks/useWorkflowViewport';
 import "../styles/index.css";
 import {
   type BranchPlaceholderData,
@@ -79,20 +79,20 @@ export type WorkflowGraphProps = {
   memoryDefinitions?: MemoryDefinition[];
   onInsertAtPath?: (insertType: EdgeInsertType, path: FlowStepPath) => void;
   onInsertAtRoot?: (insertType: EdgeInsertType) => void;
-  onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeClick?: NodeMouseHandler<Node>;
-  onSelectedNodeIdsChange?: (nodeIds: string[]) => void;
-  translate: WorkflowGraphTranslate;
-  direction?: ResizeControlDirection;
-  actionsByName: Map<string, WorkflowAction>;
-  executionStates: WorkflowExecutionStateMap;
-  onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
-  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
   queryNodeIds?: string;
   selectedNodeIds: string[];
   onFocused?: () => void;
-  workflow?: WorkflowViewportState | null;
+  onSelectedNodeIdsChange?: (nodeIds: string[]) => void;
+  translate: WorkflowGraphTranslate;
+  actionsByName: Map<string, WorkflowAction>;
+  executionStates: WorkflowExecutionStateMap;
+  onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
+  viewport?: ViewportState | null;
+  onViewportUpdate: ({ zoom, x, y }: Viewport) => void;
+  direction?: ResizeControlDirection;
+  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
 } & PropsWithChildren;
 
 export type WorkflowGraphRef = {
@@ -108,19 +108,19 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       memoryDefinitions,
       onInsertAtPath,
       onInsertAtRoot,
-      onViewportUpdate,
       onNodeClick,
       onSelectedNodeIdsChange,
       translate,
-      direction,
       actionsByName,
       executionStates,
       onRemoveStep,
-      onRotate,
       queryNodeIds,
       selectedNodeIds,
       onFocused,
-      workflow,
+      viewport,
+      onViewportUpdate,
+      direction,
+      onRotate,
       children,
     },
     ref,
@@ -305,7 +305,7 @@ export const WorkflowGraphComponent = forwardRef<WorkflowGraphRef, WorkflowGraph
       requestCenterAfterFirstInsert,
       clearCenterAfterFirstInsert,
     } = useWorkflowViewport({
-      workflow,
+      viewport,
       isEmptyWorkflow,
       graphNodes: nodesWithHandlers,
     });
