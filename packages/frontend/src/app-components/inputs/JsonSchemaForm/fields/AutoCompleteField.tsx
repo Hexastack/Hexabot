@@ -46,17 +46,14 @@ export const AutoCompleteFieldWrapper = ({
   const { data } = useGet(id, {
     entity,
   });
-  const targetData = data?.[nestedArrayField] || data || {};
+  const targetData = get(data, nestedArrayField) || {};
   const options = Object.entries(targetData).reduce((acc, [key, val]) => {
     const isNestedMode = nestedArrayItemField || nestedArrayItemValue;
 
     if (val) {
       if (isNestedMode) {
-        if (
-          val[nestedArrayItemField] === nestedArrayItemValue &&
-          val[valueKey]
-        ) {
-          acc.push(val[valueKey]);
+        if (val[nestedArrayItemField] === nestedArrayItemValue) {
+          acc.push(key);
         }
       } else if (key === valueKey) {
         acc.push(String(val));

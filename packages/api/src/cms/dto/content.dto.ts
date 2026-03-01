@@ -26,7 +26,7 @@ export class ContentStub extends BaseStub {
   status!: boolean;
 
   @Expose()
-  dynamicFields!: Record<string, any> | null;
+  properties!: Record<string, any> | null;
 
   @Expose()
   rag?: string | null;
@@ -62,9 +62,9 @@ export class ContentCreateDto {
   @IsOptional()
   status?: boolean;
 
-  @ApiPropertyOptional({ description: 'Content dynamic fields', type: Object })
+  @ApiPropertyOptional({ description: 'Content properties', type: Object })
   @IsOptional()
-  dynamicFields?: Record<string, any>;
+  properties?: Record<string, any>;
 }
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}

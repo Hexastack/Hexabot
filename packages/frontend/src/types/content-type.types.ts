@@ -4,33 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  JsonSchemaType,
+  SchemaNodeForm,
+} from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { Format } from "@/services/types";
 
 import { IBaseSchema, IFormat } from "./base.types";
 
-export enum ContentFieldType {
-  TEXT = "text",
-  URL = "url",
-  TEXTAREA = "textarea",
-  CHECKBOX = "checkbox",
-  FILE = "file",
-  HTML = "html",
-}
-
 export type ContentField = {
+  title: string;
+  type: JsonSchemaType<"fieldInput">;
   name: string;
-  label: string;
-  type: ContentFieldType;
 };
 
 export interface IContentTypeAttributes {
   name: string;
-  fields?: ContentField[];
+  schema: SchemaNodeForm;
 }
 
+export type ContentSchemaProperties = Record<string, ContentField>;
 export interface IContentTypeStub extends IBaseSchema {
   name: string;
-  fields?: ContentField[];
+  schema: SchemaNodeForm;
 }
 
 export interface IContentType extends IContentTypeStub, IFormat<Format.BASIC> {}

@@ -31,11 +31,10 @@ export const contentOptionsSchema = z.object({
         'ui:field': 'AutoCompleteField',
         'ui:options': {
           entity: 'ContentType',
-          valueKey: 'name',
           idFormPath: 'content.contentType',
-          nestedArrayField: 'fields',
+          nestedArrayField: 'schema.properties',
           nestedArrayItemField: 'type',
-          nestedArrayItemValue: 'text',
+          nestedArrayItemValue: 'string',
         },
       }),
       subtitle: z
@@ -46,11 +45,10 @@ export const contentOptionsSchema = z.object({
           'ui:field': 'AutoCompleteField',
           'ui:options': {
             entity: 'ContentType',
-            valueKey: 'name',
             idFormPath: 'content.contentType',
-            nestedArrayField: 'fields',
+            nestedArrayField: 'schema.properties',
             nestedArrayItemField: 'type',
-            nestedArrayItemValue: 'text',
+            nestedArrayItemValue: 'string',
           },
         }),
       image_url: z
@@ -61,9 +59,8 @@ export const contentOptionsSchema = z.object({
           'ui:field': 'AutoCompleteField',
           'ui:options': {
             entity: 'ContentType',
-            valueKey: 'name',
             idFormPath: 'content.contentType',
-            nestedArrayField: 'fields',
+            nestedArrayField: 'schema.properties',
             nestedArrayItemField: 'type',
             nestedArrayItemValue: 'file',
           },
@@ -79,9 +76,9 @@ export const contentOptionsSchema = z.object({
             entity: 'ContentType',
             valueKey: 'name',
             idFormPath: 'content.contentType',
-            nestedArrayField: 'fields',
+            nestedArrayField: 'schema.properties',
             nestedArrayItemField: 'type',
-            nestedArrayItemValue: 'url',
+            nestedArrayItemValue: 'uri',
           },
         }),
       action_title: z

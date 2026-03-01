@@ -13,7 +13,7 @@ export interface IContentAttributes {
   contentType: string;
   title: string;
   status: boolean;
-  dynamicFields: Record<string, any>;
+  properties: Record<string, any>;
 }
 
 export interface IContentFilters
@@ -24,7 +24,7 @@ export interface IContentFilters
 export interface IContentStub extends IBaseSchema {
   title: string;
   status: boolean;
-  dynamicFields: Record<string, any>;
+  properties: Record<string, any>;
 }
 
 export interface IContent extends IContentStub, IFormat<Format.BASIC> {
