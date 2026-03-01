@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
+import { withStepDrawerLayout } from "../../StepDrawer/withStepDrawerLayout";
 
 import { ActionFormDrawerContent } from "./ActionFormDrawerContent";
 import { ActionFormDrawerFooter } from "./ActionFormDrawerFooter";
 import { ActionFormDrawerHeader } from "./ActionFormDrawerHeader";
 import { useActionFormDrawerController } from "./useActionFormDrawerController";
 
-const ActionFormDrawerLayout = withDrawerLayout(ActionFormDrawerContent);
+const ActionFormDrawerLayout = withStepDrawerLayout(ActionFormDrawerContent);
 
 export const ActionFormDrawer = () => {
   const {
@@ -30,7 +30,6 @@ export const ActionFormDrawer = () => {
     onInputVisibleErrorsChange,
     onActionSettingsVisibleErrorsChange,
     onExecutionSettingsVisibleErrorsChange,
-    onClose,
     headerProps,
     footerProps,
   } = useActionFormDrawerController();
@@ -55,7 +54,6 @@ export const ActionFormDrawer = () => {
         onExecutionSettingsVisibleErrorsChange
       }
       open={open}
-      onClose={onClose}
       headerContent={<ActionFormDrawerHeader {...headerProps} />}
       footerContent={<ActionFormDrawerFooter {...footerProps} />}
     />

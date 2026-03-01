@@ -40,7 +40,7 @@
 
 - **LLMs & NLU Support:** Integrate with your favorite LLM model whether it's by using Ollama, ChatGPT, Mistral or Gemini ... Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
 - **Multi-Channel Support:** Create consistent chatbot experiences across multiple channels like web, mobile, and social media platforms.
-- **Visual Editor:** Design and manage chatbot flows with an intuitive drag-and-drop interface. Supports text messages, quick replies, carousels, and more.
+- **Visual Editor:** Design and manage chatbot flows with an intuitive interface. Supports text messages, quick replies, carousels, and more.
 - **Plugin System:** Extend Hexabot's functionality by developing and installing extensions from the [Extension Library](https://hexabot.ai/extensions). Enable features like text-to-action responses, 3rd party system integrations, and more.
 - **Multi-lingual Support:** Define multiple languages, allowing the chatbot to interact with users in their preferred language.
 - **Knowledge Base:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
@@ -54,9 +54,12 @@
 
 All workspace packages live under the `packages/` directory.
 
-- **packages/frontend:** The admin panel built with React/Next.js for managing chatbot configurations and flows.
+- **packages/frontend:** The admin panel built with React/Vite for managing chatbot configuration, workflows, and operations.
+- **packages/graph:** Internal React + xyflow package responsible for workflow graph building, layout, rendering, and graph interactions.
+- **packages/agentic:** Shared workflow/domain package used for workflow definitions, compilation, and runtime-related contracts.
 - **packages/api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
 - **packages/widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
+- **packages/cli:** Command-line tooling for creating and operating Hexabot projects.
 - **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
 
 ## Workspace Tooling
@@ -140,9 +143,11 @@ For detailed information on how to get started, as well as in-depth user and dev
 
 You can also find specific documentation for different components of the project in the following locations:
 
-- [CLI Documentation](https://github.com/Hexastack/hexabot-cli/)
+- [CLI Documentation](packages/cli/README.md)
 - [API Documentation](packages/api/README.md)
 - [UI Documentation](packages/frontend/README.md)
+- [Agentic Package Documentation](packages/agentic/README.md)
+- [Workflow Graph Documentation](packages/graph/README.md)
 - [Live Chat Widget Documentation](packages/widget/README.md)
 
 ## Contributing

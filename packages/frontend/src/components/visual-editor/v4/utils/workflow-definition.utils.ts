@@ -5,10 +5,14 @@
  */
 
 import {
+  compileWorkflow,
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
+  type CompiledStep,
+  type WorkflowCompileOptions,
   type WorkflowDefinition,
   isSnakeCaseName,
+  validateWorkflow,
   toSnakeCase,
 } from "@hexabot-ai/agentic";
 
@@ -64,4 +68,21 @@ export const createTaskName = (
   }
 
   return candidate;
+};
+
+export const getDefinition = (
+  yaml: string,
+  options: WorkflowCompileOptions,
+): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
+  const validation = validateWorkflow(yaml);
+
+  if (!validation.success) {
+    throw new Error(
+      `Workflow validation failed: ${validation.errors.join("; ")}`,
+    );
+  }
+
+  const { definition, flow } = compileWorkflow(validation.data, options);
+
+  return { definition, flow };
 };

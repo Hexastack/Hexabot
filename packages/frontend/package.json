@@ -13,6 +13,8 @@
     "start": "pnpm run preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "pnpm run lint:fix",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit --downlevelIteration -p tsconfig.typecheck.json"
@@ -27,6 +29,7 @@
     "@emotion/styled": "^11.11.5",
     "@fontsource/roboto": "^5.1.0",
     "@hexabot-ai/agentic": "workspace:*",
+    "@hexabot-ai/graph": "workspace:*",
     "@hexabot-ai/widget": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.0.0",
@@ -85,7 +88,8 @@
     "lint-staged": "^15.3.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
-    "vite": "^5.0.11"
+    "vite": "^5.0.11",
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": "^20.18.1"

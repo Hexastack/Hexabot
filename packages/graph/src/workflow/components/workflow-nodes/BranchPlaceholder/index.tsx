@@ -1,0 +1,68 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { type NodeProps } from "@xyflow/react";
+import { Plus } from "lucide-react";
+import { useCallback, type FC, type MouseEvent } from "react";
+
+import { useWorkflowGraphHost } from "../../../contexts/workflow-graph-host.context";
+import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
+import {
+  ELinkType,
+  ENodeType,
+  type GraphNode,
+} from "../../../types/workflow-node.types";
+import { PulseIconButton } from "../../PulseIconButton";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodePorts } from "../GenericNodePorts";
+
+export const BranchPlaceholder: FC<
+  NodeProps<GraphNode<ENodeType.BRANCH_PLACEHOLDER>>
+> = ({ id, data }) => {
+  const { translate } = useWorkflowGraphHost();
+  const addLabel = translate("button.add");
+  const insertPath = data?.insertPath;
+  const onOpenInsertMenu = data?.onOpenInsertMenu;
+  const canInsert = Boolean(insertPath && onOpenInsertMenu);
+  const handleOpenInsertMenu = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!insertPath) {
+        return;
+      }
+      onOpenInsertMenu?.(event.currentTarget, insertPath);
+    },
+    [insertPath, onOpenInsertMenu],
+  );
+
+  return (
+    <WorkflowNodeProvider id={id}>
+      <GenericNodeContainer>
+        <div className="workflow-branch-placeholder nodrag nopan">
+          <PulseIconButton
+            type="button"
+            tabIndex={-1}
+            size={32}
+            className="workflow-branch-placeholder__pulse"
+            aria-label={addLabel}
+            aria-haspopup="menu"
+            onClick={handleOpenInsertMenu}
+            disabled={!canInsert}
+          >
+            <Plus size={18} />
+          </PulseIconButton>
+        </div>
+        <GenericNodePorts<ENodeType.BRANCH_PLACEHOLDER>
+          getDisabled={({ port, node }) =>
+            port === ELinkType.BRANCH_PLACEHOLDER_OUT && !!node.groupName
+          }
+        />
+      </GenericNodeContainer>
+    </WorkflowNodeProvider>
+  );
+};

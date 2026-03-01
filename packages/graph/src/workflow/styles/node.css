@@ -1,0 +1,195 @@
+.workflow-node-shell {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.workflow-node-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 14px;
+  outline: none;
+  pointer-events: none;
+  border: 2px solid var(--workflow-node-border-color, #cbd5e1);
+  background-color: var(--workflow-node-bg-color, #ffffff);
+  box-shadow: 0 3px 6px #00000033;
+  padding: 1rem;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workflow-node-title-row {
+  display: flex;
+  flex-direction: row;
+  gap: 9px;
+  align-items: center;
+  min-height: 20px;
+  height: 100%;
+}
+
+.workflow-node-icon {
+  color: var(--workflow-node-icon-color, #475569);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  overflow: hidden;
+}
+
+.workflow-node-title-text-wrap {
+  color: var(--workflow-node-title-color, #334155);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+}
+
+.workflow-node-title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  z-index: 4;
+  text-transform: capitalize;
+}
+
+.workflow-node-description {
+  font-size: 0.75rem;
+  color: #666f7a;
+  align-content: end;
+  height: 100%;
+  margin: 0 0 0 29px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workflow-graph .workflow-node-delete {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.workflow-graph .react-flow__node:hover .workflow-node-delete,
+.workflow-graph .react-flow__node:focus-within .workflow-node-delete {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.workflow-node-delete-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #ef4444;
+  box-shadow: 0 2px 4px #00000014;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.workflow-node-delete-button:hover,
+.workflow-node-delete-button:focus-visible {
+  background-color: #ffffff;
+  border-color: #f87171;
+  outline: none;
+}
+
+.workflow-graph.dark .workflow-node-delete-button {
+  background-color: #0f172a;
+  border-color: #334155;
+  box-shadow: 0 2px 6px #0000008a;
+}
+
+.workflow-graph.dark .workflow-node-delete-button:hover,
+.workflow-graph.dark .workflow-node-delete-button:focus-visible {
+  border-color: #f87171;
+}
+
+.workflow-branch-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  border: 2px dashed #bdc6d4;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 5px;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.workflow-branch-placeholder:hover {
+  border-color: #90a4c9;
+}
+
+.workflow-graph.dark .workflow-branch-placeholder {
+  border-color: #4f5b70;
+  background: #111827;
+}
+
+.workflow-operator-port-label {
+  display: inline-flex;
+  max-width: 220px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #d0d7e2;
+  background-color: #ffffff;
+  color: #51627a;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.workflow-graph.dark .workflow-operator-port-label {
+  border-color: #39485f;
+  background-color: #1b2638;
+  color: #bdc8d8;
+}
+
+.workflow-icon-spin {
+  animation: workflow-icon-spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflow-icon-spin {
+    animation: none;
+  }
+}
+
+@keyframes workflow-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -9,26 +9,24 @@ import type {
   WorkflowDefinition,
   WorkflowEventMap,
 } from "@hexabot-ai/agentic";
+import type {
+  FlowStepPath,
+  WorkflowSelectionSnapshot,
+} from "@hexabot-ai/graph";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
-import type { XYPosition } from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
 
-import type { FlowStepPath } from "./workflow-path.types";
-
 export interface IWorkflowContext {
-  getCentroid: () => XYPosition;
-  selectNodes: (nodeIds: string[]) => void;
   getWorkflowFromCache: (id: string) => IWorkflow | undefined;
+  graphSelection: WorkflowSelectionSnapshot;
   selectedNodeIds: string[];
-  setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;
+  setGraphSelection: (selection: WorkflowSelectionSnapshot) => void;
   selectedFlowId?: string;
-  toFocusIds: string[];
-  setToFocusIds: Dispatch<SetStateAction<string[]>>;
   openSearchPanel: boolean;
   setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;
   getQuery: (key: string) => string;
@@ -77,8 +75,6 @@ export interface WorkflowContextProps {
   workflow?: IWorkflow;
 }
 
-export type TCb<T> = ((props: T) => void | undefined) & Cancelable;
-
 export type WorkflowEvent<
   T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
 > = T extends `${string}:${infer Rest}` ? Rest : T;
@@ -90,10 +86,3 @@ export type NodeExecutionState =
   | "finish"
   | "suspended"
   | "error";
-
-export type SubscribeWorkflowProps =
-  WorkflowEventMap[keyof WorkflowEventMap] & {
-    workflowId: string;
-    workflowEvent: WorkflowEvent;
-    t: number;
-  };

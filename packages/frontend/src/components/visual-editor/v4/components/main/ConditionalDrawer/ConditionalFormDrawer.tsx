@@ -11,17 +11,18 @@ import {
   type FlowStep,
 } from "@hexabot-ai/agentic";
 import { Box, Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import type { FlowStepPath } from "../../../types/workflow-path.types";
+import { useSelectedOperatorNode } from "../../../hooks/useWorkflowSelection";
+import {
+  useStepDrawerClose,
+  withStepDrawerLayout,
+} from "../StepDrawer/withStepDrawerLayout";
 
 const DEFAULT_CONDITION = "=false";
 
@@ -47,17 +48,6 @@ const isConditionalStep = (step: unknown): step is ConditionalStep => {
 const isConditionBranch = (
   branch: ConditionalBranch,
 ): branch is ConditionalBranchWithCondition => "condition" in branch;
-const getStepPath = (
-  node: GraphNode | undefined,
-): FlowStepPath | undefined => {
-  if (!node) {
-    return undefined;
-  }
-
-  const stepPath = (node.data as { stepPath?: FlowStepPath }).stepPath;
-
-  return Array.isArray(stepPath) ? stepPath : undefined;
-};
 const getConditionValues = (step?: ConditionalStep): string[] => {
   const conditions =
     step?.conditional.when
@@ -155,29 +145,16 @@ const ConditionalFormDrawerContent = ({
     </Stack>
   );
 };
-const ConditionalFormDrawerLayout = withDrawerLayout(ConditionalFormDrawerContent);
+const ConditionalFormDrawerLayout = withStepDrawerLayout(
+  ConditionalFormDrawerContent,
+);
 
 export const ConditionalFormDrawer = () => {
   const { t } = useTranslate();
-  const {
-    selectedNodeIds,
-    selectedFlowId,
-    updateWorkflowURL,
-    definition,
-    updateDefinitionState,
-    isSaving,
-  } = useWorkflow();
-  const { getNode } = useReactFlow();
-  const selectedNodeId =
-    selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-  const selectedNode = selectedNodeId
-    ? (getNode(selectedNodeId) as GraphNode | undefined)
-    : undefined;
-  const isConditionalOperatorNode =
-    selectedNode?.type === ENodeType.OPERATOR &&
-    (selectedNode.data as { operatorType?: string }).operatorType ===
-      StepType.Conditional;
-  const stepPath = isConditionalOperatorNode ? getStepPath(selectedNode) : undefined;
+  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const selectedOperatorNode = useSelectedOperatorNode(StepType.Conditional);
+  const selectedNodeId = selectedOperatorNode?.id;
+  const stepPath = selectedOperatorNode?.stepPath;
   const selectedStep = useMemo(() => {
     if (!definition || !stepPath) {
       return undefined;
@@ -188,7 +165,7 @@ export const ConditionalFormDrawer = () => {
     return isConditionalStep(stepAtPath) ? stepAtPath : undefined;
   }, [definition, stepPath]);
   const [conditions, setConditions] = useState<string[]>([DEFAULT_CONDITION]);
-  const open = Boolean(isConditionalOperatorNode && selectedNodeId);
+  const open = Boolean(selectedOperatorNode && selectedNodeId);
 
   useEffect(() => {
     if (!open) {
@@ -205,11 +182,7 @@ export const ConditionalFormDrawer = () => {
   const hasInvalidCondition = normalizedConditions.some(
     (condition) => !condition || !condition.startsWith("="),
   );
-  const handleClose = () => {
-    if (selectedFlowId) {
-      updateWorkflowURL(selectedFlowId);
-    }
-  };
+  const handleClose = useStepDrawerClose();
   const handleSave = () => {
     if (!definition || !stepPath || !selectedStep || hasInvalidCondition) {
       return;
@@ -283,7 +256,6 @@ export const ConditionalFormDrawer = () => {
         })
       }
       open={open}
-      onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>
