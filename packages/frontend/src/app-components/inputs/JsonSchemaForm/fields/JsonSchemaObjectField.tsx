@@ -129,6 +129,8 @@ export const JsonSchemaObjectField = ({
         label={<LabelWithTooltip label={label} description={description} />}
         maxDepth={maxDepth}
         readOnly={readOnly}
+        hideTitle={false}
+        hideDescription={false}
       />
     </FormProvider>
   );

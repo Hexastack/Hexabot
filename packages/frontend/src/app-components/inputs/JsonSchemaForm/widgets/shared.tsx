@@ -18,7 +18,7 @@ type LabelWithTooltipProps = {
 export const labelTooltipSx = {
   display: "inline-flex",
   alignItems: "center",
-  gap: 2,
+  gap: 0.5,
   "& .MuiFormLabel-asterisk": {
     order: 2,
   },

@@ -284,8 +284,18 @@ export abstract class LlmBaseAction<
 
   protected getProviderId(provider: string) {
     const normalized = provider.trim().toLowerCase();
+    const providerId = normalized
+      .replace(/^@ai-sdk\//, '')
+      .replace(/^ai-sdk\//, '');
+    const aliases: Record<string, string> = {
+      claude: 'anthropic',
+      gemini: 'google',
+      'google-generative-ai': 'google',
+      'google-vertex-ai': 'google-vertex',
+      'azure-openai': 'azure',
+    };
 
-    return normalized.replace(/^@ai-sdk\//, '').replace(/^ai-sdk\//, '');
+    return aliases[providerId] ?? providerId;
   }
 
   protected toPascalCase(value: string) {

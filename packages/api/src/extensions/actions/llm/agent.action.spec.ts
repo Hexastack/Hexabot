@@ -135,7 +135,7 @@ describe('LlmAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -302,7 +302,7 @@ describe('LlmAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -354,7 +354,7 @@ describe('LlmAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',

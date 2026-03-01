@@ -7,6 +7,49 @@
 import { JsonValueSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
+export const vercelAiSdkProviders = [
+  'alibaba',
+  'amazon-bedrock',
+  'anthropic',
+  'assemblyai',
+  'azure',
+  'baseten',
+  'black-forest-labs',
+  'bytedance',
+  'cerebras',
+  'claude',
+  'cohere',
+  'deepgram',
+  'deepinfra',
+  'deepseek',
+  'elevenlabs',
+  'fal',
+  'fireworks',
+  'gateway',
+  'gemini',
+  'gladia',
+  'google',
+  'google-vertex',
+  'groq',
+  'huggingface',
+  'hume',
+  'klingai',
+  'lmnt',
+  'luma',
+  'mistral',
+  'moonshotai',
+  'open-responses',
+  'openai',
+  'openai-compatible',
+  'perplexity',
+  'prodia',
+  'replicate',
+  'revai',
+  'togetherai',
+  'vercel',
+  'xai',
+] as const;
+
 const llmPromptBaseSchema = z.object({
   prompt: z.string().min(1).default('=$input.text').optional().meta({
     title: 'Prompt',
@@ -74,9 +117,10 @@ export const llmRawResponseSchema = z.object({
 });
 
 export const llmCommonSettingsSchema = z.strictObject({
-  provider: z.string().default('openai').meta({
+  provider: z.enum(vercelAiSdkProviders).default('openai').meta({
     title: 'Provider',
-    description: 'LLM provider identifier (e.g., openai).',
+    description:
+      'Vercel AI SDK provider identifier. Selecting a provider still requires its package to be installed (e.g., @ai-sdk/anthropic, @ai-sdk/google). By default, package.json only includes OpenAI/Gateway provider packages.',
   }),
   model: z.string().min(1).default('gpt-5.2').meta({
     title: 'Model',
@@ -167,29 +211,14 @@ export const llmGenerateTextOutputSchema = z.object({
   raw: llmRawResponseSchema.optional(),
 });
 
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
-  .extend({
-    output_schema: jsonSchemaInput.optional().meta({
-      title: 'Output schema',
-      description:
-        'Optional JSON Schema used to request structured output from the model.',
-      'ui:field': 'JsonSchemaObjectField',
-    }),
-    output_schema_name: z.string().min(1).optional(),
-    output_schema_description: z.string().min(1).optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (
-      (value.output_schema_name || value.output_schema_description) &&
-      !value.output_schema
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Provide "output_schema" to use output schema metadata.',
-        path: ['output_schema'],
-      });
-    }
-  });
+export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema.extend({
+  output_schema: jsonSchemaInput.optional().meta({
+    title: 'Output schema',
+    description:
+      'Optional JSON Schema used to request structured output from the model.',
+    'ui:field': 'JsonSchemaObjectField',
+  }),
+});
 
 export const llmAgentInputSchema =
   llmPromptBaseSchema.superRefine(validatePromptSource);

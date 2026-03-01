@@ -124,7 +124,7 @@ describe('LlmGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -258,6 +258,8 @@ describe('LlmGenerateTextAction', () => {
     } as any);
 
     const schemaDefinition = {
+      title: 'TestObject',
+      description: 'A simple test schema',
       type: 'object',
       properties: {
         foo: { type: 'string' },
@@ -265,7 +267,7 @@ describe('LlmGenerateTextAction', () => {
       required: ['foo'],
     } satisfies JSONSchema7;
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -281,8 +283,6 @@ describe('LlmGenerateTextAction', () => {
       max_output_tokens: 50,
       seed: 7,
       output_schema: schemaDefinition,
-      output_schema_name: 'TestObject',
-      output_schema_description: 'A simple test schema',
     };
     const input = {
       prompt: 'Generate an object',
@@ -411,7 +411,7 @@ describe('LlmGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -467,7 +467,7 @@ describe('LlmGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',
@@ -516,7 +516,7 @@ describe('LlmGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai',
+      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
       model: 'gpt-4o-mini',

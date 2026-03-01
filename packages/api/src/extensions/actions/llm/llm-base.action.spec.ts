@@ -388,6 +388,13 @@ describe('LlmBaseAction', () => {
     it('normalizes provider id and pascal case', () => {
       expect(action.getProviderIdPublic('  @ai-sdk/OpenAI  ')).toBe('openai');
       expect(action.getProviderIdPublic('ai-sdk/custom')).toBe('custom');
+      expect(action.getProviderIdPublic('claude')).toBe('anthropic');
+      expect(action.getProviderIdPublic('gemini')).toBe('google');
+      expect(action.getProviderIdPublic('google-generative-ai')).toBe('google');
+      expect(action.getProviderIdPublic('google-vertex-ai')).toBe(
+        'google-vertex',
+      );
+      expect(action.getProviderIdPublic('azure-openai')).toBe('azure');
       expect(action.toPascalCasePublic('custom-llm_provider')).toBe(
         'CustomLlmProvider',
       );

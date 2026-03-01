@@ -17,6 +17,7 @@ import Autocomplete, {
 } from "@mui/material/Autocomplete";
 import stringify from "fast-json-stable-stringify";
 import { forwardRef, useCallback, useMemo } from "react";
+import type { ReactNode } from "react";
 
 import { AlertAdornment } from "./AlertAdornment";
 
@@ -34,13 +35,14 @@ type AutoCompleteSelectProps<
     FreeSolo,
     ChipTypeMap["defaultComponent"]
   >,
-  "renderInput" | "defaultValue" | "value"
+  "renderInput" | "defaultValue" | "value" | "label"
 > & {
   value?: Multiple extends true ? string[] : string | null;
-  label: string;
+  label: ReactNode;
   idKey?: string;
   labelKey: Label;
   onSearch?: (keywords: string) => void;
+  inputLabelSx?: unknown;
   error?: boolean;
   helperText?: string | null | undefined;
   noOptionsWarning?: string;
@@ -62,6 +64,7 @@ const AutoCompleteSelect = <
     labelKey,
     multiple,
     onSearch,
+    inputLabelSx,
     error,
     helperText,
     isOptionEqualToValue = (option, value) =>
@@ -164,7 +167,10 @@ const AutoCompleteSelect = <
             error={error}
             helperText={helperText}
             slotProps={{
-              inputLabel: InputLabelProps,
+              inputLabel: {
+                ...InputLabelProps,
+                ...(inputLabelSx ? { sx: inputLabelSx } : {}),
+              },
               htmlInput: inputProps,
               input: {
                 ...InputProps,
