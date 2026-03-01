@@ -143,10 +143,16 @@ export const llmCommonSettingsSchema = z.strictObject({
     title: 'Base URL',
     description: 'Custom provider base URL (self-hosted or proxy).',
   }),
-  organization: z.string().optional().meta({
-    title: 'Organization',
-    description: 'Provider organization or account identifier.',
-  }),
+  organization: z
+    .string()
+    .optional()
+    .meta({
+      title: 'Organization',
+      description: 'Provider organization or account identifier.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
   tools: z.array(z.string().min(1)).optional().meta({
     title: 'Tools',
     description: 'Allowed tool names or tool IDs for the model.',
@@ -159,42 +165,100 @@ export const llmCommonSettingsSchema = z.strictObject({
     title: 'Temperature',
     description: 'Sampling temperature; higher values increase randomness.',
   }),
-  top_p: z.number().min(0).max(1).optional().meta({
-    title: 'Top P',
-    description: 'Nucleus sampling probability mass to consider.',
-  }),
-  top_k: z.int().positive().optional().meta({
-    title: 'Top K',
-    description: 'Limit sampling to the top K most likely tokens.',
-  }),
   max_output_tokens: z.int().positive().optional().meta({
     title: 'Max output tokens',
     description: 'Maximum number of tokens to generate in the output.',
   }),
-  presence_penalty: z.number().min(-2).max(2).optional().meta({
-    title: 'Presence penalty',
-    description: 'Penalty for introducing new topics or tokens.',
-  }),
-  frequency_penalty: z.number().min(-2).max(2).optional().meta({
-    title: 'Frequency penalty',
-    description: 'Penalty for repeating tokens frequently.',
-  }),
-  stop_sequences: z.array(z.string().min(1)).optional().meta({
-    title: 'Stop sequences',
-    description: 'Sequences that will stop generation when encountered.',
-  }),
-  seed: z.int().optional().meta({
-    title: 'Seed',
-    description: 'Seed for deterministic sampling when supported.',
-  }),
-  stop_step_count: z.int().positive().optional().meta({
-    title: 'Stop step count',
-    description: 'Maximum number of agent steps before stopping.',
-  }),
-  stop_tool_call: z.string().trim().min(1).optional().meta({
-    title: 'Stop tool call',
-    description: 'Stop when the specified tool call is triggered.',
-  }),
+  top_p: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .meta({
+      title: 'Top P',
+      description: 'Nucleus sampling probability mass to consider.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  top_k: z
+    .int()
+    .positive()
+    .optional()
+    .meta({
+      title: 'Top K',
+      description: 'Limit sampling to the top K most likely tokens.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  presence_penalty: z
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .meta({
+      title: 'Presence penalty',
+      description: 'Penalty for introducing new topics or tokens.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  frequency_penalty: z
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .meta({
+      title: 'Frequency penalty',
+      description: 'Penalty for repeating tokens frequently.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_sequences: z
+    .array(z.string().min(1))
+    .optional()
+    .meta({
+      title: 'Stop sequences',
+      description: 'Sequences that will stop generation when encountered.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  seed: z
+    .int()
+    .optional()
+    .meta({
+      title: 'Seed',
+      description: 'Seed for deterministic sampling when supported.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_step_count: z
+    .int()
+    .positive()
+    .optional()
+    .meta({
+      title: 'Stop step count',
+      description: 'Maximum number of agent steps before stopping.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_tool_call: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .meta({
+      title: 'Stop tool call',
+      description: 'Stop when the specified tool call is triggered.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
 });
 
 export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);
