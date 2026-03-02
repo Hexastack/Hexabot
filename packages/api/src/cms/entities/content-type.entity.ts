@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
-  ContentField,
   ContentType,
   ContentTypeFull,
   ContentTypeTransformerDto,
@@ -28,8 +28,9 @@ export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeTransformerDt
   @Column({ unique: true })
   name!: string;
 
+  /** JSON Schema describing the expected structure of stored values. */
   @JsonColumn({ nullable: true })
-  fields!: ContentField[] | null;
+  schema!: JsonSchema;
 
   @OneToMany(() => ContentOrmEntity, (content) => content.contentType, {
     cascade: ['remove'],

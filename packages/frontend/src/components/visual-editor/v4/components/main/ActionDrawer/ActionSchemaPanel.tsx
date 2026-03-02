@@ -11,7 +11,6 @@ import {
   Typography,
 } from "@mui/material";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
-import { ChevronDown } from "lucide-react";
 
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 
@@ -37,10 +36,8 @@ export const ActionSchemaPanel = ({
   uiSchema,
 }: ActionSchemaPanelProps) => (
   <Accordion variant="elevation" defaultExpanded>
-    <AccordionSummary expandIcon={<ChevronDown size={16} />}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-        {title}
-      </Typography>
+    <AccordionSummary>
+      <Typography variant="subtitle2">{title}</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (

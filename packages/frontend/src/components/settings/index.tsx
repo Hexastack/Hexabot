@@ -47,7 +47,7 @@ export const Settings = () => {
   const [selectedTab, setSelectedTab] = useState(
     group || DEFAULT_SETTINGS_GROUP,
   );
-  const { control, watch } = useForm();
+  const { control, watch, resetField } = useForm();
   const { data: settings } = useFind(
     { entity: EntityType.SETTING },
     {
@@ -107,6 +107,12 @@ export const Settings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group]);
 
+  useEffect(() => {
+    settings.map((s) => {
+      resetField(`${s.group}.${s.label}`, { defaultValue: undefined });
+    });
+  }, [JSON.stringify(settings)]);
+
   return (
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={SettingsIcon} title={t("title.settings")} />
@@ -140,7 +146,7 @@ export const Settings = () => {
                 >
                   {settings.map((setting) => (
                     <Controller
-                      key={setting.id}
+                      key={`${setting.id}:${setting.value}`}
                       name={`${setting.group}.${setting.label}`}
                       control={control}
                       defaultValue={setting.value}

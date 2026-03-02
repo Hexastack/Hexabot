@@ -6,9 +6,9 @@
 
 import { DataSource, DeepPartial } from 'typeorm';
 
+import { DEFAULT_CONTENT_TYPE_SCHEMA } from '@/cms';
 import { ContentType, ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
-import { FieldType } from '@/setting/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -19,100 +19,46 @@ type TContentTypeFixtures = FixturesTypeBuilder<
 >;
 
 export const contentTypeDefaultValues: TContentTypeFixtures['defaultValues'] = {
-  fields: [
-    {
-      name: 'title',
-      label: 'Title',
-      type: FieldType.text,
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      type: FieldType.checkbox,
-    },
-  ],
+  schema: DEFAULT_CONTENT_TYPE_SCHEMA,
 };
 
 const contentTypes: TContentTypeFixtures['values'][] = [
   {
     name: 'Product',
-    fields: [
-      {
-        name: 'title',
-        label: 'Title',
-        type: FieldType.text,
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: FieldType.checkbox,
-      },
-      {
-        name: 'description',
-        label: 'Description',
-        type: FieldType.text,
-      },
-      {
-        name: 'image',
-        label: 'Image',
-        type: FieldType.file,
-      },
-      {
-        name: 'subtitle',
-        label: 'Subtitle',
-        type: FieldType.file,
-      },
-    ],
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', title: 'Title' },
+        status: { type: 'boolean', title: 'Status' },
+        description: { type: 'string', title: 'Description' },
+        image: { type: 'file', title: 'Image' },
+        subtitle: { type: 'file', title: 'Subtitle' },
+      } as any,
+    },
   },
   {
     name: 'Restaurant',
-    fields: [
-      {
-        name: 'title',
-        label: 'Title',
-        type: FieldType.text,
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: FieldType.checkbox,
-      },
-      {
-        name: 'address',
-        label: 'Address',
-        type: FieldType.text,
-      },
-      {
-        name: 'image',
-        label: 'Image',
-        type: FieldType.file,
-      },
-    ],
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', title: 'Title' },
+        status: { type: 'boolean', title: 'Status' },
+        address: { type: 'string', title: 'Description' },
+        image: { type: 'file', title: 'Image' },
+      } as any,
+    },
   },
   {
     name: 'Store',
-    fields: [
-      {
-        name: 'title',
-        label: 'Title',
-        type: FieldType.text,
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: FieldType.checkbox,
-      },
-      {
-        name: 'address',
-        label: 'Address',
-        type: FieldType.text,
-      },
-      {
-        name: 'image',
-        label: 'Image',
-        type: FieldType.file,
-      },
-    ],
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', title: 'Title' },
+        status: { type: 'boolean', title: 'Status' },
+        address: { type: 'string', title: 'Description' },
+        image: { type: 'file', title: 'Image' },
+      } as any,
+    },
   },
 ];
 
@@ -124,9 +70,9 @@ export const contentTypeFixtures = getFixturesWithDefaultValues<
 });
 
 export const contentTypeOrmFixtures: DeepPartial<ContentTypeOrmEntity>[] =
-  contentTypeFixtures.map(({ name, fields }) => ({
+  contentTypeFixtures.map(({ name, schema }) => ({
     name,
-    fields,
+    schema,
   }));
 
 export const installContentTypeFixturesTypeOrm = async (
@@ -137,6 +83,7 @@ export const installContentTypeFixturesTypeOrm = async (
   if (count > 0) {
     return;
   }
+
   const entities = repository.create(contentTypeOrmFixtures);
   await repository.save(entities);
 };

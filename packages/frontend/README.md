@@ -1,10 +1,12 @@
 # Hexabot UI Admin Panel
 
-The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React single-page application powered by Vite and React Router that serves as the admin interface for managing chatbot configurations, workflows, and interactions. The admin panel allows users to easily create and manage chat flows, monitor analytics, manage content, and configure system settings.
+The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React single-page application powered by Vite and React Router that serves as the admin interface for managing chatbot configurations, workflows, and interactions.
+
+Workflow graph building, layout, and rendering are now provided by the dedicated `@hexabot-ai/graph` package. The frontend package owns editor orchestration, workflow CRUD, drawers/forms, and route/state integration around that graph component.
 
 
 ## Key Features
-- **Visual Editor:** An intuitive drag-and-drop interface for managing chat flows, including text messages, quick replies, carousels, and more.
+- **Visual Editor:** An intuitive workflow editor powered by `@hexabot-ai/graph`, with frontend-managed actions, forms, and workflow state.
 - **Multi-Channel Management:** Configure and manage multiple communication channels (e.g., web, mobile, social media) from a single interface.
 - **Analytics Dashboard:** Track user interactions, messages sent, and retention rates through detailed analytics.
 - **Knowledge Base:** Seamlessly integrate and manage content such as product catalogs, lists of stores, or any dynamic content needed by the chatbot.
@@ -12,23 +14,33 @@ The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React single-page applica
 
 ## Directory Structure
 - **app-components/:** Reusable components that are used across the admin panel.
-- **components/:** Components organized by the page where they are being used.
-- **hooks/:** Hooks defined.
-- **pages/:** Screen-level components that are consumed by the router.
+- **components/:** Feature-level modules, including the visual editor integration at `components/visual-editor/v4`.
+- **contexts/:** Global and feature contexts used by providers/hooks.
+- **hooks/:** Shared hooks, including CRUD and routing helpers.
+- **layout/:** Authenticated/public shell and theme setup.
+- **providers/:** App-level providers (auth, permissions, API client).
 - **routes/:** Centralised route configuration for the React Router SPA.
 - **services/:** API service calls to interact with the Hexabot API.
+- **config/:** Runtime config and app bootstrap constants.
 - **types/:** Defines the typescript interfaces, types, and enums used.
+- **websocket/:** Socket utilities and subscriptions.
+- **i18n/:** Translation initialization and locale loading config.
 - **styles/:** Global and component-specific styles for the application.
 - **utils/:** Utility functions and helpers used throughout the frontend.
 
+## Theming
+
+MUI theme customization is centralized in `packages/frontend/src/layout/theme` (theme primitives, component overrides, and theme composition via `AppTheme`).
+
 ## Development
 
-This package is part of the Hexabot PNPM workspace alongside the API and widget packages. Run commands from the repository root so Turborepo can orchestrate the tasks efficiently.
+This package is part of the Hexabot PNPM workspace alongside API, widget, graph, and other packages. Run commands from the repository root so Turborepo can orchestrate tasks efficiently.
 
 ```bash
 pnpm --filter @hexabot-ai/frontend run dev       # start the admin interface with Vite
 pnpm --filter @hexabot-ai/frontend run build     # type-check and compile production assets
 pnpm --filter @hexabot-ai/frontend run preview   # serve the built bundle locally
+pnpm --filter @hexabot-ai/graph run dev          # watch/rebuild graph package while editing shared graph internals
 ```
 
 The admin interface is exposed on http://localhost:8080 by default.
@@ -39,7 +51,7 @@ Hexabot also provides a live chat widget package that can be launched in paralle
 pnpm --filter @hexabot-ai/widget run dev
 ```
 
-To spin up the dashboard and widget together, run `pnpm dev` from the repository root.
+To run all workspace dev tasks (including `@hexabot-ai/frontend` and `@hexabot-ai/graph`), use `pnpm dev` from the repository root.
 
 The chat widget development server listens on http://localhost:5173.
 

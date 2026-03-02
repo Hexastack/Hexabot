@@ -239,7 +239,7 @@ export class AgenticService {
 
     const latestInput = context.event.buildInput();
     const runner = await workflowInstance.buildRunnerFromState({
-      state: this.buildExecutionState(run, latestInput),
+      state: this.buildExecutionState(run),
       context,
       snapshot: run.snapshot ?? { status: run.status, actions: {} },
       suspension: run.suspendedStep
@@ -247,6 +247,10 @@ export class AgenticService {
             stepId: run.suspendedStep,
             reason: run.suspensionReason,
             data: run.suspensionData ?? undefined,
+            stepExecId: run.suspensionStepExecId ?? undefined,
+            suspendIndex: run.suspensionIndex ?? undefined,
+            suspendKey: run.suspensionKey ?? undefined,
+            awaitResults: run.suspensionAwaitResults ?? undefined,
           }
         : undefined,
       runId: run.id,
@@ -337,11 +341,18 @@ export class AgenticService {
           runId: run.id,
           stepId: result.step.id,
           reason: result.reason,
+          stepExecId: result.stepExecId,
+          suspendIndex: result.suspendIndex,
+          suspendKey: result.suspendKey,
         });
         await this.workflowRunService.markSuspended(run.id, {
           stepId: result.step.id,
           reason: result.reason,
           data: result.data,
+          stepExecId: result.stepExecId,
+          suspendIndex: result.suspendIndex,
+          suspendKey: result.suspendKey,
+          awaitResults: result.awaitResults,
           snapshot: result.snapshot,
           context: contextState,
           lastResumeData: resumeData,
@@ -383,17 +394,9 @@ export class AgenticService {
   /**
    * Build the ExecutionState used to rebuild a runner.
    */
-  private buildExecutionState(
-    run: WorkflowRunFull,
-    latestInput?: Record<string, unknown>,
-  ): ExecutionState {
-    const baseInput = run.input ?? {};
-    const mergedInput =
-      latestInput && Object.keys(latestInput).length > 0
-        ? { ...baseInput, ...latestInput }
-        : baseInput;
+  private buildExecutionState(run: WorkflowRunFull): ExecutionState {
     const state: ExecutionState = {
-      input: mergedInput,
+      input: run.input ?? {},
       output: run.output ?? {},
       iterationStack: [],
     };

@@ -80,7 +80,7 @@ describe('ContentController (TypeORM)', () => {
         title: 'New content',
         contentType: contentType!.id,
         status: true,
-        dynamicFields: { subtitle: 'Test' },
+        properties: { subtitle: 'Test' },
       });
       createdContentIds.add(created.id);
 
@@ -88,7 +88,7 @@ describe('ContentController (TypeORM)', () => {
         title: 'New content',
         contentType: contentType!.id,
         status: true,
-        dynamicFields: { subtitle: 'Test' },
+        properties: { subtitle: 'Test' },
       });
     });
 
@@ -98,7 +98,7 @@ describe('ContentController (TypeORM)', () => {
           title: 'Invalid',
           contentType: randomUUID(),
           status: true,
-          dynamicFields: {},
+          properties: {},
         }),
       ).rejects.toThrow();
     });
@@ -216,7 +216,7 @@ describe('ContentController (TypeORM)', () => {
         title: 'To update',
         contentType: contentType!.id,
         status: true,
-        dynamicFields: {},
+        properties: {},
       });
       createdContentIds.add(created.id);
 
@@ -238,7 +238,7 @@ describe('ContentController (TypeORM)', () => {
         title: 'To delete',
         contentType: contentType!.id,
         status: true,
-        dynamicFields: {},
+        properties: {},
       });
       const result = await controller.deleteOne(created.id);
 

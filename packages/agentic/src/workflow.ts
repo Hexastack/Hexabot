@@ -13,7 +13,6 @@ import {
   validateWorkflow,
   type FlowStep,
 } from './dsl.types';
-import { WorkflowSuspendedError } from './runtime-error';
 import { safeRenameTaskInDefinition as safeRenameTaskInDefinitionHelper } from './utils/workflow-definition';
 import {
   compileWorkflow,
@@ -23,6 +22,7 @@ import { WorkflowRunner } from './workflow-runner';
 import type {
   CompiledWorkflow,
   ExecutionState,
+  PersistedSuspension,
   WorkflowRunOptions,
 } from './workflow-types';
 
@@ -41,6 +41,24 @@ export type {
 export type { WorkflowCompileOptions } from './workflow-compiler';
 
 export type FlowStepPath = Array<string | number>;
+
+class WorkflowRunSuspendedError extends Error {
+  public readonly stepId: string;
+
+  public readonly reason?: string;
+
+  public readonly data?: unknown;
+
+  constructor(stepId: string, options?: { reason?: string; data?: unknown }) {
+    super(
+      `Workflow run suspended at step ${stepId}${options?.reason ? `: ${options.reason}` : ''}`,
+    );
+    this.name = 'WorkflowRunSuspendedError';
+    this.stepId = stepId;
+    this.reason = options?.reason;
+    this.data = options?.data;
+  }
+}
 
 const getTaskNameFromStep = (step: unknown): string | null => {
   if (!step || typeof step !== 'object') {
@@ -297,7 +315,7 @@ export class Workflow {
 
   /**
    * Run the workflow until completion or suspension.
-   * Throws {@link WorkflowSuspendedError} when a task suspends so callers can capture the state.
+   * Throws when a task suspends so callers can capture the state.
    */
   async run(
     inputData: unknown,
@@ -321,7 +339,7 @@ export class Workflow {
     }
 
     context.attachWorkflowRuntime(undefined);
-    throw new WorkflowSuspendedError(result.step.id, {
+    throw new WorkflowRunSuspendedError(result.step.id, {
       reason: result.reason,
       data: result.data,
     });
@@ -343,7 +361,7 @@ export class Workflow {
     state: ExecutionState;
     context: BaseWorkflowContext;
     snapshot: WorkflowSnapshot;
-    suspension?: { stepId: string; reason?: string | null; data?: unknown };
+    suspension?: PersistedSuspension;
     runId?: string;
     lastResumeData?: unknown;
   }): Promise<WorkflowRunner> {

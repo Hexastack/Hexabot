@@ -673,7 +673,9 @@
     "clear": "Effacer"
   },
   "input": {
-    "search": "Recherche"
+    "search": "Recherche",
+    "jsonata_formula_mode": "Mode JSONata (commence par '=')",
+    "plain_text_mode": "Texte brut"
   },
   "link": {
     "reset": "Mot de passe oublié?"
@@ -757,6 +759,7 @@
         "section": {
           "input": "Entrée",
           "settings": "Paramètres",
+          "execution_settings": "Paramètres d'exécution",
           "output": "Sortie"
         },
         "empty_schema": {
@@ -782,6 +785,11 @@
             "required": "L'ID de l'étape est obligatoire.",
             "snake_case": "L'ID de l'étape doit être en snake_case avec un underscore.",
             "unique": "Cet ID d'étape existe déjà dans ce workflow."
+          }
+        },
+        "execution_settings": {
+          "mode": {
+            "override_global_settings": "Remplacer les paramètres globaux"
           }
         },
         "description": {
@@ -893,7 +901,12 @@
       }
     },
     "workflow_title_bar": {
-      "last_saved": "Dernière sauvegarde {{0}}"
+      "last_saved": "Dernière sauvegarde {{0}}",
+      "settings": {
+        "open": "Paramètres",
+        "title": "Paramètre Globaux",
+        "description": "Ces paramètres sont des valeurs par défaut globales pour ce workflow et peuvent être remplacés au niveau des étapes."
+      }
     }
   }
 }

@@ -1,0 +1,91 @@
+.button-edge__label {
+  position: absolute;
+  pointer-events: all;
+  transform-origin: center;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.button-edge__label-content {
+  display: inline-flex;
+}
+
+.workflow-pulse-icon-button {
+  --workflow-pulse-size: 32px;
+  --workflow-pulse-inset: clamp(
+    4px,
+    calc(var(--workflow-pulse-size) * 0.14),
+    12px
+  );
+
+  position: relative;
+  z-index: 0;
+  pointer-events: auto;
+  width: var(--workflow-pulse-size);
+  height: var(--workflow-pulse-size);
+  padding: 0;
+  border-radius: 50%;
+  border: 1px dashed var(--workflow-pulse-border);
+  background-color: var(--workflow-pulse-bg);
+  color: var(--workflow-pulse-color);
+  box-shadow: var(--workflow-pulse-shadow);
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.workflow-pulse-icon-button::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--workflow-pulse-inset));
+  border-radius: 50%;
+  border: 1px solid var(--workflow-pulse-ring-color);
+  opacity: 0;
+  animation: workflow-pulse-ring 1.8s ease-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.workflow-pulse-icon-button:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--workflow-pulse-bg),
+    var(--workflow-pulse-hover-mix) 15%
+  );
+}
+
+.workflow-pulse-icon-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workflow-pulse-icon-button:disabled::after {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflow-pulse-icon-button::after {
+    animation: none;
+  }
+}
+
+@keyframes workflow-pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}

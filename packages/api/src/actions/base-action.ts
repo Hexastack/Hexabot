@@ -8,11 +8,11 @@ import {
   AbstractAction,
   ActionExecutionArgs,
   BaseWorkflowContext,
-  Settings,
 } from '@hexabot-ai/agentic';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
+import { z, type ZodType } from 'zod';
 
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
@@ -28,12 +28,16 @@ import {
   DEFAULT_ACTION_ICON,
 } from './types';
 
+const defaultSchema = z.object({}).strict();
+const resolveSchema = <T>(schema?: ZodType<T>): ZodType<T> =>
+  (schema ?? defaultSchema) as unknown as ZodType<T>;
+
 @Injectable()
 export abstract class BaseAction<
     I = unknown,
     O = unknown,
     C extends BaseWorkflowContext = ConversationalWorkflowContext,
-    S extends Settings = Settings,
+    S = unknown,
   >
   extends AbstractAction<I, O, C, S>
   implements OnModuleInit
@@ -52,7 +56,12 @@ export abstract class BaseAction<
     metadata: ActionMetadata<I, O, S>,
     private readonly actionService: ActionService,
   ) {
-    super(metadata);
+    super({
+      ...metadata,
+      inputSchema: resolveSchema(metadata.inputSchema),
+      outputSchema: resolveSchema(metadata.outputSchema),
+      settingsSchema: resolveSchema(metadata.settingsSchema),
+    });
     this.icon = metadata.icon ?? DEFAULT_ACTION_ICON;
     this.color = metadata.color ?? DEFAULT_ACTION_COLOR;
     this.group = metadata.group ?? DEFAULT_ACTION_GROUP;

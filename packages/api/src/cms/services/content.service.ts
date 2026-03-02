@@ -102,7 +102,7 @@ export class ContentService extends BaseOrmService<
    * Parses a CSV dataset and saves the content in the repository.
    *
    * @param data - The CSV data as a string to be parsed.
-   * @param contentType - The content type metadata, including fields to validate the parsed data.
+   * @param contentType - The content type metadata, including properties to validate the parsed data.
    * @return A promise resolving to the created content objects.
    */
   async parseAndSaveDataset(data: string, contentType: ContentType) {
@@ -134,24 +134,26 @@ export class ContentService extends BaseOrmService<
       );
     }
 
-    const contentsDto: ContentCreateDto[] = result.data.reduce(
+    const contentsDto = result.data.reduce(
       (acc, { title, status, ...rest }) => [
         ...acc,
         {
           title: String(title),
           status: status.trim().toLowerCase() === 'true',
           contentType: contentType.id,
-          dynamicFields: Object.keys(rest)
+          properties: Object.keys(rest)
             .filter((key) =>
-              contentType.fields?.map((field) => field.name).includes(key),
+              Object.entries(contentType.schema.properties || {})
+                ?.map(([key]) => key)
+                .includes(key),
             )
             .reduce(
               (filtered, key) => ({ ...filtered, [key]: rest[key] }),
               {} as Record<string, string>,
             ),
-        },
+        } satisfies ContentCreateDto,
       ],
-      [] as ContentCreateDto[],
+      [],
     );
     this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
     try {

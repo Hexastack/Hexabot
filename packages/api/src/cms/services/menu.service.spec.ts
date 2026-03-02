@@ -162,6 +162,18 @@ describe('MenuService (TypeORM)', () => {
         menuService.updateOne(child.id, { parent: parentPostback.id }),
       ).rejects.toThrow();
     });
+
+    it('rejects assigning a menu as its own parent', async () => {
+      const parent = await menuService.create({
+        title: 'Self parent candidate',
+        type: MenuType.nested,
+      });
+      createdIds.add(parent.id);
+
+      await expect(
+        menuService.updateOne(parent.id, { parent: parent.id }),
+      ).rejects.toThrow(/parent should not reference itself/i);
+    });
   });
 
   describe('deleteOne', () => {

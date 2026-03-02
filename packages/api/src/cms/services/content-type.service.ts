@@ -5,26 +5,21 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { JSONSchema7 } from 'json-schema';
 
-import { FieldType } from '@/setting/types';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { ContentType, ContentTypeDtoConfig } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 
-const DEFAULT_FIELDS: NonNullable<ContentTypeOrmEntity['fields']> = [
-  {
-    name: 'title',
-    label: 'Title',
-    type: FieldType.text,
+export const DEFAULT_CONTENT_TYPE_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string', title: 'Title' },
+    status: { type: 'boolean', title: 'Status' },
   },
-  {
-    name: 'status',
-    label: 'Status',
-    type: FieldType.checkbox,
-  },
-];
+} satisfies JSONSchema7;
 
 @Injectable()
 export class ContentTypeService extends BaseOrmService<
@@ -36,14 +31,13 @@ export class ContentTypeService extends BaseOrmService<
   }
 
   async create(payload: ContentTypeDtoConfig['create']): Promise<ContentType> {
-    const fields =
-      payload.fields && payload.fields.length > 0
-        ? payload.fields
-        : DEFAULT_FIELDS;
+    const schema = Object.keys(payload.schema.properties || {}).length
+      ? payload.schema
+      : DEFAULT_CONTENT_TYPE_SCHEMA;
 
     return await super.create({
       ...payload,
-      fields,
+      schema,
     });
   }
 }

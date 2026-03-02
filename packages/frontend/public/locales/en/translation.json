@@ -675,7 +675,9 @@
     "clear": "Clear"
   },
   "input": {
-    "search": "Search"
+    "search": "Search",
+    "jsonata_formula_mode": "JSONata mode (starts with '=')",
+    "plain_text_mode": "Plain text"
   },
   "link": {
     "reset": "Forgot your password?"
@@ -759,6 +761,7 @@
         "section": {
           "input": "Input",
           "settings": "Settings",
+          "execution_settings": "Overrides",
           "output": "Output"
         },
         "empty_schema": {
@@ -784,6 +787,11 @@
             "required": "Step ID is required.",
             "snake_case": "Step ID must be snake_case and include an underscore.",
             "unique": "Step ID already exists in this workflow."
+          }
+        },
+        "execution_settings": {
+          "mode": {
+            "override_global_settings": "Override global settings"
           }
         },
         "description": {
@@ -895,7 +903,12 @@
       }
     },
     "workflow_title_bar": {
-      "last_saved": "Last saved {{0}}"
+      "last_saved": "Last saved {{0}}",
+      "settings": {
+        "open": "Settings",
+        "title": "Global Settings",
+        "description": "These settings are global defaults for this workflow and can be overridden at the step level."
+      }
     }
   }
 }

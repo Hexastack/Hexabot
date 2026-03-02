@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseSettingsSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -66,7 +65,7 @@ interface PreparedMessageContext {
   envelopeFactory: EnvelopeFactory;
 }
 
-export const messageActionSettingsSchema = BaseSettingsSchema.extend({
+export const messageActionSettingsSchema = z.strictObject({
   typing: z
     .int()
     .nonnegative()
@@ -79,7 +78,7 @@ export type MessageActionSettings = z.infer<typeof messageActionSettingsSchema>;
 
 export abstract class MessageAction<
   I,
-  S extends MessageActionSettings = MessageActionSettings,
+  S = MessageActionSettings,
 > extends BaseAction<I, MessageActionOutput, ConversationalWorkflowContext, S> {
   private static readonly DEFAULT_ICON = 'MessageSquare';
 

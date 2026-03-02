@@ -5,8 +5,14 @@
  */
 
 import {
+  compileWorkflow,
+  DEFAULT_RETRY_SETTINGS,
+  DEFAULT_TIMEOUT_MS,
+  type CompiledStep,
+  type WorkflowCompileOptions,
   type WorkflowDefinition,
   isSnakeCaseName,
+  validateWorkflow,
   toSnakeCase,
 } from "@hexabot-ai/agentic";
 
@@ -14,6 +20,12 @@ import {
  * Build a minimal workflow definition with defaults and optional metadata.
  */
 export const createBaseDefinition = (): WorkflowDefinition => ({
+  defaults: {
+    settings: {
+      timeout_ms: DEFAULT_TIMEOUT_MS,
+      retries: { ...DEFAULT_RETRY_SETTINGS },
+    },
+  },
   tasks: {},
   flow: [],
   outputs: {},
@@ -56,4 +68,21 @@ export const createTaskName = (
   }
 
   return candidate;
+};
+
+export const getDefinition = (
+  yaml: string,
+  options: WorkflowCompileOptions,
+): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
+  const validation = validateWorkflow(yaml);
+
+  if (!validation.success) {
+    throw new Error(
+      `Workflow validation failed: ${validation.errors.join("; ")}`,
+    );
+  }
+
+  const { definition, flow } = compileWorkflow(validation.data, options);
+
+  return { definition, flow };
 };

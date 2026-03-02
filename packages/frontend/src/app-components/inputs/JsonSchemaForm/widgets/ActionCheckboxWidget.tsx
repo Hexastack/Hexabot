@@ -4,18 +4,56 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Widgets } from "@rjsf/mui";
-import type { RJSFSchema, WidgetProps } from "@rjsf/utils";
+import { FormControlLabel, Switch } from "@mui/material";
+import {
+  ariaDescribedByIds,
+  labelValue,
+  schemaRequiresTrueValue,
+  type RJSFSchema,
+  type WidgetProps,
+} from "@rjsf/utils";
 
 import { getDescription, LabelWithTooltip } from "./shared";
 
-export const ActionCheckboxWidget = (props: WidgetProps) => {
-  const description = getDescription(props.schema as RJSFSchema, props.options);
-  const label = (
-    <LabelWithTooltip label={props.label} description={description} />
+export const ActionCheckboxWidget = ({
+  schema,
+  id,
+  htmlName,
+  value,
+  disabled,
+  readonly,
+  label: fieldLabel = "",
+  hideLabel,
+  autofocus,
+  onChange,
+  onBlur,
+  onFocus,
+  options,
+}: WidgetProps) => {
+  const description = getDescription(schema as RJSFSchema, options);
+  const required = schemaRequiresTrueValue(schema);
+  const checked = typeof value === "undefined" ? false : Boolean(value);
+  const labelWithTooltip = (
+    <LabelWithTooltip label={fieldLabel} description={description} />
   );
 
   return (
-    <Widgets.CheckboxWidget {...props} label={label as unknown as string} />
+    <FormControlLabel
+      control={
+        <Switch
+          id={id}
+          name={htmlName || id}
+          checked={checked}
+          required={required}
+          disabled={disabled || readonly}
+          autoFocus={autofocus}
+          onChange={(_, nextChecked) => onChange(nextChecked)}
+          onBlur={() => onBlur(id, value)}
+          onFocus={() => onFocus(id, value)}
+          aria-describedby={ariaDescribedByIds(id)}
+        />
+      }
+      label={labelValue(labelWithTooltip as unknown as string, hideLabel, false)}
+    />
   );
 };

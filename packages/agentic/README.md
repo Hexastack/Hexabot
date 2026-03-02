@@ -62,7 +62,7 @@ export const call_api = defineAction<{ id: string }, { body: string }, AppContex
 });
 ```
 
-Settings are parsed and merged with workflow defaults before `execute` runs; retries and timeout wrappers are applied automatically. Throwing `WorkflowSuspendedError` (via `context.workflow.suspend`) pauses the workflow.
+Settings are parsed and merged with workflow defaults before `execute` runs; retries and timeout wrappers are applied automatically. Awaiting `context.workflow.suspend(...)` pauses the workflow until `resume` is called.
 
 ## Running a workflow from YAML
 
@@ -153,7 +153,7 @@ export const await_user = defineAction<unknown, { reply?: string }, AppContext, 
 });
 ```
 
-`Workflow.run` throws `WorkflowSuspendedError` when this happens; `WorkflowRunner.start` instead returns `{ status: 'suspended', ... }` so hosts can persist state and resume later with `runner.resume`.
+`Workflow.run` throws an error with suspension details (`stepId`, `reason`, `data`) when this happens; `WorkflowRunner.start` instead returns `{ status: 'suspended', ... }` so hosts can persist state and resume later with `runner.resume`.
 
 ## Events and observability
 

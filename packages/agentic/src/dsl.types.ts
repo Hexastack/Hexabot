@@ -35,8 +35,9 @@ export type JsonValue =
 // Per-action timeout in milliseconds; 0 disables the timeout wrapper.
 export const DEFAULT_TIMEOUT_MS = 0;
 
-// Retry defaults: 3 attempts with exponential backoff starting at 25ms, capped at 10s, no jitter.
+// Retry defaults: disabled with 3 attempts and exponential backoff starting at 25ms, capped at 10s, no jitter.
 export const DEFAULT_RETRY_SETTINGS = {
+  enabled: false,
   max_attempts: 3,
   backoff_ms: 25,
   max_delay_ms: 10_000,
@@ -136,6 +137,11 @@ const InputFieldSchema: z.ZodType<InputField> = z.lazy(() =>
 );
 // Retry policy: exponential backoff per attempt, capped by max_delay_ms, with optional jitter multiplier.
 const RetriesSchema = z.strictObject({
+  enabled: z.boolean().optional().meta({
+    title: 'Enabled',
+    description:
+      'Enable retry attempts when an action fails (disabled = no retries).',
+  }),
   max_attempts: z
     .int()
     .min(1)
@@ -172,17 +178,12 @@ const RetriesSchema = z.strictObject({
 
 // Shared execution settings applied to every action invocation.
 export const BaseSettingsSchema = z.strictObject({
-  timeout_ms: z
-    .int()
-    .nonnegative()
-    .default(DEFAULT_TIMEOUT_MS)
-    .optional()
-    .meta({
-      title: 'Timeout (ms)',
-      description:
-        'Maximum runtime in milliseconds for a single action invocation (0 = disabled).',
-    }),
-  retries: RetriesSchema.default(() => ({ ...DEFAULT_RETRY_SETTINGS })).meta({
+  timeout_ms: z.int().nonnegative().optional().meta({
+    title: 'Timeout (ms)',
+    description:
+      'Maximum runtime in milliseconds for a single action invocation (0 = disabled).',
+  }),
+  retries: RetriesSchema.optional().meta({
     title: 'Retries',
     description: 'Retry policy applied when an action fails.',
   }),

@@ -1,0 +1,68 @@
+{
+  "name": "@hexabot-ai/graph",
+  "private": true,
+  "version": "3.0.0-alpha.3",
+  "description": "Internal graph components and utilities for Hexabot visual workflows.",
+  "author": "Hexastack",
+  "license": "FCL-1.0-ALv2",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./workflow.css": "./src/workflow/styles/index.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && pnpm run copy:styles",
+    "copy:styles": "mkdir -p dist/workflow/styles && cp src/workflow/styles/*.css dist/workflow/styles/",
+    "dev": "pnpm run copy:styles && tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "pnpm run lint:fix",
+    "clean": "rimraf dist coverage *.tsbuildinfo"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix --config eslint.config-staged.cjs"
+  },
+  "peerDependencies": {
+    "@xyflow/react": "^12.10.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "dependencies": {
+    "@hexabot-ai/agentic": "workspace:*",
+    "elkjs": "^0.11.0",
+    "lucide-react": "^0.562.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.12",
+    "@types/react": "18.3.2",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint": "^9.37.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "jsdom": "^28.0.0",
+    "lint-staged": "^15.3.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18",
+    "@xyflow/react": "^12.10.0"
+  },
+  "engines": {
+    "node": "^20.18.1"
+  }
+}

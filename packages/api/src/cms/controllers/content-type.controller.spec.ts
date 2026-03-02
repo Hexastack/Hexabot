@@ -8,7 +8,6 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
-import { FieldType } from '@/setting/types';
 import {
   contentTypeOrmFixtures,
   installContentTypeFixturesTypeOrm,
@@ -16,6 +15,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ContentTypeCreateDto } from '../dto/contentType.dto';
 import { ContentTypeService } from '../services/content-type.service';
 
 import { ContentTypeController } from './content-type.controller';
@@ -63,14 +63,13 @@ describe('ContentTypeController (TypeORM)', () => {
     it('creates a new content type', async () => {
       const payload = {
         name: 'Articles',
-        fields: [
-          {
-            name: 'body',
-            label: 'Body',
-            type: FieldType.text,
+        schema: {
+          type: 'object',
+          properties: {
+            body: { type: 'string', title: 'Body' },
           },
-        ],
-      };
+        },
+      } as ContentTypeCreateDto;
       const created = await controller.create(payload);
       createdIds.add(created.id);
 
@@ -122,13 +121,11 @@ describe('ContentTypeController (TypeORM)', () => {
     it('updates an existing content type', async () => {
       const created = await controller.create({
         name: 'Docs',
-        fields: [
-          {
-            name: 'description',
-            label: 'Description',
-            type: FieldType.text,
+        schema: {
+          properties: {
+            description: { type: 'string', title: 'Description' },
           },
-        ],
+        },
       });
       createdIds.add(created.id);
 
@@ -145,7 +142,7 @@ describe('ContentTypeController (TypeORM)', () => {
     it('removes an existing content type', async () => {
       const created = await controller.create({
         name: 'Temporary',
-        fields: [],
+        schema: {},
       });
       const result = await controller.deleteOne(created.id);
 

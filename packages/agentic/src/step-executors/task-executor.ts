@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowSuspendedError } from '../runtime-error';
+import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
 import type {
+  CompiledTask,
   EvaluationScope,
   ExecutionState,
   Suspension,
@@ -14,6 +15,11 @@ import type {
 import { evaluateMapping } from '../workflow-values';
 
 import type { StepExecutorEnv } from './types';
+
+type TaskProgressOutcome =
+  | { type: 'completed'; value: unknown }
+  | { type: 'failed'; error: unknown }
+  | { type: 'suspended'; request: RuntimeSuspensionRequest };
 
 /**
  * Execute a task step by running its task and handling suspension or output mapping.
@@ -52,73 +58,188 @@ export async function executeTaskStep(
     input: inputs,
     context: { before: env.context.snapshot() },
   });
+  env.beginStepExecution?.(stepInfo.id);
   env.setCurrentStep(stepInfo);
   env.markSnapshot(stepInfo, 'running');
   env.emit('hook:step:start', { runId: env.runId, step: stepInfo });
 
   try {
-    const result = await task.action.run(inputs, env.context, task.settings);
-    await env.captureTaskOutput(task, state, result);
-    env.recordStepExecution(stepInfo, {
-      status: 'completed',
-      endedAt: Date.now(),
-      output: result,
-      context: { after: env.context.snapshot() },
-    });
-    env.markSnapshot(stepInfo, 'completed');
-    env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
+    const actionPromise = Promise.resolve().then(() =>
+      task.action.run(inputs, env.context, task.settings),
+    );
+    const outcome = await waitForTaskProgress(env, stepInfo.id, actionPromise);
 
-    return undefined;
-  } catch (error) {
-    if (error instanceof WorkflowSuspendedError) {
-      env.recordStepExecution(stepInfo, {
-        status: 'suspended',
-        endedAt: Date.now(),
-        reason: error.reason,
-        context: { after: env.context.snapshot() },
-      });
-      env.markSnapshot(stepInfo, 'suspended', error.reason);
-      env.emit('hook:step:suspended', {
-        runId: env.runId,
-        step: stepInfo,
-        reason: error.reason,
-        data: error.data,
-      });
+    if (outcome.type === 'completed') {
+      await completeTask(
+        env,
+        stepInfo.id,
+        stepInfo,
+        task,
+        state,
+        outcome.value,
+      );
 
-      return {
-        step: stepInfo,
-        reason: error.reason,
-        data: error.data,
-        continue: async (resumeData: unknown) => {
-          await env.captureTaskOutput(task, state, resumeData);
-          env.recordStepExecution(stepInfo, {
-            status: 'completed',
-            endedAt: Date.now(),
-            output: resumeData,
-            context: { after: env.context.snapshot() },
-          });
-          env.markSnapshot(stepInfo, 'completed');
-          env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
-
-          return undefined;
-        },
-      };
+      return undefined;
     }
 
-    env.recordStepExecution(stepInfo, {
-      status: 'failed',
-      endedAt: Date.now(),
-      error: normalizeError(error),
-      context: { after: env.context.snapshot() },
-    });
-    env.markSnapshot(stepInfo, 'failed', normalizeErrorMessage(error));
-    env.emit('hook:step:error', { runId: env.runId, step: stepInfo, error });
-    throw error;
+    if (outcome.type === 'failed') {
+      env.clearStepSuspensions(stepInfo.id, outcome.error);
+      recordTaskFailure(env, stepInfo, outcome.error);
+      throw outcome.error;
+    }
+
+    return buildSuspensionContinuation(
+      env,
+      stepInfo.id,
+      stepInfo,
+      task,
+      state,
+      actionPromise,
+      outcome.request,
+    );
   } finally {
     env.setCurrentStep(undefined);
   }
 }
 
+const waitForTaskProgress = async (
+  env: StepExecutorEnv,
+  stepId: string,
+  actionPromise: Promise<unknown>,
+): Promise<TaskProgressOutcome> => {
+  const completion = actionPromise.then(
+    (value): TaskProgressOutcome => ({ type: 'completed', value }),
+    (error): TaskProgressOutcome => ({ type: 'failed', error }),
+  );
+  const suspension = env
+    .waitForStepSuspension(stepId)
+    .then<TaskProgressOutcome>((request) => ({ type: 'suspended', request }));
+
+  return Promise.race([completion, suspension]);
+};
+const completeTask = async (
+  env: StepExecutorEnv,
+  stepId: string,
+  stepInfo: Suspension['step'],
+  task: CompiledTask,
+  state: ExecutionState,
+  result: unknown,
+) => {
+  await env.captureTaskOutput(task, state, result);
+  env.recordStepExecution(stepInfo, {
+    status: 'completed',
+    endedAt: Date.now(),
+    output: result,
+    context: { after: env.context.snapshot() },
+  });
+  env.markSnapshot(stepInfo, 'completed');
+  env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
+  env.clearStepSuspensions(stepId);
+};
+const recordSuspension = (
+  env: StepExecutorEnv,
+  stepInfo: Suspension['step'],
+  reason?: string,
+  data?: unknown,
+) => {
+  env.recordStepExecution(stepInfo, {
+    status: 'suspended',
+    endedAt: Date.now(),
+    reason,
+    context: { after: env.context.snapshot() },
+  });
+  env.markSnapshot(stepInfo, 'suspended', reason);
+  env.emit('hook:step:suspended', {
+    runId: env.runId,
+    step: stepInfo,
+    reason,
+    data,
+  });
+};
+const buildSuspensionContinuation = (
+  env: StepExecutorEnv,
+  stepId: string,
+  stepInfo: Suspension['step'],
+  task: CompiledTask,
+  state: ExecutionState,
+  actionPromise: Promise<unknown>,
+  request: RuntimeSuspensionRequest,
+): Suspension => {
+  recordSuspension(env, stepInfo, request.reason, request.data);
+
+  let resumed = false;
+
+  return {
+    step: stepInfo,
+    reason: request.reason,
+    data: request.data,
+    stepExecId: request.stepExecId,
+    suspendIndex: request.suspendIndex,
+    suspendKey: request.suspendKey,
+    awaitResults: request.awaitResults,
+    continue: async (resumeData: unknown) => {
+      if (resumed) {
+        throw new Error(
+          `Suspension for step "${stepInfo.id}" has already been resumed.`,
+        );
+      }
+
+      resumed = true;
+      env.setCurrentStep(stepInfo);
+      env.recordStepSuspendResult?.({
+        stepId,
+        stepExecId: request.stepExecId,
+        suspendIndex: request.suspendIndex,
+        suspendKey: request.suspendKey,
+        resumeData,
+      });
+      request.resume.resolve(resumeData);
+
+      let outcome: TaskProgressOutcome;
+      try {
+        outcome = await waitForTaskProgress(env, stepId, actionPromise);
+      } finally {
+        env.setCurrentStep(undefined);
+      }
+
+      if (outcome.type === 'suspended') {
+        return buildSuspensionContinuation(
+          env,
+          stepId,
+          stepInfo,
+          task,
+          state,
+          actionPromise,
+          outcome.request,
+        );
+      }
+
+      if (outcome.type === 'completed') {
+        await completeTask(env, stepId, stepInfo, task, state, outcome.value);
+
+        return undefined;
+      }
+
+      env.clearStepSuspensions(stepId, outcome.error);
+      recordTaskFailure(env, stepInfo, outcome.error);
+      throw outcome.error;
+    },
+  };
+};
+const recordTaskFailure = (
+  env: StepExecutorEnv,
+  stepInfo: Suspension['step'],
+  error: unknown,
+) => {
+  env.recordStepExecution(stepInfo, {
+    status: 'failed',
+    endedAt: Date.now(),
+    error: normalizeError(error),
+    context: { after: env.context.snapshot() },
+  });
+  env.markSnapshot(stepInfo, 'failed', normalizeErrorMessage(error));
+  env.emit('hook:step:error', { runId: env.runId, step: stepInfo, error });
+};
 const normalizeError = (error: unknown): { message: string; stack?: string } =>
   error instanceof Error
     ? { message: error.message, stack: error.stack }

@@ -1,0 +1,13 @@
+@import url("./xy-theme.css");
+@import url("./button-edge.css");
+@import url("./node.css");
+@import url("./workflow-insert-menu.css");
+
+.workflow-graph .react-flow__handle.connectable {
+  border-color: var(--workflow-accent);
+  background: var(--workflow-accent);
+}
+
+.workflow-graph .react-flow__handle.connectable:hover {
+  background: var(--workflow-accent);
+}

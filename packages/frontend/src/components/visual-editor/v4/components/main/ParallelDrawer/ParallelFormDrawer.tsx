@@ -16,16 +16,17 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
-import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
-import type { FlowStepPath } from "../../../types/workflow-path.types";
+import { useSelectedOperatorNode } from "../../../hooks/useWorkflowSelection";
+import {
+  useStepDrawerClose,
+  withStepDrawerLayout,
+} from "../StepDrawer/withStepDrawerLayout";
 
 type ParallelStep = Extract<FlowStep, { parallel: unknown }>;
 type ParallelStrategy = "wait_all" | "wait_any";
@@ -47,15 +48,6 @@ const isParallelStep = (step: unknown): step is ParallelStep => {
 };
 const isParallelStrategy = (value: string): value is ParallelStrategy =>
   value === "wait_all" || value === "wait_any";
-const getStepPath = (node: GraphNode | undefined): FlowStepPath | undefined => {
-  if (!node) {
-    return undefined;
-  }
-
-  const stepPath = (node.data as { stepPath?: FlowStepPath }).stepPath;
-
-  return Array.isArray(stepPath) ? stepPath : undefined;
-};
 const getParallelStrategyValue = (step?: ParallelStep): ParallelStrategy => {
   const strategy = step?.parallel.strategy;
 
@@ -128,29 +120,14 @@ const ParallelFormDrawerContent = ({
     </FormControl>
   );
 };
-const ParallelFormDrawerLayout = withDrawerLayout(ParallelFormDrawerContent);
+const ParallelFormDrawerLayout = withStepDrawerLayout(ParallelFormDrawerContent);
 
 export const ParallelFormDrawer = () => {
   const { t } = useTranslate();
-  const {
-    selectedNodeIds,
-    selectedFlowId,
-    updateWorkflowURL,
-    definition,
-    updateDefinitionState,
-    isSaving,
-  } = useWorkflow();
-  const { getNode } = useReactFlow();
-  const selectedNodeId =
-    selectedNodeIds.length === 1 ? selectedNodeIds[0] : undefined;
-  const selectedNode = selectedNodeId
-    ? (getNode(selectedNodeId) as GraphNode | undefined)
-    : undefined;
-  const isParallelOperatorNode =
-    selectedNode?.type === ENodeType.OPERATOR &&
-    (selectedNode.data as { operatorType?: string }).operatorType ===
-      StepType.Parallel;
-  const stepPath = isParallelOperatorNode ? getStepPath(selectedNode) : undefined;
+  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const selectedOperatorNode = useSelectedOperatorNode(StepType.Parallel);
+  const selectedNodeId = selectedOperatorNode?.id;
+  const stepPath = selectedOperatorNode?.stepPath;
   const selectedStep = useMemo(() => {
     if (!definition || !stepPath) {
       return undefined;
@@ -163,7 +140,7 @@ export const ParallelFormDrawer = () => {
   const [strategy, setStrategy] = useState<ParallelStrategy>(
     DEFAULT_PARALLEL_STRATEGY,
   );
-  const open = Boolean(isParallelOperatorNode && selectedNodeId);
+  const open = Boolean(selectedOperatorNode && selectedNodeId);
 
   useEffect(() => {
     if (!open) {
@@ -192,11 +169,7 @@ export const ParallelFormDrawer = () => {
     ],
     [t],
   );
-  const handleClose = () => {
-    if (selectedFlowId) {
-      updateWorkflowURL(selectedFlowId);
-    }
-  };
+  const handleClose = useStepDrawerClose();
   const handleSave = () => {
     if (!definition || !stepPath || !selectedStep) {
       return;
@@ -235,7 +208,6 @@ export const ParallelFormDrawer = () => {
       onStrategyChange={setStrategy}
       emptyStateLabel={t("visual_editor.parallel_drawer.form.empty_state")}
       open={open}
-      onClose={handleClose}
       headerContent={
         <Box minWidth={0}>
           <Typography variant="subtitle1" noWrap>

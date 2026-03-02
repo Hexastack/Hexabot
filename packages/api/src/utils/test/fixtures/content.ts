@@ -27,7 +27,7 @@ export const contentDefaultValues: TContentFixtures['defaultValues'] = {
 const contents: TContentFixtures['values'][] = [
   {
     title: 'Jean',
-    dynamicFields: {
+    properties: {
       subtitle: 'Jean Droit Taille Normale',
       image: {
         payload: {
@@ -39,7 +39,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'Adaptateur',
-    dynamicFields: {
+    properties: {
       subtitle: 'Rankie Adaptateur DisplayPort vers VGA, 1080P Full HD, Noir',
       image: {
         payload: {
@@ -52,7 +52,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'Sac a Main Femmes Cuir',
-    dynamicFields: {
+    properties: {
       subtitle:
         'BestoU Sac a Main Femmes Cuir Bandoulieres Grand Sacs Porte Cabas (Marron)',
       image: {
@@ -65,7 +65,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'Kitten Heel',
-    dynamicFields: {
+    properties: {
       subtitle: 'Kitten Heel Sling Back',
       image: {
         payload: {
@@ -77,7 +77,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'A Collection of Nameless',
-    dynamicFields: {
+    properties: {
       subtitle:
         'Scenarios - A Collection of Nameless Detective Stories (English Edition)',
       image: {
@@ -90,7 +90,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'Pizza Hut',
-    dynamicFields: {
+    properties: {
       address: '90،, Avenue Taher Ben Ammar, Tunis',
       image: {
         payload: {
@@ -102,7 +102,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'store 1',
-    dynamicFields: {
+    properties: {
       image: {
         type: 'image',
         payload: {
@@ -114,7 +114,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'store 2',
-    dynamicFields: {
+    properties: {
       image: {
         type: 'image',
         payload: {
@@ -126,7 +126,7 @@ const contents: TContentFixtures['values'][] = [
   },
   {
     title: 'store 3',
-    dynamicFields: {
+    properties: {
       image: {
         type: 'image',
         payload: {
@@ -145,14 +145,11 @@ export const contentFixtures = getFixturesWithDefaultValues<
   defaultValues: contentDefaultValues,
 });
 
-// eslint-disable-next-line prettier/prettier
-export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] = contentFixtures.map(
-  ({ contentType, ...fixture }) => ({
+export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] =
+  contentFixtures.map(({ contentType, ...fixture }) => ({
     ...fixture,
     contentTypeId: contentType,
-    // eslint-disable-next-line prettier/prettier
-  }),
-);
+  }));
 
 export const installContentFixturesTypeOrm = async (
   dataSource: DataSource,

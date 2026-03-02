@@ -17,6 +17,7 @@ class TestContext extends BaseWorkflowContext {
 }
 
 const baseRetries = {
+  enabled: true,
   max_attempts: 3,
   backoff_ms: 10,
   max_delay_ms: 100,
@@ -72,6 +73,7 @@ describe('compileWorkflow', () => {
           settings: {
             timeout_ms: 50,
             retries: {
+              enabled: true,
               max_attempts: 1,
               backoff_ms: 10,
               max_delay_ms: 100,

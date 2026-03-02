@@ -24,7 +24,6 @@ import {
 import {
   Plus as AddIcon,
   Trash2 as DeleteIcon,
-  ChevronDown as ExpandMoreIcon,
   Lock as LockIcon,
 } from "lucide-react";
 import * as React from "react";
@@ -37,14 +36,47 @@ import {
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-export type JsonSchemaType =
-  | "string"
-  | "number"
-  | "integer"
-  | "boolean"
-  | "object"
-  | "array"
-  | "null";
+export type JsonSchemaOptionContext = "default" | "fieldInput";
+
+const BASE_TYPE_OPTIONS = {
+  default: [
+    { value: "string", label: "string" },
+    { value: "number", label: "number" },
+    { value: "integer", label: "integer" },
+    { value: "boolean", label: "boolean" },
+    { value: "object", label: "object" },
+    { value: "array", label: "array" },
+    { value: "null", label: "null" },
+  ],
+  fieldInput: [
+    { value: "string", label: "Text" },
+    { value: "uri", label: "URL" },
+    { value: "textarea", label: "Textarea" },
+    { value: "boolean", label: "Checkbox" },
+    { value: "file", label: "File" },
+    { value: "html", label: "HTML" },
+  ],
+} as const satisfies Record<
+  JsonSchemaOptionContext,
+  { value: string; label: string }[]
+>;
+
+export type JsonSchemaType<C extends JsonSchemaOptionContext = "default"> =
+  (typeof BASE_TYPE_OPTIONS)[C][number]["value"];
+
+export type TypeOption = { value: JsonSchemaType; label: string };
+
+type ContextTypeOption<C extends JsonSchemaOptionContext = "default"> = {
+  label: string;
+  value: JsonSchemaType<C>;
+};
+export const getContextTypeOptions = <
+  C extends JsonSchemaOptionContext = "default",
+>(
+  context?: C,
+) => {
+  return BASE_TYPE_OPTIONS[context || "default"] as ContextTypeOption<C>[];
+};
 
 export type SchemaNodeForm =
   | {
@@ -71,22 +103,15 @@ export type PropertyEntryForm = {
   schema: SchemaNodeForm;
 };
 
-const TYPE_OPTIONS: { value: JsonSchemaType; label: string }[] = [
-  { value: "string", label: "string" },
-  { value: "number", label: "number" },
-  { value: "integer", label: "integer" },
-  { value: "boolean", label: "boolean" },
-  { value: "object", label: "object" },
-  { value: "array", label: "array" },
-  { value: "null", label: "null" },
-];
-
-export function makeDefaultSchemaNode(type: JsonSchemaType): SchemaNodeForm {
+export function makeDefaultSchemaNode(
+  type: JsonSchemaType,
+  properties: PropertyEntryForm[] = [],
+): SchemaNodeForm {
   switch (type) {
     case "object":
       return {
         type: "object",
-        properties: [],
+        properties,
       };
     case "array":
       return {
@@ -139,24 +164,28 @@ export function toJsonSchema(node: SchemaNodeForm): Record<string, any> {
 
 const isPlainObject = (value: unknown): value is Record<string, any> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
-const isJsonSchemaType = (value: unknown): value is JsonSchemaType =>
-  typeof value === "string" &&
-  TYPE_OPTIONS.some((option) => option.value === value);
+const isJsonSchemaType = <C extends JsonSchemaOptionContext = "default">(
+  value: unknown,
+  options: ContextTypeOption<C>[],
+): value is JsonSchemaType =>
+  typeof value === "string" && options.some((option) => option.value === value);
 const capitalizeFirstLetter = (value: string): string =>
   value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
-const resolveSchemaType = (
+const resolveSchemaType = <C extends JsonSchemaOptionContext = "default">(
   schema: Record<string, any>,
   fallbackType: JsonSchemaType,
+  context?: C,
 ): JsonSchemaType => {
   const rawType = schema.type;
+  const options = getContextTypeOptions(context);
 
   if (Array.isArray(rawType)) {
-    const match = rawType.find((entry) => isJsonSchemaType(entry));
+    const match = rawType.find((entry) => isJsonSchemaType(entry, options));
 
     if (match) return match;
   }
 
-  if (isJsonSchemaType(rawType)) return rawType;
+  if (isJsonSchemaType(rawType, options)) return rawType;
   if ("properties" in schema || "additionalProperties" in schema)
     return "object";
   if ("items" in schema) return "array";
@@ -167,9 +196,10 @@ const resolveSchemaType = (
 export function fromJsonSchema(
   input: unknown,
   fallbackType: JsonSchemaType = "object",
+  context?: JsonSchemaOptionContext,
 ): SchemaNodeForm {
   const schema = isPlainObject(input) ? input : {};
-  const type = resolveSchemaType(schema, fallbackType);
+  const type = resolveSchemaType(schema, fallbackType, context);
   const title = typeof schema.title === "string" ? schema.title : undefined;
   const description =
     typeof schema.description === "string" ? schema.description : undefined;
@@ -192,7 +222,7 @@ export function fromJsonSchema(
       properties: Object.entries(properties).map(([key, value]) => ({
         key,
         required: requiredSet.has(key),
-        schema: fromJsonSchema(value, "string"),
+        schema: fromJsonSchema(value, "string", context),
       })),
     };
   }
@@ -203,7 +233,7 @@ export function fromJsonSchema(
       title,
       description,
       items: schema.items
-        ? fromJsonSchema(schema.items, "string")
+        ? fromJsonSchema(schema.items, "string", context)
         : makeDefaultSchemaNode("string"),
     };
   }
@@ -211,7 +241,7 @@ export function fromJsonSchema(
   return { type, title, description };
 }
 
-type SchemaNodeEditorProps = {
+type SchemaNodeEditorProps<C extends JsonSchemaOptionContext = "default"> = {
   /** react-hook-form path to this schema node (e.g. "schema", "schema.items", "schema.properties.0.schema") */
   name: string;
   label?: string | JSX.Element;
@@ -226,9 +256,10 @@ type SchemaNodeEditorProps = {
   maxDepth?: number;
   /** Display schema without allowing edits. */
   readOnly?: boolean;
+  context?: C;
 };
 
-function SchemaNodeEditor({
+function SchemaNodeEditor<C extends JsonSchemaOptionContext = "default">({
   name,
   label,
   forcedType,
@@ -237,7 +268,9 @@ function SchemaNodeEditor({
   hideTitle = true,
   hideDescription = true,
   readOnly = false,
-}: SchemaNodeEditorProps) {
+  context,
+}: SchemaNodeEditorProps<C>) {
+  const options = getContextTypeOptions(context);
   const { control, getValues, setValue } = useFormContext();
   const { t } = useTranslate();
   const type = useWatch({
@@ -367,7 +400,7 @@ function SchemaNodeEditor({
                         resetNodeToType(e.target.value as JsonSchemaType)
                       }
                     >
-                      {TYPE_OPTIONS.map((opt) => (
+                      {options.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </MenuItem>
@@ -426,6 +459,7 @@ function SchemaNodeEditor({
             depth={depth}
             maxDepth={maxDepth}
             readOnly={readOnly}
+            context={context}
           />
         )}
 
@@ -435,6 +469,7 @@ function SchemaNodeEditor({
             depth={depth}
             maxDepth={maxDepth}
             readOnly={readOnly}
+            context={context}
           />
         )}
 
@@ -448,16 +483,18 @@ function SchemaNodeEditor({
   );
 }
 
-function ObjectSchemaBody({
+function ObjectSchemaBody<C extends JsonSchemaOptionContext = "default">({
   name,
   depth,
   maxDepth,
   readOnly,
+  context,
 }: {
   name: string;
   depth: number;
   maxDepth: number;
   readOnly: boolean;
+  context?: C;
 }) {
   const { control, getValues } = useFormContext();
   const { t } = useTranslate();
@@ -508,6 +545,7 @@ function ObjectSchemaBody({
               getAllProperties={() =>
                 (getValues(propertiesPath) as PropertyEntryForm[]) ?? []
               }
+              context={context}
             />
           ))}
         </Stack>
@@ -516,7 +554,7 @@ function ObjectSchemaBody({
   );
 }
 
-function PropertyEntryEditor({
+function PropertyEntryEditor<C extends JsonSchemaOptionContext = "default">({
   objectName,
   index,
   onRemove,
@@ -524,6 +562,7 @@ function PropertyEntryEditor({
   maxDepth,
   readOnly,
   getAllProperties,
+  context,
 }: {
   objectName: string;
   index: number;
@@ -532,6 +571,7 @@ function PropertyEntryEditor({
   maxDepth: number;
   readOnly: boolean;
   getAllProperties: () => PropertyEntryForm[];
+  context?: C;
 }) {
   const { control, setValue } = useFormContext();
   const { t } = useTranslate();
@@ -552,7 +592,9 @@ function PropertyEntryEditor({
   const summaryKey = keyValue?.trim()
     ? keyValue.trim()
     : `(${t("label.unnamed")})`;
-  const summary = summaryKey + (schemaType ? ` : ${schemaType}` : "");
+  const options = getContextTypeOptions(context);
+  const schemaTypeLabel = options.find((o) => o.value === schemaType)?.label;
+  const summary = summaryKey + (schemaType ? ` : ${schemaTypeLabel}` : "");
 
   React.useEffect(() => {
     if (readOnly) {
@@ -589,7 +631,7 @@ function PropertyEntryEditor({
 
   return (
     <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary>
         <Typography variant="subtitle2">{summary}</Typography>
       </AccordionSummary>
 
@@ -670,6 +712,7 @@ function PropertyEntryEditor({
               depth={depth + 1}
               maxDepth={maxDepth}
               readOnly={readOnly}
+              context={context}
             />
           </Box>
         </Stack>
@@ -678,16 +721,18 @@ function PropertyEntryEditor({
   );
 }
 
-function ArraySchemaBody({
+function ArraySchemaBody<C extends JsonSchemaOptionContext = "default">({
   name,
   depth,
   maxDepth,
   readOnly,
+  context,
 }: {
   name: string;
   depth: number;
   maxDepth: number;
   readOnly: boolean;
+  context?: C;
 }) {
   const { t } = useTranslate();
 
@@ -700,6 +745,7 @@ function ArraySchemaBody({
         depth={depth + 1}
         maxDepth={maxDepth}
         readOnly={readOnly}
+        context={context}
       />
     </Stack>
   );
@@ -709,13 +755,16 @@ function ArraySchemaBody({
  * Main component: builds a JSON Schema for a Record<string, any> (root object).
  * Use it inside a react-hook-form <FormProvider>.
  */
-export function JsonSchemaObjectBuilder({
+export function JsonSchemaObjectBuilder<
+  C extends JsonSchemaOptionContext = "default",
+>({
   name,
   label,
   maxDepth = 6,
   hideTitle = true,
   hideDescription = true,
   readOnly = false,
+  context,
 }: {
   name: string;
   label?: string | JSX.Element;
@@ -723,6 +772,7 @@ export function JsonSchemaObjectBuilder({
   hideTitle?: boolean;
   hideDescription?: boolean;
   readOnly?: boolean;
+  context?: C;
 }) {
   const { t } = useTranslate();
   const resolvedLabel =
@@ -740,6 +790,7 @@ export function JsonSchemaObjectBuilder({
         hideTitle={hideTitle}
         hideDescription={hideDescription}
         readOnly={readOnly}
+        context={context || "default"}
       />
     </Stack>
   );

@@ -4,27 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Validate,
-  ValidateNested,
-} from 'class-validator';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
+import { z } from 'zod';
 
 import { FieldType } from '@/setting/types';
+import { Validate } from '@/utils/decorators/validate.decorator';
 import {
   BaseStub,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
-
-import { UniqueFieldNames } from '../decorators/unique-field-names.decorator';
-import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
 
 @Exclude()
 export class ContentTypeStub extends BaseStub {
@@ -32,8 +24,7 @@ export class ContentTypeStub extends BaseStub {
   name!: string;
 
   @Expose()
-  @Type(() => ContentField)
-  fields!: ContentField[] | null;
+  schema!: JsonSchema;
 }
 
 @Exclude()
@@ -66,17 +57,12 @@ export class ContentTypeCreateDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional({
-    description: 'Content type fields',
-    type: ContentField,
+  @ApiProperty({
+    description: 'JSON Schema describing the content structure',
+    type: Object,
   })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Validate(ValidateRequiredFields)
-  @Type(() => ContentField)
-  @UniqueFieldNames()
-  fields?: ContentField[];
+  @Validate(z.looseObject({}))
+  schema!: JsonSchema;
 }
 
 export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}

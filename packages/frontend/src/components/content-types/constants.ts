@@ -4,19 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ContentFieldType } from "@/types/content-type.types";
+import { PropertyEntryForm } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 
-export const FIELDS_FORM_NAME = "fields";
-export const READ_ONLY_FIELDS = ["Title", "Status"] as const;
-export const FIELDS_FORM_DEFAULT_VALUES = [
-  {
-    label: "Title",
-    name: "title",
-    type: ContentFieldType.TEXT,
-  },
-  {
-    label: "Status",
-    name: "status",
-    type: ContentFieldType.CHECKBOX,
-  },
-];
+export const CONTENT_TYPE_DEFAULT_PROPERTIES = [
+  { key: "title", schema: { type: "string", title: "Title" } },
+  { key: "status", schema: { type: "boolean", title: "Status" } },
+] satisfies PropertyEntryForm[];

@@ -192,7 +192,7 @@ describe('ContentService (TypeORM)', () => {
         title: 'Demo',
         contentType: existingContentType.id,
         status: true,
-        dynamicFields: {
+        properties: {
           description: 'Description',
           subtitle: 'Subtitle',
         },

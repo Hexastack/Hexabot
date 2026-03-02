@@ -10,35 +10,19 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import {
-  outgoingMessageFormatSchema,
-  stdIncomingMessageSchema,
-  stdOutgoingMessageEnvelopeSchema,
-} from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { conversationalWorkflowInputZodSchema } from '@/workflow/schemas/workflow-input-schemas';
 import { WorkflowType } from '@/workflow/types';
 
-export const awaitReplyInputSchema = z.object({
-  action: z.string().optional(),
-  channel: z.string().optional(),
-  recipient: z.string().optional(),
-  workflowRunId: z.string().optional(),
-  messageId: z.string().optional(),
-  format: outgoingMessageFormatSchema.optional(),
-  envelope: stdOutgoingMessageEnvelopeSchema.optional(),
-});
+export const awaitReplyResumeSchema =
+  conversationalWorkflowInputZodSchema.clone();
 
-export const awaitReplyResumeSchema = z.object({
-  message: stdIncomingMessageSchema,
-});
-
-type AwaitReplyInput = z.infer<typeof awaitReplyInputSchema>;
-type AwaitReplyOutput = z.infer<typeof stdIncomingMessageSchema>;
+type AwaitReplyOutput = z.infer<typeof awaitReplyResumeSchema>;
 type AwaitReplySettings = Settings;
 
 @Injectable()
 export class AwaitReplyAction extends BaseAction<
-  AwaitReplyInput,
+  void,
   AwaitReplyOutput,
   ConversationalWorkflowContext,
   AwaitReplySettings
@@ -50,8 +34,7 @@ export class AwaitReplyAction extends BaseAction<
         description:
           'Suspends the workflow until a subscriber reply is received, returning the incoming message on resume.',
         workflowTypes: [WorkflowType.conversational],
-        inputSchema: awaitReplyInputSchema,
-        outputSchema: stdIncomingMessageSchema,
+        outputSchema: awaitReplyResumeSchema,
         icon: 'Hourglass',
         color: '#040606',
         group: 'messaging',
@@ -61,40 +44,27 @@ export class AwaitReplyAction extends BaseAction<
   }
 
   async execute({
-    input,
     context,
   }: ActionExecutionArgs<
-    AwaitReplyInput,
+    void,
     ConversationalWorkflowContext,
     AwaitReplySettings
   >) {
-    const event = context.event;
-    const enrichedInput: AwaitReplyInput = {
-      action: input.action ?? 'await_reply',
-      channel: input.channel ?? event?.getHandler().getName(),
-      recipient:
-        input.recipient ??
-        context.initiatorId ??
-        event?.getInitiator()?.id ??
-        undefined,
-      workflowRunId: input.workflowRunId ?? context.workflowRunId,
-      messageId: input.messageId,
-      format: input.format ?? input.envelope?.format,
-      envelope: input.envelope,
-    };
     const resumeData = await context.workflow.suspend<
       z.infer<typeof awaitReplyResumeSchema>
     >({
       reason: 'awaiting_user_response',
-      data: enrichedInput,
+      data: null,
     });
     const parsed = awaitReplyResumeSchema.safeParse(resumeData);
 
     if (!parsed.success) {
-      throw new Error('resumeData must include a message payload');
+      throw new Error(
+        'resumeData must be compliant with the workflow input schema (conversational)',
+      );
     }
 
-    return parsed.data.message;
+    return parsed.data;
   }
 }
 

@@ -27,7 +27,7 @@ import { EntityType, QueryType } from "@/services/types";
 import { WorkflowVersionAction } from "@/types/workfow-version.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
-import { getDefinition } from "../utils/workflow-node.utils";
+import { getDefinition } from "../utils/workflow-definition.utils";
 
 type UseWorkflowDefinitionStateArgs = {
   workflow?: IWorkflow;

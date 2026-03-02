@@ -113,7 +113,21 @@ export type Suspension = {
   step: StepInfo;
   reason?: string;
   data?: unknown;
+  stepExecId?: string;
+  suspendIndex?: number;
+  suspendKey?: string;
+  awaitResults?: Record<string, unknown>;
   continue: (resumeData: unknown) => Promise<Suspension | void>;
+};
+
+export type PersistedSuspension = {
+  stepId: string;
+  reason?: string | null;
+  data?: unknown;
+  stepExecId?: string;
+  suspendIndex?: number;
+  suspendKey?: string;
+  awaitResults?: Record<string, unknown>;
 };
 
 /** Result of starting a workflow run. */
@@ -128,6 +142,10 @@ export type StartResult =
       step: StepInfo;
       reason?: string;
       data?: unknown;
+      stepExecId?: string;
+      suspendIndex?: number;
+      suspendKey?: string;
+      awaitResults?: Record<string, unknown>;
       snapshot: WorkflowSnapshot;
     }
   | { status: 'failed'; error: unknown; snapshot: WorkflowSnapshot };
@@ -144,6 +162,10 @@ export type ResumeResult =
       step: StepInfo;
       reason?: string;
       data?: unknown;
+      stepExecId?: string;
+      suspendIndex?: number;
+      suspendKey?: string;
+      awaitResults?: Record<string, unknown>;
       snapshot: WorkflowSnapshot;
     }
   | { status: 'failed'; error: unknown; snapshot: WorkflowSnapshot };

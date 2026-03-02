@@ -5,10 +5,13 @@
  */
 
 import {
-  Box,
   InputAdornment,
   List,
   ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Stack,
   TextField,
   Typography,
   useTheme,
@@ -36,52 +39,17 @@ const ActionsList = styled(List)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   gap: theme.spacing(1),
-  padding: 0,
 }));
 const ActionItem = styled(ListItemButton)(({ theme }) => ({
   alignItems: "flex-start",
-  gap: theme.spacing(1.5),
-  padding: theme.spacing(1.5, 2),
+  minHeight: theme.spacing(9),
+  padding: theme.spacing(2),
   borderRadius: theme.spacing(1.5),
   border: `1px solid ${theme.palette.divider}`,
   textAlign: "left",
   "&:hover": {
     backgroundColor: theme.palette.action.hover,
   },
-}));
-const ActionIcon = styled(Box)(({ theme }) => ({
-  width: 24,
-  height: 24,
-  borderRadius: theme.spacing(1),
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexShrink: 0,
-  marginTop: 2,
-}));
-const ActionGroups = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: theme.spacing(2),
-}));
-const ActionGroup = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: theme.spacing(1),
-}));
-const ActionGroupLabel = styled(Typography)(({ theme }) => ({
-  padding: theme.spacing(0.5, 2, 0),
-  fontSize: 14,
-  fontWeight: 700,
-  color: theme.palette.text.secondary,
-}));
-const ActionSearchContainer = styled(Box)(({ theme }) => ({
-  paddingBottom: theme.spacing(1.5),
-}));
-const EmptyState = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
 }));
 const FALLBACK_GROUP = "custom";
 const ActionListDrawerContent = ({
@@ -136,7 +104,7 @@ const ActionListDrawerContent = ({
 
   return (
     <>
-      <ActionSearchContainer>
+      <Stack pb={1.5}>
         <TextField
           fullWidth
           variant="outlined"
@@ -158,14 +126,28 @@ const ActionListDrawerContent = ({
             },
           }}
         />
-      </ActionSearchContainer>
+      </Stack>
       {groupedActions.length ? (
-        <ActionGroups>
+        <Stack spacing={2}>
           {groupedActions.map(({ group, items }) => (
-            <ActionGroup key={group}>
-              <ActionGroupLabel variant="caption">
-                {group.toUpperCase()}
-              </ActionGroupLabel>
+            <Stack key={group} spacing={1}>
+              <ListSubheader
+                component="div"
+                disableGutters
+                disableSticky
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  bgcolor: "background.paper",
+                  typography: "body2",
+                  fontWeight: 700,
+                  color: "text.secondary",
+                  textTransform: "uppercase",
+                  lineHeight: 1.2,
+                }}
+              >
+                {group}
+              </ListSubheader>
               <ActionsList>
                 {items.map((action) => {
                   const accentColor =
@@ -180,37 +162,69 @@ const ActionListDrawerContent = ({
                     <ActionItem
                       key={actionKey}
                       onClick={() => onActionSelect?.(action)}
-                      sx={{
-                        borderLeft: `2px solid ${accentColor}`,
-                      }}
                     >
-                      <ActionIcon sx={{ color: accentColor }}>
-                        <Icon size={16} />
-                      </ActionIcon>
-                      <Box>
-                        <Typography variant="subtitle1">
-                          {action.title}&nbsp;
-                          <Typography variant="caption" color="textSecondary">
-                            ({action.name})
+                      <ListItemIcon
+                        sx={{
+                          mr: 2,
+                          mt: 0.5,
+                          color: accentColor,
+                        }}
+                      >
+                        <Icon size={24} />
+                      </ListItemIcon>
+                      <ListItemText
+                        disableTypography
+                        sx={{ my: 0, minWidth: 0 }}
+                        primary={
+                          <Stack
+                            direction="row"
+                            alignItems="baseline"
+                            spacing={0.5}
+                            sx={{ minWidth: 0 }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              noWrap
+                              sx={{ minWidth: 0 }}
+                            >
+                              {action.title}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              noWrap
+                            >
+                              ({action.name})
+                            </Typography>
+                          </Stack>
+                        }
+                        secondary={
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            noWrap
+                            sx={{ display: "block" }}
+                          >
+                            {description}
                           </Typography>
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mt: 0.5 }}
-                        >
-                          {description}
-                        </Typography>
-                      </Box>
+                        }
+                      />
                     </ActionItem>
                   );
                 })}
               </ActionsList>
-            </ActionGroup>
+            </Stack>
           ))}
-        </ActionGroups>
+        </Stack>
       ) : (
-        <EmptyState>{emptyLabel}</EmptyState>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          p={2}
+        >
+          {emptyLabel}
+        </Typography>
       )}
     </>
   );

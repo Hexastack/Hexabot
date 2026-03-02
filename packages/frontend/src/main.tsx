@@ -8,6 +8,7 @@ import { loader } from "@monaco-editor/react";
 import { CssBaseline } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import "@hexabot-ai/graph/workflow.css";
 import * as monaco from "monaco-editor";
 import { SnackbarProvider } from "notistack";
 import ReactDOM from "react-dom/client";
@@ -28,7 +29,6 @@ import { PermissionProvider } from "./providers/PermissionProvider";
 
 import "@/components/inbox/inbox.css";
 import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
-import "@/components/visual-editor/v4/styles/index.css";
 import "@/i18n/config";
 import "@/styles/globals.css";
 import "@fontsource/roboto/100.css";

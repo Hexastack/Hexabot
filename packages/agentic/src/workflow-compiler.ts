@@ -11,7 +11,6 @@ import type { BaseWorkflowContext } from './context';
 import type {
   FlowStep,
   InputField,
-  Settings,
   TaskDefinition,
   WorkflowDefinition,
 } from './dsl.types';
@@ -125,10 +124,7 @@ const compileMapping = (
 /** Ensure every task references a provided action implementation. */
 const assertActionsBound = (
   tasks: Record<string, TaskDefinition>,
-  actions: Record<
-    string,
-    Action<unknown, unknown, BaseWorkflowContext, Settings>
-  >,
+  actions: Record<string, Action<unknown, unknown, BaseWorkflowContext>>,
 ) => {
   const missing = Object.values(tasks)
     .map((task) => task.action)

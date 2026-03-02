@@ -2,5 +2,6 @@ packages:
   - "packages/agentic"
   - "packages/api"
   - "packages/frontend"
+  - "packages/graph"
   - "packages/cli"
   - "packages/widget"

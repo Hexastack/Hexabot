@@ -4,12 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, TextField } from "@mui/material";
-import { Plus as AddIcon } from "lucide-react";
-import { FC, Fragment } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { FormHelperText, TextField } from "@mui/material";
+import { FC, Fragment, useEffect } from "react";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import {
+  JsonSchemaObjectBuilder,
+  fromJsonSchema,
+  makeDefaultSchemaNode,
+  toJsonSchema,
+} from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -17,13 +22,16 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
-  ContentFieldType,
   IContentType,
   IContentTypeAttributes,
 } from "@/types/content-type.types";
+import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 
-import { FieldInput } from "./components/FieldInput";
-import { FIELDS_FORM_DEFAULT_VALUES } from "./constants";
+import { CONTENT_TYPE_DEFAULT_PROPERTIES } from "./constants";
+
+const CONTEXT = "fieldInput" as const;
+const buildDefaultSchema = () =>
+  makeDefaultSchemaNode("object", CONTENT_TYPE_DEFAULT_PROPERTIES);
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
   data: { defaultValues: contentType },
@@ -33,38 +41,26 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
 }) => {
   const { toast } = useToast();
   const { t } = useTranslate();
+  const form = useForm<IContentType>({
+    defaultValues: {
+      name: "",
+      schema: buildDefaultSchema(),
+    },
+  });
   const {
     control,
     register,
     setValue,
+    reset,
+    setError,
+    clearErrors,
     formState: { errors },
     handleSubmit,
-  } = useForm<IContentType>({
-    defaultValues: contentType
-      ? { name: contentType.name, fields: contentType.fields }
-      : {
-          name: "",
-          fields: FIELDS_FORM_DEFAULT_VALUES,
-        },
-  });
-  const { append, fields, remove } = useFieldArray({
-    name: "fields",
-    rules: {
-      validate: (fields) => {
-        const hasUniqueLabels =
-          new Set(fields.map((f) => f["label"] as string)).size ===
-          fields.length;
-
-        if (!hasUniqueLabels) {
-          toast.error(t("message.duplicate_labels_not_allowed"));
-
-          return false;
-        }
-
-        return true;
-      },
-    },
-    control,
+  } = form;
+  const schemaError = errors.schema as { message?: string } | undefined;
+  const schemaValue = useWatch({ control, name: "schema" });
+  const nameRegister = register("name", {
+    required: t("message.name_is_required"),
   });
   const options = {
     onError: (error: Error) => {
@@ -85,62 +81,102 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     options,
   );
   const onSubmitForm = (params: IContentTypeAttributes) => {
+    const name = params.name.trim();
+    const schemaNode = { ...params.schema, title: name };
+    const jsonSchema = toJsonSchema(schemaNode);
+    const invalidSchemaMessage = t("message.schema_is_invalid", {
+      defaultValue: "Invalid JSON schema.",
+    });
+
+    try {
+      const schemaValidation = validateJsonSchema(jsonSchema, CONTEXT);
+
+      if (!schemaValidation.valid) {
+        const schemaErrorMessage =
+          schemaValidation.errors[0]?.stack ?? invalidSchemaMessage;
+
+        setError("schema", { type: "manual", message: schemaErrorMessage });
+        toast.error(invalidSchemaMessage);
+
+        return;
+      }
+    } catch (error) {
+      const schemaErrorMessage =
+        error instanceof Error ? error.message : invalidSchemaMessage;
+
+      setError("schema", { type: "manual", message: schemaErrorMessage });
+      toast.error(invalidSchemaMessage);
+
+      return;
+    }
+
+    clearErrors("schema");
+    const payload: IContentTypeAttributes = {
+      name,
+      schema: jsonSchema as any,
+    };
+
     if (contentType?.id) {
-      updateContentType({ id: contentType.id, params });
+      updateContentType({ id: contentType.id, params: payload });
     } else {
-      createContentType(params);
+      createContentType(payload);
     }
   };
 
+  useEffect(() => {
+    if (schemaError?.message) {
+      clearErrors("schema");
+    }
+  }, [schemaValue, schemaError?.message, clearErrors]);
+
+  useEffect(() => {
+    if (contentType) {
+      reset({
+        name: contentType.name,
+        schema: fromJsonSchema(contentType.schema, undefined, CONTEXT),
+      });
+    } else {
+      reset({
+        name: "",
+        schema: buildDefaultSchema(),
+      });
+    }
+  }, [contentType, reset]);
+
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
-      <form onSubmit={handleSubmit(onSubmitForm)}>
-        <ContentContainer>
-          <ContentItem>
-            <TextField
-              label={t("label.name")}
-              error={!!errors.name}
-              {...register("name", {
-                required: t("message.name_is_required"),
-              })}
-              helperText={errors.name ? errors.name.message : null}
-              required
-              autoFocus
-            />
-          </ContentItem>
-          {fields.map((field, idx) => (
-            <ContentItem
-              key={field.id}
-              display="flex"
-              justifyContent="space-between"
-              gap={2}
-            >
-              <FieldInput
-                idx={idx}
-                name={field.name}
-                remove={remove}
-                control={control}
-                setValue={setValue}
+    <FormProvider {...form}>
+      <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
+        <form onSubmit={handleSubmit(onSubmitForm)}>
+          <ContentContainer>
+            <ContentItem>
+              <TextField
+                label={t("label.name")}
+                error={!!errors.name}
+                {...nameRegister}
+                helperText={errors.name ? errors.name.message : null}
+                required
+                autoFocus
+                onChange={(event) => {
+                  nameRegister.onChange(event);
+                  setValue("schema.title", event.target.value, {
+                    shouldDirty: true,
+                  });
+                }}
               />
             </ContentItem>
-          ))}
-          <ContentItem>
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() =>
-                append({
-                  label: "",
-                  name: "",
-                  type: ContentFieldType.TEXT,
-                })
-              }
-            >
-              {t("button.add")}
-            </Button>
-          </ContentItem>
-        </ContentContainer>
-      </form>
-    </Wrapper>
+            <ContentItem>
+              <JsonSchemaObjectBuilder
+                name="schema"
+                label={t("label.schema")}
+                context={CONTEXT}
+              />
+              {schemaError?.message && (
+                <FormHelperText error>{schemaError.message}</FormHelperText>
+              )}
+            </ContentItem>
+          </ContentContainer>
+        </form>
+      </Wrapper>
+    </FormProvider>
   );
 };

@@ -8,32 +8,33 @@ import { ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
-import { WorkflowSuspendedError } from '../runtime-error';
 import { Deferred } from '../utils/deferred';
 
-export interface ActionMetadata<I, O, S extends Settings = Settings> {
+export type RuntimeSettings<S = unknown> = Settings & S;
+
+export interface ActionMetadata<I, O, S> {
   name: string;
   description: string;
   inputSchema: ZodType<I>;
   outputSchema: ZodType<O>;
-  settingsSchema?: ZodType<S>;
+  settingsSchema: ZodType<S>;
 }
 
 export interface ActionExecutionArgs<
   I,
   C extends BaseWorkflowContext = BaseWorkflowContext,
-  S extends Settings = Settings,
+  S = unknown,
 > {
   input: I;
   context: C;
-  settings: S;
+  settings: RuntimeSettings<S>;
 }
 
 export interface Action<
   I = unknown,
   O = unknown,
   C extends BaseWorkflowContext = BaseWorkflowContext,
-  S extends Settings = Settings,
+  S = unknown,
 > {
   readonly name: string;
   readonly description: string;
@@ -44,8 +45,12 @@ export interface Action<
   execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
   parseInput(payload: unknown): I;
   parseOutput(payload: unknown): O;
-  parseSettings(payload: unknown): S;
-  run(payload: unknown, context: C, settings?: Partial<S>): Promise<O>;
+  parseSettings(payload: unknown): RuntimeSettings<S>;
+  run(
+    payload: unknown,
+    context: C,
+    settings?: Partial<RuntimeSettings<S>>,
+  ): Promise<O>;
 }
 
 export type Actions = Record<string, Action>;
@@ -65,10 +70,12 @@ export type InferActionSettings<S extends Action> =
   InferActionArgs<S>['settings'];
 
 export interface SuspensionNotice {
-  error: WorkflowSuspendedError;
+  stepId: string;
+  reason?: string;
+  data?: unknown;
   resume: Deferred<unknown>;
 }
 
 export type ActionExecutionOutcome<T> =
   | { type: 'completed'; value: T }
-  | { type: 'suspended'; error: WorkflowSuspendedError };
+  | { type: 'suspended'; notice: SuspensionNotice };

@@ -102,7 +102,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
       if (onChange) {
         const newValue = inputs.map(({ value }) => value);
 
-        if (value && value.join() !== newValue.join()) {
+        if (JSON.stringify(value) !== JSON.stringify(newValue)) {
           onChange(newValue);
         }
       }

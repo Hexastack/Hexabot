@@ -9,6 +9,11 @@ import type {
   BaseWorkflowContext,
   StepExecutionRecord,
 } from '../context';
+import type {
+  RuntimeResolvedSuspension,
+  RuntimeStepReplaySeed,
+  RuntimeSuspensionRequest,
+} from '../runner-runtime-control';
 import type { StepInfo, WorkflowEventMap } from '../workflow-event-emitter';
 import type {
   CompiledStep,
@@ -40,6 +45,12 @@ export type StepExecutorEnv = {
     payload: WorkflowEventMap[K],
   ) => void;
   setCurrentStep: (step?: StepInfo) => void;
+  beginStepExecution?: (stepId: string) => string;
+  waitForStepSuspension: (stepId: string) => Promise<RuntimeSuspensionRequest>;
+  clearStepSuspensions: (stepId: string, error?: unknown) => void;
+  primeStepResumeData: (stepId: string, resumeData: unknown) => void;
+  prepareStepReplay?: (seed: RuntimeStepReplaySeed) => void;
+  recordStepSuspendResult?: (params: RuntimeResolvedSuspension) => void;
   captureTaskOutput: (
     task: CompiledTask,
     state: ExecutionState,

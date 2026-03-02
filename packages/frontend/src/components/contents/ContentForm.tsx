@@ -10,7 +10,7 @@ import {
   Switch,
   TextField,
 } from "@mui/material";
-import { Link as LinkIcon } from "lucide-react";
+import { LinkIcon } from "lucide-react";
 import { FC, Fragment, useEffect } from "react";
 import {
   Controller,
@@ -31,11 +31,12 @@ import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   ContentField,
-  ContentFieldType,
+  ContentSchemaProperties,
   IContentType,
 } from "@/types/content-type.types";
 import { IContent, IContentAttributes } from "@/types/content.types";
 import { MIME_TYPES } from "@/utils/attachment";
+import { slugify } from "@/utils/string";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 interface ContentFieldInput {
@@ -57,19 +58,19 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
   const { t } = useTranslate();
 
   switch (contentField.type) {
-    case ContentFieldType.TEXT:
-    case ContentFieldType.TEXTAREA:
-    case ContentFieldType.URL:
+    case "string":
+    case "textarea":
+    case "uri":
       return (
         <TextField
           autoFocus={idx === 0}
-          multiline={contentField.type === ContentFieldType.TEXTAREA}
-          rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
-          label={t(`label.${contentField.name}`, {
-            defaultValue: contentField.label,
+          multiline={contentField.type === "textarea"}
+          rows={contentField.type === "textarea" ? 5 : 1}
+          label={t(`label.${contentField.title}`, {
+            defaultValue: contentField.title,
           })}
           slotProps={
-            contentField.type === ContentFieldType.URL
+            contentField.type === "uri"
               ? {
                   input: {
                     startAdornment: <Adornment Icon={LinkIcon} />,
@@ -80,27 +81,27 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
           {...field}
           error={!!errors[contentField.name]}
           helperText={
-            errors[contentField.name] ? (
-              <>{errors[contentField.name]?.message}</>
+            errors[contentField.title] ? (
+              <>{errors[contentField.title]?.message}</>
             ) : null
           }
         />
       );
-    case ContentFieldType.CHECKBOX:
+    case "boolean":
       return (
         <FormControlLabel
-          label={t(`label.${contentField.name}`, {
-            defaultValue: contentField.label,
+          label={t(`label.${contentField.title}`, {
+            defaultValue: contentField.title,
           })}
           {...field}
           control={<Switch checked={field.value} />}
         />
       );
-    case ContentFieldType.FILE:
+    case "file":
       return (
         <AttachmentInput
-          label={t(`label.${contentField.name}`, {
-            defaultValue: contentField.label,
+          label={t(`label.${contentField.title}`, {
+            defaultValue: contentField.title,
           })}
           {...field}
           onChange={(id, mimeType) => {
@@ -117,20 +118,25 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
       return <TextField {...field} error={!!errors[contentField.name]} />;
   }
 };
-const INITIAL_FIELDS = ["title", "status"];
-const buildDynamicFields = (
-  content: IContentAttributes,
-  contentType?: IContentType,
-) => ({
-  title: content.title,
-  contentType: content.contentType,
-  status: content.status,
-  dynamicFields: {
-    ...contentType?.fields
-      ?.filter(({ name }) => !INITIAL_FIELDS.includes(name))
-      .reduce((acc, { name }) => ({ ...acc, [name]: content[name] }), {}),
-  },
-});
+const buildContentParams = (
+  params: IContentAttributes,
+  properties: ContentSchemaProperties = {},
+) => {
+  const writableProperties = Object.entries(properties).reduce((acc, [key]) => {
+    if (!["status", "title"].includes(key)) {
+      acc[key] = params[key];
+    }
+
+    return acc;
+  }, {});
+
+  return {
+    title: params.title,
+    contentType: params.contentType,
+    status: params.status,
+    properties: writableProperties,
+  };
+};
 
 export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   data: { defaultValues: content, presetValues: contentType },
@@ -138,6 +144,9 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   WrapperProps,
   ...rest
 }) => {
+  const properties = contentType?.schema?.["properties"] as
+    | ContentSchemaProperties
+    | undefined;
   const { t } = useTranslate();
   const { toast } = useToast();
   const {
@@ -177,13 +186,13 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   const onSubmitForm = (params: IContentAttributes) => {
     if (content) {
       updateContent(
-        { id: content.id, params: buildDynamicFields(params, contentType) },
+        { id: content.id, params: buildContentParams(params, properties) },
         options,
       );
     } else if (contentType) {
       createContent(
         {
-          ...buildDynamicFields(params, contentType),
+          ...buildContentParams(params, properties),
           contentType: contentType.id,
         },
         options,
@@ -205,34 +214,37 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          {(contentType?.fields || []).map((contentField, index) => (
-            <ContentItem key={contentField.name}>
-              <Controller
-                name={contentField.name}
-                control={control}
-                defaultValue={
-                  content ? content["dynamicFields"][contentField.name] : null
-                }
-                rules={
-                  contentField.name === "title"
-                    ? validationRules.title
-                    : contentField.type === ContentFieldType.URL
-                      ? validationRules.url
-                      : undefined
-                }
-                render={({ field }) => (
-                  <FormControl>
-                    <ContentFieldInput
-                      contentField={contentField}
-                      field={field}
-                      errors={errors}
-                      idx={index}
-                    />
-                  </FormControl>
-                )}
-              />
-            </ContentItem>
-          ))}
+          {Object.entries(properties || {}).map(
+            ([propertyKey, property], index) => (
+              <ContentItem key={propertyKey}>
+                <Controller
+                  name={propertyKey}
+                  control={control}
+                  defaultValue={content?.properties[propertyKey]}
+                  rules={
+                    property.type === "string"
+                      ? validationRules.title
+                      : property.type === "uri"
+                        ? validationRules.url
+                        : undefined
+                  }
+                  render={({ field }) => (
+                    <FormControl>
+                      <ContentFieldInput
+                        contentField={{
+                          ...property,
+                          name: slugify(property.title),
+                        }}
+                        field={field}
+                        errors={errors}
+                        idx={index}
+                      />
+                    </FormControl>
+                  )}
+                />
+              </ContentItem>
+            ),
+          )}
         </ContentContainer>
       </form>
     </Wrapper>

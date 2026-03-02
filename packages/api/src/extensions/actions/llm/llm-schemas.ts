@@ -4,11 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  BaseSettingsSchema,
-  JsonValueSchema,
-  Settings,
-} from '@hexabot-ai/agentic';
+import { JsonValueSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 const llmPromptBaseSchema = z.object({
@@ -77,7 +73,7 @@ export const llmRawResponseSchema = z.object({
   warnings: z.array(z.any()).optional(),
 });
 
-export const llmCommonSettingsSchema = BaseSettingsSchema.extend({
+export const llmCommonSettingsSchema = z.strictObject({
   provider: z.string().default('openai').meta({
     title: 'Provider',
     description: 'LLM provider identifier (e.g., openai).',
@@ -219,8 +215,7 @@ export const llmAgentSettingsSchema = llmCommonSettingsSchema;
 
 export type LlmPromptInput = z.infer<typeof llmPromptSchema>;
 
-export type LlmCommonSettings = Settings &
-  z.infer<typeof llmCommonSettingsSchema>;
+export type LlmCommonSettings = z.infer<typeof llmCommonSettingsSchema>;
 
 export type LlmGenerateTextInput = z.infer<typeof llmGenerateTextInputSchema>;
 
