@@ -140,7 +140,11 @@ describe('LlmGenerateTextAction', () => {
       max_output_tokens: 50,
       seed: 7,
     };
-    const input = { prompt: 'Hello there', system: 'system prompt' };
+    const input = {
+      input_mode: 'prompt' as const,
+      prompt: 'Hello there',
+      system: 'system prompt',
+    };
     const actionsService = {
       get: jest.fn().mockReturnValue({
         description: 'demo tool',
@@ -285,6 +289,7 @@ describe('LlmGenerateTextAction', () => {
       output_schema: schemaDefinition,
     };
     const input = {
+      input_mode: 'prompt' as const,
       prompt: 'Generate an object',
       system: 'system prompt',
     };
@@ -418,7 +423,11 @@ describe('LlmGenerateTextAction', () => {
       api_key: 'test-key',
       memory_enabled: true,
     };
-    const input = { prompt: 'Hello there', system: 'Base system' };
+    const input = {
+      input_mode: 'prompt' as const,
+      prompt: 'Hello there',
+      system: 'Base system',
+    };
 
     await action.execute({ input, settings, context });
 
@@ -474,7 +483,7 @@ describe('LlmGenerateTextAction', () => {
       api_key: 'test-key',
       tools: ['search', 'translate', 'search'],
     };
-    const input = { prompt: 'Hello there' };
+    const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
     const result = await action.execute({ input, settings, context });
     const stopWhen = (generateTextMock.mock.calls[0][0] as any).stopWhen;
 
@@ -525,7 +534,7 @@ describe('LlmGenerateTextAction', () => {
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
-    const input = { prompt: 'Hello there' };
+    const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
 
     await action.execute({ input, settings, context });
     const stopWhen = (generateTextMock.mock.calls[0][0] as any)
@@ -551,7 +560,7 @@ describe('LlmGenerateTextAction', () => {
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
-        input: { prompt: 'hi' },
+        input: { input_mode: 'prompt', prompt: 'hi' },
         settings: {
           provider: 'openai',
           timeout_ms: 0,

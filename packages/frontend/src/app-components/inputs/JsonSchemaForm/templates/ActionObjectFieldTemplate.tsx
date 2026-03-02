@@ -34,8 +34,11 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";
 
+import { isActionFieldHidden } from "./action-field-template.utils";
+
 type ActionFieldUiOptions = {
   hideUntilAdded?: boolean;
+  [key: string]: unknown;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -88,6 +91,9 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
     return new Set(Array.isArray(schema.required) ? schema.required : []);
   }, [schema.required]);
   const objectFormData = isRecord(formData) ? formData : undefined;
+  const rootFormData = isRecord(registry.formContext?.formData)
+    ? (registry.formContext.formData as Record<string, unknown>)
+    : undefined;
   const getFieldUiOptions = (fieldName: string): ActionFieldUiOptions => {
     if (!isRecord(uiSchema)) {
       return {};
@@ -120,11 +126,30 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
       hasFormDataValue(field.name)
     );
   };
+  const isFieldContentVisible = (
+    field: ObjectFieldTemplatePropertyType,
+  ): boolean => {
+    if (field.hidden) {
+      return true;
+    }
+
+    const fieldUiOptions = getFieldUiOptions(field.name);
+
+    return !isActionFieldHidden({
+      hidden: false,
+      uiOptions: fieldUiOptions,
+      formData: objectFormData ?? rootFormData,
+    });
+  };
   const addedFieldOrder = new Map(
     addedFieldNames.map((fieldName, index) => [fieldName, index]),
   );
   const visibleProperties = properties
-    .filter((field) => field.hidden || isAddOptionFieldVisible(field))
+    .filter(
+      (field) =>
+        field.hidden ||
+        (isAddOptionFieldVisible(field) && isFieldContentVisible(field)),
+    )
     .sort((leftField, rightField) => {
       const leftAddedOrder = addedFieldOrder.get(leftField.name);
       const rightAddedOrder = addedFieldOrder.get(rightField.name);
@@ -152,7 +177,11 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
 
     const { hideUntilAdded } = getFieldUiOptions(field.name);
 
-    return hideUntilAdded === true && !isAddOptionFieldVisible(field);
+    return (
+      hideUntilAdded === true &&
+      !isAddOptionFieldVisible(field) &&
+      isFieldContentVisible(field)
+    );
   });
   const TitleFieldTemplate = getTemplate(
     "TitleFieldTemplate",
@@ -201,17 +230,13 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
           registry={registry}
         />
       ) : null}
-      <Grid container spacing={2} style={{ marginTop: "10px" }}>
+      <Grid container spacing={2}>
         {!showOptionalDataControlInTitle ? optionalDataControl : undefined}
         {visibleProperties.map((element) =>
           element.hidden ? (
             element.content
           ) : (
-            <Grid
-              size={{ xs: 12 }}
-              style={{ marginBottom: "10px" }}
-              key={element.name}
-            >
+            <Grid size={{ xs: 12 }} key={element.name}>
               {element.content}
             </Grid>
           ),

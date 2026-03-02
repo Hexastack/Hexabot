@@ -22,7 +22,12 @@ import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
+import {
+  DEFAULT_LLM_MESSAGES_LIMIT,
+  DEFAULT_LLM_PROMPT,
+  LlmCommonSettings,
+  LlmPromptInput,
+} from './llm-schemas';
 
 export type { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
 
@@ -380,7 +385,7 @@ export abstract class LlmBaseAction<
     context: C,
     settings: S,
   ): Promise<PromptPayload> {
-    const promptPayload = { prompt: input.prompt, system: input.system };
+    const promptPayload = { system: input.system };
 
     if (settings.memory_enabled) {
       const memoryPrompt = this.buildMemoryPrompt(context);
@@ -391,14 +396,35 @@ export abstract class LlmBaseAction<
       }
     }
 
-    if (promptPayload.prompt) {
+    if (input.input_mode === 'prompt') {
+      if (
+        input.messages_limit !== undefined &&
+        input.messages_limit !== DEFAULT_LLM_MESSAGES_LIMIT
+      ) {
+        throw new Error('Input mode "prompt" does not allow "messages_limit".');
+      }
+
+      const prompt = input.prompt ?? DEFAULT_LLM_PROMPT;
+
       return {
-        prompt: promptPayload.prompt,
+        prompt,
         system: promptPayload.system,
       };
     }
 
-    if (input.messages_limit !== undefined && input.messages_limit > 0) {
+    if (input.input_mode === 'history') {
+      const messagesLimit = input.messages_limit ?? DEFAULT_LLM_MESSAGES_LIMIT;
+
+      if (messagesLimit < 1) {
+        throw new Error(
+          'Input mode "history" requires a positive "messages_limit" value.',
+        );
+      }
+
+      if (input.prompt !== undefined && input.prompt !== DEFAULT_LLM_PROMPT) {
+        throw new Error('Input mode "history" does not allow "prompt".');
+      }
+
       const subscriberId = context.initiatorId;
       if (!subscriberId) {
         throw new Error(
@@ -415,7 +441,7 @@ export abstract class LlmBaseAction<
 
       const history = await messageService.findLastMessages(
         { id: subscriberId } as Subscriber,
-        input.messages_limit,
+        messagesLimit,
       );
       const messages = this.normalizeMessagesForModel(history, subscriberId);
 
@@ -423,7 +449,7 @@ export abstract class LlmBaseAction<
     }
 
     throw new Error(
-      'Provide either "prompt" or "messages_limit" to build the model request.',
+      'An "input_mode" of either "prompt" or "history" is required to build the model request.',
     );
   }
 

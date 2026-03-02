@@ -153,6 +153,7 @@ describe('LlmAgentAction', () => {
       tools: ['search', 'translate', 'search'],
     };
     const input = {
+      input_mode: 'prompt' as const,
       prompt: 'Hello there',
       system: 'system prompt',
     };
@@ -309,7 +310,11 @@ describe('LlmAgentAction', () => {
       api_key: 'test-key',
       memory_enabled: true,
     };
-    const input = { prompt: 'Hello there', system: 'Base system' };
+    const input = {
+      input_mode: 'prompt' as const,
+      prompt: 'Hello there',
+      system: 'Base system',
+    };
 
     await action.execute({ input, settings, context });
 
@@ -363,7 +368,7 @@ describe('LlmAgentAction', () => {
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
-    const input = { prompt: 'Hello there' };
+    const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
 
     await action.execute({ input, settings, context });
     const { stopWhen } = ToolLoopAgentMock.mock.calls[0][0] as {
@@ -384,7 +389,7 @@ describe('LlmAgentAction', () => {
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
-        input: { prompt: 'hi' },
+        input: { input_mode: 'prompt', prompt: 'hi' },
         settings: {
           provider: 'openai',
           timeout_ms: 0,

@@ -50,17 +50,55 @@ export const vercelAiSdkProviders = [
   'xai',
 ] as const;
 
+export const DEFAULT_LLM_PROMPT = '=$input.text';
+
+export const DEFAULT_LLM_MESSAGES_LIMIT = 4;
+
 const llmPromptBaseSchema = z.object({
-  prompt: z.string().min(1).default('=$input.text').optional().meta({
-    title: 'Prompt',
-    description:
-      'Prompt text to send directly to the model instead of loading message history.',
-  }),
-  messages_limit: z.int().nonnegative().default(0).optional().meta({
-    title: 'Messages limit',
-    description:
-      'Number of most recent conversation messages to include instead of a prompt.',
-  }),
+  input_mode: z
+    .enum(['prompt', 'history'])
+    .default('prompt')
+    .meta({
+      title: 'Input mode',
+      description:
+        'Choose whether to send a direct prompt or use recent conversation history.',
+      'ui:widget': 'radio',
+      'ui:options': {
+        inline: true,
+      },
+    }),
+  prompt: z
+    .string()
+    .min(1)
+    .default(DEFAULT_LLM_PROMPT)
+    .optional()
+    .meta({
+      title: 'Prompt',
+      description:
+        'Prompt text to send directly to the model instead of loading message history.',
+      'ui:options': {
+        showWhen: {
+          field: 'input_mode',
+          equals: 'prompt',
+        },
+      },
+    }),
+  messages_limit: z
+    .int()
+    .positive()
+    .default(DEFAULT_LLM_MESSAGES_LIMIT)
+    .optional()
+    .meta({
+      title: 'Messages limit',
+      description:
+        'Number of most recent conversation messages to include instead of a prompt.',
+      'ui:options': {
+        showWhen: {
+          field: 'input_mode',
+          equals: 'history',
+        },
+      },
+    }),
   system: z.string().default('You are a helpful assistant.').optional().meta({
     title: 'System',
     description:
@@ -71,16 +109,32 @@ const validatePromptSource = (
   value: z.infer<typeof llmPromptBaseSchema>,
   ctx: z.RefinementCtx,
 ) => {
-  const promptCount =
-    (value.prompt ? 1 : 0) +
-    (value.messages_limit !== undefined && value.messages_limit > 0 ? 1 : 0);
+  if (value.input_mode === 'prompt') {
+    if (
+      value.messages_limit !== undefined &&
+      value.messages_limit !== DEFAULT_LLM_MESSAGES_LIMIT
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          '"messages_limit" is not allowed when "input_mode" is "prompt".',
+        path: ['messages_limit'],
+      });
+    }
 
-  if (promptCount !== 1) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Provide exactly one of "prompt" or "messages_limit"',
-      path: ['prompt'],
-    });
+    return;
+  }
+
+  if (value.input_mode === 'history') {
+    if (value.prompt !== undefined && value.prompt !== DEFAULT_LLM_PROMPT) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '"prompt" is not allowed when "input_mode" is "history".',
+        path: ['prompt'],
+      });
+    }
+
+    return;
   }
 };
 
@@ -139,10 +193,19 @@ export const llmCommonSettingsSchema = z.strictObject({
         labelKey: 'name',
       },
     }),
-  base_url: z.url().optional().meta({
-    title: 'Base URL',
-    description: 'Custom provider base URL (self-hosted or proxy).',
-  }),
+  base_url: z
+    .url()
+    .optional()
+    .meta({
+      title: 'Base URL',
+      description: 'Custom provider base URL (self-hosted or proxy).',
+      'ui:options': {
+        showWhen: {
+          field: 'provider',
+          equals: 'gateway',
+        },
+      },
+    }),
   organization: z
     .string()
     .optional()
@@ -284,8 +347,7 @@ export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema.extend({
   }),
 });
 
-export const llmAgentInputSchema =
-  llmPromptBaseSchema.superRefine(validatePromptSource);
+export const llmAgentInputSchema = llmPromptSchema;
 
 export const llmAgentOutputSchema = z.object({
   text: z.string().optional(),
