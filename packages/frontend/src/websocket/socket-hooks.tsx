@@ -10,6 +10,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -82,11 +83,15 @@ export const useSubscribe = <T,>(event: string, callback: (arg: T) => void) => {
 
 export const useSocketGetQuery = <T,>(
   url: string,
-  options?: Omit<QueryOptions<T, Error, T, string[]>, "queryFn">,
+  options?: Omit<QueryOptions<T, Error, T, string[]>, "queryFn"> & {
+    shouldRefetch?: boolean;
+  },
 ) => {
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
+  const { shouldRefetch = true, ...restOptions } = options || {};
+  const isEnabled = shouldRefetch && !!socket && connected;
   const query = useTanstackQuery({
-    ...options,
+    ...restOptions,
     queryKey: ["socket", "get", url],
     queryFn: async () => {
       if (!socket) throw new Error("Socket not initialized");
@@ -94,8 +99,16 @@ export const useSocketGetQuery = <T,>(
 
       return response.body;
     },
-    enabled: !!socket,
+    enabled: isEnabled,
   });
+  const wasConnected = useRef(connected);
+
+  useEffect(() => {
+    if (connected && !wasConnected.current && shouldRefetch) {
+      query.refetch();
+    }
+    wasConnected.current = connected;
+  }, [connected, query, shouldRefetch]);
 
   return query;
 };
