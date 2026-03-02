@@ -150,7 +150,7 @@ export class UserCreateDto extends UserProfileCreateDto {
   @IsOptional()
   @IsString()
   @IsUUIDv4({ message: 'Avatar must be a valid UUID' })
-  avatar: string | null = null;
+  avatar: string | null;
 
   @ApiPropertyOptional({
     description: 'User state',
