@@ -128,7 +128,7 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @IsOptional()
   @IsString()
   @IsUUIDv4({ message: 'AssignedTo must be a valid UUID' })
-  assignedTo: string | null = null;
+  assignedTo: string | null;
 
   @ApiPropertyOptional({
     description: 'Subscriber assigned at',
@@ -171,7 +171,7 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @IsOptional()
   @IsString()
   @IsUUIDv4({ message: 'Avatar Attachment ID must be a valid UUID' })
-  avatar: string | null = null;
+  avatar: string | null;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
