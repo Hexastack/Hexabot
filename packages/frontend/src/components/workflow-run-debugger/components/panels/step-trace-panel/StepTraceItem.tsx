@@ -7,7 +7,7 @@
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
 import { resolveWorkflowStepTheme } from "@hexabot-ai/graph";
 import { Box, Chip, Paper, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { alpha, useColorScheme, useTheme } from "@mui/material/styles";
 import type { KeyboardEvent } from "react";
 
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
@@ -27,6 +27,12 @@ export const StepTraceItem = ({
   onSelect,
 }: StepTraceItemProps) => {
   const theme = useTheme();
+  const { mode, systemMode } = useColorScheme();
+  const resolvedMode =
+    mode === "dark" || (mode === "system" && systemMode === "dark")
+      ? "dark"
+      : "light";
+  const resolvedMuiTheme = theme.vars || theme;
   const { actionsByName } = useWorkflowActionsCatalog();
   const actionDefinition = step.action
     ? actionsByName.get(step.action)
@@ -34,18 +40,18 @@ export const StepTraceItem = ({
   const resolvedTheme = resolveWorkflowStepTheme({
     action: actionDefinition,
     status: step.status,
-    mode: theme.palette.mode,
+    mode: resolvedMode,
   });
   const groupLabel = actionDefinition?.group?.trim();
   const accentColor =
-    resolvedTheme.iconColor ||
-    resolvedTheme.borderColor ||
+    resolvedTheme.iconColor ??
+    resolvedTheme.borderColor ??
     theme.palette.primary.main;
   const itemBorderColor = resolvedTheme.borderColor
     ? alpha(resolvedTheme.borderColor, 0.25)
     : "divider";
   const itemBackgroundColor =
-    resolvedTheme.bgColor || theme.palette.background.paper;
+    resolvedTheme.bgColor ?? resolvedMuiTheme.palette.background.paper;
   const IconComponent = resolvedTheme.Icon;
   const isInteractive = Boolean(onSelect);
   const selectedBackgroundColor = alpha(accentColor, 0.14);
@@ -55,26 +61,44 @@ export const StepTraceItem = ({
   const hoverShadow = theme.shadows[3];
   const selectedShadow = `0 0 0 1px ${selectedOutlineColor}, ${theme.shadows[4]}`;
   const selectedHoverShadow = `0 0 0 1px ${selectedOutlineColor}, ${theme.shadows[6]}`;
-  const handleSelect = () => {
-    if (!onSelect) return;
-    onSelect(step.id);
-  };
+  const handleSelect = () => onSelect?.(step.id);
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!onSelect) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onSelect(step.id);
+      handleSelect();
     }
   };
+  const interactiveProps = isInteractive
+    ? {
+        role: "button" as const,
+        tabIndex: 0,
+        "aria-pressed": isSelected,
+        onClick: handleSelect,
+        onKeyDown: handleKeyDown,
+      }
+    : {};
+  const interactiveSx = isInteractive
+    ? {
+        cursor: "pointer",
+        "&:hover": {
+          borderColor: accentColor,
+          backgroundColor: isSelected
+            ? selectedBackgroundColor
+            : hoverBackgroundColor,
+          boxShadow: isSelected ? selectedHoverShadow : hoverShadow,
+        },
+        "&:focus-visible": {
+          outline: `2px solid ${selectedOutlineColor}`,
+          outlineOffset: 2,
+        },
+      }
+    : { cursor: "default" };
 
   return (
     <Paper
       variant="outlined"
-      role={isInteractive ? "button" : undefined}
-      tabIndex={isInteractive ? 0 : undefined}
-      aria-pressed={isInteractive ? isSelected : undefined}
-      onClick={isInteractive ? handleSelect : undefined}
-      onKeyDown={isInteractive ? handleKeyDown : undefined}
+      {...interactiveProps}
       sx={{
         display: "grid",
         gridTemplateColumns: "auto 1fr auto",
@@ -90,32 +114,7 @@ export const StepTraceItem = ({
         boxShadow: isSelected ? selectedShadow : baseShadow,
         transition:
           "border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease",
-        cursor: isInteractive ? "pointer" : "default",
-        "&:hover": isInteractive
-          ? {
-              borderColor: accentColor,
-              backgroundColor: isSelected
-                ? selectedBackgroundColor
-                : hoverBackgroundColor,
-              boxShadow: isSelected ? selectedHoverShadow : hoverShadow,
-            }
-          : undefined,
-        "&:hover::before": isInteractive
-          ? {
-              opacity: isSelected ? 1 : 0.6,
-            }
-          : undefined,
-        "&:focus-visible::before": isInteractive
-          ? {
-              opacity: 1,
-            }
-          : undefined,
-        "&:focus-visible": isInteractive
-          ? {
-              outline: `2px solid ${selectedOutlineColor}`,
-              outlineOffset: 2,
-            }
-          : undefined,
+        ...interactiveSx,
       }}
     >
       <Box

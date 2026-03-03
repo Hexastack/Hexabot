@@ -62,10 +62,6 @@ export interface IWorkflowContext {
   addLoopStep: (insertPath?: FlowStepPath | null) => void;
   addParallelStep: (insertPath?: FlowStepPath | null) => void;
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
-  executionStates: Record<string, { state: NodeExecutionState; t: number }[]>;
-  setExecutionStates: Dispatch<
-    Record<string, { state: NodeExecutionState; t: number }[]>
-  >;
   definition?: WorkflowDefinition;
   flow?: CompiledStep[];
 }
@@ -78,6 +74,13 @@ export interface WorkflowContextProps {
 export type WorkflowEvent<
   T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
 > = T extends `${string}:${infer Rest}` ? Rest : T;
+
+export type SubscribeWorkflowProps =
+  WorkflowEventMap[keyof WorkflowEventMap] & {
+    workflowEvent: WorkflowEvent;
+    workflowId?: string;
+    t: number;
+  };
 
 export type NodeExecutionState =
   | "idle"

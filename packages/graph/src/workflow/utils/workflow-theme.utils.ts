@@ -68,34 +68,30 @@ export const resolveWorkflowStepTheme = ({
   status,
   mode,
 }: WorkflowThemeInput): ResolvedWorkflowTheme => {
-  const iconName = action?.icon;
-  const apiIcon =
-    iconName && iconName in Icons
-      ? (Icons[iconName as keyof typeof Icons] as WorkflowIcon)
-      : undefined;
   const isDarkMode = mode === "dark";
   const stateConfig = getWorkflowStateConfig(status);
-  const stateColor = stateConfig?.color;
-  const borderColor = stateColor ?? baseTheme?.borderColor ?? action?.color;
-  const iconColor =
-    stateColor ??
-    baseTheme?.iconColor ??
-    baseTheme?.borderColor ??
-    action?.color;
-  const uiIcon = baseTheme?.Icon;
-  const Icon = stateConfig?.icon || uiIcon || apiIcon || Icons.Zap;
+  const borderColor = stateConfig?.color ?? baseTheme?.borderColor ?? action?.color;
+  const iconName = action?.icon;
+  const Icon =
+    stateConfig?.icon ??
+    baseTheme?.Icon ??
+    (iconName && iconName in Icons
+      ? (Icons[iconName as keyof typeof Icons] as WorkflowIcon)
+      : Icons.Zap);
 
   return {
     Icon,
     color:
-      baseTheme?.color ||
+      baseTheme?.color ??
       (isDarkMode ? DEFAULT_DARK_NODE_TEXT_COLOR : DEFAULT_NODE_TEXT_COLOR),
     bgColor:
-      baseTheme?.bgColor ||
+      baseTheme?.bgColor ??
       (borderColor
-        ? `color-mix(in srgb, ${borderColor}, ${isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET} ${isDarkMode ? "85%" : "95%"})`
+        ? `color-mix(in srgb, ${borderColor}, ${
+            isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET
+          } ${isDarkMode ? "85%" : "95%"})`
         : undefined),
-    iconColor,
+    iconColor: stateConfig?.color ?? baseTheme?.iconColor ?? borderColor,
     borderColor,
   };
 };

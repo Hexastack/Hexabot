@@ -28,10 +28,7 @@ import type { IWorkflowAttributes } from "@/types/workfow.types";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
-import type {
-  NodeExecutionState,
-  WorkflowContextProps,
-} from "../types/workflow.types";
+import type { WorkflowContextProps } from "../types/workflow.types";
 import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
   createBaseDefinition,
@@ -66,9 +63,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const directionMemo = useMemo(() => {
     return workflow?.direction;
   }, [flowId, workflow?.direction]);
-  const [executionStates, setExecutionStates] = useState<
-    Record<string, { state: NodeExecutionState; t: number }[]>
-  >({});
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
   const [graphSelection, setGraphSelectionState] =
     useState<WorkflowSelectionSnapshot>(EMPTY_GRAPH_SELECTION);
@@ -311,8 +305,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         workflows,
         updateWorkflow,
         debouncedWorkflowUpdate,
-        executionStates,
-        setExecutionStates,
         updateDefinition: updateDefinitionState,
         persistDefinition,
         publishVersion,
