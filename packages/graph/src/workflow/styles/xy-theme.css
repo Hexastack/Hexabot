@@ -115,6 +115,8 @@
 
 .workflow-rotate-icon {
   transition: transform 0.2s ease;
+  fill: none !important;
+  stroke: currentColor;
 }
 
 .workflow-rotate-icon--horizontal {
