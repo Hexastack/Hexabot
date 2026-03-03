@@ -24,6 +24,7 @@ import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useNormalizeSchema } from "@/hooks/useNormalizeSchema";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -37,7 +38,6 @@ import {
 import { IContent, IContentAttributes } from "@/types/content.types";
 import { MIME_TYPES } from "@/utils/attachment";
 import { slugify } from "@/utils/string";
-import { isAbsoluteUrl } from "@/utils/URL";
 
 interface ContentFieldInput {
   contentField: ContentField;
@@ -144,9 +144,6 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   WrapperProps,
   ...rest
 }) => {
-  const properties = contentType?.schema?.["properties"] as
-    | ContentSchemaProperties
-    | undefined;
   const { t } = useTranslate();
   const { toast } = useToast();
   const {
@@ -161,15 +158,13 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       title: content?.title || "",
     },
   });
+  const { getNormalizedSchema } = useNormalizeSchema();
+  const { schemaRules, properties } = getNormalizedSchema(contentType?.schema);
   const validationRules = {
     title: {
       required: t("message.title_is_required"),
     },
-    url: {
-      required: t("message.url_is_invalid"),
-      validate: (value: string) =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
-    },
+    ...schemaRules,
   };
   const { mutate: createContent } = useCreate(EntityType.CONTENT);
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
@@ -221,13 +216,7 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
                   name={propertyKey}
                   control={control}
                   defaultValue={content?.properties[propertyKey]}
-                  rules={
-                    property.type === "string"
-                      ? validationRules.title
-                      : property.type === "uri"
-                        ? validationRules.url
-                        : undefined
-                  }
+                  rules={validationRules[propertyKey]}
                   render={({ field }) => (
                     <FormControl>
                       <ContentFieldInput
