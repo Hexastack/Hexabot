@@ -96,6 +96,7 @@ const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
     : [];
   const providerValue = settings?.provider;
   const modelValue = settings?.model;
+  const memoryEnabled = settings?.memory_enabled === true;
   const provider =
     providerValue !== undefined && providerValue !== null
       ? String(providerValue)
@@ -107,6 +108,7 @@ const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
     tools,
     provider,
     model,
+    memoryEnabled,
   };
 };
 const buildConditionalOperatorOutPort = (
@@ -337,12 +339,14 @@ const addAgentAttachments = (
     level,
     tools,
     model,
+    memoryEnabled,
   }: {
     stepId: string;
     parentNodeId: string;
     level: number;
     tools: string[];
     model: string;
+    memoryEnabled: boolean;
   },
 ) => {
   if (model) {
@@ -369,37 +373,39 @@ const addAgentAttachments = (
     });
   }
 
-  state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
-    const memoryProperties = memoryDefinition.schema?.properties;
-    const memoryNodeId = createAttachmentNodeId(
-      stepId,
-      "memory",
-      memoryDefinition.name,
-      memoryIndex,
-    );
+  if (memoryEnabled) {
+    state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
+      const memoryProperties = memoryDefinition.schema?.properties;
+      const memoryNodeId = createAttachmentNodeId(
+        stepId,
+        "memory",
+        memoryDefinition.name,
+        memoryIndex,
+      );
 
-    addSemanticNode(state, {
-      id: memoryNodeId,
-      type: ENodeType.MEMORY,
-      level,
-      groupPath: [],
-      isAttachment: true,
-      data: {
-        ...state.config.nodes[ENodeType.MEMORY],
-        title: memoryDefinition.name,
-        i18nTitle: undefined,
-        description: memoryProperties
-          ? Object.keys(memoryProperties).join(", ")
-          : "",
-      },
-    });
+      addSemanticNode(state, {
+        id: memoryNodeId,
+        type: ENodeType.MEMORY,
+        level,
+        groupPath: [],
+        isAttachment: true,
+        data: {
+          ...state.config.nodes[ENodeType.MEMORY],
+          title: memoryDefinition.name,
+          i18nTitle: undefined,
+          description: memoryProperties
+            ? Object.keys(memoryProperties).join(", ")
+            : "",
+        },
+      });
 
-    addDirectEdge(state, {
-      source: parentNodeId,
-      target: memoryNodeId,
-      sourceHandle: ELinkType.AGENT_MEMORY,
+      addDirectEdge(state, {
+        source: parentNodeId,
+        target: memoryNodeId,
+        sourceHandle: ELinkType.AGENT_MEMORY,
+      });
     });
-  });
+  }
 
   tools.forEach((toolName, toolIndex) => {
     const toolNodeId = createAttachmentNodeId(stepId, "tool", toolName, toolIndex);
@@ -613,6 +619,15 @@ const walkStep = ({
     const groupName = getGroupName(groupPath);
 
     if (isAgentTask) {
+      const agentBaseData = state.config.nodes[ENodeType.AGENT];
+      const ports = agentBaseData.ports.filter((port) => {
+        if (taskMeta.memoryEnabled) {
+          return true;
+        }
+
+        return (typeof port === "string" ? port : port.id) !== ELinkType.AGENT_MEMORY;
+      });
+
       addSemanticNode(state, {
         id: taskNodeId,
         type: ENodeType.AGENT,
@@ -622,7 +637,7 @@ const walkStep = ({
         stepPath,
         groupPath,
         data: {
-          ...state.config.nodes[ENodeType.AGENT],
+          ...agentBaseData,
           description: getTaskDescription(step.taskName, state.tasks),
           stepId: step.id,
           actionName: getTaskAction(step.taskName, state.tasks),
@@ -631,6 +646,7 @@ const walkStep = ({
           stepPath,
           title: step.taskName,
           i18nTitle: undefined,
+          ports,
         },
       });
 
@@ -640,6 +656,7 @@ const walkStep = ({
         level,
         tools: taskMeta.tools,
         model: `${taskMeta.provider}/${taskMeta.model}`,
+        memoryEnabled: taskMeta.memoryEnabled,
       });
     } else {
       addSemanticNode(state, {
