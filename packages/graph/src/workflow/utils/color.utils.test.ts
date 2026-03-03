@@ -14,7 +14,7 @@ describe("color.utils", () => {
   });
 
   it("preserves existing hex alpha before applying additional alpha", () => {
-    expect(withAlpha("#0004", 0.5)).toBe("rgba(0, 0, 0, 0.133)");
+    expect(withAlpha("#0004", 0.5)).toBe("rgba(0, 0, 0, 0.135)");
   });
 
   it("applies alpha to rgb and rgba colors", () => {

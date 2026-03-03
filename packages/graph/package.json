@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hexabot-ai/agentic": "workspace:*",
+    "chroma-js": "^3.2.0",
     "elkjs": "^0.11.0",
     "lucide-react": "^0.562.0"
   },
@@ -47,6 +48,7 @@
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
+    "@xyflow/react": "^12.10.0",
     "eslint": "^9.37.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-header": "^3.1.1",
@@ -59,8 +61,7 @@
     "react-dom": "^18",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
-    "vitest": "^4.0.18",
-    "@xyflow/react": "^12.10.0"
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": "^20.18.1"
