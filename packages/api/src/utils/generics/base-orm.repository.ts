@@ -11,7 +11,6 @@ import {
   TNormalizedEvents,
 } from '@nestjs/event-emitter';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { isUUID } from 'class-validator';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
 import {
@@ -266,27 +265,6 @@ export abstract class BaseOrmRepository<
     return created.map((e) => e.toPlainCls());
   }
 
-  areAllFieldsUUIDArrays(
-    payload: InferActionDto<DtoAction.Update, ActionDto>,
-    version: '3' | '4' | '5' | 'all' = '4',
-  ): boolean {
-    try {
-      if (typeof payload !== 'object' || payload === null) {
-        return false;
-      }
-
-      return Object.values(payload).every(
-        (value) =>
-          Array.isArray(value) &&
-          value.every(
-            (item) => typeof item === 'string' && isUUID(item, version),
-          ),
-      );
-    } catch {
-      return false;
-    }
-  }
-
   async updateOne(
     idOrOptions: string | FindOneOptions<Entity>,
     payload: InferActionDto<DtoAction.Update, ActionDto>,
@@ -306,7 +284,10 @@ export abstract class BaseOrmRepository<
       } else {
         Object.assign(entity, updates);
       }
-      const hasOnlyManyToManyProperties = this.areAllFieldsUUIDArrays(payload);
+      const hasOnlyManyToManyProperties = Object.entries(payload || {}).every(
+        ([key, val]) =>
+          this.populateRelations.includes(key) && Array.isArray(val),
+      );
 
       if (hasOnlyManyToManyProperties) {
         entity.updatedAt = new Date();
