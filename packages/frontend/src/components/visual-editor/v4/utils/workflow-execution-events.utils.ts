@@ -1,0 +1,144 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { EIndicatorType } from "@hexabot-ai/graph";
+
+import type {
+  NodeExecutionState,
+  SubscribeWorkflowProps,
+} from "../types/workflow.types";
+
+export const START_INDICATOR_FINISH_DELAY_MS = 1000;
+export const STEP_SUCCESS_FINISH_DELAY_MS = 800;
+export const WORKFLOW_FINISH_DELAY_MS = 1000;
+export const WORKFLOW_RESET_DELAY_MS = 1200;
+
+type AppendExecutionStateAction = {
+  type: "append";
+  key: string;
+  state: NodeExecutionState;
+  t?: number;
+  delayMs?: number;
+};
+
+type ClearExecutionStateAction = {
+  type: "clear";
+  delayMs?: number;
+};
+
+export type ExecutionStateUpdateAction =
+  | AppendExecutionStateAction
+  | ClearExecutionStateAction;
+
+export const isWorkflowEventForFlow = (
+  event: SubscribeWorkflowProps,
+  flowId?: string,
+) => {
+  if (!event.workflowId) {
+    return true;
+  }
+
+  return Boolean(flowId) && event.workflowId === flowId;
+};
+
+export const isStepWorkflowEvent = (
+  event: SubscribeWorkflowProps,
+): event is SubscribeWorkflowProps & { step: { id: string } } => {
+  if (!event.workflowEvent.startsWith("step:") || !("step" in event)) {
+    return false;
+  }
+
+  const step = (event as { step?: { id?: unknown } }).step;
+
+  return typeof step?.id === "string" && step.id.length > 0;
+};
+
+export const mapWorkflowEventToExecutionActions = (
+  event: SubscribeWorkflowProps,
+): ExecutionStateUpdateAction[] => {
+  if (event.workflowEvent === "workflow:start") {
+    return [
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_START,
+        state: "start",
+        t: event.t,
+      },
+    ];
+  }
+
+  if (event.workflowEvent === "workflow:finish") {
+    return [
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_END,
+        state: "start",
+        t: event.t,
+      },
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_END,
+        state: "finish",
+        delayMs: WORKFLOW_FINISH_DELAY_MS,
+      },
+      {
+        type: "clear",
+        delayMs: WORKFLOW_RESET_DELAY_MS,
+      },
+    ];
+  }
+
+  if (!isStepWorkflowEvent(event)) {
+    return [];
+  }
+
+  const stepActions: ExecutionStateUpdateAction[] = [
+    {
+      type: "append",
+      key: EIndicatorType.WORKFLOW_START,
+      state: "finish",
+      delayMs: START_INDICATOR_FINISH_DELAY_MS,
+    },
+  ];
+
+  if (event.workflowEvent === "step:start") {
+    stepActions.push({
+      type: "append",
+      key: event.step.id,
+      state: "start",
+      t: event.t,
+    });
+  }
+
+  if (event.workflowEvent === "step:error") {
+    stepActions.push({
+      type: "append",
+      key: event.step.id,
+      state: "error",
+      t: event.t,
+    });
+  }
+
+  if (event.workflowEvent === "step:success") {
+    stepActions.push({
+      type: "append",
+      key: event.step.id,
+      state: "finish",
+      delayMs: STEP_SUCCESS_FINISH_DELAY_MS,
+    });
+  }
+
+  if (event.workflowEvent === "step:suspended") {
+    stepActions.push({
+      type: "append",
+      key: event.step.id,
+      state: "suspended",
+      t: event.t,
+    });
+  }
+
+  return stepActions;
+};

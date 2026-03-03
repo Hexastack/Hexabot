@@ -53,6 +53,7 @@ import { WorkflowMenu } from "../components/main/WorkflowMenu";
 import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { useWorkflow } from "../hooks/useWorkflow";
+import { useWorkflowExecutionState } from "../hooks/useWorkflowExecutionState";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
 import "./workflow-layout.css";
 
@@ -97,7 +98,6 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
-    executionStates,
     removeStepAtPath,
     setGraphSelection,
     updateDefinitionState,
@@ -124,6 +124,7 @@ export const Workflow = () => {
   const graphColorMode: WorkflowGraphColorMode =
     mode === "light" || mode === "dark" ? mode : "system";
   const workflowGraphRef = useRef<WorkflowGraphHandle | null>(null);
+  const executionStates = useWorkflowExecutionState(selectedFlowId);
   const focusNodeIds = useMemo(
     () =>
       typeof nodeIds === "string"

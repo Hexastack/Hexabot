@@ -10,9 +10,11 @@ import { type FC } from "react";
 import { useWorkflowGraphHost } from "../contexts/workflow-graph-host.context";
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
 import type {
+  EIndicatorType,
   GraphNode,
   IWorkflowNodeProps,
 } from "../types/workflow-node.types";
+import { resolveNodeExecutionState } from "../utils/execution-state.utils";
 
 export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   id,
@@ -28,15 +30,28 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
   }
 
   const { data, ...rest } = node;
-  const nodeData = data as { actionName?: unknown };
+  const nodeData = data as {
+    actionName?: unknown;
+    stepId?: unknown;
+    indicator?: unknown;
+  };
   const actionName =
     typeof nodeData.actionName === "string"
       ? nodeData.actionName
       : undefined;
+  const stepId =
+    typeof nodeData.stepId === "string" ? nodeData.stepId : undefined;
+  const indicator =
+    typeof nodeData.indicator === "string"
+      ? (nodeData.indicator as EIndicatorType)
+      : undefined;
   const action = actionName ? actionCatalog.get(actionName) : undefined;
-  const executionState = [...(executionStates[id] ?? [])]
-    .sort((e1, e2) => (e1.t - e2.t > 0 ? 1 : -1))
-    .at(-1)?.state;
+  const executionState = resolveNodeExecutionState({
+    executionStates,
+    nodeId: id,
+    stepId,
+    indicator,
+  });
 
   return (
     <WorkflowNodeContext.Provider
