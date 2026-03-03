@@ -7,7 +7,6 @@
 import {
   getNodesBounds,
   getViewportForBounds,
-  useNodesInitialized,
   useReactFlow,
   useStore,
   type Node,
@@ -36,20 +35,41 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
   graphNodes,
 }: UseWorkflowViewportProps<TNode>) => {
   const { setViewport, getViewport } = useReactFlow();
-  const workflowWidth = useStore((state) => state.domNode?.clientWidth ?? 0);
-  const workflowHeight = useStore((state) => state.domNode?.clientHeight ?? 0);
-  const nodesInitialized = useNodesInitialized();
+  const workflowWidth = useStore(
+    (state) => state.width ?? state.domNode?.clientWidth ?? 0,
+  );
+  const workflowHeight = useStore(
+    (state) => state.height ?? state.domNode?.clientHeight ?? 0,
+  );
   const [shouldCenterAfterFirstInsert, setShouldCenterAfterFirstInsert] =
     useState(false);
   const viewportInitializedForFlowRef = useRef<string | null>(null);
-  const defaultViewport = useMemo(() => {
-    const [x = 0, y = 0, zoom = 1] = [
-      Number(viewport?.x),
-      Number(viewport?.y),
-      Number(viewport?.zoom),
-    ].map((value) => (Number.isFinite(value) ? value : undefined));
+  const nodeIdsSignatureRef = useRef<string | null>(null);
+  const nodeIdsSignature = useMemo(
+    () =>
+      graphNodes
+        .map(({ id }) => id)
+        .sort()
+        .join("|"),
+    [graphNodes],
+  );
+  const { defaultViewport, hasPersistedViewport } = useMemo(() => {
+    const parsedX = Number(viewport?.x);
+    const parsedY = Number(viewport?.y);
+    const parsedZoom = Number(viewport?.zoom);
+    const hasViewport =
+      Number.isFinite(parsedX) &&
+      Number.isFinite(parsedY) &&
+      Number.isFinite(parsedZoom);
 
-    return { x, y, zoom };
+    return {
+      defaultViewport: {
+        x: Number.isFinite(parsedX) ? parsedX : 0,
+        y: Number.isFinite(parsedY) ? parsedY : 0,
+        zoom: Number.isFinite(parsedZoom) ? parsedZoom : 1,
+      },
+      hasPersistedViewport: hasViewport,
+    };
   }, [viewport?.id, viewport?.x, viewport?.y, viewport?.zoom]);
   const emptyViewport = useMemo(
     () => ({
@@ -61,9 +81,10 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
   );
   const shouldUseComputedEmptyViewport =
     isEmptyWorkflow &&
-    defaultViewport.x === 0 &&
-    defaultViewport.y === 0 &&
-    defaultViewport.zoom === 1;
+    (!hasPersistedViewport ||
+      (defaultViewport.x === 0 &&
+        defaultViewport.y === 0 &&
+        defaultViewport.zoom === 1));
   const initialViewport = useMemo(
     () => (shouldUseComputedEmptyViewport ? emptyViewport : defaultViewport),
     [defaultViewport, emptyViewport, shouldUseComputedEmptyViewport],
@@ -76,24 +97,11 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
     },
     [setViewport, viewportSyncKey],
   );
-
-  useEffect(() => {
-    if (!nodesInitialized) {
-      return;
-    }
-
-    if (viewportInitializedForFlowRef.current === viewportSyncKey) {
-      return;
-    }
-
-    syncViewportForFlow(initialViewport);
-  }, [initialViewport, nodesInitialized, syncViewportForFlow, viewportSyncKey]);
-
-  useEffect(() => {
+  const centerGraphAtCurrentZoom = useCallback(() => {
     if (
-      !shouldCenterAfterFirstInsert ||
-      !nodesInitialized ||
-      graphNodes.length === 0
+      graphNodes.length === 0 ||
+      workflowWidth <= 0 ||
+      workflowHeight <= 0
     ) {
       return;
     }
@@ -110,17 +118,101 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
     );
 
     syncViewportForFlow(centeredViewport);
-
-    setShouldCenterAfterFirstInsert(false);
   }, [
     getViewport,
     graphNodes,
-    nodesInitialized,
+    syncViewportForFlow,
+    workflowHeight,
+    workflowWidth,
+  ]);
+
+  useEffect(() => {
+    if (workflowWidth <= 0 || workflowHeight <= 0) {
+      return;
+    }
+
+    if (viewportInitializedForFlowRef.current === viewportSyncKey) {
+      return;
+    }
+
+    syncViewportForFlow(initialViewport);
+  }, [
+    initialViewport,
+    syncViewportForFlow,
+    viewportSyncKey,
+    workflowHeight,
+    workflowWidth,
+  ]);
+
+  useEffect(() => {
+    nodeIdsSignatureRef.current = null;
+  }, [viewportSyncKey]);
+
+  useEffect(() => {
+    if (
+      !shouldCenterAfterFirstInsert ||
+      graphNodes.length === 0 ||
+      workflowWidth <= 0 ||
+      workflowHeight <= 0
+    ) {
+      return;
+    }
+
+    centerGraphAtCurrentZoom();
+    setShouldCenterAfterFirstInsert(false);
+  }, [
+    centerGraphAtCurrentZoom,
+    shouldCenterAfterFirstInsert,
+    workflowHeight,
+    workflowWidth,
+  ]);
+
+  useEffect(() => {
+    if (workflowWidth <= 0 || workflowHeight <= 0) {
+      return;
+    }
+
+    const previousNodeIdsSignature = nodeIdsSignatureRef.current;
+
+    nodeIdsSignatureRef.current = nodeIdsSignature;
+
+    if (
+      !previousNodeIdsSignature ||
+      previousNodeIdsSignature === nodeIdsSignature ||
+      shouldCenterAfterFirstInsert
+    ) {
+      return;
+    }
+
+    if (graphNodes.length === 0) {
+      const currentViewport = getViewport();
+
+      syncViewportForFlow({
+        x: workflowWidth / 2,
+        y: workflowHeight / 2,
+        zoom: currentViewport.zoom,
+      });
+
+      return;
+    }
+
+    centerGraphAtCurrentZoom();
+  }, [
+    centerGraphAtCurrentZoom,
+    getViewport,
+    graphNodes.length,
+    nodeIdsSignature,
     shouldCenterAfterFirstInsert,
     syncViewportForFlow,
     workflowHeight,
     workflowWidth,
   ]);
+
+  useEffect(() => {
+    if (isEmptyWorkflow) {
+      nodeIdsSignatureRef.current = null;
+    }
+  }, [isEmptyWorkflow]);
 
   const requestCenterAfterFirstInsert = useCallback(() => {
     if (isEmptyWorkflow) {
