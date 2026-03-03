@@ -14,7 +14,7 @@ import {
 } from "@hexabot-ai/agentic";
 import { describe, expect, it } from "vitest";
 
-import { ENodeType } from "../types/workflow-node.types";
+import { ELinkType, ENodeType, type MemoryDefinition } from "../types/workflow-node.types";
 
 import {
   END_INDICATOR_ID,
@@ -45,15 +45,17 @@ const baseTasks = (taskNames: string[]): TaskDefinitions => {
 const buildGraph = async ({
   flow,
   tasks,
+  memoryDefinitions = [],
 }: {
   flow: CompiledStep[];
   tasks: TaskDefinitions;
+  memoryDefinitions?: MemoryDefinition[];
 }) => {
   const graph = await buildNodesAndEdges({
     config: getWorkflowDefaultConfig("horizontal"),
     flow,
     tasks,
-    memoryDefinitions: [],
+    memoryDefinitions,
   });
 
   if (!graph) {
@@ -62,8 +64,75 @@ const buildGraph = async ({
 
   return graph;
 };
+const getNodePorts = (
+  node:
+    | {
+        data: {
+          ports?: Array<string | { id: string }>;
+        };
+      }
+    | undefined,
+) => {
+  const ports = node?.data.ports ?? [];
+
+  return ports.map((port) => (typeof port === "string" ? port : port.id));
+};
 
 describe("buildNodesAndEdges", () => {
+  it("only shows memory port and edges when memory_enabled is true", async () => {
+    const flow: CompiledStep[] = [
+      taskStep("0:memory_disabled", "memory_disabled"),
+      taskStep("1:memory_enabled", "memory_enabled"),
+    ];
+    const tasks: TaskDefinitions = {
+      memory_disabled: {
+        action: "agent_action_disabled",
+        settings: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+          memory_enabled: false,
+        },
+      },
+      memory_enabled: {
+        action: "agent_action_enabled",
+        settings: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+          memory_enabled: true,
+        },
+      },
+    };
+    const memoryDefinitions: MemoryDefinition[] = [
+      {
+        name: "profile",
+        schema: {
+          properties: {
+            full_name: { type: "string" },
+          },
+        },
+      },
+    ];
+    const graph = await buildGraph({ flow, tasks, memoryDefinitions });
+    const disabledNodeId = createStepNodeId("0:memory_disabled", "agent");
+    const enabledNodeId = createStepNodeId("1:memory_enabled", "agent");
+    const memoryEdges = graph.edges.filter(
+      (edge) => edge.sourceHandle === ELinkType.AGENT_MEMORY,
+    );
+    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.MEMORY);
+    const disabledAgentNode = graph.nodes.find((node) => node.id === disabledNodeId);
+    const enabledAgentNode = graph.nodes.find((node) => node.id === enabledNodeId);
+
+    expect(memoryNodes).toHaveLength(1);
+    expect(memoryEdges).toHaveLength(1);
+    expect(memoryEdges[0]?.source).toBe(enabledNodeId);
+    expect(
+      getNodePorts(disabledAgentNode).includes(ELinkType.AGENT_MEMORY),
+    ).toBe(false);
+    expect(getNodePorts(enabledAgentNode).includes(ELinkType.AGENT_MEMORY)).toBe(
+      true,
+    );
+  });
+
   it("creates unique tool node IDs for multiple agent tasks using the same tool", async () => {
     const flow: CompiledStep[] = [
       taskStep("0:first_agent", "first_agent"),

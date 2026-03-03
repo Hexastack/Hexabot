@@ -388,6 +388,13 @@ describe('LlmBaseAction', () => {
     it('normalizes provider id and pascal case', () => {
       expect(action.getProviderIdPublic('  @ai-sdk/OpenAI  ')).toBe('openai');
       expect(action.getProviderIdPublic('ai-sdk/custom')).toBe('custom');
+      expect(action.getProviderIdPublic('claude')).toBe('anthropic');
+      expect(action.getProviderIdPublic('gemini')).toBe('google');
+      expect(action.getProviderIdPublic('google-generative-ai')).toBe('google');
+      expect(action.getProviderIdPublic('google-vertex-ai')).toBe(
+        'google-vertex',
+      );
+      expect(action.getProviderIdPublic('azure-openai')).toBe('azure');
       expect(action.toPascalCasePublic('custom-llm_provider')).toBe(
         'CustomLlmProvider',
       );
@@ -450,6 +457,7 @@ describe('LlmBaseAction', () => {
       } as unknown as WorkflowRuntimeContext;
       const result = await action.buildPromptPublic(
         {
+          input_mode: 'history',
           messages_limit: 2,
           system: 'system prompt',
         },
@@ -473,6 +481,7 @@ describe('LlmBaseAction', () => {
     it('builds prompt payload from prompt string', async () => {
       const result = await action.buildPromptPublic(
         {
+          input_mode: 'prompt',
           prompt: 'Tell me a joke',
           system: 'system prompt',
         },
@@ -486,10 +495,51 @@ describe('LlmBaseAction', () => {
       });
     });
 
+    it('defaults prompt mode prompt to workflow input text', async () => {
+      const result = await action.buildPromptPublic(
+        {
+          input_mode: 'prompt',
+          system: 'system prompt',
+        } as unknown as Record<string, unknown>,
+        {} as WorkflowRuntimeContext,
+        {} as LlmCommonSettings,
+      );
+
+      expect(result).toEqual({
+        prompt: '=$input.text',
+        system: 'system prompt',
+      });
+    });
+
+    it('defaults history mode message limit to 4 when missing', async () => {
+      const initiatorId = 'subscriber-123';
+      const messageService = {
+        findLastMessages: jest.fn().mockResolvedValue([]),
+      };
+      const context = {
+        initiatorId,
+        services: { message: messageService },
+      } as unknown as WorkflowRuntimeContext;
+
+      await action.buildPromptPublic(
+        {
+          input_mode: 'history',
+          system: 'system prompt',
+        } as unknown as Record<string, unknown>,
+        context,
+        {} as LlmCommonSettings,
+      );
+
+      expect(messageService.findLastMessages).toHaveBeenCalledWith(
+        { id: initiatorId },
+        4,
+      );
+    });
+
     it('throws when subscriber id is missing for message history requests', async () => {
       await expect(
         action.buildPromptPublic(
-          { messages_limit: 1 },
+          { input_mode: 'history', messages_limit: 1 },
           {
             services: { message: { findLastMessages: jest.fn() } },
           } as unknown as WorkflowRuntimeContext,
@@ -500,7 +550,7 @@ describe('LlmBaseAction', () => {
       );
     });
 
-    it('throws when neither prompt nor message limit are provided', async () => {
+    it('throws when input mode is missing', async () => {
       await expect(
         action.buildPromptPublic(
           {} as unknown as Record<string, unknown>,
@@ -508,8 +558,36 @@ describe('LlmBaseAction', () => {
           {} as LlmCommonSettings,
         ),
       ).rejects.toThrow(
-        'Provide either "prompt" or "messages_limit" to build the model request.',
+        'An "input_mode" of either "prompt" or "history" is required to build the model request.',
       );
+    });
+
+    it('throws when prompt mode receives history fields', async () => {
+      await expect(
+        action.buildPromptPublic(
+          {
+            input_mode: 'prompt',
+            prompt: 'Tell me a joke',
+            messages_limit: 2,
+          } as unknown as Record<string, unknown>,
+          {} as WorkflowRuntimeContext,
+          {} as LlmCommonSettings,
+        ),
+      ).rejects.toThrow('Input mode "prompt" does not allow "messages_limit".');
+    });
+
+    it('throws when history mode receives prompt field', async () => {
+      await expect(
+        action.buildPromptPublic(
+          {
+            input_mode: 'history',
+            prompt: 'Tell me a joke',
+            messages_limit: 2,
+          } as unknown as Record<string, unknown>,
+          {} as WorkflowRuntimeContext,
+          {} as LlmCommonSettings,
+        ),
+      ).rejects.toThrow('Input mode "history" does not allow "prompt".');
     });
   });
 

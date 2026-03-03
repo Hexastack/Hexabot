@@ -6,7 +6,7 @@
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { Output, ToolSet, generateText, jsonSchema } from 'ai';
+import { JSONSchema7, Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -82,13 +82,13 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       settings.output_schema &&
       typeof settings.output_schema === 'object' &&
       !Array.isArray(settings.output_schema)
-        ? settings.output_schema
+        ? (settings.output_schema as JSONSchema7)
         : undefined;
     const output = outputSchema
       ? Output.object({
-          schema: jsonSchema(outputSchema as Parameters<typeof jsonSchema>[0]),
-          name: settings.output_schema_name,
-          description: settings.output_schema_description,
+          schema: jsonSchema(outputSchema),
+          name: outputSchema.title,
+          description: outputSchema.description,
         })
       : undefined;
 

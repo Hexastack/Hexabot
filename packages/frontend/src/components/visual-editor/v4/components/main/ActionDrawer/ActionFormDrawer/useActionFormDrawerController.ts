@@ -290,7 +290,9 @@ export const useActionFormDrawerController =
         hasSettingValues || currentTask.settings !== undefined;
       const nextTask: TaskDefinition = {
         ...currentTask,
-        ...(normalizedDescription ? { description: normalizedDescription } : {}),
+        ...(normalizedDescription
+          ? { description: normalizedDescription }
+          : {}),
         ...(shouldIncludeInputs
           ? { inputs: inputData as Record<string, JsonValue> }
           : {}),

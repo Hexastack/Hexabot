@@ -5,8 +5,8 @@
  */
 
 import { Form } from "@rjsf/mui";
-import type { RJSFSchema, UiSchema } from "@rjsf/utils";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { getDefaultFormState, type RJSFSchema, type UiSchema } from "@rjsf/utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import validator from "@/utils/rjsf-zod-validator";
 
@@ -19,6 +19,30 @@ const FORM_UI_SCHEMA = {
     norender: true,
   },
 } as const;
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+};
+const withSchemaDefaults = (
+  schema: RJSFSchema,
+  formData: Record<string, unknown>,
+) => {
+  try {
+    const nextFormData = getDefaultFormState<Record<string, unknown>>(
+      validator,
+      schema,
+      formData,
+      schema,
+      false,
+      {
+        emptyObjectFields: "skipEmptyDefaults",
+      },
+    );
+
+    return isRecord(nextFormData) ? nextFormData : formData;
+  } catch {
+    return formData;
+  }
+};
 
 type JsonSchemaFormProps = {
   schema: RJSFSchema;
@@ -45,6 +69,12 @@ export const JsonSchemaForm = ({
 }: JsonSchemaFormProps) => {
   const visibleErrorFieldIdsRef = useRef<Set<string>>(new Set());
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
+  const normalizedFormData = useMemo(
+    () => withSchemaDefaults(schema, formData),
+    [formData, schema],
+  );
+  const [liveFormData, setLiveFormData] =
+    useState<Record<string, unknown>>(normalizedFormData);
   const reportFieldVisibleError = useCallback(
     (fieldId: string, hasVisibleError: boolean) => {
       if (!fieldId) {
@@ -69,6 +99,10 @@ export const JsonSchemaForm = ({
   );
 
   useEffect(() => {
+    setLiveFormData(normalizedFormData);
+  }, [normalizedFormData]);
+
+  useEffect(() => {
     onVisibleErrorsChange?.(hasVisibleErrors);
   }, [hasVisibleErrors, onVisibleErrorsChange]);
 
@@ -82,15 +116,18 @@ export const JsonSchemaForm = ({
     <Form
       schema={schema}
       validator={validator}
-      formData={formData}
+      formData={liveFormData}
       formContext={{
         ...(formContext ?? {}),
-        formData,
+        formData: liveFormData,
         reportFieldVisibleError,
       }}
-      onChange={(event) =>
-        onFormDataChange((event.formData ?? {}) as Record<string, unknown>)
-      }
+      onChange={(event) => {
+        const nextFormData = (event.formData ?? {}) as Record<string, unknown>;
+
+        setLiveFormData(nextFormData);
+        onFormDataChange(nextFormData);
+      }}
       showErrorList={false}
       noHtml5Validate
       liveValidate={liveValidate}

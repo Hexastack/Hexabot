@@ -7,6 +7,7 @@
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
 import { forwardRef, useEffect, useRef } from "react";
+import type { ReactNode } from "react";
 
 import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
 import { useSearch } from "@/hooks/useSearch";
@@ -31,16 +32,17 @@ export type AutoCompleteEntitySelectProps<
     false,
     ChipTypeMap["defaultComponent"]
   >,
-  "renderInput" | "options" | "value" | "defaultValue"
+  "renderInput" | "options" | "value" | "defaultValue" | "label"
 > & {
   value?: Multiple extends true ? string[] : string | null;
-  label: string;
+  label: ReactNode;
   idKey?: string;
   sortKey?: string;
   labelKey: Label;
   entity: keyof IEntityMapTypes;
   format: Format;
   searchFields: string[];
+  inputLabelSx?: unknown;
   disableSearch?: boolean;
   error?: boolean;
   helperText?: string | null | undefined;

@@ -7,17 +7,98 @@
 import { JsonValueSchema } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
+export const vercelAiSdkProviders = [
+  'alibaba',
+  'amazon-bedrock',
+  'anthropic',
+  'assemblyai',
+  'azure',
+  'baseten',
+  'black-forest-labs',
+  'bytedance',
+  'cerebras',
+  'claude',
+  'cohere',
+  'deepgram',
+  'deepinfra',
+  'deepseek',
+  'elevenlabs',
+  'fal',
+  'fireworks',
+  'gateway',
+  'gemini',
+  'gladia',
+  'google',
+  'google-vertex',
+  'groq',
+  'huggingface',
+  'hume',
+  'klingai',
+  'lmnt',
+  'luma',
+  'mistral',
+  'moonshotai',
+  'open-responses',
+  'openai',
+  'openai-compatible',
+  'perplexity',
+  'prodia',
+  'replicate',
+  'revai',
+  'togetherai',
+  'vercel',
+  'xai',
+] as const;
+
+export const DEFAULT_LLM_PROMPT = '=$input.text';
+
+export const DEFAULT_LLM_MESSAGES_LIMIT = 4;
+
 const llmPromptBaseSchema = z.object({
-  prompt: z.string().min(1).default('=$input.text').optional().meta({
-    title: 'Prompt',
-    description:
-      'Prompt text to send directly to the model instead of loading message history.',
-  }),
-  messages_limit: z.int().nonnegative().default(0).optional().meta({
-    title: 'Messages limit',
-    description:
-      'Number of most recent conversation messages to include instead of a prompt.',
-  }),
+  input_mode: z
+    .enum(['prompt', 'history'])
+    .default('prompt')
+    .meta({
+      title: 'Input mode',
+      description:
+        'Choose whether to send a direct prompt or use recent conversation history.',
+      'ui:widget': 'radio',
+      'ui:options': {
+        inline: true,
+      },
+    }),
+  prompt: z
+    .string()
+    .min(1)
+    .default(DEFAULT_LLM_PROMPT)
+    .optional()
+    .meta({
+      title: 'Prompt',
+      description:
+        'Prompt text to send directly to the model instead of loading message history.',
+      'ui:options': {
+        showWhen: {
+          field: 'input_mode',
+          equals: 'prompt',
+        },
+      },
+    }),
+  messages_limit: z
+    .int()
+    .positive()
+    .default(DEFAULT_LLM_MESSAGES_LIMIT)
+    .optional()
+    .meta({
+      title: 'Messages limit',
+      description:
+        'Number of most recent conversation messages to include instead of a prompt.',
+      'ui:options': {
+        showWhen: {
+          field: 'input_mode',
+          equals: 'history',
+        },
+      },
+    }),
   system: z.string().default('You are a helpful assistant.').optional().meta({
     title: 'System',
     description:
@@ -28,16 +109,32 @@ const validatePromptSource = (
   value: z.infer<typeof llmPromptBaseSchema>,
   ctx: z.RefinementCtx,
 ) => {
-  const promptCount =
-    (value.prompt ? 1 : 0) +
-    (value.messages_limit !== undefined && value.messages_limit > 0 ? 1 : 0);
+  if (value.input_mode === 'prompt') {
+    if (
+      value.messages_limit !== undefined &&
+      value.messages_limit !== DEFAULT_LLM_MESSAGES_LIMIT
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          '"messages_limit" is not allowed when "input_mode" is "prompt".',
+        path: ['messages_limit'],
+      });
+    }
 
-  if (promptCount !== 1) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Provide exactly one of "prompt" or "messages_limit"',
-      path: ['prompt'],
-    });
+    return;
+  }
+
+  if (value.input_mode === 'history') {
+    if (value.prompt !== undefined && value.prompt !== DEFAULT_LLM_PROMPT) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '"prompt" is not allowed when "input_mode" is "history".',
+        path: ['prompt'],
+      });
+    }
+
+    return;
   }
 };
 
@@ -74,9 +171,10 @@ export const llmRawResponseSchema = z.object({
 });
 
 export const llmCommonSettingsSchema = z.strictObject({
-  provider: z.string().default('openai').meta({
+  provider: z.enum(vercelAiSdkProviders).default('openai').meta({
     title: 'Provider',
-    description: 'LLM provider identifier (e.g., openai).',
+    description:
+      'Vercel AI SDK provider identifier. Selecting a provider still requires its package to be installed (e.g., @ai-sdk/anthropic, @ai-sdk/google). By default, package.json only includes OpenAI/Gateway provider packages.',
   }),
   model: z.string().min(1).default('gpt-5.2').meta({
     title: 'Model',
@@ -95,14 +193,29 @@ export const llmCommonSettingsSchema = z.strictObject({
         labelKey: 'name',
       },
     }),
-  base_url: z.url().optional().meta({
-    title: 'Base URL',
-    description: 'Custom provider base URL (self-hosted or proxy).',
-  }),
-  organization: z.string().optional().meta({
-    title: 'Organization',
-    description: 'Provider organization or account identifier.',
-  }),
+  base_url: z
+    .url()
+    .optional()
+    .meta({
+      title: 'Base URL',
+      description: 'Custom provider base URL (self-hosted or proxy).',
+      'ui:options': {
+        showWhen: {
+          field: 'provider',
+          equals: 'gateway',
+        },
+      },
+    }),
+  organization: z
+    .string()
+    .optional()
+    .meta({
+      title: 'Organization',
+      description: 'Provider organization or account identifier.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
   tools: z.array(z.string().min(1)).optional().meta({
     title: 'Tools',
     description: 'Allowed tool names or tool IDs for the model.',
@@ -115,42 +228,100 @@ export const llmCommonSettingsSchema = z.strictObject({
     title: 'Temperature',
     description: 'Sampling temperature; higher values increase randomness.',
   }),
-  top_p: z.number().min(0).max(1).optional().meta({
-    title: 'Top P',
-    description: 'Nucleus sampling probability mass to consider.',
-  }),
-  top_k: z.int().positive().optional().meta({
-    title: 'Top K',
-    description: 'Limit sampling to the top K most likely tokens.',
-  }),
   max_output_tokens: z.int().positive().optional().meta({
     title: 'Max output tokens',
     description: 'Maximum number of tokens to generate in the output.',
   }),
-  presence_penalty: z.number().min(-2).max(2).optional().meta({
-    title: 'Presence penalty',
-    description: 'Penalty for introducing new topics or tokens.',
-  }),
-  frequency_penalty: z.number().min(-2).max(2).optional().meta({
-    title: 'Frequency penalty',
-    description: 'Penalty for repeating tokens frequently.',
-  }),
-  stop_sequences: z.array(z.string().min(1)).optional().meta({
-    title: 'Stop sequences',
-    description: 'Sequences that will stop generation when encountered.',
-  }),
-  seed: z.int().optional().meta({
-    title: 'Seed',
-    description: 'Seed for deterministic sampling when supported.',
-  }),
-  stop_step_count: z.int().positive().optional().meta({
-    title: 'Stop step count',
-    description: 'Maximum number of agent steps before stopping.',
-  }),
-  stop_tool_call: z.string().trim().min(1).optional().meta({
-    title: 'Stop tool call',
-    description: 'Stop when the specified tool call is triggered.',
-  }),
+  top_p: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .meta({
+      title: 'Top P',
+      description: 'Nucleus sampling probability mass to consider.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  top_k: z
+    .int()
+    .positive()
+    .optional()
+    .meta({
+      title: 'Top K',
+      description: 'Limit sampling to the top K most likely tokens.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  presence_penalty: z
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .meta({
+      title: 'Presence penalty',
+      description: 'Penalty for introducing new topics or tokens.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  frequency_penalty: z
+    .number()
+    .min(-2)
+    .max(2)
+    .optional()
+    .meta({
+      title: 'Frequency penalty',
+      description: 'Penalty for repeating tokens frequently.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_sequences: z
+    .array(z.string().min(1))
+    .optional()
+    .meta({
+      title: 'Stop sequences',
+      description: 'Sequences that will stop generation when encountered.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  seed: z
+    .int()
+    .optional()
+    .meta({
+      title: 'Seed',
+      description: 'Seed for deterministic sampling when supported.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_step_count: z
+    .int()
+    .positive()
+    .optional()
+    .meta({
+      title: 'Stop step count',
+      description: 'Maximum number of agent steps before stopping.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
+  stop_tool_call: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .meta({
+      title: 'Stop tool call',
+      description: 'Stop when the specified tool call is triggered.',
+      'ui:options': {
+        hideUntilAdded: true,
+      },
+    }),
 });
 
 export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);
@@ -167,32 +338,16 @@ export const llmGenerateTextOutputSchema = z.object({
   raw: llmRawResponseSchema.optional(),
 });
 
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema
-  .extend({
-    output_schema: jsonSchemaInput.optional().meta({
-      title: 'Output schema',
-      description:
-        'Optional JSON Schema used to request structured output from the model.',
-      'ui:field': 'JsonSchemaObjectField',
-    }),
-    output_schema_name: z.string().min(1).optional(),
-    output_schema_description: z.string().min(1).optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (
-      (value.output_schema_name || value.output_schema_description) &&
-      !value.output_schema
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Provide "output_schema" to use output schema metadata.',
-        path: ['output_schema'],
-      });
-    }
-  });
+export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema.extend({
+  output_schema: jsonSchemaInput.optional().meta({
+    title: 'Output schema',
+    description:
+      'Optional JSON Schema used to request structured output from the model.',
+    'ui:field': 'JsonSchemaObjectField',
+  }),
+});
 
-export const llmAgentInputSchema =
-  llmPromptBaseSchema.superRefine(validatePromptSource);
+export const llmAgentInputSchema = llmPromptSchema;
 
 export const llmAgentOutputSchema = z.object({
   text: z.string().optional(),
