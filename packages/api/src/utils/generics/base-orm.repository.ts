@@ -284,16 +284,20 @@ export abstract class BaseOrmRepository<
       } else {
         Object.assign(entity, updates);
       }
+      // Read all fields from the update data.
       const entries = Object.entries(payload ?? {});
+      // Find relation keys that are many-to-many.
       const manyToManyKeys = this.repository.metadata.relations
         .filter((relation) => relation.isManyToMany)
         .map((relation) => relation.propertyName);
+      // Check if update data has only many-to-many list fields.
       const hasOnlyManyToManyProperties =
         entries.length > 0 &&
         entries.every(
           ([key, val]) => manyToManyKeys.includes(key) && Array.isArray(val),
         );
 
+      // If only many-to-many fields changed, set update time to trigger afterUpdate event
       if (hasOnlyManyToManyProperties) {
         entity.updatedAt = new Date();
       }
