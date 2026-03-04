@@ -284,10 +284,15 @@ export abstract class BaseOrmRepository<
       } else {
         Object.assign(entity, updates);
       }
-      const hasOnlyManyToManyProperties = Object.entries(payload || {}).every(
-        ([key, val]) =>
-          this.populateRelations.includes(key) && Array.isArray(val),
-      );
+      const entries = Object.entries(payload ?? {});
+      const manyToManyKeys = this.repository.metadata.relations
+        .filter((relation) => relation.isManyToMany)
+        .map((relation) => relation.propertyName);
+      const hasOnlyManyToManyProperties =
+        entries.length > 0 &&
+        entries.every(
+          ([key, val]) => manyToManyKeys.includes(key) && Array.isArray(val),
+        );
 
       if (hasOnlyManyToManyProperties) {
         entity.updatedAt = new Date();
