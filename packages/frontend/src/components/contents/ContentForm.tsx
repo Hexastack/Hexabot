@@ -22,6 +22,8 @@ import {
 } from "@/types/content-type.types";
 import { IContent } from "@/types/content.types";
 
+import { getSchemaProperties } from "../visual-editor/v4/utils/schema-defaults.utils";
+
 type ContentFormData = Record<string, unknown> & {
   contentType: string;
   status: boolean;
@@ -41,32 +43,17 @@ const buildContentParams = (
   params: ContentFormData,
   properties: ContentSchemaProperties = {},
 ) => {
-  const writableProperties = Object.entries(properties).reduce((acc, [key]) => {
-    if (!["status", "title"].includes(key)) {
-      acc[key] = params[key];
-    }
-
-    return acc;
-  }, {});
+  const writableProperties = Object.fromEntries(
+    Object.keys(properties)
+      .filter((key) => !["status", "title"].includes(key))
+      .map((key) => [key, params[key]]),
+  );
 
   return {
     title: params.title,
     contentType: params.contentType,
     status: params.status,
     properties: writableProperties,
-  };
-};
-const getContentSchemaProperties = (schema: unknown) => {
-  if (!schema || typeof schema !== "object") {
-    return {
-      properties: {} as ContentSchemaProperties,
-    };
-  }
-
-  const typedSchema = schema as Record<string, unknown>;
-
-  return {
-    properties: (typedSchema.properties ?? {}) as ContentSchemaProperties,
   };
 };
 const buildStringFieldSchema = (title: string): RJSFSchema => ({
@@ -132,7 +119,9 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { properties } = getContentSchemaProperties(contentType?.schema);
+  const properties = getSchemaProperties<ContentSchemaProperties>(
+    contentType?.schema as RJSFSchema,
+  );
   const contentTypeId = content?.contentType ?? contentType?.id ?? "";
   const defaultFormData = useMemo(
     () => buildDefaultFormData(content, contentTypeId),
@@ -150,17 +139,14 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       },
     };
 
-    for (const [propertyKey, property] of Object.entries(properties)) {
+    for (const [propertyKey, property] of Object.entries(properties || {})) {
       const fieldTitle = property.title || propertyKey;
       const translatedLabel = t(`label.${fieldTitle}`, {
         defaultValue: fieldTitle,
       });
       const schemaFactory =
         CONTENT_FIELD_SCHEMA_FACTORIES[property.type] ?? buildStringFieldSchema;
-      const baseFieldSchema =
-        property.type === "uri"
-          ? buildStringFieldSchema(translatedLabel)
-          : schemaFactory(translatedLabel);
+      const baseFieldSchema = schemaFactory(translatedLabel);
 
       schemaProperties[propertyKey] = REQUIRED_NON_EMPTY_FIELD_TYPES.has(
         property.type,

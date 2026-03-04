@@ -70,14 +70,14 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
-export const getSchemaProperties = (
+export const getSchemaProperties = <T extends SchemaProperties>(
   schema?: RJSFSchema,
-): SchemaProperties | undefined => {
+): T | undefined => {
   if (!isRecord(schema) || !isRecord(schema.properties)) {
     return undefined;
   }
 
-  const properties = schema.properties as SchemaProperties;
+  const properties = schema.properties as T;
 
   return Object.keys(properties).length > 0 ? properties : undefined;
 };
