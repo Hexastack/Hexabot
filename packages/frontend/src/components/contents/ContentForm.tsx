@@ -56,30 +56,19 @@ const buildContentParams = (
     properties: writableProperties,
   };
 };
-const getContentSchema = (schema: unknown) => {
+const getContentSchemaProperties = (schema: unknown) => {
   if (!schema || typeof schema !== "object") {
     return {
       properties: {} as ContentSchemaProperties,
-      required: [] as string[],
     };
   }
 
   const typedSchema = schema as Record<string, unknown>;
-  const required = Array.isArray(typedSchema.required)
-    ? typedSchema.required.filter(
-        (fieldName): fieldName is string => typeof fieldName === "string",
-      )
-    : [];
 
   return {
     properties: (typedSchema.properties ?? {}) as ContentSchemaProperties,
-    required,
   };
 };
-const getRequiredFields = (
-  properties: ContentSchemaProperties,
-  required: string[],
-) => (properties.title && !required.includes("title") ? [...required, "title"] : required);
 const buildStringFieldSchema = (title: string): RJSFSchema => ({
   type: "string",
   title,
@@ -143,16 +132,14 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { properties, required } = getContentSchema(contentType?.schema);
-  const requiredFields = getRequiredFields(properties, required);
-  const hasRequiredFields = requiredFields.length > 0;
+  const { properties } = getContentSchemaProperties(contentType?.schema);
   const contentTypeId = content?.contentType ?? contentType?.id ?? "";
   const defaultFormData = useMemo(
     () => buildDefaultFormData(content, contentTypeId),
     [content, contentTypeId],
   );
   const [formData, setFormData] = useState<ContentFormData>(defaultFormData);
-  const [hasVisibleErrors, setHasVisibleErrors] = useState(hasRequiredFields);
+  const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
   const { schema, uiSchema } = useMemo(() => {
     const schemaProperties: Record<string, RJSFSchema> = {
       contentType: { type: "string", title: "contentType" },
@@ -170,22 +157,22 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       });
       const schemaFactory =
         CONTENT_FIELD_SCHEMA_FACTORIES[property.type] ?? buildStringFieldSchema;
-      const isRequiredField = requiredFields.includes(propertyKey);
       const baseFieldSchema =
-        property.type === "uri" && !isRequiredField
+        property.type === "uri"
           ? buildStringFieldSchema(translatedLabel)
           : schemaFactory(translatedLabel);
 
-      schemaProperties[propertyKey] =
-        isRequiredField && REQUIRED_NON_EMPTY_FIELD_TYPES.has(property.type)
-          ? {
-              ...baseFieldSchema,
-              minLength:
-                typeof baseFieldSchema.minLength === "number"
-                  ? Math.max(1, baseFieldSchema.minLength)
-                  : 1,
-            }
-          : baseFieldSchema;
+      schemaProperties[propertyKey] = REQUIRED_NON_EMPTY_FIELD_TYPES.has(
+        property.type,
+      )
+        ? {
+            ...baseFieldSchema,
+            minLength:
+              typeof baseFieldSchema.minLength === "number"
+                ? Math.max(1, baseFieldSchema.minLength)
+                : 1,
+          }
+        : baseFieldSchema;
 
       const fieldUiSchema = CONTENT_FIELD_UI_SCHEMAS[property.type];
 
@@ -198,11 +185,11 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       schema: {
         type: "object",
         properties: schemaProperties,
-        required: requiredFields,
+        required: contentType?.schema?.["required"] || [],
       } as RJSFSchema,
       uiSchema: nextUiSchema,
     };
-  }, [properties, requiredFields, t]);
+  }, [properties, t]);
   const { mutate: createContent } = useCreate(EntityType.CONTENT);
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
   const options = {
@@ -240,8 +227,7 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
 
   useEffect(() => {
     setFormData(defaultFormData);
-    setHasVisibleErrors(hasRequiredFields);
-  }, [defaultFormData, hasRequiredFields]);
+  }, [defaultFormData]);
 
   return (
     <Wrapper
