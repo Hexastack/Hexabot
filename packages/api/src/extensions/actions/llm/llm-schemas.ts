@@ -105,6 +105,16 @@ const llmPromptBaseSchema = z.object({
       'Optional system instruction prepended to the prompt or message history.',
   }),
 });
+const llmPromptOnlySchema = z.strictObject({
+  prompt: z.string().min(1).default(DEFAULT_LLM_PROMPT).optional().meta({
+    title: 'Prompt',
+    description: 'Prompt text to send directly to the model.',
+  }),
+  system: z.string().default('You are a helpful assistant.').optional().meta({
+    title: 'System',
+    description: 'Optional system instruction prepended to the prompt.',
+  }),
+});
 const validatePromptSource = (
   value: z.infer<typeof llmPromptBaseSchema>,
   ctx: z.RefinementCtx,
@@ -326,26 +336,49 @@ export const llmCommonSettingsSchema = z.strictObject({
 
 export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);
 
-export const llmGenerateTextInputSchema = llmPromptSchema;
+export const llmGenerateReplyInputSchema = llmPromptSchema;
 
-export const llmGenerateTextOutputSchema = z.object({
+export const llmGenerateTextInputSchema = llmPromptOnlySchema;
+
+const llmTextOutputSchema = z.object({
   text: z.string(),
-  object: z.any().optional(),
   reasoning: z.string().optional(),
   finish_reason: z.string().optional(),
   model: z.string().optional(),
   usage: llmUsageSchema.optional(),
   raw: llmRawResponseSchema.optional(),
 });
-
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema.extend({
-  output_schema: jsonSchemaInput.optional().meta({
+const llmObjectOutputSchema = llmTextOutputSchema.extend({
+  object: z.any(),
+});
+const llmObjectSettingsSchema = llmCommonSettingsSchema.extend({
+  output_schema: jsonSchemaInput.meta({
     title: 'Output schema',
     description:
-      'Optional JSON Schema used to request structured output from the model.',
+      'JSON Schema used to request structured output from the model.',
     'ui:field': 'JsonSchemaObjectField',
   }),
 });
+
+export const llmGenerateTextOutputSchema = llmTextOutputSchema;
+
+export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema;
+
+export const llmGenerateReplyOutputSchema = llmGenerateTextOutputSchema;
+
+export const llmGenerateReplySettingsSchema = llmCommonSettingsSchema;
+
+export const llmGenerateObjectInputSchema = llmPromptOnlySchema;
+
+export const llmGenerateObjectOutputSchema = llmObjectOutputSchema;
+
+export const llmGenerateObjectSettingsSchema = llmObjectSettingsSchema;
+
+export const llmInferObjectInputSchema = llmPromptSchema;
+
+export const llmInferObjectOutputSchema = llmObjectOutputSchema;
+
+export const llmInferObjectSettingsSchema = llmObjectSettingsSchema;
 
 export const llmAgentInputSchema = llmPromptSchema;
 
@@ -378,6 +411,36 @@ export type LlmGenerateTextOutput = z.infer<typeof llmGenerateTextOutputSchema>;
 
 export type LlmGenerateTextSettings = z.infer<
   typeof llmGenerateTextSettingsSchema
+>;
+
+export type LlmGenerateReplyInput = z.infer<typeof llmGenerateReplyInputSchema>;
+
+export type LlmGenerateReplyOutput = z.infer<
+  typeof llmGenerateReplyOutputSchema
+>;
+
+export type LlmGenerateReplySettings = z.infer<
+  typeof llmGenerateReplySettingsSchema
+>;
+
+export type LlmGenerateObjectInput = z.infer<
+  typeof llmGenerateObjectInputSchema
+>;
+
+export type LlmGenerateObjectOutput = z.infer<
+  typeof llmGenerateObjectOutputSchema
+>;
+
+export type LlmGenerateObjectSettings = z.infer<
+  typeof llmGenerateObjectSettingsSchema
+>;
+
+export type LlmInferObjectInput = z.infer<typeof llmInferObjectInputSchema>;
+
+export type LlmInferObjectOutput = z.infer<typeof llmInferObjectOutputSchema>;
+
+export type LlmInferObjectSettings = z.infer<
+  typeof llmInferObjectSettingsSchema
 >;
 
 export type LlmAgentInput = z.infer<typeof llmAgentInputSchema>;

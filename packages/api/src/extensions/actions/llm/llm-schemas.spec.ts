@@ -8,7 +8,13 @@ import {
   DEFAULT_LLM_MESSAGES_LIMIT,
   DEFAULT_LLM_PROMPT,
   llmAgentInputSchema,
+  llmGenerateObjectSettingsSchema,
+  llmGenerateReplyInputSchema,
+  llmGenerateReplySettingsSchema,
   llmGenerateTextInputSchema,
+  llmGenerateTextSettingsSchema,
+  llmInferObjectInputSchema,
+  llmInferObjectSettingsSchema,
   llmPromptSchema,
 } from './llm-schemas';
 
@@ -78,7 +84,7 @@ describe('llm prompt schemas', () => {
     );
   });
 
-  it('keeps llm_generate_text and llm_agent input schemas aligned', () => {
+  it('keeps llm_generate_reply and llm_agent input schemas aligned', () => {
     const promptInput = {
       input_mode: 'prompt',
     };
@@ -86,15 +92,108 @@ describe('llm prompt schemas', () => {
       input_mode: 'history',
     };
 
-    expect(llmGenerateTextInputSchema.safeParse(promptInput).success).toBe(
+    expect(llmGenerateReplyInputSchema.safeParse(promptInput).success).toBe(
       true,
     );
     expect(llmAgentInputSchema.safeParse(historyInput).success).toBe(true);
-    expect(llmGenerateTextInputSchema.parse(promptInput).prompt).toBe(
+    expect(llmGenerateReplyInputSchema.parse(promptInput).prompt).toBe(
       DEFAULT_LLM_PROMPT,
     );
     expect(llmAgentInputSchema.parse(historyInput).messages_limit).toBe(
       DEFAULT_LLM_MESSAGES_LIMIT,
+    );
+  });
+
+  it('keeps llm_infer_object and llm_agent input schemas aligned', () => {
+    const historyInput = {
+      input_mode: 'history',
+    };
+
+    expect(llmInferObjectInputSchema.safeParse(historyInput).success).toBe(
+      true,
+    );
+    expect(llmAgentInputSchema.safeParse(historyInput).success).toBe(true);
+    expect(llmInferObjectInputSchema.parse(historyInput).messages_limit).toBe(
+      DEFAULT_LLM_MESSAGES_LIMIT,
+    );
+  });
+});
+
+describe('llm_generate_text input schema', () => {
+  it('accepts prompt and system fields', () => {
+    const result = llmGenerateTextInputSchema.safeParse({
+      prompt: 'Write a haiku about spring.',
+      system: 'You are a helpful assistant.',
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('defaults prompt to workflow input text', () => {
+    const result = llmGenerateTextInputSchema.safeParse({});
+
+    expect(result.success).toBe(true);
+    expect(result.data?.prompt).toBe(DEFAULT_LLM_PROMPT);
+  });
+
+  it('rejects history-specific fields', () => {
+    const result = llmGenerateTextInputSchema.safeParse({
+      input_mode: 'history',
+      messages_limit: 3,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+});
+
+describe('llm generation settings schemas', () => {
+  const commonSettings = {
+    provider: 'openai',
+    model: 'gpt-4o-mini',
+  };
+
+  it('rejects output_schema for llm_generate_text settings', () => {
+    const result = llmGenerateTextSettingsSchema.safeParse({
+      ...commonSettings,
+      output_schema: { type: 'object' },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+
+  it('rejects output_schema for llm_generate_reply settings', () => {
+    const result = llmGenerateReplySettingsSchema.safeParse({
+      ...commonSettings,
+      output_schema: { type: 'object' },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+
+  it('requires output_schema for llm_generate_object settings', () => {
+    const result = llmGenerateObjectSettingsSchema.safeParse(commonSettings);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ path: ['output_schema'] }),
+    );
+  });
+
+  it('requires output_schema for llm_infer_object settings', () => {
+    const result = llmInferObjectSettingsSchema.safeParse(commonSettings);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ path: ['output_schema'] }),
     );
   });
 });

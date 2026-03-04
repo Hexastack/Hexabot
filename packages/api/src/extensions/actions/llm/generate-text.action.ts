@@ -4,36 +4,33 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
-import { JSONSchema7, Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
+import { WorkflowType } from '@/workflow/types';
 
-import { LlmBaseAction } from './llm-base.action';
+import { LlmGenerateTextBaseAction } from './generate-text.base.action';
+import { LlmPromptInput } from './llm-base.action';
 import {
   LlmGenerateTextInput,
-  LlmGenerateTextOutput,
-  LlmGenerateTextSettings,
   llmGenerateTextInputSchema,
   llmGenerateTextOutputSchema,
   llmGenerateTextSettingsSchema,
 } from './llm-schemas';
 
 @Injectable()
-export class LlmGenerateTextAction extends LlmBaseAction<
+export class LlmGenerateTextAction extends LlmGenerateTextBaseAction<
   LlmGenerateTextInput,
-  LlmGenerateTextOutput,
-  WorkflowRuntimeContext,
-  LlmGenerateTextSettings
+  WorkflowRuntimeContext
 > {
   constructor(actionService: ActionService) {
     super(
       {
         name: 'llm_generate_text',
         description:
-          'Generates text or structured output using a language model via the Vercel AI SDK, returning the response, usage, and raw response metadata.',
+          'Generates text from a direct prompt using a language model via the Vercel AI SDK.',
+        workflowTypes: [WorkflowType.manual, WorkflowType.scheduled],
         inputSchema: llmGenerateTextInputSchema,
         outputSchema: llmGenerateTextOutputSchema,
         settingsSchema: llmGenerateTextSettingsSchema,
@@ -42,95 +39,11 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     );
   }
 
-  async execute({
-    input,
-    settings,
-    context,
-  }: ActionExecutionArgs<
-    LlmGenerateTextInput,
-    WorkflowRuntimeContext,
-    LlmGenerateTextSettings
-  >) {
-    const logger = context.services.logger;
-    const providerName = settings.provider ?? 'openai';
-    const modelId = this.resolveModelId(settings);
-    const credentials = await context.services.credentials.findOneValue(
-      settings.api_key,
-    );
-    const providerOptions = this.buildProviderInitOptions(
-      providerName,
-      settings,
-      credentials,
-    );
-    const provider = await this.loadProvider(providerName, providerOptions);
-    const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context, settings);
-    // Structured outputs do not support stop sequences in the AI SDK call.
-    const callSettings = this.buildCallSettings(settings);
-    const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =
-      callSettings;
-    const tools = this.buildTools(
-      context,
-      settings.tools,
-      settings.memory_enabled,
-    ) as ToolSet | undefined;
-    const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
-      settings,
-      tools,
-    );
-    const outputSchema =
-      settings.output_schema &&
-      typeof settings.output_schema === 'object' &&
-      !Array.isArray(settings.output_schema)
-        ? (settings.output_schema as JSONSchema7)
-        : undefined;
-    const output = outputSchema
-      ? Output.object({
-          schema: jsonSchema(outputSchema),
-          name: outputSchema.title,
-          description: outputSchema.description,
-        })
-      : undefined;
-
-    logger.debug(
-      `Calling model "${modelId}" via llm_generate_text action using provider "${providerName}"`,
-      {
-        provider: providerName,
-        base_url: providerOptions.baseURL,
-        tools: settings.tools,
-        stop_when: {
-          step_count: stepCount,
-          tool_call: toolCall,
-        },
-      },
-    );
-    const result = await generateText({
-      ...promptPayload,
-      ...(outputSchema ? callSettingsWithoutStops : callSettings),
-      model,
-      ...(output ? { output } : {}),
-      ...(tools ? { tools } : {}),
-      ...(stopWhen ? { stopWhen } : {}),
-    });
-    const reasoning =
-      result.reasoningText ??
-      (result.reasoning?.length
-        ? result.reasoning.map((part) => part.text).join('\n')
-        : undefined);
-
+  protected resolvePromptInput(input: LlmGenerateTextInput): LlmPromptInput {
     return {
-      text: result.text,
-      ...(output ? { object: result.output } : {}),
-      ...(reasoning ? { reasoning } : {}),
-      finish_reason: result.finishReason,
-      model: modelId,
-      usage: this.normalizeUsage(result.usage),
-      raw: {
-        request: result.request,
-        response: result.response,
-        provider_metadata: result.providerMetadata,
-        warnings: result.warnings,
-      },
+      input_mode: 'prompt',
+      prompt: input.prompt,
+      system: input.system,
     };
   }
 }

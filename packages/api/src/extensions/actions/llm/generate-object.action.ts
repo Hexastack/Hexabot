@@ -1,0 +1,51 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Injectable } from '@nestjs/common';
+
+import { ActionService } from '@/actions/actions.service';
+import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
+import { WorkflowType } from '@/workflow/types';
+
+import { LlmGenerateObjectBaseAction } from './generate-object.base.action';
+import { LlmPromptInput } from './llm-base.action';
+import {
+  LlmGenerateObjectInput,
+  llmGenerateObjectInputSchema,
+  llmGenerateObjectOutputSchema,
+  llmGenerateObjectSettingsSchema,
+} from './llm-schemas';
+
+@Injectable()
+export class LlmGenerateObjectAction extends LlmGenerateObjectBaseAction<
+  LlmGenerateObjectInput,
+  WorkflowRuntimeContext
+> {
+  constructor(actionService: ActionService) {
+    super(
+      {
+        name: 'llm_generate_object',
+        description:
+          'Generates stateless structured output from a direct prompt using a language model via the Vercel AI SDK.',
+        workflowTypes: [WorkflowType.manual, WorkflowType.scheduled],
+        inputSchema: llmGenerateObjectInputSchema,
+        outputSchema: llmGenerateObjectOutputSchema,
+        settingsSchema: llmGenerateObjectSettingsSchema,
+      },
+      actionService,
+    );
+  }
+
+  protected resolvePromptInput(input: LlmGenerateObjectInput): LlmPromptInput {
+    return {
+      input_mode: 'prompt',
+      prompt: input.prompt,
+      system: input.system,
+    };
+  }
+}
+
+export default LlmGenerateObjectAction;
