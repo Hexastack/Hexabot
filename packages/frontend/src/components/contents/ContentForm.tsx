@@ -56,19 +56,6 @@ const buildContentParams = (
     properties: writableProperties,
   };
 };
-const normalizeContentFormData = (
-  formData: Record<string, unknown>,
-  fallback: ContentFormData,
-): ContentFormData => ({
-  ...formData,
-  contentType:
-    typeof formData.contentType === "string"
-      ? formData.contentType
-      : fallback.contentType,
-  status:
-    typeof formData.status === "boolean" ? formData.status : fallback.status,
-  title: typeof formData.title === "string" ? formData.title : fallback.title,
-});
 const getContentSchema = (schema: unknown) => {
   if (!schema || typeof schema !== "object") {
     return {
@@ -270,11 +257,9 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       <JsonSchemaForm
         schema={schema}
         formData={formData}
-        onFormDataChange={(nextFormData) => {
-          setFormData((previous) =>
-            normalizeContentFormData(nextFormData, previous),
-          );
-        }}
+        onFormDataChange={(nextFormData) =>
+          setFormData(nextFormData as ContentFormData)
+        }
         onVisibleErrorsChange={setHasVisibleErrors}
         validateOnMount
         uiSchema={uiSchema}
