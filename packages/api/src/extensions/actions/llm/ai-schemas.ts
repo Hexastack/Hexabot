@@ -50,11 +50,11 @@ export const vercelAiSdkProviders = [
   'xai',
 ] as const;
 
-export const DEFAULT_LLM_PROMPT = '=$input.text';
+export const DEFAULT_AI_PROMPT = '=$input.text';
 
-export const DEFAULT_LLM_MESSAGES_LIMIT = 4;
+export const DEFAULT_AI_MESSAGES_LIMIT = 4;
 
-const llmPromptBaseSchema = z.object({
+const aiPromptBaseSchema = z.object({
   input_mode: z
     .enum(['prompt', 'history'])
     .default('prompt')
@@ -70,7 +70,7 @@ const llmPromptBaseSchema = z.object({
   prompt: z
     .string()
     .min(1)
-    .default(DEFAULT_LLM_PROMPT)
+    .default(DEFAULT_AI_PROMPT)
     .optional()
     .meta({
       title: 'Prompt',
@@ -86,7 +86,7 @@ const llmPromptBaseSchema = z.object({
   messages_limit: z
     .int()
     .positive()
-    .default(DEFAULT_LLM_MESSAGES_LIMIT)
+    .default(DEFAULT_AI_MESSAGES_LIMIT)
     .optional()
     .meta({
       title: 'Messages limit',
@@ -105,8 +105,8 @@ const llmPromptBaseSchema = z.object({
       'Optional system instruction prepended to the prompt or message history.',
   }),
 });
-const llmPromptOnlySchema = z.strictObject({
-  prompt: z.string().min(1).default(DEFAULT_LLM_PROMPT).optional().meta({
+const aiPromptOnlySchema = z.strictObject({
+  prompt: z.string().min(1).default(DEFAULT_AI_PROMPT).optional().meta({
     title: 'Prompt',
     description: 'Prompt text to send directly to the model.',
   }),
@@ -116,13 +116,13 @@ const llmPromptOnlySchema = z.strictObject({
   }),
 });
 const validatePromptSource = (
-  value: z.infer<typeof llmPromptBaseSchema>,
+  value: z.infer<typeof aiPromptBaseSchema>,
   ctx: z.RefinementCtx,
 ) => {
   if (value.input_mode === 'prompt') {
     if (
       value.messages_limit !== undefined &&
-      value.messages_limit !== DEFAULT_LLM_MESSAGES_LIMIT
+      value.messages_limit !== DEFAULT_AI_MESSAGES_LIMIT
     ) {
       ctx.addIssue({
         code: 'custom',
@@ -136,7 +136,7 @@ const validatePromptSource = (
   }
 
   if (value.input_mode === 'history') {
-    if (value.prompt !== undefined && value.prompt !== DEFAULT_LLM_PROMPT) {
+    if (value.prompt !== undefined && value.prompt !== DEFAULT_AI_PROMPT) {
       ctx.addIssue({
         code: 'custom',
         message: '"prompt" is not allowed when "input_mode" is "history".',
@@ -148,10 +148,10 @@ const validatePromptSource = (
   }
 };
 
-export const llmPromptSchema =
-  llmPromptBaseSchema.superRefine(validatePromptSource);
+export const aiPromptSchema =
+  aiPromptBaseSchema.superRefine(validatePromptSource);
 
-export const llmUsageSchema = z.object({
+export const aiUsageSchema = z.object({
   input_tokens: z.int().nonnegative().optional(),
   output_tokens: z.int().nonnegative().optional(),
   total_tokens: z.int().nonnegative().optional(),
@@ -173,14 +173,14 @@ export const llmUsageSchema = z.object({
   raw: z.record(z.string(), z.any()).optional(),
 });
 
-export const llmRawResponseSchema = z.object({
+export const aiRawResponseSchema = z.object({
   request: z.any().optional(),
   response: z.any().optional(),
   provider_metadata: z.any().optional(),
   warnings: z.array(z.any()).optional(),
 });
 
-export const llmCommonSettingsSchema = z.strictObject({
+export const aiCommonSettingsSchema = z.strictObject({
   provider: z.enum(vercelAiSdkProviders).default('openai').meta({
     title: 'Provider',
     description:
@@ -336,22 +336,22 @@ export const llmCommonSettingsSchema = z.strictObject({
 
 export const jsonSchemaInput = z.record(z.string(), JsonValueSchema);
 
-export const llmGenerateReplyInputSchema = llmPromptSchema;
+export const aiGenerateReplyInputSchema = aiPromptSchema;
 
-export const llmGenerateTextInputSchema = llmPromptOnlySchema;
+export const aiGenerateTextInputSchema = aiPromptOnlySchema;
 
-const llmTextOutputSchema = z.object({
+const aiTextOutputSchema = z.object({
   text: z.string(),
   reasoning: z.string().optional(),
   finish_reason: z.string().optional(),
   model: z.string().optional(),
-  usage: llmUsageSchema.optional(),
-  raw: llmRawResponseSchema.optional(),
+  usage: aiUsageSchema.optional(),
+  raw: aiRawResponseSchema.optional(),
 });
-const llmObjectOutputSchema = llmTextOutputSchema.extend({
+const aiObjectOutputSchema = aiTextOutputSchema.extend({
   object: z.any(),
 });
-const llmObjectSettingsSchema = llmCommonSettingsSchema.extend({
+const aiObjectSettingsSchema = aiCommonSettingsSchema.extend({
   output_schema: jsonSchemaInput.meta({
     title: 'Output schema',
     description:
@@ -360,29 +360,29 @@ const llmObjectSettingsSchema = llmCommonSettingsSchema.extend({
   }),
 });
 
-export const llmGenerateTextOutputSchema = llmTextOutputSchema;
+export const aiGenerateTextOutputSchema = aiTextOutputSchema;
 
-export const llmGenerateTextSettingsSchema = llmCommonSettingsSchema;
+export const aiGenerateTextSettingsSchema = aiCommonSettingsSchema;
 
-export const llmGenerateReplyOutputSchema = llmGenerateTextOutputSchema;
+export const aiGenerateReplyOutputSchema = aiGenerateTextOutputSchema;
 
-export const llmGenerateReplySettingsSchema = llmCommonSettingsSchema;
+export const aiGenerateReplySettingsSchema = aiCommonSettingsSchema;
 
-export const llmGenerateObjectInputSchema = llmPromptOnlySchema;
+export const aiGenerateObjectInputSchema = aiPromptOnlySchema;
 
-export const llmGenerateObjectOutputSchema = llmObjectOutputSchema;
+export const aiGenerateObjectOutputSchema = aiObjectOutputSchema;
 
-export const llmGenerateObjectSettingsSchema = llmObjectSettingsSchema;
+export const aiGenerateObjectSettingsSchema = aiObjectSettingsSchema;
 
-export const llmInferObjectInputSchema = llmPromptSchema;
+export const aiInferObjectInputSchema = aiPromptSchema;
 
-export const llmInferObjectOutputSchema = llmObjectOutputSchema;
+export const aiInferObjectOutputSchema = aiObjectOutputSchema;
 
-export const llmInferObjectSettingsSchema = llmObjectSettingsSchema;
+export const aiInferObjectSettingsSchema = aiObjectSettingsSchema;
 
-export const llmAgentInputSchema = llmPromptSchema;
+export const aiAgentInputSchema = aiPromptSchema;
 
-export const llmAgentOutputSchema = z.object({
+export const aiAgentOutputSchema = z.object({
   text: z.string().optional(),
   content: z.array(z.any()).optional(),
   reasoning: z.string().optional(),
@@ -393,58 +393,52 @@ export const llmAgentOutputSchema = z.object({
   finish_reason: z.string().optional(),
   raw_finish_reason: z.string().optional(),
   model: z.string().optional(),
-  usage: llmUsageSchema.optional(),
-  total_usage: llmUsageSchema.optional(),
+  usage: aiUsageSchema.optional(),
+  total_usage: aiUsageSchema.optional(),
   steps: z.array(z.any()).optional(),
-  raw: llmRawResponseSchema.optional(),
+  raw: aiRawResponseSchema.optional(),
 });
 
-export const llmAgentSettingsSchema = llmCommonSettingsSchema;
+export const aiAgentSettingsSchema = aiCommonSettingsSchema;
 
-export type LlmPromptInput = z.infer<typeof llmPromptSchema>;
+export type AiPromptInput = z.infer<typeof aiPromptSchema>;
 
-export type LlmCommonSettings = z.infer<typeof llmCommonSettingsSchema>;
+export type AiCommonSettings = z.infer<typeof aiCommonSettingsSchema>;
 
-export type LlmGenerateTextInput = z.infer<typeof llmGenerateTextInputSchema>;
+export type AiGenerateTextInput = z.infer<typeof aiGenerateTextInputSchema>;
 
-export type LlmGenerateTextOutput = z.infer<typeof llmGenerateTextOutputSchema>;
+export type AiGenerateTextOutput = z.infer<typeof aiGenerateTextOutputSchema>;
 
-export type LlmGenerateTextSettings = z.infer<
-  typeof llmGenerateTextSettingsSchema
+export type AiGenerateTextSettings = z.infer<
+  typeof aiGenerateTextSettingsSchema
 >;
 
-export type LlmGenerateReplyInput = z.infer<typeof llmGenerateReplyInputSchema>;
+export type AiGenerateReplyInput = z.infer<typeof aiGenerateReplyInputSchema>;
 
-export type LlmGenerateReplyOutput = z.infer<
-  typeof llmGenerateReplyOutputSchema
+export type AiGenerateReplyOutput = z.infer<typeof aiGenerateReplyOutputSchema>;
+
+export type AiGenerateReplySettings = z.infer<
+  typeof aiGenerateReplySettingsSchema
 >;
 
-export type LlmGenerateReplySettings = z.infer<
-  typeof llmGenerateReplySettingsSchema
+export type AiGenerateObjectInput = z.infer<typeof aiGenerateObjectInputSchema>;
+
+export type AiGenerateObjectOutput = z.infer<
+  typeof aiGenerateObjectOutputSchema
 >;
 
-export type LlmGenerateObjectInput = z.infer<
-  typeof llmGenerateObjectInputSchema
+export type AiGenerateObjectSettings = z.infer<
+  typeof aiGenerateObjectSettingsSchema
 >;
 
-export type LlmGenerateObjectOutput = z.infer<
-  typeof llmGenerateObjectOutputSchema
->;
+export type AiInferObjectInput = z.infer<typeof aiInferObjectInputSchema>;
 
-export type LlmGenerateObjectSettings = z.infer<
-  typeof llmGenerateObjectSettingsSchema
->;
+export type AiInferObjectOutput = z.infer<typeof aiInferObjectOutputSchema>;
 
-export type LlmInferObjectInput = z.infer<typeof llmInferObjectInputSchema>;
+export type AiInferObjectSettings = z.infer<typeof aiInferObjectSettingsSchema>;
 
-export type LlmInferObjectOutput = z.infer<typeof llmInferObjectOutputSchema>;
+export type AiAgentInput = z.infer<typeof aiAgentInputSchema>;
 
-export type LlmInferObjectSettings = z.infer<
-  typeof llmInferObjectSettingsSchema
->;
+export type AiAgentOutput = z.infer<typeof aiAgentOutputSchema>;
 
-export type LlmAgentInput = z.infer<typeof llmAgentInputSchema>;
-
-export type LlmAgentOutput = z.infer<typeof llmAgentOutputSchema>;
-
-export type LlmAgentSettings = z.infer<typeof llmAgentSettingsSchema>;
+export type AiAgentSettings = z.infer<typeof aiAgentSettingsSchema>;

@@ -10,7 +10,7 @@ import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { LlmGenerateReplyAction } from './generate-reply.action';
+import { AiGenerateReplyAction } from './generate-reply.action';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
@@ -36,8 +36,8 @@ jest.mock('ai', () => ({
   },
 }));
 
-describe('LlmGenerateReplyAction', () => {
-  let action: LlmGenerateReplyAction;
+describe('AiGenerateReplyAction', () => {
+  let action: AiGenerateReplyAction;
   let actionService: ActionService;
   const generateTextMock = generateText as jest.MockedFunction<
     typeof generateText
@@ -66,11 +66,11 @@ describe('LlmGenerateReplyAction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new LlmGenerateReplyAction(actionService);
+    action = new AiGenerateReplyAction(actionService);
   });
 
   it('is conversational-only', () => {
-    expect(action.name).toBe('llm_generate_reply');
+    expect(action.name).toBe('ai_generate_reply');
     expect(action.workflowTypes).toEqual([WorkflowType.conversational]);
   });
 
@@ -123,7 +123,7 @@ describe('LlmGenerateReplyAction', () => {
       }),
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via llm_generate_reply action using provider "openai"',
+      'Calling model "gpt-4o-mini" via ai_generate_reply action using provider "openai"',
       expect.any(Object),
     );
     expect(result.text).toBe('Generated reply');
@@ -141,6 +141,6 @@ describe('LlmGenerateReplyAction', () => {
         } as any,
         context: createContext(),
       }),
-    ).rejects.toThrow('A model is required to run llm_generate_reply.');
+    ).rejects.toThrow('A model is required to run ai_generate_reply.');
   });
 });

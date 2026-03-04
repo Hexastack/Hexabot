@@ -11,32 +11,32 @@ import { ToolLoopAgent, ToolSet } from 'ai';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmBaseAction } from './llm-base.action';
+import { AiBaseAction } from './ai-base.action';
 import {
-  LlmAgentInput,
-  LlmAgentOutput,
-  LlmAgentSettings,
-  llmAgentInputSchema,
-  llmAgentOutputSchema,
-  llmAgentSettingsSchema,
-} from './llm-schemas';
+  AiAgentInput,
+  AiAgentOutput,
+  AiAgentSettings,
+  aiAgentInputSchema,
+  aiAgentOutputSchema,
+  aiAgentSettingsSchema,
+} from './ai-schemas';
 
 @Injectable()
-export class LlmAgentAction extends LlmBaseAction<
-  LlmAgentInput,
-  LlmAgentOutput,
+export class AiAgentAction extends AiBaseAction<
+  AiAgentInput,
+  AiAgentOutput,
   WorkflowRuntimeContext,
-  LlmAgentSettings
+  AiAgentSettings
 > {
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_agent',
+        name: 'ai_agent',
         description:
           'Runs a ToolLoopAgent with optional tools to generate multi-step outputs via the Vercel AI SDK.',
-        inputSchema: llmAgentInputSchema,
-        outputSchema: llmAgentOutputSchema,
-        settingsSchema: llmAgentSettingsSchema,
+        inputSchema: aiAgentInputSchema,
+        outputSchema: aiAgentOutputSchema,
+        settingsSchema: aiAgentSettingsSchema,
       },
       actionService,
     );
@@ -47,9 +47,9 @@ export class LlmAgentAction extends LlmBaseAction<
     settings,
     context,
   }: ActionExecutionArgs<
-    LlmAgentInput,
+    AiAgentInput,
     WorkflowRuntimeContext,
-    LlmAgentSettings
+    AiAgentSettings
   >) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
@@ -84,7 +84,7 @@ export class LlmAgentAction extends LlmBaseAction<
     });
 
     logger.debug(
-      `Calling model "${modelId}" via llm_agent action using provider "${providerName}"`,
+      `Calling model "${modelId}" via ai_agent action using provider "${providerName}"`,
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
@@ -134,4 +134,4 @@ export class LlmAgentAction extends LlmBaseAction<
   }
 }
 
-export default LlmAgentAction;
+export default AiAgentAction;

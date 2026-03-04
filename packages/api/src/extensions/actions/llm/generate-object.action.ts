@@ -10,36 +10,36 @@ import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { LlmGenerateObjectBaseAction } from './generate-object.base.action';
-import { LlmPromptInput } from './llm-base.action';
+import { AiPromptInput } from './ai-base.action';
 import {
-  LlmGenerateObjectInput,
-  llmGenerateObjectInputSchema,
-  llmGenerateObjectOutputSchema,
-  llmGenerateObjectSettingsSchema,
-} from './llm-schemas';
+  AiGenerateObjectInput,
+  aiGenerateObjectInputSchema,
+  aiGenerateObjectOutputSchema,
+  aiGenerateObjectSettingsSchema,
+} from './ai-schemas';
+import { AiGenerateObjectBaseAction } from './generate-object.base.action';
 
 @Injectable()
-export class LlmGenerateObjectAction extends LlmGenerateObjectBaseAction<
-  LlmGenerateObjectInput,
+export class AiGenerateObjectAction extends AiGenerateObjectBaseAction<
+  AiGenerateObjectInput,
   WorkflowRuntimeContext
 > {
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_generate_object',
+        name: 'ai_generate_object',
         description:
           'Generates stateless structured output from a direct prompt using a language model via the Vercel AI SDK.',
         workflowTypes: [WorkflowType.manual, WorkflowType.scheduled],
-        inputSchema: llmGenerateObjectInputSchema,
-        outputSchema: llmGenerateObjectOutputSchema,
-        settingsSchema: llmGenerateObjectSettingsSchema,
+        inputSchema: aiGenerateObjectInputSchema,
+        outputSchema: aiGenerateObjectOutputSchema,
+        settingsSchema: aiGenerateObjectSettingsSchema,
       },
       actionService,
     );
   }
 
-  protected resolvePromptInput(input: LlmGenerateObjectInput): LlmPromptInput {
+  protected resolvePromptInput(input: AiGenerateObjectInput): AiPromptInput {
     return {
       input_mode: 'prompt',
       prompt: input.prompt,
@@ -48,4 +48,4 @@ export class LlmGenerateObjectAction extends LlmGenerateObjectBaseAction<
   }
 }
 
-export default LlmGenerateObjectAction;
+export default AiGenerateObjectAction;

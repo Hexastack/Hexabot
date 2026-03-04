@@ -10,36 +10,36 @@ import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { LlmGenerateTextBaseAction } from './generate-text.base.action';
-import { LlmPromptInput } from './llm-base.action';
+import { AiPromptInput } from './ai-base.action';
 import {
-  LlmGenerateTextInput,
-  llmGenerateTextInputSchema,
-  llmGenerateTextOutputSchema,
-  llmGenerateTextSettingsSchema,
-} from './llm-schemas';
+  AiGenerateTextInput,
+  aiGenerateTextInputSchema,
+  aiGenerateTextOutputSchema,
+  aiGenerateTextSettingsSchema,
+} from './ai-schemas';
+import { AiGenerateTextBaseAction } from './generate-text.base.action';
 
 @Injectable()
-export class LlmGenerateTextAction extends LlmGenerateTextBaseAction<
-  LlmGenerateTextInput,
+export class AiGenerateTextAction extends AiGenerateTextBaseAction<
+  AiGenerateTextInput,
   WorkflowRuntimeContext
 > {
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_generate_text',
+        name: 'ai_generate_text',
         description:
           'Generates text from a direct prompt using a language model via the Vercel AI SDK.',
         workflowTypes: [WorkflowType.manual, WorkflowType.scheduled],
-        inputSchema: llmGenerateTextInputSchema,
-        outputSchema: llmGenerateTextOutputSchema,
-        settingsSchema: llmGenerateTextSettingsSchema,
+        inputSchema: aiGenerateTextInputSchema,
+        outputSchema: aiGenerateTextOutputSchema,
+        settingsSchema: aiGenerateTextSettingsSchema,
       },
       actionService,
     );
   }
 
-  protected resolvePromptInput(input: LlmGenerateTextInput): LlmPromptInput {
+  protected resolvePromptInput(input: AiGenerateTextInput): AiPromptInput {
     return {
       input_mode: 'prompt',
       prompt: input.prompt,
@@ -48,4 +48,4 @@ export class LlmGenerateTextAction extends LlmGenerateTextBaseAction<
   }
 }
 
-export default LlmGenerateTextAction;
+export default AiGenerateTextAction;

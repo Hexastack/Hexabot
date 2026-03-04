@@ -11,39 +11,31 @@ import { ActionService } from '@/actions/actions.service';
 import { ActionMetadata } from '@/actions/types';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmBaseAction, LlmPromptInput } from './llm-base.action';
-import {
-  LlmGenerateObjectOutput,
-  LlmGenerateObjectSettings,
-} from './llm-schemas';
+import { AiBaseAction, AiPromptInput } from './ai-base.action';
+import { AiGenerateObjectOutput, AiGenerateObjectSettings } from './ai-schemas';
 
-export abstract class LlmGenerateObjectBaseAction<
+export abstract class AiGenerateObjectBaseAction<
   I,
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
-> extends LlmBaseAction<
-  I,
-  LlmGenerateObjectOutput,
-  C,
-  LlmGenerateObjectSettings
-> {
+> extends AiBaseAction<I, AiGenerateObjectOutput, C, AiGenerateObjectSettings> {
   protected constructor(
     metadata: ActionMetadata<
       I,
-      LlmGenerateObjectOutput,
-      LlmGenerateObjectSettings
+      AiGenerateObjectOutput,
+      AiGenerateObjectSettings
     >,
     actionService: ActionService,
   ) {
     super(metadata, actionService);
   }
 
-  protected abstract resolvePromptInput(input: I): LlmPromptInput;
+  protected abstract resolvePromptInput(input: I): AiPromptInput;
 
   async execute({
     input,
     settings,
     context,
-  }: ActionExecutionArgs<I, C, LlmGenerateObjectSettings>) {
+  }: ActionExecutionArgs<I, C, AiGenerateObjectSettings>) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);

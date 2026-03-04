@@ -10,7 +10,7 @@ import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { LlmInferObjectAction } from './infer-object.action';
+import { AiInferObjectAction } from './infer-object.action';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
@@ -36,8 +36,8 @@ jest.mock('ai', () => ({
   },
 }));
 
-describe('LlmInferObjectAction', () => {
-  let action: LlmInferObjectAction;
+describe('AiInferObjectAction', () => {
+  let action: AiInferObjectAction;
   let actionService: ActionService;
   const generateTextMock = generateText as jest.MockedFunction<
     typeof generateText
@@ -70,11 +70,11 @@ describe('LlmInferObjectAction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new LlmInferObjectAction(actionService);
+    action = new AiInferObjectAction(actionService);
   });
 
   it('is conversational-only', () => {
-    expect(action.name).toBe('llm_infer_object');
+    expect(action.name).toBe('ai_infer_object');
     expect(action.workflowTypes).toEqual([WorkflowType.conversational]);
   });
 
@@ -151,7 +151,7 @@ describe('LlmInferObjectAction', () => {
       }),
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via llm_infer_object action using provider "openai"',
+      'Calling model "gpt-4o-mini" via ai_infer_object action using provider "openai"',
       expect.any(Object),
     );
     expect(result.object).toEqual({
@@ -173,6 +173,6 @@ describe('LlmInferObjectAction', () => {
         } as any,
         context: createContext(),
       }),
-    ).rejects.toThrow('A model is required to run llm_infer_object.');
+    ).rejects.toThrow('A model is required to run ai_infer_object.');
   });
 });

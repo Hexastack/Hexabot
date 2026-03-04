@@ -5,22 +5,22 @@
  */
 
 import {
-  DEFAULT_LLM_MESSAGES_LIMIT,
-  DEFAULT_LLM_PROMPT,
-  llmAgentInputSchema,
-  llmGenerateObjectSettingsSchema,
-  llmGenerateReplyInputSchema,
-  llmGenerateReplySettingsSchema,
-  llmGenerateTextInputSchema,
-  llmGenerateTextSettingsSchema,
-  llmInferObjectInputSchema,
-  llmInferObjectSettingsSchema,
-  llmPromptSchema,
-} from './llm-schemas';
+  DEFAULT_AI_MESSAGES_LIMIT,
+  DEFAULT_AI_PROMPT,
+  aiAgentInputSchema,
+  aiGenerateObjectSettingsSchema,
+  aiGenerateReplyInputSchema,
+  aiGenerateReplySettingsSchema,
+  aiGenerateTextInputSchema,
+  aiGenerateTextSettingsSchema,
+  aiInferObjectInputSchema,
+  aiInferObjectSettingsSchema,
+  aiPromptSchema,
+} from './ai-schemas';
 
-describe('llm prompt schemas', () => {
+describe('ai prompt schemas', () => {
   it('accepts prompt mode with prompt text', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       input_mode: 'prompt',
       prompt: 'Tell me a joke',
       system: 'You are a helpful assistant.',
@@ -30,7 +30,7 @@ describe('llm prompt schemas', () => {
   });
 
   it('accepts history mode with a positive messages limit', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       input_mode: 'history',
       messages_limit: 5,
       system: 'You are a helpful assistant.',
@@ -40,16 +40,16 @@ describe('llm prompt schemas', () => {
   });
 
   it('defaults prompt mode prompt to workflow input text', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       input_mode: 'prompt',
     });
 
     expect(result.success).toBe(true);
-    expect(result.data?.prompt).toBe(DEFAULT_LLM_PROMPT);
+    expect(result.data?.prompt).toBe(DEFAULT_AI_PROMPT);
   });
 
   it('defaults missing input mode to prompt', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       prompt: 'Hello',
     });
 
@@ -58,17 +58,17 @@ describe('llm prompt schemas', () => {
   });
 
   it('defaults history mode messages_limit to 4 when missing', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       input_mode: 'history',
       system: 'You are a helpful assistant.',
     });
 
     expect(result.success).toBe(true);
-    expect(result.data?.messages_limit).toBe(DEFAULT_LLM_MESSAGES_LIMIT);
+    expect(result.data?.messages_limit).toBe(DEFAULT_AI_MESSAGES_LIMIT);
   });
 
   it('rejects prompt mode with conflicting messages_limit', () => {
-    const result = llmPromptSchema.safeParse({
+    const result = aiPromptSchema.safeParse({
       input_mode: 'prompt',
       prompt: 'Tell me a joke',
       messages_limit: 2,
@@ -84,7 +84,7 @@ describe('llm prompt schemas', () => {
     );
   });
 
-  it('keeps llm_generate_reply and llm_agent input schemas aligned', () => {
+  it('keeps ai_generate_reply and ai_agent input schemas aligned', () => {
     const promptInput = {
       input_mode: 'prompt',
     };
@@ -92,36 +92,34 @@ describe('llm prompt schemas', () => {
       input_mode: 'history',
     };
 
-    expect(llmGenerateReplyInputSchema.safeParse(promptInput).success).toBe(
+    expect(aiGenerateReplyInputSchema.safeParse(promptInput).success).toBe(
       true,
     );
-    expect(llmAgentInputSchema.safeParse(historyInput).success).toBe(true);
-    expect(llmGenerateReplyInputSchema.parse(promptInput).prompt).toBe(
-      DEFAULT_LLM_PROMPT,
+    expect(aiAgentInputSchema.safeParse(historyInput).success).toBe(true);
+    expect(aiGenerateReplyInputSchema.parse(promptInput).prompt).toBe(
+      DEFAULT_AI_PROMPT,
     );
-    expect(llmAgentInputSchema.parse(historyInput).messages_limit).toBe(
-      DEFAULT_LLM_MESSAGES_LIMIT,
+    expect(aiAgentInputSchema.parse(historyInput).messages_limit).toBe(
+      DEFAULT_AI_MESSAGES_LIMIT,
     );
   });
 
-  it('keeps llm_infer_object and llm_agent input schemas aligned', () => {
+  it('keeps ai_infer_object and ai_agent input schemas aligned', () => {
     const historyInput = {
       input_mode: 'history',
     };
 
-    expect(llmInferObjectInputSchema.safeParse(historyInput).success).toBe(
-      true,
-    );
-    expect(llmAgentInputSchema.safeParse(historyInput).success).toBe(true);
-    expect(llmInferObjectInputSchema.parse(historyInput).messages_limit).toBe(
-      DEFAULT_LLM_MESSAGES_LIMIT,
+    expect(aiInferObjectInputSchema.safeParse(historyInput).success).toBe(true);
+    expect(aiAgentInputSchema.safeParse(historyInput).success).toBe(true);
+    expect(aiInferObjectInputSchema.parse(historyInput).messages_limit).toBe(
+      DEFAULT_AI_MESSAGES_LIMIT,
     );
   });
 });
 
-describe('llm_generate_text input schema', () => {
+describe('ai_generate_text input schema', () => {
   it('accepts prompt and system fields', () => {
-    const result = llmGenerateTextInputSchema.safeParse({
+    const result = aiGenerateTextInputSchema.safeParse({
       prompt: 'Write a haiku about spring.',
       system: 'You are a helpful assistant.',
     });
@@ -130,14 +128,14 @@ describe('llm_generate_text input schema', () => {
   });
 
   it('defaults prompt to workflow input text', () => {
-    const result = llmGenerateTextInputSchema.safeParse({});
+    const result = aiGenerateTextInputSchema.safeParse({});
 
     expect(result.success).toBe(true);
-    expect(result.data?.prompt).toBe(DEFAULT_LLM_PROMPT);
+    expect(result.data?.prompt).toBe(DEFAULT_AI_PROMPT);
   });
 
   it('rejects history-specific fields', () => {
-    const result = llmGenerateTextInputSchema.safeParse({
+    const result = aiGenerateTextInputSchema.safeParse({
       input_mode: 'history',
       messages_limit: 3,
     });
@@ -149,14 +147,14 @@ describe('llm_generate_text input schema', () => {
   });
 });
 
-describe('llm generation settings schemas', () => {
+describe('ai generation settings schemas', () => {
   const commonSettings = {
     provider: 'openai',
     model: 'gpt-4o-mini',
   };
 
-  it('rejects output_schema for llm_generate_text settings', () => {
-    const result = llmGenerateTextSettingsSchema.safeParse({
+  it('rejects output_schema for ai_generate_text settings', () => {
+    const result = aiGenerateTextSettingsSchema.safeParse({
       ...commonSettings,
       output_schema: { type: 'object' },
     });
@@ -167,8 +165,8 @@ describe('llm generation settings schemas', () => {
     );
   });
 
-  it('rejects output_schema for llm_generate_reply settings', () => {
-    const result = llmGenerateReplySettingsSchema.safeParse({
+  it('rejects output_schema for ai_generate_reply settings', () => {
+    const result = aiGenerateReplySettingsSchema.safeParse({
       ...commonSettings,
       output_schema: { type: 'object' },
     });
@@ -179,8 +177,8 @@ describe('llm generation settings schemas', () => {
     );
   });
 
-  it('requires output_schema for llm_generate_object settings', () => {
-    const result = llmGenerateObjectSettingsSchema.safeParse(commonSettings);
+  it('requires output_schema for ai_generate_object settings', () => {
+    const result = aiGenerateObjectSettingsSchema.safeParse(commonSettings);
 
     expect(result.success).toBe(false);
     expect(result.error?.issues).toContainEqual(
@@ -188,8 +186,8 @@ describe('llm generation settings schemas', () => {
     );
   });
 
-  it('requires output_schema for llm_infer_object settings', () => {
-    const result = llmInferObjectSettingsSchema.safeParse(commonSettings);
+  it('requires output_schema for ai_infer_object settings', () => {
+    const result = aiInferObjectSettingsSchema.safeParse(commonSettings);
 
     expect(result.success).toBe(false);
     expect(result.error?.issues).toContainEqual(

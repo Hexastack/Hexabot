@@ -10,38 +10,38 @@ import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { LlmGenerateTextBaseAction } from './generate-text.base.action';
-import { LlmPromptInput } from './llm-base.action';
+import { AiPromptInput } from './ai-base.action';
 import {
-  LlmGenerateReplyInput,
-  llmGenerateReplyInputSchema,
-  llmGenerateReplyOutputSchema,
-  llmGenerateReplySettingsSchema,
-} from './llm-schemas';
+  AiGenerateReplyInput,
+  aiGenerateReplyInputSchema,
+  aiGenerateReplyOutputSchema,
+  aiGenerateReplySettingsSchema,
+} from './ai-schemas';
+import { AiGenerateTextBaseAction } from './generate-text.base.action';
 
 @Injectable()
-export class LlmGenerateReplyAction extends LlmGenerateTextBaseAction<
-  LlmGenerateReplyInput,
+export class AiGenerateReplyAction extends AiGenerateTextBaseAction<
+  AiGenerateReplyInput,
   WorkflowRuntimeContext
 > {
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_generate_reply',
+        name: 'ai_generate_reply',
         description:
           'Generates a reply from either a direct prompt or recent conversation history using a language model via the Vercel AI SDK.',
         workflowTypes: [WorkflowType.conversational],
-        inputSchema: llmGenerateReplyInputSchema,
-        outputSchema: llmGenerateReplyOutputSchema,
-        settingsSchema: llmGenerateReplySettingsSchema,
+        inputSchema: aiGenerateReplyInputSchema,
+        outputSchema: aiGenerateReplyOutputSchema,
+        settingsSchema: aiGenerateReplySettingsSchema,
       },
       actionService,
     );
   }
 
-  protected resolvePromptInput(input: LlmGenerateReplyInput): LlmPromptInput {
+  protected resolvePromptInput(input: AiGenerateReplyInput): AiPromptInput {
     return input;
   }
 }
 
-export default LlmGenerateReplyAction;
+export default AiGenerateReplyAction;

@@ -9,7 +9,7 @@ import { generateText, hasToolCall, stepCountIs } from 'ai';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmGenerateTextAction } from './generate-text.action';
+import { AiGenerateTextAction } from './generate-text.action';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
@@ -35,8 +35,8 @@ jest.mock('ai', () => ({
   },
 }));
 
-describe('LlmGenerateTextAction', () => {
-  let action: LlmGenerateTextAction;
+describe('AiGenerateTextAction', () => {
+  let action: AiGenerateTextAction;
   let actionService: ActionService;
   const generateTextMock = generateText as jest.MockedFunction<
     typeof generateText
@@ -71,7 +71,7 @@ describe('LlmGenerateTextAction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new LlmGenerateTextAction(actionService);
+    action = new AiGenerateTextAction(actionService);
   });
 
   it('calls the provider and normalizes the generateText response', async () => {
@@ -176,7 +176,7 @@ describe('LlmGenerateTextAction', () => {
       }),
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via llm_generate_text action using provider "openai"',
+      'Calling model "gpt-4o-mini" via ai_generate_text action using provider "openai"',
       {
         provider: 'openai',
         base_url: 'https://api.openai.com',
@@ -420,6 +420,6 @@ describe('LlmGenerateTextAction', () => {
         } as any,
         context: createContext(),
       }),
-    ).rejects.toThrow('A model is required to run llm_generate_text.');
+    ).rejects.toThrow('A model is required to run ai_generate_text.');
   });
 });

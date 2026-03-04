@@ -15,11 +15,11 @@ import { Message } from '@/chat/dto/message.dto';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {
+  AiBaseAction,
+  AiCommonSettings,
   LanguageModelProvider,
-  LlmBaseAction,
-  LlmCommonSettings,
   ProviderInitOptions,
-} from './llm-base.action';
+} from './ai-base.action';
 
 jest.mock('@ai-sdk/openai', () => ({
   createOpenAI: jest.fn(),
@@ -46,7 +46,7 @@ jest.mock(
   { virtual: true },
 );
 
-class TestLlmBaseAction extends LlmBaseAction<
+class TestAiBaseAction extends AiBaseAction<
   Record<string, unknown>,
   unknown,
   WorkflowRuntimeContext
@@ -54,7 +54,7 @@ class TestLlmBaseAction extends LlmBaseAction<
   constructor(actionService: ActionService) {
     super(
       {
-        name: 'llm_test_action',
+        name: 'ai_test_action',
         description: 'Test action',
         workflowTypes: ALL_WORKFLOW_TYPES,
         inputSchema: z.any(),
@@ -71,7 +71,7 @@ class TestLlmBaseAction extends LlmBaseAction<
 
   public buildProviderInitOptionsPublic(
     provider: string,
-    settings: LlmCommonSettings,
+    settings: AiCommonSettings,
     credential: string,
   ) {
     return this.buildProviderInitOptions(provider, settings, credential);
@@ -120,14 +120,14 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.toPascalCase(value);
   }
 
-  public resolveModelIdPublic(settings: LlmCommonSettings) {
+  public resolveModelIdPublic(settings: AiCommonSettings) {
     return this.resolveModelId(settings);
   }
 
   public buildPromptPublic(
     input: unknown,
     context: WorkflowRuntimeContext,
-    settings: LlmCommonSettings = {} as LlmCommonSettings,
+    settings: AiCommonSettings = {} as AiCommonSettings,
   ) {
     return this.buildPrompt(input as any, context, settings);
   }
@@ -136,7 +136,7 @@ class TestLlmBaseAction extends LlmBaseAction<
     return this.buildMemoryPrompt(context);
   }
 
-  public buildCallSettingsPublic(settings: LlmCommonSettings) {
+  public buildCallSettingsPublic(settings: AiCommonSettings) {
     return this.buildCallSettings(settings);
   }
 
@@ -152,14 +152,14 @@ const createProviderStub = () =>
     imageModel: jest.fn(),
   }) as LanguageModelProvider;
 
-describe('LlmBaseAction', () => {
-  let action: TestLlmBaseAction;
+describe('AiBaseAction', () => {
+  let action: TestAiBaseAction;
   let actionService: ActionService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new TestLlmBaseAction(actionService);
+    action = new TestAiBaseAction(actionService);
   });
 
   describe('buildProviderInitOptions', () => {
@@ -170,7 +170,7 @@ describe('LlmBaseAction', () => {
           api_key: 'key',
           base_url: 'https://example.com',
           organization: 'org',
-        } as LlmCommonSettings,
+        } as AiCommonSettings,
         'key',
       );
 
@@ -185,7 +185,7 @@ describe('LlmBaseAction', () => {
       expect(() =>
         action.buildProviderInitOptionsPublic(
           'openai',
-          {} as LlmCommonSettings,
+          {} as AiCommonSettings,
           'key',
         ),
       ).toThrow(
@@ -395,8 +395,8 @@ describe('LlmBaseAction', () => {
         'google-vertex',
       );
       expect(action.getProviderIdPublic('azure-openai')).toBe('azure');
-      expect(action.toPascalCasePublic('custom-llm_provider')).toBe(
-        'CustomLlmProvider',
+      expect(action.toPascalCasePublic('custom-ai_provider')).toBe(
+        'CustomAiProvider',
       );
     });
   });
@@ -404,14 +404,14 @@ describe('LlmBaseAction', () => {
   describe('resolveModelId', () => {
     it('returns the model when provided', () => {
       expect(
-        action.resolveModelIdPublic({ model: 'gpt-4o' } as LlmCommonSettings),
+        action.resolveModelIdPublic({ model: 'gpt-4o' } as AiCommonSettings),
       ).toBe('gpt-4o');
     });
 
     it('throws when model is missing', () => {
-      expect(() =>
-        action.resolveModelIdPublic({} as LlmCommonSettings),
-      ).toThrow('A model is required to run llm_test_action.');
+      expect(() => action.resolveModelIdPublic({} as AiCommonSettings)).toThrow(
+        'A model is required to run ai_test_action.',
+      );
     });
   });
 
@@ -462,7 +462,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         },
         context,
-        {} as LlmCommonSettings,
+        {} as AiCommonSettings,
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
@@ -486,7 +486,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         },
         {} as WorkflowRuntimeContext,
-        {} as LlmCommonSettings,
+        {} as AiCommonSettings,
       );
 
       expect(result).toEqual({
@@ -502,7 +502,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         } as unknown as Record<string, unknown>,
         {} as WorkflowRuntimeContext,
-        {} as LlmCommonSettings,
+        {} as AiCommonSettings,
       );
 
       expect(result).toEqual({
@@ -527,7 +527,7 @@ describe('LlmBaseAction', () => {
           system: 'system prompt',
         } as unknown as Record<string, unknown>,
         context,
-        {} as LlmCommonSettings,
+        {} as AiCommonSettings,
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
@@ -543,7 +543,7 @@ describe('LlmBaseAction', () => {
           {
             services: { message: { findLastMessages: jest.fn() } },
           } as unknown as WorkflowRuntimeContext,
-          {} as LlmCommonSettings,
+          {} as AiCommonSettings,
         ),
       ).rejects.toThrow(
         'A subscriber id is required to load previous messages for this action.',
@@ -555,7 +555,7 @@ describe('LlmBaseAction', () => {
         action.buildPromptPublic(
           {} as unknown as Record<string, unknown>,
           {} as WorkflowRuntimeContext,
-          {} as LlmCommonSettings,
+          {} as AiCommonSettings,
         ),
       ).rejects.toThrow(
         'An "input_mode" of either "prompt" or "history" is required to build the model request.',
@@ -571,7 +571,7 @@ describe('LlmBaseAction', () => {
             messages_limit: 2,
           } as unknown as Record<string, unknown>,
           {} as WorkflowRuntimeContext,
-          {} as LlmCommonSettings,
+          {} as AiCommonSettings,
         ),
       ).rejects.toThrow('Input mode "prompt" does not allow "messages_limit".');
     });
@@ -585,7 +585,7 @@ describe('LlmBaseAction', () => {
             messages_limit: 2,
           } as unknown as Record<string, unknown>,
           {} as WorkflowRuntimeContext,
-          {} as LlmCommonSettings,
+          {} as AiCommonSettings,
         ),
       ).rejects.toThrow('Input mode "history" does not allow "prompt".');
     });
@@ -678,7 +678,7 @@ describe('LlmBaseAction', () => {
         stop_sequences: ['stop'],
         max_output_tokens: 50,
         seed: 7,
-      } as LlmCommonSettings);
+      } as AiCommonSettings);
 
       expect(result).toEqual({
         temperature: 0.7,
@@ -693,7 +693,7 @@ describe('LlmBaseAction', () => {
     });
 
     it('omits undefined settings', () => {
-      const result = action.buildCallSettingsPublic({} as LlmCommonSettings);
+      const result = action.buildCallSettingsPublic({} as AiCommonSettings);
 
       expect(result).toEqual({});
     });

@@ -11,27 +11,27 @@ import { ActionService } from '@/actions/actions.service';
 import { ActionMetadata } from '@/actions/types';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmBaseAction, LlmPromptInput } from './llm-base.action';
-import { LlmGenerateTextOutput, LlmGenerateTextSettings } from './llm-schemas';
+import { AiBaseAction, AiPromptInput } from './ai-base.action';
+import { AiGenerateTextOutput, AiGenerateTextSettings } from './ai-schemas';
 
-export abstract class LlmGenerateTextBaseAction<
+export abstract class AiGenerateTextBaseAction<
   I,
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
-> extends LlmBaseAction<I, LlmGenerateTextOutput, C, LlmGenerateTextSettings> {
+> extends AiBaseAction<I, AiGenerateTextOutput, C, AiGenerateTextSettings> {
   protected constructor(
-    metadata: ActionMetadata<I, LlmGenerateTextOutput, LlmGenerateTextSettings>,
+    metadata: ActionMetadata<I, AiGenerateTextOutput, AiGenerateTextSettings>,
     actionService: ActionService,
   ) {
     super(metadata, actionService);
   }
 
-  protected abstract resolvePromptInput(input: I): LlmPromptInput;
+  protected abstract resolvePromptInput(input: I): AiPromptInput;
 
   async execute({
     input,
     settings,
     context,
-  }: ActionExecutionArgs<I, C, LlmGenerateTextSettings>) {
+  }: ActionExecutionArgs<I, C, AiGenerateTextSettings>) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);

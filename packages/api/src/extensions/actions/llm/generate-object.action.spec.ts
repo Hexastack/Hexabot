@@ -9,7 +9,7 @@ import { JSONSchema7, Output, generateText, jsonSchema } from 'ai';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmGenerateObjectAction } from './generate-object.action';
+import { AiGenerateObjectAction } from './generate-object.action';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
@@ -35,8 +35,8 @@ jest.mock('ai', () => ({
   },
 }));
 
-describe('LlmGenerateObjectAction', () => {
-  let action: LlmGenerateObjectAction;
+describe('AiGenerateObjectAction', () => {
+  let action: AiGenerateObjectAction;
   let actionService: ActionService;
   const generateTextMock = generateText as jest.MockedFunction<
     typeof generateText
@@ -69,7 +69,7 @@ describe('LlmGenerateObjectAction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new LlmGenerateObjectAction(actionService);
+    action = new AiGenerateObjectAction(actionService);
   });
 
   it('uses output schema settings to request structured output', async () => {
@@ -191,7 +191,7 @@ describe('LlmGenerateObjectAction', () => {
     });
     expect(callArgs.stopSequences).toBeUndefined();
     expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via llm_generate_object action using provider "openai"',
+      'Calling model "gpt-4o-mini" via ai_generate_object action using provider "openai"',
       expect.any(Object),
     );
 
@@ -240,6 +240,6 @@ describe('LlmGenerateObjectAction', () => {
         } as any,
         context: createContext(),
       }),
-    ).rejects.toThrow('A model is required to run llm_generate_object.');
+    ).rejects.toThrow('A model is required to run ai_generate_object.');
   });
 });
