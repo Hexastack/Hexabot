@@ -4,27 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  FormControl,
-  FormControlLabel,
-  Switch,
-  TextField,
-} from "@mui/material";
-import { LinkIcon } from "lucide-react";
-import { FC, Fragment, useEffect } from "react";
-import {
-  Controller,
-  ControllerRenderProps,
-  FieldErrors,
-  useForm,
-} from "react-hook-form";
+import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Adornment } from "@/app-components/inputs/Adornment";
+import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useNormalizeSchema } from "@/hooks/useNormalizeSchema";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -35,91 +20,25 @@ import {
   ContentSchemaProperties,
   IContentType,
 } from "@/types/content-type.types";
-import { IContent, IContentAttributes } from "@/types/content.types";
-import { MIME_TYPES } from "@/utils/attachment";
-import { slugify } from "@/utils/string";
+import { IContent } from "@/types/content.types";
 
-interface ContentFieldInput {
-  contentField: ContentField;
-  field: ControllerRenderProps<any, string>;
-  errors: FieldErrors<
-    IContentAttributes & {
-      [key: string]: any;
-    }
-  >;
-  idx: number;
-}
-const ContentFieldInput: React.FC<ContentFieldInput> = ({
-  contentField: contentField,
-  field,
-  errors,
-  idx,
-}) => {
-  const { t } = useTranslate();
-
-  switch (contentField.type) {
-    case "string":
-    case "textarea":
-    case "uri":
-      return (
-        <TextField
-          autoFocus={idx === 0}
-          multiline={contentField.type === "textarea"}
-          rows={contentField.type === "textarea" ? 5 : 1}
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          slotProps={
-            contentField.type === "uri"
-              ? {
-                  input: {
-                    startAdornment: <Adornment Icon={LinkIcon} />,
-                  },
-                }
-              : undefined
-          }
-          {...field}
-          error={!!errors[contentField.name]}
-          helperText={
-            errors[contentField.title] ? (
-              <>{errors[contentField.title]?.message}</>
-            ) : null
-          }
-        />
-      );
-    case "boolean":
-      return (
-        <FormControlLabel
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          {...field}
-          control={<Switch checked={field.value} />}
-        />
-      );
-    case "file":
-      return (
-        <AttachmentInput
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          {...field}
-          onChange={(id, mimeType) => {
-            field.onChange({ type: mimeType, payload: { id } });
-          }}
-          value={field.value?.payload?.id}
-          accept={MIME_TYPES["images"].join(",")}
-          format="full"
-          size={256}
-          resourceRef={AttachmentResourceRef.ContentAttachment}
-        />
-      );
-    default:
-      return <TextField {...field} error={!!errors[contentField.name]} />;
-  }
+type ContentFormData = Record<string, unknown> & {
+  contentType: string;
+  status: boolean;
+  title: string;
 };
+
+const buildDefaultFormData = (
+  content: IContent | null | undefined,
+  contentTypeId: string,
+): ContentFormData => ({
+  contentType: content?.contentType ?? contentTypeId,
+  status: content?.status ?? false,
+  title: content?.title ?? "",
+  ...(content?.properties ?? {}),
+});
 const buildContentParams = (
-  params: IContentAttributes,
+  params: ContentFormData,
   properties: ContentSchemaProperties = {},
 ) => {
   const writableProperties = Object.entries(properties).reduce((acc, [key]) => {
@@ -137,6 +56,97 @@ const buildContentParams = (
     properties: writableProperties,
   };
 };
+const normalizeContentFormData = (
+  formData: Record<string, unknown>,
+  fallback: ContentFormData,
+): ContentFormData => ({
+  ...formData,
+  contentType:
+    typeof formData.contentType === "string"
+      ? formData.contentType
+      : fallback.contentType,
+  status:
+    typeof formData.status === "boolean" ? formData.status : fallback.status,
+  title: typeof formData.title === "string" ? formData.title : fallback.title,
+});
+const getContentSchema = (schema: unknown) => {
+  if (!schema || typeof schema !== "object") {
+    return {
+      properties: {} as ContentSchemaProperties,
+      required: [] as string[],
+    };
+  }
+
+  const typedSchema = schema as Record<string, unknown>;
+  const required = Array.isArray(typedSchema.required)
+    ? typedSchema.required.filter(
+        (fieldName): fieldName is string => typeof fieldName === "string",
+      )
+    : [];
+
+  return {
+    properties: (typedSchema.properties ?? {}) as ContentSchemaProperties,
+    required,
+  };
+};
+const getRequiredFields = (
+  properties: ContentSchemaProperties,
+  required: string[],
+) => (properties.title && !required.includes("title") ? [...required, "title"] : required);
+const buildStringFieldSchema = (title: string): RJSFSchema => ({
+  type: "string",
+  title,
+});
+const buildFileFieldSchema = (title: string): RJSFSchema => ({
+  type: "object",
+  title,
+  properties: {
+    type: { type: "string" },
+    payload: {
+      type: "object",
+      properties: {
+        id: {
+          anyOf: [{ type: "string" }, { type: "null" }],
+        },
+      },
+      additionalProperties: true,
+    },
+  },
+  additionalProperties: true,
+});
+const CONTENT_FIELD_SCHEMA_FACTORIES: Partial<
+  Record<ContentField["type"], (title: string) => RJSFSchema>
+> = {
+  boolean: (title) => ({ type: "boolean", title }),
+  textarea: buildStringFieldSchema,
+  uri: (title) => ({ type: "string", format: "uri", title }),
+  file: buildFileFieldSchema,
+  html: buildStringFieldSchema,
+  string: buildStringFieldSchema,
+};
+const REQUIRED_NON_EMPTY_FIELD_TYPES = new Set<ContentField["type"]>([
+  "string",
+  "textarea",
+  "html",
+  "uri",
+]);
+const CONTENT_FIELD_UI_SCHEMAS: Partial<
+  Record<ContentField["type"], UiSchema>
+> = {
+  textarea: {
+    "ui:widget": "textarea",
+    "ui:options": {
+      rows: 5,
+    },
+  },
+  file: {
+    "ui:field": "ActionAttachmentField",
+    "ui:options": {
+      wrapInAttachmentKey: false,
+      resourceRef: AttachmentResourceRef.ContentAttachment,
+    },
+  },
+};
 
 export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   data: { defaultValues: content, presetValues: contentType },
@@ -146,26 +156,66 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const {
-    reset,
-    control,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<IContentAttributes & { [key: string]: any }>({
-    defaultValues: {
-      contentType: content?.contentType || "",
-      status: content?.status || false,
-      title: content?.title || "",
-    },
-  });
-  const { getNormalizedSchema } = useNormalizeSchema();
-  const { schemaRules, properties } = getNormalizedSchema(contentType?.schema);
-  const validationRules = {
-    title: {
-      required: t("message.title_is_required"),
-    },
-    ...schemaRules,
-  };
+  const { properties, required } = getContentSchema(contentType?.schema);
+  const requiredFields = getRequiredFields(properties, required);
+  const hasRequiredFields = requiredFields.length > 0;
+  const contentTypeId = content?.contentType ?? contentType?.id ?? "";
+  const defaultFormData = useMemo(
+    () => buildDefaultFormData(content, contentTypeId),
+    [content, contentTypeId],
+  );
+  const [formData, setFormData] = useState<ContentFormData>(defaultFormData);
+  const [hasVisibleErrors, setHasVisibleErrors] = useState(hasRequiredFields);
+  const { schema, uiSchema } = useMemo(() => {
+    const schemaProperties: Record<string, RJSFSchema> = {
+      contentType: { type: "string", title: "contentType" },
+    };
+    const nextUiSchema: UiSchema = {
+      contentType: {
+        "ui:widget": "hidden",
+      },
+    };
+
+    for (const [propertyKey, property] of Object.entries(properties)) {
+      const fieldTitle = property.title || propertyKey;
+      const translatedLabel = t(`label.${fieldTitle}`, {
+        defaultValue: fieldTitle,
+      });
+      const schemaFactory =
+        CONTENT_FIELD_SCHEMA_FACTORIES[property.type] ?? buildStringFieldSchema;
+      const isRequiredField = requiredFields.includes(propertyKey);
+      const baseFieldSchema =
+        property.type === "uri" && !isRequiredField
+          ? buildStringFieldSchema(translatedLabel)
+          : schemaFactory(translatedLabel);
+
+      schemaProperties[propertyKey] =
+        isRequiredField && REQUIRED_NON_EMPTY_FIELD_TYPES.has(property.type)
+          ? {
+              ...baseFieldSchema,
+              minLength:
+                typeof baseFieldSchema.minLength === "number"
+                  ? Math.max(1, baseFieldSchema.minLength)
+                  : 1,
+            }
+          : baseFieldSchema;
+
+      const fieldUiSchema = CONTENT_FIELD_UI_SCHEMAS[property.type];
+
+      if (fieldUiSchema) {
+        nextUiSchema[propertyKey] = fieldUiSchema;
+      }
+    }
+
+    return {
+      schema: {
+        type: "object",
+        properties: schemaProperties,
+        required: requiredFields,
+      } as RJSFSchema,
+      uiSchema: nextUiSchema,
+    };
+  }, [properties, requiredFields, t]);
   const { mutate: createContent } = useCreate(EntityType.CONTENT);
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
   const options = {
@@ -178,16 +228,20 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const onSubmitForm = (params: IContentAttributes) => {
+  const onSubmitForm = () => {
+    if (hasVisibleErrors) {
+      return;
+    }
+
     if (content) {
       updateContent(
-        { id: content.id, params: buildContentParams(params, properties) },
+        { id: content.id, params: buildContentParams(formData, properties) },
         options,
       );
     } else if (contentType) {
       createContent(
         {
-          ...buildContentParams(params, properties),
+          ...buildContentParams(formData, properties),
           contentType: contentType.id,
         },
         options,
@@ -198,44 +252,35 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   };
 
   useEffect(() => {
-    if (content) {
-      reset(content);
-    } else {
-      reset();
-    }
-  }, [content, reset]);
+    setFormData(defaultFormData);
+    setHasVisibleErrors(hasRequiredFields);
+  }, [defaultFormData, hasRequiredFields]);
 
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
-      <form onSubmit={handleSubmit(onSubmitForm)}>
-        <ContentContainer>
-          {Object.entries(properties || {}).map(
-            ([propertyKey, property], index) => (
-              <ContentItem key={propertyKey}>
-                <Controller
-                  name={propertyKey}
-                  control={control}
-                  defaultValue={content?.properties[propertyKey]}
-                  rules={validationRules[propertyKey]}
-                  render={({ field }) => (
-                    <FormControl>
-                      <ContentFieldInput
-                        contentField={{
-                          ...property,
-                          name: slugify(property.title),
-                        }}
-                        field={field}
-                        errors={errors}
-                        idx={index}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </ContentItem>
-            ),
-          )}
-        </ContentContainer>
-      </form>
+    <Wrapper
+      onSubmit={onSubmitForm}
+      {...WrapperProps}
+      confirmButtonProps={{
+        ...WrapperProps?.confirmButtonProps,
+        disabled:
+          hasVisibleErrors ||
+          Boolean(WrapperProps?.confirmButtonProps?.disabled),
+      }}
+    >
+      <JsonSchemaForm
+        schema={schema}
+        formData={formData}
+        onFormDataChange={(nextFormData) => {
+          setFormData((previous) =>
+            normalizeContentFormData(nextFormData, previous),
+          );
+        }}
+        onVisibleErrorsChange={setHasVisibleErrors}
+        validateOnMount
+        uiSchema={uiSchema}
+        enableJsonataTextWidget={false}
+        idPrefix={content ? `content-${content.id}` : "content-new"}
+      />
     </Wrapper>
   );
 };
