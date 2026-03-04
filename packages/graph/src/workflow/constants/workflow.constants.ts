@@ -7,7 +7,6 @@
 import { StepType } from "@hexabot-ai/agentic";
 import { MarkerType, type Node } from "@xyflow/react";
 import {
-  Bot,
   Brain,
   ChartNoAxesGantt,
   CircleStop,
@@ -134,63 +133,62 @@ export const NODES = {
   [ENodeType.MEMORY]: {
     theme: {
       Icon: Database,
-      borderColor: "#7bb0ff",
+      borderColor: '#7bb0ff',
     },
     ports: [ELinkType.MEMORY_IN],
-    title: "",
+    title: '',
   },
   [ENodeType.AGENT]: {
-    memory: "",
-    model: "",
+    memory: '',
+    model: '',
     tools: [],
     ports: [
       ELinkType.AGENT_IN,
       ELinkType.AGENT_OUT,
-      { id: ELinkType.AGENT_TOOL, label: "visual_editor.port_label.tools" },
-      { id: ELinkType.AGENT_MODEL, label: "visual_editor.port_label.model" },
+      { id: ELinkType.AGENT_TOOL, label: 'visual_editor.port_label.tools' },
+      { id: ELinkType.AGENT_MODEL, label: 'visual_editor.port_label.model' },
       {
         id: ELinkType.AGENT_MEMORY,
-        label: "visual_editor.port_label.memory",
+        label: 'visual_editor.port_label.memory',
       },
     ],
     theme: {
-      Icon: Bot,
-      borderColor: "#b65bfd",
+      borderColor: '#b65bfd',
     },
-    title: "",
+    title: '',
   },
   [ENodeType.TOOL]: {
-    title: "",
+    title: '',
     ports: [ELinkType.TOOL_IN],
     theme: {
       Icon: Zap,
-      borderColor: "orange",
+      borderColor: 'orange',
     },
   },
   [ENodeType.MODEL]: {
-    title: "",
+    title: '',
     ports: [ELinkType.MODEL_IN],
     theme: {
       Icon: Brain,
-      borderColor: "#ad46fc",
+      borderColor: '#ad46fc',
     },
   },
   [ENodeType.INDICATOR]: {
     [EIndicatorType.WORKFLOW_START]: {
       theme: {
         Icon: Play,
-        borderColor: "#37b765",
+        borderColor: '#37b765',
       },
       ports: [ELinkType.INDICATOR_OUT],
-      i18nTitle: "message.start",
+      i18nTitle: 'message.start',
     },
     [EIndicatorType.WORKFLOW_END]: {
       theme: {
         Icon: CircleStop,
-        borderColor: "#e95d32",
+        borderColor: '#e95d32',
       },
       ports: [ELinkType.INDICATOR_IN],
-      i18nTitle: "message.stop",
+      i18nTitle: 'message.stop',
     },
   },
   [ENodeType.OPERATOR]: {
@@ -225,15 +223,15 @@ export const NODES = {
   [ENodeType.GROUP]: {
     ports: [ELinkType.GROUP_IN, ELinkType.GROUP_OUT],
     theme: {
-      bgColor: "#7bb0ff",
+      bgColor: '#7bb0ff',
     },
   },
   [ENodeType.BRANCH_PLACEHOLDER]: {
-    i18nTitle: "button.add",
+    i18nTitle: 'button.add',
     ports: [ELinkType.BRANCH_PLACEHOLDER_IN, ELinkType.BRANCH_PLACEHOLDER_OUT],
     theme: {
       Icon: Plus,
-      borderColor: "#7f8ea3",
+      borderColor: '#7f8ea3',
     },
   },
-} satisfies INodeConfig["nodes"];
+} satisfies INodeConfig['nodes'];

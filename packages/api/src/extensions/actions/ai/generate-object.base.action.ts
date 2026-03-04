@@ -1,56 +1,41 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
 import { ActionExecutionArgs } from '@hexabot-ai/agentic';
-import { Injectable } from '@nestjs/common';
 import { JSONSchema7, Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
+import { ActionMetadata } from '@/actions/types';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmBaseAction } from './llm-base.action';
-import {
-  LlmGenerateTextInput,
-  LlmGenerateTextOutput,
-  LlmGenerateTextSettings,
-  llmGenerateTextInputSchema,
-  llmGenerateTextOutputSchema,
-  llmGenerateTextSettingsSchema,
-} from './llm-schemas';
+import { AiBaseAction, AiPromptInput } from './ai-base.action';
+import { AiGenerateObjectOutput, AiGenerateObjectSettings } from './ai-schemas';
 
-@Injectable()
-export class LlmGenerateTextAction extends LlmBaseAction<
-  LlmGenerateTextInput,
-  LlmGenerateTextOutput,
-  WorkflowRuntimeContext,
-  LlmGenerateTextSettings
-> {
-  constructor(actionService: ActionService) {
-    super(
-      {
-        name: 'llm_generate_text',
-        description:
-          'Generates text or structured output using a language model via the Vercel AI SDK, returning the response, usage, and raw response metadata.',
-        inputSchema: llmGenerateTextInputSchema,
-        outputSchema: llmGenerateTextOutputSchema,
-        settingsSchema: llmGenerateTextSettingsSchema,
-      },
-      actionService,
-    );
+export abstract class AiGenerateObjectBaseAction<
+  I,
+  C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
+> extends AiBaseAction<I, AiGenerateObjectOutput, C, AiGenerateObjectSettings> {
+  protected constructor(
+    metadata: ActionMetadata<
+      I,
+      AiGenerateObjectOutput,
+      AiGenerateObjectSettings
+    >,
+    actionService: ActionService,
+  ) {
+    super(metadata, actionService);
   }
+
+  protected abstract resolvePromptInput(input: I): AiPromptInput;
 
   async execute({
     input,
     settings,
     context,
-  }: ActionExecutionArgs<
-    LlmGenerateTextInput,
-    WorkflowRuntimeContext,
-    LlmGenerateTextSettings
-  >) {
+  }: ActionExecutionArgs<I, C, AiGenerateObjectSettings>) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);
@@ -64,9 +49,13 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context, settings);
-    // Structured outputs do not support stop sequences in the AI SDK call.
+    const promptPayload = await this.buildPrompt(
+      this.resolvePromptInput(input),
+      context,
+      settings,
+    );
     const callSettings = this.buildCallSettings(settings);
+    // Structured outputs do not support stop sequences in the AI SDK call.
     const { stopSequences: _stopSequences, ...callSettingsWithoutStops } =
       callSettings;
     const tools = this.buildTools(
@@ -78,22 +67,15 @@ export class LlmGenerateTextAction extends LlmBaseAction<
       settings,
       tools,
     );
-    const outputSchema =
-      settings.output_schema &&
-      typeof settings.output_schema === 'object' &&
-      !Array.isArray(settings.output_schema)
-        ? (settings.output_schema as JSONSchema7)
-        : undefined;
-    const output = outputSchema
-      ? Output.object({
-          schema: jsonSchema(outputSchema),
-          name: outputSchema.title,
-          description: outputSchema.description,
-        })
-      : undefined;
+    const outputSchema = settings.output_schema as JSONSchema7;
+    const output = Output.object({
+      schema: jsonSchema(outputSchema),
+      name: outputSchema.title,
+      description: outputSchema.description,
+    });
 
     logger.debug(
-      `Calling model "${modelId}" via llm_generate_text action using provider "${providerName}"`,
+      `Calling model "${modelId}" via ${this.name} action using provider "${providerName}"`,
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
@@ -106,9 +88,9 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     );
     const result = await generateText({
       ...promptPayload,
-      ...(outputSchema ? callSettingsWithoutStops : callSettings),
+      ...callSettingsWithoutStops,
       model,
-      ...(output ? { output } : {}),
+      output,
       ...(tools ? { tools } : {}),
       ...(stopWhen ? { stopWhen } : {}),
     });
@@ -120,7 +102,7 @@ export class LlmGenerateTextAction extends LlmBaseAction<
 
     return {
       text: result.text,
-      ...(output ? { object: result.output } : {}),
+      object: result.output,
       ...(reasoning ? { reasoning } : {}),
       finish_reason: result.finishReason,
       model: modelId,
@@ -134,5 +116,3 @@ export class LlmGenerateTextAction extends LlmBaseAction<
     };
   }
 }
-
-export default LlmGenerateTextAction;

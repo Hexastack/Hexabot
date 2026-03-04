@@ -9,7 +9,7 @@ import { ToolLoopAgent, hasToolCall, stepCountIs } from 'ai';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
-import { LlmAgentAction } from './agent.action';
+import { AiAgentAction } from './agent.action';
 
 jest.mock('ai', () => {
   const generateFn = jest.fn();
@@ -39,8 +39,8 @@ const toolLoopAgentGenerateMock = (
   jest.requireMock('ai') as { __toolLoopAgentGenerateMock: jest.Mock }
 ).__toolLoopAgentGenerateMock;
 
-describe('LlmAgentAction', () => {
-  let action: LlmAgentAction;
+describe('AiAgentAction', () => {
+  let action: AiAgentAction;
   let actionService: ActionService;
   const ToolLoopAgentMock = ToolLoopAgent as unknown as jest.Mock;
   const stepCountIsMock = stepCountIs as jest.MockedFunction<
@@ -69,7 +69,7 @@ describe('LlmAgentAction', () => {
     jest.clearAllMocks();
     toolLoopAgentGenerateMock.mockReset();
     actionService = { register: jest.fn() } as unknown as ActionService;
-    action = new LlmAgentAction(actionService);
+    action = new AiAgentAction(actionService);
   });
 
   it('creates a ToolLoopAgent, runs it, and normalizes the response', async () => {
@@ -196,7 +196,7 @@ describe('LlmAgentAction', () => {
       prompt: 'Hello there',
     });
     expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via llm_agent action using provider "openai"',
+      'Calling model "gpt-4o-mini" via ai_agent action using provider "openai"',
       {
         provider: 'openai',
         base_url: 'https://api.openai.com',
@@ -398,6 +398,6 @@ describe('LlmAgentAction', () => {
         } as any,
         context: createContext(),
       }),
-    ).rejects.toThrow('A model is required to run llm_agent.');
+    ).rejects.toThrow('A model is required to run ai_agent.');
   });
 });

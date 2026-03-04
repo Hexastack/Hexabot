@@ -22,7 +22,13 @@ export * from './helpers/local-storage/index.helper';
 
 export * from './helpers/local-storage/settings';
 
-export * from './actions/llm/generate-text.action';
+export * from './actions/ai/generate-text.action';
+
+export * from './actions/ai/generate-reply.action';
+
+export * from './actions/ai/generate-object.action';
+
+export * from './actions/ai/infer-object.action';
 
 export * from './actions/messaging/text-message.action';
 

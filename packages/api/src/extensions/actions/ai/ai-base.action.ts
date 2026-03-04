@@ -23,13 +23,13 @@ import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {
-  DEFAULT_LLM_MESSAGES_LIMIT,
-  DEFAULT_LLM_PROMPT,
-  LlmCommonSettings,
-  LlmPromptInput,
-} from './llm-schemas';
+  AiCommonSettings,
+  AiPromptInput,
+  DEFAULT_AI_MESSAGES_LIMIT,
+  DEFAULT_AI_PROMPT,
+} from './ai-schemas';
 
-export type { LlmCommonSettings, LlmPromptInput } from './llm-schemas';
+export type { AiCommonSettings, AiPromptInput } from './ai-schemas';
 
 export type ProviderInitOptions = {
   apiKey?: string;
@@ -64,15 +64,15 @@ type PromptPayload =
       system?: string;
     };
 
-export abstract class LlmBaseAction<
+export abstract class AiBaseAction<
   I,
   O,
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
-  S extends LlmCommonSettings = LlmCommonSettings,
+  S extends AiCommonSettings = AiCommonSettings,
 > extends BaseAction<I, O, C, S> {
   private static readonly DEFAULT_COLOR = '#b65bfd';
 
-  private static readonly DEFAULT_GROUP = 'llm';
+  private static readonly DEFAULT_GROUP = 'ai';
 
   protected constructor(
     metadata: ActionMetadata<I, O, S>,
@@ -81,8 +81,9 @@ export abstract class LlmBaseAction<
     super(
       {
         ...metadata,
-        color: metadata.color ?? LlmBaseAction.DEFAULT_COLOR,
-        group: metadata.group ?? LlmBaseAction.DEFAULT_GROUP,
+        color: metadata.color ?? AiBaseAction.DEFAULT_COLOR,
+        group: metadata.group ?? AiBaseAction.DEFAULT_GROUP,
+        icon: 'Sparkles',
       },
       actionService,
     );
@@ -381,7 +382,7 @@ export abstract class LlmBaseAction<
   }
 
   protected async buildPrompt(
-    input: LlmPromptInput,
+    input: AiPromptInput,
     context: C,
     settings: S,
   ): Promise<PromptPayload> {
@@ -397,14 +398,7 @@ export abstract class LlmBaseAction<
     }
 
     if (input.input_mode === 'prompt') {
-      if (
-        input.messages_limit !== undefined &&
-        input.messages_limit !== DEFAULT_LLM_MESSAGES_LIMIT
-      ) {
-        throw new Error('Input mode "prompt" does not allow "messages_limit".');
-      }
-
-      const prompt = input.prompt ?? DEFAULT_LLM_PROMPT;
+      const prompt = input.prompt ?? DEFAULT_AI_PROMPT;
 
       return {
         prompt,
@@ -413,16 +407,12 @@ export abstract class LlmBaseAction<
     }
 
     if (input.input_mode === 'history') {
-      const messagesLimit = input.messages_limit ?? DEFAULT_LLM_MESSAGES_LIMIT;
+      const messagesLimit = input.messages_limit ?? DEFAULT_AI_MESSAGES_LIMIT;
 
       if (messagesLimit < 1) {
         throw new Error(
           'Input mode "history" requires a positive "messages_limit" value.',
         );
-      }
-
-      if (input.prompt !== undefined && input.prompt !== DEFAULT_LLM_PROMPT) {
-        throw new Error('Input mode "history" does not allow "prompt".');
       }
 
       const subscriberId = context.initiatorId;
