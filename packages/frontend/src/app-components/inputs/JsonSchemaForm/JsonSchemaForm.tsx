@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type RJSFForm from "@rjsf/core";
 import { Form } from "@rjsf/mui";
 import { getDefaultFormState, type RJSFSchema, type UiSchema } from "@rjsf/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -54,6 +55,7 @@ type JsonSchemaFormProps = {
   enableJsonataTextWidget?: boolean;
   formContext?: Record<string, unknown>;
   onVisibleErrorsChange?: (hasVisibleErrors: boolean) => void;
+  validateOnMount?: boolean;
 };
 
 export const JsonSchemaForm = ({
@@ -66,7 +68,11 @@ export const JsonSchemaForm = ({
   enableJsonataTextWidget = true,
   formContext,
   onVisibleErrorsChange,
+  validateOnMount = false,
 }: JsonSchemaFormProps) => {
+  const formRef = useRef<RJSFForm<Record<string, unknown>, RJSFSchema> | null>(
+    null,
+  );
   const visibleErrorFieldIdsRef = useRef<Set<string>>(new Set());
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
   const normalizedFormData = useMemo(
@@ -107,6 +113,14 @@ export const JsonSchemaForm = ({
   }, [hasVisibleErrors, onVisibleErrorsChange]);
 
   useEffect(() => {
+    if (!validateOnMount) {
+      return;
+    }
+
+    formRef.current?.validateForm();
+  }, [validateOnMount, schema, idPrefix]);
+
+  useEffect(() => {
     return () => {
       onVisibleErrorsChange?.(false);
     };
@@ -114,6 +128,7 @@ export const JsonSchemaForm = ({
 
   return (
     <Form
+      ref={formRef}
       schema={schema}
       validator={validator}
       formData={liveFormData}

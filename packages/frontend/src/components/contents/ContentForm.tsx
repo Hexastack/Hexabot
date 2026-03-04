@@ -4,24 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  FormControl,
-  FormControlLabel,
-  Switch,
-  TextField,
-} from "@mui/material";
-import { LinkIcon } from "lucide-react";
-import { FC, Fragment, useEffect } from "react";
-import {
-  Controller,
-  ControllerRenderProps,
-  FieldErrors,
-  useForm,
-} from "react-hook-form";
+import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Adornment } from "@/app-components/inputs/Adornment";
+import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -34,101 +20,34 @@ import {
   ContentSchemaProperties,
   IContentType,
 } from "@/types/content-type.types";
-import { IContent, IContentAttributes } from "@/types/content.types";
-import { MIME_TYPES } from "@/utils/attachment";
-import { slugify } from "@/utils/string";
-import { isAbsoluteUrl } from "@/utils/URL";
+import { IContent } from "@/types/content.types";
 
-interface ContentFieldInput {
-  contentField: ContentField;
-  field: ControllerRenderProps<any, string>;
-  errors: FieldErrors<
-    IContentAttributes & {
-      [key: string]: any;
-    }
-  >;
-  idx: number;
-}
-const ContentFieldInput: React.FC<ContentFieldInput> = ({
-  contentField: contentField,
-  field,
-  errors,
-  idx,
-}) => {
-  const { t } = useTranslate();
+import { getSchemaProperties } from "../visual-editor/v4/utils/schema-defaults.utils";
 
-  switch (contentField.type) {
-    case "string":
-    case "textarea":
-    case "uri":
-      return (
-        <TextField
-          autoFocus={idx === 0}
-          multiline={contentField.type === "textarea"}
-          rows={contentField.type === "textarea" ? 5 : 1}
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          slotProps={
-            contentField.type === "uri"
-              ? {
-                  input: {
-                    startAdornment: <Adornment Icon={LinkIcon} />,
-                  },
-                }
-              : undefined
-          }
-          {...field}
-          error={!!errors[contentField.name]}
-          helperText={
-            errors[contentField.title] ? (
-              <>{errors[contentField.title]?.message}</>
-            ) : null
-          }
-        />
-      );
-    case "boolean":
-      return (
-        <FormControlLabel
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          {...field}
-          control={<Switch checked={field.value} />}
-        />
-      );
-    case "file":
-      return (
-        <AttachmentInput
-          label={t(`label.${contentField.title}`, {
-            defaultValue: contentField.title,
-          })}
-          {...field}
-          onChange={(id, mimeType) => {
-            field.onChange({ type: mimeType, payload: { id } });
-          }}
-          value={field.value?.payload?.id}
-          accept={MIME_TYPES["images"].join(",")}
-          format="full"
-          size={256}
-          resourceRef={AttachmentResourceRef.ContentAttachment}
-        />
-      );
-    default:
-      return <TextField {...field} error={!!errors[contentField.name]} />;
-  }
+type ContentFormData = Record<string, unknown> & {
+  contentType: string;
+  status: boolean;
+  title: string;
 };
+
+const buildDefaultFormData = (
+  content: IContent | null | undefined,
+  contentTypeId: string,
+): ContentFormData => ({
+  contentType: content?.contentType ?? contentTypeId,
+  status: content?.status ?? false,
+  title: content?.title ?? "",
+  ...(content?.properties ?? {}),
+});
 const buildContentParams = (
-  params: IContentAttributes,
+  params: ContentFormData,
   properties: ContentSchemaProperties = {},
 ) => {
-  const writableProperties = Object.entries(properties).reduce((acc, [key]) => {
-    if (!["status", "title"].includes(key)) {
-      acc[key] = params[key];
-    }
-
-    return acc;
-  }, {});
+  const writableProperties = Object.fromEntries(
+    Object.keys(properties)
+      .filter((key) => !["status", "title"].includes(key))
+      .map((key) => [key, params[key]]),
+  );
 
   return {
     title: params.title,
@@ -137,6 +56,60 @@ const buildContentParams = (
     properties: writableProperties,
   };
 };
+const buildStringFieldSchema = (title: string): RJSFSchema => ({
+  type: "string",
+  title,
+});
+const buildFileFieldSchema = (title: string): RJSFSchema => ({
+  type: "object",
+  title,
+  properties: {
+    type: { type: "string" },
+    payload: {
+      type: "object",
+      properties: {
+        id: {
+          anyOf: [{ type: "string" }, { type: "null" }],
+        },
+      },
+      additionalProperties: true,
+    },
+  },
+  additionalProperties: true,
+});
+const CONTENT_FIELD_SCHEMA_FACTORIES: Partial<
+  Record<ContentField["type"], (title: string) => RJSFSchema>
+> = {
+  boolean: (title) => ({ type: "boolean", title }),
+  textarea: buildStringFieldSchema,
+  uri: (title) => ({ type: "string", format: "uri", title }),
+  file: buildFileFieldSchema,
+  html: buildStringFieldSchema,
+  string: buildStringFieldSchema,
+};
+const REQUIRED_NON_EMPTY_FIELD_TYPES = new Set<ContentField["type"]>([
+  "string",
+  "textarea",
+  "html",
+  "uri",
+]);
+const CONTENT_FIELD_UI_SCHEMAS: Partial<
+  Record<ContentField["type"], UiSchema>
+> = {
+  textarea: {
+    "ui:widget": "textarea",
+    "ui:options": {
+      rows: 5,
+    },
+  },
+  file: {
+    "ui:field": "ActionAttachmentField",
+    "ui:options": {
+      wrapInAttachmentKey: false,
+      resourceRef: AttachmentResourceRef.ContentAttachment,
+    },
+  },
+};
 
 export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   data: { defaultValues: content, presetValues: contentType },
@@ -144,33 +117,65 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   WrapperProps,
   ...rest
 }) => {
-  const properties = contentType?.schema?.["properties"] as
-    | ContentSchemaProperties
-    | undefined;
   const { t } = useTranslate();
   const { toast } = useToast();
-  const {
-    reset,
-    control,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<IContentAttributes & { [key: string]: any }>({
-    defaultValues: {
-      contentType: content?.contentType || "",
-      status: content?.status || false,
-      title: content?.title || "",
-    },
-  });
-  const validationRules = {
-    title: {
-      required: t("message.title_is_required"),
-    },
-    url: {
-      required: t("message.url_is_invalid"),
-      validate: (value: string) =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
-    },
-  };
+  const properties = getSchemaProperties<ContentSchemaProperties>(
+    contentType?.schema as RJSFSchema,
+  );
+  const contentTypeId = content?.contentType ?? contentType?.id ?? "";
+  const defaultFormData = useMemo(
+    () => buildDefaultFormData(content, contentTypeId),
+    [content, contentTypeId],
+  );
+  const [formData, setFormData] = useState<ContentFormData>(defaultFormData);
+  const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
+  const { schema, uiSchema } = useMemo(() => {
+    const schemaProperties: Record<string, RJSFSchema> = {
+      contentType: { type: "string", title: "contentType" },
+    };
+    const nextUiSchema: UiSchema = {
+      contentType: {
+        "ui:widget": "hidden",
+      },
+    };
+
+    for (const [propertyKey, property] of Object.entries(properties || {})) {
+      const fieldTitle = property.title || propertyKey;
+      const translatedLabel = t(`label.${fieldTitle}`, {
+        defaultValue: fieldTitle,
+      });
+      const schemaFactory =
+        CONTENT_FIELD_SCHEMA_FACTORIES[property.type] ?? buildStringFieldSchema;
+      const baseFieldSchema = schemaFactory(translatedLabel);
+
+      schemaProperties[propertyKey] = REQUIRED_NON_EMPTY_FIELD_TYPES.has(
+        property.type,
+      )
+        ? {
+            ...baseFieldSchema,
+            minLength:
+              typeof baseFieldSchema.minLength === "number"
+                ? Math.max(1, baseFieldSchema.minLength)
+                : 1,
+          }
+        : baseFieldSchema;
+
+      const fieldUiSchema = CONTENT_FIELD_UI_SCHEMAS[property.type];
+
+      if (fieldUiSchema) {
+        nextUiSchema[propertyKey] = fieldUiSchema;
+      }
+    }
+
+    return {
+      schema: {
+        type: "object",
+        properties: schemaProperties,
+        required: contentType?.schema?.["required"] || [],
+      } as RJSFSchema,
+      uiSchema: nextUiSchema,
+    };
+  }, [properties, t]);
   const { mutate: createContent } = useCreate(EntityType.CONTENT);
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
   const options = {
@@ -183,16 +188,20 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const onSubmitForm = (params: IContentAttributes) => {
+  const onSubmitForm = () => {
+    if (hasVisibleErrors) {
+      return;
+    }
+
     if (content) {
       updateContent(
-        { id: content.id, params: buildContentParams(params, properties) },
+        { id: content.id, params: buildContentParams(formData, properties) },
         options,
       );
     } else if (contentType) {
       createContent(
         {
-          ...buildContentParams(params, properties),
+          ...buildContentParams(formData, properties),
           contentType: contentType.id,
         },
         options,
@@ -203,50 +212,32 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   };
 
   useEffect(() => {
-    if (content) {
-      reset(content);
-    } else {
-      reset();
-    }
-  }, [content, reset]);
+    setFormData(defaultFormData);
+  }, [defaultFormData]);
 
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
-      <form onSubmit={handleSubmit(onSubmitForm)}>
-        <ContentContainer>
-          {Object.entries(properties || {}).map(
-            ([propertyKey, property], index) => (
-              <ContentItem key={propertyKey}>
-                <Controller
-                  name={propertyKey}
-                  control={control}
-                  defaultValue={content?.properties[propertyKey]}
-                  rules={
-                    property.type === "string"
-                      ? validationRules.title
-                      : property.type === "uri"
-                        ? validationRules.url
-                        : undefined
-                  }
-                  render={({ field }) => (
-                    <FormControl>
-                      <ContentFieldInput
-                        contentField={{
-                          ...property,
-                          name: slugify(property.title),
-                        }}
-                        field={field}
-                        errors={errors}
-                        idx={index}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </ContentItem>
-            ),
-          )}
-        </ContentContainer>
-      </form>
+    <Wrapper
+      onSubmit={onSubmitForm}
+      {...WrapperProps}
+      confirmButtonProps={{
+        ...WrapperProps?.confirmButtonProps,
+        disabled:
+          hasVisibleErrors ||
+          Boolean(WrapperProps?.confirmButtonProps?.disabled),
+      }}
+    >
+      <JsonSchemaForm
+        schema={schema}
+        formData={formData}
+        onFormDataChange={(nextFormData) =>
+          setFormData(nextFormData as ContentFormData)
+        }
+        onVisibleErrorsChange={setHasVisibleErrors}
+        validateOnMount
+        uiSchema={uiSchema}
+        enableJsonataTextWidget={false}
+        idPrefix={content ? `content-${content.id}` : "content-new"}
+      />
     </Wrapper>
   );
 };
