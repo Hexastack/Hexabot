@@ -67,21 +67,15 @@ describe('ai prompt schemas', () => {
     expect(result.data?.messages_limit).toBe(DEFAULT_AI_MESSAGES_LIMIT);
   });
 
-  it('rejects prompt mode with conflicting messages_limit', () => {
+  it('accepts prompt mode even when messages_limit is provided', () => {
     const result = aiPromptSchema.safeParse({
       input_mode: 'prompt',
       prompt: 'Tell me a joke',
       messages_limit: 2,
     });
 
-    expect(result.success).toBe(false);
-    expect(result.error?.issues).toContainEqual(
-      expect.objectContaining({
-        path: ['messages_limit'],
-        message:
-          '"messages_limit" is not allowed when "input_mode" is "prompt".',
-      }),
-    );
+    expect(result.success).toBe(true);
+    expect(result.data?.messages_limit).toBe(2);
   });
 
   it('keeps ai_generate_reply and ai_agent input schemas aligned', () => {

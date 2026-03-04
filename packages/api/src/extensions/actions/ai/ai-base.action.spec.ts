@@ -562,32 +562,50 @@ describe('AiBaseAction', () => {
       );
     });
 
-    it('throws when prompt mode receives history fields', async () => {
-      await expect(
-        action.buildPromptPublic(
-          {
-            input_mode: 'prompt',
-            prompt: 'Tell me a joke',
-            messages_limit: 2,
-          } as unknown as Record<string, unknown>,
-          {} as WorkflowRuntimeContext,
-          {} as AiCommonSettings,
-        ),
-      ).rejects.toThrow('Input mode "prompt" does not allow "messages_limit".');
+    it('ignores history fields when input mode is prompt', async () => {
+      const result = await action.buildPromptPublic(
+        {
+          input_mode: 'prompt',
+          prompt: 'Tell me a joke',
+          messages_limit: 2,
+        } as unknown as Record<string, unknown>,
+        {} as WorkflowRuntimeContext,
+        {} as AiCommonSettings,
+      );
+
+      expect(result).toEqual({
+        prompt: 'Tell me a joke',
+        system: undefined,
+      });
     });
 
-    it('throws when history mode receives prompt field', async () => {
-      await expect(
-        action.buildPromptPublic(
-          {
-            input_mode: 'history',
-            prompt: 'Tell me a joke',
-            messages_limit: 2,
-          } as unknown as Record<string, unknown>,
-          {} as WorkflowRuntimeContext,
-          {} as AiCommonSettings,
-        ),
-      ).rejects.toThrow('Input mode "history" does not allow "prompt".');
+    it('ignores prompt field when input mode is history', async () => {
+      const initiatorId = 'subscriber-123';
+      const messageService = {
+        findLastMessages: jest.fn().mockResolvedValue([]),
+      };
+      const context = {
+        initiatorId,
+        services: { message: messageService },
+      } as unknown as WorkflowRuntimeContext;
+      const result = await action.buildPromptPublic(
+        {
+          input_mode: 'history',
+          prompt: 'Tell me a joke',
+          messages_limit: 2,
+        } as unknown as Record<string, unknown>,
+        context,
+        {} as AiCommonSettings,
+      );
+
+      expect(messageService.findLastMessages).toHaveBeenCalledWith(
+        { id: initiatorId },
+        2,
+      );
+      expect(result).toEqual({
+        messages: [],
+        system: undefined,
+      });
     });
   });
 

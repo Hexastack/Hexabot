@@ -115,41 +115,8 @@ const aiPromptOnlySchema = z.strictObject({
     description: 'Optional system instruction prepended to the prompt.',
   }),
 });
-const validatePromptSource = (
-  value: z.infer<typeof aiPromptBaseSchema>,
-  ctx: z.RefinementCtx,
-) => {
-  if (value.input_mode === 'prompt') {
-    if (
-      value.messages_limit !== undefined &&
-      value.messages_limit !== DEFAULT_AI_MESSAGES_LIMIT
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        message:
-          '"messages_limit" is not allowed when "input_mode" is "prompt".',
-        path: ['messages_limit'],
-      });
-    }
 
-    return;
-  }
-
-  if (value.input_mode === 'history') {
-    if (value.prompt !== undefined && value.prompt !== DEFAULT_AI_PROMPT) {
-      ctx.addIssue({
-        code: 'custom',
-        message: '"prompt" is not allowed when "input_mode" is "history".',
-        path: ['prompt'],
-      });
-    }
-
-    return;
-  }
-};
-
-export const aiPromptSchema =
-  aiPromptBaseSchema.superRefine(validatePromptSource);
+export const aiPromptSchema = aiPromptBaseSchema;
 
 export const aiUsageSchema = z.object({
   input_tokens: z.int().nonnegative().optional(),

@@ -83,6 +83,7 @@ export abstract class AiBaseAction<
         ...metadata,
         color: metadata.color ?? AiBaseAction.DEFAULT_COLOR,
         group: metadata.group ?? AiBaseAction.DEFAULT_GROUP,
+        icon: 'Sparkles',
       },
       actionService,
     );
@@ -397,13 +398,6 @@ export abstract class AiBaseAction<
     }
 
     if (input.input_mode === 'prompt') {
-      if (
-        input.messages_limit !== undefined &&
-        input.messages_limit !== DEFAULT_AI_MESSAGES_LIMIT
-      ) {
-        throw new Error('Input mode "prompt" does not allow "messages_limit".');
-      }
-
       const prompt = input.prompt ?? DEFAULT_AI_PROMPT;
 
       return {
@@ -419,10 +413,6 @@ export abstract class AiBaseAction<
         throw new Error(
           'Input mode "history" requires a positive "messages_limit" value.',
         );
-      }
-
-      if (input.prompt !== undefined && input.prompt !== DEFAULT_AI_PROMPT) {
-        throw new Error('Input mode "history" does not allow "prompt".');
       }
 
       const subscriberId = context.initiatorId;
