@@ -141,6 +141,7 @@ const createTask = (name: string): CompiledTask =>
     action: dummyAction,
     inputs: {},
     settings: {} as Settings,
+    bindings: {},
   }) as CompiledTask;
 
 afterEach(() => {

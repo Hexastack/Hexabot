@@ -6,11 +6,13 @@
 
 import { z } from 'zod';
 
+import type { InferWorkflowBindings } from '../../bindings/base-binding';
 import { BaseWorkflowContext } from '../../context';
 import { Settings, SettingsSchema } from '../../dsl.types';
 import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import {
+  InferActionBindings,
   InferActionContext,
   InferActionInput,
   InferActionOutput,
@@ -35,6 +37,13 @@ class DoubleContext extends BaseWorkflowContext<{ factor: number }> {
 const InputSchema = z.object({ value: z.number() });
 const OutputSchema = z.object({ result: z.number() });
 const NoSettingsSchema = z.any();
+const _bindingKindSchemas = {
+  tools: z.strictObject({
+    action: z.string(),
+    settings: z.record(z.string(), z.unknown()).optional(),
+  }),
+};
+type TestBindings = InferWorkflowBindings<typeof _bindingKindSchemas>;
 
 class DoubleAction extends AbstractAction<
   z.infer<typeof InputSchema>,
@@ -167,6 +176,7 @@ class FlakyDoubleAction extends DoubleAction {
     input,
     context,
     settings,
+    bindings,
   }: ActionExecutionArgs<
     z.infer<typeof InputSchema>,
     DoubleContext,
@@ -177,7 +187,44 @@ class FlakyDoubleAction extends DoubleAction {
       throw new Error('Intermittent failure');
     }
 
-    return super.execute({ input, context, settings });
+    return super.execute({ input, context, settings, bindings });
+  }
+}
+
+class BindingsAwareAction extends AbstractAction<
+  z.infer<typeof InputSchema>,
+  z.infer<typeof OutputSchema>,
+  DoubleContext,
+  unknown,
+  TestBindings
+> {
+  constructor() {
+    const metadata: ActionMetadata<
+      z.infer<typeof InputSchema>,
+      z.infer<typeof OutputSchema>,
+      unknown
+    > = {
+      name: 'bindings_aware_step',
+      description: 'Reads workflow bindings.',
+      inputSchema: InputSchema,
+      outputSchema: OutputSchema,
+      settingsSchema: NoSettingsSchema,
+    };
+
+    super(metadata);
+  }
+
+  async execute({
+    input,
+  }: ActionExecutionArgs<
+    z.infer<typeof InputSchema>,
+    DoubleContext,
+    unknown,
+    TestBindings
+  >): Promise<z.infer<typeof OutputSchema>> {
+    return {
+      result: input.value,
+    };
   }
 }
 
@@ -268,6 +315,7 @@ describe('workflow step primitives', () => {
         Settings & z.infer<typeof DoubleSettingsSchema>
       >
     >();
+    expectType<Equal<InferActionBindings<BindingsAwareAction>, TestBindings>>();
 
     const step: ActionType = new DoubleAction();
     expect(step.name).toBe('double_step');

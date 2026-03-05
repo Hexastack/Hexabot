@@ -7,6 +7,11 @@
 import { z, ZodType } from 'zod';
 
 import type { Action } from './action/action.types';
+import type { BindingKindSchemas } from './bindings/base-binding';
+import {
+  mountTaskBindings,
+  validateAndResolveBindings,
+} from './bindings/base-binding';
 import type { BaseWorkflowContext } from './context';
 import type {
   FlowStep,
@@ -33,6 +38,7 @@ import {
 
 export type WorkflowCompileOptions = CompileValueOptions & {
   actions: Record<string, Action>;
+  bindingKinds?: BindingKindSchemas;
 };
 
 /** Build a stable identifier for a step using its path and label. */
@@ -146,6 +152,16 @@ const compileTasks = (
 ): Record<string, CompiledTask> => {
   const compiled: Record<string, CompiledTask> = {};
   const defaultSettings = definition.defaults?.settings;
+  const bindingValidation = validateAndResolveBindings(
+    definition,
+    options.bindingKinds,
+  );
+
+  if (bindingValidation.errors.length > 0) {
+    throw new Error(
+      `Workflow bindings validation failed: ${bindingValidation.errors.join('; ')}`,
+    );
+  }
 
   assertActionsBound(definition.tasks, options.actions);
 
@@ -163,6 +179,10 @@ const compileTasks = (
       action,
       inputs: compileMapping(task.inputs, options) ?? {},
       settings: parsedSettings,
+      bindings: mountTaskBindings(
+        task.bindings,
+        bindingValidation.resolvedDefs,
+      ),
     };
   }
 

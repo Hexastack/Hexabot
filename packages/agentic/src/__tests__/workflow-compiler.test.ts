@@ -7,6 +7,7 @@
 import { z } from 'zod';
 
 import type { Action } from '../action/action.types';
+import type { BindingKindSchemas } from '../bindings/base-binding';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
@@ -201,5 +202,119 @@ describe('compileWorkflow', () => {
         >,
       }),
     ).toThrow(/No action implementations provided/);
+  });
+
+  it('mounts task bindings from defs using parsed binding payloads', () => {
+    const { action } = createAction();
+    const bindingKinds: BindingKindSchemas = {
+      tools: z.strictObject({
+        action: z.string(),
+        settings: z.strictObject({
+          multiplier: z.number(),
+          bias: z.number(),
+        }),
+      }),
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          description: 'Compute a score',
+          action: 'calculate_score',
+          settings: {
+            multiplier: 2,
+            bias: 1,
+          },
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+      bindingKinds,
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({
+      tools: {
+        calculate: {
+          action: 'calculate_score',
+          settings: {
+            multiplier: 2,
+            bias: 1,
+          },
+        },
+      },
+    });
+  });
+
+  it('throws when a def payload fails binding schema validation', () => {
+    const { action } = createAction();
+    const bindingKinds: BindingKindSchemas = {
+      tools: z.strictObject({
+        action: z.string(),
+      }),
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 42,
+        } as any,
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/defs\.calculate\.action/);
+  });
+
+  it('throws when defs or task bindings are provided without bindingKinds', () => {
+    const { action } = createAction();
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+      }),
+    ).toThrow(/bindingKinds/);
   });
 });

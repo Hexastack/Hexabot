@@ -8,9 +8,12 @@ import type { Expression } from 'jsonata';
 import type { ZodType } from 'zod';
 
 import type { Action } from './action/action.types';
+import type { CompiledTaskBindings } from './bindings/base-binding';
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import type { Settings, TaskDefinition, WorkflowDefinition } from './dsl.types';
 import { StepType, type StepInfo } from './workflow-event-emitter';
+
+export type { CompiledTaskBindings } from './bindings/base-binding';
 
 /** Value representation used by the runtime after compilation. */
 export type CompiledValue =
@@ -28,6 +31,7 @@ export type CompiledTask = {
   action: Action;
   inputs: CompiledMapping;
   settings: Settings;
+  bindings: CompiledTaskBindings;
 };
 
 /** Complete workflow ready for execution. */

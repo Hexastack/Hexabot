@@ -7,6 +7,7 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
 - `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
 - `defaults`: settings inherited by every task unless overridden (timeouts, retries, and action-specific knobs).
+- `defs`: reusable typed entities declared once and referenced by tasks through bindings.
 - `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs, and per-task settings.
 - `flow`: ordered execution plan composed of `do`, `parallel`, `conditional`, and `loop` blocks.
 - `outputs`: expressions that expose final artifacts from the run back to the caller.
@@ -30,11 +31,28 @@ Each entry under `tasks` has:
 - `description`: human-readable purpose.
 - `action`: engine-specific operation to call (`call_llm`, `search_web`, `await_user_input`, etc.). The DSL does not fix action semantics; the runtime must bind them.
 - `inputs`: map of parameters passed to the action. Values can be literals or expressions (prefixed with `=`).
+- `bindings`: optional map of `<kind>: [<defName>...]` that mounts reusable defs into the task execution args (`execute({ bindings })`).
 - `settings`: execution hints (timeout, retries, model choice, temperature, and action-specific options). Settings merge with `defaults.settings`, with task-level keys taking precedence.
 
 Task results are stored automatically under `$output.<task>` for downstream steps.
 
 Example: `tasks.understand_request` calls an LLM with a system prompt, user query, and context; its returned payload is available under `$output.understand_request`.
+
+## Defs and task bindings
+
+- `defs` is a root-level registry where each entry has:
+  - `kind`: binding kind name (`tools`, `toolset`, `mcp_server`, etc.).
+  - `description`: optional text metadata.
+  - kind-specific payload fields validated by the host-provided Zod schema.
+- `tasks.<task>.bindings` references `defs` by name, grouped per kind.
+- Validation rules:
+  - every referenced def must exist;
+  - the referenced def `kind` must exactly match the task binding key;
+  - duplicate refs in a single binding list are rejected;
+  - workflows that use `defs`/`bindings` require a non-empty `bindingKinds` registry at compile/validation time.
+- Runtime mounting:
+  - each task receives `bindings` as `{ [kind]: { [defName]: parsedPayload } }`;
+  - mounted payload excludes shared def metadata (`kind`, `description`) and contains only kind-schema fields.
 
 ## Flow primitives
 

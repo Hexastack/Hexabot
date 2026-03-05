@@ -11,16 +11,26 @@ import { BaseSettingsSchema } from '../dsl.types';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 
-import { ActionExecutionArgs } from './action';
-import { Action, ActionMetadata, RuntimeSettings } from './action.types';
+import {
+  Action,
+  ActionExecutionArgs,
+  ActionMetadata,
+  RuntimeBindings,
+  RuntimeSettings,
+} from './action.types';
 
 const BASE_SETTINGS_KEYS = Object.keys(BaseSettingsSchema.shape);
 
 /**
  * Base implementation that enforces schema-validated input/output.
  */
-export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
-  implements Action<I, O, C, S>
+export abstract class AbstractAction<
+  I,
+  O,
+  C extends BaseWorkflowContext,
+  S,
+  B extends RuntimeBindings = RuntimeBindings,
+> implements Action<I, O, C, S, B>
 {
   public readonly name: string;
 
@@ -100,9 +110,11 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     payload: unknown,
     context: C,
     settings?: Partial<RuntimeSettings<S>>,
+    bindings?: B,
   ): Promise<O> {
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
+    const parsedBindings = (bindings ?? {}) as B;
     const timeoutMs = parsedSettings.timeout_ms ?? 0;
     const retrySettings = parsedSettings.retries ?? {
       enabled: false,
@@ -124,7 +136,12 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     while (attempt < maxAttempts) {
       try {
         const result = await withTimeout(
-          this.execute({ input, context, settings: parsedSettings }),
+          this.execute({
+            input,
+            context,
+            settings: parsedSettings,
+            bindings: parsedBindings,
+          }),
           timeoutMs,
         );
 
@@ -166,5 +183,5 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
    * @param args - Strongly typed input and context for the action.
    * @returns Action output wrapped in a promise.
    */
-  abstract execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
+  abstract execute(args: ActionExecutionArgs<I, C, S, B>): Promise<O>;
 }

@@ -28,11 +28,15 @@ A workflow is a single YAML (or object) that declares inputs, context, defaults,
 - `inputs.schema`: JSON-schema-like fields validated at runtime.
 - `context`: read-only values injected by the host (including any long-term state) and exposed to expressions.
 - `defaults.settings`: inherited by every task (timeouts, retries, and action-specific settings).
+- `defs`: reusable typed entities that tasks can mount through bindings.
 - `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs` and `settings`.
+- `tasks.<task>.bindings`: optional `<kind>: [<defName>...]` refs that mount parsed defs into action runtime args.
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
 Task results are stored automatically under `$output.<task>` for downstream expressions.
+
+When workflows use `defs` or task `bindings`, pass `bindingKinds` (a map of binding kind names to Zod schemas) to `Workflow.fromYaml` / `Workflow.fromDefinition`. The engine validates kind names, def payloads, and task binding refs before compilation.
 
 Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator }` as scope; `$context` resolves to your workflow context state.
 
@@ -42,6 +46,7 @@ Actions wrap your IO or model calls. `defineAction` enforces schemas and merges 
 
 ```ts
 import { defineAction, Settings, BaseWorkflowContext } from '@hexabot-ai/agentic';
+import type { InferWorkflowBindings } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 class AppContext extends BaseWorkflowContext<{ user_id: string }> {
@@ -50,13 +55,31 @@ class AppContext extends BaseWorkflowContext<{ user_id: string }> {
   }
 }
 
-export const call_api = defineAction<{ id: string }, { body: string }, AppContext, Settings>({
+const bindingKinds = {
+  tools: z.object({
+    action: z.string(),
+    settings: z.record(z.string(), z.unknown()).optional(),
+  }),
+};
+type AppBindings = InferWorkflowBindings<typeof bindingKinds>;
+
+export const call_api = defineAction<
+  { id: string },
+  { body: string },
+  AppContext,
+  Settings,
+  AppBindings
+>({
   name: 'call_api', // must match task.action
   description: 'Fetches data from an API',
   inputSchema: z.object({ id: z.string() }),
   outputSchema: z.object({ body: z.string() }),
-  execute: async ({ input, context, settings }) => {
-    context.log('calling api', { id: input.id, timeout: settings.timeout_ms });
+  execute: async ({ input, context, settings, bindings }) => {
+    context.log('calling api', {
+      id: input.id,
+      timeout: settings.timeout_ms,
+      tools: bindings.tools ? Object.keys(bindings.tools) : [],
+    });
     return { body: `result for ${input.id}` };
   },
 });
@@ -101,6 +124,15 @@ if (startResult.status === 'finished') {
 
 You can also skip YAML and use `Workflow.fromDefinition` with a typed object that matches `WorkflowDefinition`.
 Attach an event emitter to your workflow context (via the constructor or by setting `context.eventEmitter`); it accepts any object with `emit` and `on` methods. `WorkflowEventEmitter` is a small, dependency-free helper with typed payloads (`WorkflowEventEmitterLike` describes the shape).
+
+If your YAML declares `defs` / `tasks.*.bindings`, pass the same `bindingKinds` registry:
+
+```ts
+const workflow = Workflow.fromYaml(yamlSource, {
+  actions,
+  bindingKinds,
+});
+```
 
 ### Minimal YAML example
 
