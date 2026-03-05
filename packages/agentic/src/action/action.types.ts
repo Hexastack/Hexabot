@@ -13,7 +13,7 @@ import { Deferred } from '../utils/deferred';
 
 export type RuntimeSettings<S = unknown> = Settings & S;
 
-export type RuntimeBindings = InferWorkflowBindings;
+export type AnyRuntimeBindings = InferWorkflowBindings;
 
 export interface ActionMetadata<I, O, S> {
   name: string;
@@ -27,7 +27,7 @@ export interface ActionExecutionArgs<
   I,
   C extends BaseWorkflowContext = BaseWorkflowContext,
   S = unknown,
-  B extends RuntimeBindings = RuntimeBindings,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > {
   input: I;
   context: C;
@@ -40,7 +40,7 @@ export interface Action<
   O = unknown,
   C extends BaseWorkflowContext = BaseWorkflowContext,
   S = unknown,
-  B extends RuntimeBindings = RuntimeBindings,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > {
   readonly name: string;
   readonly description: string;

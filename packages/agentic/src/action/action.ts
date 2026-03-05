@@ -12,7 +12,7 @@ import { AbstractAction } from './abstract-action';
 import type {
   ActionExecutionArgs,
   ActionMetadata,
-  RuntimeBindings,
+  AnyRuntimeBindings,
 } from './action.types';
 
 export type DefineActionParams<
@@ -20,7 +20,7 @@ export type DefineActionParams<
   O,
   Ctx extends BaseWorkflowContext,
   S,
-  B extends RuntimeBindings = RuntimeBindings,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > = {
   name: string;
   description?: string;
@@ -44,7 +44,7 @@ export function defineAction<
   O,
   Ctx extends BaseWorkflowContext,
   S,
-  B extends RuntimeBindings = RuntimeBindings,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 >(params: DefineActionParams<I, O, Ctx, S, B>) {
   type ActionArgs = ActionExecutionArgs<I, Ctx, S, B>;
 

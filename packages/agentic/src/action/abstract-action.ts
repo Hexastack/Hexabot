@@ -15,7 +15,7 @@ import {
   Action,
   ActionExecutionArgs,
   ActionMetadata,
-  RuntimeBindings,
+  AnyRuntimeBindings,
   RuntimeSettings,
 } from './action.types';
 
@@ -29,7 +29,7 @@ export abstract class AbstractAction<
   O,
   C extends BaseWorkflowContext,
   S,
-  B extends RuntimeBindings = RuntimeBindings,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > implements Action<I, O, C, S, B>
 {
   public readonly name: string;
