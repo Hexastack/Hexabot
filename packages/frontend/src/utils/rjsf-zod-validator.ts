@@ -20,11 +20,14 @@ type ErrorPath = ErrorPathSegment[];
 type JsonRecord = Record<string, unknown>;
 type ZodIssueLike = {
   code?: string;
+  format?: string;
   message?: string;
   path?: ErrorPath;
 };
 type ZodSchemaLike = {
-  safeParse: (data: unknown) =>
+  safeParse: (
+    data: unknown,
+  ) =>
     | { success: true; data: unknown }
     | { success: false; error: { issues: ZodIssueLike[] } };
 };
@@ -98,6 +101,40 @@ const getZodSchema = (
 
   return nextSchema;
 };
+const getValueAtPath = (data: unknown, path: ErrorPath): unknown => {
+  let current: unknown = data;
+
+  for (const segment of path) {
+    if (typeof segment === "number") {
+      if (!Array.isArray(current)) {
+        return undefined;
+      }
+
+      current = current[segment];
+      continue;
+    }
+
+    if (!isRecord(current)) {
+      return undefined;
+    }
+
+    current = current[String(segment)];
+  }
+
+  return current;
+};
+const shouldSkipZodIssue = (
+  issue: ZodIssueLike,
+  formData: unknown,
+): boolean => {
+  if (issue.code !== "invalid_format" || issue.format !== "url") {
+    return false;
+  }
+
+  const valueAtPath = getValueAtPath(formData, issue.path ?? []);
+
+  return typeof valueAtPath === "string" && valueAtPath.startsWith("=");
+};
 const escapePathKey = (key: string): string => {
   return key.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
 };
@@ -147,7 +184,9 @@ const runValidation = (
     }
 
     return {
-      errors: validationResult.error.issues.map(toRjsfValidationError),
+      errors: validationResult.error.issues
+        .filter((issue) => !shouldSkipZodIssue(issue, formData))
+        .map(toRjsfValidationError),
     };
   } catch (error) {
     return {
@@ -206,7 +245,11 @@ const zodValidator: ValidatorType = {
     return validationData;
   },
   isValid(schema, formData, rootSchema) {
-    const { errors, validationError } = runValidation(schema, formData, rootSchema);
+    const { errors, validationError } = runValidation(
+      schema,
+      formData,
+      rootSchema,
+    );
 
     return !validationError && errors.length === 0;
   },

@@ -37,6 +37,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     onChange,
     onBlur,
     onFocus,
+    autoFocus,
     globalsSchema,
     disabled,
     helperText,
@@ -117,6 +118,14 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     };
 
     updateHeight();
+
+    if (autoFocus && !disabled && model) {
+      const endPosition = model.getFullModelRange().getEndPosition();
+
+      editor.focus();
+      editor.setPosition(endPosition);
+      editor.revealPositionInCenterIfOutsideViewport(endPosition);
+    }
 
     const sub = editor.onDidContentSizeChange(updateHeight);
     const blurSub = editor.onDidBlurEditorText(() => {

@@ -11,6 +11,7 @@ import { ActionRangeWidget } from "./ActionRangeWidget";
 import { ActionSelectWidget } from "./ActionSelectWidget";
 import { AutoCompleteWidget } from "./AutoCompleteWidget";
 import { JsonataTextWidget } from "./JsonataTextWidget";
+import { JsonataUrlWidget } from "./JsonataUrlWidget";
 
 export const FORM_WIDGETS_BASE = {
   SelectWidget: ActionSelectWidget,
@@ -25,6 +26,7 @@ export const FORM_WIDGETS = {
   ...FORM_WIDGETS_BASE,
   TextWidget: JsonataTextWidget,
   TextareaWidget: JsonataTextWidget,
+  URLWidget: JsonataUrlWidget,
 } as const;
 
 export const getFormWidgets = (enableJsonataTextWidget = true) =>

@@ -60,6 +60,7 @@ export type JsonataFormulaFieldProps = {
   onChange: (next: string) => void;
   onBlur?: (next: string) => void;
   onFocus?: (next: string) => void;
+  autoFocus?: boolean;
 
   /**
    * JSON schema that describes the shapes of $input / $output / $context.
