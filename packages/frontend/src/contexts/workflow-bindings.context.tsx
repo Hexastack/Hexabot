@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { type BindingKindSchemas } from "@hexabot-ai/agentic";
 import type { JSONSchema } from "monaco-yaml";
 import {
   PropsWithChildren,
@@ -11,6 +12,7 @@ import {
   useContext,
   useMemo,
 } from "react";
+import { z } from "zod";
 
 import { useTanstackQuery } from "@/hooks/crud/useTanstack";
 import { useApiClient } from "@/hooks/useApiClient";
@@ -19,6 +21,7 @@ type WorkflowBindingsCatalog = Record<string, JSONSchema>;
 type WorkflowBindingsCatalogContextValue = {
   bindings: WorkflowBindingsCatalog;
   bindingsByName: Map<string, JSONSchema>;
+  bindingKinds: BindingKindSchemas;
   isLoading: boolean;
   isFetching: boolean;
 };
@@ -45,13 +48,23 @@ export const WorkflowBindingsProvider = ({ children }: PropsWithChildren) => {
       ),
     [bindings],
   );
-  const value = useMemo(
-    () => ({ bindings, bindingsByName, isLoading, isFetching }),
-    [bindings, bindingsByName, isLoading, isFetching],
+  const bindingKinds = useMemo<BindingKindSchemas>(
+    () =>
+      Object.fromEntries(
+        Object.entries(bindings).map(([kind, schema]) => [
+          kind,
+          z.fromJSONSchema(
+            schema as unknown as Parameters<typeof z.fromJSONSchema>[0],
+          ),
+        ]),
+      ),
+    [bindings],
   );
-  
+
   return (
-    <WorkflowBindingsCatalogContext.Provider value={value}>
+    <WorkflowBindingsCatalogContext.Provider
+      value={{ bindings, bindingsByName, bindingKinds, isLoading, isFetching }}
+    >
       {children}
     </WorkflowBindingsCatalogContext.Provider>
   );

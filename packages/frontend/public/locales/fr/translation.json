@@ -798,6 +798,32 @@
         }
       }
     },
+    "tool_drawer": {
+      "title": "Outil",
+      "description": "Configurez ce binding d'outil.",
+      "form": {
+        "action_label": "Action",
+        "tool_id": {
+          "label": "ID de l'outil",
+          "placeholder": "nom_outil",
+          "errors": {
+            "required": "L'ID de l'outil est obligatoire.",
+            "snake_case": "L'ID de l'outil doit utiliser des lettres minuscules, des chiffres et des underscores.",
+            "unique": "Cet ID d'outil existe déjà dans ce workflow."
+          }
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Description optionnelle de l'outil."
+        },
+        "empty_schema": {
+          "settings": "Aucun schéma de paramètres disponible pour cette action."
+        },
+        "empty_state": {
+          "no_tool": "Aucun outil sélectionné."
+        }
+      }
+    },
     "conditional_drawer": {
       "title": "Conditionnel",
       "description": "Définissez des conditions JSONata pour cet opérateur.",

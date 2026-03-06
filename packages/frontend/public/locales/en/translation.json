@@ -800,6 +800,32 @@
         }
       }
     },
+    "tool_drawer": {
+      "title": "Tool",
+      "description": "Configure this tool binding.",
+      "form": {
+        "action_label": "Action",
+        "tool_id": {
+          "label": "Tool ID",
+          "placeholder": "tool_name",
+          "errors": {
+            "required": "Tool ID is required.",
+            "snake_case": "Tool ID must use lowercase letters, numbers, and underscores.",
+            "unique": "Tool ID already exists in this workflow."
+          }
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Optional tool description."
+        },
+        "empty_schema": {
+          "settings": "No settings schema available for this action."
+        },
+        "empty_state": {
+          "no_tool": "No tool selected."
+        }
+      }
+    },
     "conditional_drawer": {
       "title": "Conditional",
       "description": "Define JSONata conditions for this operator.",
