@@ -10,6 +10,7 @@ import { BaseWorkflowContext } from '../context';
 
 import { AbstractAction } from './abstract-action';
 import type {
+  Action,
   ActionExecutionArgs,
   ActionMetadata,
   AnyRuntimeBindings,
@@ -24,6 +25,7 @@ export type DefineActionParams<
 > = {
   name: string;
   description?: string;
+  supportedBindings?: readonly string[];
   inputSchema?: ZodType<I>;
   outputSchema?: ZodType<O>;
   settingSchema?: ZodType<S>;
@@ -45,7 +47,7 @@ export function defineAction<
   Ctx extends BaseWorkflowContext,
   S,
   B extends AnyRuntimeBindings = AnyRuntimeBindings,
->(params: DefineActionParams<I, O, Ctx, S, B>) {
+>(params: DefineActionParams<I, O, Ctx, S, B>): Action<I, O, Ctx, S, B> {
   type ActionArgs = ActionExecutionArgs<I, Ctx, S, B>;
 
   const defaultSettingsSchema = z.any() as ZodType<S>;
@@ -60,6 +62,7 @@ export function defineAction<
         inputSchema: params.inputSchema ?? defaultInputSchema,
         outputSchema: params.outputSchema ?? defaultOutputSchema,
         settingsSchema: params.settingSchema ?? defaultSettingsSchema,
+        supportedBindings: params.supportedBindings,
       };
 
       super(metadata);

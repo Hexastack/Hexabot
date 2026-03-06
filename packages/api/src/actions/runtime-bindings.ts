@@ -14,4 +14,6 @@ export const bindingKinds = {
   }),
 };
 
+export type RuntimeBindingKind = keyof typeof bindingKinds;
+
 export type RuntimeBindings = InferWorkflowBindings<typeof bindingKinds>;

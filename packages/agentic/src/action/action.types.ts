@@ -21,6 +21,7 @@ export interface ActionMetadata<I, O, S> {
   inputSchema: ZodType<I>;
   outputSchema: ZodType<O>;
   settingsSchema: ZodType<S>;
+  supportedBindings?: readonly string[];
 }
 
 export interface ActionExecutionArgs<
@@ -47,6 +48,7 @@ export interface Action<
   readonly inputSchema: ZodType<I>;
   readonly outputSchema: ZodType<O>;
   readonly settingSchema?: ZodType<S>;
+  readonly supportedBindings?: readonly string[];
 
   execute(args: ActionExecutionArgs<I, C, S, B>): Promise<O>;
   parseInput(payload: unknown): I;

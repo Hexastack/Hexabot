@@ -205,7 +205,9 @@ describe('compileWorkflow', () => {
   });
 
   it('mounts task bindings from defs using parsed binding payloads', () => {
-    const { action } = createAction();
+    const { action } = createAction({
+      supportedBindings: ['tools'],
+    });
     const bindingKinds: BindingKindSchemas = {
       tools: z.strictObject({
         action: z.string(),
@@ -254,6 +256,59 @@ describe('compileWorkflow', () => {
         },
       },
     });
+  });
+
+  it('throws when a task mounts bindings not supported by the action', () => {
+    const { action } = createAction();
+    const bindingKinds: BindingKindSchemas = {
+      tools: z.strictObject({
+        action: z.string(),
+      }),
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/does not support binding kind "tools"/);
+  });
+
+  it('allows actions with no supported bindings when tasks do not mount bindings', () => {
+    const { action } = createAction();
+    const definition: WorkflowDefinition = {
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          inputs: { value: 1 },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({});
   });
 
   it('throws when a def payload fails binding schema validation', () => {

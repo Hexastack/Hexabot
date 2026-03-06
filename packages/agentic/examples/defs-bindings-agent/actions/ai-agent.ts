@@ -76,6 +76,7 @@ export const aiAgent = defineAction<
   name: 'ai_agent',
   description:
     'Runs a Vercel AI SDK ToolLoopAgent and resolves workflow-mounted tools through action bindings.',
+  supportedBindings: ['tools'],
   inputSchema,
   outputSchema,
   settingSchema,

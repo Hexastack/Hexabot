@@ -162,6 +162,10 @@ describe('AiBaseAction', () => {
     action = new TestAiBaseAction(actionService);
   });
 
+  it('defaults supported bindings to tools', () => {
+    expect(action.supportedBindings).toEqual(['tools']);
+  });
+
   describe('buildProviderInitOptions', () => {
     it('returns init options when provided', () => {
       const options = action.buildProviderInitOptionsPublic(

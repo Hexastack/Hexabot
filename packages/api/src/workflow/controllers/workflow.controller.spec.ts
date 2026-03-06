@@ -195,6 +195,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(action?.inputSchema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
+      expect(action?.supportedBindings).toEqual([]);
     });
 
     it('filters actions by workflow type when provided', () => {

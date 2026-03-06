@@ -85,6 +85,7 @@ export abstract class AiBaseAction<
         color: metadata.color ?? AiBaseAction.DEFAULT_COLOR,
         group: metadata.group ?? AiBaseAction.DEFAULT_GROUP,
         icon: 'Sparkles',
+        supportedBindings: metadata.supportedBindings ?? ['tools'],
       },
       actionService,
     );

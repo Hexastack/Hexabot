@@ -15,7 +15,7 @@ import type { ZodType } from 'zod';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 
-import { RuntimeBindings } from './runtime-bindings';
+import { RuntimeBindingKind, RuntimeBindings } from './runtime-bindings';
 
 export type ActionName = `${string}_${string}`;
 
@@ -31,11 +31,12 @@ export type ActionWorkflowTypes = WorkflowType[];
 
 export type ActionMetadata<I, O, S = unknown> = Omit<
   BaseActionMetadata<I, O, S>,
-  'inputSchema' | 'outputSchema' | 'settingsSchema'
+  'inputSchema' | 'outputSchema' | 'settingsSchema' | 'supportedBindings'
 > & {
   inputSchema?: ZodType<I>;
   outputSchema?: ZodType<O>;
   settingsSchema?: ZodType<S>;
+  supportedBindings?: readonly RuntimeBindingKind[];
   icon?: string;
   color?: string;
   group?: string;

@@ -209,6 +209,7 @@ class BindingsAwareAction extends AbstractAction<
       inputSchema: InputSchema,
       outputSchema: OutputSchema,
       settingsSchema: NoSettingsSchema,
+      supportedBindings: ['tools'],
     };
 
     super(metadata);
@@ -256,6 +257,41 @@ describe('workflow step primitives', () => {
     await expect(
       step.run({ value: 2 }, context, { multiplier: 0 }),
     ).rejects.toThrow();
+  });
+
+  it('rejects run() bindings when the action does not support their kind', async () => {
+    const step = new DoubleAction();
+    const context = new DoubleContext({ factor: 3 });
+
+    await expect(
+      step.run({ value: 2 }, context, {}, {
+        tools: {
+          calculate: {
+            action: 'calculate_score',
+          },
+        },
+      } as any),
+    ).rejects.toThrow('does not support binding kind(s): tools');
+  });
+
+  it('accepts run() bindings when the action declares the binding kind', async () => {
+    const step = new BindingsAwareAction();
+    const context = new DoubleContext({ factor: 3 });
+
+    await expect(
+      step.run(
+        { value: 2 },
+        context,
+        {},
+        {
+          tools: {
+            calculate: {
+              action: 'calculate_score',
+            },
+          },
+        },
+      ),
+    ).resolves.toEqual({ result: 2 });
   });
 
   it('accepts base settings without requiring action schemas to extend them', async () => {

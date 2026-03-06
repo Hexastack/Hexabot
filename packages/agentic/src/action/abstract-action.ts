@@ -42,6 +42,8 @@ export abstract class AbstractAction<
 
   public readonly settingSchema: ZodType<S>;
 
+  public readonly supportedBindings: readonly string[];
+
   /**
    * Sets up core metadata and schemas for the action.
    *
@@ -68,6 +70,7 @@ export abstract class AbstractAction<
     this.inputSchema = metadata.inputSchema;
     this.outputSchema = metadata.outputSchema;
     this.settingSchema = metadata.settingsSchema;
+    this.supportedBindings = metadata.supportedBindings ?? [];
   }
 
   /**
@@ -115,6 +118,7 @@ export abstract class AbstractAction<
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
     const parsedBindings = (bindings ?? {}) as B;
+    this.assertSupportedBindings(parsedBindings);
     const timeoutMs = parsedSettings.timeout_ms ?? 0;
     const retrySettings = parsedSettings.retries ?? {
       enabled: false,
@@ -175,6 +179,30 @@ export abstract class AbstractAction<
     }
 
     throw new Error('Action failed after exhausting retry attempts.');
+  }
+
+  private assertSupportedBindings(bindings: B): void {
+    const bindingKinds = Object.keys(
+      (bindings ?? {}) as Record<string, unknown>,
+    );
+    if (bindingKinds.length === 0) {
+      return;
+    }
+
+    const unsupportedKinds = bindingKinds.filter(
+      (bindingKind) => !this.supportedBindings.includes(bindingKind),
+    );
+    if (unsupportedKinds.length === 0) {
+      return;
+    }
+
+    const supported =
+      this.supportedBindings.length > 0
+        ? this.supportedBindings.join(', ')
+        : '<none>';
+    throw new Error(
+      `Action "${this.name}" does not support binding kind(s): ${unsupportedKinds.join(', ')}. Supported binding kinds: ${supported}.`,
+    );
   }
 
   /**
