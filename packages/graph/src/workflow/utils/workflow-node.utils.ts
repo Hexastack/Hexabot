@@ -17,7 +17,6 @@ import {
 } from "../constants/workflow.constants";
 import {
   EHandleType,
-  ELinkType,
   ENodeType,
   getWorkflowPortId,
   type GraphNode,
@@ -33,7 +32,7 @@ import { projectSemanticGraph } from "./graph-builder/project";
 import { traverseWorkflow } from "./graph-builder/traverse";
 import type { GroupMeta } from "./graph-builder/types";
 import {
-  AGENT_ATTACHMENT_SOURCE_HANDLES,
+  isAttachmentSourceHandle,
   resolveWorkflowPortRule,
 } from "./port-rules";
 
@@ -64,8 +63,8 @@ const getNodeDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
   config?.dimensions?.[nodeType] || { height: 0, width: 0 };
 const isHorizontalDirection = (ctx: LayoutContext) =>
   (ctx.config?.direction ?? "horizontal") === "horizontal";
-const isAgentAttachmentEdge = (edge: Edge) =>
-  AGENT_ATTACHMENT_SOURCE_HANDLES.has(edge.sourceHandle as ELinkType);
+const isAttachmentEdge = (edge: Edge) =>
+  isAttachmentSourceHandle(edge.sourceHandle);
 const getElkSide = (position: Position) => {
   switch (position) {
     case Position.Top:
@@ -101,7 +100,7 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
 
   if (!isVertical) {
     const attachmentTargetsBySource = edges.reduce((acc, edge) => {
-      if (!isAgentAttachmentEdge(edge)) {
+      if (!isAttachmentEdge(edge)) {
         return acc;
       }
 
@@ -389,6 +388,8 @@ export const buildNodesAndEdges = async ({
   flow,
   tasks,
   memoryDefinitions,
+  actionCatalog,
+  bindingCatalog,
 }: IBuildNodesAndEdgesProps): Promise<
   { nodes: GraphNode[]; edges: Edge[] } | undefined
 > => {
@@ -401,6 +402,8 @@ export const buildNodesAndEdges = async ({
     config,
     tasks,
     memoryDefinitions,
+    actionCatalog,
+    bindingCatalog,
   });
 
   decorateSemanticGraph(traversal.registry);
@@ -411,7 +414,7 @@ export const buildNodesAndEdges = async ({
   });
   const positionedNodes = addExtraNodes(
     elkNodes,
-    projected.edges.filter(isAgentAttachmentEdge),
+    projected.edges.filter(isAttachmentEdge),
     {
       config,
     },

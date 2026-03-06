@@ -16,11 +16,15 @@ import {
 import {
   EIndicatorType,
   ELinkType,
+  type AgentBindingOutPort,
+  type TaskBindingOutPort,
   type MemoryDefinition,
   ENodeType,
   type ConditionalOperatorOutPort,
   type EOperatorType,
   type INodeConfig,
+  type WorkflowAction,
+  type WorkflowBindingCatalog,
   type WorkflowNodePort,
 } from "../../types/workflow-node.types";
 import type { FlowStepPath } from "../../types/workflow-path.types";
@@ -30,6 +34,7 @@ import {
   END_INDICATOR_ID,
   START_INDICATOR_ID,
   createAttachmentNodeId,
+  createBindingPlaceholderNodeId,
   createEdgeId,
   createGroupId,
   createPlaceholderNodeId,
@@ -65,6 +70,8 @@ type GraphBuilderContext = {
   config: INodeConfig;
   tasks?: TaskDefinitions;
   memoryDefinitions: MemoryDefinition[];
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog: WorkflowBindingCatalog;
 };
 
 type TraverseState = GraphBuilderContext & {
@@ -89,14 +96,93 @@ const getNextInsertPath = (stepPath: FlowStepPath): FlowStepPath | undefined => 
   return [...stepPath.slice(0, -1), tail + 1];
 };
 const getGroupName = (groupPath: string[]) => groupPath[groupPath.length - 1];
-const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
-  const settings = tasks?.[taskName]?.settings as Record<string, unknown> | undefined;
-  const tools = Array.isArray(settings?.tools)
-    ? (settings.tools as string[])
-    : [];
+const getBindingPortLabel = (kind: string): string => {
+  if (kind === "tools") {
+    return "visual_editor.port_label.tools";
+  }
+
+  return kind;
+};
+const buildAgentBindingOutPort = (
+  bindingKind: string,
+  index: number,
+  total: number,
+): AgentBindingOutPort =>
+  `${ELinkType.AGENT_BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
+const buildTaskBindingOutPort = (
+  bindingKind: string,
+  index: number,
+  total: number,
+): TaskBindingOutPort =>
+  `${ELinkType.TASK_BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
+const buildBindingPorts = <T extends ENodeType.AGENT | ENodeType.TASK>(
+  nodeType: T,
+  bindingKinds: string[],
+): WorkflowNodePort<T>[] => {
+  return bindingKinds.map((bindingKind, index) => {
+    const id =
+      nodeType === ENodeType.AGENT
+        ? buildAgentBindingOutPort(bindingKind, index, bindingKinds.length)
+        : buildTaskBindingOutPort(bindingKind, index, bindingKinds.length);
+
+    return {
+      id,
+      label: getBindingPortLabel(bindingKind),
+    } as WorkflowNodePort<T>;
+  });
+};
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((entry) => entry !== undefined && entry !== null)
+    .map((entry) => String(entry));
+};
+const resolveEffectiveBindingKinds = (
+  taskAction: string,
+  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+  bindingCatalog: WorkflowBindingCatalog,
+) => {
+  const supportedKinds = actionCatalog.get(taskAction)?.supportedBindings ?? [];
+  const availableKinds = new Set(bindingCatalog.keys());
+  const resolvedKinds: string[] = [];
+
+  supportedKinds.forEach((bindingKind) => {
+    if (
+      typeof bindingKind !== "string" ||
+      !bindingKind ||
+      !availableKinds.has(bindingKind) ||
+      resolvedKinds.includes(bindingKind)
+    ) {
+      return;
+    }
+
+    resolvedKinds.push(bindingKind);
+  });
+
+  return resolvedKinds;
+};
+const getTaskMeta = (
+  taskName: string,
+  tasks: TaskDefinitions | undefined,
+  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+  bindingCatalog: WorkflowBindingCatalog,
+) => {
+  const taskDefinition = tasks?.[taskName];
+  const settings = taskDefinition?.settings as Record<string, unknown> | undefined;
+  const actionName =
+    typeof taskDefinition?.action === "string" ? taskDefinition.action : "";
   const providerValue = settings?.provider;
   const modelValue = settings?.model;
   const memoryEnabled = settings?.memory_enabled === true;
+  const bindingKinds = resolveEffectiveBindingKinds(
+    actionName,
+    actionCatalog,
+    bindingCatalog,
+  );
+  const bindings = taskDefinition?.bindings as Record<string, unknown> | undefined;
   const provider =
     providerValue !== undefined && providerValue !== null
       ? String(providerValue)
@@ -105,7 +191,14 @@ const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
     modelValue !== undefined && modelValue !== null ? String(modelValue) : "";
 
   return {
-    tools,
+    actionName,
+    bindingKinds,
+    mountedBindings: Object.fromEntries(
+      bindingKinds.map((bindingKind) => [
+        bindingKind,
+        toStringArray(bindings?.[bindingKind]),
+      ]),
+    ) as Record<string, string[]>,
     provider,
     model,
     memoryEnabled,
@@ -331,25 +424,40 @@ const addPlaceholderNode = (
 
   return placeholderNodeId;
 };
-const addAgentAttachments = (
+const BINDING_NODE_TYPE_BY_KIND: Record<string, ENodeType.TOOL> = {
+  tools: ENodeType.TOOL,
+};
+const resolveBindingNodeType = (bindingKind: string): ENodeType.TOOL =>
+  BINDING_NODE_TYPE_BY_KIND[bindingKind] ?? ENodeType.TOOL;
+const addTaskAttachments = (
   state: TraverseState,
   {
     stepId,
+    stepPath,
+    taskName,
     parentNodeId,
     level,
-    tools,
+    nodeType,
+    bindingKinds,
+    mountedBindings,
     model,
     memoryEnabled,
   }: {
     stepId: string;
+    stepPath: FlowStepPath;
+    taskName: string;
     parentNodeId: string;
     level: number;
-    tools: string[];
+    nodeType: ENodeType.AGENT | ENodeType.TASK;
+    bindingKinds: string[];
+    mountedBindings: Record<string, string[]>;
     model: string;
     memoryEnabled: boolean;
   },
 ) => {
-  if (model) {
+  const isAgentNode = nodeType === ENodeType.AGENT;
+
+  if (isAgentNode && model) {
     const modelNodeId = createAttachmentNodeId(stepId, "model", model, 0);
 
     addSemanticNode(state, {
@@ -373,7 +481,7 @@ const addAgentAttachments = (
     });
   }
 
-  if (memoryEnabled) {
+  if (isAgentNode && memoryEnabled) {
     state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
       const memoryProperties = memoryDefinition.schema?.properties;
       const memoryNodeId = createAttachmentNodeId(
@@ -407,27 +515,76 @@ const addAgentAttachments = (
     });
   }
 
-  tools.forEach((toolName, toolIndex) => {
-    const toolNodeId = createAttachmentNodeId(stepId, "tool", toolName, toolIndex);
+  bindingKinds.forEach((bindingKind, bindingIndex) => {
+    const sourceHandle =
+      nodeType === ENodeType.AGENT
+        ? buildAgentBindingOutPort(bindingKind, bindingIndex, bindingKinds.length)
+        : buildTaskBindingOutPort(bindingKind, bindingIndex, bindingKinds.length);
+    const mountedRefs = mountedBindings[bindingKind] ?? [];
+    const placeholderNodeId = createBindingPlaceholderNodeId(stepId, bindingKind);
+
+    mountedRefs.forEach((bindingName, bindingRefIndex) => {
+      const bindingNodeType = resolveBindingNodeType(bindingKind);
+      const bindingNodeId = createAttachmentNodeId(
+        stepId,
+        "binding",
+        bindingName,
+        bindingRefIndex,
+        bindingKind,
+      );
+
+      addSemanticNode(state, {
+        id: bindingNodeId,
+        type: bindingNodeType,
+        level,
+        stepPath,
+        groupPath: [],
+        isAttachment: true,
+        data: {
+          ...state.config.nodes[bindingNodeType],
+          title: bindingName,
+          i18nTitle: undefined,
+          description: bindingKind,
+          stepId,
+          stepPath,
+          taskName,
+          bindingKind,
+          bindingName,
+          level,
+        },
+      });
+
+      addDirectEdge(state, {
+        source: parentNodeId,
+        target: bindingNodeId,
+        sourceHandle,
+      });
+    });
 
     addSemanticNode(state, {
-      id: toolNodeId,
-      type: ENodeType.TOOL,
+      id: placeholderNodeId,
+      type: ENodeType.BINDING_PLACEHOLDER,
       level,
+      stepPath,
       groupPath: [],
       isAttachment: true,
       data: {
-        ...state.config.nodes[ENodeType.TOOL],
-        title: toolName,
+        ...state.config.nodes[ENodeType.BINDING_PLACEHOLDER],
+        title: bindingKind,
         i18nTitle: undefined,
+        description: "",
+        stepId,
+        stepPath,
+        taskName,
+        bindingKind,
         level,
       },
     });
 
     addDirectEdge(state, {
       source: parentNodeId,
-      target: toolNodeId,
-      sourceHandle: ELinkType.AGENT_TOOL,
+      target: placeholderNodeId,
+      sourceHandle,
     });
   });
 };
@@ -613,20 +770,35 @@ const walkStep = ({
   const entryInsertPath = disableEntryInsertPath ? undefined : stepPath;
 
   if (step.type === StepType.Task) {
-    const taskMeta = getTaskMeta(step.taskName, state.tasks);
+    const taskMeta = getTaskMeta(
+      step.taskName,
+      state.tasks,
+      state.actionCatalog,
+      state.bindingCatalog,
+    );
     const isAgentTask = Boolean(taskMeta.model && taskMeta.provider);
     const taskNodeId = createStepNodeId(step.id, isAgentTask ? "agent" : "task");
     const groupName = getGroupName(groupPath);
+    const bindingPorts = buildBindingPorts(
+      isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
+      taskMeta.bindingKinds,
+    );
+    const actionName =
+      taskMeta.actionName || getTaskAction(step.taskName, state.tasks);
 
     if (isAgentTask) {
       const agentBaseData = state.config.nodes[ENodeType.AGENT];
-      const ports = agentBaseData.ports.filter((port) => {
+      const basePorts = agentBaseData.ports.filter((port) => {
         if (taskMeta.memoryEnabled) {
           return true;
         }
 
         return (typeof port === "string" ? port : port.id) !== ELinkType.AGENT_MEMORY;
       });
+      const ports = [
+        ...basePorts,
+        ...(bindingPorts as WorkflowNodePort<ENodeType.AGENT>[]),
+      ];
 
       addSemanticNode(state, {
         id: taskNodeId,
@@ -640,7 +812,7 @@ const walkStep = ({
           ...agentBaseData,
           description: getTaskDescription(step.taskName, state.tasks),
           stepId: step.id,
-          actionName: getTaskAction(step.taskName, state.tasks),
+          actionName,
           level,
           groupName,
           stepPath,
@@ -649,16 +821,17 @@ const walkStep = ({
           ports,
         },
       });
-
-      addAgentAttachments(state, {
-        stepId: step.id,
-        parentNodeId: taskNodeId,
-        level,
-        tools: taskMeta.tools,
-        model: `${taskMeta.provider}/${taskMeta.model}`,
-        memoryEnabled: taskMeta.memoryEnabled,
-      });
     } else {
+      const taskBaseData = state.config.nodes[ENodeType.TASK](
+        taskNodeId,
+        step.taskName,
+        state.tasks,
+      );
+      const ports = [
+        ...taskBaseData.ports,
+        ...(bindingPorts as WorkflowNodePort<ENodeType.TASK>[]),
+      ];
+
       addSemanticNode(state, {
         id: taskNodeId,
         type: ENodeType.TASK,
@@ -668,18 +841,29 @@ const walkStep = ({
         stepPath,
         groupPath,
         data: {
-          ...state.config.nodes[ENodeType.TASK](
-            taskNodeId,
-            step.taskName,
-            state.tasks,
-          ),
+          ...taskBaseData,
+          actionName,
           stepId: step.id,
           level,
           groupName,
           stepPath,
+          ports,
         },
       });
     }
+
+    addTaskAttachments(state, {
+      stepId: step.id,
+      stepPath,
+      taskName: step.taskName,
+      parentNodeId: taskNodeId,
+      level,
+      nodeType: isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
+      bindingKinds: taskMeta.bindingKinds,
+      mountedBindings: taskMeta.mountedBindings,
+      model: isAgentTask ? `${taskMeta.provider}/${taskMeta.model}` : "",
+      memoryEnabled: taskMeta.memoryEnabled,
+    });
 
     connectIncoming(state, {
       incoming,
@@ -853,6 +1037,8 @@ export const traverseWorkflow = ({
   config,
   tasks,
   memoryDefinitions,
+  actionCatalog,
+  bindingCatalog,
 }: {
   flow?: CompiledStep[];
 } & GraphBuilderContext): {
@@ -866,6 +1052,8 @@ export const traverseWorkflow = ({
     config,
     tasks,
     memoryDefinitions,
+    actionCatalog,
+    bindingCatalog,
     registry,
     groups,
   };

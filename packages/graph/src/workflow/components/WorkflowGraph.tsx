@@ -46,6 +46,9 @@ import {
   type MemoryDefinition,
   NODE_TYPES,
   type WorkflowAction,
+  type WorkflowBindingAddPayload,
+  type WorkflowBindingCatalog,
+  type WorkflowBindingRemovePayload,
   type WorkflowExecutionStateMap,
 } from '../types/workflow-node.types';
 import type {
@@ -66,6 +69,7 @@ export type WorkflowGraphModel = {
   compiledFlow?: CompiledStep[];
   memoryDefinitions?: MemoryDefinition[];
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog: WorkflowBindingCatalog;
   executionStates: WorkflowExecutionStateMap;
   layoutDirection?: ResizeControlDirection;
 };
@@ -90,6 +94,8 @@ export type WorkflowGraphViewport = {
 export type WorkflowGraphCallbacks = {
   onNodeClick?: NodeMouseHandler<Node>;
   onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
+  onAddBinding?: (payload: WorkflowBindingAddPayload) => void;
+  onRemoveBinding?: (payload: WorkflowBindingRemovePayload) => void;
   onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
 };
 
@@ -151,6 +157,8 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
       tasks: model.definition?.tasks,
       memoryDefinitions: model.memoryDefinitions,
       layoutDirection: model.layoutDirection,
+      actionCatalog: model.actionCatalog,
+      bindingCatalog: model.bindingCatalog,
     });
     const {
       edges,
@@ -198,8 +206,12 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
         actionCatalog: model.actionCatalog,
         executionStates: model.executionStates,
         onRemoveStep: callbacks.onRemoveStep,
+        onAddBinding: callbacks.onAddBinding,
+        onRemoveBinding: callbacks.onRemoveBinding,
       }),
       [
+        callbacks.onAddBinding,
+        callbacks.onRemoveBinding,
         callbacks.onRemoveStep,
         model.actionCatalog,
         model.executionStates,

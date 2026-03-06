@@ -10,24 +10,68 @@ import { useCallback, type MouseEvent } from "react";
 import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context";
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 
+type StepRemovableNodeType = "agent" | "task" | "operator";
+const STEP_REMOVABLE_NODE_TYPES = new Set<StepRemovableNodeType>([
+  "agent",
+  "task",
+  "operator",
+]);
+
 export const GenericNodeDeleteButton = () => {
-  const { translate, onRemoveStep } = useWorkflowGraphHost();
-  const { id, stepPath } = useWorkflowNode();
+  const { translate, onRemoveStep, onRemoveBinding } = useWorkflowGraphHost();
+  const { id, type, stepId, stepPath, taskName, bindingKind, bindingName } =
+    useWorkflowNode();
+  const isStepRemovable =
+    !!stepPath &&
+    typeof type === "string" &&
+    STEP_REMOVABLE_NODE_TYPES.has(type as StepRemovableNodeType);
+  const isBindingRemovable = !!(
+    onRemoveBinding &&
+    stepPath &&
+    stepId &&
+    taskName &&
+    bindingKind &&
+    bindingName
+  );
   const handleDelete = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!stepPath) {
+      if (isBindingRemovable) {
+        onRemoveBinding?.({
+          nodeId: id,
+          stepId,
+          stepPath,
+          taskName,
+          bindingKind,
+          bindingName,
+        });
+
+        return;
+      }
+
+      if (!isStepRemovable || !stepPath) {
         return;
       }
 
       onRemoveStep(stepPath, id);
     },
-    [id, onRemoveStep, stepPath],
+    [
+      bindingKind,
+      bindingName,
+      id,
+      isBindingRemovable,
+      isStepRemovable,
+      onRemoveBinding,
+      onRemoveStep,
+      stepId,
+      stepPath,
+      taskName,
+    ],
   );
 
-  if (!stepPath) {
+  if (!isBindingRemovable && !isStepRemovable) {
     return null;
   }
 

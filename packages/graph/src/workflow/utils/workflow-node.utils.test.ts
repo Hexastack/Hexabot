@@ -14,7 +14,12 @@ import {
 } from "@hexabot-ai/agentic";
 import { describe, expect, it } from "vitest";
 
-import { ELinkType, ENodeType, type MemoryDefinition } from "../types/workflow-node.types";
+import {
+  ELinkType,
+  ENodeType,
+  type MemoryDefinition,
+  type WorkflowAction,
+} from "../types/workflow-node.types";
 
 import {
   END_INDICATOR_ID,
@@ -42,20 +47,42 @@ const baseTasks = (taskNames: string[]): TaskDefinitions => {
     return acc;
   }, {} as TaskDefinitions);
 };
+const createActionCatalog = (
+  bindingsByAction: Record<string, readonly string[]>,
+): ReadonlyMap<string, WorkflowAction> => {
+  return new Map(
+    Object.entries(bindingsByAction).map(([actionName, supportedBindings]) => [
+      actionName,
+      {
+        name: actionName,
+        supportedBindings,
+      },
+    ]),
+  );
+};
+const createBindingCatalog = (bindingKinds: string[]): ReadonlyMap<string, Record<string, unknown>> => {
+  return new Map(bindingKinds.map((bindingKind) => [bindingKind, {}]));
+};
 const buildGraph = async ({
   flow,
   tasks,
   memoryDefinitions = [],
+  actionCatalog = new Map(),
+  bindingCatalog = new Map(),
 }: {
   flow: CompiledStep[];
   tasks: TaskDefinitions;
   memoryDefinitions?: MemoryDefinition[];
+  actionCatalog?: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog?: ReadonlyMap<string, Record<string, unknown>>;
 }) => {
   const graph = await buildNodesAndEdges({
     config: getWorkflowDefaultConfig("horizontal"),
     flow,
     tasks,
     memoryDefinitions,
+    actionCatalog,
+    bindingCatalog,
   });
 
   if (!graph) {
@@ -133,7 +160,7 @@ describe("buildNodesAndEdges", () => {
     );
   });
 
-  it("creates unique tool node IDs for multiple agent tasks using the same tool", async () => {
+  it("creates unique tool node IDs for multiple agent tasks using the same binding ref", async () => {
     const flow: CompiledStep[] = [
       taskStep("0:first_agent", "first_agent"),
       taskStep("1:second_agent", "second_agent"),
@@ -141,14 +168,154 @@ describe("buildNodesAndEdges", () => {
     const tasks: TaskDefinitions = {
       first_agent: {
         action: "agent_action_a",
+        bindings: {
+          tools: ["search"],
+        },
         settings: {
           provider: "openai",
           model: "gpt-4o-mini",
-          tools: ["search"],
         },
       },
       second_agent: {
         action: "agent_action_b",
+        bindings: {
+          tools: ["search"],
+        },
+        settings: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+        },
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action_a: ["tools"],
+        agent_action_b: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog(["tools"]),
+    });
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+
+    expect(toolNodes).toHaveLength(2);
+    expect(new Set(toolNodes.map((node) => node.id)).size).toBe(2);
+  });
+
+  it("renders mounted tool bindings from task.bindings.tools", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          tools: ["search"],
+        },
+        settings: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+        },
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog(["tools"]),
+    });
+    const agentNodeId = createStepNodeId("0:agent", "agent");
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const placeholderNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
+
+    expect(toolNodes).toHaveLength(1);
+    expect((toolNodes[0].data as { title?: string }).title).toBe("search");
+    expect(placeholderNodes).toHaveLength(1);
+    expect((placeholderNodes[0].data as { title?: string }).title).toBe("tools");
+    expect(
+      graph.edges.some(
+        (edge) =>
+          edge.source === agentNodeId &&
+          edge.sourceHandle === "agentBindingOut-0-1-tools",
+      ),
+    ).toBe(true);
+  });
+
+  it("renders binding placeholders for non-agent tasks with supported bindings", async () => {
+    const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
+    const tasks: TaskDefinitions = {
+      worker: {
+        action: "worker_action",
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        worker_action: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog(["tools"]),
+    });
+    const taskNodeId = createStepNodeId("0:worker", "task");
+    const taskNode = graph.nodes.find((node) => node.id === taskNodeId);
+    const placeholderNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
+
+    expect(taskNode).toBeDefined();
+    expect(getNodePorts(taskNode).includes("taskBindingOut-0-1-tools")).toBe(true);
+    expect(placeholderNodes).toHaveLength(1);
+    expect(
+      graph.edges.some(
+        (edge) =>
+          edge.source === taskNodeId &&
+          edge.sourceHandle === "taskBindingOut-0-1-tools",
+      ),
+    ).toBe(true);
+  });
+
+  it("filters unsupported binding kinds that are missing from the binding catalog", async () => {
+    const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
+    const tasks: TaskDefinitions = {
+      worker: {
+        action: "worker_action",
+        bindings: {
+          tools: ["search"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        worker_action: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog([]),
+    });
+    const taskNodeId = createStepNodeId("0:worker", "task");
+    const taskNode = graph.nodes.find((node) => node.id === taskNodeId);
+    const placeholderNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+
+    expect(taskNode).toBeDefined();
+    expect(
+      getNodePorts(taskNode).some((port) => port.startsWith("taskBindingOut-")),
+    ).toBe(false);
+    expect(placeholderNodes).toHaveLength(0);
+    expect(toolNodes).toHaveLength(0);
+  });
+
+  it("does not mount legacy settings.tools without task bindings", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
         settings: {
           provider: "openai",
           model: "gpt-4o-mini",
@@ -156,11 +323,21 @@ describe("buildNodesAndEdges", () => {
         },
       },
     };
-    const graph = await buildGraph({ flow, tasks });
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog(["tools"]),
+    });
+    const placeholderNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
     const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
 
-    expect(toolNodes).toHaveLength(2);
-    expect(new Set(toolNodes.map((node) => node.id)).size).toBe(2);
+    expect(placeholderNodes).toHaveLength(1);
+    expect(toolNodes).toHaveLength(0);
   });
 
   it("adds conditional branch handles and branch placeholders that join to downstream steps", async () => {
@@ -472,6 +649,8 @@ describe("buildNodesAndEdges", () => {
       flow: [],
       tasks: {},
       memoryDefinitions: [],
+      actionCatalog: new Map(),
+      bindingCatalog: new Map(),
     });
 
     expect(graph).toBeUndefined();

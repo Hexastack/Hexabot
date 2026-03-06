@@ -104,6 +104,7 @@ export const DEFAULT_NODE_PROPS = {
 export const DIMENSIONS = {
   [ENodeType.MODEL]: { width: 180, height: 68 },
   [ENodeType.TOOL]: { width: 180, height: 55 },
+  [ENodeType.BINDING_PLACEHOLDER]: { width: 64, height: 64 },
   [ENodeType.AGENT]: { width: 256, height: 86 },
   [ENodeType.INDICATOR]: { width: 128, height: 68 },
   [ENodeType.TASK]: { width: 256, height: 86 },
@@ -141,11 +142,9 @@ export const NODES = {
   [ENodeType.AGENT]: {
     memory: '',
     model: '',
-    tools: [],
     ports: [
       ELinkType.AGENT_IN,
       ELinkType.AGENT_OUT,
-      { id: ELinkType.AGENT_TOOL, label: 'visual_editor.port_label.tools' },
       { id: ELinkType.AGENT_MODEL, label: 'visual_editor.port_label.model' },
       {
         id: ELinkType.AGENT_MEMORY,
@@ -163,6 +162,16 @@ export const NODES = {
     theme: {
       Icon: Zap,
       borderColor: 'orange',
+    },
+  },
+  [ENodeType.BINDING_PLACEHOLDER]: {
+    title: '',
+    description: '',
+    bindingKind: '',
+    ports: [ELinkType.BINDING_PLACEHOLDER_IN],
+    theme: {
+      Icon: Plus,
+      borderColor: '#7f8ea3',
     },
   },
   [ENodeType.MODEL]: {

@@ -12,6 +12,7 @@ import { ELinkType } from "../types/workflow-node.types";
 import { getHandleConfig } from "./handle.utils";
 import {
   getAgentOutHandleMeta,
+  getBindingOutHandleMeta,
   getConditionalOperatorOutHandleMeta,
   resolveWorkflowPortRule,
 } from "./port-rules";
@@ -35,6 +36,22 @@ describe("handle.utils", () => {
     expect(getAgentOutHandleMeta(ELinkType.TASK_OUT)).toBeUndefined();
   });
 
+  it("parses dynamic task and agent binding handle metadata", () => {
+    expect(getBindingOutHandleMeta("agentBindingOut-1-3-tools")).toEqual({
+      baseId: ELinkType.AGENT_BINDING_OUT,
+      index: 1,
+      total: 3,
+      bindingKind: "tools",
+    });
+    expect(getBindingOutHandleMeta("taskBindingOut-0-2-tools")).toEqual({
+      baseId: ELinkType.TASK_BINDING_OUT,
+      index: 0,
+      total: 2,
+      bindingKind: "tools",
+    });
+    expect(getBindingOutHandleMeta("agentBindingOut-x-y-tools")).toBeUndefined();
+  });
+
   it("resolves handle config for conditional out handles", () => {
     const config = getHandleConfig("operatorOut-1-3", "horizontal");
 
@@ -43,14 +60,14 @@ describe("handle.utils", () => {
     expect(config.style?.top).toBe("50%");
   });
 
-  it("resolves attachment handle positions for horizontal and vertical directions", () => {
-    const horizontal = getHandleConfig(ELinkType.AGENT_TOOL, "horizontal");
-    const vertical = getHandleConfig(ELinkType.AGENT_TOOL, "vertical");
+  it("resolves dynamic binding handle positions for horizontal and vertical directions", () => {
+    const horizontal = getHandleConfig("agentBindingOut-1-3-tools", "horizontal");
+    const vertical = getHandleConfig("agentBindingOut-1-3-tools", "vertical");
 
     expect(horizontal.position).toBe(Position.Bottom);
-    expect(horizontal.style?.left).toBe("90%");
+    expect(horizontal.style?.left).toBe("50%");
     expect(vertical.position).toBe(Position.Left);
-    expect(vertical.style?.top).toBe("70%");
+    expect(vertical.style?.top).toBe("50%");
   });
 
   it("keeps port resolution consistent for render and layout rules", () => {
