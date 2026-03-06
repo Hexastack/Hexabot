@@ -64,8 +64,7 @@ export const ExecutionSettingsPanel = ({
           onFormDataChange={onExecutionSettingsDataChange}
           onVisibleErrorsChange={onExecutionSettingsVisibleErrorsChange}
           uiSchema={overrideExecutionUiSchema}
-          enableJsonataTextWidget={false}
-          idPrefix={`${panelKeyBase}-execution-override`}
+          idPrefix={`action-${panelKeyBase}-execution-override`}
         />
       ) : null}
     </Stack>

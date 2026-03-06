@@ -32,11 +32,16 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     schema,
     uiSchema,
     registry,
+    formData,
   } = props;
   const uiOptions = getUiOptions(uiSchema);
   const rootFormData = registry.formContext?.formData as
     | Record<string, unknown>
     | undefined;
+  const shouldIgnoreErrors =
+    id.startsWith("action-") &&
+    typeof formData === "string" &&
+    formData.startsWith("=");
   const reportFieldVisibleError = registry.formContext
     ?.reportFieldVisibleError as
     | ((fieldId: string, hasVisibleError: boolean) => void)
@@ -46,7 +51,8 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     uiOptions,
     formData: rootFormData,
   });
-  const hasVisibleError = !isHidden && rawErrors.length > 0;
+  const hasVisibleError =
+    !isHidden && !shouldIgnoreErrors && rawErrors.length > 0;
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
@@ -83,9 +89,9 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
       uiSchema={uiSchema}
       registry={registry}
     >
-      <FormControl fullWidth error={rawErrors.length > 0} required={required}>
+      <FormControl fullWidth error={hasVisibleError} required={required}>
         {children}
-        {errors}
+        {hasVisibleError ? errors : null}
         {help}
       </FormControl>
     </WrapIfAdditionalTemplate>

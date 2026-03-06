@@ -305,7 +305,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
             ? errorBorderColor
             : resolvedTheme.palette.grey[400];
           const disabledBackground =
-            resolvedTheme.palette.action?.disabledBackground ??
+            resolvedTheme.palette.grey[300] ??
             resolvedTheme.palette.background.default;
 
           return {
@@ -314,9 +314,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
             borderRadius: resolvedTheme.shape.borderRadius,
             border: "1px solid",
             paddingLeft: theme.spacing(1),
-            paddingRight: showModeIcon
-              ? theme.spacing(4.5)
-              : theme.spacing(1),
+            paddingRight: showModeIcon ? theme.spacing(4.5) : theme.spacing(1),
             borderColor,
             backgroundColor: disabled
               ? disabledBackground
@@ -332,7 +330,24 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
             "&:focus-within": {
               borderColor: focusBorderColor,
             },
+            ...(disabled
+              ? {
+                  "& .monaco-editor, & .monaco-editor .margin, & .monaco-editor-background":
+                    {
+                      backgroundColor: `${disabledBackground} !important`,
+                    },
+                }
+              : null),
             ...theme.applyStyles("dark", {
+              ...(disabled
+                ? {
+                    backgroundColor: resolvedTheme.palette.grey[600],
+                    "& .monaco-editor, & .monaco-editor .margin, & .monaco-editor-background":
+                      {
+                        backgroundColor: `${resolvedTheme.palette.grey[600]} !important`,
+                      },
+                  }
+                : null),
               "&:hover": {
                 borderColor: disabled
                   ? borderColor
