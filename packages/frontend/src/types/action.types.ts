@@ -18,6 +18,7 @@ export interface IActionAttributes {
   color: string;
   group: string;
   description: string;
+  supportedBindings: string[];
   inputSchema: JSONSchema;
   settingSchema: JSONSchema;
   outputSchema: JSONSchema;
