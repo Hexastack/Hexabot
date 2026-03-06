@@ -62,6 +62,7 @@ describe('AiGenerateReplyAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const emptyBindings = {};
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -112,7 +113,12 @@ describe('AiGenerateReplyAction', () => {
       warnings: [],
     } as any);
 
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: emptyBindings,
+    });
 
     expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
     expect(generateTextMock).toHaveBeenCalledWith(
@@ -140,6 +146,7 @@ describe('AiGenerateReplyAction', () => {
           api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: emptyBindings,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_reply.');
   });

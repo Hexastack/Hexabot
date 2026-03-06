@@ -65,6 +65,7 @@ describe('AiGenerateObjectAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const emptyBindings = {};
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -144,7 +145,12 @@ describe('AiGenerateObjectAction', () => {
       system: 'system prompt',
     };
     const context = createContext();
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: emptyBindings,
+    });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
       apiKey: 'test-key',
@@ -239,6 +245,7 @@ describe('AiGenerateObjectAction', () => {
           output_schema: { type: 'object' },
         } as any,
         context: createContext(),
+        bindings: emptyBindings,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_object.');
   });

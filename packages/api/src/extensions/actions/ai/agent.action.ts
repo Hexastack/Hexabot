@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { ToolLoopAgent, ToolSet } from 'ai';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
@@ -46,11 +46,8 @@ export class AiAgentAction extends AiBaseAction<
     input,
     settings,
     context,
-  }: ActionExecutionArgs<
-    AiAgentInput,
-    WorkflowRuntimeContext,
-    AiAgentSettings
-  >) {
+    bindings,
+  }: ExecArgs<AiAgentInput, WorkflowRuntimeContext, AiAgentSettings>) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);
@@ -68,9 +65,10 @@ export class AiAgentAction extends AiBaseAction<
     const callSettings = this.buildCallSettings(settings);
     const tools = this.buildTools(
       context,
-      settings.tools,
+      bindings.tools,
       settings.memory_enabled,
     ) as ToolSet | undefined;
+    const toolNames = Object.keys(bindings.tools ?? {});
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
       settings,
       tools,
@@ -88,7 +86,7 @@ export class AiAgentAction extends AiBaseAction<
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
-        tools: settings.tools,
+        tools: toolNames,
         stop_when: {
           step_count: stepCount,
           tool_call: toolCall,

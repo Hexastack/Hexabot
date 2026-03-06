@@ -193,10 +193,6 @@ export const aiCommonSettingsSchema = z.strictObject({
         hideUntilAdded: true,
       },
     }),
-  tools: z.array(z.string().min(1)).optional().meta({
-    title: 'Tools',
-    description: 'Allowed tool names or tool IDs for the model.',
-  }),
   memory_enabled: z.boolean().optional().meta({
     title: 'Memory enabled',
     description: 'Enable memory feature.',

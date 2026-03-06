@@ -38,6 +38,7 @@ describe('UpdateMemoryAction', () => {
       input,
       context,
       settings: {} as any,
+      bindings: {} as any,
     });
 
     expect(update).toHaveBeenCalledTimes(1);

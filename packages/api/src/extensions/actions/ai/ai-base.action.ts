@@ -16,6 +16,7 @@ import {
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
+import type { RuntimeBindings } from '@/actions/runtime-bindings';
 import { ActionMetadata, ActionName } from '@/actions/types';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
@@ -552,7 +553,7 @@ export abstract class AiBaseAction<
 
   protected buildTools(
     context: C,
-    toolNames?: string[],
+    toolBindings?: RuntimeBindings['tools'],
     isMemoryEnabled: boolean = false,
   ): Record<string, ToolDefinition> | undefined {
     const actionService = context.services.actions;
@@ -560,29 +561,26 @@ export abstract class AiBaseAction<
       throw new Error('Action service is unavailable in the workflow context.');
     }
 
-    const uniqueNames = Array.from(
-      new Set(
-        (toolNames ?? []).filter(
-          (name) => typeof name === 'string' && name.trim().length > 0,
-        ),
-      ),
-    );
-    const tools = uniqueNames.reduce(
-      (tools, actionName) => {
-        const normalizedName = actionName.trim() as ActionName;
-        const action = actionService.get(normalizedName);
+    const tools: Record<string, ToolDefinition> = {};
 
-        tools[normalizedName] = {
-          description: action.description,
-          inputSchema: action.inputSchema,
-          outputSchema: action.outputSchema,
-          execute: async (input) => action.run(input, context),
-        };
+    for (const [toolName, toolDefinition] of Object.entries(
+      toolBindings ?? {},
+    )) {
+      const normalizedToolName = toolName.trim();
+      if (normalizedToolName.length === 0) {
+        continue;
+      }
+      const actionName = toolDefinition.action.trim() as ActionName;
+      const action = actionService.get(actionName);
 
-        return tools;
-      },
-      {} as Record<string, ToolDefinition>,
-    );
+      tools[normalizedToolName] = {
+        description: action.description,
+        inputSchema: action.inputSchema,
+        outputSchema: action.outputSchema,
+        execute: async (input) =>
+          action.run(input, context, toolDefinition.settings),
+      };
+    }
 
     if (isMemoryEnabled) {
       const updateMemoryAction = actionService.get('update_memory');

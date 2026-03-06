@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { ButtonType } from '@/chat';
 import { OutgoingMessageFormat } from '@/chat/types/message';
@@ -103,7 +103,7 @@ export class SendListAction extends MessageAction<
     input,
     context,
     settings,
-  }: ActionExecutionArgs<
+  }: ExecArgs<
     ListActionInput,
     ConversationalWorkflowContext,
     ListActionSettings

@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
-import { ActionMetadata } from './types';
+import { ActionMetadata, ExecArgs } from './types';
 
 type CreateActionParams<
   I,
@@ -24,7 +23,7 @@ type CreateActionParams<
    * from the caller's file location.
    */
   path?: string;
-  execute: (args: ActionExecutionArgs<I, C, S>) => Promise<O> | O;
+  execute: (args: ExecArgs<I, C, S>) => Promise<O> | O;
 };
 
 export function createAction<
@@ -51,7 +50,7 @@ export function createAction<
       );
     }
 
-    async execute(args: ActionExecutionArgs<I, C, S>) {
+    async execute(args: ExecArgs<I, C, S>) {
       return params.execute(args);
     }
   }

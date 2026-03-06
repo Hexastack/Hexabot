@@ -131,6 +131,7 @@ describe('SendListAction', () => {
         } as any,
         context,
         settings: { skip: 0 } as any,
+        bindings: {} as any,
       }),
     ).rejects.toThrow('Content type with id "missing" not found');
   });

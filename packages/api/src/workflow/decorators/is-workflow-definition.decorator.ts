@@ -11,6 +11,8 @@ import {
   type ValidationOptions,
 } from 'class-validator';
 
+import { bindingKinds } from '@/actions/runtime-bindings';
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
@@ -31,14 +33,18 @@ export const IsWorkflowDefinition =
             return false;
           }
 
-          return validateWorkflow(value).success;
+          return validateWorkflow(value, {
+            bindingKinds,
+          }).success;
         },
         defaultMessage(args?: ValidationArguments) {
           if (!isPlainObject(args?.value)) {
             return 'Workflow definition must be an object';
           }
 
-          const validation = validateWorkflow(args?.value);
+          const validation = validateWorkflow(args?.value, {
+            bindingKinds,
+          });
 
           if (!validation.success) {
             return `Invalid workflow definition: ${validation.errors.join('; ')}`;

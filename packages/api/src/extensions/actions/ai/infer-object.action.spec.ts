@@ -66,6 +66,7 @@ describe('AiInferObjectAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const emptyBindings = {};
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -128,7 +129,12 @@ describe('AiInferObjectAction', () => {
       warnings: [],
     } as any);
 
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: emptyBindings,
+    });
 
     expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
     expect(jsonSchemaMock).toHaveBeenCalledWith(schemaDefinition);
@@ -172,6 +178,7 @@ describe('AiInferObjectAction', () => {
           output_schema: { type: 'object' },
         } as any,
         context: createContext(),
+        bindings: emptyBindings,
       }),
     ).rejects.toThrow('A model is required to run ai_infer_object.');
   });

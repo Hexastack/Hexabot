@@ -51,6 +51,7 @@ describe('AwaitReplyAction', () => {
       input: undefined,
       context,
       settings: action.parseSettings({}),
+      bindings: {} as any,
     });
 
     expect(workflow.suspend).toHaveBeenCalledWith({
@@ -68,6 +69,7 @@ describe('AwaitReplyAction', () => {
         input: undefined,
         context,
         settings: action.parseSettings({}),
+        bindings: {} as any,
       }),
     ).rejects.toThrow(
       'resumeData must be compliant with the workflow input schema (conversational)',
@@ -88,6 +90,7 @@ describe('AwaitReplyAction', () => {
       input: undefined,
       context,
       settings: action.parseSettings({}),
+      bindings: {} as any,
     });
 
     expect(resultWithOptionalFields).toEqual(resumeWithOptionalFields);

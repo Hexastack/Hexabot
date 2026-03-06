@@ -16,6 +16,7 @@ import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
+import { bindingKinds } from '@/actions/runtime-bindings';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { User } from '@/user';
 import {
@@ -238,6 +239,7 @@ describe('AgenticService (TypeORM)', () => {
         messagingWorkflowDefinition,
         expect.objectContaining({
           actions: expect.any(Object),
+          bindingKinds,
           jsonataFunctions: expect.any(Object),
         }),
       );

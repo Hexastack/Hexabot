@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { ActionExecutionArgs } from '@hexabot-ai/agentic';
-
 import type { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
 import { createAction } from './create-action';
+import { ExecArgs } from './types';
 
 type EmptyPayload = Record<string, never>;
 
@@ -31,11 +30,7 @@ class NoSchemaClassAction extends BaseAction<
   }
 
   async execute(
-    _args: ActionExecutionArgs<
-      EmptyPayload,
-      WorkflowRuntimeContext,
-      EmptyPayload
-    >,
+    _args: ExecArgs<EmptyPayload, WorkflowRuntimeContext, EmptyPayload>,
   ): Promise<EmptyPayload> {
     return {};
   }

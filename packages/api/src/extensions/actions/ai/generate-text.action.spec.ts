@@ -67,6 +67,7 @@ describe('AiGenerateTextAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const emptyBindings = {};
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -142,7 +143,12 @@ describe('AiGenerateTextAction', () => {
       }),
     };
     const context = createContext({ actions: actionsService });
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: emptyBindings,
+    });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
       apiKey: 'test-key',
@@ -180,7 +186,7 @@ describe('AiGenerateTextAction', () => {
       {
         provider: 'openai',
         base_url: 'https://api.openai.com',
-        tools: undefined,
+        tools: [],
         stop_when: {
           step_count: undefined,
           tool_call: undefined,
@@ -280,7 +286,7 @@ describe('AiGenerateTextAction', () => {
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings: emptyBindings });
 
     const callArgs = generateTextMock.mock.calls[0][0] as any;
 
@@ -296,19 +302,20 @@ describe('AiGenerateTextAction', () => {
     expect(callArgs.system).toContain('- Name: Ada');
   });
 
-  it('defaults stopWhen to the number of provided tools', async () => {
+  it('defaults stopWhen to the number of bound tools and forwards tool settings', async () => {
     const provider = Object.assign(
       jest.fn().mockReturnValue('model-instance'),
       {
         languageModel: jest.fn(),
       },
     );
+    const toolRun = jest.fn().mockResolvedValue({ ok: true });
     const actionsService = {
       get: jest.fn().mockReturnValue({
         description: 'demo',
         inputSchema: {},
         outputSchema: {},
-        run: jest.fn(),
+        run: toolRun,
       }),
     };
     const context = createContext({ actions: actionsService });
@@ -332,16 +339,26 @@ describe('AiGenerateTextAction', () => {
       retries: defaultRetries,
       model: 'gpt-4o-mini',
       api_key: 'test-key',
-      tools: ['search', 'translate', 'search'],
     };
     const input = { prompt: 'Hello there' };
-    const result = await action.execute({ input, settings, context });
-    const stopWhen = (generateTextMock.mock.calls[0][0] as any).stopWhen;
+    const bindings = {
+      tools: {
+        search: { action: 'search_action', settings: { locale: 'en' } },
+        translate: { action: 'translate_action' },
+      },
+    };
+    const result = await action.execute({ input, settings, context, bindings });
+    const callArgs = generateTextMock.mock.calls[0][0] as any;
+    const stopWhen = callArgs.stopWhen;
 
     expect(stepCountIsMock).toHaveBeenCalledWith(2);
     expect(typeof stopWhen).toBe('function');
     expect(stopWhen({ steps: [{}, {}] })).toBe(true);
     expect(stopWhen({ steps: [{}] })).toBe(false);
+    await callArgs.tools.search.execute({ query: 'hello' });
+    expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+      locale: 'en',
+    });
     expect(result.text).toBe('Generated text');
   });
 
@@ -381,13 +398,17 @@ describe('AiGenerateTextAction', () => {
       retries: defaultRetries,
       model: 'gpt-4o-mini',
       api_key: 'test-key',
-      tools: ['search'],
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { prompt: 'Hello there' };
+    const bindings = {
+      tools: {
+        search: { action: 'search_action' },
+      },
+    };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings });
     const stopWhen = (generateTextMock.mock.calls[0][0] as any)
       .stopWhen as Array<(params: any) => boolean>;
 
@@ -419,6 +440,7 @@ describe('AiGenerateTextAction', () => {
           api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: emptyBindings,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_text.');
   });

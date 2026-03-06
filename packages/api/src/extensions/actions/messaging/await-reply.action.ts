@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs, Settings } from '@hexabot-ai/agentic';
+import { Settings } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
@@ -45,11 +46,7 @@ export class AwaitReplyAction extends BaseAction<
 
   async execute({
     context,
-  }: ActionExecutionArgs<
-    void,
-    ConversationalWorkflowContext,
-    AwaitReplySettings
-  >) {
+  }: ExecArgs<void, ConversationalWorkflowContext, AwaitReplySettings>) {
     const resumeData = await context.workflow.suspend<
       z.infer<typeof awaitReplyResumeSchema>
     >({

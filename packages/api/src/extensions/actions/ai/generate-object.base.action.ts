@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { JSONSchema7, Output, ToolSet, generateText, jsonSchema } from 'ai';
 
 import { ActionService } from '@/actions/actions.service';
-import { ActionMetadata } from '@/actions/types';
+import { ActionMetadata, ExecArgs } from '@/actions/types';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import { AiBaseAction, AiPromptInput } from './ai-base.action';
@@ -35,7 +34,8 @@ export abstract class AiGenerateObjectBaseAction<
     input,
     settings,
     context,
-  }: ActionExecutionArgs<I, C, AiGenerateObjectSettings>) {
+    bindings,
+  }: ExecArgs<I, C, AiGenerateObjectSettings>) {
     const logger = context.services.logger;
     const providerName = settings.provider ?? 'openai';
     const modelId = this.resolveModelId(settings);
@@ -60,9 +60,10 @@ export abstract class AiGenerateObjectBaseAction<
       callSettings;
     const tools = this.buildTools(
       context,
-      settings.tools,
+      bindings.tools,
       settings.memory_enabled,
     ) as ToolSet | undefined;
+    const toolNames = Object.keys(bindings.tools ?? {});
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
       settings,
       tools,
@@ -79,7 +80,7 @@ export abstract class AiGenerateObjectBaseAction<
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
-        tools: settings.tools,
+        tools: toolNames,
         stop_when: {
           step_count: stepCount,
           tool_call: toolCall,

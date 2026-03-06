@@ -60,6 +60,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: {} as any,
+      bindings: {} as any,
     });
 
     expect(requestMock).toHaveBeenCalledTimes(1);
@@ -112,6 +113,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: { method: 'POST', timeout_ms: 5000 } as any,
+      bindings: {} as any,
     });
 
     expect(requestMock).toHaveBeenCalledWith(
@@ -153,6 +155,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: { method: 'POST' } as any,
+      bindings: {} as any,
     });
 
     expect(requestMock).toHaveBeenCalledWith(
@@ -179,6 +182,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: {} as any,
+      bindings: {} as any,
     });
 
     expect(result).toMatchObject({
@@ -208,6 +212,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: {} as any,
+      bindings: {} as any,
     });
 
     expect(logger.warn).toHaveBeenCalledWith(
@@ -227,6 +232,7 @@ describe('HttpRequestAction', () => {
       input,
       context,
       settings: {} as any,
+      bindings: {} as any,
     });
 
     expect(logger.warn).toHaveBeenCalledWith(

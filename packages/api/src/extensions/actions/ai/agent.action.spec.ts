@@ -64,6 +64,7 @@ describe('AiAgentAction', () => {
     ({
       services: { logger, credentials: createCredentialService(), ...services },
     }) as unknown as WorkflowRuntimeContext;
+  const emptyBindings = {};
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -79,12 +80,13 @@ describe('AiAgentAction', () => {
         languageModel: jest.fn(),
       },
     );
+    const toolRun = jest.fn().mockResolvedValue({ ok: true });
     const actionsService = {
       get: jest.fn().mockReturnValue({
         description: 'demo tool',
         inputSchema: {},
         outputSchema: {},
-        run: jest.fn(),
+        run: toolRun,
       }),
     };
     const context = createContext({ actions: actionsService });
@@ -150,14 +152,19 @@ describe('AiAgentAction', () => {
       stop_sequences: ['stop'],
       max_output_tokens: 50,
       seed: 7,
-      tools: ['search', 'translate', 'search'],
+    };
+    const bindings = {
+      tools: {
+        search: { action: 'search_action', settings: { scope: 'web' } },
+        translate: { action: 'translate_action' },
+      },
     };
     const input = {
       input_mode: 'prompt' as const,
       prompt: 'Hello there',
       system: 'system prompt',
     };
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({ input, settings, context, bindings });
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
       string,
       unknown
@@ -192,6 +199,10 @@ describe('AiAgentAction', () => {
       'translate',
     ]);
     expect(stepCountIsMock).toHaveBeenCalledWith(2);
+    await (agentOptions.tools as any).search.execute({ query: 'hello' });
+    expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+      scope: 'web',
+    });
     expect(toolLoopAgentGenerateMock).toHaveBeenCalledWith({
       prompt: 'Hello there',
     });
@@ -200,7 +211,7 @@ describe('AiAgentAction', () => {
       {
         provider: 'openai',
         base_url: 'https://api.openai.com',
-        tools: ['search', 'translate', 'search'],
+        tools: ['search', 'translate'],
         stop_when: {
           step_count: 2,
           tool_call: undefined,
@@ -316,7 +327,7 @@ describe('AiAgentAction', () => {
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings: emptyBindings });
 
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
       string,
@@ -364,13 +375,17 @@ describe('AiAgentAction', () => {
       retries: defaultRetries,
       model: 'gpt-4o-mini',
       api_key: 'test-key',
-      tools: ['search'],
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
+    const bindings = {
+      tools: {
+        search: { action: 'search_action' },
+      },
+    };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings });
     const { stopWhen } = ToolLoopAgentMock.mock.calls[0][0] as {
       stopWhen: Array<(params: any) => boolean>;
     };
@@ -397,6 +412,7 @@ describe('AiAgentAction', () => {
           api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: emptyBindings,
       }),
     ).rejects.toThrow('A model is required to run ai_agent.');
   });
