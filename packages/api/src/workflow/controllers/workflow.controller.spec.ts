@@ -217,6 +217,22 @@ describe('WorkflowController (TypeORM)', () => {
     });
   });
 
+  describe('findBindings', () => {
+    it('returns runtime binding schema definitions', () => {
+      const bindings = workflowController.findBindings();
+
+      expect(bindings.tools).toBeDefined();
+      expect(bindings.tools.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      const toolsDefinition = bindings.tools as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+
+      expect(toolsDefinition?.properties?.action?.type).toBe('string');
+    });
+  });
+
   describe('create', () => {
     it('creates a workflow', async () => {
       const payload = buildWorkflowPayload();

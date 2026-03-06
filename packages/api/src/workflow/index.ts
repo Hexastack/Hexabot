@@ -60,4 +60,6 @@ export * from './services/memory.service';
 
 export * from './services/agentic.service';
 
+export * from './services/runtime-bindings.service';
+
 export * from './defaults/default-workflow';

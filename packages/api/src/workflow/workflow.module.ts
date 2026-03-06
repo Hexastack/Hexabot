@@ -36,6 +36,7 @@ import { AgenticService } from './services/agentic.service';
 import { MemoryDefinitionService } from './services/memory-definition.service';
 import { MemoryRecordService } from './services/memory-record.service';
 import { MemoryService } from './services/memory.service';
+import { RuntimeBindingsService } from './services/runtime-bindings.service';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowVersionService } from './services/workflow-version.service';
@@ -74,6 +75,7 @@ import { WorkflowService } from './services/workflow.service';
     MemoryDefinitionService,
     MemoryRecordService,
     MemoryService,
+    RuntimeBindingsService,
     SchedulerRegistry,
     WorkflowSchedulerService,
     ConversationalWorkflowContext,
@@ -94,6 +96,7 @@ import { WorkflowService } from './services/workflow.service';
     MemoryDefinitionService,
     MemoryRecordService,
     MemoryService,
+    RuntimeBindingsService,
     ConversationalWorkflowContext,
     AgenticService,
   ],

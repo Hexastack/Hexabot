@@ -22,7 +22,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
-import { ActionService } from '@/actions';
+import { ActionService } from '@/actions/actions.service';
 import { UserService } from '@/user';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
@@ -42,6 +42,7 @@ import {
   ScheduledEventWrapper,
 } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
+import { RuntimeBindingsService } from '../services/runtime-bindings.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 
@@ -55,6 +56,7 @@ export class WorkflowController extends BaseOrmController<
     private readonly agenticService: AgenticService,
     private readonly userService: UserService,
     private readonly actionService: ActionService,
+    private readonly runtimeBindingsService: RuntimeBindingsService,
   ) {
     super(workflowService);
   }
@@ -130,6 +132,16 @@ export class WorkflowController extends BaseOrmController<
     }
 
     return this.actionService.getAllSchemaDefinitions(type);
+  }
+
+  /**
+   * Retrieves runtime bindings with Draft-07 JSON schemas.
+   *
+   * @returns Runtime bindings metadata with JSON schemas.
+   */
+  @Get('bindings')
+  findBindings() {
+    return this.runtimeBindingsService.getAllSchemaDefinitions();
   }
 
   /**

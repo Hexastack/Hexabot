@@ -6,8 +6,6 @@
 
 export * from './actions.module';
 
-export * from './actions.controller';
-
 export * from './actions.service';
 
 export * from './base-action';
