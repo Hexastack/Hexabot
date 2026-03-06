@@ -8,6 +8,7 @@ import { styled } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
 import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
+import { WorkflowBindingsProvider } from "@/contexts/workflow-bindings.context";
 import { useGet } from "@/hooks/crud/useGet";
 import { useQueryState } from "@/hooks/useQueryState";
 import { EntityType, Format } from "@/services/types";
@@ -43,17 +44,19 @@ export const WorkflowEditor = () => {
 
   return (
     <WorkflowActionsProvider workflowType={workflow?.type}>
-      <WorkflowProvider workflow={workflow}>
-        <WorkflowJsonataGlobalsSchemaProvider>
-          <StyledContainerGrid container>
-            <Grid container height="100%" width="100%" wrap="nowrap">
-              <StyledGrid size="grow">
-                <Workflow />
-              </StyledGrid>
-            </Grid>
-          </StyledContainerGrid>
-        </WorkflowJsonataGlobalsSchemaProvider>
-      </WorkflowProvider>
+      <WorkflowBindingsProvider>
+        <WorkflowProvider workflow={workflow}>
+          <WorkflowJsonataGlobalsSchemaProvider>
+            <StyledContainerGrid container>
+              <Grid container height="100%" width="100%" wrap="nowrap">
+                <StyledGrid size="grow">
+                  <Workflow />
+                </StyledGrid>
+              </Grid>
+            </StyledContainerGrid>
+          </WorkflowJsonataGlobalsSchemaProvider>
+        </WorkflowProvider>
+      </WorkflowBindingsProvider>
     </WorkflowActionsProvider>
   );
 };
