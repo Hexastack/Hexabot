@@ -6,14 +6,21 @@
 
 import { z, type ZodIssue } from 'zod';
 
-export type BindingKindSchemas = Record<string, z.ZodTypeAny>;
+export type BindingKindSchema = z.ZodTypeAny;
+
+export type BindingKindDescriptor = {
+  schema: BindingKindSchema;
+  multiple: boolean;
+};
+
+export type BindingKindSchemas = Record<string, BindingKindDescriptor>;
 
 export type InferWorkflowBindings<
   TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
 > = Partial<{
   [K in keyof TBindingKinds & string]: Record<
     string,
-    z.infer<TBindingKinds[K]>
+    z.infer<TBindingKinds[K]['schema']>
   >;
 }>;
 
@@ -23,7 +30,7 @@ export type DefLike = {
   [key: string]: unknown;
 };
 
-export type TaskBindingReferences = Record<string, string[]>;
+export type TaskBindingReferences = Record<string, string | string[]>;
 
 export type BindingAwareTaskLike = {
   bindings?: TaskBindingReferences;
@@ -83,6 +90,8 @@ const collectDuplicateReferences = (refs: string[]): string[] => {
 
   return Array.from(duplicates).sort();
 };
+const toBindingRefs = (refs: string | string[]): string[] =>
+  Array.isArray(refs) ? refs : [refs];
 
 export const validateAndResolveBindings = (
   workflow: BindingAwareWorkflowLike,
@@ -102,15 +111,16 @@ export const validateAndResolveBindings = (
   }
 
   for (const [defName, defDefinition] of Object.entries(defs)) {
-    const schema = kinds[defDefinition.kind];
+    const kindDefinition = kinds[defDefinition.kind];
 
-    if (!schema) {
+    if (!kindDefinition) {
       errors.push(
         `defs.${defName}.kind: Unknown binding kind "${defDefinition.kind}".`,
       );
       continue;
     }
 
+    const { schema } = kindDefinition;
     const payload = stripDefMeta(defDefinition);
     const parsedPayload = schema.safeParse(payload);
 
@@ -134,15 +144,31 @@ export const validateAndResolveBindings = (
       continue;
     }
 
-    for (const [bindingKind, refs] of Object.entries(taskBindings)) {
-      const schema = kinds[bindingKind];
+    for (const [bindingKind, bindingRefs] of Object.entries(taskBindings)) {
+      const kindDefinition = kinds[bindingKind];
 
-      if (!schema) {
+      if (!kindDefinition) {
         errors.push(
           `tasks.${taskName}.bindings.${bindingKind}: Unknown binding kind "${bindingKind}".`,
         );
+        continue;
       }
 
+      const { multiple } = kindDefinition;
+      if (multiple && !Array.isArray(bindingRefs)) {
+        errors.push(
+          `tasks.${taskName}.bindings.${bindingKind}: Expected an array of def references for binding kind "${bindingKind}".`,
+        );
+        continue;
+      }
+      if (!multiple && typeof bindingRefs !== 'string') {
+        errors.push(
+          `tasks.${taskName}.bindings.${bindingKind}: Expected a single def reference string for binding kind "${bindingKind}".`,
+        );
+        continue;
+      }
+
+      const refs = toBindingRefs(bindingRefs);
       const duplicateRefs = collectDuplicateReferences(refs);
       if (duplicateRefs.length > 0) {
         errors.push(
@@ -182,8 +208,9 @@ export const mountTaskBindings = (
 
   const mounted: CompiledTaskBindings = {};
 
-  for (const [bindingKind, refs] of Object.entries(taskBindings)) {
+  for (const [bindingKind, bindingRefs] of Object.entries(taskBindings)) {
     const mountedKindDefs: Record<string, unknown> = {};
+    const refs = toBindingRefs(bindingRefs);
 
     for (const ref of refs) {
       const resolvedDef = resolvedDefs[ref];

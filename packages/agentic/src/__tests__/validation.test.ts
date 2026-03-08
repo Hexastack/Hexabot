@@ -22,13 +22,26 @@ const fixturePath = path.join(
 );
 const fixtureYaml = fs.readFileSync(fixturePath, 'utf8');
 const bindingKinds = {
-  tools: z.strictObject({
-    action: z.string(),
-    settings: z.record(z.string(), z.unknown()).optional(),
-  }),
-  toolset: z.strictObject({
-    name: z.string(),
-  }),
+  tools: {
+    schema: z.strictObject({
+      action: z.string(),
+      settings: z.record(z.string(), z.unknown()).optional(),
+    }),
+    multiple: true,
+  },
+  toolset: {
+    schema: z.strictObject({
+      name: z.string(),
+    }),
+    multiple: true,
+  },
+  model: {
+    schema: z.strictObject({
+      provider: z.string(),
+      model: z.string(),
+    }),
+    multiple: false,
+  },
 };
 
 describe('validateWorkflow', () => {
@@ -138,6 +151,98 @@ describe('validateWorkflow', () => {
     const result = validateWorkflow(workflow, { bindingKinds });
 
     expect(result.success).toBe(true);
+  });
+
+  it('accepts single-ref task bindings for kinds with multiple=false', () => {
+    const workflow = {
+      defs: {
+        chat_model: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        agent_step: {
+          action: 'understand_request_action',
+          bindings: {
+            model: 'chat_model',
+          },
+        },
+      },
+      flow: [{ do: 'agent_step' }],
+      outputs: { result: '=$output.agent_step' },
+    };
+    const result = validateWorkflow(workflow, { bindingKinds });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('fails when single-ref binding kinds are provided as arrays', () => {
+    const workflow = {
+      defs: {
+        chat_model: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        agent_step: {
+          action: 'understand_request_action',
+          bindings: {
+            model: ['chat_model'],
+          },
+        },
+      },
+      flow: [{ do: 'agent_step' }],
+      outputs: { result: '=$output.agent_step' },
+    };
+    const result = validateWorkflow(workflow, { bindingKinds });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.errors.some((error) =>
+          error.includes(
+            'Expected a single def reference string for binding kind "model"',
+          ),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('fails when multi-ref binding kinds are provided as strings', () => {
+    const workflow = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        agent_step: {
+          action: 'understand_request_action',
+          bindings: {
+            tools: 'calculate',
+          },
+        },
+      },
+      flow: [{ do: 'agent_step' }],
+      outputs: { result: '=$output.agent_step' },
+    };
+    const result = validateWorkflow(workflow, { bindingKinds });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.errors.some((error) =>
+          error.includes(
+            'Expected an array of def references for binding kind "tools"',
+          ),
+        ),
+      ).toBe(true);
+    }
   });
 
   it('fails when task bindings reference unknown defs', () => {

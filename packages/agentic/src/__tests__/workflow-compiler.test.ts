@@ -209,13 +209,16 @@ describe('compileWorkflow', () => {
       supportedBindings: ['tools'],
     });
     const bindingKinds: BindingKindSchemas = {
-      tools: z.strictObject({
-        action: z.string(),
-        settings: z.strictObject({
-          multiplier: z.number(),
-          bias: z.number(),
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+          settings: z.strictObject({
+            multiplier: z.number(),
+            bias: z.number(),
+          }),
         }),
-      }),
+        multiple: true,
+      },
     };
     const definition: WorkflowDefinition = {
       defs: {
@@ -258,12 +261,142 @@ describe('compileWorkflow', () => {
     });
   });
 
+  it('mounts single-ref bindings as map-by-def payloads', () => {
+    const { action } = createAction({
+      supportedBindings: ['model'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      model: {
+        schema: z.strictObject({
+          provider: z.string(),
+          model: z.string(),
+        }),
+        multiple: false,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        openai_chatgpt: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            model: 'openai_chatgpt',
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+      bindingKinds,
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({
+      model: {
+        openai_chatgpt: {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+    });
+  });
+
+  it('throws when single-ref binding kinds are provided as arrays', () => {
+    const { action } = createAction({
+      supportedBindings: ['model'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      model: {
+        schema: z.strictObject({
+          provider: z.string(),
+          model: z.string(),
+        }),
+        multiple: false,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        openai_chatgpt: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            model: ['openai_chatgpt'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/Expected a single def reference string/);
+  });
+
+  it('throws when multi-ref binding kinds are provided as strings', () => {
+    const { action } = createAction({
+      supportedBindings: ['tools'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: 'calculate',
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/Expected an array of def references/);
+  });
+
   it('throws when a task mounts bindings not supported by the action', () => {
     const { action } = createAction();
     const bindingKinds: BindingKindSchemas = {
-      tools: z.strictObject({
-        action: z.string(),
-      }),
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
     };
     const definition: WorkflowDefinition = {
       defs: {
@@ -314,9 +447,12 @@ describe('compileWorkflow', () => {
   it('throws when a def payload fails binding schema validation', () => {
     const { action } = createAction();
     const bindingKinds: BindingKindSchemas = {
-      tools: z.strictObject({
-        action: z.string(),
-      }),
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
     };
     const definition: WorkflowDefinition = {
       defs: {

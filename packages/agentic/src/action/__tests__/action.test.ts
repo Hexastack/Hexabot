@@ -38,10 +38,13 @@ const InputSchema = z.object({ value: z.number() });
 const OutputSchema = z.object({ result: z.number() });
 const NoSettingsSchema = z.any();
 const _bindingKindSchemas = {
-  tools: z.strictObject({
-    action: z.string(),
-    settings: z.record(z.string(), z.unknown()).optional(),
-  }),
+  tools: {
+    schema: z.strictObject({
+      action: z.string(),
+      settings: z.record(z.string(), z.unknown()).optional(),
+    }),
+    multiple: true,
+  },
 };
 type TestBindings = InferWorkflowBindings<typeof _bindingKindSchemas>;
 

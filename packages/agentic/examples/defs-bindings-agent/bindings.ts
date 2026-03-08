@@ -9,10 +9,13 @@ import { z } from 'zod';
 import type { InferWorkflowBindings } from '../../src';
 
 export const bindingKinds = {
-  tools: z.strictObject({
-    action: z.string(),
-    settings: z.record(z.string(), z.unknown()).optional(),
-  }),
+  tools: {
+    schema: z.strictObject({
+      action: z.string(),
+      settings: z.record(z.string(), z.unknown()).optional(),
+    }),
+    multiple: true,
+  },
 };
 
 export type AgentBindings = InferWorkflowBindings<typeof bindingKinds>;

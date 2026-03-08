@@ -194,7 +194,8 @@ export const BaseSettingsSchema = z.strictObject({
 
 export const SettingsSchema = BaseSettingsSchema.catchall(JsonValueSchema);
 
-const TaskBindingsSchema = z.record(z.string(), z.array(z.string()));
+const TaskBindingReferenceSchema = z.union([z.string(), z.array(z.string())]);
+const TaskBindingsSchema = z.record(z.string(), TaskBindingReferenceSchema);
 
 export const TaskDefinitionSchema = z.strictObject({
   description: z.string().optional(),

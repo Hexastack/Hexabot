@@ -83,7 +83,7 @@ describe('WorkflowDefinitionSchema', () => {
         agent_step: {
           action: 'ai_agent',
           bindings: {
-            tools: 'calculate',
+            tools: 42,
           },
         },
       },
