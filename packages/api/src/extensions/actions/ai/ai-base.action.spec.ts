@@ -17,6 +17,7 @@ import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.con
 import {
   AiBaseAction,
   AiCommonSettings,
+  AiModelBinding,
   LanguageModelProvider,
   ProviderInitOptions,
 } from './ai-base.action';
@@ -71,10 +72,10 @@ class TestAiBaseAction extends AiBaseAction<
 
   public buildProviderInitOptionsPublic(
     provider: string,
-    settings: AiCommonSettings,
+    modelBinding: AiModelBinding,
     credential: string,
   ) {
-    return this.buildProviderInitOptions(provider, settings, credential);
+    return this.buildProviderInitOptions(provider, modelBinding, credential);
   }
 
   public shouldRequireApiKeyPublic(provider: string) {
@@ -120,8 +121,12 @@ class TestAiBaseAction extends AiBaseAction<
     return this.toPascalCase(value);
   }
 
-  public resolveModelIdPublic(settings: AiCommonSettings) {
-    return this.resolveModelId(settings);
+  public resolveModelBindingPublic(bindings: any) {
+    return this.resolveModelBinding(bindings);
+  }
+
+  public resolveModelIdPublic(modelBinding: Pick<AiModelBinding, 'model'>) {
+    return this.resolveModelId(modelBinding);
   }
 
   public buildPromptPublic(
@@ -162,8 +167,8 @@ describe('AiBaseAction', () => {
     action = new TestAiBaseAction(actionService);
   });
 
-  it('defaults supported bindings to tools', () => {
-    expect(action.supportedBindings).toEqual(['tools']);
+  it('defaults supported bindings to tools and model', () => {
+    expect(action.supportedBindings).toEqual(['tools', 'model']);
   });
 
   describe('buildProviderInitOptions', () => {
@@ -174,7 +179,9 @@ describe('AiBaseAction', () => {
           api_key: 'key',
           base_url: 'https://example.com',
           organization: 'org',
-        } as AiCommonSettings,
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        } as AiModelBinding,
         'key',
       );
 
@@ -189,11 +196,11 @@ describe('AiBaseAction', () => {
       expect(() =>
         action.buildProviderInitOptionsPublic(
           'openai',
-          {} as AiCommonSettings,
+          {} as AiModelBinding,
           'key',
         ),
       ).toThrow(
-        'No API key provided for provider "openai". Set settings.api_key.',
+        'No API key provided for provider "openai". Set bindings.model.<def>.api_key.',
       );
     });
   });
@@ -408,13 +415,53 @@ describe('AiBaseAction', () => {
   describe('resolveModelId', () => {
     it('returns the model when provided', () => {
       expect(
-        action.resolveModelIdPublic({ model: 'gpt-4o' } as AiCommonSettings),
+        action.resolveModelIdPublic({ model: 'gpt-4o' } as AiModelBinding),
       ).toBe('gpt-4o');
     });
 
     it('throws when model is missing', () => {
-      expect(() => action.resolveModelIdPublic({} as AiCommonSettings)).toThrow(
+      expect(() => action.resolveModelIdPublic({} as AiModelBinding)).toThrow(
         'A model is required to run ai_test_action.',
+      );
+    });
+  });
+
+  describe('resolveModelBinding', () => {
+    it('returns the mounted model binding when exactly one is provided', () => {
+      expect(
+        action.resolveModelBindingPublic({
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+            },
+          },
+        }),
+      ).toEqual({
+        name: 'openai_chatgpt',
+        config: {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      });
+    });
+
+    it('throws when no model binding is mounted', () => {
+      expect(() => action.resolveModelBindingPublic({})).toThrow(
+        'A model binding is required to run ai_test_action. Mount one with tasks.<task>.bindings.model.',
+      );
+    });
+
+    it('throws when multiple model bindings are mounted', () => {
+      expect(() =>
+        action.resolveModelBindingPublic({
+          model: {
+            primary: { provider: 'openai', model: 'gpt-4o-mini' },
+            secondary: { provider: 'openai', model: 'gpt-4.1-mini' },
+          },
+        }),
+      ).toThrow(
+        'Exactly one model binding is required to run ai_test_action. Found: primary, secondary',
       );
     });
   });

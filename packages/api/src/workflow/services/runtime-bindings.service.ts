@@ -13,9 +13,12 @@ import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 export class RuntimeBindingsService {
   getAllSchemaDefinitions() {
     return Object.fromEntries(
-      Object.entries(bindingKinds).map(([bindingKind, bindingSchema]) => [
+      Object.entries(bindingKinds).map(([bindingKind, bindingDefinition]) => [
         bindingKind,
-        toDraft07JsonSchema(bindingSchema),
+        {
+          schema: toDraft07JsonSchema(bindingDefinition.schema),
+          multiple: bindingDefinition.multiple,
+        },
       ]),
     );
   }

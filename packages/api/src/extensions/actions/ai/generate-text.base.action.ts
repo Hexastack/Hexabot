@@ -33,14 +33,16 @@ export abstract class AiGenerateTextBaseAction<
     bindings,
   }: ExecArgs<I, C, AiGenerateTextSettings>) {
     const logger = context.services.logger;
-    const providerName = settings.provider ?? 'openai';
-    const modelId = this.resolveModelId(settings);
+    const { name: modelBindingName, config: modelBinding } =
+      this.resolveModelBinding(bindings);
+    const providerName = modelBinding.provider ?? 'openai';
+    const modelId = this.resolveModelId(modelBinding);
     const credentials = await context.services.credentials.findOneValue(
-      settings.api_key,
+      modelBinding.api_key,
     );
     const providerOptions = this.buildProviderInitOptions(
       providerName,
-      settings,
+      modelBinding,
       credentials,
     );
     const provider = await this.loadProvider(providerName, providerOptions);
@@ -65,6 +67,7 @@ export abstract class AiGenerateTextBaseAction<
       `Calling model "${modelId}" via ${this.name} action using provider "${providerName}"`,
       {
         provider: providerName,
+        model_binding: modelBindingName,
         base_url: providerOptions.baseURL,
         tools: toolNames,
         stop_when: {

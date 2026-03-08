@@ -223,14 +223,25 @@ describe('WorkflowController (TypeORM)', () => {
       const bindings = workflowController.findBindings();
 
       expect(bindings.tools).toBeDefined();
-      expect(bindings.tools.$schema).toBe(
+      expect(bindings.model).toBeDefined();
+      expect(bindings.tools.multiple).toBe(true);
+      expect(bindings.model.multiple).toBe(false);
+      expect(bindings.tools.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
-      const toolsDefinition = bindings.tools as
+      expect(bindings.model.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      const toolsDefinition = bindings.tools.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+      const modelDefinition = bindings.model.schema as
         | { properties?: Record<string, { type?: string }> }
         | undefined;
 
       expect(toolsDefinition?.properties?.action?.type).toBe('string');
+      expect(modelDefinition?.properties?.provider?.type).toBe('string');
+      expect(modelDefinition?.properties?.model?.type).toBe('string');
     });
   });
 

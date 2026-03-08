@@ -64,7 +64,26 @@ describe('AiAgentAction', () => {
     ({
       services: { logger, credentials: createCredentialService(), ...services },
     }) as unknown as WorkflowRuntimeContext;
-  const emptyBindings = {};
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      openai_chatgpt: {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -137,13 +156,8 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -154,6 +168,7 @@ describe('AiAgentAction', () => {
       seed: 7,
     };
     const bindings = {
+      ...createModelBindings(),
       tools: {
         search: { action: 'search_action', settings: { scope: 'web' } },
         translate: { action: 'translate_action' },
@@ -210,6 +225,7 @@ describe('AiAgentAction', () => {
       'Calling model "gpt-4o-mini" via ai_agent action using provider "openai"',
       {
         provider: 'openai',
+        model_binding: 'openai_chatgpt',
         base_url: 'https://api.openai.com',
         tools: ['search', 'translate'],
         stop_when: {
@@ -314,11 +330,8 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
       memory_enabled: true,
     };
     const input = {
@@ -327,7 +340,12 @@ describe('AiAgentAction', () => {
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context, bindings: emptyBindings });
+    await action.execute({
+      input,
+      settings,
+      context,
+      bindings: createModelBindings(),
+    });
 
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
       string,
@@ -370,16 +388,14 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
     const bindings = {
+      ...createModelBindings(),
       tools: {
         search: { action: 'search_action' },
       },
@@ -401,18 +417,38 @@ describe('AiAgentAction', () => {
     ).toBe(true);
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { input_mode: 'prompt', prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow(
+      'A model binding is required to run ai_agent. Mount one with tasks.<task>.bindings.model.',
+    );
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { input_mode: 'prompt', prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
         } as any,
         context: createContext(),
-        bindings: emptyBindings,
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_agent.');
   });

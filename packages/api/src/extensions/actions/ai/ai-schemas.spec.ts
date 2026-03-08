@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { aiModelBindingSchema } from '@/actions/runtime-bindings';
+
 import {
   DEFAULT_AI_MESSAGES_LIMIT,
   DEFAULT_AI_PROMPT,
@@ -142,10 +144,7 @@ describe('ai_generate_text input schema', () => {
 });
 
 describe('ai generation settings schemas', () => {
-  const commonSettings = {
-    provider: 'openai',
-    model: 'gpt-4o-mini',
-  };
+  const commonSettings = {};
 
   it('rejects output_schema for ai_generate_text settings', () => {
     const result = aiGenerateTextSettingsSchema.safeParse({
@@ -186,6 +185,80 @@ describe('ai generation settings schemas', () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues).toContainEqual(
       expect.objectContaining({ path: ['output_schema'] }),
+    );
+  });
+});
+
+describe('ai model binding schema', () => {
+  it('defaults provider and model when missing', () => {
+    const result = aiModelBindingSchema.safeParse({});
+
+    expect(result.success).toBe(true);
+    expect(result.data?.provider).toBe('openai');
+    expect(result.data?.model).toBe('gpt-5.2');
+  });
+
+  it('rejects empty model names', () => {
+    const result = aiModelBindingSchema.safeParse({
+      provider: 'openai',
+      model: '',
+    });
+
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((issue) => issue.path[0] === 'model'),
+    ).toBe(true);
+  });
+});
+
+describe('legacy provider/model settings rejection', () => {
+  const legacyModelFields = {
+    provider: 'openai',
+    model: 'gpt-4o-mini',
+    api_key: 'credential-id',
+    base_url: 'https://api.openai.com',
+    organization: 'org-1',
+  };
+
+  it('rejects legacy model fields in ai_generate_text settings', () => {
+    const result = aiGenerateTextSettingsSchema.safeParse(legacyModelFields);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+
+  it('rejects legacy model fields in ai_generate_reply settings', () => {
+    const result = aiGenerateReplySettingsSchema.safeParse(legacyModelFields);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+
+  it('rejects legacy model fields in ai_generate_object settings', () => {
+    const result = aiGenerateObjectSettingsSchema.safeParse({
+      ...legacyModelFields,
+      output_schema: { type: 'object' },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+
+  it('rejects legacy model fields in ai_infer_object settings', () => {
+    const result = aiInferObjectSettingsSchema.safeParse({
+      ...legacyModelFields,
+      output_schema: { type: 'object' },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
     );
   });
 });

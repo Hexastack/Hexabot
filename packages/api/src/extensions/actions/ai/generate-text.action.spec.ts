@@ -67,7 +67,26 @@ describe('AiGenerateTextAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
-  const emptyBindings = {};
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      openai_chatgpt: {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -114,13 +133,8 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -143,11 +157,12 @@ describe('AiGenerateTextAction', () => {
       }),
     };
     const context = createContext({ actions: actionsService });
+    const bindings = createModelBindings();
     const result = await action.execute({
       input,
       settings,
       context,
-      bindings: emptyBindings,
+      bindings,
     });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
@@ -185,6 +200,7 @@ describe('AiGenerateTextAction', () => {
       'Calling model "gpt-4o-mini" via ai_generate_text action using provider "openai"',
       {
         provider: 'openai',
+        model_binding: 'openai_chatgpt',
         base_url: 'https://api.openai.com',
         tools: [],
         stop_when: {
@@ -274,11 +290,8 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
       memory_enabled: true,
     };
     const input = {
@@ -286,7 +299,12 @@ describe('AiGenerateTextAction', () => {
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context, bindings: emptyBindings });
+    await action.execute({
+      input,
+      settings,
+      context,
+      bindings: createModelBindings(),
+    });
 
     const callArgs = generateTextMock.mock.calls[0][0] as any;
 
@@ -334,14 +352,12 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
     };
     const input = { prompt: 'Hello there' };
     const bindings = {
+      ...createModelBindings(),
       tools: {
         search: { action: 'search_action', settings: { locale: 'en' } },
         translate: { action: 'translate_action' },
@@ -393,16 +409,14 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { prompt: 'Hello there' };
     const bindings = {
+      ...createModelBindings(),
       tools: {
         search: { action: 'search_action' },
       },
@@ -429,18 +443,38 @@ describe('AiGenerateTextAction', () => {
     ).toBe(false);
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow(
+      'A model binding is required to run ai_generate_text. Mount one with tasks.<task>.bindings.model.',
+    );
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
         } as any,
         context: createContext(),
-        bindings: emptyBindings,
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_text.');
   });

@@ -65,7 +65,26 @@ describe('AiGenerateObjectAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
-  const emptyBindings = {};
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      openai_chatgpt: {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -123,13 +142,8 @@ describe('AiGenerateObjectAction', () => {
       required: ['foo'],
     } satisfies JSONSchema7;
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -149,7 +163,7 @@ describe('AiGenerateObjectAction', () => {
       input,
       settings,
       context,
-      bindings: emptyBindings,
+      bindings: createModelBindings(),
     });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
@@ -233,19 +247,40 @@ describe('AiGenerateObjectAction', () => {
     });
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+          output_schema: { type: 'object' },
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow(
+      'A model binding is required to run ai_generate_object. Mount one with tasks.<task>.bindings.model.',
+    );
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
           output_schema: { type: 'object' },
         } as any,
         context: createContext(),
-        bindings: emptyBindings,
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_object.');
   });
