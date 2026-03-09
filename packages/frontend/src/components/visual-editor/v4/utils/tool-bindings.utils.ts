@@ -6,26 +6,18 @@
 
 import {
   JsonValue,
-  type TaskDefinition,
-  toSnakeCase,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 
+import {
+  mountTaskBindingRef,
+  setTaskBindingRefs,
+  toBindingRefs,
+} from "./task-bindings.utils";
+
 export const TOOL_BINDING_KIND = "tools";
 
-const TOOL_NAME_REGEX = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
-
 type WorkflowDefs = NonNullable<WorkflowDefinition["defs"]>;
-
-const toStringArray = (value: unknown): string[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .filter((entry): entry is string => typeof entry === "string")
-    .filter(Boolean);
-};
 const sanitizeToolDescription = (value?: string): string | undefined => {
   const normalized = value?.trim() ?? "";
 
@@ -58,57 +50,6 @@ const createToolDefinition = ({
     ...(normalizedDescription ? { description: normalizedDescription } : {}),
     ...(normalizedSettings ? { settings: normalizedSettings } : {}),
   };
-};
-const withTaskBindingRefs = (
-  taskDefinition: TaskDefinition,
-  bindingKind: string,
-  refs: string[],
-): TaskDefinition => {
-  const nextBindings = { ...(taskDefinition.bindings ?? {}) };
-
-  if (refs.length > 0) {
-    nextBindings[bindingKind] = refs;
-  } else {
-    delete nextBindings[bindingKind];
-  }
-
-  if (Object.keys(nextBindings).length === 0) {
-    const { bindings: _bindings, ...taskWithoutBindings } = taskDefinition;
-
-    return taskWithoutBindings;
-  }
-
-  return {
-    ...taskDefinition,
-    bindings: nextBindings,
-  };
-};
-
-export const normalizeToolBindingName = (value: string): string => {
-  const normalized = toSnakeCase(value.trim());
-
-  if (!normalized || !TOOL_NAME_REGEX.test(normalized)) {
-    return "";
-  }
-
-  return normalized;
-};
-
-export const createUniqueToolBindingName = (
-  actionName: string,
-  defs: WorkflowDefinition["defs"] | undefined,
-): string => {
-  const nextDefs = defs ?? {};
-  const baseName = normalizeToolBindingName(actionName) || "tool";
-  let candidate = baseName;
-  let suffix = 2;
-
-  while (Object.prototype.hasOwnProperty.call(nextDefs, candidate)) {
-    candidate = `${baseName}_${suffix}`;
-    suffix += 1;
-  }
-
-  return candidate;
 };
 
 export type CreateToolBindingDefinitionMutationArgs = {
@@ -143,16 +84,16 @@ export const createToolBindingDefinitionMutation = (
     return definition;
   }
 
-  const currentRefs = toStringArray(taskDefinition.bindings?.[bindingKind]);
+  const nextTaskDefinition = mountTaskBindingRef(
+    taskDefinition,
+    bindingKind,
+    bindingName,
+    true,
+  );
 
-  if (currentRefs.includes(bindingName)) {
+  if (nextTaskDefinition === taskDefinition) {
     return definition;
   }
-
-  const nextTaskDefinition = withTaskBindingRefs(taskDefinition, bindingKind, [
-    ...currentRefs,
-    bindingName,
-  ]);
 
   return {
     ...definition,
@@ -216,7 +157,7 @@ export const updateToolBindingDefinitionMutation = (
 
   const nextTasks = Object.fromEntries(
     Object.entries(definition.tasks).map(([taskName, taskDefinition]) => {
-      const refs = toStringArray(taskDefinition.bindings?.[bindingKind]);
+      const refs = toBindingRefs(taskDefinition.bindings?.[bindingKind], true);
 
       if (!refs.includes(currentBindingName)) {
         return [taskName, taskDefinition];
@@ -229,7 +170,7 @@ export const updateToolBindingDefinitionMutation = (
 
       return [
         taskName,
-        withTaskBindingRefs(taskDefinition, bindingKind, dedupedRefs),
+        setTaskBindingRefs(taskDefinition, bindingKind, dedupedRefs, true),
       ];
     }),
   ) as WorkflowDefinition["tasks"];

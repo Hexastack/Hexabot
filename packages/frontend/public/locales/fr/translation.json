@@ -824,6 +824,29 @@
         }
       }
     },
+    "single_binding_drawer": {
+      "title": {
+        "edit": "Modifier la définition {{bindingLabel}}",
+        "create": "Ajouter un binding {{bindingLabel}}"
+      },
+      "form": {
+        "binding_id": {
+          "label": "ID {{bindingLabel}}",
+          "errors": {
+            "required": "L'ID {{bindingLabel}} est obligatoire.",
+            "snake_case": "L'ID {{bindingLabel}} doit utiliser des lettres minuscules, des chiffres et des underscores.",
+            "unique": "Une définition avec cet ID existe déjà."
+          }
+        },
+        "description": {
+          "placeholder": "Description optionnelle de {{bindingLabelLower}}."
+        },
+        "back": "Retour à la sélection de {{bindingLabelLower}}",
+        "empty_schema": "Le schéma {{bindingLabel}} est indisponible."
+      },
+      "add_new": "Ajouter une nouvelle définition {{bindingLabelLower}}",
+      "empty": "Aucune définition {{bindingLabelLower}} n'est disponible pour le moment."
+    },
     "conditional_drawer": {
       "title": "Conditionnel",
       "description": "Définissez des conditions JSONata pour cet opérateur.",

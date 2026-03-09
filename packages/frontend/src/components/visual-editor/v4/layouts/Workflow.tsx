@@ -5,9 +5,9 @@
  */
 
 import {
-  type JsonValue,
   StepType,
   Workflow as WorkflowHelper,
+  type JsonValue,
   type Settings,
 } from "@hexabot-ai/agentic";
 import {
@@ -54,6 +54,7 @@ import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/Cond
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { LoopFormDrawer } from "../components/main/LoopDrawer/LoopFormDrawer";
 import { ParallelFormDrawer } from "../components/main/ParallelDrawer/ParallelFormDrawer";
+import { SingleBindingSelectionDrawer } from "../components/main/SingleBindingDrawer/SingleBindingSelectionDrawer";
 import {
   ToolFormDrawer,
   type ToolFormDrawerTarget,
@@ -64,9 +65,22 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowExecutionState } from "../hooks/useWorkflowExecutionState";
+import {
+  humanizeBindingKind,
+  isSingleBindingKind,
+} from "../utils/binding-kind.utils";
+import {
+  createUniqueBindingName,
+  normalizeBindingName,
+} from "../utils/binding-name.utils";
 import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
-  createUniqueToolBindingName,
+  mountTaskBindingRef,
+  setTaskBindingRefs,
+  toBindingRefs,
+  unmountTaskBindingRef,
+} from "../utils/task-bindings.utils";
+import {
   TOOL_BINDING_KIND,
 } from "../utils/tool-bindings.utils";
 import { createBaseDefinition } from "../utils/workflow-definition.utils";
@@ -94,6 +108,11 @@ const WorkflowPublishOverlay = styled(Box)(() => ({
   right: 12,
   zIndex: 2,
 }));
+
+type EditingSingleBindingTarget = {
+  bindingKind: string;
+  bindingName: string;
+};
 
 export const Workflow = () => {
   const { t } = useTranslate();
@@ -134,6 +153,10 @@ export const Workflow = () => {
     useState<FlowStepPath | null>(null);
   const [pendingToolBindingAdd, setPendingToolBindingAdd] =
     useState<WorkflowBindingAddPayload | null>(null);
+  const [pendingSingleBindingAdd, setPendingSingleBindingAdd] =
+    useState<WorkflowBindingAddPayload | null>(null);
+  const [editingSingleBindingTarget, setEditingSingleBindingTarget] =
+    useState<EditingSingleBindingTarget | null>(null);
   const [toolDrawerTarget, setToolDrawerTarget] =
     useState<ToolFormDrawerTarget | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
@@ -163,8 +186,34 @@ export const Workflow = () => {
     isDefinitionSaving ||
     isCurrentVersionPublished;
   const isUnpublishDisabled = !hasPublishedVersion || isDefinitionSaving;
+  const activeSingleBindingKind =
+    editingSingleBindingTarget?.bindingKind ?? pendingSingleBindingAdd?.bindingKind;
+  const activeSingleBindingLabel = useMemo(
+    () => humanizeBindingKind(activeSingleBindingKind ?? ""),
+    [activeSingleBindingKind],
+  );
+  const availableSingleBindingDefs = useMemo(() => {
+    if (!activeSingleBindingKind) {
+      return [];
+    }
+
+    return Object.entries(definition?.defs ?? {})
+      .filter(([, defDefinition]) => defDefinition.kind === activeSingleBindingKind)
+      .map(([defName]) => defName)
+      .sort();
+  }, [activeSingleBindingKind, definition?.defs]);
+  const activeSingleBindingSchema = activeSingleBindingKind
+    ? bindingsByName.get(activeSingleBindingKind)?.schema
+    : undefined;
+  const isSingleBindingDrawerOpen = Boolean(
+    activeSingleBindingKind &&
+      (pendingSingleBindingAdd || editingSingleBindingTarget),
+  );
   const handleInsert = useCallback(
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
+      setPendingSingleBindingAdd(null);
+      setEditingSingleBindingTarget(null);
+
       if (insertType === StepType.Conditional) {
         setPendingInsertPath(null);
         addConditionalStep(insertPath);
@@ -207,8 +256,8 @@ export const Workflow = () => {
           return;
         }
 
-        const nextToolName = createUniqueToolBindingName(
-          action.name,
+        const nextToolName = createUniqueBindingName(
+          normalizeBindingName(action.name) || "tool",
           definition.defs,
         );
         const toolSettingsDefaults =
@@ -227,6 +276,7 @@ export const Workflow = () => {
         setActionsDrawerOpen(false);
         setPendingInsertPath(null);
         setPendingToolBindingAdd(null);
+        setEditingSingleBindingTarget(null);
 
         return;
       }
@@ -234,6 +284,8 @@ export const Workflow = () => {
       addActionStep(action, pendingInsertPath);
       setActionsDrawerOpen(false);
       setPendingInsertPath(null);
+      setPendingSingleBindingAdd(null);
+      setEditingSingleBindingTarget(null);
     },
     [addActionStep, definition, pendingInsertPath, pendingToolBindingAdd],
   );
@@ -420,6 +472,8 @@ export const Workflow = () => {
 
       if (bindingKind === TOOL_BINDING_KIND) {
         setPendingInsertPath(null);
+        setPendingSingleBindingAdd(null);
+        setEditingSingleBindingTarget(null);
         setPendingToolBindingAdd({
           ...payload,
           taskName,
@@ -430,7 +484,28 @@ export const Workflow = () => {
         return;
       }
 
+      const bindingDefinition = bindingsByName.get(bindingKind);
+
+      if (!bindingDefinition) {
+        return;
+      }
+
+      if (isSingleBindingKind(bindingKind, bindingsByName)) {
+        setPendingInsertPath(null);
+        setPendingToolBindingAdd(null);
+        setEditingSingleBindingTarget(null);
+        setPendingSingleBindingAdd({
+          ...payload,
+          taskName,
+          bindingKind,
+        });
+
+        return;
+      }
+
+      setPendingSingleBindingAdd(null);
       setPendingToolBindingAdd(null);
+      setEditingSingleBindingTarget(null);
       const defsByKind = Object.entries(definition.defs ?? {}).reduce<string[]>(
         (acc, [defName, defDefinition]) => {
           if (defDefinition.kind === bindingKind) {
@@ -447,10 +522,72 @@ export const Workflow = () => {
       }
 
       const taskDefinition = definition.tasks[taskName];
-      const currentRefs = taskDefinition.bindings?.[bindingKind] ?? [];
-      const nextRef = defsByKind.find((refName) => !currentRefs.includes(refName));
+      const multiple = bindingDefinition.multiple ?? true;
+      const currentRefs = toBindingRefs(
+        taskDefinition.bindings?.[bindingKind],
+        multiple,
+      );
+
+      if (!multiple && currentRefs.length > 0) {
+        return;
+      }
+
+      const nextRef = multiple
+        ? defsByKind.find((refName) => !currentRefs.includes(refName))
+        : defsByKind[0];
 
       if (!nextRef) {
+        return;
+      }
+
+      const nextTaskDefinition = mountTaskBindingRef(
+        taskDefinition,
+        bindingKind,
+        nextRef,
+        multiple,
+      );
+      const nextDefinition = {
+        ...definition,
+        tasks: {
+          ...definition.tasks,
+          [taskName]: nextTaskDefinition,
+        },
+      };
+
+      updateDefinitionState(nextDefinition);
+    },
+    [bindingsByName, definition, updateDefinitionState],
+  );
+  const handleSelectSingleBinding = useCallback(
+    (bindingName: string) => {
+      if (!pendingSingleBindingAdd || !definition) {
+        return;
+      }
+
+      const { taskName, bindingKind } = pendingSingleBindingAdd;
+      const taskDefinition = definition.tasks[taskName];
+
+      if (!taskDefinition) {
+        return;
+      }
+
+      const bindingDefinition = bindingsByName.get(bindingKind);
+
+      if (!bindingDefinition) {
+        return;
+      }
+
+      const multiple = bindingDefinition.multiple ?? true;
+      const nextTaskDefinition = mountTaskBindingRef(
+        taskDefinition,
+        bindingKind,
+        bindingName,
+        multiple,
+      );
+
+      if (nextTaskDefinition === taskDefinition) {
+        setPendingSingleBindingAdd(null);
+
         return;
       }
 
@@ -458,23 +595,182 @@ export const Workflow = () => {
         ...definition,
         tasks: {
           ...definition.tasks,
-          [taskName]: {
-            ...taskDefinition,
-            bindings: {
-              ...(taskDefinition.bindings ?? {}),
-              [bindingKind]: [...currentRefs, nextRef],
-            },
-          },
+          [taskName]: nextTaskDefinition,
         },
       };
 
       updateDefinitionState(nextDefinition);
+      setPendingSingleBindingAdd(null);
+      setEditingSingleBindingTarget(null);
     },
-    [definition, updateDefinitionState],
+    [bindingsByName, definition, pendingSingleBindingAdd, updateDefinitionState],
   );
+  const handleCreateSingleBindingDefinition = useCallback(
+    (
+      bindingName: string,
+      bindingDefinitionPayload: Record<string, unknown>,
+      description?: string,
+    ) => {
+      if (!pendingSingleBindingAdd || !definition) {
+        return;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(definition.defs ?? {}, bindingName)) {
+        return;
+      }
+
+      const { taskName, bindingKind } = pendingSingleBindingAdd;
+      const taskDefinition = definition.tasks[taskName];
+
+      if (!taskDefinition) {
+        return;
+      }
+
+      const bindingDefinition = bindingsByName.get(bindingKind);
+
+      if (!bindingDefinition) {
+        return;
+      }
+
+      const multiple = bindingDefinition.multiple ?? true;
+      const nextTaskDefinition = mountTaskBindingRef(
+        taskDefinition,
+        bindingKind,
+        bindingName,
+        multiple,
+      );
+
+      if (nextTaskDefinition === taskDefinition) {
+        setPendingSingleBindingAdd(null);
+
+        return;
+      }
+      const normalizedDescription = description?.trim() ?? "";
+      const nextDefinition = {
+        ...definition,
+        defs: {
+          ...(definition.defs ?? {}),
+          [bindingName]: {
+            ...bindingDefinitionPayload,
+            kind: bindingKind,
+            ...(normalizedDescription
+              ? { description: normalizedDescription }
+              : {}),
+          } as { [key: string]: unknown; kind: string },
+        },
+        tasks: {
+          ...definition.tasks,
+          [taskName]: nextTaskDefinition,
+        },
+      };
+
+      updateDefinitionState(nextDefinition);
+      setPendingSingleBindingAdd(null);
+      setEditingSingleBindingTarget(null);
+    },
+    [bindingsByName, definition, pendingSingleBindingAdd, updateDefinitionState],
+  );
+  const handleUpdateSingleBindingDefinition = useCallback(
+    (
+      currentBindingName: string,
+      nextBindingName: string,
+      bindingDefinitionPayload: Record<string, unknown>,
+      description?: string,
+    ) => {
+      if (!definition || !editingSingleBindingTarget) {
+        return;
+      }
+
+      const { bindingKind } = editingSingleBindingTarget;
+      const currentDefs = definition.defs ?? {};
+      const currentDef = currentDefs[currentBindingName];
+
+      if (!currentDef || currentDef.kind !== bindingKind) {
+        return;
+      }
+
+      if (
+        currentBindingName !== nextBindingName &&
+        Object.prototype.hasOwnProperty.call(currentDefs, nextBindingName)
+      ) {
+        return;
+      }
+
+      const normalizedDescription = description?.trim() ?? "";
+      const nextDefs = { ...currentDefs };
+
+      if (currentBindingName !== nextBindingName) {
+        delete nextDefs[currentBindingName];
+      }
+
+      nextDefs[nextBindingName] = {
+        ...bindingDefinitionPayload,
+        kind: bindingKind,
+        ...(normalizedDescription
+          ? { description: normalizedDescription }
+          : {}),
+      } as { [key: string]: unknown; kind: string };
+
+      const bindingDefinition = bindingsByName.get(bindingKind);
+      const multiple = bindingDefinition?.multiple ?? false;
+      const nextTasks =
+        currentBindingName !== nextBindingName
+          ? (Object.fromEntries(
+              Object.entries(definition.tasks).map(
+                ([taskName, taskDefinition]) => {
+                  const refs = toBindingRefs(
+                    taskDefinition.bindings?.[bindingKind],
+                    multiple,
+                  );
+
+                  if (!refs.includes(currentBindingName)) {
+                    return [taskName, taskDefinition];
+                  }
+
+                  const replacedRefs = refs.map((refName) =>
+                    refName === currentBindingName ? nextBindingName : refName,
+                  );
+                  const dedupedRefs = Array.from(new Set(replacedRefs));
+
+                  return [
+                    taskName,
+                    setTaskBindingRefs(
+                      taskDefinition,
+                      bindingKind,
+                      dedupedRefs,
+                      multiple,
+                    ),
+                  ];
+                },
+              ),
+            ) as typeof definition.tasks)
+          : definition.tasks;
+
+      updateDefinitionState({
+        ...definition,
+        defs: nextDefs,
+        tasks: nextTasks,
+      });
+      setEditingSingleBindingTarget(null);
+      setPendingSingleBindingAdd(null);
+    },
+    [
+      bindingsByName,
+      definition,
+      editingSingleBindingTarget,
+      updateDefinitionState,
+    ],
+  );
+  const handleCloseSingleBindingDrawer = useCallback(() => {
+    setPendingSingleBindingAdd(null);
+    setEditingSingleBindingTarget(null);
+  }, []);
   const handleGraphNodeClick = useCallback<NodeMouseHandler<Node>>(
     (_event, node) => {
-      if (node.type !== ENodeType.TOOL) {
+      if (
+        node.type !== ENodeType.TOOL &&
+        node.type !== ENodeType.SINGLE_BINDING
+      ) {
         return;
       }
 
@@ -486,22 +782,43 @@ export const Workflow = () => {
       const bindingName = nodeData?.bindingName;
       const taskName = nodeData?.taskName;
 
-      if (
-        bindingKind !== TOOL_BINDING_KIND ||
-        typeof bindingName !== "string" ||
-        typeof taskName !== "string"
-      ) {
+      if (node.type === ENodeType.TOOL) {
+        if (
+          bindingKind !== TOOL_BINDING_KIND ||
+          typeof bindingName !== "string" ||
+          typeof taskName !== "string"
+        ) {
+          return;
+        }
+
+        setToolDrawerTarget({
+          mode: "edit",
+          taskName,
+          bindingKind: TOOL_BINDING_KIND,
+          bindingName,
+        });
+        setEditingSingleBindingTarget(null);
+
         return;
       }
 
-      setToolDrawerTarget({
-        mode: "edit",
-        taskName,
-        bindingKind: TOOL_BINDING_KIND,
+      if (typeof bindingKind !== "string" || typeof bindingName !== "string") {
+        return;
+      }
+
+      if (!isSingleBindingKind(bindingKind, bindingsByName)) {
+        return;
+      }
+
+      setPendingSingleBindingAdd(null);
+      setPendingToolBindingAdd(null);
+      setToolDrawerTarget(null);
+      setEditingSingleBindingTarget({
+        bindingKind,
         bindingName,
       });
     },
-    [],
+    [bindingsByName],
   );
   const handleRemoveBinding = useCallback(
     ({
@@ -514,30 +831,28 @@ export const Workflow = () => {
       }
 
       const taskDefinition = definition.tasks[taskName];
-      const currentRefs = taskDefinition.bindings?.[bindingKind] ?? [];
+      const bindingDefinition = bindingsByName.get(bindingKind);
+
+      if (!bindingDefinition) {
+        return;
+      }
+
+      const multiple = bindingDefinition.multiple ?? true;
+      const currentRefs = toBindingRefs(
+        taskDefinition.bindings?.[bindingKind],
+        multiple,
+      );
 
       if (!currentRefs.includes(bindingName)) {
         return;
       }
 
-      const nextRefs = currentRefs.filter((refName) => refName !== bindingName);
-      const nextBindings = { ...(taskDefinition.bindings ?? {}) };
-
-      if (nextRefs.length > 0) {
-        nextBindings[bindingKind] = nextRefs;
-      } else {
-        delete nextBindings[bindingKind];
-      }
-
-      const nextTaskDefinition =
-        Object.keys(nextBindings).length > 0
-          ? { ...taskDefinition, bindings: nextBindings }
-          : (() => {
-              const { bindings: _bindings, ...taskWithoutBindings } =
-                taskDefinition;
-
-              return taskWithoutBindings;
-            })();
+      const nextTaskDefinition = unmountTaskBindingRef(
+        taskDefinition,
+        bindingKind,
+        bindingName,
+        multiple,
+      );
       const nextDefinition = {
         ...definition,
         tasks: {
@@ -548,7 +863,7 @@ export const Workflow = () => {
 
       updateDefinitionState(nextDefinition);
     },
-    [definition, updateDefinitionState],
+    [bindingsByName, definition, updateDefinitionState],
   );
 
   return (
@@ -655,11 +970,28 @@ export const Workflow = () => {
             setActionsDrawerOpen(false);
             setPendingInsertPath(null);
             setPendingToolBindingAdd(null);
+            setPendingSingleBindingAdd(null);
+            setEditingSingleBindingTarget(null);
             workflowGraphRef.current?.clearCenterAfterFirstInsert();
           }}
         />
         <WorkflowBottomDrawer />
       </StyledBox>
+      <SingleBindingSelectionDrawer
+        drawerId="workflow-single-bindings-drawer"
+        open={isSingleBindingDrawerOpen}
+        availableBindings={availableSingleBindingDefs}
+        bindingKind={activeSingleBindingKind ?? ""}
+        bindingLabel={activeSingleBindingLabel}
+        defs={definition?.defs}
+        bindingSchema={activeSingleBindingSchema}
+        editingBindingName={editingSingleBindingTarget?.bindingName}
+        isSaving={isDefinitionSaving}
+        onSelectBinding={handleSelectSingleBinding}
+        onCreateBindingDefinition={handleCreateSingleBindingDefinition}
+        onUpdateBindingDefinition={handleUpdateSingleBindingDefinition}
+        onClose={handleCloseSingleBindingDrawer}
+      />
       <ToolFormDrawer
         target={toolDrawerTarget}
         onClose={() => {

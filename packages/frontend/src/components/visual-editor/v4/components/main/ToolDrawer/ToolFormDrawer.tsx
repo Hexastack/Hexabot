@@ -14,6 +14,7 @@ import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
+import { normalizeBindingName } from "../../../utils/binding-name.utils";
 import {
   getSchemaPropertyNames,
 } from "../../../utils/schema-defaults.utils";
@@ -22,7 +23,6 @@ import {
 } from "../../../utils/settings-ui-schema.utils";
 import {
   createToolBindingDefinitionMutation,
-  normalizeToolBindingName,
   TOOL_BINDING_KIND,
   updateToolBindingDefinitionMutation,
 } from "../../../utils/tool-bindings.utils";
@@ -210,7 +210,7 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
     [actionSchema?.settingSchema],
   );
   const normalizedToolName = useMemo(
-    () => normalizeToolBindingName(toolNameValue),
+    () => normalizeBindingName(toolNameValue),
     [toolNameValue],
   );
   const toolNameError = useMemo(() => {
@@ -298,7 +298,7 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
     handleClose();
   };
   const handleToolNameCommit = (nextToolName: string) => {
-    const nextNormalizedToolName = normalizeToolBindingName(nextToolName);
+    const nextNormalizedToolName = normalizeBindingName(nextToolName);
 
     setToolNameValue(nextNormalizedToolName || "");
   };

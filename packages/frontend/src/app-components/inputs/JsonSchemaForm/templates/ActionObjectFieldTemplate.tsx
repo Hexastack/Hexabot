@@ -245,7 +245,7 @@ export const ActionObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
       {canAddOption ? (
         <>
           <Grid container>
-            <Grid size={{ xs: 12 }}>
+            <Grid size={{ xs: 12 }} mt={2}>
               <Button
                 variant="outlined"
                 onClick={handleOpenAddOptionMenu}
