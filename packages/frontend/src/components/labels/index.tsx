@@ -105,14 +105,6 @@ export const Labels = () => {
       headerAlign: "left",
     },
     {
-      minWidth: 120,
-      field: "user_count",
-      headerName: t("label.user_count"),
-      disableColumnMenu: true,
-      resizable: false,
-      headerAlign: "left",
-    },
-    {
       minWidth: 140,
       field: "label_id",
       headerName: t("label.label_id"),
