@@ -11,28 +11,28 @@ import type { CSSProperties } from "react";
 import type { WorkflowPort } from "../types/workflow-node.types";
 
 const LINK = {
-  MODEL_IN: "modelIn",
-  TOOL_IN: "toolIn",
-  BINDING_PLACEHOLDER_IN: "bindingPlaceholderIn",
-  AGENT_IN: "agentIn",
-  AGENT_OUT: "agentOut",
-  AGENT_MEMORY: "agentMemory",
-  AGENT_MODEL: "agentModel",
-  AGENT_TOOL: "agentTool",
-  AGENT_BINDING_OUT: "agentBindingOut",
-  TASK_IN: "taskIn",
-  TASK_OUT: "taskOut",
-  TASK_TOOL: "taskTool",
-  TASK_BINDING_OUT: "taskBindingOut",
-  INDICATOR_IN: "indicatorIn",
-  INDICATOR_OUT: "indicatorOut",
-  OPERATOR_IN: "operatorIn",
-  OPERATOR_OUT: "operatorOut",
-  GROUP_IN: "groupIn",
-  GROUP_OUT: "groupOut",
-  MEMORY_IN: "memoryIn",
-  BRANCH_PLACEHOLDER_IN: "branchPlaceholderIn",
-  BRANCH_PLACEHOLDER_OUT: "branchPlaceholderOut",
+  SINGLE_BINDING_IN: 'singleBindingIn',
+  TOOL_IN: 'toolIn',
+  BINDING_PLACEHOLDER_IN: 'bindingPlaceholderIn',
+  AGENT_IN: 'agentIn',
+  AGENT_OUT: 'agentOut',
+  AGENT_MEMORY: 'agentMemory',
+  AGENT_SINGLE_BINDING: 'agentModel',
+  AGENT_TOOL: 'agentTool',
+  AGENT_BINDING_OUT: 'agentBindingOut',
+  TASK_IN: 'taskIn',
+  TASK_OUT: 'taskOut',
+  TASK_TOOL: 'taskTool',
+  TASK_BINDING_OUT: 'taskBindingOut',
+  INDICATOR_IN: 'indicatorIn',
+  INDICATOR_OUT: 'indicatorOut',
+  OPERATOR_IN: 'operatorIn',
+  OPERATOR_OUT: 'operatorOut',
+  GROUP_IN: 'groupIn',
+  GROUP_OUT: 'groupOut',
+  MEMORY_IN: 'memoryIn',
+  BRANCH_PLACEHOLDER_IN: 'branchPlaceholderIn',
+  BRANCH_PLACEHOLDER_OUT: 'branchPlaceholderOut',
 } as const;
 
 type LinkType = (typeof LINK)[keyof typeof LINK];
@@ -42,7 +42,7 @@ const CONDITIONAL_OPERATOR_OUT_PATTERN = /^operatorOut-(\d+)-(\d+)$/;
 const BINDING_OUT_PATTERN = /^(agentBindingOut|taskBindingOut)-(\d+)-(\d+)-(.+)$/;
 
 type AgentOutHandle =
-  | typeof LINK.AGENT_MODEL
+  | typeof LINK.AGENT_SINGLE_BINDING
   | typeof LINK.AGENT_MEMORY
   | typeof LINK.AGENT_TOOL;
 
@@ -61,7 +61,7 @@ const AGENT_OUT_HANDLE_PROGRESS: Record<
 
 export const AGENT_ATTACHMENT_SOURCE_HANDLES = new Set<string>([
   LINK.AGENT_TOOL,
-  LINK.AGENT_MODEL,
+  LINK.AGENT_SINGLE_BINDING,
   LINK.AGENT_MEMORY,
 ]);
 
@@ -230,109 +230,109 @@ type PortRule = {
 
 const PORT_RULES: Partial<Record<LinkType, PortRule>> = {
   [LINK.GROUP_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
   },
   [LINK.GROUP_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
   },
   [LINK.INDICATOR_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
   },
   [LINK.INDICATOR_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
   },
   [LINK.OPERATOR_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
   },
   [LINK.OPERATOR_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
     style: getConditionalOperatorOutStyle,
   },
   [LINK.TASK_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
   },
   [LINK.TASK_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
   },
   [LINK.TASK_TOOL]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
   },
   [LINK.TASK_BINDING_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getBindingOutStyle,
   },
   [LINK.AGENT_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
     style: (_, direction) =>
-      direction === "horizontal" ? { top: "50%" } : undefined,
+      direction === 'horizontal' ? { top: '50%' } : undefined,
   },
   [LINK.AGENT_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
     style: (_, direction) =>
-      direction === "horizontal" ? { top: "50%" } : undefined,
+      direction === 'horizontal' ? { top: '50%' } : undefined,
   },
-  [LINK.AGENT_MODEL]: {
-    type: "source",
+  [LINK.AGENT_SINGLE_BINDING]: {
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getAgentOutStyle,
   },
   [LINK.AGENT_MEMORY]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getAgentOutStyle,
   },
   [LINK.AGENT_TOOL]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getAgentOutStyle,
   },
   [LINK.AGENT_BINDING_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getBindingOutStyle,
   },
   [LINK.TOOL_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
-      direction === "horizontal" ? { left: "50%" } : undefined,
+      direction === 'horizontal' ? { left: '50%' } : undefined,
   },
   [LINK.BINDING_PLACEHOLDER_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
-      direction === "horizontal" ? { left: "50%" } : undefined,
+      direction === 'horizontal' ? { left: '50%' } : undefined,
   },
-  [LINK.MODEL_IN]: {
-    type: "target",
+  [LINK.SINGLE_BINDING_IN]: {
+    type: 'target',
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
-      direction === "horizontal" ? { left: "50%" } : undefined,
+      direction === 'horizontal' ? { left: '50%' } : undefined,
   },
   [LINK.MEMORY_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
-      direction === "horizontal" ? { left: "50%" } : undefined,
+      direction === 'horizontal' ? { left: '50%' } : undefined,
   },
   [LINK.BRANCH_PLACEHOLDER_IN]: {
-    type: "target",
+    type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
   },
   [LINK.BRANCH_PLACEHOLDER_OUT]: {
-    type: "source",
+    type: 'source',
     position: { horizontal: Position.Right, vertical: Position.Bottom },
   },
 };
@@ -343,10 +343,10 @@ const DEFAULT_PORT_RULE: PortRule = {
 const SPECIAL_DIMENSION_HANDLES = new Set<LinkType>([
   LINK.TOOL_IN,
   LINK.BINDING_PLACEHOLDER_IN,
-  LINK.MODEL_IN,
+  LINK.SINGLE_BINDING_IN,
   LINK.MEMORY_IN,
   LINK.AGENT_TOOL,
-  LINK.AGENT_MODEL,
+  LINK.AGENT_SINGLE_BINDING,
   LINK.AGENT_MEMORY,
   LINK.AGENT_BINDING_OUT,
   LINK.TASK_BINDING_OUT,

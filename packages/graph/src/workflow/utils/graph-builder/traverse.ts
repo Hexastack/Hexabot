@@ -25,6 +25,7 @@ import {
   type INodeConfig,
   type WorkflowAction,
   type WorkflowBindingCatalog,
+  type WorkflowBindingDefinition,
   type WorkflowNodePort,
 } from "../../types/workflow-node.types";
 import type { FlowStepPath } from "../../types/workflow-path.types";
@@ -96,12 +97,23 @@ const getNextInsertPath = (stepPath: FlowStepPath): FlowStepPath | undefined => 
   return [...stepPath.slice(0, -1), tail + 1];
 };
 const getGroupName = (groupPath: string[]) => groupPath[groupPath.length - 1];
+const humanizeBindingKind = (kind: string): string => {
+  return kind
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+};
 const getBindingPortLabel = (kind: string): string => {
   if (kind === "tools") {
     return "visual_editor.port_label.tools";
   }
 
-  return kind;
+  if (kind === "model") {
+    return "visual_editor.port_label.model";
+  }
+
+  return humanizeBindingKind(kind);
 };
 const buildAgentBindingOutPort = (
   bindingKind: string,
@@ -131,14 +143,36 @@ const buildBindingPorts = <T extends ENodeType.AGENT | ENodeType.TASK>(
     } as WorkflowNodePort<T>;
   });
 };
-const toStringArray = (value: unknown): string[] => {
+const toBindingRefs = (
+  value: unknown,
+  bindingDefinition: WorkflowBindingDefinition | undefined,
+): string[] => {
+  const multiple = bindingDefinition?.multiple ?? true;
+
+  if (multiple) {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .filter((entry): entry is string => typeof entry === "string")
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim();
+
+    return normalized ? [normalized] : [];
+  }
+
+  // Be tolerant with invalid values and still recover displayable refs.
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value
-    .filter((entry) => entry !== undefined && entry !== null)
-    .map((entry) => String(entry));
+    .filter((entry): entry is string => typeof entry === "string")
+    .filter(Boolean);
 };
 const resolveEffectiveBindingKinds = (
   taskAction: string,
@@ -174,8 +208,6 @@ const getTaskMeta = (
   const settings = taskDefinition?.settings as Record<string, unknown> | undefined;
   const actionName =
     typeof taskDefinition?.action === "string" ? taskDefinition.action : "";
-  const providerValue = settings?.provider;
-  const modelValue = settings?.model;
   const memoryEnabled = settings?.memory_enabled === true;
   const bindingKinds = resolveEffectiveBindingKinds(
     actionName,
@@ -183,12 +215,6 @@ const getTaskMeta = (
     bindingCatalog,
   );
   const bindings = taskDefinition?.bindings as Record<string, unknown> | undefined;
-  const provider =
-    providerValue !== undefined && providerValue !== null
-      ? String(providerValue)
-      : "";
-  const model =
-    modelValue !== undefined && modelValue !== null ? String(modelValue) : "";
 
   return {
     actionName,
@@ -196,11 +222,9 @@ const getTaskMeta = (
     mountedBindings: Object.fromEntries(
       bindingKinds.map((bindingKind) => [
         bindingKind,
-        toStringArray(bindings?.[bindingKind]),
+        toBindingRefs(bindings?.[bindingKind], bindingCatalog.get(bindingKind)),
       ]),
     ) as Record<string, string[]>,
-    provider,
-    model,
     memoryEnabled,
   };
 };
@@ -424,11 +448,10 @@ const addPlaceholderNode = (
 
   return placeholderNodeId;
 };
-const BINDING_NODE_TYPE_BY_KIND: Record<string, ENodeType.TOOL> = {
-  tools: ENodeType.TOOL,
-};
-const resolveBindingNodeType = (bindingKind: string): ENodeType.TOOL =>
-  BINDING_NODE_TYPE_BY_KIND[bindingKind] ?? ENodeType.TOOL;
+const resolveBindingNodeType = (
+  multiple: boolean,
+): ENodeType.TOOL | ENodeType.SINGLE_BINDING =>
+  multiple ? ENodeType.TOOL : ENodeType.SINGLE_BINDING;
 const addTaskAttachments = (
   state: TraverseState,
   {
@@ -440,7 +463,6 @@ const addTaskAttachments = (
     nodeType,
     bindingKinds,
     mountedBindings,
-    model,
     memoryEnabled,
   }: {
     stepId: string;
@@ -451,35 +473,10 @@ const addTaskAttachments = (
     nodeType: ENodeType.AGENT | ENodeType.TASK;
     bindingKinds: string[];
     mountedBindings: Record<string, string[]>;
-    model: string;
     memoryEnabled: boolean;
   },
 ) => {
   const isAgentNode = nodeType === ENodeType.AGENT;
-
-  if (isAgentNode && model) {
-    const modelNodeId = createAttachmentNodeId(stepId, "model", model, 0);
-
-    addSemanticNode(state, {
-      id: modelNodeId,
-      type: ENodeType.MODEL,
-      level,
-      groupPath: [],
-      isAttachment: true,
-      data: {
-        ...state.config.nodes[ENodeType.MODEL],
-        title: model,
-        i18nTitle: undefined,
-        level,
-      },
-    });
-
-    addDirectEdge(state, {
-      source: parentNodeId,
-      target: modelNodeId,
-      sourceHandle: ELinkType.AGENT_MODEL,
-    });
-  }
 
   if (isAgentNode && memoryEnabled) {
     state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
@@ -516,6 +513,7 @@ const addTaskAttachments = (
   }
 
   bindingKinds.forEach((bindingKind, bindingIndex) => {
+    const isMultiple = state.bindingCatalog.get(bindingKind)?.multiple ?? true;
     const sourceHandle =
       nodeType === ENodeType.AGENT
         ? buildAgentBindingOutPort(bindingKind, bindingIndex, bindingKinds.length)
@@ -524,7 +522,7 @@ const addTaskAttachments = (
     const placeholderNodeId = createBindingPlaceholderNodeId(stepId, bindingKind);
 
     mountedRefs.forEach((bindingName, bindingRefIndex) => {
-      const bindingNodeType = resolveBindingNodeType(bindingKind);
+      const bindingNodeType = resolveBindingNodeType(isMultiple);
       const bindingNodeId = createAttachmentNodeId(
         stepId,
         "binding",
@@ -561,31 +559,33 @@ const addTaskAttachments = (
       });
     });
 
-    addSemanticNode(state, {
-      id: placeholderNodeId,
-      type: ENodeType.BINDING_PLACEHOLDER,
-      level,
-      stepPath,
-      groupPath: [],
-      isAttachment: true,
-      data: {
-        ...state.config.nodes[ENodeType.BINDING_PLACEHOLDER],
-        title: bindingKind,
-        i18nTitle: undefined,
-        description: "",
-        stepId,
-        stepPath,
-        taskName,
-        bindingKind,
+    if (isMultiple || mountedRefs.length === 0) {
+      addSemanticNode(state, {
+        id: placeholderNodeId,
+        type: ENodeType.BINDING_PLACEHOLDER,
         level,
-      },
-    });
+        stepPath,
+        groupPath: [],
+        isAttachment: true,
+        data: {
+          ...state.config.nodes[ENodeType.BINDING_PLACEHOLDER],
+          title: bindingKind,
+          i18nTitle: undefined,
+          description: "",
+          stepId,
+          stepPath,
+          taskName,
+          bindingKind,
+          level,
+        },
+      });
 
-    addDirectEdge(state, {
-      source: parentNodeId,
-      target: placeholderNodeId,
-      sourceHandle,
-    });
+      addDirectEdge(state, {
+        source: parentNodeId,
+        target: placeholderNodeId,
+        sourceHandle,
+      });
+    }
   });
 };
 const walkParallelSteps = (
@@ -776,15 +776,18 @@ const walkStep = ({
       state.actionCatalog,
       state.bindingCatalog,
     );
-    const isAgentTask = Boolean(taskMeta.model && taskMeta.provider);
+    const actionName =
+      taskMeta.actionName || getTaskAction(step.taskName, state.tasks) || "";
+    const supportsModelBinding = Boolean(
+      state.actionCatalog.get(actionName)?.supportedBindings?.includes("model"),
+    );
+    const isAgentTask = supportsModelBinding;
     const taskNodeId = createStepNodeId(step.id, isAgentTask ? "agent" : "task");
     const groupName = getGroupName(groupPath);
     const bindingPorts = buildBindingPorts(
       isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
       taskMeta.bindingKinds,
     );
-    const actionName =
-      taskMeta.actionName || getTaskAction(step.taskName, state.tasks);
 
     if (isAgentTask) {
       const agentBaseData = state.config.nodes[ENodeType.AGENT];
@@ -861,7 +864,6 @@ const walkStep = ({
       nodeType: isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
       bindingKinds: taskMeta.bindingKinds,
       mountedBindings: taskMeta.mountedBindings,
-      model: isAgentTask ? `${taskMeta.provider}/${taskMeta.model}` : "",
       memoryEnabled: taskMeta.memoryEnabled,
     });
 

@@ -17,7 +17,7 @@ import { GenericNodePorts } from "../../GenericNodePorts";
 import { GenericNodeRightContent } from "../../GenericNodeRightContent";
 import { GenericNodeTitle } from "../../GenericNodeTitle";
 
-export const Model: FC<NodeProps<GraphNode<ENodeType.MODEL>>> = ({ id }) => (
+export const SingleBinding: FC<NodeProps<GraphNode<ENodeType.SINGLE_BINDING>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
       <GenericNodeRightContent>

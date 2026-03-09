@@ -102,7 +102,7 @@ export const DEFAULT_NODE_PROPS = {
 } satisfies Omit<Node, "id" | "data" | "position">;
 
 export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 180, height: 68 },
+  [ENodeType.SINGLE_BINDING]: { width: 180, height: 68 },
   [ENodeType.TOOL]: { width: 180, height: 55 },
   [ENodeType.BINDING_PLACEHOLDER]: { width: 64, height: 64 },
   [ENodeType.AGENT]: { width: 256, height: 86 },
@@ -145,7 +145,6 @@ export const NODES = {
     ports: [
       ELinkType.AGENT_IN,
       ELinkType.AGENT_OUT,
-      { id: ELinkType.AGENT_MODEL, label: 'visual_editor.port_label.model' },
       {
         id: ELinkType.AGENT_MEMORY,
         label: 'visual_editor.port_label.memory',
@@ -174,9 +173,9 @@ export const NODES = {
       borderColor: '#7f8ea3',
     },
   },
-  [ENodeType.MODEL]: {
+  [ENodeType.SINGLE_BINDING]: {
     title: '',
-    ports: [ELinkType.MODEL_IN],
+    ports: [ELinkType.SINGLE_BINDING_IN],
     theme: {
       Icon: Brain,
       borderColor: '#ad46fc',

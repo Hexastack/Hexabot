@@ -28,8 +28,8 @@ describe("handle.utils", () => {
   });
 
   it("parses agent attachment handle metadata", () => {
-    expect(getAgentOutHandleMeta(ELinkType.AGENT_MODEL)).toEqual({
-      handleId: ELinkType.AGENT_MODEL,
+    expect(getAgentOutHandleMeta(ELinkType.AGENT_SINGLE_BINDING)).toEqual({
+      handleId: ELinkType.AGENT_SINGLE_BINDING,
       horizontal: 10,
       vertical: 30,
     });
