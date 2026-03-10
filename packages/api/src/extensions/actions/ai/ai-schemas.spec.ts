@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { aiModelBindingSchema } from '@/actions/runtime-bindings';
-
 import {
   DEFAULT_AI_MESSAGES_LIMIT,
   DEFAULT_AI_PROMPT,
@@ -19,6 +17,7 @@ import {
   aiInferObjectSettingsSchema,
   aiPromptSchema,
 } from './ai-schemas';
+import { aiModelBindingSchema } from './model.binding';
 
 describe('ai prompt schemas', () => {
   it('accepts prompt mode with prompt text', () => {
@@ -195,18 +194,18 @@ describe('ai model binding schema', () => {
 
     expect(result.success).toBe(true);
     expect(result.data?.provider).toBe('openai');
-    expect(result.data?.model).toBe('gpt-5.2');
+    expect(result.data?.model_id).toBe('gpt-5.2');
   });
 
   it('rejects empty model names', () => {
     const result = aiModelBindingSchema.safeParse({
       provider: 'openai',
-      model: '',
+      model_id: '',
     });
 
     expect(result.success).toBe(false);
     expect(
-      result.error?.issues.some((issue) => issue.path[0] === 'model'),
+      result.error?.issues.some((issue) => issue.path[0] === 'model_id'),
     ).toBe(true);
   });
 });

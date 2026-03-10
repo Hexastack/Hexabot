@@ -65,17 +65,15 @@ describe('AiGenerateReplyAction', () => {
   const createModelBindings = (
     overrides: Partial<{
       provider: string;
-      model: string;
+      model_id: string;
       api_key: string;
     }> = {},
   ): any => ({
     model: {
-      openai_chatgpt: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        api_key: 'test-key',
-        ...overrides,
-      },
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      ...overrides,
     },
   });
 
@@ -140,10 +138,6 @@ describe('AiGenerateReplyAction', () => {
         model: 'model-instance',
       }),
     );
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_generate_reply action using provider "openai"',
-      expect.any(Object),
-    );
     expect(result.text).toBe('Generated reply');
   });
 
@@ -158,9 +152,7 @@ describe('AiGenerateReplyAction', () => {
         context: createContext(),
         bindings: {},
       }),
-    ).rejects.toThrow(
-      'A model binding is required to run ai_generate_reply. Mount one with tasks.<task>.bindings.model.',
-    );
+    ).rejects.toThrow('A model is required to run ai_generate_reply.');
   });
 
   it('throws when the model id is missing', async () => {

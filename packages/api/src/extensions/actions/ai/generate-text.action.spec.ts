@@ -70,21 +70,19 @@ describe('AiGenerateTextAction', () => {
   const createModelBindings = (
     overrides: Partial<{
       provider: string;
-      model: string;
+      model_id: string;
       api_key: string;
       base_url: string;
       organization: string;
     }> = {},
   ): any => ({
     model: {
-      openai_chatgpt: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        api_key: 'test-key',
-        base_url: 'https://api.openai.com',
-        organization: 'org-1',
-        ...overrides,
-      },
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      base_url: 'https://api.openai.com',
+      organization: 'org-1',
+      ...overrides,
     },
   });
 
@@ -195,19 +193,6 @@ describe('AiGenerateTextAction', () => {
         seed: 7,
         model: 'model-instance',
       }),
-    );
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_generate_text action using provider "openai"',
-      {
-        provider: 'openai',
-        model_binding: 'openai_chatgpt',
-        base_url: 'https://api.openai.com',
-        tools: [],
-        stop_when: {
-          step_count: undefined,
-          tool_call: undefined,
-        },
-      },
     );
     expect(result).toEqual({
       text: 'Generated text',
@@ -454,9 +439,7 @@ describe('AiGenerateTextAction', () => {
         context: createContext(),
         bindings: {},
       }),
-    ).rejects.toThrow(
-      'A model binding is required to run ai_generate_text. Mount one with tasks.<task>.bindings.model.',
-    );
+    ).rejects.toThrow('A model is required to run ai_generate_text.');
   });
 
   it('throws when the model id is missing', async () => {

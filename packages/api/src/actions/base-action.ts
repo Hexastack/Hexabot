@@ -10,12 +10,12 @@ import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 import { z, type ZodType } from 'zod';
 
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 
 import { ActionService } from './actions.service';
-import type { RuntimeBindings } from './runtime-bindings';
 import {
   ActionMetadata,
   ActionName,

@@ -29,6 +29,7 @@ import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
+import { RuntimeBindingsService } from '../../bindings/runtime-bindings.service';
 import {
   Workflow,
   WorkflowCreateDto,
@@ -42,7 +43,6 @@ import {
   ScheduledEventWrapper,
 } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
-import { RuntimeBindingsService } from '../services/runtime-bindings.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 

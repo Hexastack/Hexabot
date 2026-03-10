@@ -11,13 +11,13 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { ALL_WORKFLOW_TYPES } from '@/actions/types';
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { Message } from '@/chat/dto/message.dto';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {
   AiBaseAction,
   AiCommonSettings,
-  AiModelBinding,
   LanguageModelProvider,
   ProviderInitOptions,
 } from './ai-base.action';
@@ -72,7 +72,7 @@ class TestAiBaseAction extends AiBaseAction<
 
   public buildProviderInitOptionsPublic(
     provider: string,
-    modelBinding: AiModelBinding,
+    modelBinding: RuntimeBindings['model'],
     credential: string,
   ) {
     return this.buildProviderInitOptions(provider, modelBinding, credential);
@@ -121,11 +121,7 @@ class TestAiBaseAction extends AiBaseAction<
     return this.toPascalCase(value);
   }
 
-  public resolveModelBindingPublic(bindings: any) {
-    return this.resolveModelBinding(bindings);
-  }
-
-  public resolveModelIdPublic(modelBinding: Pick<AiModelBinding, 'model'>) {
+  public resolveModelIdPublic(modelBinding: RuntimeBindings['model']) {
     return this.resolveModelId(modelBinding);
   }
 
@@ -180,8 +176,8 @@ describe('AiBaseAction', () => {
           base_url: 'https://example.com',
           organization: 'org',
           provider: 'openai',
-          model: 'gpt-4o-mini',
-        } as AiModelBinding,
+          model_id: 'gpt-4o-mini',
+        } as RuntimeBindings['model'],
         'key',
       );
 
@@ -196,7 +192,7 @@ describe('AiBaseAction', () => {
       expect(() =>
         action.buildProviderInitOptionsPublic(
           'openai',
-          {} as AiModelBinding,
+          {} as RuntimeBindings['model'],
           'key',
         ),
       ).toThrow(
@@ -415,54 +411,16 @@ describe('AiBaseAction', () => {
   describe('resolveModelId', () => {
     it('returns the model when provided', () => {
       expect(
-        action.resolveModelIdPublic({ model: 'gpt-4o' } as AiModelBinding),
+        action.resolveModelIdPublic({
+          model_id: 'gpt-4o',
+        } as RuntimeBindings['model']),
       ).toBe('gpt-4o');
     });
 
     it('throws when model is missing', () => {
-      expect(() => action.resolveModelIdPublic({} as AiModelBinding)).toThrow(
-        'A model is required to run ai_test_action.',
-      );
-    });
-  });
-
-  describe('resolveModelBinding', () => {
-    it('returns the mounted model binding when exactly one is provided', () => {
-      expect(
-        action.resolveModelBindingPublic({
-          model: {
-            openai_chatgpt: {
-              provider: 'openai',
-              model: 'gpt-4o-mini',
-            },
-          },
-        }),
-      ).toEqual({
-        name: 'openai_chatgpt',
-        config: {
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-        },
-      });
-    });
-
-    it('throws when no model binding is mounted', () => {
-      expect(() => action.resolveModelBindingPublic({})).toThrow(
-        'A model binding is required to run ai_test_action. Mount one with tasks.<task>.bindings.model.',
-      );
-    });
-
-    it('throws when multiple model bindings are mounted', () => {
       expect(() =>
-        action.resolveModelBindingPublic({
-          model: {
-            primary: { provider: 'openai', model: 'gpt-4o-mini' },
-            secondary: { provider: 'openai', model: 'gpt-4.1-mini' },
-          },
-        }),
-      ).toThrow(
-        'Exactly one model binding is required to run ai_test_action. Found: primary, secondary',
-      );
+        action.resolveModelIdPublic({} as RuntimeBindings['model']),
+      ).toThrow('A model is required to run ai_test_action.');
     });
   });
 

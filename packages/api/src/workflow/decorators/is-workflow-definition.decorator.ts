@@ -11,7 +11,7 @@ import {
   type ValidationOptions,
 } from 'class-validator';
 
-import { bindingKinds } from '@/actions/runtime-bindings';
+import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -34,7 +34,7 @@ export const IsWorkflowDefinition =
           }
 
           return validateWorkflow(value, {
-            bindingKinds,
+            bindingKinds: RuntimeBindingsService.getRegistry(),
           }).success;
         },
         defaultMessage(args?: ValidationArguments) {
@@ -43,7 +43,7 @@ export const IsWorkflowDefinition =
           }
 
           const validation = validateWorkflow(args?.value, {
-            bindingKinds,
+            bindingKinds: RuntimeBindingsService.getRegistry(),
           });
 
           if (!validation.success) {

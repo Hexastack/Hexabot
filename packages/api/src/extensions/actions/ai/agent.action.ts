@@ -49,12 +49,11 @@ export class AiAgentAction extends AiBaseAction<
     bindings,
   }: ExecArgs<AiAgentInput, WorkflowRuntimeContext, AiAgentSettings>) {
     const logger = context.services.logger;
-    const { name: modelBindingName, config: modelBinding } =
-      this.resolveModelBinding(bindings);
-    const providerName = modelBinding.provider ?? 'openai';
+    const modelBinding = bindings.model;
+    const providerName = modelBinding?.provider ?? 'openai';
     const modelId = this.resolveModelId(modelBinding);
     const credentials = await context.services.credentials.findOneValue(
-      modelBinding.api_key,
+      modelBinding?.api_key,
     );
     const providerOptions = this.buildProviderInitOptions(
       providerName,
@@ -87,7 +86,6 @@ export class AiAgentAction extends AiBaseAction<
       `Calling model "${modelId}" via ai_agent action using provider "${providerName}"`,
       {
         provider: providerName,
-        model_binding: modelBindingName,
         base_url: providerOptions.baseURL,
         tools: toolNames,
         stop_when: {

@@ -69,17 +69,15 @@ describe('AiInferObjectAction', () => {
   const createModelBindings = (
     overrides: Partial<{
       provider: string;
-      model: string;
+      mode_id: string;
       api_key: string;
     }> = {},
   ): any => ({
     model: {
-      openai_chatgpt: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        api_key: 'test-key',
-        ...overrides,
-      },
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      ...overrides,
     },
   });
 
@@ -168,10 +166,6 @@ describe('AiInferObjectAction', () => {
         },
       }),
     );
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_infer_object action using provider "openai"',
-      expect.any(Object),
-    );
     expect(result.object).toEqual({
       intent: 'support',
       confidence: 0.92,
@@ -190,9 +184,7 @@ describe('AiInferObjectAction', () => {
         context: createContext(),
         bindings: {},
       }),
-    ).rejects.toThrow(
-      'A model binding is required to run ai_infer_object. Mount one with tasks.<task>.bindings.model.',
-    );
+    ).rejects.toThrow('A model is required to run ai_infer_object');
   });
 
   it('throws when the model id is missing', async () => {

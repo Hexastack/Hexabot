@@ -16,11 +16,8 @@ import {
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import type {
-  RuntimeBindings,
-  RuntimeModelBinding,
-} from '@/actions/runtime-bindings';
 import { ActionMetadata, ActionName } from '@/actions/types';
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
@@ -34,8 +31,6 @@ import {
 } from './ai-schemas';
 
 export type { AiCommonSettings, AiPromptInput } from './ai-schemas';
-
-export type AiModelBinding = RuntimeModelBinding;
 
 export type ProviderInitOptions = {
   apiKey?: string;
@@ -98,13 +93,13 @@ export abstract class AiBaseAction<
 
   protected buildProviderInitOptions(
     provider: string,
-    modelBinding: AiModelBinding,
+    modelBinding: RuntimeBindings['model'],
     credentials: string,
   ): ProviderInitOptions {
     const providerId = this.getProviderId(provider);
-    const apiKey = modelBinding.api_key;
-    const baseURL = modelBinding.base_url;
-    const organization = modelBinding.organization;
+    const apiKey = modelBinding?.api_key;
+    const baseURL = modelBinding?.base_url;
+    const organization = modelBinding?.organization;
 
     if (!apiKey && this.shouldRequireApiKey(providerId)) {
       throw new Error(
@@ -319,40 +314,31 @@ export abstract class AiBaseAction<
       .join('');
   }
 
-  protected resolveModelBinding(bindings: RuntimeBindings): {
-    name: string;
-    config: AiModelBinding;
-  } {
-    const modelBindings = (bindings.model ?? {}) as Record<
-      string,
-      AiModelBinding
-    >;
-    const entries = Object.entries(modelBindings);
-
-    if (entries.length === 0) {
-      throw new Error(
-        `A model binding is required to run ${this.name}. Mount one with tasks.<task>.bindings.model.`,
-      );
-    }
-
-    if (entries.length > 1) {
-      throw new Error(
-        `Exactly one model binding is required to run ${this.name}. Found: ${entries
-          .map(([bindingName]) => bindingName)
-          .join(', ')}`,
-      );
-    }
-
-    const [name, config] = entries[0];
-
-    return {
-      name,
-      config,
-    };
+  protected isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
-  protected resolveModelId(modelBinding: Pick<AiModelBinding, 'model'>) {
-    const modelId = modelBinding.model;
+  protected isModelBindingConfig(
+    value: unknown,
+  ): value is RuntimeBindings['model'] {
+    const knownKeys: Array<keyof NonNullable<RuntimeBindings['model']>> = [
+      'provider',
+      'model_id',
+      'api_key',
+      'base_url',
+      'organization',
+    ];
+
+    return (
+      this.isPlainObject(value) &&
+      knownKeys.some((key) => key in value) &&
+      (value.model === undefined || typeof value.model === 'string') &&
+      (value.provider === undefined || typeof value.provider === 'string')
+    );
+  }
+
+  protected resolveModelId(modelBinding: RuntimeBindings['model']) {
+    const modelId = modelBinding?.model_id;
 
     if (!modelId) {
       throw new Error(`A model is required to run ${this.name}.`);

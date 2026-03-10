@@ -16,7 +16,7 @@ import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
-import { bindingKinds } from '@/actions/runtime-bindings';
+import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { User } from '@/user';
 import {
@@ -39,6 +39,9 @@ import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
 const actionServiceMock = {
+  getRegistry: jest.fn(),
+};
+const runtimeBindingsServiceMock = {
   getRegistry: jest.fn(),
 };
 const workflowContextFactoryMock = {
@@ -136,6 +139,10 @@ describe('AgenticService (TypeORM)', () => {
         WorkflowRunRepository,
         { provide: ActionService, useValue: actionServiceMock },
         {
+          provide: RuntimeBindingsService,
+          useValue: runtimeBindingsServiceMock,
+        },
+        {
           provide: WorkflowContextFactory,
           useValue: workflowContextFactoryMock,
         },
@@ -164,6 +171,7 @@ describe('AgenticService (TypeORM)', () => {
     workflowVersionId = workflow.currentVersion?.id ?? null;
     initiator = workflow.createdBy as User;
     actionServiceMock.getRegistry.mockReturnValue({});
+    runtimeBindingsServiceMock.getRegistry.mockReturnValue({});
     workflowContextFactoryMock.create.mockResolvedValue({
       state: {},
       event: undefined,
@@ -239,7 +247,7 @@ describe('AgenticService (TypeORM)', () => {
         messagingWorkflowDefinition,
         expect.objectContaining({
           actions: expect.any(Object),
-          bindingKinds,
+          bindingKinds: expect.any(Object),
           jsonataFunctions: expect.any(Object),
         }),
       );

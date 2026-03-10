@@ -12,10 +12,12 @@ import {
 } from '@hexabot-ai/agentic';
 import type { ZodType } from 'zod';
 
+import {
+  RuntimeBindingKind,
+  RuntimeBindings,
+} from '@/bindings/runtime-bindings';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
-
-import { RuntimeBindingKind, RuntimeBindings } from './runtime-bindings';
 
 export type ActionName = `${string}_${string}`;
 

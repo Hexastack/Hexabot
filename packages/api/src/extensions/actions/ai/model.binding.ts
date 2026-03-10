@@ -4,7 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
+import { BindingKindDescriptor } from '@hexabot-ai/agentic';
+import z from 'zod';
+
+import { createBindingKind } from '@/bindings/create-binding-kind';
 
 export const vercelAiSdkProviders = [
   'alibaba',
@@ -55,7 +58,7 @@ export const aiModelBindingSchema = z.strictObject({
     description:
       'Vercel AI SDK provider identifier. Selecting a provider still requires its package to be installed (e.g., @ai-sdk/anthropic, @ai-sdk/google). By default, package.json only includes OpenAI/Gateway provider packages.',
   }),
-  model: z.string().min(1).default('gpt-5.2').meta({
+  model_id: z.string().min(1).default('gpt-5.2').meta({
     title: 'Model',
     description: 'Provider model identifier to use for generation.',
   }),
@@ -97,32 +100,16 @@ export const aiModelBindingSchema = z.strictObject({
     }),
 });
 
-export const aiToolBindingSchema = z.strictObject({
-  action: z.string().min(1),
-  settings: z.record(z.string(), z.unknown()).optional(),
+declare global {
+  interface RuntimeBindingKindRegistry {
+    model: BindingKindDescriptor<typeof aiModelBindingSchema, false>;
+  }
+}
+
+export const ModelBindingKind = createBindingKind({
+  kind: 'model',
+  schema: aiModelBindingSchema,
+  multiple: false,
 });
 
-export const bindingKinds = {
-  tools: {
-    schema: aiToolBindingSchema,
-    multiple: true,
-  },
-  model: {
-    schema: aiModelBindingSchema,
-    multiple: false,
-  },
-} as const;
-
-export type RuntimeBindingKind = keyof typeof bindingKinds;
-
-export type RuntimeBindingPayload<K extends RuntimeBindingKind> = z.infer<
-  (typeof bindingKinds)[K]['schema']
->;
-
-export type RuntimeToolBinding = RuntimeBindingPayload<'tools'>;
-
-export type RuntimeModelBinding = RuntimeBindingPayload<'model'>;
-
-export type RuntimeBindings = Partial<{
-  [K in RuntimeBindingKind]: Record<string, RuntimeBindingPayload<K>>;
-}>;
+export default ModelBindingKind;
