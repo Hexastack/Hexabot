@@ -4,6 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import type {
+  BindingKindDescriptor,
+  InferMountedBindingValue,
+} from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
 /**
@@ -20,16 +24,15 @@ declare global {
 
 export type RuntimeBindingKind = keyof RuntimeBindingKindRegistry & string;
 
+type RuntimeBindingDescriptor<K extends RuntimeBindingKind> =
+  RuntimeBindingKindRegistry[K] & BindingKindDescriptor;
+
 export type RuntimeBindingPayload<K extends RuntimeBindingKind> = z.infer<
-  RuntimeBindingKindRegistry[K]['schema']
+  RuntimeBindingDescriptor<K>['schema']
 >;
 
 export type RuntimeBindingValue<K extends RuntimeBindingKind> =
-  RuntimeBindingKindRegistry[K]['multiple'] extends true
-    ? Record<string, RuntimeBindingPayload<K>>
-    : RuntimeBindingKindRegistry[K]['multiple'] extends false
-      ? RuntimeBindingPayload<K>
-      : RuntimeBindingPayload<K> | Record<string, RuntimeBindingPayload<K>>;
+  InferMountedBindingValue<RuntimeBindingDescriptor<K>>;
 
 export type RuntimeBindings = Partial<{
   [K in RuntimeBindingKind]: RuntimeBindingValue<K>;

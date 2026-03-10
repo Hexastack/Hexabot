@@ -214,6 +214,7 @@ const compileTasks = (
       bindings: mountTaskBindings(
         task.bindings,
         bindingValidation.resolvedDefs,
+        options.bindingKinds,
       ),
     };
   }

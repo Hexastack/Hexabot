@@ -41,6 +41,7 @@ export * from './dsl.types';
 export type {
   BindingKindDescriptor,
   BindingKindSchemas,
+  InferMountedBindingValue,
   InferWorkflowBindings,
 } from './bindings/base-binding';
 

@@ -6,7 +6,10 @@
 
 import { z } from 'zod';
 
-import type { InferWorkflowBindings } from '../../bindings/base-binding';
+import type {
+  BindingKindSchemas,
+  InferWorkflowBindings,
+} from '../../bindings/base-binding';
 import { BaseWorkflowContext } from '../../context';
 import { Settings, SettingsSchema } from '../../dsl.types';
 import { EventEmitterLike } from '../../workflow-event-emitter';
@@ -45,7 +48,14 @@ const _bindingKindSchemas = {
     }),
     multiple: true,
   },
-};
+  model: {
+    schema: z.strictObject({
+      provider: z.string(),
+      model_id: z.string(),
+    }),
+    multiple: false,
+  },
+} as const satisfies BindingKindSchemas;
 type TestBindings = InferWorkflowBindings<typeof _bindingKindSchemas>;
 
 class DoubleAction extends AbstractAction<
@@ -355,6 +365,18 @@ describe('workflow step primitives', () => {
       >
     >();
     expectType<Equal<InferActionBindings<BindingsAwareAction>, TestBindings>>();
+    expectType<
+      Equal<
+        NonNullable<TestBindings['tools']>,
+        Record<string, z.infer<typeof _bindingKindSchemas.tools.schema>>
+      >
+    >();
+    expectType<
+      Equal<
+        NonNullable<TestBindings['model']>,
+        z.infer<typeof _bindingKindSchemas.model.schema>
+      >
+    >();
 
     const step: ActionType = new DoubleAction();
     expect(step.name).toBe('double_step');

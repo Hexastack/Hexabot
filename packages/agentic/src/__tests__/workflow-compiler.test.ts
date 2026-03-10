@@ -261,7 +261,7 @@ describe('compileWorkflow', () => {
     });
   });
 
-  it('mounts single-ref bindings as map-by-def payloads', () => {
+  it('mounts single-ref bindings as direct payloads', () => {
     const { action } = createAction({
       supportedBindings: ['model'],
     });
@@ -300,10 +300,8 @@ describe('compileWorkflow', () => {
 
     expect(compiled.tasks.worker_task.bindings).toEqual({
       model: {
-        openai_chatgpt: {
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-        },
+        provider: 'openai',
+        model: 'gpt-4o-mini',
       },
     });
   });

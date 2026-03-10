@@ -31,7 +31,7 @@ Each entry under `tasks` has:
 - `description`: human-readable purpose.
 - `action`: engine-specific operation to call (`call_llm`, `search_web`, `await_user_input`, etc.). The DSL does not fix action semantics; the runtime must bind them.
 - `inputs`: map of parameters passed to the action. Values can be literals or expressions (prefixed with `=`).
-- `bindings`: optional map of `<kind>: [<defName>...]` that mounts reusable defs into the task execution args (`execute({ bindings })`).
+- `bindings`: optional map of def refs grouped by kind: `<kind>: [<defName>...]` for `multiple: true` kinds, `<kind>: <defName>` for `multiple: false` kinds.
 - `settings`: execution hints (timeout, retries, model choice, temperature, and action-specific options). Settings merge with `defaults.settings`, with task-level keys taking precedence.
 
 Task results are stored automatically under `$output.<task>` for downstream steps.
@@ -51,7 +51,8 @@ Example: `tasks.understand_request` calls an LLM with a system prompt, user quer
   - duplicate refs in a single binding list are rejected;
   - workflows that use `defs`/`bindings` require a non-empty `bindingKinds` registry at compile/validation time.
 - Runtime mounting:
-  - each task receives `bindings` as `{ [kind]: { [defName]: parsedPayload } }`;
+  - `multiple: true` kinds mount as `{ [kind]: { [defName]: parsedPayload } }`;
+  - `multiple: false` kinds mount as `{ [kind]: parsedPayload }`;
   - mounted payload excludes shared def metadata (`kind`, `description`) and contains only kind-schema fields.
 
 ## Flow primitives

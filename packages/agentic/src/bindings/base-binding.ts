@@ -18,12 +18,21 @@ export type BindingKindDescriptor<
 
 export type BindingKindSchemas = Record<string, BindingKindDescriptor>;
 
+export type InferMountedBindingValue<
+  TBindingKind extends BindingKindDescriptor = BindingKindDescriptor,
+> = TBindingKind['multiple'] extends true
+  ? Record<string, z.infer<TBindingKind['schema']>>
+  : TBindingKind['multiple'] extends false
+    ? z.infer<TBindingKind['schema']>
+    :
+        | z.infer<TBindingKind['schema']>
+        | Record<string, z.infer<TBindingKind['schema']>>;
+
 export type InferWorkflowBindings<
   TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
 > = Partial<{
-  [K in keyof TBindingKinds & string]: Record<
-    string,
-    z.infer<TBindingKinds[K]['schema']>
+  [K in keyof TBindingKinds & string]: InferMountedBindingValue<
+    TBindingKinds[K]
   >;
 }>;
 
@@ -51,7 +60,7 @@ export type ResolvedBindingDef = {
 
 export type ResolvedBindingDefs = Record<string, ResolvedBindingDef>;
 
-export type CompiledTaskBindings = Record<string, Record<string, unknown>>;
+export type CompiledTaskBindings = Record<string, unknown>;
 
 type BindingValidationResult = {
   errors: string[];
@@ -204,16 +213,38 @@ export const validateAndResolveBindings = (
 export const mountTaskBindings = (
   taskBindings: TaskBindingReferences | undefined,
   resolvedDefs: ResolvedBindingDefs,
+  bindingKinds?: BindingKindSchemas,
 ): CompiledTaskBindings => {
   if (!taskBindings) {
     return {};
   }
 
   const mounted: CompiledTaskBindings = {};
+  const kinds = bindingKinds ?? {};
 
   for (const [bindingKind, bindingRefs] of Object.entries(taskBindings)) {
-    const mountedKindDefs: Record<string, unknown> = {};
     const refs = toBindingRefs(bindingRefs);
+    const isMultiple =
+      kinds[bindingKind]?.multiple ?? Array.isArray(bindingRefs);
+
+    if (!isMultiple) {
+      const ref = refs[0];
+
+      if (!ref) {
+        continue;
+      }
+
+      const resolvedDef = resolvedDefs[ref];
+
+      if (!resolvedDef) {
+        continue;
+      }
+
+      mounted[bindingKind] = resolvedDef.payload;
+      continue;
+    }
+
+    const mountedKindDefs: Record<string, unknown> = {};
 
     for (const ref of refs) {
       const resolvedDef = resolvedDefs[ref];

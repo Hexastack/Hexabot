@@ -30,13 +30,17 @@ A workflow is a single YAML (or object) that declares inputs, context, defaults,
 - `defaults.settings`: inherited by every task (timeouts, retries, and action-specific settings).
 - `defs`: reusable typed entities that tasks can mount through bindings.
 - `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs` and `settings`.
-- `tasks.<task>.bindings`: optional `<kind>: [<defName>...]` refs that mount parsed defs into action runtime args.
+- `tasks.<task>.bindings`: optional kind-based refs that mount parsed defs into action runtime args (`<kind>: [<defName>...]` for `multiple: true`, `<kind>: <defName>` for `multiple: false`).
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
 Task results are stored automatically under `$output.<task>` for downstream expressions.
 
-When workflows use `defs` or task `bindings`, pass `bindingKinds` (a map of binding kind names to Zod schemas) to `Workflow.fromYaml` / `Workflow.fromDefinition`. The engine validates kind names, def payloads, and task binding refs before compilation.
+When workflows use `defs` or task `bindings`, pass `bindingKinds` (a map of binding kind names to `{ schema, multiple }`) to `Workflow.fromYaml` / `Workflow.fromDefinition`. The engine validates kind names, def payloads, and task binding refs before compilation.
+
+At runtime, mounted bindings follow kind cardinality:
+- `multiple: true` kinds mount as `{ [defName]: parsedPayload }`.
+- `multiple: false` kinds mount as the direct `parsedPayload`.
 
 Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator }` as scope; `$context` resolves to your workflow context state.
 
@@ -56,10 +60,13 @@ class AppContext extends BaseWorkflowContext<{ user_id: string }> {
 }
 
 const bindingKinds = {
-  tools: z.object({
-    action: z.string(),
-    settings: z.record(z.string(), z.unknown()).optional(),
-  }),
+  tools: {
+    schema: z.object({
+      action: z.string(),
+      settings: z.record(z.string(), z.unknown()).optional(),
+    }),
+    multiple: true,
+  },
 };
 type AppBindings = InferWorkflowBindings<typeof bindingKinds>;
 
