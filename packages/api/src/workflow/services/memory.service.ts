@@ -24,11 +24,13 @@ export class MemoryService {
    * Build a structured memory store for a given owner, keyed by slug.
    */
   async buildStore(
-    { ownerId, workflowId, runId }: MemoryStoreIdentifier,
+    { ownerId, workflowId, runId, memoryDefinitionIds }: MemoryStoreIdentifier,
     context: WorkflowRuntimeContext,
   ): Promise<MemoryStore> {
     const definitionCache =
-      await this.memoryDefinitionService.buildDefinitionCache(workflowId);
+      await this.memoryDefinitionService.buildDefinitionCache(
+        memoryDefinitionIds,
+      );
     const records = await this.memoryRecordService.findActiveByScope({
       ownerId,
       workflowId,

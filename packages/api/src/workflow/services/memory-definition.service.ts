@@ -17,17 +17,12 @@ import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity'
 import { MemoryDefinitionRepository } from '../repositories/memory-definition.repository';
 import { MemoryScope } from '../types';
 
-import { WorkflowService } from './workflow.service';
-
 @Injectable()
 export class MemoryDefinitionService extends BaseOrmService<
   MemoryDefinitionOrmEntity,
   MemoryDefinitionDtoConfig
 > {
-  constructor(
-    readonly repository: MemoryDefinitionRepository,
-    private readonly workflowService: WorkflowService,
-  ) {
+  constructor(readonly repository: MemoryDefinitionRepository) {
     super(repository);
   }
 
@@ -44,31 +39,41 @@ export class MemoryDefinitionService extends BaseOrmService<
   /**
    * Build a cache of memory definitions keyed by slug.
    *
-   * Always includes global definitions; when a workflow id is provided,
-   * includes the workflow-scoped definitions attached to that workflow.
+   * Always includes global definitions; when memory definition ids are provided,
+   * includes matching workflow/run-scoped definitions.
    *
-   * @param workflowId - Optional workflow identifier to include scoped definitions.
+   * @param memoryDefinitionIds - Optional memory definition identifiers to include.
    * @returns A map of definition slugs to memory definition metadata.
    */
   async buildDefinitionCache(
-    workflowId?: string | null,
+    memoryDefinitionIds?: string[] | null,
   ): Promise<Map<string, MemoryDefinition>> {
     const where: FindOptionsWhere<MemoryDefinitionOrmEntity>[] = [
       { scope: MemoryScope.global },
     ];
+    const requestedIds = Array.from(new Set(memoryDefinitionIds ?? [])).filter(
+      Boolean,
+    );
 
-    if (workflowId) {
-      const workflow = await this.workflowService.findOne({
-        where: { id: workflowId },
-      });
-      const memoryDefinitionIds = workflow?.memoryDefinitions ?? [];
-
-      if (memoryDefinitionIds.length > 0) {
-        where.push({ id: In(memoryDefinitionIds) });
-      }
+    if (requestedIds.length > 0) {
+      where.push({ id: In(requestedIds) });
     }
 
     const definitions = await this.find({ where });
+    if (requestedIds.length > 0) {
+      const resolvedIds = new Set(
+        definitions
+          .map((definition) => definition.id)
+          .filter((id): id is string => Boolean(id)),
+      );
+      const missingIds = requestedIds.filter((id) => !resolvedIds.has(id));
+      if (missingIds.length > 0) {
+        throw new Error(
+          `Unable to find memory definition(s): ${missingIds.join(', ')}`,
+        );
+      }
+    }
+
     const definitionCache = new Map<string, MemoryDefinition>();
     for (const definition of definitions) {
       definitionCache.set(definition.slug, definition);

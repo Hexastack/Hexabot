@@ -85,7 +85,11 @@ export abstract class AiBaseAction<
         color: metadata.color ?? AiBaseAction.DEFAULT_COLOR,
         group: metadata.group ?? AiBaseAction.DEFAULT_GROUP,
         icon: 'Sparkles',
-        supportedBindings: metadata.supportedBindings ?? ['tools', 'model'],
+        supportedBindings: metadata.supportedBindings ?? [
+          'tools',
+          'model',
+          'memory',
+        ],
       },
       actionService,
     );
@@ -409,17 +413,14 @@ export abstract class AiBaseAction<
   protected async buildPrompt(
     input: AiPromptInput,
     context: C,
-    settings: S,
+    selectedMemorySlugs: string[] = [],
   ): Promise<PromptPayload> {
     const promptPayload = { system: input.system };
-
-    if (settings.memory_enabled) {
-      const memoryPrompt = this.buildMemoryPrompt(context);
-      if (memoryPrompt) {
-        promptPayload.system = promptPayload.system
-          ? `${promptPayload.system}\n\n${memoryPrompt}`
-          : memoryPrompt;
-      }
+    const memoryPrompt = this.buildMemoryPrompt(context, selectedMemorySlugs);
+    if (memoryPrompt) {
+      promptPayload.system = promptPayload.system
+        ? `${promptPayload.system}\n\n${memoryPrompt}`
+        : memoryPrompt;
     }
 
     if (input.input_mode === 'prompt') {
@@ -468,7 +469,49 @@ export abstract class AiBaseAction<
     );
   }
 
-  protected buildMemoryPrompt(context: C): string | undefined {
+  protected resolveMemoryBindingSlugs(
+    context: C,
+    memoryBindings?: RuntimeBindings['memory'],
+  ): string[] {
+    if (!memoryBindings || Object.keys(memoryBindings).length === 0) {
+      return [];
+    }
+
+    const memoryStore = context.memoryStore;
+    if (!memoryStore) {
+      return [];
+    }
+
+    const idToSlug = new Map<string, string>();
+    for (const [slug, definition] of memoryStore.definitionCache.entries()) {
+      if (definition.id) {
+        idToSlug.set(definition.id, slug);
+      }
+    }
+
+    const selectedSlugs = new Set<string>();
+    for (const [defName, binding] of Object.entries(memoryBindings)) {
+      const slug = idToSlug.get(binding.definition_id);
+      if (!slug) {
+        throw new Error(
+          `Unable to resolve memory definition "${binding.definition_id}" from bindings.memory.${defName}.definition_id.`,
+        );
+      }
+
+      selectedSlugs.add(slug);
+    }
+
+    return Array.from(selectedSlugs);
+  }
+
+  protected buildMemoryPrompt(
+    context: C,
+    selectedMemorySlugs: string[] = [],
+  ): string | undefined {
+    if (selectedMemorySlugs.length === 0) {
+      return undefined;
+    }
+
     const memoryStore = context.memoryStore;
     if (!memoryStore) {
       return undefined;
@@ -480,7 +523,12 @@ export abstract class AiBaseAction<
     }
 
     const sections: string[] = [];
+    const selectedSlugSet = new Set(selectedMemorySlugs);
     for (const [slug, definition] of definitionCache.entries()) {
+      if (!selectedSlugSet.has(slug)) {
+        continue;
+      }
+
       const instance = instances[slug];
       if (!instance) {
         continue;
@@ -578,7 +626,7 @@ export abstract class AiBaseAction<
   protected buildTools(
     context: C,
     toolBindings?: RuntimeBindings['tools'],
-    isMemoryEnabled: boolean = false,
+    selectedMemorySlugs: string[] = [],
   ): Record<string, ToolDefinition> | undefined {
     const actionService = context.services.actions;
     if (!actionService) {
@@ -607,9 +655,14 @@ export abstract class AiBaseAction<
       };
     }
 
-    if (isMemoryEnabled) {
+    if (selectedMemorySlugs.length > 0) {
       const updateMemoryAction = actionService.get('update_memory');
-      const memorySchema = context.memoryStore.buildUpdateMemorySchema();
+      const memorySchema =
+        context.memoryStore.buildUpdateMemorySchema(selectedMemorySlugs);
+      if (!memorySchema) {
+        return Object.keys(tools).length > 0 ? tools : undefined;
+      }
+
       tools['update_memory'] = {
         description: updateMemoryAction.description,
         inputSchema: memorySchema,

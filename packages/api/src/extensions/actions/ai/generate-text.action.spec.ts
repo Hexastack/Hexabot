@@ -175,7 +175,7 @@ describe('AiGenerateTextAction', () => {
         system: input.system,
       },
       context,
-      settings,
+      [],
     );
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
@@ -244,6 +244,7 @@ describe('AiGenerateTextAction', () => {
       [
         'user_profile',
         {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
           name: 'User Profile',
           slug: 'user_profile',
         },
@@ -277,7 +278,6 @@ describe('AiGenerateTextAction', () => {
     const settings = {
       timeout_ms: 0,
       retries: defaultRetries,
-      memory_enabled: true,
     };
     const input = {
       prompt: 'Hello there',
@@ -288,7 +288,14 @@ describe('AiGenerateTextAction', () => {
       input,
       settings,
       context,
-      bindings: createModelBindings(),
+      bindings: {
+        ...createModelBindings(),
+        memory: {
+          selected_profile: {
+            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          },
+        },
+      } as any,
     });
 
     const callArgs = generateTextMock.mock.calls[0][0] as any;
@@ -297,6 +304,9 @@ describe('AiGenerateTextAction', () => {
       includeAdditional: true,
     });
     expect(actionsService.get).toHaveBeenCalledWith('update_memory');
+    expect(
+      (context as any).memoryStore.buildUpdateMemorySchema,
+    ).toHaveBeenCalledWith(['user_profile']);
     expect(callArgs.tools).toHaveProperty('update_memory');
     expect(callArgs.tools.update_memory.description).toBe('demo tool');
     expect(callArgs.system).toContain('Base system');

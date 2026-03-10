@@ -13,7 +13,6 @@ import {
 } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
-  IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
@@ -38,7 +37,6 @@ import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
 
-import { MemoryDefinition } from './memory-definition.dto';
 import { WorkflowVersion } from './workflow-version.dto';
 
 const WorkflowInputSchemaValidator = z.looseObject({});
@@ -87,9 +85,6 @@ export class Workflow extends WorkflowStub {
   @Expose({ name: 'createdById' })
   createdBy!: string;
 
-  @Expose({ name: 'memoryDefinitionIds' })
-  memoryDefinitions!: string[];
-
   @Expose({ name: 'runAfterMs' })
   runAfterMs!: number;
 }
@@ -107,10 +102,6 @@ export class WorkflowFull extends WorkflowStub {
   @Expose()
   @Type(() => User)
   createdBy!: User;
-
-  @Expose()
-  @Type(() => MemoryDefinition)
-  memoryDefinitions!: MemoryDefinition[];
 
   @Expose()
   @Transform(({ obj }) => {
@@ -183,14 +174,6 @@ export class WorkflowCreateDto {
   @IsOptional()
   @IsBoolean()
   builtin?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Memory definitions available to this workflow',
-    type: [String],
-  })
-  @IsArray()
-  @IsUUIDv4({ each: true, message: 'Memory definition must be a valid UUID' })
-  memoryDefinitions: string[];
 
   @ApiPropertyOptional({
     description: 'Workflow x offset',

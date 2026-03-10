@@ -261,6 +261,7 @@ describe('AgenticService (TypeORM)', () => {
       expect(workflowContextFactoryMock.create).toHaveBeenCalledWith(
         expect.objectContaining({ id: storedRun.id }),
         event,
+        messagingWorkflowDefinition,
       );
       expect(storedRun.status).toBe('finished');
       expect(storedRun.output).toEqual({ result: 'ok' });

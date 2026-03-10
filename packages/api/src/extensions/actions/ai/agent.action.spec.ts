@@ -188,7 +188,7 @@ describe('AiAgentAction', () => {
       baseURL: 'https://api.openai.com',
       organization: 'org-1',
     });
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, []);
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
     expect(agentOptions).toEqual(
@@ -287,6 +287,7 @@ describe('AiAgentAction', () => {
       [
         'user_profile',
         {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
           name: 'User Profile',
           slug: 'user_profile',
         },
@@ -317,7 +318,6 @@ describe('AiAgentAction', () => {
     const settings = {
       timeout_ms: 0,
       retries: defaultRetries,
-      memory_enabled: true,
     };
     const input = {
       input_mode: 'prompt' as const,
@@ -329,7 +329,14 @@ describe('AiAgentAction', () => {
       input,
       settings,
       context,
-      bindings: createModelBindings(),
+      bindings: {
+        ...createModelBindings(),
+        memory: {
+          selected_profile: {
+            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          },
+        },
+      } as any,
     });
 
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
@@ -340,6 +347,11 @@ describe('AiAgentAction', () => {
     expect(instances.user_profile.fields).toHaveBeenCalledWith({
       includeAdditional: true,
     });
+    expect(actionsService.get).toHaveBeenCalledWith('update_memory');
+    expect(
+      (context as any).memoryStore.buildUpdateMemorySchema,
+    ).toHaveBeenCalledWith(['user_profile']);
+    expect(agentOptions.tools).toHaveProperty('update_memory');
     expect(agentOptions.instructions).toContain('Base system');
     expect(agentOptions.instructions).toContain('# Working Memory');
     expect(agentOptions.instructions).toContain('## User Profile');

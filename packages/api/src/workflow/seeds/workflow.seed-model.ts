@@ -13,7 +13,6 @@ export const workflowModels = (creatorId: string): WorkflowCreateDto[] => [
     description: 'Built-in default workflow.',
     type: WorkflowType.conversational,
     schedule: null,
-    memoryDefinitions: [],
     createdBy: creatorId,
     builtin: true,
   },

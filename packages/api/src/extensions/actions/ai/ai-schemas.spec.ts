@@ -261,3 +261,16 @@ describe('legacy provider/model settings rejection', () => {
     );
   });
 });
+
+describe('legacy memory settings rejection', () => {
+  it('rejects memory_enabled in ai_generate_text settings', () => {
+    const result = aiGenerateTextSettingsSchema.safeParse({
+      memory_enabled: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys' }),
+    );
+  });
+});

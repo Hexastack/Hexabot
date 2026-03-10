@@ -50,7 +50,6 @@ describe('WorkflowVersionController (TypeORM)', () => {
         flow: [{ do: 'send_greeting' }],
         outputs: { result: '=1' },
       }),
-      memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
       x: 0,

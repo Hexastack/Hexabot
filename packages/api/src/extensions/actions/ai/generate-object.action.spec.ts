@@ -176,7 +176,7 @@ describe('AiGenerateObjectAction', () => {
         system: input.system,
       },
       context,
-      settings,
+      [],
     );
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');

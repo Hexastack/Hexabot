@@ -78,6 +78,7 @@ export type MemoryStoreIdentifier = {
   ownerId: string;
   workflowId?: string | null;
   runId?: string | null;
+  memoryDefinitionIds?: string[];
 };
 
 export type MemoryStoreUpdater = (

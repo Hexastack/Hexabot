@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowDefinition } from '@hexabot-ai/agentic';
 import { Injectable, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
@@ -30,9 +31,25 @@ export class WorkflowContextFactory {
     private readonly memoryService: MemoryService,
   ) {}
 
+  private extractMemoryDefinitionIds(
+    definition?: WorkflowDefinition,
+  ): string[] {
+    if (!definition?.defs) {
+      return [];
+    }
+
+    const ids = Object.values(definition.defs)
+      .filter((def) => def?.kind === 'memory')
+      .map((def) => (def as { definition_id?: unknown }).definition_id)
+      .filter((value): value is string => typeof value === 'string' && !!value);
+
+    return Array.from(new Set(ids));
+  }
+
   async create<E extends TriggerEventWrapper>(
     run: WorkflowRunFull,
     event: E,
+    definition?: WorkflowDefinition,
   ): Promise<WorkflowRuntimeContext<E>> {
     const Ctx = this.map[event.triggerType];
     if (!Ctx) {
@@ -40,11 +57,13 @@ export class WorkflowContextFactory {
     }
 
     const ctx = await this.moduleRef.resolve<WorkflowRuntimeContext<E>>(Ctx);
+    const memoryDefinitionIds = this.extractMemoryDefinitionIds(definition);
     const memory = await this.memoryService.buildStore(
       {
         ownerId: run.triggeredBy.id,
         workflowId: run.workflow.id,
         runId: run.id,
+        memoryDefinitionIds,
       },
       ctx,
     );

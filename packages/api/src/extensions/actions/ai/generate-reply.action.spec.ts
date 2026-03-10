@@ -130,7 +130,7 @@ describe('AiGenerateReplyAction', () => {
       bindings: createModelBindings(),
     });
 
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, []);
     expect(generateTextMock).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: [{ role: 'user', content: 'Hi' }],

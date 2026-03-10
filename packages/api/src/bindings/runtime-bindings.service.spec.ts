@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import { BindingsModule } from '@/bindings/bindings.module';
 import { createBindingKind } from '@/bindings/create-binding-kind';
+import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
 import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
 import { LoggerModule } from '@/logger/logger.module';
@@ -61,16 +62,26 @@ describe('RuntimeBindingsService', () => {
       schema: aiModelBindingSchema,
       multiple: false,
     });
+    service.register({
+      kind: 'memory',
+      schema: aiMemoryBindingSchema,
+      multiple: true,
+    });
     const definitions = service.getAllSchemaDefinitions();
 
     expect(definitions.tools).toBeDefined();
     expect(definitions.model).toBeDefined();
+    expect(definitions.memory).toBeDefined();
     expect(definitions.tools.multiple).toBe(true);
     expect(definitions.model.multiple).toBe(false);
+    expect(definitions.memory.multiple).toBe(true);
     expect(definitions.tools.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
     expect(definitions.model.schema.$schema).toBe(
+      'http://json-schema.org/draft-07/schema#',
+    );
+    expect(definitions.memory.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
     const toolsDefinition = definitions.tools.schema as
@@ -79,10 +90,14 @@ describe('RuntimeBindingsService', () => {
     const modelDefinition = definitions.model.schema as
       | { properties?: Record<string, { type?: string }> }
       | undefined;
+    const memoryDefinition = definitions.memory.schema as
+      | { properties?: Record<string, { type?: string }> }
+      | undefined;
 
     expect(toolsDefinition?.properties?.action?.type).toBe('string');
     expect(modelDefinition?.properties?.provider?.type).toBe('string');
     expect(modelDefinition?.properties?.model_id?.type).toBe('string');
+    expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');
   });
 
   it('fails fast when registering duplicate binding kinds', () => {

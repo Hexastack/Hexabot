@@ -20,6 +20,7 @@ import { z } from 'zod';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
+import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
 import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
@@ -100,7 +101,6 @@ describe('WorkflowController (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       inputSchema: conversationalWorkflowInputJsonSchema,
-      memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
       x: 0,
@@ -155,6 +155,11 @@ describe('WorkflowController (TypeORM)', () => {
       kind: 'model',
       schema: aiModelBindingSchema,
       multiple: false,
+    });
+    runtimeBindingsService.register({
+      kind: 'memory',
+      schema: aiMemoryBindingSchema,
+      multiple: true,
     });
     runtimeBindingsService.register({
       kind: 'weather',
@@ -254,9 +259,11 @@ describe('WorkflowController (TypeORM)', () => {
 
       expect(bindings.tools).toBeDefined();
       expect(bindings.model).toBeDefined();
+      expect(bindings.memory).toBeDefined();
       expect(bindings.weather).toBeDefined();
       expect(bindings.tools.multiple).toBe(true);
       expect(bindings.model.multiple).toBe(false);
+      expect(bindings.memory.multiple).toBe(true);
       expect(bindings.weather.multiple).toBe(false);
       expect(bindings.tools.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
@@ -264,10 +271,16 @@ describe('WorkflowController (TypeORM)', () => {
       expect(bindings.model.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
+      expect(bindings.memory.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
       const toolsDefinition = bindings.tools.schema as
         | { properties?: Record<string, { type?: string }> }
         | undefined;
       const modelDefinition = bindings.model.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+      const memoryDefinition = bindings.memory.schema as
         | { properties?: Record<string, { type?: string }> }
         | undefined;
       const weatherDefinition = bindings.weather.schema as
@@ -277,6 +290,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(toolsDefinition?.properties?.action?.type).toBe('string');
       expect(modelDefinition?.properties?.provider?.type).toBe('string');
       expect(modelDefinition?.properties?.model_id?.type).toBe('string');
+      expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');
       expect(weatherDefinition?.properties?.city?.type).toBe('string');
     });
   });

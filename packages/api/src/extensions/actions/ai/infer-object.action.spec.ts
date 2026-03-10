@@ -146,7 +146,7 @@ describe('AiInferObjectAction', () => {
       bindings: createModelBindings(),
     });
 
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, []);
     expect(jsonSchemaMock).toHaveBeenCalledWith(schemaDefinition);
     expect(outputObjectMock).toHaveBeenCalledWith({
       schema: { wrapped: schemaDefinition },

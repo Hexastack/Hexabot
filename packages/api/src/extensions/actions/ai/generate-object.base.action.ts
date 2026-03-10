@@ -50,10 +50,14 @@ export abstract class AiGenerateObjectBaseAction<
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
+    const selectedMemorySlugs = this.resolveMemoryBindingSlugs(
+      context,
+      bindings.memory,
+    );
     const promptPayload = await this.buildPrompt(
       this.resolvePromptInput(input),
       context,
-      settings,
+      selectedMemorySlugs,
     );
     const callSettings = this.buildCallSettings(settings);
     // Structured outputs do not support stop sequences in the AI SDK call.
@@ -62,7 +66,7 @@ export abstract class AiGenerateObjectBaseAction<
     const tools = this.buildTools(
       context,
       bindings.tools,
-      settings.memory_enabled,
+      selectedMemorySlugs,
     ) as ToolSet | undefined;
     const toolNames = Object.keys(bindings.tools ?? {});
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(

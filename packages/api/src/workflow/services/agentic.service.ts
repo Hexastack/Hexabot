@@ -132,7 +132,11 @@ export class AgenticService {
       bindingKinds: this.runtimeBindingsService.getRegistry(),
       jsonataFunctions: this.buildJsonataFunctions(event),
     });
-    const context = await this.workflowContextFactory.create(run, event);
+    const context = await this.workflowContextFactory.create(
+      run,
+      event,
+      definition,
+    );
 
     this.logger.debug('Preparing workflow runner', {
       mode,

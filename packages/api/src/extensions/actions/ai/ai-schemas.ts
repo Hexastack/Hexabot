@@ -105,10 +105,6 @@ export const aiRawResponseSchema = z.object({
 });
 
 export const aiCommonSettingsSchema = z.strictObject({
-  memory_enabled: z.boolean().optional().meta({
-    title: 'Memory enabled',
-    description: 'Enable memory feature.',
-  }),
   temperature: z.number().min(0).max(2).optional().meta({
     title: 'Temperature',
     description: 'Sampling temperature; higher values increase randomness.',

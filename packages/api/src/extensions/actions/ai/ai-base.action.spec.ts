@@ -128,13 +128,17 @@ class TestAiBaseAction extends AiBaseAction<
   public buildPromptPublic(
     input: unknown,
     context: WorkflowRuntimeContext,
-    settings: AiCommonSettings = {} as AiCommonSettings,
+    _settings: AiCommonSettings = {} as AiCommonSettings,
+    selectedMemorySlugs: string[] = [],
   ) {
-    return this.buildPrompt(input as any, context, settings);
+    return this.buildPrompt(input as any, context, selectedMemorySlugs);
   }
 
-  public buildMemoryPromptPublic(context: WorkflowRuntimeContext) {
-    return this.buildMemoryPrompt(context);
+  public buildMemoryPromptPublic(
+    context: WorkflowRuntimeContext,
+    selectedMemorySlugs: string[] = [],
+  ) {
+    return this.buildMemoryPrompt(context, selectedMemorySlugs);
   }
 
   public buildCallSettingsPublic(settings: AiCommonSettings) {
@@ -163,8 +167,8 @@ describe('AiBaseAction', () => {
     action = new TestAiBaseAction(actionService);
   });
 
-  it('defaults supported bindings to tools and model', () => {
-    expect(action.supportedBindings).toEqual(['tools', 'model']);
+  it('defaults supported bindings to tools, model, and memory', () => {
+    expect(action.supportedBindings).toEqual(['tools', 'model', 'memory']);
   });
 
   describe('buildProviderInitOptions', () => {
@@ -668,7 +672,10 @@ describe('AiBaseAction', () => {
       const context = {
         memoryStore: { definitionCache, instances },
       } as unknown as WorkflowRuntimeContext;
-      const result = action.buildMemoryPromptPublic(context);
+      const result = action.buildMemoryPromptPublic(context, [
+        'user_infos',
+        'weather_workflow',
+      ]);
 
       expect(instances.user_infos.fields).toHaveBeenCalledWith({
         includeAdditional: true,
