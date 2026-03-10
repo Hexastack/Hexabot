@@ -8,9 +8,12 @@ import { z, type ZodIssue } from 'zod';
 
 export type BindingKindSchema = z.ZodTypeAny;
 
-export type BindingKindDescriptor = {
-  schema: BindingKindSchema;
-  multiple: boolean;
+export type BindingKindDescriptor<
+  TSchema extends z.ZodTypeAny = BindingKindSchema,
+  TMultiple extends boolean = boolean,
+> = {
+  schema: TSchema;
+  multiple: TMultiple;
 };
 
 export type BindingKindSchemas = Record<string, BindingKindDescriptor>;

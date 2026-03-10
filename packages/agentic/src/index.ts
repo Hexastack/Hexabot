@@ -17,8 +17,8 @@ export type {
   ActionMetadata,
   Actions,
   InferActionArgs,
-  InferActionContext,
   InferActionBindings,
+  InferActionContext,
   InferActionInput,
   InferActionOutput,
   InferActionSettings,
@@ -39,6 +39,7 @@ export {
 export * from './dsl.types';
 
 export type {
+  BindingKindDescriptor,
   BindingKindSchemas,
   InferWorkflowBindings,
 } from './bindings/base-binding';
