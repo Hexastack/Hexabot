@@ -11,7 +11,6 @@ import type { JSONSchema7 as JsonSchema } from "json-schema";
 import { EntityType, Format } from "@/services/types";
 
 import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { IMemoryDefinition } from "./memory-definition.types";
 import { IWorkflowVersion } from "./workfow-version.types";
 
 export enum WorkflowType {
@@ -35,7 +34,6 @@ export interface IWorkflowAttributes {
 
 export interface IWorkflowSubmitAttributes extends IWorkflowAttributes {
   definitionYml?: string;
-  memoryDefinitions: string[];
 }
 
 export interface IWorkflowFilters {
@@ -53,7 +51,6 @@ export interface IWorkflowStub
 export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {
   currentVersion: string | null;
   publishedVersion: string | null;
-  memoryDefinitions: string[];
   runAfterMs: number;
 }
 
@@ -62,5 +59,4 @@ export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {
   publishedVersion: IWorkflowVersion | null;
   definitionYml: string;
   definition: WorkflowDefinition;
-  memoryDefinitions: IMemoryDefinition[];
 }

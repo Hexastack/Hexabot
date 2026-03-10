@@ -34,6 +34,8 @@ export const FlowListItem = ({
   renameLabel,
   moreLabel,
 }: FlowListItemProps) => {
+  const hasTypeMeta = Boolean(match.typeMeta.secondaryText || match.typeMeta.badge);
+
   return (
     <FlowItem
       selected={match.isSelected}
@@ -91,31 +93,35 @@ export const FlowListItem = ({
             moreLabel={moreLabel}
           />
         </Stack>
-        <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            noWrap
-            component="div"
-            flex={1}
-            minWidth={0}
-          >
-            {match.typeMeta.secondaryText}
-          </Typography>
-          {match.typeMeta.badge && (
-            <Chip
-              size="small"
-              label={match.typeMeta.badge}
-              sx={{
-                color: "text.secondary",
-                borderColor: "divider",
-                bgcolor: "background.paper",
-                flexShrink: 0,
-              }}
-              variant="outlined"
-            />
-          )}
-        </Stack>
+        {hasTypeMeta && (
+          <Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
+            {match.typeMeta.secondaryText && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                component="div"
+                flex={1}
+                minWidth={0}
+              >
+                {match.typeMeta.secondaryText}
+              </Typography>
+            )}
+            {match.typeMeta.badge && (
+              <Chip
+                size="small"
+                label={match.typeMeta.badge}
+                sx={{
+                  color: "text.secondary",
+                  borderColor: "divider",
+                  bgcolor: "background.paper",
+                  flexShrink: 0,
+                }}
+                variant="outlined"
+              />
+            )}
+          </Stack>
+        )}
         {normalizedQuery &&
           !match.nameMatch.length &&
           match.descriptionMatch.length &&

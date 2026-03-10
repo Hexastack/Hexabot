@@ -14,7 +14,10 @@ import { EntityType } from "@/services/types";
 import type { IMemoryDefinition } from "@/types/memory-definition.types";
 
 import { useWorkflow } from "../hooks/useWorkflow";
-import { buildJsonataGlobalsSchema } from "../utils/jsonata-globals-schema.utils";
+import {
+  buildJsonataGlobalsSchema,
+  extractMemoryDefinitionIdsFromWorkflowDefinition,
+} from "../utils/jsonata-globals-schema.utils";
 
 export const WorkflowJsonataGlobalsSchemaProvider = ({
   children,
@@ -24,15 +27,19 @@ export const WorkflowJsonataGlobalsSchemaProvider = ({
   const getMemoryDefinitionFromCache = useGetFromCache(
     EntityType.MEMORY_DEFINITION,
   );
+  const memoryDefinitionIds = useMemo(
+    () => extractMemoryDefinitionIdsFromWorkflowDefinition(definition),
+    [definition],
+  );
   const memoryDefinitions = useMemo(
     () =>
-      (workflow?.memoryDefinitions ?? [])
+      memoryDefinitionIds
         .map((memoryDefinitionId) => getMemoryDefinitionFromCache(memoryDefinitionId))
         .filter(
           (memoryDefinition): memoryDefinition is IMemoryDefinition =>
             Boolean(memoryDefinition),
         ),
-    [workflow?.memoryDefinitions, getMemoryDefinitionFromCache],
+    [getMemoryDefinitionFromCache, memoryDefinitionIds],
   );
   const globalsSchema = useMemo(
     () =>

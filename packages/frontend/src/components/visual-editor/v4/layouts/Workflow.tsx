@@ -15,7 +15,6 @@ import {
   WorkflowGraph,
   type EdgeInsertType,
   type FlowStepPath,
-  type MemoryDefinition,
   type WorkflowBindingAddPayload,
   type WorkflowBindingRemovePayload,
   type WorkflowGraphColorMode,
@@ -39,7 +38,6 @@ import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useWorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
 import { useDelete } from "@/hooks/crud/useDelete";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -288,27 +286,6 @@ export const Workflow = () => {
       setEditingSingleBindingTarget(null);
     },
     [addActionStep, definition, pendingInsertPath, pendingToolBindingAdd],
-  );
-  const getMemoryDefinitionsFromCache = useGetFromCache(
-    EntityType.MEMORY_DEFINITION,
-  );
-  const memoryDefinitions = useMemo(
-    () =>
-      (workflow?.memoryDefinitions ?? []).reduce<MemoryDefinition[]>(
-        (acc, memoryDefinitionId) => {
-          const memoryDefinition = getMemoryDefinitionsFromCache(
-            memoryDefinitionId,
-          ) as MemoryDefinition | undefined;
-
-          if (memoryDefinition) {
-            acc.push(memoryDefinition);
-          }
-
-          return acc;
-        },
-        [],
-      ),
-    [getMemoryDefinitionsFromCache, workflow?.memoryDefinitions],
   );
 
   useEffect(() => {
@@ -877,7 +854,6 @@ export const Workflow = () => {
           model={{
             definition,
             compiledFlow: flow,
-            memoryDefinitions,
             actionCatalog: actionsByName,
             bindingCatalog: bindingsByName,
             executionStates,

@@ -12,7 +12,6 @@ import { FC, Fragment, useEffect, useMemo, useRef } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import {
   JsonSchemaObjectBuilder,
   SchemaNodeForm,
@@ -23,9 +22,8 @@ import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMemoryDefinition } from "@/types/memory-definition.types";
 import {
   IWorkflowSubmitAttributes,
   WorkflowType,
@@ -132,7 +130,6 @@ type WorkflowFormValues = {
   description: string;
   type: WorkflowType;
   schedule: string;
-  memoryDefinitions: string[];
   inputSchema: SchemaNodeForm;
 };
 
@@ -162,7 +159,6 @@ export const WorkflowForm: FC<
           description: workflow.description ?? "",
           type: workflowType,
           schedule: workflow.schedule ?? "",
-          memoryDefinitions: workflow.memoryDefinitions ?? [],
           inputSchema: buildInputSchemaNode(
             workflowType,
             translateRef.current,
@@ -174,7 +170,6 @@ export const WorkflowForm: FC<
           description: "",
           type: workflowType,
           schedule: "",
-          memoryDefinitions: [],
           inputSchema: buildInputSchemaNode(workflowType, translateRef.current),
         };
   }, [workflow]);
@@ -266,7 +261,6 @@ export const WorkflowForm: FC<
       params.type === WorkflowType.scheduled
         ? params.schedule.trim() || null
         : null;
-    const memoryDefinitions = params.memoryDefinitions ?? [];
     const shouldIncludeManualInputSchema =
       params.type === WorkflowType.manual &&
       (!workflow?.id || Boolean(dirtyFields.inputSchema));
@@ -275,7 +269,6 @@ export const WorkflowForm: FC<
       description,
       type: params.type,
       schedule,
-      memoryDefinitions,
     };
 
     if (shouldIncludeManualInputSchema) {
@@ -387,33 +380,6 @@ export const WorkflowForm: FC<
                     />
                   </ContentItem>
                 )}
-                <ContentItem>
-                  <Controller
-                    name="memoryDefinitions"
-                    control={control}
-                    render={({ field }) => {
-                      const { onChange, ...restField } = field;
-
-                      return (
-                        <AutoCompleteEntitySelect<IMemoryDefinition>
-                          fullWidth
-                          searchFields={["name", "slug"]}
-                          entity={EntityType.MEMORY_DEFINITION}
-                          format={Format.BASIC}
-                          labelKey="name"
-                          label={t("label.memory_definitions", {
-                            defaultValue: "Memory definitions",
-                          })}
-                          multiple={true}
-                          onChange={(_event, selected) =>
-                            onChange(selected.map(({ id }) => id))
-                          }
-                          {...restField}
-                        />
-                      );
-                    }}
-                  />
-                </ContentItem>
               </ContentContainer>
             </Grid>
 

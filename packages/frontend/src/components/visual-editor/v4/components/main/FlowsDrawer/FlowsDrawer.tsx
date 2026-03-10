@@ -199,18 +199,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       }
 
       if (typeKey === WorkflowType.manual) {
-        const paramCount = flow.memoryDefinitions?.length ?? 0;
-
-        return {
-          secondaryText: paramCount
-            ? t("visual_editor.flows_drawer.meta.requires_params", {
-                0: paramCount,
-              })
-            : t("visual_editor.flows_drawer.meta.no_params"),
-          badge: paramCount
-            ? t("visual_editor.flows_drawer.badge.input_schema")
-            : undefined,
-        };
+        return {};
       }
 
       return {
