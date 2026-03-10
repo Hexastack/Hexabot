@@ -56,16 +56,22 @@ describe('RuntimeBindingsService', () => {
       kind: 'tools',
       schema: aiToolBindingSchema,
       multiple: true,
+      color: '#f59e0b',
+      icon: 'Wrench',
     });
     service.register({
       kind: 'model',
       schema: aiModelBindingSchema,
       multiple: false,
+      color: '#ad46fc',
+      icon: 'Brain',
     });
     service.register({
       kind: 'memory',
       schema: aiMemoryBindingSchema,
       multiple: true,
+      color: '#0ea5e9',
+      icon: 'Database',
     });
     const definitions = service.getAllSchemaDefinitions();
 
@@ -75,6 +81,12 @@ describe('RuntimeBindingsService', () => {
     expect(definitions.tools.multiple).toBe(true);
     expect(definitions.model.multiple).toBe(false);
     expect(definitions.memory.multiple).toBe(true);
+    expect(definitions.tools.color).toBe('#f59e0b');
+    expect(definitions.tools.icon).toBe('Wrench');
+    expect(definitions.model.color).toBe('#ad46fc');
+    expect(definitions.model.icon).toBe('Brain');
+    expect(definitions.memory.color).toBe('#0ea5e9');
+    expect(definitions.memory.icon).toBe('Database');
     expect(definitions.tools.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
@@ -107,6 +119,8 @@ describe('RuntimeBindingsService', () => {
       kind: duplicateKind,
       schema: weatherBindingSchema,
       multiple: false,
+      color: '#22c55e',
+      icon: 'CloudSun',
     });
 
     expect(() =>
@@ -114,6 +128,8 @@ describe('RuntimeBindingsService', () => {
         kind: duplicateKind,
         schema: weatherBindingSchema,
         multiple: false,
+        color: '#22c55e',
+        icon: 'CloudSun',
       }),
     ).toThrow(
       new RegExp(

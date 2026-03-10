@@ -20,6 +20,8 @@ import { useApiClient } from "@/hooks/useApiClient";
 export type WorkflowBindingDefinition = {
   schema: JSONSchema;
   multiple: boolean;
+  color?: string;
+  icon?: string;
 };
 
 type WorkflowBindingsCatalog = Record<string, WorkflowBindingDefinition>;

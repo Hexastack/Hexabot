@@ -150,21 +150,29 @@ describe('WorkflowController (TypeORM)', () => {
       kind: 'tools',
       schema: aiToolBindingSchema,
       multiple: true,
+      color: '#f59e0b',
+      icon: 'Wrench',
     });
     runtimeBindingsService.register({
       kind: 'model',
       schema: aiModelBindingSchema,
       multiple: false,
+      color: '#ad46fc',
+      icon: 'Brain',
     });
     runtimeBindingsService.register({
       kind: 'memory',
       schema: aiMemoryBindingSchema,
       multiple: true,
+      color: '#0ea5e9',
+      icon: 'Database',
     });
     runtimeBindingsService.register({
       kind: 'weather',
       schema: weatherBindingSchema,
       multiple: false,
+      color: '#22c55e',
+      icon: 'CloudSun',
     });
     logger = workflowController.logger;
     actionService.register(new SendTextMessageAction(actionService));
@@ -265,6 +273,14 @@ describe('WorkflowController (TypeORM)', () => {
       expect(bindings.model.multiple).toBe(false);
       expect(bindings.memory.multiple).toBe(true);
       expect(bindings.weather.multiple).toBe(false);
+      expect(bindings.tools.color).toBe('#f59e0b');
+      expect(bindings.tools.icon).toBe('Wrench');
+      expect(bindings.model.color).toBe('#ad46fc');
+      expect(bindings.model.icon).toBe('Brain');
+      expect(bindings.memory.color).toBe('#0ea5e9');
+      expect(bindings.memory.icon).toBe('Database');
+      expect(bindings.weather.color).toBe('#22c55e');
+      expect(bindings.weather.icon).toBe('CloudSun');
       expect(bindings.tools.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );

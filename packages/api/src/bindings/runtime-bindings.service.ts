@@ -4,27 +4,44 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BindingKindDescriptor, BindingKindSchemas } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 
-import { RegisterRuntimeBindingKindParams } from '@/bindings/runtime-bindings';
+import {
+  RegisterRuntimeBindingKindParams,
+  RuntimeBindingKindDescriptor,
+  RuntimeBindingKindSchemas,
+} from '@/bindings/runtime-bindings';
 import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 @Injectable()
 export class RuntimeBindingsService {
-  private static readonly registry = new Map<string, BindingKindDescriptor>();
+  private static readonly registry = new Map<
+    string,
+    RuntimeBindingKindDescriptor
+  >();
 
-  register({ kind, schema, multiple }: RegisterRuntimeBindingKindParams): void {
+  register({
+    kind,
+    schema,
+    multiple,
+    color,
+    icon,
+  }: RegisterRuntimeBindingKindParams): void {
     if (RuntimeBindingsService.registry.has(kind)) {
       throw new Error(
         `Runtime binding kind "${kind}" is already registered and cannot be registered again.`,
       );
     }
 
-    RuntimeBindingsService.registry.set(kind, { schema, multiple });
+    RuntimeBindingsService.registry.set(kind, {
+      schema,
+      multiple,
+      color,
+      icon,
+    });
   }
 
-  get(kind: string): BindingKindDescriptor {
+  get(kind: string): RuntimeBindingKindDescriptor {
     const bindingKind = RuntimeBindingsService.registry.get(kind);
 
     if (!bindingKind) {
@@ -34,21 +51,21 @@ export class RuntimeBindingsService {
     return bindingKind;
   }
 
-  getAll(): BindingKindDescriptor[] {
+  getAll(): RuntimeBindingKindDescriptor[] {
     return Array.from(RuntimeBindingsService.registry.values());
   }
 
-  getRegistry(): BindingKindSchemas {
+  getRegistry(): RuntimeBindingKindSchemas {
     return RuntimeBindingsService.getRegistry();
   }
 
-  static getRegistry(): BindingKindSchemas {
+  static getRegistry(): RuntimeBindingKindSchemas {
     return Object.fromEntries(
       RuntimeBindingsService.registry.entries(),
-    ) as BindingKindSchemas;
+    ) as RuntimeBindingKindSchemas;
   }
 
-  static getRegistryOrThrow(context: string): BindingKindSchemas {
+  static getRegistryOrThrow(context: string): RuntimeBindingKindSchemas {
     if (RuntimeBindingsService.registry.size > 0) {
       return RuntimeBindingsService.getRegistry();
     }
@@ -73,6 +90,8 @@ export class RuntimeBindingsService {
         {
           schema: toDraft07JsonSchema(bindingDefinition.schema),
           multiple: bindingDefinition.multiple,
+          color: bindingDefinition.color,
+          icon: bindingDefinition.icon,
         },
       ]),
     );

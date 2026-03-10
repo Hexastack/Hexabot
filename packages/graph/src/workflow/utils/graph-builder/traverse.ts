@@ -451,6 +451,12 @@ const resolveBindingNodeType = (
   multiple: boolean,
 ): ENodeType.TOOL | ENodeType.SINGLE_BINDING =>
   multiple ? ENodeType.TOOL : ENodeType.SINGLE_BINDING;
+const getBindingNodeTheme = (
+  bindingDefinition: WorkflowBindingDefinition | undefined,
+) => ({
+  ...(bindingDefinition?.color ? { borderColor: bindingDefinition.color } : {}),
+  ...(bindingDefinition?.icon ? { icon: bindingDefinition.icon } : {}),
+});
 const addTaskAttachments = (
   state: TraverseState,
   {
@@ -474,7 +480,12 @@ const addTaskAttachments = (
   },
 ) => {
   bindingKinds.forEach((bindingKind, bindingIndex) => {
-    const isMultiple = state.bindingCatalog.get(bindingKind)?.multiple ?? true;
+    const bindingDefinition = state.bindingCatalog.get(bindingKind);
+    const isMultiple = bindingDefinition?.multiple ?? true;
+    const bindingNodeTheme = getBindingNodeTheme(bindingDefinition);
+    const bindingPlaceholderTheme = bindingDefinition?.color
+      ? { borderColor: bindingDefinition.color }
+      : {};
     const sourceHandle =
       nodeType === ENodeType.AGENT
         ? buildAgentBindingOutPort(bindingKind, bindingIndex, bindingKinds.length)
@@ -491,6 +502,7 @@ const addTaskAttachments = (
         bindingRefIndex,
         bindingKind,
       );
+      const bindingNodeBaseData = state.config.nodes[bindingNodeType];
 
       addSemanticNode(state, {
         id: bindingNodeId,
@@ -500,7 +512,7 @@ const addTaskAttachments = (
         groupPath: [],
         isAttachment: true,
         data: {
-          ...state.config.nodes[bindingNodeType],
+          ...bindingNodeBaseData,
           title: bindingName,
           i18nTitle: undefined,
           description: bindingKind,
@@ -510,6 +522,10 @@ const addTaskAttachments = (
           bindingKind,
           bindingName,
           level,
+          theme: {
+            ...bindingNodeBaseData.theme,
+            ...bindingNodeTheme,
+          },
         },
       });
 
@@ -521,6 +537,9 @@ const addTaskAttachments = (
     });
 
     if (isMultiple || mountedRefs.length === 0) {
+      const bindingPlaceholderBaseData =
+        state.config.nodes[ENodeType.BINDING_PLACEHOLDER];
+
       addSemanticNode(state, {
         id: placeholderNodeId,
         type: ENodeType.BINDING_PLACEHOLDER,
@@ -529,7 +548,7 @@ const addTaskAttachments = (
         groupPath: [],
         isAttachment: true,
         data: {
-          ...state.config.nodes[ENodeType.BINDING_PLACEHOLDER],
+          ...bindingPlaceholderBaseData,
           title: bindingKind,
           i18nTitle: undefined,
           description: "",
@@ -538,6 +557,10 @@ const addTaskAttachments = (
           taskName,
           bindingKind,
           level,
+          theme: {
+            ...bindingPlaceholderBaseData.theme,
+            ...bindingPlaceholderTheme,
+          },
         },
       });
 

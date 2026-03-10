@@ -66,6 +66,8 @@ export type WorkflowBindingSchema = unknown;
 export type WorkflowBindingDefinition = {
   schema: WorkflowBindingSchema;
   multiple: boolean;
+  color?: string;
+  icon?: string;
 };
 export type WorkflowBindingCatalog = ReadonlyMap<
   string,
@@ -78,6 +80,7 @@ type NodeDataTitle =
 
 export type WorkflowNodeTheme = {
   Icon?: WorkflowIcon;
+  icon?: string;
   color?: CSSProperties["color"];
   bgColor?: CSSProperties["color"];
   iconColor?: CSSProperties["color"];

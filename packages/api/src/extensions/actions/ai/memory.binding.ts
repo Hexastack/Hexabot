@@ -36,6 +36,8 @@ export const MemoryBindingKind = createBindingKind({
   kind: 'memory',
   schema: aiMemoryBindingSchema,
   multiple: true,
+  color: '#0ea5e9',
+  icon: 'Database',
 });
 
 export default MemoryBindingKind;

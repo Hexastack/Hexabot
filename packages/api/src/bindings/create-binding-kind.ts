@@ -7,10 +7,8 @@
 import { Injectable, Type } from '@nestjs/common';
 import { z } from 'zod';
 
-import {
-  BaseBindingKindProvider,
-  BindingKindMetadata,
-} from './base-binding-kind';
+import { BaseBindingKindProvider } from './base-binding-kind';
+import { BindingKindMetadata } from './runtime-bindings';
 import { RuntimeBindingsService } from './runtime-bindings.service';
 
 type CreateBindingKindParams<

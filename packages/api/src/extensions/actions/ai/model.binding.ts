@@ -110,6 +110,8 @@ export const ModelBindingKind = createBindingKind({
   kind: 'model',
   schema: aiModelBindingSchema,
   multiple: false,
+  color: '#ad46fc',
+  icon: 'Brain',
 });
 
 export default ModelBindingKind;

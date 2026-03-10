@@ -60,10 +60,12 @@ const createActionCatalog = (
   );
 };
 const createBindingCatalog = (
-  bindingKinds: Array<string | { kind: string; multiple?: boolean }>,
+  bindingKinds: Array<
+    string | { kind: string; multiple?: boolean; color?: string; icon?: string }
+  >,
 ): ReadonlyMap<string, WorkflowBindingDefinition> => {
-  return new Map(
-    bindingKinds.map((bindingKind) => {
+  return new Map<string, WorkflowBindingDefinition>(
+    bindingKinds.map((bindingKind): [string, WorkflowBindingDefinition] => {
       if (typeof bindingKind === "string") {
         return [
           bindingKind,
@@ -79,6 +81,8 @@ const createBindingCatalog = (
         {
           schema: {},
           multiple: bindingKind.multiple ?? true,
+          color: bindingKind.color,
+          icon: bindingKind.icon,
         },
       ];
     }),
@@ -284,6 +288,52 @@ describe("buildNodesAndEdges", () => {
           edge.sourceHandle === "agentBindingOut-1-2-memory",
       ),
     ).toBe(true);
+  });
+
+  it("applies binding color and icon metadata to mounted and placeholder nodes", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          memory: ["profile"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action: ["memory"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "memory",
+          multiple: true,
+          color: "#0ea5e9",
+          icon: "Database",
+        },
+      ]),
+    });
+    const memoryNode = graph.nodes.find((node) => node.type === ENodeType.TOOL);
+    const placeholderNode = graph.nodes.find(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
+
+    expect(memoryNode).toBeDefined();
+    expect(
+      (memoryNode?.data as { theme?: { borderColor?: string; icon?: string } }).theme,
+    ).toMatchObject({
+      borderColor: "#0ea5e9",
+      icon: "Database",
+    });
+    expect(placeholderNode).toBeDefined();
+    expect(
+      (placeholderNode?.data as { theme?: { borderColor?: string } }).theme,
+    ).toMatchObject({
+      borderColor: "#0ea5e9",
+    });
   });
 
   it("renders mounted single-ref model bindings from string task bindings", async () => {

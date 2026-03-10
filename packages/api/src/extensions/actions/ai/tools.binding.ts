@@ -24,6 +24,8 @@ export const ToolsBindingKind = createBindingKind({
   kind: 'tools',
   schema: aiToolBindingSchema,
   multiple: true,
+  color: '#f59e0b',
+  icon: 'Wrench',
 });
 
 export default ToolsBindingKind;
