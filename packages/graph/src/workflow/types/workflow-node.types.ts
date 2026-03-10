@@ -24,7 +24,6 @@ import type {
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { Agent } from "../components/workflow-nodes/Agent";
-import { Memory } from "../components/workflow-nodes/Agent/Memory";
 import { SingleBinding } from '../components/workflow-nodes/Agent/SingleBinding';
 import { Tool } from "../components/workflow-nodes/Agent/Tool";
 import { BindingPlaceholder } from "../components/workflow-nodes/BindingPlaceholder";
@@ -47,13 +46,6 @@ export type WorkflowAction = {
   color?: string;
   description?: string;
   supportedBindings?: readonly string[];
-};
-
-export type MemoryDefinition = {
-  name: string;
-  schema?: {
-    properties?: Record<string, unknown>;
-  } | null;
 };
 
 export type NodeExecutionState =
@@ -117,8 +109,6 @@ export type ToolData = CommonNodeData<ENodeType.TOOL> & {
 };
 
 export type AgentData = CommonNodeData<ENodeType.AGENT> & {
-  model: string;
-  memory: string;
   actionName?: string;
 };
 
@@ -176,8 +166,6 @@ export type GroupData = {
   groupName?: never;
 };
 
-export type MemoryData = CommonNodeData<ENodeType.MEMORY>;
-
 export type EdgeLink = Edge & { id: string; source: string; target: string };
 
 export enum EHandleType {
@@ -191,7 +179,6 @@ export enum ELinkType {
   BINDING_PLACEHOLDER_IN = 'bindingPlaceholderIn',
   AGENT_IN = 'agentIn',
   AGENT_OUT = 'agentOut',
-  AGENT_MEMORY = 'agentMemory',
   AGENT_SINGLE_BINDING = 'agentModel',
   AGENT_TOOL = 'agentTool',
   AGENT_BINDING_OUT = 'agentBindingOut',
@@ -205,7 +192,6 @@ export enum ELinkType {
   OPERATOR_OUT = 'operatorOut',
   GROUP_IN = 'groupIn',
   GROUP_OUT = 'groupOut',
-  MEMORY_IN = 'memoryIn',
   BRANCH_PLACEHOLDER_IN = 'branchPlaceholderIn',
   BRANCH_PLACEHOLDER_OUT = 'branchPlaceholderOut',
 }
@@ -277,7 +263,6 @@ export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
   flow?: CompiledStep[];
   tasks?: TaskDefinitions;
-  memoryDefinitions: MemoryDefinition[];
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
 }
@@ -290,7 +275,6 @@ export type NodeDataTypes = {
   [ENodeType.OPERATOR]: OperatorData;
   [ENodeType.TASK]: TaskData;
   [ENodeType.GROUP]: GroupData;
-  [ENodeType.MEMORY]: MemoryData;
   [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholderData;
   [ENodeType.BINDING_PLACEHOLDER]: BindingPlaceholderData;
 };
@@ -310,7 +294,6 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
         | Node<GroupData, ENodeType.GROUP>
-        | Node<MemoryData, ENodeType.MEMORY>
         | Node<BranchPlaceholderData, ENodeType.BRANCH_PLACEHOLDER>
         | Node<BindingPlaceholderData, ENodeType.BINDING_PLACEHOLDER>;
 
@@ -322,7 +305,6 @@ export enum ENodeType {
   OPERATOR = 'operator',
   TASK = 'task',
   GROUP = 'group',
-  MEMORY = 'memory',
   BRANCH_PLACEHOLDER = 'branchPlaceholder',
   BINDING_PLACEHOLDER = 'bindingPlaceholder',
 }
@@ -339,7 +321,6 @@ export const NODE_TYPES = {
   [ENodeType.OPERATOR]: Operator,
   [ENodeType.TASK]: Task,
   [ENodeType.GROUP]: Group,
-  [ENodeType.MEMORY]: Memory,
   [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholder,
   [ENodeType.BINDING_PLACEHOLDER]: BindingPlaceholder,
 } satisfies {

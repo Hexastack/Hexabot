@@ -387,7 +387,6 @@ export const buildNodesAndEdges = async ({
   config,
   flow,
   tasks,
-  memoryDefinitions,
   actionCatalog,
   bindingCatalog,
 }: IBuildNodesAndEdgesProps): Promise<
@@ -401,7 +400,6 @@ export const buildNodesAndEdges = async ({
     flow,
     config,
     tasks,
-    memoryDefinitions,
     actionCatalog,
     bindingCatalog,
   });

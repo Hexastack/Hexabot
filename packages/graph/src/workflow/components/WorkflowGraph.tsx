@@ -43,7 +43,6 @@ import {
 import "../styles/index.css";
 import {
   EDGE_TYPES,
-  type MemoryDefinition,
   NODE_TYPES,
   type WorkflowAction,
   type WorkflowBindingAddPayload,
@@ -67,7 +66,6 @@ import { WorkflowInsertContextMenu } from "./WorkflowInsertContextMenu";
 export type WorkflowGraphModel = {
   definition?: WorkflowDefinition;
   compiledFlow?: CompiledStep[];
-  memoryDefinitions?: MemoryDefinition[];
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
   executionStates: WorkflowExecutionStateMap;
@@ -155,7 +153,6 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
       compiledFlow: model.compiledFlow,
       tasks: model.definition?.tasks,
-      memoryDefinitions: model.memoryDefinitions,
       layoutDirection: model.layoutDirection,
       actionCatalog: model.actionCatalog,
       bindingCatalog: model.bindingCatalog,

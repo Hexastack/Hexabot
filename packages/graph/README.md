@@ -6,7 +6,7 @@ Internal React + xyflow package for rendering and interacting with Hexabot workf
 
 - `WorkflowGraph` component with built-in controls, insert menus, node selection syncing, and viewport syncing.
 - ELK-based automatic layout (`elkjs`) for compiled workflow steps.
-- Support for branch/parallel/loop operators, nested group overlays, and attachment-style agent nodes (tool/model/memory).
+- Support for branch/parallel/loop operators, nested group overlays, and generic binding attachments.
 - Selection helpers to build stable selection snapshots from xyflow nodes.
 - Theme helpers to resolve workflow step visuals from action metadata and runtime execution status.
 
@@ -35,7 +35,6 @@ import {
   WorkflowGraph,
   type EdgeInsertType,
   type FlowStepPath,
-  type MemoryDefinition,
   type WorkflowGraphHandle,
   type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
@@ -44,13 +43,11 @@ import { useCallback, useMemo, useRef, useState } from "react";
 type Props = {
   definition?: WorkflowDefinition;
   compiledFlow?: CompiledStep[];
-  memoryDefinitions: MemoryDefinition[];
 };
 
 export const WorkflowGraphExample = ({
   definition,
   compiledFlow,
-  memoryDefinitions,
 }: Props) => {
   const graphRef = useRef<WorkflowGraphHandle | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
@@ -104,7 +101,6 @@ export const WorkflowGraphExample = ({
       model={{
         definition,
         compiledFlow,
-        memoryDefinitions,
         actionCatalog,
         executionStates: {},
         layoutDirection: "horizontal",
@@ -146,7 +142,7 @@ export const WorkflowGraphExample = ({
 | Prop | Required | Description |
 | --- | --- | --- |
 | `t` | Yes | Translation function used by built-in labels and aria text. |
-| `model` | Yes | Graph data source and rendering context (`definition`, `compiledFlow`, `memoryDefinitions`, `actionCatalog`, `executionStates`, `layoutDirection`). |
+| `model` | Yes | Graph data source and rendering context (`definition`, `compiledFlow`, `actionCatalog`, `executionStates`, `layoutDirection`). |
 | `selection` | Yes | Controlled selection (`selectedNodeIds`) plus optional focus requests and selection callback. |
 | `insertion` | No | Insert handlers for edge insert points and empty-state root insertion. |
 | `viewport` | Yes | Controlled viewport input (`value`) and `onChange` callback when pan/zoom changes. |
@@ -211,7 +207,6 @@ Core graph types and enums:
 - `WorkflowGraphData`
 - `WorkflowAction`
 - `WorkflowExecutionStateMap`
-- `MemoryDefinition`
 - `INodeConfig`
 
 Utilities:
@@ -233,7 +228,7 @@ Graph build and render pipeline:
 2. Decorate semantic edges for group overlays and visibility rules (`decorateSemanticGraph` in `src/workflow/utils/graph-builder/decorate.ts`).
 3. Project semantic nodes/edges into xyflow shapes (`projectSemanticGraph` in `src/workflow/utils/graph-builder/project.ts`).
 4. Run ELK layered layout and map computed coordinates back to nodes (`layoutNodesWithElk` inside `src/workflow/utils/workflow-node.utils.ts`).
-5. Reposition agent attachment nodes (tool/model/memory) with explicit offsets for readability (`addExtraNodes` in `workflow-node.utils.ts`).
+5. Reposition attachment nodes (single-binding and multi-binding) with explicit offsets for readability (`addExtraNodes` in `workflow-node.utils.ts`).
 6. Create group overlay nodes from nested operator bounds (`getGroupNodes` in `workflow-node.utils.ts`).
 
 Main customization points:

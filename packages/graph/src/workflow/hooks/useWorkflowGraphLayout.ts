@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { EMPTY_WORKFLOW_GRAPH } from "../constants/workflow.constants";
 import type {
-  MemoryDefinition,
   WorkflowBindingCatalog,
   WorkflowAction,
   WorkflowGraphData,
@@ -23,7 +22,6 @@ import {
 type UseWorkflowGraphLayoutProps = {
   compiledFlow?: CompiledStep[];
   tasks?: TaskDefinitions;
-  memoryDefinitions?: MemoryDefinition[];
   layoutDirection?: ResizeControlDirection;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
@@ -32,7 +30,6 @@ type UseWorkflowGraphLayoutProps = {
 export const useWorkflowGraphLayout = ({
   compiledFlow,
   tasks,
-  memoryDefinitions,
   layoutDirection,
   actionCatalog,
   bindingCatalog,
@@ -63,7 +60,6 @@ export const useWorkflowGraphLayout = ({
           config,
           flow: compiledFlow,
           tasks,
-          memoryDefinitions: memoryDefinitions ?? [],
           actionCatalog,
           bindingCatalog,
         });
@@ -91,7 +87,6 @@ export const useWorkflowGraphLayout = ({
     bindingCatalog,
     compiledFlow,
     layoutDirection,
-    memoryDefinitions,
     tasks,
   ]);
 

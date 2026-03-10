@@ -41,7 +41,7 @@ export const createPlaceholderNodeId = (
 
 export const createAttachmentNodeId = (
   stepId: string,
-  kind: "tool" | "model" | "memory" | "binding",
+  kind: "tool" | "model" | "binding",
   name: string,
   index: number,
   namespace?: string,

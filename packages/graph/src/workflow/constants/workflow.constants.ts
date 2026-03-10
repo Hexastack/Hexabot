@@ -10,7 +10,6 @@ import {
   Brain,
   ChartNoAxesGantt,
   CircleStop,
-  Database,
   GitBranch,
   ListTree,
   Play,
@@ -109,7 +108,6 @@ export const DIMENSIONS = {
   [ENodeType.INDICATOR]: { width: 128, height: 68 },
   [ENodeType.TASK]: { width: 256, height: 86 },
   [ENodeType.OPERATOR]: { width: 156, height: 68 },
-  [ENodeType.MEMORY]: { width: 256, height: 86 },
   [ENodeType.BRANCH_PLACEHOLDER]: { width: 64, height: 64 },
 } satisfies INodeConfig['dimensions'];
 
@@ -131,25 +129,8 @@ export const EDGES = {
 } satisfies INodeConfig["edges"];
 
 export const NODES = {
-  [ENodeType.MEMORY]: {
-    theme: {
-      Icon: Database,
-      borderColor: '#7bb0ff',
-    },
-    ports: [ELinkType.MEMORY_IN],
-    title: '',
-  },
   [ENodeType.AGENT]: {
-    memory: '',
-    model: '',
-    ports: [
-      ELinkType.AGENT_IN,
-      ELinkType.AGENT_OUT,
-      {
-        id: ELinkType.AGENT_MEMORY,
-        label: 'visual_editor.port_label.memory',
-      },
-    ],
+    ports: [ELinkType.AGENT_IN, ELinkType.AGENT_OUT],
     theme: {
       borderColor: '#b65bfd',
     },

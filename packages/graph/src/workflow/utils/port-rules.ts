@@ -16,7 +16,6 @@ const LINK = {
   BINDING_PLACEHOLDER_IN: 'bindingPlaceholderIn',
   AGENT_IN: 'agentIn',
   AGENT_OUT: 'agentOut',
-  AGENT_MEMORY: 'agentMemory',
   AGENT_SINGLE_BINDING: 'agentModel',
   AGENT_TOOL: 'agentTool',
   AGENT_BINDING_OUT: 'agentBindingOut',
@@ -30,7 +29,6 @@ const LINK = {
   OPERATOR_OUT: 'operatorOut',
   GROUP_IN: 'groupIn',
   GROUP_OUT: 'groupOut',
-  MEMORY_IN: 'memoryIn',
   BRANCH_PLACEHOLDER_IN: 'branchPlaceholderIn',
   BRANCH_PLACEHOLDER_OUT: 'branchPlaceholderOut',
 } as const;
@@ -43,7 +41,6 @@ const BINDING_OUT_PATTERN = /^(agentBindingOut|taskBindingOut)-(\d+)-(\d+)-(.+)$
 
 type AgentOutHandle =
   | typeof LINK.AGENT_SINGLE_BINDING
-  | typeof LINK.AGENT_MEMORY
   | typeof LINK.AGENT_TOOL;
 
 type BindingOutHandle =
@@ -55,14 +52,12 @@ const AGENT_OUT_HANDLE_PROGRESS: Record<
   { horizontal: number; vertical: number }
 > = {
   agentModel: { horizontal: 10, vertical: 30 },
-  agentMemory: { horizontal: 50, vertical: 50 },
   agentTool: { horizontal: 90, vertical: 70 },
 };
 
 export const AGENT_ATTACHMENT_SOURCE_HANDLES = new Set<string>([
   LINK.AGENT_TOOL,
   LINK.AGENT_SINGLE_BINDING,
-  LINK.AGENT_MEMORY,
 ]);
 
 export const getConditionalOperatorOutHandleMeta = (
@@ -288,11 +283,6 @@ const PORT_RULES: Partial<Record<LinkType, PortRule>> = {
     position: { horizontal: Position.Bottom, vertical: Position.Left },
     style: getAgentOutStyle,
   },
-  [LINK.AGENT_MEMORY]: {
-    type: 'source',
-    position: { horizontal: Position.Bottom, vertical: Position.Left },
-    style: getAgentOutStyle,
-  },
   [LINK.AGENT_TOOL]: {
     type: 'source',
     position: { horizontal: Position.Bottom, vertical: Position.Left },
@@ -321,12 +311,6 @@ const PORT_RULES: Partial<Record<LinkType, PortRule>> = {
     style: (_, direction) =>
       direction === 'horizontal' ? { left: '50%' } : undefined,
   },
-  [LINK.MEMORY_IN]: {
-    type: 'target',
-    position: { horizontal: Position.Top, vertical: Position.Right },
-    style: (_, direction) =>
-      direction === 'horizontal' ? { left: '50%' } : undefined,
-  },
   [LINK.BRANCH_PLACEHOLDER_IN]: {
     type: 'target',
     position: { horizontal: Position.Left, vertical: Position.Top },
@@ -344,10 +328,8 @@ const SPECIAL_DIMENSION_HANDLES = new Set<LinkType>([
   LINK.TOOL_IN,
   LINK.BINDING_PLACEHOLDER_IN,
   LINK.SINGLE_BINDING_IN,
-  LINK.MEMORY_IN,
   LINK.AGENT_TOOL,
   LINK.AGENT_SINGLE_BINDING,
-  LINK.AGENT_MEMORY,
   LINK.AGENT_BINDING_OUT,
   LINK.TASK_BINDING_OUT,
 ]);

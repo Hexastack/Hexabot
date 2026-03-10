@@ -15,9 +15,7 @@ import {
 import { describe, expect, it } from "vitest";
 
 import {
-  ELinkType,
   ENodeType,
-  type MemoryDefinition,
   type WorkflowAction,
   type WorkflowBindingDefinition,
 } from "../types/workflow-node.types";
@@ -89,13 +87,11 @@ const createBindingCatalog = (
 const buildGraph = async ({
   flow,
   tasks,
-  memoryDefinitions = [],
   actionCatalog = new Map(),
   bindingCatalog = new Map(),
 }: {
   flow: CompiledStep[];
   tasks: TaskDefinitions;
-  memoryDefinitions?: MemoryDefinition[];
   actionCatalog?: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog?: ReadonlyMap<string, WorkflowBindingDefinition>;
 }) => {
@@ -103,7 +99,6 @@ const buildGraph = async ({
     config: getWorkflowDefaultConfig("horizontal"),
     flow,
     tasks,
-    memoryDefinitions,
     actionCatalog,
     bindingCatalog,
   });
@@ -129,68 +124,6 @@ const getNodePorts = (
 };
 
 describe("buildNodesAndEdges", () => {
-  it("only shows memory port and edges when memory_enabled is true", async () => {
-    const flow: CompiledStep[] = [
-      taskStep("0:memory_disabled", "memory_disabled"),
-      taskStep("1:memory_enabled", "memory_enabled"),
-    ];
-    const tasks: TaskDefinitions = {
-      memory_disabled: {
-        action: "agent_action_disabled",
-        settings: {
-          provider: "openai",
-          model: "gpt-4o-mini",
-          memory_enabled: false,
-        },
-      },
-      memory_enabled: {
-        action: "agent_action_enabled",
-        settings: {
-          provider: "openai",
-          model: "gpt-4o-mini",
-          memory_enabled: true,
-        },
-      },
-    };
-    const memoryDefinitions: MemoryDefinition[] = [
-      {
-        name: "profile",
-        schema: {
-          properties: {
-            full_name: { type: "string" },
-          },
-        },
-      },
-    ];
-    const graph = await buildGraph({
-      flow,
-      tasks,
-      memoryDefinitions,
-      actionCatalog: createActionCatalog({
-        agent_action_disabled: ["model"],
-        agent_action_enabled: ["model"],
-      }),
-    });
-    const disabledNodeId = createStepNodeId("0:memory_disabled", "agent");
-    const enabledNodeId = createStepNodeId("1:memory_enabled", "agent");
-    const memoryEdges = graph.edges.filter(
-      (edge) => edge.sourceHandle === ELinkType.AGENT_MEMORY,
-    );
-    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.MEMORY);
-    const disabledAgentNode = graph.nodes.find((node) => node.id === disabledNodeId);
-    const enabledAgentNode = graph.nodes.find((node) => node.id === enabledNodeId);
-
-    expect(memoryNodes).toHaveLength(1);
-    expect(memoryEdges).toHaveLength(1);
-    expect(memoryEdges[0]?.source).toBe(enabledNodeId);
-    expect(
-      getNodePorts(disabledAgentNode).includes(ELinkType.AGENT_MEMORY),
-    ).toBe(false);
-    expect(getNodePorts(enabledAgentNode).includes(ELinkType.AGENT_MEMORY)).toBe(
-      true,
-    );
-  });
-
   it("infers agent node type from action supported model binding", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
     const tasks: TaskDefinitions = {
@@ -293,6 +226,62 @@ describe("buildNodesAndEdges", () => {
         (edge) =>
           edge.source === agentNodeId &&
           edge.sourceHandle === "agentBindingOut-0-1-tools",
+      ),
+    ).toBe(true);
+  });
+
+  it("renders mounted memory bindings through generic multi-binding pipeline", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          memory: ["profile"],
+        },
+        settings: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+        },
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action: ["model", "memory"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+        { kind: "memory", multiple: true },
+      ]),
+    });
+    const agentNodeId = createStepNodeId("0:agent", "agent");
+    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const placeholderNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
+    );
+    const agentNode = graph.nodes.find((node) => node.id === agentNodeId);
+
+    expect(memoryNodes).toHaveLength(1);
+    expect((memoryNodes[0].data as { title?: string }).title).toBe("profile");
+    expect((memoryNodes[0].data as { description?: string }).description).toBe(
+      "memory",
+    );
+    expect(placeholderNodes).toHaveLength(2);
+    expect(
+      placeholderNodes.some(
+        (node) => (node.data as { title?: string }).title === "memory",
+      ),
+    ).toBe(true);
+    expect(getNodePorts(agentNode).includes("agentMemory")).toBe(false);
+    expect(getNodePorts(agentNode).includes("agentBindingOut-1-2-memory")).toBe(
+      true,
+    );
+    expect(
+      graph.edges.some(
+        (edge) =>
+          edge.source === agentNodeId &&
+          edge.sourceHandle === "agentBindingOut-1-2-memory",
       ),
     ).toBe(true);
   });
@@ -842,7 +831,6 @@ describe("buildNodesAndEdges", () => {
       config: getWorkflowDefaultConfig("horizontal"),
       flow: [],
       tasks: {},
-      memoryDefinitions: [],
       actionCatalog: new Map(),
       bindingCatalog: new Map(),
     });

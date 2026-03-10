@@ -18,7 +18,6 @@ import {
   ELinkType,
   type AgentBindingOutPort,
   type TaskBindingOutPort,
-  type MemoryDefinition,
   ENodeType,
   type ConditionalOperatorOutPort,
   type EOperatorType,
@@ -70,7 +69,6 @@ type TraversalExit = {
 type GraphBuilderContext = {
   config: INodeConfig;
   tasks?: TaskDefinitions;
-  memoryDefinitions: MemoryDefinition[];
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
 };
@@ -111,6 +109,10 @@ const getBindingPortLabel = (kind: string): string => {
 
   if (kind === "model") {
     return "visual_editor.port_label.model";
+  }
+
+  if (kind === "memory") {
+    return "visual_editor.port_label.memory";
   }
 
   return humanizeBindingKind(kind);
@@ -205,10 +207,8 @@ const getTaskMeta = (
   bindingCatalog: WorkflowBindingCatalog,
 ) => {
   const taskDefinition = tasks?.[taskName];
-  const settings = taskDefinition?.settings as Record<string, unknown> | undefined;
   const actionName =
     typeof taskDefinition?.action === "string" ? taskDefinition.action : "";
-  const memoryEnabled = settings?.memory_enabled === true;
   const bindingKinds = resolveEffectiveBindingKinds(
     actionName,
     actionCatalog,
@@ -225,7 +225,6 @@ const getTaskMeta = (
         toBindingRefs(bindings?.[bindingKind], bindingCatalog.get(bindingKind)),
       ]),
     ) as Record<string, string[]>,
-    memoryEnabled,
   };
 };
 const buildConditionalOperatorOutPort = (
@@ -463,7 +462,6 @@ const addTaskAttachments = (
     nodeType,
     bindingKinds,
     mountedBindings,
-    memoryEnabled,
   }: {
     stepId: string;
     stepPath: FlowStepPath;
@@ -473,45 +471,8 @@ const addTaskAttachments = (
     nodeType: ENodeType.AGENT | ENodeType.TASK;
     bindingKinds: string[];
     mountedBindings: Record<string, string[]>;
-    memoryEnabled: boolean;
   },
 ) => {
-  const isAgentNode = nodeType === ENodeType.AGENT;
-
-  if (isAgentNode && memoryEnabled) {
-    state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
-      const memoryProperties = memoryDefinition.schema?.properties;
-      const memoryNodeId = createAttachmentNodeId(
-        stepId,
-        "memory",
-        memoryDefinition.name,
-        memoryIndex,
-      );
-
-      addSemanticNode(state, {
-        id: memoryNodeId,
-        type: ENodeType.MEMORY,
-        level,
-        groupPath: [],
-        isAttachment: true,
-        data: {
-          ...state.config.nodes[ENodeType.MEMORY],
-          title: memoryDefinition.name,
-          i18nTitle: undefined,
-          description: memoryProperties
-            ? Object.keys(memoryProperties).join(", ")
-            : "",
-        },
-      });
-
-      addDirectEdge(state, {
-        source: parentNodeId,
-        target: memoryNodeId,
-        sourceHandle: ELinkType.AGENT_MEMORY,
-      });
-    });
-  }
-
   bindingKinds.forEach((bindingKind, bindingIndex) => {
     const isMultiple = state.bindingCatalog.get(bindingKind)?.multiple ?? true;
     const sourceHandle =
@@ -791,15 +752,8 @@ const walkStep = ({
 
     if (isAgentTask) {
       const agentBaseData = state.config.nodes[ENodeType.AGENT];
-      const basePorts = agentBaseData.ports.filter((port) => {
-        if (taskMeta.memoryEnabled) {
-          return true;
-        }
-
-        return (typeof port === "string" ? port : port.id) !== ELinkType.AGENT_MEMORY;
-      });
       const ports = [
-        ...basePorts,
+        ...agentBaseData.ports,
         ...(bindingPorts as WorkflowNodePort<ENodeType.AGENT>[]),
       ];
 
@@ -864,7 +818,6 @@ const walkStep = ({
       nodeType: isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
       bindingKinds: taskMeta.bindingKinds,
       mountedBindings: taskMeta.mountedBindings,
-      memoryEnabled: taskMeta.memoryEnabled,
     });
 
     connectIncoming(state, {
@@ -1038,7 +991,6 @@ export const traverseWorkflow = ({
   flow,
   config,
   tasks,
-  memoryDefinitions,
   actionCatalog,
   bindingCatalog,
 }: {
@@ -1053,7 +1005,6 @@ export const traverseWorkflow = ({
   const state: TraverseState = {
     config,
     tasks,
-    memoryDefinitions,
     actionCatalog,
     bindingCatalog,
     registry,
