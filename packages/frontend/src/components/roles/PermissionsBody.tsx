@@ -136,6 +136,9 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
               backgroundColor: "background.default",
               borderRadius: 1,
               fontFamily: "inherit",
+              "&.Mui-expanded .MuiAccordionSummary-expandIconWrapper": {
+                transform: "rotate(180deg)",
+              },
             }}
           >
             <Typography>{model.name}</Typography>
@@ -171,12 +174,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                         alignItems="center"
                       >
                         <Grid size="auto" width="6rem">
-                          <IconButton
-                            variant="text"
-                            color="error"
-                            onClick={() => deletePermission(id)}
-                            size="small"
-                          >
+                          <IconButton onClick={() => deletePermission(id)}>
                             <Trash2 size={16} />
                           </IconButton>
                         </Grid>

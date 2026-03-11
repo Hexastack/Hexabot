@@ -224,6 +224,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
                 errors.description ? errors.description.message : null
               }
               multiline={true}
+              minRows={3}
             />
           </ContentItem>
         </ContentContainer>

@@ -87,7 +87,6 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
               label={t("label.title")}
               error={!!errors.title}
               {...register("title", validationRules.title)}
-              multiline={true}
               autoFocus
               helperText={errors.title ? errors.title.message : null}
             />
@@ -97,7 +96,6 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
               label={t("label.code")}
               error={!!errors.code}
               {...register("code", validationRules.code)}
-              multiline={true}
               helperText={errors.code ? errors.code.message : null}
             />
           </ContentItem>

@@ -72,6 +72,7 @@ export const WorkflowRuns = ({
       {
         flex: 1,
         minWidth: 150,
+        sortable: false,
         field: "triggeredBy",
         resizable: true,
         headerName: t("label.triggered_by"),
