@@ -51,11 +51,11 @@ import {
   type ActionFormDrawerCreateTarget,
 } from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
+import { BindingSelectionDrawer } from "../components/main/BindingDrawer/BindingSelectionDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
 import { LoopFormDrawer } from "../components/main/LoopDrawer/LoopFormDrawer";
 import { ParallelFormDrawer } from "../components/main/ParallelDrawer/ParallelFormDrawer";
-import { BindingSelectionDrawer } from "../components/main/SingleBindingDrawer/BindingSelectionDrawer";
 import {
   ToolFormDrawer,
   type ToolFormDrawerTarget,
