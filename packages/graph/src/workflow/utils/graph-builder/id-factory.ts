@@ -22,7 +22,7 @@ export const END_INDICATOR_ID = "indicator:end";
 
 export const createStepNodeId = (
   stepId: string,
-  kind: "task" | "agent" | "operator",
+  kind: "task" | "operator",
 ): string => {
   return `step:${toToken(stepId)}:${kind}`;
 };
@@ -41,14 +41,13 @@ export const createPlaceholderNodeId = (
 
 export const createAttachmentNodeId = (
   stepId: string,
-  kind: "tool" | "model" | "binding",
   name: string,
   index: number,
   namespace?: string,
 ): string => {
   const namespacePart = namespace ? `${normalizeName(namespace)}:` : "";
 
-  return `attachment:${toToken(stepId)}:${kind}:${namespacePart}${index}:${normalizeName(name)}`;
+  return `attachment:${toToken(stepId)}:binding:${namespacePart}${index}:${normalizeName(name)}`;
 };
 
 export const createBindingPlaceholderNodeId = (

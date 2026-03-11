@@ -12,7 +12,8 @@ describe("@hexabot-ai/graph", () => {
   it("exposes workflow graph utilities", () => {
     const config = getWorkflowDefaultConfig("horizontal");
 
-    expect(config.nodes[ENodeType.AGENT]).toBeDefined();
+    expect(config.nodes[ENodeType.TASK]).toBeDefined();
+    expect(config.nodes[ENodeType.BINDING_MULTI]).toBeDefined();
     expect(config.edges).toBeDefined();
   });
 });

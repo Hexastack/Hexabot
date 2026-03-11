@@ -128,7 +128,7 @@ const getNodePorts = (
 };
 
 describe("buildNodesAndEdges", () => {
-  it("infers agent node type from action supported model binding", async () => {
+  it("always renders action steps as task nodes", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
     const tasks: TaskDefinitions = {
       worker: {
@@ -144,11 +144,9 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
     });
-    const agentNodeId = createStepNodeId("0:worker", "agent");
     const taskNodeId = createStepNodeId("0:worker", "task");
 
-    expect(graph.nodes.some((node) => node.id === agentNodeId)).toBe(true);
-    expect(graph.nodes.some((node) => node.id === taskNodeId)).toBe(false);
+    expect(graph.nodes.some((node) => node.id === taskNodeId)).toBe(true);
   });
 
   it("creates unique tool node IDs for multiple agent tasks using the same binding ref", async () => {
@@ -187,7 +185,7 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog(["tools"]),
     });
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
 
     expect(toolNodes).toHaveLength(2);
     expect(new Set(toolNodes.map((node) => node.id)).size).toBe(2);
@@ -215,8 +213,8 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog(["tools"]),
     });
-    const agentNodeId = createStepNodeId("0:agent", "agent");
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const agentNodeId = createStepNodeId("0:agent", "task");
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -229,7 +227,7 @@ describe("buildNodesAndEdges", () => {
       graph.edges.some(
         (edge) =>
           edge.source === agentNodeId &&
-          edge.sourceHandle === "agentBindingOut-0-1-tools",
+          edge.sourceHandle === "bindingOut-0-1-tools",
       ),
     ).toBe(true);
   });
@@ -259,8 +257,8 @@ describe("buildNodesAndEdges", () => {
         { kind: "memory", multiple: true },
       ]),
     });
-    const agentNodeId = createStepNodeId("0:agent", "agent");
-    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const agentNodeId = createStepNodeId("0:agent", "task");
+    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -278,14 +276,14 @@ describe("buildNodesAndEdges", () => {
       ),
     ).toBe(true);
     expect(getNodePorts(agentNode).includes("agentMemory")).toBe(false);
-    expect(getNodePorts(agentNode).includes("agentBindingOut-1-2-memory")).toBe(
+    expect(getNodePorts(agentNode).includes("bindingOut-1-2-memory")).toBe(
       true,
     );
     expect(
       graph.edges.some(
         (edge) =>
           edge.source === agentNodeId &&
-          edge.sourceHandle === "agentBindingOut-1-2-memory",
+          edge.sourceHandle === "bindingOut-1-2-memory",
       ),
     ).toBe(true);
   });
@@ -316,7 +314,7 @@ describe("buildNodesAndEdges", () => {
         },
       ]),
     });
-    const memoryNode = graph.nodes.find((node) => node.type === ENodeType.TOOL);
+    const memoryNode = graph.nodes.find((node) => node.type === ENodeType.BINDING_MULTI);
     const placeholderNode = graph.nodes.find(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -355,8 +353,8 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
     });
-    const agentNodeId = createStepNodeId("0:worker", "agent");
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.SINGLE_BINDING);
+    const agentNodeId = createStepNodeId("0:worker", "task");
+    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -368,7 +366,7 @@ describe("buildNodesAndEdges", () => {
       graph.edges.some(
         (edge) =>
           edge.source === agentNodeId &&
-          edge.sourceHandle === "agentBindingOut-0-1-model",
+          edge.sourceHandle === "bindingOut-0-1-model",
       ),
     ).toBe(true);
   });
@@ -389,8 +387,8 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
     });
-    const agentNodeId = createStepNodeId("0:worker", "agent");
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.SINGLE_BINDING);
+    const agentNodeId = createStepNodeId("0:worker", "task");
+    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -402,7 +400,7 @@ describe("buildNodesAndEdges", () => {
       graph.edges.some(
         (edge) =>
           edge.source === agentNodeId &&
-          edge.sourceHandle === "agentBindingOut-0-1-model",
+          edge.sourceHandle === "bindingOut-0-1-model",
       ),
     ).toBe(true);
   });
@@ -426,7 +424,7 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
     });
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.SINGLE_BINDING);
+    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -458,7 +456,7 @@ describe("buildNodesAndEdges", () => {
     });
     const taskNodeId = createStepNodeId("0:worker", "task");
     const singleBindingNodes = graph.nodes.filter(
-      (node) => node.type === ENodeType.SINGLE_BINDING,
+      (node) => node.type === ENodeType.BINDING_SINGLE,
     );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
@@ -471,12 +469,12 @@ describe("buildNodesAndEdges", () => {
       graph.edges.some(
         (edge) =>
           edge.source === taskNodeId &&
-          edge.sourceHandle === "taskBindingOut-0-1-knowledge_base",
+          edge.sourceHandle === "bindingOut-0-1-knowledge_base",
       ),
     ).toBe(true);
   });
 
-  it("renders binding placeholders for non-agent tasks with supported bindings", async () => {
+  it("renders binding placeholders for tasks with supported bindings", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
     const tasks: TaskDefinitions = {
       worker: {
@@ -499,13 +497,13 @@ describe("buildNodesAndEdges", () => {
     );
 
     expect(taskNode).toBeDefined();
-    expect(getNodePorts(taskNode).includes("taskBindingOut-0-1-tools")).toBe(true);
+    expect(getNodePorts(taskNode).includes("bindingOut-0-1-tools")).toBe(true);
     expect(placeholderNodes).toHaveLength(1);
     expect(
       graph.edges.some(
         (edge) =>
           edge.source === taskNodeId &&
-          edge.sourceHandle === "taskBindingOut-0-1-tools",
+          edge.sourceHandle === "bindingOut-0-1-tools",
       ),
     ).toBe(true);
   });
@@ -534,11 +532,11 @@ describe("buildNodesAndEdges", () => {
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
 
     expect(taskNode).toBeDefined();
     expect(
-      getNodePorts(taskNode).some((port) => port.startsWith("taskBindingOut-")),
+      getNodePorts(taskNode).some((port) => port.startsWith("bindingOut-")),
     ).toBe(false);
     expect(placeholderNodes).toHaveLength(0);
     expect(toolNodes).toHaveLength(0);
@@ -567,7 +565,7 @@ describe("buildNodesAndEdges", () => {
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.TOOL);
+    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
 
     expect(placeholderNodes).toHaveLength(1);
     expect(toolNodes).toHaveLength(0);

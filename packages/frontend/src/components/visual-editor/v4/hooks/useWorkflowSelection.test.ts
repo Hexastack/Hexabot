@@ -36,7 +36,7 @@ describe("useWorkflowSelection selectors", () => {
     expect(getSingleSelectedNode(selection)).toBeUndefined();
   });
 
-  it("returns selected action node for task and agent nodes", () => {
+  it("returns selected action node for task nodes", () => {
     const taskSelection: WorkflowSelectionSnapshot = {
       nodeIds: ["task-1"],
       nodes: [
@@ -48,20 +48,8 @@ describe("useWorkflowSelection selectors", () => {
         },
       ],
     };
-    const agentSelection: WorkflowSelectionSnapshot = {
-      nodeIds: ["agent-1"],
-      nodes: [
-        {
-          id: "agent-1",
-          type: ENodeType.AGENT,
-          taskName: "agent_step",
-          actionName: "agent_action",
-        },
-      ],
-    };
 
     expect(getSelectedActionNode(taskSelection)?.id).toBe("task-1");
-    expect(getSelectedActionNode(agentSelection)?.id).toBe("agent-1");
   });
 
   it("returns undefined for action selector when taskName is missing", () => {

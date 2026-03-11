@@ -11,7 +11,6 @@ import { ELinkType } from "../types/workflow-node.types";
 
 import { getHandleConfig } from "./handle.utils";
 import {
-  getAgentOutHandleMeta,
   getBindingOutHandleMeta,
   getConditionalOperatorOutHandleMeta,
   resolveWorkflowPortRule,
@@ -27,29 +26,20 @@ describe("handle.utils", () => {
     expect(getConditionalOperatorOutHandleMeta("operatorOut-x-y")).toBeUndefined();
   });
 
-  it("parses agent attachment handle metadata", () => {
-    expect(getAgentOutHandleMeta(ELinkType.AGENT_SINGLE_BINDING)).toEqual({
-      handleId: ELinkType.AGENT_SINGLE_BINDING,
-      horizontal: 10,
-      vertical: 30,
-    });
-    expect(getAgentOutHandleMeta(ELinkType.TASK_OUT)).toBeUndefined();
-  });
-
-  it("parses dynamic task and agent binding handle metadata", () => {
-    expect(getBindingOutHandleMeta("agentBindingOut-1-3-tools")).toEqual({
-      baseId: ELinkType.AGENT_BINDING_OUT,
+  it("parses dynamic binding handle metadata", () => {
+    expect(getBindingOutHandleMeta("bindingOut-1-3-tools")).toEqual({
+      baseId: ELinkType.BINDING_OUT,
       index: 1,
       total: 3,
       bindingKind: "tools",
     });
-    expect(getBindingOutHandleMeta("taskBindingOut-0-2-tools")).toEqual({
-      baseId: ELinkType.TASK_BINDING_OUT,
+    expect(getBindingOutHandleMeta("bindingOut-0-2-tools")).toEqual({
+      baseId: ELinkType.BINDING_OUT,
       index: 0,
       total: 2,
       bindingKind: "tools",
     });
-    expect(getBindingOutHandleMeta("agentBindingOut-x-y-tools")).toBeUndefined();
+    expect(getBindingOutHandleMeta("bindingOut-x-y-tools")).toBeUndefined();
   });
 
   it("resolves handle config for conditional out handles", () => {
@@ -61,8 +51,8 @@ describe("handle.utils", () => {
   });
 
   it("resolves dynamic binding handle positions for horizontal and vertical directions", () => {
-    const horizontal = getHandleConfig("agentBindingOut-1-3-tools", "horizontal");
-    const vertical = getHandleConfig("agentBindingOut-1-3-tools", "vertical");
+    const horizontal = getHandleConfig("bindingOut-1-3-tools", "horizontal");
+    const vertical = getHandleConfig("bindingOut-1-3-tools", "vertical");
 
     expect(horizontal.position).toBe(Position.Bottom);
     expect(horizontal.style?.left).toBe("50%");
@@ -71,8 +61,8 @@ describe("handle.utils", () => {
   });
 
   it("keeps port resolution consistent for render and layout rules", () => {
-    const rule = resolveWorkflowPortRule(ELinkType.TOOL_IN, "horizontal");
-    const handle = getHandleConfig(ELinkType.TOOL_IN, "horizontal");
+    const rule = resolveWorkflowPortRule(ELinkType.BINDING_MULTI_IN, "horizontal");
+    const handle = getHandleConfig(ELinkType.BINDING_MULTI_IN, "horizontal");
 
     expect(rule.type).toBe(handle.type);
     expect(rule.position).toBe(handle.position);

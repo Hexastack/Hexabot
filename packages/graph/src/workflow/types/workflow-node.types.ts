@@ -23,10 +23,9 @@ import type {
 } from "react";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
-import { Agent } from "../components/workflow-nodes/Agent";
-import { SingleBinding } from '../components/workflow-nodes/Agent/SingleBinding';
-import { Tool } from "../components/workflow-nodes/Agent/Tool";
+import { BindingMulti } from "../components/workflow-nodes/BindingMulti";
 import { BindingPlaceholder } from "../components/workflow-nodes/BindingPlaceholder";
+import { BindingSingle } from "../components/workflow-nodes/BindingSingle";
 import { BranchPlaceholder } from "../components/workflow-nodes/BranchPlaceholder";
 import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
@@ -104,16 +103,8 @@ type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
   ports: WorkflowNodePort<T>[];
 };
 
-export type SingleBindingData = CommonNodeData<ENodeType.SINGLE_BINDING>;
-export type ToolData = CommonNodeData<ENodeType.TOOL> & {
-  taskName?: string;
-  bindingKind?: string;
-  bindingName?: string;
-};
-
-export type AgentData = CommonNodeData<ENodeType.AGENT> & {
-  actionName?: string;
-};
+export type BindingSingleData = CommonNodeData<ENodeType.BINDING_SINGLE>;
+export type BindingMultiData = CommonNodeData<ENodeType.BINDING_MULTI>;
 
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
   actionName?: string;
@@ -177,43 +168,31 @@ export enum EHandleType {
 }
 
 export enum ELinkType {
-  SINGLE_BINDING_IN = 'singleBindingIn',
-  TOOL_IN = 'toolIn',
-  BINDING_PLACEHOLDER_IN = 'bindingPlaceholderIn',
-  AGENT_IN = 'agentIn',
-  AGENT_OUT = 'agentOut',
-  AGENT_SINGLE_BINDING = 'agentModel',
-  AGENT_TOOL = 'agentTool',
-  AGENT_BINDING_OUT = 'agentBindingOut',
-  TASK_IN = 'taskIn',
-  TASK_OUT = 'taskOut',
-  TASK_TOOL = 'taskTool',
-  TASK_BINDING_OUT = 'taskBindingOut',
-  INDICATOR_IN = 'indicatorIn',
-  INDICATOR_OUT = 'indicatorOut',
-  OPERATOR_IN = 'operatorIn',
-  OPERATOR_OUT = 'operatorOut',
-  GROUP_IN = 'groupIn',
-  GROUP_OUT = 'groupOut',
-  BRANCH_PLACEHOLDER_IN = 'branchPlaceholderIn',
-  BRANCH_PLACEHOLDER_OUT = 'branchPlaceholderOut',
+  BINDING_SINGLE_IN = "bindingSingleIn",
+  BINDING_MULTI_IN = "bindingMultiIn",
+  BINDING_PLACEHOLDER_IN = "bindingPlaceholderIn",
+  TASK_IN = "taskIn",
+  TASK_OUT = "taskOut",
+  BINDING_OUT = "bindingOut",
+  INDICATOR_IN = "indicatorIn",
+  INDICATOR_OUT = "indicatorOut",
+  OPERATOR_IN = "operatorIn",
+  OPERATOR_OUT = "operatorOut",
+  GROUP_IN = "groupIn",
+  GROUP_OUT = "groupOut",
+  BRANCH_PLACEHOLDER_IN = "branchPlaceholderIn",
+  BRANCH_PLACEHOLDER_OUT = "branchPlaceholderOut",
 }
 
 export type ConditionalOperatorOutPort =
   `${ELinkType.OPERATOR_OUT}-${number}-${number}`;
-export type AgentBindingOutPort =
-  `${ELinkType.AGENT_BINDING_OUT}-${number}-${number}-${string}`;
-export type TaskBindingOutPort =
-  `${ELinkType.TASK_BINDING_OUT}-${number}-${number}-${string}`;
+export type BindingOutPort =
+  `${ELinkType.BINDING_OUT}-${number}-${number}-${string}`;
 
-export type WorkflowPort =
-  | ELinkType
-  | ConditionalOperatorOutPort
-  | AgentBindingOutPort
-  | TaskBindingOutPort;
+export type WorkflowPort = ELinkType | ConditionalOperatorOutPort | BindingOutPort;
 
-type WorkflowPortPrefix<P extends string> = P extends ENodeType.SINGLE_BINDING
-  ? "singleBinding"
+type WorkflowPortPrefix<P extends string> = P extends ENodeType.TASK
+  ? "task" | "bindingOut"
   : P;
 
 export type Port<P extends string> = Extract<
@@ -252,13 +231,7 @@ export interface INodeConfig {
       ? { [O in EOperatorType]: OperatorData }
       : K extends ENodeType.INDICATOR
         ? { [I in EIndicatorType]: IndicatorData }
-        : K extends ENodeType.TASK
-          ? (
-              stepId: string,
-              taskName: string,
-              tasks?: TaskDefinitions,
-            ) => TaskData
-          : NodeDataTypes[K];
+        : NodeDataTypes[K];
   };
 }
 
@@ -271,9 +244,8 @@ export interface IBuildNodesAndEdgesProps {
 }
 
 export type NodeDataTypes = {
-  [ENodeType.SINGLE_BINDING]: SingleBindingData;
-  [ENodeType.TOOL]: ToolData;
-  [ENodeType.AGENT]: AgentData;
+  [ENodeType.BINDING_SINGLE]: BindingSingleData;
+  [ENodeType.BINDING_MULTI]: BindingMultiData;
   [ENodeType.INDICATOR]: IndicatorData;
   [ENodeType.OPERATOR]: OperatorData;
   [ENodeType.TASK]: TaskData;
@@ -290,9 +262,8 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
   T extends keyof NodeDataTypes
     ? Node<NodeDataTypes[T], T>
     :
-        | Node<SingleBindingData, ENodeType.SINGLE_BINDING>
-        | Node<ToolData, ENodeType.TOOL>
-        | Node<AgentData, ENodeType.AGENT>
+        | Node<BindingSingleData, ENodeType.BINDING_SINGLE>
+        | Node<BindingMultiData, ENodeType.BINDING_MULTI>
         | Node<IndicatorData, ENodeType.INDICATOR>
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
@@ -301,15 +272,14 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
         | Node<BindingPlaceholderData, ENodeType.BINDING_PLACEHOLDER>;
 
 export enum ENodeType {
-  SINGLE_BINDING = 'model',
-  TOOL = 'tool',
-  AGENT = 'agent',
-  INDICATOR = 'indicator',
-  OPERATOR = 'operator',
-  TASK = 'task',
-  GROUP = 'group',
-  BRANCH_PLACEHOLDER = 'branchPlaceholder',
-  BINDING_PLACEHOLDER = 'bindingPlaceholder',
+  BINDING_SINGLE = "bindingSingle",
+  BINDING_MULTI = "bindingMulti",
+  INDICATOR = "indicator",
+  OPERATOR = "operator",
+  TASK = "task",
+  GROUP = "group",
+  BRANCH_PLACEHOLDER = "branchPlaceholder",
+  BINDING_PLACEHOLDER = "bindingPlaceholder",
 }
 
 export enum EEdgeType {
@@ -317,9 +287,8 @@ export enum EEdgeType {
 }
 
 export const NODE_TYPES = {
-  [ENodeType.SINGLE_BINDING]: SingleBinding,
-  [ENodeType.TOOL]: Tool,
-  [ENodeType.AGENT]: Agent,
+  [ENodeType.BINDING_SINGLE]: BindingSingle,
+  [ENodeType.BINDING_MULTI]: BindingMulti,
   [ENodeType.INDICATOR]: Indicator,
   [ENodeType.OPERATOR]: Operator,
   [ENodeType.TASK]: Task,

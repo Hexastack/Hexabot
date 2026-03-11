@@ -16,8 +16,7 @@ import {
 import {
   EIndicatorType,
   ELinkType,
-  type AgentBindingOutPort,
-  type TaskBindingOutPort,
+  type BindingOutPort,
   ENodeType,
   type ConditionalOperatorOutPort,
   type EOperatorType,
@@ -117,32 +116,20 @@ const getBindingPortLabel = (kind: string): string => {
 
   return humanizeBindingKind(kind);
 };
-const buildAgentBindingOutPort = (
+const buildBindingOutPort = (
   bindingKind: string,
   index: number,
   total: number,
-): AgentBindingOutPort =>
-  `${ELinkType.AGENT_BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
-const buildTaskBindingOutPort = (
-  bindingKind: string,
-  index: number,
-  total: number,
-): TaskBindingOutPort =>
-  `${ELinkType.TASK_BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
-const buildBindingPorts = <T extends ENodeType.AGENT | ENodeType.TASK>(
-  nodeType: T,
+): BindingOutPort =>
+  `${ELinkType.BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
+const buildBindingPorts = (
   bindingKinds: string[],
-): WorkflowNodePort<T>[] => {
+): WorkflowNodePort<ENodeType.TASK>[] => {
   return bindingKinds.map((bindingKind, index) => {
-    const id =
-      nodeType === ENodeType.AGENT
-        ? buildAgentBindingOutPort(bindingKind, index, bindingKinds.length)
-        : buildTaskBindingOutPort(bindingKind, index, bindingKinds.length);
-
     return {
-      id,
+      id: buildBindingOutPort(bindingKind, index, bindingKinds.length),
       label: getBindingPortLabel(bindingKind),
-    } as WorkflowNodePort<T>;
+    };
   });
 };
 const toBindingRefs = (
@@ -449,8 +436,8 @@ const addPlaceholderNode = (
 };
 const resolveBindingNodeType = (
   multiple: boolean,
-): ENodeType.TOOL | ENodeType.SINGLE_BINDING =>
-  multiple ? ENodeType.TOOL : ENodeType.SINGLE_BINDING;
+): ENodeType.BINDING_MULTI | ENodeType.BINDING_SINGLE =>
+  multiple ? ENodeType.BINDING_MULTI : ENodeType.BINDING_SINGLE;
 const getBindingNodeTheme = (
   bindingDefinition: WorkflowBindingDefinition | undefined,
 ) => ({
@@ -465,7 +452,6 @@ const addTaskAttachments = (
     taskName,
     parentNodeId,
     level,
-    nodeType,
     bindingKinds,
     mountedBindings,
   }: {
@@ -474,7 +460,6 @@ const addTaskAttachments = (
     taskName: string;
     parentNodeId: string;
     level: number;
-    nodeType: ENodeType.AGENT | ENodeType.TASK;
     bindingKinds: string[];
     mountedBindings: Record<string, string[]>;
   },
@@ -486,10 +471,11 @@ const addTaskAttachments = (
     const bindingPlaceholderTheme = bindingDefinition?.color
       ? { borderColor: bindingDefinition.color }
       : {};
-    const sourceHandle =
-      nodeType === ENodeType.AGENT
-        ? buildAgentBindingOutPort(bindingKind, bindingIndex, bindingKinds.length)
-        : buildTaskBindingOutPort(bindingKind, bindingIndex, bindingKinds.length);
+    const sourceHandle = buildBindingOutPort(
+      bindingKind,
+      bindingIndex,
+      bindingKinds.length,
+    );
     const mountedRefs = mountedBindings[bindingKind] ?? [];
     const placeholderNodeId = createBindingPlaceholderNodeId(stepId, bindingKind);
 
@@ -497,7 +483,6 @@ const addTaskAttachments = (
       const bindingNodeType = resolveBindingNodeType(isMultiple);
       const bindingNodeId = createAttachmentNodeId(
         stepId,
-        "binding",
         bindingName,
         bindingRefIndex,
         bindingKind,
@@ -762,75 +747,34 @@ const walkStep = ({
     );
     const actionName =
       taskMeta.actionName || getTaskAction(step.taskName, state.tasks) || "";
-    const supportsModelBinding = Boolean(
-      state.actionCatalog.get(actionName)?.supportedBindings?.includes("model"),
-    );
-    const isAgentTask = supportsModelBinding;
-    const taskNodeId = createStepNodeId(step.id, isAgentTask ? "agent" : "task");
+    const taskNodeId = createStepNodeId(step.id, "task");
     const groupName = getGroupName(groupPath);
-    const bindingPorts = buildBindingPorts(
-      isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
-      taskMeta.bindingKinds,
-    );
+    const taskBaseData = state.config.nodes[ENodeType.TASK];
+    const ports: WorkflowNodePort<ENodeType.TASK>[] = [
+      ...taskBaseData.ports,
+      ...buildBindingPorts(taskMeta.bindingKinds),
+    ];
 
-    if (isAgentTask) {
-      const agentBaseData = state.config.nodes[ENodeType.AGENT];
-      const ports = [
-        ...agentBaseData.ports,
-        ...(bindingPorts as WorkflowNodePort<ENodeType.AGENT>[]),
-      ];
-
-      addSemanticNode(state, {
-        id: taskNodeId,
-        type: ENodeType.AGENT,
-        selectable: true,
-        level,
+    addSemanticNode(state, {
+      id: taskNodeId,
+      type: ENodeType.TASK,
+      selectable: true,
+      level,
+      stepId: step.id,
+      stepPath,
+      groupPath,
+      data: {
+        ...taskBaseData,
+        title: step.taskName,
+        description: getTaskDescription(step.taskName, state.tasks),
+        actionName,
         stepId: step.id,
-        stepPath,
-        groupPath,
-        data: {
-          ...agentBaseData,
-          description: getTaskDescription(step.taskName, state.tasks),
-          stepId: step.id,
-          actionName,
-          level,
-          groupName,
-          stepPath,
-          title: step.taskName,
-          i18nTitle: undefined,
-          ports,
-        },
-      });
-    } else {
-      const taskBaseData = state.config.nodes[ENodeType.TASK](
-        taskNodeId,
-        step.taskName,
-        state.tasks,
-      );
-      const ports = [
-        ...taskBaseData.ports,
-        ...(bindingPorts as WorkflowNodePort<ENodeType.TASK>[]),
-      ];
-
-      addSemanticNode(state, {
-        id: taskNodeId,
-        type: ENodeType.TASK,
-        selectable: true,
         level,
-        stepId: step.id,
+        groupName,
         stepPath,
-        groupPath,
-        data: {
-          ...taskBaseData,
-          actionName,
-          stepId: step.id,
-          level,
-          groupName,
-          stepPath,
-          ports,
-        },
-      });
-    }
+        ports,
+      },
+    });
 
     addTaskAttachments(state, {
       stepId: step.id,
@@ -838,7 +782,6 @@ const walkStep = ({
       taskName: step.taskName,
       parentNodeId: taskNodeId,
       level,
-      nodeType: isAgentTask ? ENodeType.AGENT : ENodeType.TASK,
       bindingKinds: taskMeta.bindingKinds,
       mountedBindings: taskMeta.mountedBindings,
     });

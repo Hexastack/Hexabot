@@ -10,10 +10,10 @@ import ELK from "elkjs/lib/elk.bundled.js";
 
 import {
   DEFAULT_NODE_PROPS,
-  DIMENSIONS,
-  EDGES,
-  HIGHLIGHTS,
-  NODES,
+  EDGE_STYLES,
+  NODE_DEFINITIONS,
+  NODE_DIMENSIONS,
+  OPERATOR_HIGHLIGHTS,
 } from "../constants/workflow.constants";
 import {
   EHandleType,
@@ -428,8 +428,8 @@ export const buildNodesAndEdges = async ({
 export const getWorkflowDefaultConfig = (direction?: ResizeControlDirection) =>
   ({
     direction,
-    dimensions: DIMENSIONS,
-    highlights: HIGHLIGHTS,
-    edges: EDGES,
-    nodes: NODES,
+    dimensions: NODE_DIMENSIONS,
+    highlights: OPERATOR_HIGHLIGHTS,
+    edges: EDGE_STYLES,
+    nodes: NODE_DEFINITIONS,
   }) satisfies INodeConfig;

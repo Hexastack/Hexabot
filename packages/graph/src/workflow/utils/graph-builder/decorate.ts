@@ -13,7 +13,6 @@ import { GraphRegistry } from "./registry";
 const GROUP_EDGE_ELIGIBLE_NODE_TYPES = new Set<ENodeType>([
   ENodeType.INDICATOR,
   ENodeType.TASK,
-  ENodeType.AGENT,
   ENodeType.OPERATOR,
   ENodeType.BRANCH_PLACEHOLDER,
 ]);

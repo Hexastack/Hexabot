@@ -745,8 +745,8 @@ export const Workflow = () => {
   const handleGraphNodeClick = useCallback<NodeMouseHandler<Node>>(
     (_event, node) => {
       if (
-        node.type !== ENodeType.TOOL &&
-        node.type !== ENodeType.SINGLE_BINDING
+        node.type !== ENodeType.BINDING_MULTI &&
+        node.type !== ENodeType.BINDING_SINGLE
       ) {
         return;
       }
@@ -759,7 +759,7 @@ export const Workflow = () => {
       const bindingName = nodeData?.bindingName;
       const taskName = nodeData?.taskName;
 
-      if (node.type === ENodeType.TOOL) {
+      if (node.type === ENodeType.BINDING_MULTI) {
         if (
           bindingKind !== TOOL_BINDING_KIND ||
           typeof bindingName !== "string" ||

@@ -10,9 +10,8 @@ import { useCallback, type MouseEvent } from "react";
 import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context";
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 
-type StepRemovableNodeType = "agent" | "task" | "operator";
+type StepRemovableNodeType = "task" | "operator";
 const STEP_REMOVABLE_NODE_TYPES = new Set<StepRemovableNodeType>([
-  "agent",
   "task",
   "operator",
 ]);
