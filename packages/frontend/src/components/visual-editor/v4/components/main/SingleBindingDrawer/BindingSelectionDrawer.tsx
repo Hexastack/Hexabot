@@ -38,8 +38,9 @@ import {
   getSchemaDefaults,
 } from "../../../utils/schema-defaults.utils";
 
-type SingleBindingSelectionDrawerBaseProps = {
+type BindingSelectionDrawerBaseProps = {
   availableBindings: string[];
+  disabledBindings?: string[];
   bindingKind: string;
   bindingLabel: string;
   defs?: WorkflowDefinition["defs"];
@@ -60,13 +61,13 @@ type SingleBindingSelectionDrawerBaseProps = {
   ) => void;
 };
 
-type SingleBindingSelectionDrawerContentProps =
-  SingleBindingSelectionDrawerBaseProps & {
+type BindingSelectionDrawerContentProps =
+  BindingSelectionDrawerBaseProps & {
     isOpen: boolean;
   };
 
-type SingleBindingSelectionDrawerProps =
-  SingleBindingSelectionDrawerBaseProps & {
+type BindingSelectionDrawerProps =
+  BindingSelectionDrawerBaseProps & {
     drawerId?: string;
     open: boolean;
     onClose: () => void;
@@ -84,9 +85,10 @@ const toBindingFormData = (definition: Record<string, unknown>) => {
 
   return rest;
 };
-const SingleBindingSelectionDrawerContent = ({
+const BindingSelectionDrawerContent = ({
   isOpen,
   availableBindings,
+  disabledBindings,
   bindingKind,
   bindingLabel,
   defs,
@@ -96,7 +98,7 @@ const SingleBindingSelectionDrawerContent = ({
   onSelectBinding,
   onCreateBindingDefinition,
   onUpdateBindingDefinition,
-}: SingleBindingSelectionDrawerContentProps) => {
+}: BindingSelectionDrawerContentProps) => {
   const { t } = useTranslate();
   const [mode, setMode] = useState<"select" | "create">("select");
   const [bindingName, setBindingName] = useState("");
@@ -358,7 +360,7 @@ const SingleBindingSelectionDrawerContent = ({
               onClick={() => {
                 onSelectBinding?.(selectedBindingName);
               }}
-              disabled={isSaving}
+              disabled={isSaving || disabledBindings?.includes(selectedBindingName)}
             >
               <ListItemText
                 primaryTypographyProps={{ fontFamily: "monospace" }}
@@ -371,12 +373,13 @@ const SingleBindingSelectionDrawerContent = ({
     </Stack>
   );
 };
-const SingleBindingSelectionDrawerLayout = withDrawerLayout(
-  SingleBindingSelectionDrawerContent,
+const BindingSelectionDrawerLayout = withDrawerLayout(
+  BindingSelectionDrawerContent,
 );
 
-export const SingleBindingSelectionDrawer = ({
+export const BindingSelectionDrawer = ({
   availableBindings,
+  disabledBindings,
   bindingKind,
   bindingLabel,
   defs,
@@ -389,7 +392,7 @@ export const SingleBindingSelectionDrawer = ({
   onSelectBinding,
   onCreateBindingDefinition,
   onUpdateBindingDefinition,
-}: SingleBindingSelectionDrawerProps) => {
+}: BindingSelectionDrawerProps) => {
   const { t } = useTranslate();
   const normalizedBindingLabel = bindingLabel || humanizeBindingKind(bindingKind);
   const title = editingBindingName
@@ -401,9 +404,10 @@ export const SingleBindingSelectionDrawer = ({
       } as Parameters<typeof t>[1]);
 
   return (
-    <SingleBindingSelectionDrawerLayout
+    <BindingSelectionDrawerLayout
       isOpen={open}
       availableBindings={availableBindings}
+      disabledBindings={disabledBindings}
       bindingKind={bindingKind}
       bindingLabel={normalizedBindingLabel}
       defs={defs}
