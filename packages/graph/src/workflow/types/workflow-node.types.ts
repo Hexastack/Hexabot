@@ -6,6 +6,7 @@
 
 import type {
   CompiledStep,
+  DefDefinitions,
   StepType,
   TaskDefinitions,
 } from "@hexabot-ai/agentic";
@@ -23,10 +24,9 @@ import type {
 } from "react";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
-import { Agent } from "../components/workflow-nodes/Agent";
-import { Memory } from "../components/workflow-nodes/Agent/Memory";
-import { Model } from "../components/workflow-nodes/Agent/Model";
-import { Tool } from "../components/workflow-nodes/Agent/Tool";
+import { BindingMulti } from "../components/workflow-nodes/BindingMulti";
+import { BindingPlaceholder } from "../components/workflow-nodes/BindingPlaceholder";
+import { BindingSingle } from "../components/workflow-nodes/BindingSingle";
 import { BranchPlaceholder } from "../components/workflow-nodes/BranchPlaceholder";
 import { Group } from "../components/workflow-nodes/Group";
 import { Indicator } from "../components/workflow-nodes/Indicator";
@@ -45,13 +45,7 @@ export type WorkflowAction = {
   icon?: string;
   color?: string;
   description?: string;
-};
-
-export type MemoryDefinition = {
-  name: string;
-  schema?: {
-    properties?: Record<string, unknown>;
-  } | null;
+  supportedBindings?: readonly string[];
 };
 
 export type NodeExecutionState =
@@ -68,6 +62,17 @@ export type WorkflowExecutionState = {
 };
 
 export type WorkflowExecutionStateMap = Record<string, WorkflowExecutionState[]>;
+export type WorkflowBindingSchema = unknown;
+export type WorkflowBindingDefinition = {
+  schema: WorkflowBindingSchema;
+  multiple: boolean;
+  color?: string;
+  icon?: string;
+};
+export type WorkflowBindingCatalog = ReadonlyMap<
+  string,
+  WorkflowBindingDefinition
+>;
 
 type NodeDataTitle =
   | { title: string; i18nTitle?: undefined }
@@ -75,6 +80,7 @@ type NodeDataTitle =
 
 export type WorkflowNodeTheme = {
   Icon?: WorkflowIcon;
+  icon?: string;
   color?: CSSProperties["color"];
   bgColor?: CSSProperties["color"];
   iconColor?: CSSProperties["color"];
@@ -83,6 +89,9 @@ export type WorkflowNodeTheme = {
 
 export type CommonNodeDadaTypes = NodeDataTitle & {
   stepId?: string;
+  taskName?: string;
+  bindingKind?: string;
+  bindingName?: string;
   description?: string;
   groupName?: string;
   stepPath?: FlowStepPath;
@@ -95,15 +104,8 @@ type CommonNodeData<T extends ENodeType> = CommonNodeDadaTypes & {
   ports: WorkflowNodePort<T>[];
 };
 
-export type ModelData = CommonNodeData<ENodeType.MODEL>;
-export type ToolData = CommonNodeData<ENodeType.TOOL>;
-
-export type AgentData = CommonNodeData<ENodeType.AGENT> & {
-  tools: string[];
-  model: string;
-  memory: string;
-  actionName?: string;
-};
+export type BindingSingleData = CommonNodeData<ENodeType.BINDING_SINGLE>;
+export type BindingMultiData = CommonNodeData<ENodeType.BINDING_MULTI>;
 
 export type TaskData = CommonNodeData<ENodeType.TASK> & {
   actionName?: string;
@@ -116,6 +118,24 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
 export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
   insertPath?: FlowStepPath;
   onOpenInsertMenu?: OnOpenInsertMenu;
+};
+export type BindingPlaceholderData = CommonNodeData<ENodeType.BINDING_PLACEHOLDER> & {
+  taskName?: string;
+  bindingKind?: string;
+};
+
+export type WorkflowBindingBasePayload = {
+  stepId?: string;
+  stepPath?: FlowStepPath;
+  taskName: string;
+  bindingKind: string;
+  nodeId?: string;
+};
+
+export type WorkflowBindingAddPayload = WorkflowBindingBasePayload;
+
+export type WorkflowBindingRemovePayload = WorkflowBindingBasePayload & {
+  bindingName: string;
 };
 
 export enum EIndicatorType {
@@ -141,8 +161,6 @@ export type GroupData = {
   groupName?: never;
 };
 
-export type MemoryData = CommonNodeData<ENodeType.MEMORY>;
-
 export type EdgeLink = Edge & { id: string; source: string; target: string };
 
 export enum EHandleType {
@@ -151,33 +169,37 @@ export enum EHandleType {
 }
 
 export enum ELinkType {
-  MODEL_IN = "modelIn",
-  TOOL_IN = "toolIn",
-  AGENT_IN = "agentIn",
-  AGENT_OUT = "agentOut",
-  AGENT_MEMORY = "agentMemory",
-  AGENT_MODEL = "agentModel",
-  AGENT_TOOL = "agentTool",
+  BINDING_SINGLE_IN = "bindingSingleIn",
+  BINDING_MULTI_IN = "bindingMultiIn",
+  BINDING_PLACEHOLDER_IN = "bindingPlaceholderIn",
   TASK_IN = "taskIn",
   TASK_OUT = "taskOut",
-  TASK_TOOL = "taskTool",
+  BINDING_OUT = "bindingOut",
   INDICATOR_IN = "indicatorIn",
   INDICATOR_OUT = "indicatorOut",
   OPERATOR_IN = "operatorIn",
   OPERATOR_OUT = "operatorOut",
   GROUP_IN = "groupIn",
   GROUP_OUT = "groupOut",
-  MEMORY_IN = "memoryIn",
   BRANCH_PLACEHOLDER_IN = "branchPlaceholderIn",
   BRANCH_PLACEHOLDER_OUT = "branchPlaceholderOut",
 }
 
 export type ConditionalOperatorOutPort =
   `${ELinkType.OPERATOR_OUT}-${number}-${number}`;
+export type BindingOutPort =
+  `${ELinkType.BINDING_OUT}-${number}-${number}-${string}`;
 
-export type WorkflowPort = ELinkType | ConditionalOperatorOutPort;
+export type WorkflowPort = ELinkType | ConditionalOperatorOutPort | BindingOutPort;
 
-export type Port<P extends string> = Extract<WorkflowPort, `${P}${string}`>;
+type WorkflowPortPrefix<P extends string> = P extends ENodeType.TASK
+  ? "task" | "bindingOut"
+  : P;
+
+export type Port<P extends string> = Extract<
+  WorkflowPort,
+  `${WorkflowPortPrefix<P>}${string}`
+>;
 export type WorkflowPortObject<P extends string> = {
   id: Port<P>;
   label?: string;
@@ -192,8 +214,29 @@ export type THighlightGroups = {
   [K in EOperatorType]?: { padding?: number; color?: string };
 };
 
+export type TNodeCardContentVariant = "title-only" | "title-with-description";
+
+export type TNodeCardMetrics = {
+  paddingX: number;
+  paddingY: number;
+  borderWidth: number;
+  borderRadius: number;
+  titleMinHeight: number;
+  descriptionIndent: number;
+  contentVariant: TNodeCardContentVariant;
+};
+
+export type TNodeMetricsEntry = {
+  dimensions: { width: number; height: number };
+  card?: TNodeCardMetrics;
+};
+
+export type TNodeMetrics = {
+  [K in ENodeType]?: TNodeMetricsEntry;
+};
+
 export type TNodeDimensions = {
-  [K in ENodeType]?: { width: number; height: number };
+  [K in ENodeType]?: TNodeMetricsEntry["dimensions"];
 };
 
 export type TEdgeStyles = {
@@ -203,6 +246,7 @@ export type TEdgeStyles = {
 export interface INodeConfig {
   highlights?: THighlightGroups;
   direction?: ResizeControlDirection;
+  nodeMetrics?: TNodeMetrics;
   dimensions?: TNodeDimensions;
   edges?: TEdgeStyles;
   nodes: {
@@ -210,13 +254,7 @@ export interface INodeConfig {
       ? { [O in EOperatorType]: OperatorData }
       : K extends ENodeType.INDICATOR
         ? { [I in EIndicatorType]: IndicatorData }
-        : K extends ENodeType.TASK
-          ? (
-              stepId: string,
-              taskName: string,
-              tasks?: TaskDefinitions,
-            ) => TaskData
-          : NodeDataTypes[K];
+        : NodeDataTypes[K];
   };
 }
 
@@ -224,19 +262,20 @@ export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
   flow?: CompiledStep[];
   tasks?: TaskDefinitions;
-  memoryDefinitions: MemoryDefinition[];
+  defs?: DefDefinitions;
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog: WorkflowBindingCatalog;
 }
 
 export type NodeDataTypes = {
-  [ENodeType.MODEL]: ModelData;
-  [ENodeType.TOOL]: ToolData;
-  [ENodeType.AGENT]: AgentData;
+  [ENodeType.BINDING_SINGLE]: BindingSingleData;
+  [ENodeType.BINDING_MULTI]: BindingMultiData;
   [ENodeType.INDICATOR]: IndicatorData;
   [ENodeType.OPERATOR]: OperatorData;
   [ENodeType.TASK]: TaskData;
   [ENodeType.GROUP]: GroupData;
-  [ENodeType.MEMORY]: MemoryData;
   [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholderData;
+  [ENodeType.BINDING_PLACEHOLDER]: BindingPlaceholderData;
 };
 
 export type NodeType<V, T = NodeDataTypes> = {
@@ -247,26 +286,24 @@ export type GraphNode<T extends keyof NodeDataTypes | null = null> =
   T extends keyof NodeDataTypes
     ? Node<NodeDataTypes[T], T>
     :
-        | Node<ModelData, ENodeType.MODEL>
-        | Node<ToolData, ENodeType.TOOL>
-        | Node<AgentData, ENodeType.AGENT>
+        | Node<BindingSingleData, ENodeType.BINDING_SINGLE>
+        | Node<BindingMultiData, ENodeType.BINDING_MULTI>
         | Node<IndicatorData, ENodeType.INDICATOR>
         | Node<OperatorData, ENodeType.OPERATOR>
         | Node<TaskData, ENodeType.TASK>
         | Node<GroupData, ENodeType.GROUP>
-        | Node<MemoryData, ENodeType.MEMORY>
-        | Node<BranchPlaceholderData, ENodeType.BRANCH_PLACEHOLDER>;
+        | Node<BranchPlaceholderData, ENodeType.BRANCH_PLACEHOLDER>
+        | Node<BindingPlaceholderData, ENodeType.BINDING_PLACEHOLDER>;
 
 export enum ENodeType {
-  MODEL = "model",
-  TOOL = "tool",
-  AGENT = "agent",
+  BINDING_SINGLE = "bindingSingle",
+  BINDING_MULTI = "bindingMulti",
   INDICATOR = "indicator",
   OPERATOR = "operator",
   TASK = "task",
   GROUP = "group",
-  MEMORY = "memory",
   BRANCH_PLACEHOLDER = "branchPlaceholder",
+  BINDING_PLACEHOLDER = "bindingPlaceholder",
 }
 
 export enum EEdgeType {
@@ -274,15 +311,14 @@ export enum EEdgeType {
 }
 
 export const NODE_TYPES = {
-  [ENodeType.MODEL]: Model,
-  [ENodeType.TOOL]: Tool,
-  [ENodeType.AGENT]: Agent,
+  [ENodeType.BINDING_SINGLE]: BindingSingle,
+  [ENodeType.BINDING_MULTI]: BindingMulti,
   [ENodeType.INDICATOR]: Indicator,
   [ENodeType.OPERATOR]: Operator,
   [ENodeType.TASK]: Task,
   [ENodeType.GROUP]: Group,
-  [ENodeType.MEMORY]: Memory,
   [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholder,
+  [ENodeType.BINDING_PLACEHOLDER]: BindingPlaceholder,
 } satisfies {
   [NT in ENodeType]: FC<NodeProps<GraphNode<NT>>>;
 };

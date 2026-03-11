@@ -10,17 +10,21 @@ import {
   type CompiledLoopStep,
   type CompiledParallelStep,
   type CompiledStep,
+  type DefDefinitions,
   type TaskDefinitions,
 } from "@hexabot-ai/agentic";
 
 import {
   EIndicatorType,
   ELinkType,
-  type MemoryDefinition,
+  type BindingOutPort,
   ENodeType,
   type ConditionalOperatorOutPort,
   type EOperatorType,
   type INodeConfig,
+  type WorkflowAction,
+  type WorkflowBindingCatalog,
+  type WorkflowBindingDefinition,
   type WorkflowNodePort,
 } from "../../types/workflow-node.types";
 import type { FlowStepPath } from "../../types/workflow-path.types";
@@ -30,6 +34,7 @@ import {
   END_INDICATOR_ID,
   START_INDICATOR_ID,
   createAttachmentNodeId,
+  createBindingPlaceholderNodeId,
   createEdgeId,
   createGroupId,
   createPlaceholderNodeId,
@@ -64,7 +69,9 @@ type TraversalExit = {
 type GraphBuilderContext = {
   config: INodeConfig;
   tasks?: TaskDefinitions;
-  memoryDefinitions: MemoryDefinition[];
+  defs?: DefDefinitions;
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog: WorkflowBindingCatalog;
 };
 
 type TraverseState = GraphBuilderContext & {
@@ -89,26 +96,124 @@ const getNextInsertPath = (stepPath: FlowStepPath): FlowStepPath | undefined => 
   return [...stepPath.slice(0, -1), tail + 1];
 };
 const getGroupName = (groupPath: string[]) => groupPath[groupPath.length - 1];
-const getTaskMeta = (taskName: string, tasks?: TaskDefinitions) => {
-  const settings = tasks?.[taskName]?.settings as Record<string, unknown> | undefined;
-  const tools = Array.isArray(settings?.tools)
-    ? (settings.tools as string[])
-    : [];
-  const providerValue = settings?.provider;
-  const modelValue = settings?.model;
-  const memoryEnabled = settings?.memory_enabled === true;
-  const provider =
-    providerValue !== undefined && providerValue !== null
-      ? String(providerValue)
-      : "";
-  const model =
-    modelValue !== undefined && modelValue !== null ? String(modelValue) : "";
+const humanizeBindingKind = (kind: string): string => {
+  return kind
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+};
+const getBindingPortLabel = (kind: string): string => {
+  if (kind === "tools") {
+    return "visual_editor.port_label.tools";
+  }
+
+  if (kind === "model") {
+    return "visual_editor.port_label.model";
+  }
+
+  if (kind === "memory") {
+    return "visual_editor.port_label.memory";
+  }
+
+  return humanizeBindingKind(kind);
+};
+const buildBindingOutPort = (
+  bindingKind: string,
+  index: number,
+  total: number,
+): BindingOutPort =>
+  `${ELinkType.BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
+const buildBindingPorts = (
+  bindingKinds: string[],
+): WorkflowNodePort<ENodeType.TASK>[] => {
+  return bindingKinds.map((bindingKind, index) => {
+    return {
+      id: buildBindingOutPort(bindingKind, index, bindingKinds.length),
+      label: getBindingPortLabel(bindingKind),
+    };
+  });
+};
+const toBindingRefs = (
+  value: unknown,
+  bindingDefinition: WorkflowBindingDefinition | undefined,
+): string[] => {
+  const multiple = bindingDefinition?.multiple ?? true;
+
+  if (multiple) {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .filter((entry): entry is string => typeof entry === "string")
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim();
+
+    return normalized ? [normalized] : [];
+  }
+
+  // Be tolerant with invalid values and still recover displayable refs.
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((entry): entry is string => typeof entry === "string")
+    .filter(Boolean);
+};
+const resolveEffectiveBindingKinds = (
+  taskAction: string,
+  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+  bindingCatalog: WorkflowBindingCatalog,
+) => {
+  const supportedKinds = actionCatalog.get(taskAction)?.supportedBindings ?? [];
+  const availableKinds = new Set(bindingCatalog.keys());
+  const resolvedKinds: string[] = [];
+
+  supportedKinds.forEach((bindingKind) => {
+    if (
+      typeof bindingKind !== "string" ||
+      !bindingKind ||
+      !availableKinds.has(bindingKind) ||
+      resolvedKinds.includes(bindingKind)
+    ) {
+      return;
+    }
+
+    resolvedKinds.push(bindingKind);
+  });
+
+  return resolvedKinds;
+};
+const getTaskMeta = (
+  taskName: string,
+  tasks: TaskDefinitions | undefined,
+  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+  bindingCatalog: WorkflowBindingCatalog,
+) => {
+  const taskDefinition = tasks?.[taskName];
+  const actionName =
+    typeof taskDefinition?.action === "string" ? taskDefinition.action : "";
+  const bindingKinds = resolveEffectiveBindingKinds(
+    actionName,
+    actionCatalog,
+    bindingCatalog,
+  );
+  const bindings = taskDefinition?.bindings as Record<string, unknown> | undefined;
 
   return {
-    tools,
-    provider,
-    model,
-    memoryEnabled,
+    actionName,
+    bindingKinds,
+    mountedBindings: Object.fromEntries(
+      bindingKinds.map((bindingKind) => [
+        bindingKind,
+        toBindingRefs(bindings?.[bindingKind], bindingCatalog.get(bindingKind)),
+      ]),
+    ) as Record<string, string[]>,
   };
 };
 const buildConditionalOperatorOutPort = (
@@ -331,104 +436,141 @@ const addPlaceholderNode = (
 
   return placeholderNodeId;
 };
-const addAgentAttachments = (
+const resolveBindingNodeType = (
+  multiple: boolean,
+): ENodeType.BINDING_MULTI | ENodeType.BINDING_SINGLE =>
+  multiple ? ENodeType.BINDING_MULTI : ENodeType.BINDING_SINGLE;
+const getBindingNodeTheme = (
+  bindingDefinition: WorkflowBindingDefinition | undefined,
+) => ({
+  ...(bindingDefinition?.color ? { borderColor: bindingDefinition.color } : {}),
+  ...(bindingDefinition?.icon ? { icon: bindingDefinition.icon } : {}),
+});
+const getBindingNodeDescription = ({
+  bindingName,
+  defs,
+}: {
+  bindingName: string;
+  defs: DefDefinitions | undefined;
+}) => {
+  const def = defs?.[bindingName] as { description?: unknown } | undefined;
+
+  return typeof def?.description === "string" ? def.description.trim() : undefined;
+};
+const addTaskAttachments = (
   state: TraverseState,
   {
     stepId,
+    stepPath,
+    taskName,
     parentNodeId,
     level,
-    tools,
-    model,
-    memoryEnabled,
+    bindingKinds,
+    mountedBindings,
   }: {
     stepId: string;
+    stepPath: FlowStepPath;
+    taskName: string;
     parentNodeId: string;
     level: number;
-    tools: string[];
-    model: string;
-    memoryEnabled: boolean;
+    bindingKinds: string[];
+    mountedBindings: Record<string, string[]>;
   },
 ) => {
-  if (model) {
-    const modelNodeId = createAttachmentNodeId(stepId, "model", model, 0);
+  bindingKinds.forEach((bindingKind, bindingIndex) => {
+    const bindingDefinition = state.bindingCatalog.get(bindingKind);
+    const isMultiple = bindingDefinition?.multiple ?? true;
+    const bindingNodeTheme = getBindingNodeTheme(bindingDefinition);
+    const bindingPlaceholderTheme = bindingDefinition?.color
+      ? { borderColor: bindingDefinition.color }
+      : {};
+    const sourceHandle = buildBindingOutPort(
+      bindingKind,
+      bindingIndex,
+      bindingKinds.length,
+    );
+    const mountedRefs = mountedBindings[bindingKind] ?? [];
+    const placeholderNodeId = createBindingPlaceholderNodeId(stepId, bindingKind);
 
-    addSemanticNode(state, {
-      id: modelNodeId,
-      type: ENodeType.MODEL,
-      level,
-      groupPath: [],
-      isAttachment: true,
-      data: {
-        ...state.config.nodes[ENodeType.MODEL],
-        title: model,
-        i18nTitle: undefined,
-        level,
-      },
-    });
-
-    addDirectEdge(state, {
-      source: parentNodeId,
-      target: modelNodeId,
-      sourceHandle: ELinkType.AGENT_MODEL,
-    });
-  }
-
-  if (memoryEnabled) {
-    state.memoryDefinitions.forEach((memoryDefinition, memoryIndex) => {
-      const memoryProperties = memoryDefinition.schema?.properties;
-      const memoryNodeId = createAttachmentNodeId(
+    mountedRefs.forEach((bindingName, bindingRefIndex) => {
+      const bindingNodeType = resolveBindingNodeType(isMultiple);
+      const bindingNodeId = createAttachmentNodeId(
         stepId,
-        "memory",
-        memoryDefinition.name,
-        memoryIndex,
+        bindingName,
+        bindingRefIndex,
+        bindingKind,
       );
+      const bindingNodeBaseData = state.config.nodes[bindingNodeType];
 
       addSemanticNode(state, {
-        id: memoryNodeId,
-        type: ENodeType.MEMORY,
+        id: bindingNodeId,
+        type: bindingNodeType,
         level,
+        stepPath,
         groupPath: [],
         isAttachment: true,
         data: {
-          ...state.config.nodes[ENodeType.MEMORY],
-          title: memoryDefinition.name,
+          ...bindingNodeBaseData,
+          title: bindingName,
           i18nTitle: undefined,
-          description: memoryProperties
-            ? Object.keys(memoryProperties).join(", ")
-            : "",
+          description: getBindingNodeDescription({
+            bindingName,
+            defs: state.defs,
+          }),
+          stepId,
+          stepPath,
+          taskName,
+          bindingKind,
+          bindingName,
+          level,
+          theme: {
+            ...bindingNodeBaseData.theme,
+            ...bindingNodeTheme,
+          },
         },
       });
 
       addDirectEdge(state, {
         source: parentNodeId,
-        target: memoryNodeId,
-        sourceHandle: ELinkType.AGENT_MEMORY,
+        target: bindingNodeId,
+        sourceHandle,
       });
     });
-  }
 
-  tools.forEach((toolName, toolIndex) => {
-    const toolNodeId = createAttachmentNodeId(stepId, "tool", toolName, toolIndex);
+    if (isMultiple || mountedRefs.length === 0) {
+      const bindingPlaceholderBaseData =
+        state.config.nodes[ENodeType.BINDING_PLACEHOLDER];
 
-    addSemanticNode(state, {
-      id: toolNodeId,
-      type: ENodeType.TOOL,
-      level,
-      groupPath: [],
-      isAttachment: true,
-      data: {
-        ...state.config.nodes[ENodeType.TOOL],
-        title: toolName,
-        i18nTitle: undefined,
+      addSemanticNode(state, {
+        id: placeholderNodeId,
+        type: ENodeType.BINDING_PLACEHOLDER,
         level,
-      },
-    });
+        stepPath,
+        groupPath: [],
+        isAttachment: true,
+        data: {
+          ...bindingPlaceholderBaseData,
+          title: bindingKind,
+          i18nTitle: undefined,
+          description: "",
+          stepId,
+          stepPath,
+          taskName,
+          bindingKind,
+          level,
+          theme: {
+            ...bindingPlaceholderBaseData.theme,
+            ...bindingPlaceholderTheme,
+          },
+        },
+      });
 
-    addDirectEdge(state, {
-      source: parentNodeId,
-      target: toolNodeId,
-      sourceHandle: ELinkType.AGENT_TOOL,
-    });
+      addDirectEdge(state, {
+        source: parentNodeId,
+        target: placeholderNodeId,
+        sourceHandle,
+      });
+    }
   });
 };
 const walkParallelSteps = (
@@ -613,73 +755,52 @@ const walkStep = ({
   const entryInsertPath = disableEntryInsertPath ? undefined : stepPath;
 
   if (step.type === StepType.Task) {
-    const taskMeta = getTaskMeta(step.taskName, state.tasks);
-    const isAgentTask = Boolean(taskMeta.model && taskMeta.provider);
-    const taskNodeId = createStepNodeId(step.id, isAgentTask ? "agent" : "task");
+    const taskMeta = getTaskMeta(
+      step.taskName,
+      state.tasks,
+      state.actionCatalog,
+      state.bindingCatalog,
+    );
+    const actionName =
+      taskMeta.actionName || getTaskAction(step.taskName, state.tasks) || "";
+    const taskNodeId = createStepNodeId(step.id, "task");
     const groupName = getGroupName(groupPath);
+    const taskBaseData = state.config.nodes[ENodeType.TASK];
+    const ports: WorkflowNodePort<ENodeType.TASK>[] = [
+      ...taskBaseData.ports,
+      ...buildBindingPorts(taskMeta.bindingKinds),
+    ];
 
-    if (isAgentTask) {
-      const agentBaseData = state.config.nodes[ENodeType.AGENT];
-      const ports = agentBaseData.ports.filter((port) => {
-        if (taskMeta.memoryEnabled) {
-          return true;
-        }
-
-        return (typeof port === "string" ? port : port.id) !== ELinkType.AGENT_MEMORY;
-      });
-
-      addSemanticNode(state, {
-        id: taskNodeId,
-        type: ENodeType.AGENT,
-        selectable: true,
-        level,
+    addSemanticNode(state, {
+      id: taskNodeId,
+      type: ENodeType.TASK,
+      selectable: true,
+      level,
+      stepId: step.id,
+      stepPath,
+      groupPath,
+      data: {
+        ...taskBaseData,
+        title: step.taskName,
+        description: getTaskDescription(step.taskName, state.tasks),
+        actionName,
         stepId: step.id,
+        level,
+        groupName,
         stepPath,
-        groupPath,
-        data: {
-          ...agentBaseData,
-          description: getTaskDescription(step.taskName, state.tasks),
-          stepId: step.id,
-          actionName: getTaskAction(step.taskName, state.tasks),
-          level,
-          groupName,
-          stepPath,
-          title: step.taskName,
-          i18nTitle: undefined,
-          ports,
-        },
-      });
+        ports,
+      },
+    });
 
-      addAgentAttachments(state, {
-        stepId: step.id,
-        parentNodeId: taskNodeId,
-        level,
-        tools: taskMeta.tools,
-        model: `${taskMeta.provider}/${taskMeta.model}`,
-        memoryEnabled: taskMeta.memoryEnabled,
-      });
-    } else {
-      addSemanticNode(state, {
-        id: taskNodeId,
-        type: ENodeType.TASK,
-        selectable: true,
-        level,
-        stepId: step.id,
-        stepPath,
-        groupPath,
-        data: {
-          ...state.config.nodes[ENodeType.TASK](
-            taskNodeId,
-            step.taskName,
-            state.tasks,
-          ),
-          stepId: step.id,
-          level,
-          groupName,
-          stepPath,
-        },
-      });
-    }
+    addTaskAttachments(state, {
+      stepId: step.id,
+      stepPath,
+      taskName: step.taskName,
+      parentNodeId: taskNodeId,
+      level,
+      bindingKinds: taskMeta.bindingKinds,
+      mountedBindings: taskMeta.mountedBindings,
+    });
 
     connectIncoming(state, {
       incoming,
@@ -852,7 +973,9 @@ export const traverseWorkflow = ({
   flow,
   config,
   tasks,
-  memoryDefinitions,
+  defs,
+  actionCatalog,
+  bindingCatalog,
 }: {
   flow?: CompiledStep[];
 } & GraphBuilderContext): {
@@ -865,7 +988,9 @@ export const traverseWorkflow = ({
   const state: TraverseState = {
     config,
     tasks,
-    memoryDefinitions,
+    defs,
+    actionCatalog,
+    bindingCatalog,
     registry,
     groups,
   };

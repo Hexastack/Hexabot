@@ -92,7 +92,6 @@ export const messagingWorkflowFixtures: WorkflowFixture[] = [
     type: WorkflowType.conversational,
     schedule: null,
     inputSchema: conversationalWorkflowInputJsonSchema,
-    memoryDefinitions: [],
     createdBy: userFixtureIds.admin,
     direction: DirectionType.HORIZONTAL,
     x: 0,
@@ -110,7 +109,6 @@ export const scheduledWorkflowFixtures: WorkflowFixture[] = [
     type: WorkflowType.scheduled,
     schedule: '*/10 * * * * *',
     inputSchema: scheduledWorkflowInputJsonSchema,
-    memoryDefinitions: [],
     createdBy: userFixtureIds.admin,
     builtin: false,
   },
@@ -141,9 +139,6 @@ const installWorkflowFixtures = async (
       return {
         ...fixture,
         createdBy: fixture.createdBy ? { id: fixture.createdBy } : undefined,
-        memoryDefinitions: fixture.memoryDefinitions?.map((definitionId) => ({
-          id: definitionId,
-        })),
       };
     }),
   );

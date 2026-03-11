@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  AbstractAction,
-  ActionExecutionArgs,
-  BaseWorkflowContext,
-} from '@hexabot-ai/agentic';
+import { AbstractAction, BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 import { z, type ZodType } from 'zod';
 
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
@@ -26,6 +23,7 @@ import {
   DEFAULT_ACTION_COLOR,
   DEFAULT_ACTION_GROUP,
   DEFAULT_ACTION_ICON,
+  ExecArgs,
 } from './types';
 
 const defaultSchema = z.object({}).strict();
@@ -39,7 +37,7 @@ export abstract class BaseAction<
     C extends BaseWorkflowContext = ConversationalWorkflowContext,
     S = unknown,
   >
-  extends AbstractAction<I, O, C, S>
+  extends AbstractAction<I, O, C, S, RuntimeBindings>
   implements OnModuleInit
 {
   private translations?: I18nTranslation | Observable<I18nTranslation>;
@@ -88,5 +86,5 @@ export abstract class BaseAction<
     this.actionService.register(this);
   }
 
-  abstract execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
+  abstract execute(args: ExecArgs<I, C, S>): Promise<O>;
 }

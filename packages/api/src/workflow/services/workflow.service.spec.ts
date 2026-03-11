@@ -88,7 +88,6 @@ describe('WorkflowService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
-      memoryDefinitions: [],
     });
 
     definitionYml = WorkflowHelper.stringifyDefinition(definition);
@@ -145,7 +144,6 @@ describe('WorkflowService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
-      memoryDefinitions: [],
     };
 
     await expect(workflowService.create(duplicatePayload)).rejects.toThrow();
@@ -165,7 +163,6 @@ describe('WorkflowService (TypeORM)', () => {
       schedule: null,
       inputSchema: customSchema,
       createdBy: creatorId,
-      memoryDefinitions: [],
     });
 
     expect(created.inputSchema).toEqual(conversationalWorkflowInputJsonSchema);
@@ -186,7 +183,6 @@ describe('WorkflowService (TypeORM)', () => {
       inputSchema: manualSchema,
       schedule: null,
       createdBy: creatorId,
-      memoryDefinitions: [],
     });
 
     expect(created.inputSchema).toEqual(manualSchema);
@@ -216,7 +212,6 @@ describe('WorkflowService (TypeORM)', () => {
       type: WorkflowType.scheduled,
       schedule: '*/10 * * * * *',
       createdBy: creatorId,
-      memoryDefinitions: [],
     });
 
     expect(scheduled.inputSchema).toEqual(scheduledWorkflowInputJsonSchema);

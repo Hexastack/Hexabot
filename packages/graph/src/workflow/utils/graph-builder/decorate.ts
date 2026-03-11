@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ELinkType, ENodeType } from "../../types/workflow-node.types";
+import { ENodeType } from "../../types/workflow-node.types";
+import { isAttachmentSourceHandle } from "../port-rules";
 
 import { createEdgeId } from "./id-factory";
 import { GraphRegistry } from "./registry";
@@ -12,14 +13,8 @@ import { GraphRegistry } from "./registry";
 const GROUP_EDGE_ELIGIBLE_NODE_TYPES = new Set<ENodeType>([
   ENodeType.INDICATOR,
   ENodeType.TASK,
-  ENodeType.AGENT,
   ENodeType.OPERATOR,
   ENodeType.BRANCH_PLACEHOLDER,
-]);
-const GROUP_EDGE_BYPASS_SOURCE_HANDLES = new Set<string>([
-  ELinkType.AGENT_MODEL,
-  ELinkType.AGENT_MEMORY,
-  ELinkType.AGENT_TOOL,
 ]);
 const isPrefixPath = (prefix: string[], value: string[]): boolean => {
   if (prefix.length > value.length) {
@@ -105,8 +100,7 @@ export const decorateSemanticGraph = (registry: GraphRegistry): void => {
       const sourceType = sourceNode.type;
       const targetType = targetNode.type;
       const canCreateGroupEdge =
-        (!edge.sourceHandle ||
-          !GROUP_EDGE_BYPASS_SOURCE_HANDLES.has(edge.sourceHandle)) &&
+        (!edge.sourceHandle || !isAttachmentSourceHandle(edge.sourceHandle)) &&
         GROUP_EDGE_ELIGIBLE_NODE_TYPES.has(sourceType) &&
         GROUP_EDGE_ELIGIBLE_NODE_TYPES.has(targetType);
       const endpoints = canCreateGroupEdge

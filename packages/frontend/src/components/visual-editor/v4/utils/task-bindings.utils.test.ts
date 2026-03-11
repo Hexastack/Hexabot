@@ -1,0 +1,67 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import type { TaskDefinition } from "@hexabot-ai/agentic";
+import { describe, expect, it } from "vitest";
+
+import {
+  mountTaskBindingRef,
+  toBindingRefs,
+  unmountTaskBindingRef,
+} from "./task-bindings.utils";
+
+const createTaskDefinition = (
+  bindings?: Record<string, string | string[]>,
+): TaskDefinition => ({
+  action: "ai_generate_reply",
+  ...(bindings ? { bindings } : {}),
+});
+
+describe("task-bindings.utils", () => {
+  it("normalizes refs for both multi and single binding kinds", () => {
+    expect(toBindingRefs(["a", "b"], true)).toEqual(["a", "b"]);
+    expect(toBindingRefs("openai_chatgpt", false)).toEqual(["openai_chatgpt"]);
+    expect(toBindingRefs(["openai_chatgpt"], false)).toEqual(["openai_chatgpt"]);
+    expect(toBindingRefs(undefined, true)).toEqual([]);
+    expect(toBindingRefs(undefined, false)).toEqual([]);
+  });
+
+  it("mounts multi refs as arrays", () => {
+    const task = createTaskDefinition({ tools: ["search"] });
+    const nextTask = mountTaskBindingRef(task, "tools", "calculator", true);
+
+    expect(nextTask.bindings?.tools).toEqual(["search", "calculator"]);
+  });
+
+  it("mounts single refs as string values", () => {
+    const task = createTaskDefinition();
+    const nextTask = mountTaskBindingRef(task, "model", "openai_chatgpt", false);
+
+    expect(nextTask.bindings?.model).toBe("openai_chatgpt");
+  });
+
+  it("unmounts multi refs and keeps array shape", () => {
+    const task = createTaskDefinition({ tools: ["search", "calculator"] });
+    const nextTask = unmountTaskBindingRef(task, "tools", "search", true);
+
+    expect(nextTask.bindings?.tools).toEqual(["calculator"]);
+  });
+
+  it("unmounts single refs and removes binding key", () => {
+    const task = createTaskDefinition({ model: "openai_chatgpt" });
+    const nextTask = unmountTaskBindingRef(task, "model", "openai_chatgpt", false);
+
+    expect(nextTask.bindings?.model).toBeUndefined();
+    expect(nextTask.bindings).toBeUndefined();
+  });
+
+  it("mounts selected single-binding refs as a single string", () => {
+    const task = createTaskDefinition();
+    const nextTask = mountTaskBindingRef(task, "model", "anthropic_claude", false);
+
+    expect(nextTask.bindings?.model).toBe("anthropic_claude");
+  });
+});

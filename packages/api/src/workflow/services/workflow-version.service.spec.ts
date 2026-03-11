@@ -43,7 +43,6 @@ describe('WorkflowVersionService (TypeORM)', () => {
       description: 'Workflow for version service tests.',
       type: WorkflowType.conversational,
       schedule: null,
-      memoryDefinitions: [],
       createdBy: { id: userFixtureIds.admin },
       ...overrides,
     });

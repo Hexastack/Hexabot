@@ -66,6 +66,7 @@ export class ActionService {
         color: action.color,
         group: action.group,
         workflowTypes: action.workflowTypes,
+        supportedBindings: action.supportedBindings ?? [],
         inputSchema: toDraft07JsonSchema(action.inputSchema),
         outputSchema: toDraft07JsonSchema(action.outputSchema),
         settingSchema: toDraft07JsonSchema(action.settingSchema),

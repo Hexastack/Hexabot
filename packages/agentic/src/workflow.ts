@@ -112,8 +112,16 @@ export class Workflow {
     definition: WorkflowDefinition,
     options: WorkflowCompileOptions,
   ): Workflow {
-    const parsed = WorkflowDefinitionSchema.parse(definition);
-    const compiled = compileWorkflow(parsed, options);
+    const validation = validateWorkflow(definition, {
+      bindingKinds: options.bindingKinds,
+    });
+    if (!validation.success) {
+      throw new Error(
+        `Workflow validation failed: ${validation.errors.join('; ')}`,
+      );
+    }
+
+    const compiled = compileWorkflow(validation.data, options);
 
     return new Workflow(compiled);
   }
@@ -123,7 +131,9 @@ export class Workflow {
    * YAML is validated and compiled before being wrapped in a {@link Workflow} instance.
    */
   static fromYaml(yaml: string, options: WorkflowCompileOptions): Workflow {
-    const validation = validateWorkflow(yaml);
+    const validation = validateWorkflow(yaml, {
+      bindingKinds: options.bindingKinds,
+    });
     if (!validation.success) {
       throw new Error(
         `Workflow validation failed: ${validation.errors.join('; ')}`,

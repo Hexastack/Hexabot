@@ -14,6 +14,7 @@ import { Box, Button, IconButton, Stack, Tooltip, Typography } from "@mui/materi
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -267,19 +268,13 @@ export const ConditionalFormDrawer = () => {
         </Box>
       }
       footerContent={
-        <Box display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={saveDisabled}
-            aria-label={saveLabel}
-            startIcon={<Save size={18} />}
-            sx={{ minWidth: 200 }}
-          >
-            {saveLabel}
-          </Button>
-        </Box>
+        <DrawerPrimaryFooterAction
+          label={saveLabel}
+          ariaLabel={saveLabel}
+          onClick={handleSave}
+          disabled={saveDisabled}
+          startIcon={<Save size={18} />}
+        />
       }
     />
   );

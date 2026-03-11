@@ -7,31 +7,29 @@
 import { z, ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
-import { Settings } from '../dsl.types';
 
 import { AbstractAction } from './abstract-action';
+import type {
+  Action,
+  ActionExecutionArgs,
+  ActionMetadata,
+  AnyRuntimeBindings,
+} from './action.types';
 
-export interface ActionMetadata<I, O, S> {
-  name: string;
-  description: string;
-  inputSchema: ZodType<I>;
-  outputSchema: ZodType<O>;
-  settingsSchema: ZodType<S>;
-}
-
-export interface ActionExecutionArgs<I, C extends BaseWorkflowContext, S> {
-  input: I;
-  context: C;
-  settings: Settings & S;
-}
-
-export type DefineActionParams<I, O, Ctx extends BaseWorkflowContext, S> = {
+export type DefineActionParams<
+  I,
+  O,
+  Ctx extends BaseWorkflowContext,
+  S,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
+> = {
   name: string;
   description?: string;
+  supportedBindings?: readonly string[];
   inputSchema?: ZodType<I>;
   outputSchema?: ZodType<O>;
   settingSchema?: ZodType<S>;
-  execute: (args: ActionExecutionArgs<I, Ctx, S>) => Promise<O> | O;
+  execute: (args: ActionExecutionArgs<I, Ctx, S, B>) => Promise<O> | O;
 };
 
 /**
@@ -43,23 +41,28 @@ export type DefineActionParams<I, O, Ctx extends BaseWorkflowContext, S> = {
  * @typeParam O - Action output type.
  * @typeParam Ctx - Workflow context type.
  */
-export function defineAction<I, O, Ctx extends BaseWorkflowContext, S>(
-  params: DefineActionParams<I, O, Ctx, S>,
-) {
-  /**
-   * Concrete action generated for the supplied configuration options.
-   */
-  class FnAction extends AbstractAction<I, O, Ctx, S> {
+export function defineAction<
+  I,
+  O,
+  Ctx extends BaseWorkflowContext,
+  S,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
+>(params: DefineActionParams<I, O, Ctx, S, B>): Action<I, O, Ctx, S, B> {
+  type ActionArgs = ActionExecutionArgs<I, Ctx, S, B>;
+
+  const defaultSettingsSchema = z.any() as ZodType<S>;
+  const defaultInputSchema = z.any() as ZodType<I>;
+  const defaultOutputSchema = z.any() as ZodType<O>;
+
+  class FnAction extends AbstractAction<I, O, Ctx, S, B> {
     constructor() {
       const metadata: ActionMetadata<I, O, S> = {
         name: params.name,
         description: params.description ?? '',
-        inputSchema: (params.inputSchema ??
-          (z.any() as ZodType<I>)) as ZodType<I>,
-        outputSchema: (params.outputSchema ??
-          (z.any() as ZodType<O>)) as ZodType<O>,
-        settingsSchema: (params.settingSchema ??
-          (z.any() as ZodType<O>)) as ZodType<S>,
+        inputSchema: params.inputSchema ?? defaultInputSchema,
+        outputSchema: params.outputSchema ?? defaultOutputSchema,
+        settingsSchema: params.settingSchema ?? defaultSettingsSchema,
+        supportedBindings: params.supportedBindings,
       };
 
       super(metadata);
@@ -71,7 +74,7 @@ export function defineAction<I, O, Ctx extends BaseWorkflowContext, S>(
      * @param args - Action execution arguments supplied by the runner.
      * @returns Result of the user callback as a promise.
      */
-    async execute(args: ActionExecutionArgs<I, Ctx, S>): Promise<O> {
+    async execute(args: ActionArgs): Promise<O> {
       return await Promise.resolve(params.execute(args));
     }
   }

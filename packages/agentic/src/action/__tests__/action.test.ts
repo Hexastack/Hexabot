@@ -6,11 +6,16 @@
 
 import { z } from 'zod';
 
+import type {
+  BindingKindSchemas,
+  InferWorkflowBindings,
+} from '../../bindings/base-binding';
 import { BaseWorkflowContext } from '../../context';
 import { Settings, SettingsSchema } from '../../dsl.types';
 import { EventEmitterLike } from '../../workflow-event-emitter';
 import { AbstractAction } from '../abstract-action';
 import {
+  InferActionBindings,
   InferActionContext,
   InferActionInput,
   InferActionOutput,
@@ -35,6 +40,23 @@ class DoubleContext extends BaseWorkflowContext<{ factor: number }> {
 const InputSchema = z.object({ value: z.number() });
 const OutputSchema = z.object({ result: z.number() });
 const NoSettingsSchema = z.any();
+const _bindingKindSchemas = {
+  tools: {
+    schema: z.strictObject({
+      action: z.string(),
+      settings: z.record(z.string(), z.unknown()).optional(),
+    }),
+    multiple: true,
+  },
+  model: {
+    schema: z.strictObject({
+      provider: z.string(),
+      model_id: z.string(),
+    }),
+    multiple: false,
+  },
+} as const satisfies BindingKindSchemas;
+type TestBindings = InferWorkflowBindings<typeof _bindingKindSchemas>;
 
 class DoubleAction extends AbstractAction<
   z.infer<typeof InputSchema>,
@@ -167,6 +189,7 @@ class FlakyDoubleAction extends DoubleAction {
     input,
     context,
     settings,
+    bindings,
   }: ActionExecutionArgs<
     z.infer<typeof InputSchema>,
     DoubleContext,
@@ -177,7 +200,45 @@ class FlakyDoubleAction extends DoubleAction {
       throw new Error('Intermittent failure');
     }
 
-    return super.execute({ input, context, settings });
+    return super.execute({ input, context, settings, bindings });
+  }
+}
+
+class BindingsAwareAction extends AbstractAction<
+  z.infer<typeof InputSchema>,
+  z.infer<typeof OutputSchema>,
+  DoubleContext,
+  unknown,
+  TestBindings
+> {
+  constructor() {
+    const metadata: ActionMetadata<
+      z.infer<typeof InputSchema>,
+      z.infer<typeof OutputSchema>,
+      unknown
+    > = {
+      name: 'bindings_aware_step',
+      description: 'Reads workflow bindings.',
+      inputSchema: InputSchema,
+      outputSchema: OutputSchema,
+      settingsSchema: NoSettingsSchema,
+      supportedBindings: ['tools'],
+    };
+
+    super(metadata);
+  }
+
+  async execute({
+    input,
+  }: ActionExecutionArgs<
+    z.infer<typeof InputSchema>,
+    DoubleContext,
+    unknown,
+    TestBindings
+  >): Promise<z.infer<typeof OutputSchema>> {
+    return {
+      result: input.value,
+    };
   }
 }
 
@@ -209,6 +270,41 @@ describe('workflow step primitives', () => {
     await expect(
       step.run({ value: 2 }, context, { multiplier: 0 }),
     ).rejects.toThrow();
+  });
+
+  it('rejects run() bindings when the action does not support their kind', async () => {
+    const step = new DoubleAction();
+    const context = new DoubleContext({ factor: 3 });
+
+    await expect(
+      step.run({ value: 2 }, context, {}, {
+        tools: {
+          calculate: {
+            action: 'calculate_score',
+          },
+        },
+      } as any),
+    ).rejects.toThrow('does not support binding kind(s): tools');
+  });
+
+  it('accepts run() bindings when the action declares the binding kind', async () => {
+    const step = new BindingsAwareAction();
+    const context = new DoubleContext({ factor: 3 });
+
+    await expect(
+      step.run(
+        { value: 2 },
+        context,
+        {},
+        {
+          tools: {
+            calculate: {
+              action: 'calculate_score',
+            },
+          },
+        },
+      ),
+    ).resolves.toEqual({ result: 2 });
   });
 
   it('accepts base settings without requiring action schemas to extend them', async () => {
@@ -266,6 +362,19 @@ describe('workflow step primitives', () => {
       Equal<
         InferActionSettings<ConfigurableDoubleAction>,
         Settings & z.infer<typeof DoubleSettingsSchema>
+      >
+    >();
+    expectType<Equal<InferActionBindings<BindingsAwareAction>, TestBindings>>();
+    expectType<
+      Equal<
+        NonNullable<TestBindings['tools']>,
+        Record<string, z.infer<typeof _bindingKindSchemas.tools.schema>>
+      >
+    >();
+    expectType<
+      Equal<
+        NonNullable<TestBindings['model']>,
+        z.infer<typeof _bindingKindSchemas.model.schema>
       >
     >();
 

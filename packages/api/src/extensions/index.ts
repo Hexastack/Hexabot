@@ -22,6 +22,10 @@ export * from './helpers/local-storage/index.helper';
 
 export * from './helpers/local-storage/settings';
 
+export * from './actions/ai/model.binding';
+
+export * from './actions/ai/tools.binding';
+
 export * from './actions/ai/generate-text.action';
 
 export * from './actions/ai/generate-reply.action';

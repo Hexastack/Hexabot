@@ -13,19 +13,23 @@ import {
   type INodeConfig,
 } from "../../types/workflow-node.types";
 import type { FlowStepPath } from "../../types/workflow-path.types";
+import {
+  getWorkflowNodeCardMetrics,
+  getWorkflowNodeCardStyleVariables,
+  getWorkflowNodeDimensions,
+} from "../node-metrics.utils";
 
 import { GraphRegistry } from "./registry";
-
-const getNodeDimensions = (nodeType: GraphNode["type"], config: INodeConfig) => {
-  return config.dimensions?.[nodeType] || { height: 0, width: 0 };
-};
 
 export const projectSemanticGraph = (
   registry: GraphRegistry,
   config: INodeConfig,
 ): { nodes: GraphNode[]; edges: Edge[] } => {
   const nodes: GraphNode[] = registry.listNodes().map((node) => {
-    const dimensions = getNodeDimensions(node.type, config);
+    const dimensions = getWorkflowNodeDimensions(node.type, config);
+    const style = getWorkflowNodeCardStyleVariables(
+      getWorkflowNodeCardMetrics(node.type, config),
+    );
 
     return {
       ...dimensions,
@@ -35,6 +39,7 @@ export const projectSemanticGraph = (
       selectable: Boolean(node.selectable),
       position: { x: 0, y: 0 },
       data: node.data as GraphNode["data"],
+      style,
     } as GraphNode;
   });
   const edges: Edge[] = registry.listEdges().map((edge) => {

@@ -25,7 +25,7 @@ export type FlowTypeInfo = {
 };
 
 export type FlowTypeMeta = {
-  secondaryText: string;
+  secondaryText?: string;
   badge?: string;
 };
 

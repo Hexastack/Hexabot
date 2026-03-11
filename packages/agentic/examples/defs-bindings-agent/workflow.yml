@@ -1,0 +1,29 @@
+---
+defs:
+  calculate:
+    kind: tools
+    action: caculate_score
+    description: "LLM Tool to calculate the score"
+    settings:
+      multiplier: 2
+      bias: 1
+
+tasks:
+  my_agent:
+    action: ai_agent
+    inputs:
+      prompt: "Caculate the score for x=10"
+      system: "You are a helpful assistant"
+    settings:
+      provider: "openai"
+      model: "gpt-4o"
+      max_steps: 2
+    bindings:
+      tools:
+        - calculate
+
+flow:
+  - do: my_agent
+
+outputs:
+  result: "=$output.my_agent.text"

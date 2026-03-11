@@ -127,6 +127,10 @@ describe('MemoryService (TypeORM)', () => {
         ownerId: userFixtureIds.admin,
         workflowId: memoryWorkflowFixtureId,
         runId: memoryRunFixtureId,
+        memoryDefinitionIds: [
+          memoryDefinitionFixtureIds.workflow,
+          memoryDefinitionFixtureIds.run,
+        ],
       },
       context,
     );
@@ -185,6 +189,10 @@ describe('MemoryService (TypeORM)', () => {
         ownerId: userFixtureIds.admin,
         workflowId: memoryWorkflowFixtureId,
         runId: memoryRunFixtureId,
+        memoryDefinitionIds: [
+          memoryDefinitionFixtureIds.workflow,
+          memoryDefinitionFixtureIds.run,
+        ],
       },
       context,
     );

@@ -46,4 +46,51 @@ describe('WorkflowDefinitionSchema', () => {
       /Unrecognized key/i,
     );
   });
+
+  it('parses workflows with defs and task bindings', () => {
+    const workflow = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+          settings: { multiplier: 2 },
+        },
+      },
+      tasks: {
+        agent_step: {
+          action: 'ai_agent',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'agent_step' }],
+      outputs: { result: '=$output.agent_step' },
+    };
+
+    expect(() => WorkflowDefinitionSchema.parse(workflow)).not.toThrow();
+  });
+
+  it('rejects malformed task bindings definitions', () => {
+    const invalid = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        agent_step: {
+          action: 'ai_agent',
+          bindings: {
+            tools: 42,
+          },
+        },
+      },
+      flow: [{ do: 'agent_step' }],
+      outputs: { result: '=$output.agent_step' },
+    };
+
+    expect(() => WorkflowDefinitionSchema.parse(invalid)).toThrow();
+  });
 });

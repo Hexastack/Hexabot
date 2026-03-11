@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button } from "@mui/material";
 import { Save } from "lucide-react";
 
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { useTranslate } from "@/hooks/useTranslate";
 
 export type ActionFormDrawerFooterProps = {
@@ -19,19 +19,15 @@ export const ActionFormDrawerFooter = ({
   onSave,
 }: ActionFormDrawerFooterProps) => {
   const { t } = useTranslate();
+  const saveLabel = t("button.save");
 
   return (
-    <Box display="flex" justifyContent="center">
-      <Button
-        variant="contained"
-        size="large"
-        onClick={onSave}
-        disabled={saveDisabled}
-        startIcon={<Save size={18} />}
-        sx={{ minWidth: 200 }}
-      >
-        {t("button.save")}
-      </Button>
-    </Box>
+    <DrawerPrimaryFooterAction
+      label={saveLabel}
+      ariaLabel={saveLabel}
+      onClick={onSave}
+      disabled={saveDisabled}
+      startIcon={<Save size={18} />}
+    />
   );
 };

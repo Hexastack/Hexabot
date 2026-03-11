@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { buttonSchema, ButtonType } from '@/chat/types/button';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
@@ -68,11 +68,7 @@ export class SendButtonsAction extends MessageAction<
     input,
     context,
     settings,
-  }: ActionExecutionArgs<
-    ButtonsInput,
-    ConversationalWorkflowContext,
-    ButtonsSettings
-  >) {
+  }: ExecArgs<ButtonsInput, ConversationalWorkflowContext, ButtonsSettings>) {
     const prepared = await this.prepare(context);
     const envelope = prepared.envelopeFactory.buildButtonsEnvelope(
       input.text,

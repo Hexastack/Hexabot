@@ -14,6 +14,7 @@ import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
+import { useWorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import {
@@ -37,6 +38,7 @@ export const useWorkflowDefinitionState = ({
   workflow,
 }: UseWorkflowDefinitionStateArgs) => {
   const { actionsByName } = useWorkflowActionsCatalog();
+  const { bindingKinds } = useWorkflowBindingsCatalog();
   const queryClient = useTanstackQueryClient();
   const { apiClient } = useApiClient();
   const { mutate: updateWorkflow } = useUpdate(EntityType.WORKFLOW);
@@ -160,6 +162,7 @@ export const useWorkflowDefinitionState = ({
     try {
       const { flow, definition } = getDefinition(yaml, {
         actions: compileActionsByName,
+        bindingKinds,
       });
 
       return {
@@ -170,7 +173,13 @@ export const useWorkflowDefinitionState = ({
     } catch (error) {
       return { definition: undefined, flow: undefined, error: error as Error };
     }
-  }, [actionsByName, compileActionsByName, yaml, workflow?.id]);
+  }, [
+    actionsByName,
+    compileActionsByName,
+    bindingKinds,
+    yaml,
+    workflow?.id,
+  ]);
   // New definition version not yet saved ?
   const isDefinitionDirty = useMemo(() => {
     if (workflow?.currentVersion && !currentVersion) {
@@ -188,7 +197,9 @@ export const useWorkflowDefinitionState = ({
         return;
       }
 
-      const validation = validateWorkflow(nextDefinitionYml);
+      const validation = validateWorkflow(nextDefinitionYml, {
+        bindingKinds,
+      });
 
       if (!validation.success) {
         return;
@@ -199,7 +210,7 @@ export const useWorkflowDefinitionState = ({
         definitionYml: nextDefinitionYml,
       });
     }, 4000),
-    [workflow?.id, commitVersion],
+    [bindingKinds, workflow?.id, commitVersion],
     (memoizedFn) => {
       memoizedFn.clear();
     },

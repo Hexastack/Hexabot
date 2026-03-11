@@ -6,11 +6,14 @@
 
 import { ZodType } from 'zod';
 
+import type { InferWorkflowBindings } from '../bindings/base-binding';
 import { BaseWorkflowContext } from '../context';
 import { Settings } from '../dsl.types';
 import { Deferred } from '../utils/deferred';
 
 export type RuntimeSettings<S = unknown> = Settings & S;
+
+export type AnyRuntimeBindings = InferWorkflowBindings;
 
 export interface ActionMetadata<I, O, S> {
   name: string;
@@ -18,16 +21,19 @@ export interface ActionMetadata<I, O, S> {
   inputSchema: ZodType<I>;
   outputSchema: ZodType<O>;
   settingsSchema: ZodType<S>;
+  supportedBindings?: readonly string[];
 }
 
 export interface ActionExecutionArgs<
   I,
   C extends BaseWorkflowContext = BaseWorkflowContext,
   S = unknown,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > {
   input: I;
   context: C;
   settings: RuntimeSettings<S>;
+  bindings: B;
 }
 
 export interface Action<
@@ -35,14 +41,16 @@ export interface Action<
   O = unknown,
   C extends BaseWorkflowContext = BaseWorkflowContext,
   S = unknown,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
 > {
   readonly name: string;
   readonly description: string;
   readonly inputSchema: ZodType<I>;
   readonly outputSchema: ZodType<O>;
   readonly settingSchema?: ZodType<S>;
+  readonly supportedBindings?: readonly string[];
 
-  execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
+  execute(args: ActionExecutionArgs<I, C, S, B>): Promise<O>;
   parseInput(payload: unknown): I;
   parseOutput(payload: unknown): O;
   parseSettings(payload: unknown): RuntimeSettings<S>;
@@ -50,6 +58,7 @@ export interface Action<
     payload: unknown,
     context: C,
     settings?: Partial<RuntimeSettings<S>>,
+    bindings?: B,
   ): Promise<O>;
 }
 
@@ -68,6 +77,9 @@ export type InferActionOutput<A extends Action> = Awaited<
 
 export type InferActionSettings<S extends Action> =
   InferActionArgs<S>['settings'];
+
+export type InferActionBindings<S extends Action> =
+  InferActionArgs<S>['bindings'];
 
 export interface SuspensionNotice {
   stepId: string;

@@ -54,6 +54,7 @@ describe('ActionService', () => {
     expect(inputDefinition?.properties?.message?.type).toBe('string');
     expect(outputDefinition?.properties?.echoed?.type).toBe('string');
     expect(definition.settingSchema).toBeDefined();
+    expect(definition.supportedBindings).toEqual([]);
   });
 
   it('should expose a registry keyed by action name', () => {

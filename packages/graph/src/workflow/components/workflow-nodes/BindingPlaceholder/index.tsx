@@ -1,0 +1,82 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import type { NodeProps } from "@xyflow/react";
+import { Plus } from "lucide-react";
+import { useCallback, type FC, type MouseEvent } from "react";
+
+import { useWorkflowGraphHost } from "../../../contexts/workflow-graph-host.context";
+import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
+import {
+  ENodeType,
+  type GraphNode,
+} from "../../../types/workflow-node.types";
+import { PulseIconButton } from "../../PulseIconButton";
+import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodePorts } from "../GenericNodePorts";
+
+export const BindingPlaceholder: FC<
+  NodeProps<GraphNode<ENodeType.BINDING_PLACEHOLDER>>
+> = ({ id, data }) => {
+  const { translate, onAddBinding } = useWorkflowGraphHost();
+  const stepId = data?.stepId;
+  const stepPath = data?.stepPath;
+  const taskName = data?.taskName;
+  const bindingKind = data?.bindingKind;
+  const canAddBinding = Boolean(
+    onAddBinding && stepId && stepPath && taskName && bindingKind,
+  );
+  const addLabel = translate("button.add");
+  const handleAddBinding = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!canAddBinding || !onAddBinding || !taskName || !bindingKind) {
+        return;
+      }
+
+      onAddBinding({
+        nodeId: id,
+        stepId,
+        stepPath,
+        taskName,
+        bindingKind,
+      });
+    },
+    [
+      bindingKind,
+      canAddBinding,
+      id,
+      onAddBinding,
+      stepId,
+      stepPath,
+      taskName,
+    ],
+  );
+
+  return (
+    <WorkflowNodeProvider id={id}>
+      <GenericNodeContainer>
+        <div className="workflow-branch-placeholder workflow-binding-placeholder nodrag nopan">
+          <PulseIconButton
+            type="button"
+            tabIndex={-1}
+            size={32}
+            className="workflow-binding-placeholder__pulse"
+            aria-label={addLabel}
+            title={addLabel}
+            onClick={handleAddBinding}
+            disabled={!canAddBinding}
+          >
+            <Plus size={18} />
+          </PulseIconButton>
+        </div>
+        <GenericNodePorts />
+      </GenericNodeContainer>
+    </WorkflowNodeProvider>
+  );
+};

@@ -14,6 +14,9 @@ import type { IAction } from "@/types/action.types";
 import type { IMemoryDefinition } from "@/types/memory-definition.types";
 
 type WorkflowTaskDefinition = NonNullable<WorkflowDefinition["tasks"]>[string];
+
+const MEMORY_BINDING_KIND = "memory";
+
 type BuildJsonataGlobalsSchemaArgs = {
   definition?: WorkflowDefinition;
   actionsByName: ReadonlyMap<string, IAction>;
@@ -21,11 +24,46 @@ type BuildJsonataGlobalsSchemaArgs = {
   inputSchema?: unknown;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
 const createOpenObjectSchema = (): JsonSchemaLike => ({
   type: "object",
   properties: {},
   additionalProperties: true,
 });
+
+export const extractMemoryDefinitionIdsFromWorkflowDefinition = (
+  definition?: WorkflowDefinition,
+): string[] => {
+  if (!definition?.defs) {
+    return [];
+  }
+
+  const ids = Object.values(definition.defs).reduce<string[]>(
+    (acc, defDefinition) => {
+      if (!isRecord(defDefinition)) {
+        return acc;
+      }
+
+      if (defDefinition.kind !== MEMORY_BINDING_KIND) {
+        return acc;
+      }
+
+      const definitionId = defDefinition.definition_id;
+
+      if (typeof definitionId !== "string" || !definitionId.trim()) {
+        return acc;
+      }
+
+      acc.push(definitionId);
+
+      return acc;
+    },
+    [],
+  );
+
+  return Array.from(new Set(ids));
+};
 const isJsonSchemaLike = (schema: unknown): schema is JsonSchemaLike =>
   Boolean(schema) && typeof schema === "object" && !Array.isArray(schema);
 const getTaskOutputSchema = ({

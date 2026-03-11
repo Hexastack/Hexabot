@@ -74,7 +74,9 @@ export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
 ): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
-  const validation = validateWorkflow(yaml);
+  const validation = validateWorkflow(yaml, {
+    bindingKinds: options.bindingKinds,
+  });
 
   if (!validation.success) {
     throw new Error(

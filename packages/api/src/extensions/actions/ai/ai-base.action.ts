@@ -17,6 +17,7 @@ import {
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ActionMetadata, ActionName } from '@/actions/types';
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
@@ -84,6 +85,11 @@ export abstract class AiBaseAction<
         color: metadata.color ?? AiBaseAction.DEFAULT_COLOR,
         group: metadata.group ?? AiBaseAction.DEFAULT_GROUP,
         icon: 'Sparkles',
+        supportedBindings: metadata.supportedBindings ?? [
+          'tools',
+          'model',
+          'memory',
+        ],
       },
       actionService,
     );
@@ -91,17 +97,17 @@ export abstract class AiBaseAction<
 
   protected buildProviderInitOptions(
     provider: string,
-    settings: S,
+    modelBinding: RuntimeBindings['model'],
     credentials: string,
   ): ProviderInitOptions {
     const providerId = this.getProviderId(provider);
-    const apiKey = settings.api_key;
-    const baseURL = settings.base_url;
-    const organization = settings.organization;
+    const apiKey = modelBinding?.api_key;
+    const baseURL = modelBinding?.base_url;
+    const organization = modelBinding?.organization;
 
     if (!apiKey && this.shouldRequireApiKey(providerId)) {
       throw new Error(
-        `No API key provided for provider "${provider}". Set settings.api_key.`,
+        `No API key provided for provider "${provider}". Set bindings.model.<def>.api_key.`,
       );
     }
 
@@ -312,8 +318,31 @@ export abstract class AiBaseAction<
       .join('');
   }
 
-  protected resolveModelId(settings: S) {
-    const modelId = settings.model;
+  protected isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  protected isModelBindingConfig(
+    value: unknown,
+  ): value is RuntimeBindings['model'] {
+    const knownKeys: Array<keyof NonNullable<RuntimeBindings['model']>> = [
+      'provider',
+      'model_id',
+      'api_key',
+      'base_url',
+      'organization',
+    ];
+
+    return (
+      this.isPlainObject(value) &&
+      knownKeys.some((key) => key in value) &&
+      (value.model === undefined || typeof value.model === 'string') &&
+      (value.provider === undefined || typeof value.provider === 'string')
+    );
+  }
+
+  protected resolveModelId(modelBinding: RuntimeBindings['model']) {
+    const modelId = modelBinding?.model_id;
 
     if (!modelId) {
       throw new Error(`A model is required to run ${this.name}.`);
@@ -384,17 +413,14 @@ export abstract class AiBaseAction<
   protected async buildPrompt(
     input: AiPromptInput,
     context: C,
-    settings: S,
+    selectedMemorySlugs: string[] = [],
   ): Promise<PromptPayload> {
     const promptPayload = { system: input.system };
-
-    if (settings.memory_enabled) {
-      const memoryPrompt = this.buildMemoryPrompt(context);
-      if (memoryPrompt) {
-        promptPayload.system = promptPayload.system
-          ? `${promptPayload.system}\n\n${memoryPrompt}`
-          : memoryPrompt;
-      }
+    const memoryPrompt = this.buildMemoryPrompt(context, selectedMemorySlugs);
+    if (memoryPrompt) {
+      promptPayload.system = promptPayload.system
+        ? `${promptPayload.system}\n\n${memoryPrompt}`
+        : memoryPrompt;
     }
 
     if (input.input_mode === 'prompt') {
@@ -443,7 +469,49 @@ export abstract class AiBaseAction<
     );
   }
 
-  protected buildMemoryPrompt(context: C): string | undefined {
+  protected resolveMemoryBindingSlugs(
+    context: C,
+    memoryBindings?: RuntimeBindings['memory'],
+  ): string[] {
+    if (!memoryBindings || Object.keys(memoryBindings).length === 0) {
+      return [];
+    }
+
+    const memoryStore = context.memoryStore;
+    if (!memoryStore) {
+      return [];
+    }
+
+    const idToSlug = new Map<string, string>();
+    for (const [slug, definition] of memoryStore.definitionCache.entries()) {
+      if (definition.id) {
+        idToSlug.set(definition.id, slug);
+      }
+    }
+
+    const selectedSlugs = new Set<string>();
+    for (const [defName, binding] of Object.entries(memoryBindings)) {
+      const slug = idToSlug.get(binding.definition_id);
+      if (!slug) {
+        throw new Error(
+          `Unable to resolve memory definition "${binding.definition_id}" from bindings.memory.${defName}.definition_id.`,
+        );
+      }
+
+      selectedSlugs.add(slug);
+    }
+
+    return Array.from(selectedSlugs);
+  }
+
+  protected buildMemoryPrompt(
+    context: C,
+    selectedMemorySlugs: string[] = [],
+  ): string | undefined {
+    if (selectedMemorySlugs.length === 0) {
+      return undefined;
+    }
+
     const memoryStore = context.memoryStore;
     if (!memoryStore) {
       return undefined;
@@ -455,7 +523,12 @@ export abstract class AiBaseAction<
     }
 
     const sections: string[] = [];
+    const selectedSlugSet = new Set(selectedMemorySlugs);
     for (const [slug, definition] of definitionCache.entries()) {
+      if (!selectedSlugSet.has(slug)) {
+        continue;
+      }
+
       const instance = instances[slug];
       if (!instance) {
         continue;
@@ -552,41 +625,44 @@ export abstract class AiBaseAction<
 
   protected buildTools(
     context: C,
-    toolNames?: string[],
-    isMemoryEnabled: boolean = false,
+    toolBindings?: RuntimeBindings['tools'],
+    selectedMemorySlugs: string[] = [],
   ): Record<string, ToolDefinition> | undefined {
     const actionService = context.services.actions;
     if (!actionService) {
       throw new Error('Action service is unavailable in the workflow context.');
     }
 
-    const uniqueNames = Array.from(
-      new Set(
-        (toolNames ?? []).filter(
-          (name) => typeof name === 'string' && name.trim().length > 0,
-        ),
-      ),
-    );
-    const tools = uniqueNames.reduce(
-      (tools, actionName) => {
-        const normalizedName = actionName.trim() as ActionName;
-        const action = actionService.get(normalizedName);
+    const tools: Record<string, ToolDefinition> = {};
+    const mountedTools = (toolBindings ?? {}) as NonNullable<
+      RuntimeBindings['tools']
+    >;
 
-        tools[normalizedName] = {
-          description: action.description,
-          inputSchema: action.inputSchema,
-          outputSchema: action.outputSchema,
-          execute: async (input) => action.run(input, context),
-        };
+    for (const [toolName, toolDefinition] of Object.entries(mountedTools)) {
+      const normalizedToolName = toolName.trim();
+      if (normalizedToolName.length === 0) {
+        continue;
+      }
+      const actionName = toolDefinition.action.trim() as ActionName;
+      const action = actionService.get(actionName);
 
-        return tools;
-      },
-      {} as Record<string, ToolDefinition>,
-    );
+      tools[normalizedToolName] = {
+        description: action.description,
+        inputSchema: action.inputSchema,
+        outputSchema: action.outputSchema,
+        execute: async (input) =>
+          action.run(input, context, toolDefinition.settings),
+      };
+    }
 
-    if (isMemoryEnabled) {
+    if (selectedMemorySlugs.length > 0) {
       const updateMemoryAction = actionService.get('update_memory');
-      const memorySchema = context.memoryStore.buildUpdateMemorySchema();
+      const memorySchema =
+        context.memoryStore.buildUpdateMemorySchema(selectedMemorySlugs);
+      if (!memorySchema) {
+        return Object.keys(tools).length > 0 ? tools : undefined;
+      }
+
       tools['update_memory'] = {
         description: updateMemoryAction.description,
         inputSchema: memorySchema,

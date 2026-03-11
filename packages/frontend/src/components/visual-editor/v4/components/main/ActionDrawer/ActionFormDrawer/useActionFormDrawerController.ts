@@ -8,6 +8,7 @@ import {
   BaseSettingsSchema,
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
+  FlowStep,
   JsonValue,
   Settings,
   TaskDefinition,
@@ -15,15 +16,19 @@ import {
   mergeSettings,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
+import type { FlowStepPath } from "@hexabot-ai/graph";
 import { useEffect, useMemo, useState } from "react";
 
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useTranslate } from "@/hooks/useTranslate";
-import { IAction } from "@/types/action.types";
+import type { IAction } from "@/types/action.types";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
 import { useSelectedActionNode } from "../../../../hooks/useWorkflowSelection";
-import { getSchemaPropertyNames } from "../../../../utils/schema-defaults.utils";
+import {
+  getSchemaDefaults,
+  getSchemaPropertyNames,
+} from "../../../../utils/schema-defaults.utils";
 import { useStepDrawerClose } from "../../StepDrawer/withStepDrawerLayout";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";
@@ -45,9 +50,24 @@ type UseActionFormDrawerControllerResult = {
   onInputVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
   onActionSettingsDataChange: (data: Record<string, unknown>) => void;
   onActionSettingsVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
+  onClose: () => void;
   open: boolean;
   panelKeyBase: string;
   actionSettingsData: Record<string, unknown>;
+};
+
+export type ActionFormDrawerCloseReason = "save" | "cancel";
+
+export type ActionFormDrawerCreateTarget = {
+  action: IAction;
+  insertPath: FlowStepPath | null;
+  initialTaskName: string;
+  initialTaskDescription?: string;
+};
+
+type UseActionFormDrawerControllerParams = {
+  target: ActionFormDrawerCreateTarget | null;
+  onClose?: (reason: ActionFormDrawerCloseReason) => void;
 };
 
 type SplitTaskSettingsResult = {
@@ -91,84 +111,97 @@ const splitTaskSettings = (
   };
 };
 
-export const useActionFormDrawerController =
-  (): UseActionFormDrawerControllerResult => {
-    const { t } = useTranslate();
-    const { definition, updateDefinitionState, isSaving } = useWorkflow();
-    const { actionsByName } = useWorkflowActionsCatalog();
-    const selectedActionNode = useSelectedActionNode();
-    const selectedNodeId = selectedActionNode?.id;
-    const actionName = selectedActionNode?.actionName;
-    const taskName = selectedActionNode?.taskName;
-    const actionSchema = actionName ? actionsByName.get(actionName) : undefined;
-    const taskDefinition = taskName ? definition?.tasks?.[taskName] : undefined;
-    const [inputData, setInputData] = useState<Record<string, unknown>>({});
-    const [actionSettingsData, setActionSettingsData] = useState<
-      Record<string, unknown>
-    >({});
-    const [executionSettingsData, setExecutionSettingsData] = useState<
-      Record<string, unknown>
-    >({});
-    const [
-      isUsingWorkflowExecutionDefaults,
-      setIsUsingWorkflowExecutionDefaults,
-    ] = useState(true);
-    const [hasInputVisibleErrors, setHasInputVisibleErrors] = useState(false);
-    const [hasActionSettingsVisibleErrors, setHasActionSettingsVisibleErrors] =
-      useState(false);
-    const [hasExecutionSettingsVisibleErrors, setHasExecutionSettingsVisibleErrors] =
-      useState(false);
-    const open = Boolean(selectedActionNode && selectedNodeId);
-    const panelKeyBase = selectedNodeId ?? actionName ?? "action";
-    const hasInputSchema = useMemo(
-      () =>
-        getSchemaPropertyNames(
-          actionSchema?.inputSchema as Record<string, unknown>,
-        ).length > 0,
-      [actionSchema?.inputSchema],
+export const useActionFormDrawerController = ({
+  target,
+  onClose,
+}: UseActionFormDrawerControllerParams): UseActionFormDrawerControllerResult => {
+  const { t } = useTranslate();
+  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const { actionsByName } = useWorkflowActionsCatalog();
+  const selectedActionNode = useSelectedActionNode();
+  const selectedNodeId = selectedActionNode?.id;
+  const isCreateMode = Boolean(target);
+  const actionName = target?.action.name ?? selectedActionNode?.actionName;
+  const taskName = target?.initialTaskName ?? selectedActionNode?.taskName;
+  const actionSchema = target?.action ?? (actionName ? actionsByName.get(actionName) : undefined);
+  const taskDefinition =
+    !isCreateMode && taskName ? definition?.tasks?.[taskName] : undefined;
+  const [inputData, setInputData] = useState<Record<string, unknown>>({});
+  const [actionSettingsData, setActionSettingsData] = useState<
+    Record<string, unknown>
+  >({});
+  const [executionSettingsData, setExecutionSettingsData] = useState<
+    Record<string, unknown>
+  >({});
+  const [isUsingWorkflowExecutionDefaults, setIsUsingWorkflowExecutionDefaults] =
+    useState(true);
+  const [hasInputVisibleErrors, setHasInputVisibleErrors] = useState(false);
+  const [hasActionSettingsVisibleErrors, setHasActionSettingsVisibleErrors] =
+    useState(false);
+  const [hasExecutionSettingsVisibleErrors, setHasExecutionSettingsVisibleErrors] =
+    useState(false);
+  const open = Boolean(target || (selectedActionNode && selectedNodeId));
+  const panelKeyBase = target
+    ? `action-create-${target.initialTaskName}-${target.action.name}`
+    : (selectedNodeId ?? actionName ?? "action");
+  const hasInputSchema = useMemo(
+    () =>
+      getSchemaPropertyNames(
+        actionSchema?.inputSchema as Record<string, unknown>,
+      ).length > 0,
+    [actionSchema?.inputSchema],
+  );
+  const hasActionSettingsSchema = useMemo(
+    () =>
+      getSchemaPropertyNames(
+        actionSchema?.settingSchema as Record<string, unknown>,
+      ).length > 0,
+    [actionSchema?.settingSchema],
+  );
+  const workflowExecutionSettingsDefaults = useMemo<Partial<Settings>>(() => {
+    const { executionSettings } = splitTaskSettings(
+      definition?.defaults?.settings as Record<string, unknown> | undefined,
     );
-    const hasActionSettingsSchema = useMemo(
-      () =>
-        getSchemaPropertyNames(
-          actionSchema?.settingSchema as Record<string, unknown>,
-        ).length > 0,
-      [actionSchema?.settingSchema],
-    );
-    const workflowExecutionSettingsDefaults = useMemo<Partial<Settings>>(() => {
-      const { executionSettings } = splitTaskSettings(
-        definition?.defaults?.settings as Record<string, unknown> | undefined,
-      );
 
-      return mergeSettings(
-        DEFAULT_WORKFLOW_EXECUTION_SETTINGS,
-        executionSettings,
-      ) as Partial<Settings>;
-    }, [definition?.defaults?.settings]);
-    const {
-      taskNameValue,
-      taskDescriptionValue,
-      normalizedTaskName,
-      taskNameValidationError,
-      handleTaskNameCommit,
-      handleTaskNameCancel,
-      handleDescriptionCommit,
-      handleDescriptionCancel,
-    } = useTaskIdentityController({
-      open,
-      actionName,
-      taskName,
-      taskDescription: taskDefinition?.description,
-      tasks: definition?.tasks,
-    });
+    return mergeSettings(
+      DEFAULT_WORKFLOW_EXECUTION_SETTINGS,
+      executionSettings,
+    ) as Partial<Settings>;
+  }, [definition?.defaults?.settings]);
+  const {
+    taskNameValue,
+    taskDescriptionValue,
+    normalizedTaskName,
+    taskNameValidationError,
+    handleTaskNameCommit,
+    handleTaskNameCancel,
+    handleDescriptionCommit,
+    handleDescriptionCancel,
+  } = useTaskIdentityController({
+    open,
+    actionName,
+    taskName,
+    taskDescription: target?.initialTaskDescription ?? taskDefinition?.description,
+    tasks: definition?.tasks,
+  });
+  const handleSaveClose = useStepDrawerClose(() => {
+    onClose?.("save");
+  });
 
-    useEffect(() => {
-      if (!open) {
-        return;
-      }
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
 
+    if (isCreateMode && target) {
+      const inputDefaults =
+        (getSchemaDefaults<Record<string, JsonValue>>(target.action.inputSchema) ??
+          {}) as Record<string, unknown>;
       const { actionSettings, executionSettings, hasExecutionOverride } =
         splitTaskSettings(
-          taskDefinition?.settings as Record<string, unknown> | undefined,
+          getSchemaDefaults<Record<string, JsonValue>>(
+            target.action.settingSchema,
+          ) as Record<string, unknown> | undefined,
         );
       const resolvedExecutionSettings = hasExecutionOverride
         ? (mergeSettings(
@@ -177,196 +210,263 @@ export const useActionFormDrawerController =
           ) as Record<string, unknown>)
         : (workflowExecutionSettingsDefaults as Record<string, unknown>);
 
-      setInputData((taskDefinition?.inputs as Record<string, unknown>) ?? {});
+      setInputData(inputDefaults);
       setActionSettingsData(actionSettings);
       setExecutionSettingsData(resolvedExecutionSettings);
       setIsUsingWorkflowExecutionDefaults(!hasExecutionOverride);
       setHasExecutionSettingsVisibleErrors(false);
-    }, [
-      actionName,
-      open,
-      taskDefinition?.inputs,
-      taskDefinition?.settings,
-      taskName,
-      workflowExecutionSettingsDefaults,
-    ]);
 
-    useEffect(() => {
-      if (open) {
-        return;
-      }
+      return;
+    }
 
-      setHasInputVisibleErrors(false);
-      setHasActionSettingsVisibleErrors(false);
-      setHasExecutionSettingsVisibleErrors(false);
-    }, [open]);
-
-    useEffect(() => {
-      if (!hasInputSchema) {
-        setHasInputVisibleErrors(false);
-      }
-    }, [hasInputSchema]);
-
-    useEffect(() => {
-      if (!hasActionSettingsSchema) {
-        setHasActionSettingsVisibleErrors(false);
-      }
-    }, [hasActionSettingsSchema]);
-
-    useEffect(() => {
-      if (isUsingWorkflowExecutionDefaults) {
-        setHasExecutionSettingsVisibleErrors(false);
-      }
-    }, [isUsingWorkflowExecutionDefaults]);
-
-    const handleClose = useStepDrawerClose();
-    const handleExecutionSettingsModeChange = (
-      useWorkflowDefaults: boolean,
-    ) => {
-      setIsUsingWorkflowExecutionDefaults(useWorkflowDefaults);
-      if (useWorkflowDefaults) {
-        return;
-      }
-
-      setExecutionSettingsData((current) => {
-        if (Object.keys(current).length > 0) {
-          return current;
-        }
-
-        return workflowExecutionSettingsDefaults as Record<string, unknown>;
-      });
-    };
-    const handleExecutionSettingsVisibleErrorsChange = (
-      hasVisibleErrors: boolean,
-    ) => {
-      setHasExecutionSettingsVisibleErrors(
-        isUsingWorkflowExecutionDefaults ? false : hasVisibleErrors,
+    const { actionSettings, executionSettings, hasExecutionOverride } =
+      splitTaskSettings(
+        taskDefinition?.settings as Record<string, unknown> | undefined,
       );
+    const resolvedExecutionSettings = hasExecutionOverride
+      ? (mergeSettings(
+          workflowExecutionSettingsDefaults,
+          executionSettings,
+        ) as Record<string, unknown>)
+      : (workflowExecutionSettingsDefaults as Record<string, unknown>);
+
+    setInputData((taskDefinition?.inputs as Record<string, unknown>) ?? {});
+    setActionSettingsData(actionSettings);
+    setExecutionSettingsData(resolvedExecutionSettings);
+    setIsUsingWorkflowExecutionDefaults(!hasExecutionOverride);
+    setHasExecutionSettingsVisibleErrors(false);
+  }, [
+    isCreateMode,
+    open,
+    target,
+    taskDefinition?.inputs,
+    taskDefinition?.settings,
+    workflowExecutionSettingsDefaults,
+  ]);
+
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+
+    setHasInputVisibleErrors(false);
+    setHasActionSettingsVisibleErrors(false);
+    setHasExecutionSettingsVisibleErrors(false);
+  }, [open]);
+
+  useEffect(() => {
+    if (!hasInputSchema) {
+      setHasInputVisibleErrors(false);
+    }
+  }, [hasInputSchema]);
+
+  useEffect(() => {
+    if (!hasActionSettingsSchema) {
+      setHasActionSettingsVisibleErrors(false);
+    }
+  }, [hasActionSettingsSchema]);
+
+  useEffect(() => {
+    if (isUsingWorkflowExecutionDefaults) {
+      setHasExecutionSettingsVisibleErrors(false);
+    }
+  }, [isUsingWorkflowExecutionDefaults]);
+
+  const handleExecutionSettingsModeChange = (useWorkflowDefaults: boolean) => {
+    setIsUsingWorkflowExecutionDefaults(useWorkflowDefaults);
+    if (useWorkflowDefaults) {
+      return;
+    }
+
+    setExecutionSettingsData((current) => {
+      if (Object.keys(current).length > 0) {
+        return current;
+      }
+
+      return workflowExecutionSettingsDefaults as Record<string, unknown>;
+    });
+  };
+  const handleExecutionSettingsVisibleErrorsChange = (
+    hasVisibleErrors: boolean,
+  ) => {
+    setHasExecutionSettingsVisibleErrors(
+      isUsingWorkflowExecutionDefaults ? false : hasVisibleErrors,
+    );
+  };
+  const handleSave = () => {
+    if (!definition || !taskName || !actionSchema) {
+      return;
+    }
+
+    if (
+      hasInputVisibleErrors ||
+      hasActionSettingsVisibleErrors ||
+      hasExecutionSettingsVisibleErrors
+    ) {
+      return;
+    }
+
+    const nextTaskName = normalizedTaskName;
+
+    if (!nextTaskName || taskNameValidationError) {
+      return;
+    }
+
+    const normalizedDescription = taskDescriptionValue.trim();
+    const hasInputValues = Object.keys(inputData).length > 0;
+    const nextSettingsData: Record<string, JsonValue> = {
+      ...(actionSettingsData as Record<string, JsonValue>),
+      ...(isUsingWorkflowExecutionDefaults
+        ? {}
+        : (executionSettingsData as Record<string, JsonValue>)),
     };
-    const handleSave = () => {
-      if (!definition || !taskName) {
+    const hasSettingValues = Object.keys(nextSettingsData).length > 0;
+
+    if (isCreateMode && target) {
+      if (Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)) {
         return;
       }
 
-      if (
-        hasInputVisibleErrors ||
-        hasActionSettingsVisibleErrors ||
-        hasExecutionSettingsVisibleErrors
-      ) {
-        return;
-      }
-
-      const nextTaskName = normalizedTaskName;
-
-      if (!nextTaskName || taskNameValidationError) {
-        return;
-      }
-
-      if (
-        nextTaskName !== taskName &&
-        Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)
-      ) {
-        return;
-      }
-
-      const currentTask = definition.tasks?.[taskName];
-
-      if (!currentTask) {
-        return;
-      }
-
-      const normalizedDescription = taskDescriptionValue.trim();
-      const hasInputValues = Object.keys(inputData).length > 0;
-      const nextSettingsData: Record<string, JsonValue> = {
-        ...(actionSettingsData as Record<string, JsonValue>),
-        ...(isUsingWorkflowExecutionDefaults
-          ? {}
-          : (executionSettingsData as Record<string, JsonValue>)),
-      };
-      const hasSettingValues = Object.keys(nextSettingsData).length > 0;
-      const shouldIncludeInputs =
-        hasInputValues || currentTask.inputs !== undefined;
-      const shouldIncludeSettings =
-        hasSettingValues || currentTask.settings !== undefined;
       const nextTask: TaskDefinition = {
-        ...currentTask,
-        ...(normalizedDescription
-          ? { description: normalizedDescription }
-          : {}),
-        ...(shouldIncludeInputs
+        action: actionSchema.name,
+        ...(normalizedDescription ? { description: normalizedDescription } : {}),
+        ...(hasInputValues
           ? { inputs: inputData as Record<string, JsonValue> }
           : {}),
-        ...(shouldIncludeSettings
+        ...(hasSettingValues
           ? { settings: nextSettingsData as TaskDefinition["settings"] }
           : {}),
       };
-      let nextDefinition: WorkflowDefinition = {
+      const nextStep: FlowStep = { do: nextTaskName };
+      const definitionWithTask: WorkflowDefinition = {
         ...definition,
         tasks: {
           ...(definition.tasks ?? {}),
-          [taskName]: nextTask,
+          [nextTaskName]: nextTask,
         },
+        outputs:
+          definition.outputs && Object.keys(definition.outputs).length > 0
+            ? definition.outputs
+            : { result: `=$output.${nextTaskName}` },
+      };
+      const insertedDefinition = target.insertPath
+        ? WorkflowHelper.insertStepAtPath(
+            definitionWithTask,
+            target.insertPath,
+            nextStep,
+          )
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...definitionWithTask,
+        flow: [...(definition.flow ?? []), nextStep],
       };
 
-      if (!normalizedDescription) {
-        delete nextDefinition.tasks[taskName].description;
-      }
-
-      if (nextTaskName !== taskName) {
-        nextDefinition = WorkflowHelper.safeRenameTaskInDefinition(
-          nextDefinition,
-          taskName,
-          nextTaskName,
-        );
-      }
-
       updateDefinitionState(nextDefinition);
-      handleClose();
-    };
-    const saveDisabled =
-      hasInputVisibleErrors ||
-      hasActionSettingsVisibleErrors ||
-      hasExecutionSettingsVisibleErrors ||
-      !definition ||
-      !taskName ||
-      !selectedActionNode ||
-      !taskDefinition ||
-      isSaving ||
-      Boolean(taskNameValidationError);
+      handleSaveClose();
 
-    return {
-      actionSchema,
-      executionSettingsData,
-      emptyStateLabel: actionName
-        ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
-        : t("visual_editor.actions_drawer.form.empty_state.no_action"),
-      footerProps: {
-        saveDisabled,
-        onSave: handleSave,
-      },
-      headerProps: {
-        taskNameValue,
-        taskNameValidationError,
-        taskDescriptionValue,
-        taskName,
-        isSaving,
-        onTaskNameCommit: handleTaskNameCommit,
-        onTaskNameCancel: handleTaskNameCancel,
-        onDescriptionCommit: handleDescriptionCommit,
-        onDescriptionCancel: handleDescriptionCancel,
-      },
-      inputData,
-      isUsingWorkflowExecutionDefaults,
-      onExecutionSettingsDataChange: setExecutionSettingsData,
-      onExecutionSettingsModeChange: handleExecutionSettingsModeChange,
-      onExecutionSettingsVisibleErrorsChange:
-        handleExecutionSettingsVisibleErrorsChange,
-      onInputDataChange: setInputData,
-      onInputVisibleErrorsChange: setHasInputVisibleErrors,
-      onActionSettingsDataChange: setActionSettingsData,
-      onActionSettingsVisibleErrorsChange: setHasActionSettingsVisibleErrors,
-      open,
-      panelKeyBase,
-      actionSettingsData,
+      return;
+    }
+
+    if (
+      nextTaskName !== taskName &&
+      Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)
+    ) {
+      return;
+    }
+
+    const currentTask = definition.tasks?.[taskName];
+
+    if (!currentTask) {
+      return;
+    }
+
+    const shouldIncludeInputs = hasInputValues || currentTask.inputs !== undefined;
+    const shouldIncludeSettings =
+      hasSettingValues || currentTask.settings !== undefined;
+    const nextTask: TaskDefinition = {
+      ...currentTask,
+      ...(normalizedDescription ? { description: normalizedDescription } : {}),
+      ...(shouldIncludeInputs
+        ? { inputs: inputData as Record<string, JsonValue> }
+        : {}),
+      ...(shouldIncludeSettings
+        ? { settings: nextSettingsData as TaskDefinition["settings"] }
+        : {}),
     };
+    let nextDefinition: WorkflowDefinition = {
+      ...definition,
+      tasks: {
+        ...(definition.tasks ?? {}),
+        [taskName]: nextTask,
+      },
+    };
+
+    if (!normalizedDescription) {
+      delete nextDefinition.tasks[taskName].description;
+    }
+
+    if (nextTaskName !== taskName) {
+      nextDefinition = WorkflowHelper.safeRenameTaskInDefinition(
+        nextDefinition,
+        taskName,
+        nextTaskName,
+      );
+    }
+
+    updateDefinitionState(nextDefinition);
+    handleSaveClose();
   };
+  const saveDisabled =
+    hasInputVisibleErrors ||
+    hasActionSettingsVisibleErrors ||
+    hasExecutionSettingsVisibleErrors ||
+    !definition ||
+    !taskName ||
+    !actionSchema ||
+    isSaving ||
+    Boolean(taskNameValidationError) ||
+    (isCreateMode
+      ? !target ||
+        !normalizedTaskName ||
+        Object.prototype.hasOwnProperty.call(definition.tasks, normalizedTaskName)
+      : !selectedActionNode || !taskDefinition);
+
+  return {
+    actionSchema,
+    executionSettingsData,
+    emptyStateLabel: actionName
+      ? t("visual_editor.actions_drawer.form.empty_state.no_schema")
+      : t("visual_editor.actions_drawer.form.empty_state.no_action"),
+    footerProps: {
+      saveDisabled,
+      onSave: handleSave,
+    },
+    headerProps: {
+      taskNameValue,
+      taskNameValidationError,
+      taskDescriptionValue,
+      taskName,
+      isSaving,
+      onTaskNameCommit: handleTaskNameCommit,
+      onTaskNameCancel: handleTaskNameCancel,
+      onDescriptionCommit: handleDescriptionCommit,
+      onDescriptionCancel: handleDescriptionCancel,
+    },
+    inputData,
+    isUsingWorkflowExecutionDefaults,
+    onExecutionSettingsDataChange: setExecutionSettingsData,
+    onExecutionSettingsModeChange: handleExecutionSettingsModeChange,
+    onExecutionSettingsVisibleErrorsChange:
+      handleExecutionSettingsVisibleErrorsChange,
+    onInputDataChange: setInputData,
+    onInputVisibleErrorsChange: setHasInputVisibleErrors,
+    onActionSettingsDataChange: setActionSettingsData,
+    onActionSettingsVisibleErrorsChange: setHasActionSettingsVisibleErrors,
+    onClose: () => {
+      onClose?.("cancel");
+    },
+    open,
+    panelKeyBase,
+    actionSettingsData,
+  };
+};

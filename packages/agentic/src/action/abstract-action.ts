@@ -11,16 +11,26 @@ import { BaseSettingsSchema } from '../dsl.types';
 import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 
-import { ActionExecutionArgs } from './action';
-import { Action, ActionMetadata, RuntimeSettings } from './action.types';
+import {
+  Action,
+  ActionExecutionArgs,
+  ActionMetadata,
+  AnyRuntimeBindings,
+  RuntimeSettings,
+} from './action.types';
 
 const BASE_SETTINGS_KEYS = Object.keys(BaseSettingsSchema.shape);
 
 /**
  * Base implementation that enforces schema-validated input/output.
  */
-export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
-  implements Action<I, O, C, S>
+export abstract class AbstractAction<
+  I,
+  O,
+  C extends BaseWorkflowContext,
+  S,
+  B extends AnyRuntimeBindings = AnyRuntimeBindings,
+> implements Action<I, O, C, S, B>
 {
   public readonly name: string;
 
@@ -31,6 +41,8 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
   public readonly outputSchema: ZodType<O>;
 
   public readonly settingSchema: ZodType<S>;
+
+  public readonly supportedBindings: readonly string[];
 
   /**
    * Sets up core metadata and schemas for the action.
@@ -58,6 +70,7 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     this.inputSchema = metadata.inputSchema;
     this.outputSchema = metadata.outputSchema;
     this.settingSchema = metadata.settingsSchema;
+    this.supportedBindings = metadata.supportedBindings ?? [];
   }
 
   /**
@@ -100,9 +113,12 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     payload: unknown,
     context: C,
     settings?: Partial<RuntimeSettings<S>>,
+    bindings?: B,
   ): Promise<O> {
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
+    const parsedBindings = (bindings ?? {}) as B;
+    this.assertSupportedBindings(parsedBindings);
     const timeoutMs = parsedSettings.timeout_ms ?? 0;
     const retrySettings = parsedSettings.retries ?? {
       enabled: false,
@@ -124,7 +140,12 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     while (attempt < maxAttempts) {
       try {
         const result = await withTimeout(
-          this.execute({ input, context, settings: parsedSettings }),
+          this.execute({
+            input,
+            context,
+            settings: parsedSettings,
+            bindings: parsedBindings,
+          }),
           timeoutMs,
         );
 
@@ -160,11 +181,35 @@ export abstract class AbstractAction<I, O, C extends BaseWorkflowContext, S>
     throw new Error('Action failed after exhausting retry attempts.');
   }
 
+  private assertSupportedBindings(bindings: B): void {
+    const bindingKinds = Object.keys(
+      (bindings ?? {}) as Record<string, unknown>,
+    );
+    if (bindingKinds.length === 0) {
+      return;
+    }
+
+    const unsupportedKinds = bindingKinds.filter(
+      (bindingKind) => !this.supportedBindings.includes(bindingKind),
+    );
+    if (unsupportedKinds.length === 0) {
+      return;
+    }
+
+    const supported =
+      this.supportedBindings.length > 0
+        ? this.supportedBindings.join(', ')
+        : '<none>';
+    throw new Error(
+      `Action "${this.name}" does not support binding kind(s): ${unsupportedKinds.join(', ')}. Supported binding kinds: ${supported}.`,
+    );
+  }
+
   /**
    * Runs the core business logic for the action.
    *
    * @param args - Strongly typed input and context for the action.
    * @returns Action output wrapped in a promise.
    */
-  abstract execute(args: ActionExecutionArgs<I, C, S>): Promise<O>;
+  abstract execute(args: ActionExecutionArgs<I, C, S, B>): Promise<O>;
 }

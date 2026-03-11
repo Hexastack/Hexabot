@@ -7,25 +7,41 @@
   box-sizing: border-box;
 }
 
+.workflow-node-shell--interactive {
+  cursor: pointer;
+}
+
 .workflow-node-card {
   position: relative;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border-radius: 14px;
+  border-radius: var(--workflow-node-border-radius, 14px);
   outline: none;
   pointer-events: none;
-  border: 2px solid var(--workflow-node-border-color, #cbd5e1);
+  border: var(--workflow-node-border-width, 2px) solid
+    var(--workflow-node-border-color, #cbd5e1);
   background-color: var(--workflow-node-bg-color, #ffffff);
   box-shadow: 0 3px 6px #00000033;
-  padding: 1rem;
+  padding: var(--workflow-node-padding-y, 16px)
+    var(--workflow-node-padding-x, 16px);
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   overflow: hidden;
+}
+
+.workflow-node-card--title-only {
+  gap: 0;
+}
+
+.workflow-node-card--title-with-description {
+  justify-content: flex-start;
+  gap: 6px;
 }
 
 .workflow-node-title-row {
@@ -33,8 +49,7 @@
   flex-direction: row;
   gap: 9px;
   align-items: center;
-  min-height: 20px;
-  height: 100%;
+  min-height: var(--workflow-node-title-min-height, 20px);
 }
 
 .workflow-node-icon {
@@ -70,12 +85,14 @@
 .workflow-node-description {
   font-size: 0.75rem;
   color: #666f7a;
-  align-content: end;
-  height: 100%;
-  margin: 0 0 0 29px;
+  margin: 0 0 0 var(--workflow-node-description-indent, 29px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.workflow-node-card--title-with-description .workflow-node-description {
+  margin-top: auto;
 }
 
 .workflow-graph .workflow-node-delete {

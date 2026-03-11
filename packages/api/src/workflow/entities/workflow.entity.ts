@@ -7,9 +7,9 @@
 import { isDeepStrictEqual } from 'node:util';
 
 import {
+  Workflow as AgenticWorkflow,
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
-  Workflow as AgenticWorkflow,
 } from '@hexabot-ai/agentic';
 import { CronJob } from 'cron';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
@@ -22,8 +22,6 @@ import {
   Entity,
   Index,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   RelationId,
 } from 'typeorm';
@@ -46,7 +44,6 @@ import {
 } from '../schemas/workflow-input-schemas';
 import { DirectionType, WorkflowType, WorkflowVersionAction } from '../types';
 
-import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 
 @Entity({ name: 'workflows' })
@@ -95,22 +92,6 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
   /** Indicates if the workflow is built-in and protected from deletion. */
   @Column({ default: false })
   builtin!: boolean;
-
-  /** Memory definitions available for this workflow. */
-  @ManyToMany(() => MemoryDefinitionOrmEntity, {
-    cascade: false,
-  })
-  @JoinTable({
-    name: 'workflow_memory_definitions',
-    joinColumn: { name: 'workflow_id' },
-    inverseJoinColumn: { name: 'memory_definition_id' },
-  })
-  @AsRelation({ allowArray: true })
-  memoryDefinitions: MemoryDefinitionOrmEntity[];
-
-  /** Identifiers of the related memory definitions. */
-  @RelationId((workflow: WorkflowOrmEntity) => workflow.memoryDefinitions)
-  private readonly memoryDefinitionIds: string[];
 
   /** User who created the workflow definition. */
   @ManyToOne(() => UserOrmEntity, {

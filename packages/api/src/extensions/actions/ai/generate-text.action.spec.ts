@@ -67,6 +67,24 @@ describe('AiGenerateTextAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model_id: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      base_url: 'https://api.openai.com',
+      organization: 'org-1',
+      ...overrides,
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -113,13 +131,8 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -142,7 +155,13 @@ describe('AiGenerateTextAction', () => {
       }),
     };
     const context = createContext({ actions: actionsService });
-    const result = await action.execute({ input, settings, context });
+    const bindings = createModelBindings();
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings,
+    });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
       apiKey: 'test-key',
@@ -156,7 +175,7 @@ describe('AiGenerateTextAction', () => {
         system: input.system,
       },
       context,
-      settings,
+      [],
     );
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
@@ -174,18 +193,6 @@ describe('AiGenerateTextAction', () => {
         seed: 7,
         model: 'model-instance',
       }),
-    );
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_generate_text action using provider "openai"',
-      {
-        provider: 'openai',
-        base_url: 'https://api.openai.com',
-        tools: undefined,
-        stop_when: {
-          step_count: undefined,
-          tool_call: undefined,
-        },
-      },
     );
     expect(result).toEqual({
       text: 'Generated text',
@@ -237,6 +244,7 @@ describe('AiGenerateTextAction', () => {
       [
         'user_profile',
         {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
           name: 'User Profile',
           slug: 'user_profile',
         },
@@ -268,19 +276,27 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      memory_enabled: true,
     };
     const input = {
       prompt: 'Hello there',
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context });
+    await action.execute({
+      input,
+      settings,
+      context,
+      bindings: {
+        ...createModelBindings(),
+        memory: {
+          selected_profile: {
+            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          },
+        },
+      } as any,
+    });
 
     const callArgs = generateTextMock.mock.calls[0][0] as any;
 
@@ -288,6 +304,9 @@ describe('AiGenerateTextAction', () => {
       includeAdditional: true,
     });
     expect(actionsService.get).toHaveBeenCalledWith('update_memory');
+    expect(
+      (context as any).memoryStore.buildUpdateMemorySchema,
+    ).toHaveBeenCalledWith(['user_profile']);
     expect(callArgs.tools).toHaveProperty('update_memory');
     expect(callArgs.tools.update_memory.description).toBe('demo tool');
     expect(callArgs.system).toContain('Base system');
@@ -296,19 +315,20 @@ describe('AiGenerateTextAction', () => {
     expect(callArgs.system).toContain('- Name: Ada');
   });
 
-  it('defaults stopWhen to the number of provided tools', async () => {
+  it('defaults stopWhen to the number of bound tools and forwards tool settings', async () => {
     const provider = Object.assign(
       jest.fn().mockReturnValue('model-instance'),
       {
         languageModel: jest.fn(),
       },
     );
+    const toolRun = jest.fn().mockResolvedValue({ ok: true });
     const actionsService = {
       get: jest.fn().mockReturnValue({
         description: 'demo',
         inputSchema: {},
         outputSchema: {},
-        run: jest.fn(),
+        run: toolRun,
       }),
     };
     const context = createContext({ actions: actionsService });
@@ -327,21 +347,29 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      tools: ['search', 'translate', 'search'],
     };
     const input = { prompt: 'Hello there' };
-    const result = await action.execute({ input, settings, context });
-    const stopWhen = (generateTextMock.mock.calls[0][0] as any).stopWhen;
+    const bindings = {
+      ...createModelBindings(),
+      tools: {
+        search: { action: 'search_action', settings: { locale: 'en' } },
+        translate: { action: 'translate_action' },
+      },
+    };
+    const result = await action.execute({ input, settings, context, bindings });
+    const callArgs = generateTextMock.mock.calls[0][0] as any;
+    const stopWhen = callArgs.stopWhen;
 
     expect(stepCountIsMock).toHaveBeenCalledWith(2);
     expect(typeof stopWhen).toBe('function');
     expect(stopWhen({ steps: [{}, {}] })).toBe(true);
     expect(stopWhen({ steps: [{}] })).toBe(false);
+    await callArgs.tools.search.execute({ query: 'hello' });
+    expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+      locale: 'en',
+    });
     expect(result.text).toBe('Generated text');
   });
 
@@ -376,18 +404,20 @@ describe('AiGenerateTextAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      tools: ['search'],
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { prompt: 'Hello there' };
+    const bindings = {
+      ...createModelBindings(),
+      tools: {
+        search: { action: 'search_action' },
+      },
+    };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings });
     const stopWhen = (generateTextMock.mock.calls[0][0] as any)
       .stopWhen as Array<(params: any) => boolean>;
 
@@ -408,17 +438,36 @@ describe('AiGenerateTextAction', () => {
     ).toBe(false);
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow('A model is required to run ai_generate_text.');
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_text.');
   });

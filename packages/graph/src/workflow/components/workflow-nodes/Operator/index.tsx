@@ -21,7 +21,7 @@ export const Operator: FC<NodeProps<GraphNode<ENodeType.OPERATOR>>> = ({
     <WorkflowNodeProvider id={id}>
       <div>
         <GenericNodeContainer>
-          <GenericNodeRightContent>
+          <GenericNodeRightContent variant="title-only">
             <GenericNodeTitle />
           </GenericNodeRightContent>
           <GenericNodePorts<ENodeType.OPERATOR>

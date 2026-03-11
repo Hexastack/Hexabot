@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { ALL_WORKFLOW_TYPES } from '@/actions/types';
+import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { Message } from '@/chat/dto/message.dto';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
@@ -71,10 +72,10 @@ class TestAiBaseAction extends AiBaseAction<
 
   public buildProviderInitOptionsPublic(
     provider: string,
-    settings: AiCommonSettings,
+    modelBinding: RuntimeBindings['model'],
     credential: string,
   ) {
-    return this.buildProviderInitOptions(provider, settings, credential);
+    return this.buildProviderInitOptions(provider, modelBinding, credential);
   }
 
   public shouldRequireApiKeyPublic(provider: string) {
@@ -120,20 +121,24 @@ class TestAiBaseAction extends AiBaseAction<
     return this.toPascalCase(value);
   }
 
-  public resolveModelIdPublic(settings: AiCommonSettings) {
-    return this.resolveModelId(settings);
+  public resolveModelIdPublic(modelBinding: RuntimeBindings['model']) {
+    return this.resolveModelId(modelBinding);
   }
 
   public buildPromptPublic(
     input: unknown,
     context: WorkflowRuntimeContext,
-    settings: AiCommonSettings = {} as AiCommonSettings,
+    _settings: AiCommonSettings = {} as AiCommonSettings,
+    selectedMemorySlugs: string[] = [],
   ) {
-    return this.buildPrompt(input as any, context, settings);
+    return this.buildPrompt(input as any, context, selectedMemorySlugs);
   }
 
-  public buildMemoryPromptPublic(context: WorkflowRuntimeContext) {
-    return this.buildMemoryPrompt(context);
+  public buildMemoryPromptPublic(
+    context: WorkflowRuntimeContext,
+    selectedMemorySlugs: string[] = [],
+  ) {
+    return this.buildMemoryPrompt(context, selectedMemorySlugs);
   }
 
   public buildCallSettingsPublic(settings: AiCommonSettings) {
@@ -162,6 +167,10 @@ describe('AiBaseAction', () => {
     action = new TestAiBaseAction(actionService);
   });
 
+  it('defaults supported bindings to tools, model, and memory', () => {
+    expect(action.supportedBindings).toEqual(['tools', 'model', 'memory']);
+  });
+
   describe('buildProviderInitOptions', () => {
     it('returns init options when provided', () => {
       const options = action.buildProviderInitOptionsPublic(
@@ -170,7 +179,9 @@ describe('AiBaseAction', () => {
           api_key: 'key',
           base_url: 'https://example.com',
           organization: 'org',
-        } as AiCommonSettings,
+          provider: 'openai',
+          model_id: 'gpt-4o-mini',
+        } as RuntimeBindings['model'],
         'key',
       );
 
@@ -185,11 +196,11 @@ describe('AiBaseAction', () => {
       expect(() =>
         action.buildProviderInitOptionsPublic(
           'openai',
-          {} as AiCommonSettings,
+          {} as RuntimeBindings['model'],
           'key',
         ),
       ).toThrow(
-        'No API key provided for provider "openai". Set settings.api_key.',
+        'No API key provided for provider "openai". Set bindings.model.<def>.api_key.',
       );
     });
   });
@@ -404,14 +415,16 @@ describe('AiBaseAction', () => {
   describe('resolveModelId', () => {
     it('returns the model when provided', () => {
       expect(
-        action.resolveModelIdPublic({ model: 'gpt-4o' } as AiCommonSettings),
+        action.resolveModelIdPublic({
+          model_id: 'gpt-4o',
+        } as RuntimeBindings['model']),
       ).toBe('gpt-4o');
     });
 
     it('throws when model is missing', () => {
-      expect(() => action.resolveModelIdPublic({} as AiCommonSettings)).toThrow(
-        'A model is required to run ai_test_action.',
-      );
+      expect(() =>
+        action.resolveModelIdPublic({} as RuntimeBindings['model']),
+      ).toThrow('A model is required to run ai_test_action.');
     });
   });
 
@@ -659,7 +672,10 @@ describe('AiBaseAction', () => {
       const context = {
         memoryStore: { definitionCache, instances },
       } as unknown as WorkflowRuntimeContext;
-      const result = action.buildMemoryPromptPublic(context);
+      const result = action.buildMemoryPromptPublic(context, [
+        'user_infos',
+        'weather_workflow',
+      ]);
 
       expect(instances.user_infos.fields).toHaveBeenCalledWith({
         includeAdditional: true,

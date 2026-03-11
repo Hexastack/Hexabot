@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
@@ -48,7 +48,7 @@ export class UpdateMemoryAction extends BaseAction<
   async execute({
     input,
     context,
-  }: ActionExecutionArgs<UpdateMemoryInput, WorkflowRuntimeContext>) {
+  }: ExecArgs<UpdateMemoryInput, WorkflowRuntimeContext>) {
     const memory = await context.memoryStore.update(input.memory);
 
     return { memory };

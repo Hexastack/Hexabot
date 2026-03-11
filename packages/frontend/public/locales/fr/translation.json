@@ -797,6 +797,69 @@
         }
       }
     },
+    "tool_drawer": {
+      "title": "Outil",
+      "description": "Configurez ce binding d'outil.",
+      "form": {
+        "action_label": "Action",
+        "tool_id": {
+          "label": "ID de l'outil",
+          "placeholder": "nom_outil",
+          "errors": {
+            "required": "L'ID de l'outil est obligatoire.",
+            "snake_case": "L'ID de l'outil doit utiliser des lettres minuscules, des chiffres et des underscores.",
+            "unique": "Cet ID d'outil existe déjà dans ce workflow."
+          }
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Description optionnelle de l'outil."
+        },
+        "empty_schema": {
+          "settings": "Aucun schéma de paramètres disponible pour cette action."
+        },
+        "empty_state": {
+          "no_tool": "Aucun outil sélectionné."
+        }
+      }
+    },
+    "single_binding_drawer": {
+      "title": {
+        "edit": "Modifier la définition {{bindingLabel}}",
+        "create": "Ajouter un binding {{bindingLabel}}"
+      },
+      "selection": {
+        "use_existing": {
+          "title": "Utiliser une définition existante",
+          "description": "Sélectionnez une définition {{bindingLabelLower}} déjà disponible dans ce workflow."
+        },
+        "create_new": {
+          "title": "Créer une nouvelle définition",
+          "description": "Définissez et attachez une nouvelle définition {{bindingLabelLower}}."
+        }
+      },
+      "form": {
+        "binding_id": {
+          "label": "ID {{bindingLabel}}",
+          "errors": {
+            "required": "L'ID {{bindingLabel}} est obligatoire.",
+            "snake_case": "L'ID {{bindingLabel}} doit utiliser des lettres minuscules, des chiffres et des underscores.",
+            "unique": "Une définition avec cet ID existe déjà."
+          }
+        },
+        "description": {
+          "placeholder": "Description optionnelle de {{bindingLabelLower}}."
+        },
+        "back": "Retour à la sélection de {{bindingLabelLower}}",
+        "empty_schema": "Le schéma {{bindingLabel}} est indisponible."
+      },
+      "list": {
+        "description_fallback": "Aucune description fournie.",
+        "disabled_reason": "Déjà utilisé par cette tâche."
+      },
+      "add_new": "Ajouter une nouvelle définition {{bindingLabelLower}}",
+      "empty": "Aucune définition {{bindingLabelLower}} n'est disponible pour le moment."
+    },
     "conditional_drawer": {
       "title": "Conditionnel",
       "description": "Définissez des conditions JSONata pour cet opérateur.",
