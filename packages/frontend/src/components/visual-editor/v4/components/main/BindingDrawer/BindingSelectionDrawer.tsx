@@ -18,12 +18,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type RJSFSchema } from "@rjsf/utils";
-import { ArrowLeft, Plus, Save } from "lucide-react";
+import { type RJSFSchema, type UiSchema } from "@rjsf/utils";
+import { ArrowLeft, ChevronRight, Plus, Save } from "lucide-react";
 import type { JSONSchema } from "monaco-yaml";
 import { useEffect, useMemo, useState } from "react";
 
 import { withDrawerLayout } from "@/app-components/drawers/DrawerLayout";
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { EditableTypography } from "@/app-components/inputs/EditableTypography";
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -61,10 +62,35 @@ type BindingSelectionDrawerBaseProps = {
   ) => void;
 };
 
-type BindingSelectionDrawerContentProps =
-  BindingSelectionDrawerBaseProps & {
-    isOpen: boolean;
-  };
+type BindingListItem = {
+  name: string;
+  description: string;
+  isDisabled: boolean;
+};
+
+type BindingSelectionDrawerContentProps = {
+  isOpen: boolean;
+  isEditing: boolean;
+  isCreateMode: boolean;
+  isSaving?: boolean;
+  bindingLabel: string;
+  bindingLabelLower: string;
+  bindingSchema?: JSONSchema;
+  bindingUiSchema: UiSchema;
+  bindingName: string;
+  bindingNameError: string | null;
+  bindingDescription: string;
+  bindingData: Record<string, unknown>;
+  bindingItems: BindingListItem[];
+  canCreateBindingDefinition: boolean;
+  onSelectBinding?: (bindingName: string) => void;
+  onCreateMode: () => void;
+  onSelectMode: () => void;
+  onBindingNameCommit: (value: string) => void;
+  onBindingDescriptionCommit: (value: string) => void;
+  onBindingDataChange: (value: Record<string, unknown>) => void;
+  onVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
+};
 
 type BindingSelectionDrawerProps =
   BindingSelectionDrawerBaseProps & {
@@ -87,6 +113,254 @@ const toBindingFormData = (definition: Record<string, unknown>) => {
 };
 const BindingSelectionDrawerContent = ({
   isOpen,
+  isEditing,
+  isCreateMode,
+  isSaving,
+  bindingLabel,
+  bindingLabelLower,
+  bindingSchema,
+  bindingUiSchema,
+  bindingName,
+  bindingNameError,
+  bindingDescription,
+  bindingData,
+  bindingItems,
+  canCreateBindingDefinition,
+  onSelectBinding,
+  onCreateMode,
+  onSelectMode,
+  onBindingNameCommit,
+  onBindingDescriptionCommit,
+  onBindingDataChange,
+  onVisibleErrorsChange,
+}: BindingSelectionDrawerContentProps) => {
+  const { t } = useTranslate();
+
+  if (!isOpen) {
+    return null;
+  }
+
+  if (isCreateMode) {
+    return (
+      <Stack spacing={1.5}>
+        {!isEditing ? (
+          <Button
+            variant="text"
+            size="small"
+            startIcon={<ArrowLeft size={16} />}
+            onClick={onSelectMode}
+            sx={{ alignSelf: "flex-start" }}
+          >
+            {t(
+              "visual_editor.single_binding_drawer.form.back",
+              { bindingLabelLower } as Parameters<typeof t>[1],
+            )}
+          </Button>
+        ) : null}
+        <Stack spacing={0.25} minWidth={0}>
+          <EditableTypography
+            component="div"
+            variant="subtitle1"
+            value={bindingName}
+            onCommit={onBindingNameCommit}
+            placeholder={t(
+              "visual_editor.single_binding_drawer.form.binding_id.label",
+              { bindingLabel } as Parameters<typeof t>[1],
+            )}
+            disabled={isSaving}
+            sx={{ fontFamily: "monospace" }}
+          />
+          {bindingNameError ? (
+            <Typography variant="caption" color="error.main">
+              {bindingNameError}
+            </Typography>
+          ) : null}
+          <EditableTypography
+            component="div"
+            variant="body2"
+            multiline
+            value={bindingDescription}
+            onCommit={onBindingDescriptionCommit}
+            placeholder={t(
+              "visual_editor.single_binding_drawer.form.description.placeholder",
+              { bindingLabelLower } as Parameters<typeof t>[1],
+            )}
+            disabled={isSaving}
+            color={bindingDescription.trim() ? "text.primary" : "text.secondary"}
+          />
+        </Stack>
+        {bindingSchema ? (
+          <JsonSchemaForm
+            schema={bindingSchema as RJSFSchema}
+            formData={bindingData}
+            onFormDataChange={onBindingDataChange}
+            onVisibleErrorsChange={onVisibleErrorsChange}
+            uiSchema={bindingUiSchema}
+            idPrefix="single-binding-selection-drawer"
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary" px={1}>
+            {t(
+              "visual_editor.single_binding_drawer.form.empty_schema",
+              { bindingLabel } as Parameters<typeof t>[1],
+            )}
+          </Typography>
+        )}
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack spacing={2}>
+      <Box
+        border={(theme) => `1px solid ${theme.palette.divider}`}
+        borderRadius={1.5}
+        p={1.5}
+      >
+        <Stack spacing={1.5}>
+          <Stack spacing={0.25}>
+            <Typography variant="subtitle2">
+              {t(
+                "visual_editor.single_binding_drawer.selection.use_existing.title",
+              )}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t(
+                "visual_editor.single_binding_drawer.selection.use_existing.description",
+                { bindingLabelLower } as Parameters<typeof t>[1],
+              )}
+            </Typography>
+          </Stack>
+          {bindingItems.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" px={0.5}>
+              {t("visual_editor.single_binding_drawer.empty", {
+                bindingLabelLower,
+              } as Parameters<typeof t>[1])}
+            </Typography>
+          ) : (
+            <List
+              disablePadding
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
+            >
+              {bindingItems.map((bindingItem) => {
+                const description =
+                  bindingItem.description ||
+                  t(
+                    "visual_editor.single_binding_drawer.list.description_fallback",
+                  );
+                const isDisabled = Boolean(isSaving || bindingItem.isDisabled);
+
+                return (
+                  <ListItemButton
+                    key={bindingItem.name}
+                    onClick={() => {
+                      onSelectBinding?.(bindingItem.name);
+                    }}
+                    disabled={isDisabled}
+                    sx={{
+                      alignItems: "flex-start",
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                      borderRadius: 1.25,
+                      px: 2,
+                      py: 2,
+                      backgroundColor: "background.paper",
+                      transition: "background-color 120ms, border-color 120ms",
+                      "&:hover, &.Mui-focusVisible": isDisabled
+                        ? undefined
+                        : {
+                            backgroundColor: "action.hover",
+                            borderColor: "primary.main",
+                          },
+                    }}
+                  >
+                    <ListItemText
+                      slotProps={{
+                        primary: { fontFamily: "monospace" },
+                        secondary: { component: "div" },
+                      }}
+                      sx={{ my: 0, minWidth: 0 }}
+                      primary={bindingItem.name}
+                      secondary={
+                        <Stack spacing={0.25} mt={0.25}>
+                          <Typography variant="body2" color="text.secondary">
+                            {description}
+                          </Typography>
+                          {bindingItem.isDisabled ? (
+                            <Typography variant="caption" color="text.disabled">
+                              {t(
+                                "visual_editor.single_binding_drawer.list.disabled_reason",
+                              )}
+                            </Typography>
+                          ) : null}
+                        </Stack>
+                      }
+                    />
+                    {!isDisabled ? (
+                      <Box
+                        color="text.secondary"
+                        ml={1}
+                        display="flex"
+                        alignItems="center"
+                        alignSelf="center"
+                        flexShrink={0}
+                      >
+                        <ChevronRight size={16} />
+                      </Box>
+                    ) : null}
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          )}
+        </Stack>
+      </Box>
+
+      <Divider>{t("label.or")}</Divider>
+
+      <Box
+        border={(theme) => `1px solid ${theme.palette.divider}`}
+        borderRadius={1.5}
+        p={1.5}
+      >
+        <Stack spacing={1.25}>
+          <Stack spacing={0.25}>
+            <Typography variant="subtitle2">
+              {t(
+                "visual_editor.single_binding_drawer.selection.create_new.title",
+              )}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t(
+                "visual_editor.single_binding_drawer.selection.create_new.description",
+                { bindingLabelLower } as Parameters<typeof t>[1],
+              )}
+            </Typography>
+          </Stack>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Plus size={18} />}
+            onClick={onCreateMode}
+            disabled={!canCreateBindingDefinition || isSaving}
+          >
+            {t("visual_editor.single_binding_drawer.add_new", {
+              bindingLabelLower,
+            } as Parameters<typeof t>[1])}
+          </Button>
+        </Stack>
+      </Box>
+    </Stack>
+  );
+};
+const BindingSelectionDrawerLayout = withDrawerLayout(
+  BindingSelectionDrawerContent,
+);
+
+export const BindingSelectionDrawer = ({
   availableBindings,
   disabledBindings,
   bindingKind,
@@ -95,10 +369,13 @@ const BindingSelectionDrawerContent = ({
   bindingSchema,
   editingBindingName,
   isSaving,
+  drawerId,
+  open,
+  onClose,
   onSelectBinding,
   onCreateBindingDefinition,
   onUpdateBindingDefinition,
-}: BindingSelectionDrawerContentProps) => {
+}: BindingSelectionDrawerProps) => {
   const { t } = useTranslate();
   const [mode, setMode] = useState<"select" | "create">("select");
   const [bindingName, setBindingName] = useState("");
@@ -106,9 +383,32 @@ const BindingSelectionDrawerContent = ({
   const [bindingData, setBindingData] = useState<Record<string, unknown>>({});
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
   const isEditing = Boolean(editingBindingName);
+  const isCreateMode = isEditing || mode === "create";
+  const normalizedBindingLabel = bindingLabel || humanizeBindingKind(bindingKind);
   const bindingLabelLower = useMemo(
-    () => bindingLabel.toLowerCase(),
-    [bindingLabel],
+    () => normalizedBindingLabel.toLowerCase(),
+    [normalizedBindingLabel],
+  );
+  const disabledBindingSet = useMemo(
+    () => new Set(disabledBindings ?? []),
+    [disabledBindings],
+  );
+  const bindingItems = useMemo(
+    () =>
+      availableBindings.map((bindingNameEntry) => {
+        const bindingDefinition = asRecord(defs?.[bindingNameEntry]);
+        const description =
+          typeof bindingDefinition?.description === "string"
+            ? bindingDefinition.description.trim()
+            : "";
+
+        return {
+          name: bindingNameEntry,
+          description,
+          isDisabled: disabledBindingSet.has(bindingNameEntry),
+        } as BindingListItem;
+      }),
+    [availableBindings, defs, disabledBindingSet],
   );
   const normalizedBindingName = useMemo(
     () => normalizeBindingName(bindingName),
@@ -123,14 +423,14 @@ const BindingSelectionDrawerContent = ({
     if (!bindingName.trim()) {
       return t(
         "visual_editor.single_binding_drawer.form.binding_id.errors.required",
-        { bindingLabel } as Parameters<typeof t>[1],
+        { bindingLabel: normalizedBindingLabel } as Parameters<typeof t>[1],
       );
     }
 
     if (!normalizedBindingName) {
       return t(
         "visual_editor.single_binding_drawer.form.binding_id.errors.snake_case",
-        { bindingLabel } as Parameters<typeof t>[1],
+        { bindingLabel: normalizedBindingLabel } as Parameters<typeof t>[1],
       );
     }
 
@@ -145,9 +445,9 @@ const BindingSelectionDrawerContent = ({
 
     return null;
   }, [
-    bindingLabel,
     bindingName,
     defs,
+    normalizedBindingLabel,
     normalizedBindingName,
     normalizedEditingBindingName,
     t,
@@ -163,9 +463,19 @@ const BindingSelectionDrawerContent = ({
 
     return getSchemaDefaults<Record<string, JsonValue>>(bindingSchema) ?? {};
   }, [bindingSchema]);
+  const canCreateBindingDefinition = Boolean(
+    onCreateBindingDefinition && bindingSchema,
+  );
+  const isSaveDisabled =
+    (!isEditing && !onCreateBindingDefinition) ||
+    (isEditing && !onUpdateBindingDefinition) ||
+    !bindingSchema ||
+    isSaving ||
+    Boolean(bindingNameError) ||
+    hasVisibleErrors;
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!open) {
       return;
     }
 
@@ -203,7 +513,7 @@ const BindingSelectionDrawerContent = ({
     defaultBindingData,
     defs,
     editingBindingName,
-    isOpen,
+    open,
   ]);
 
   const handleSaveBindingDefinition = () => {
@@ -234,167 +544,6 @@ const BindingSelectionDrawerContent = ({
       bindingDescription,
     );
   };
-
-  if (isEditing || mode === "create") {
-    return (
-      <Stack spacing={1.5}>
-        {!isEditing ? (
-          <Button
-            variant="text"
-            size="small"
-            startIcon={<ArrowLeft size={16} />}
-            onClick={() => {
-              setMode("select");
-            }}
-            sx={{ alignSelf: "flex-start" }}
-          >
-            {t(
-              "visual_editor.single_binding_drawer.form.back",
-              { bindingLabelLower } as Parameters<typeof t>[1],
-            )}
-          </Button>
-        ) : null}
-        <Stack spacing={0.25} minWidth={0}>
-          <EditableTypography
-            component="div"
-            variant="subtitle1"
-            value={bindingName}
-            onCommit={setBindingName}
-            placeholder={t(
-              "visual_editor.single_binding_drawer.form.binding_id.label",
-              { bindingLabel } as Parameters<typeof t>[1],
-            )}
-            disabled={isSaving}
-            sx={{ fontFamily: "monospace" }}
-          />
-          {bindingNameError && (
-            <Typography variant="caption" color="error.main">
-              {bindingNameError}
-            </Typography>
-          )}
-          <EditableTypography
-            component="div"
-            variant="body2"
-            multiline
-            value={bindingDescription}
-            onCommit={setBindingDescription}
-            placeholder={t(
-              "visual_editor.single_binding_drawer.form.description.placeholder",
-              { bindingLabelLower } as Parameters<typeof t>[1],
-            )}
-            disabled={isSaving}
-            color={
-              bindingDescription.trim() ? "text.primary" : "text.secondary"
-            }
-          />
-        </Stack>
-        {bindingSchema ? (
-          <JsonSchemaForm
-            schema={bindingSchema as RJSFSchema}
-            formData={bindingData}
-            onFormDataChange={setBindingData}
-            onVisibleErrorsChange={setHasVisibleErrors}
-            uiSchema={bindingUiSchema}
-            idPrefix="single-binding-selection-drawer"
-          />
-        ) : (
-          <Typography variant="body2" color="text.secondary" px={1}>
-            {t(
-              "visual_editor.single_binding_drawer.form.empty_schema",
-              { bindingLabel } as Parameters<typeof t>[1],
-            )}
-          </Typography>
-        )}
-        <Box display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSaveBindingDefinition}
-            disabled={
-              (!isEditing && !onCreateBindingDefinition) ||
-              (isEditing && !onUpdateBindingDefinition) ||
-              !bindingSchema ||
-              isSaving ||
-              Boolean(bindingNameError) ||
-              hasVisibleErrors
-            }
-            startIcon={<Save size={18} />}
-            sx={{ minWidth: 220 }}
-          >
-            {t("button.save")}
-          </Button>
-        </Box>
-      </Stack>
-    );
-  }
-
-  return (
-    <Stack spacing={1.5}>
-      <Button
-        variant="contained"
-        size="large"
-        startIcon={<Plus size={18} />}
-        onClick={() => {
-          setMode("create");
-        }}
-        disabled={!onCreateBindingDefinition || !bindingSchema || isSaving}
-      >
-        {t(
-          "visual_editor.single_binding_drawer.add_new",
-          { bindingLabelLower } as Parameters<typeof t>[1],
-        )}
-      </Button>
-      <Divider />
-      {availableBindings.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" p={1}>
-          {t(
-            "visual_editor.single_binding_drawer.empty",
-            { bindingLabelLower } as Parameters<typeof t>[1],
-          )}
-        </Typography>
-      ) : (
-        <List disablePadding>
-          {availableBindings.map((selectedBindingName) => (
-            <ListItemButton
-              key={selectedBindingName}
-              onClick={() => {
-                onSelectBinding?.(selectedBindingName);
-              }}
-              disabled={isSaving || disabledBindings?.includes(selectedBindingName)}
-            >
-              <ListItemText
-                primaryTypographyProps={{ fontFamily: "monospace" }}
-                primary={selectedBindingName}
-              />
-            </ListItemButton>
-          ))}
-        </List>
-      )}
-    </Stack>
-  );
-};
-const BindingSelectionDrawerLayout = withDrawerLayout(
-  BindingSelectionDrawerContent,
-);
-
-export const BindingSelectionDrawer = ({
-  availableBindings,
-  disabledBindings,
-  bindingKind,
-  bindingLabel,
-  defs,
-  bindingSchema,
-  editingBindingName,
-  isSaving,
-  drawerId,
-  open,
-  onClose,
-  onSelectBinding,
-  onCreateBindingDefinition,
-  onUpdateBindingDefinition,
-}: BindingSelectionDrawerProps) => {
-  const { t } = useTranslate();
-  const normalizedBindingLabel = bindingLabel || humanizeBindingKind(bindingKind);
   const title = editingBindingName
     ? t("visual_editor.single_binding_drawer.title.edit", {
         bindingLabel: normalizedBindingLabel,
@@ -406,17 +555,42 @@ export const BindingSelectionDrawer = ({
   return (
     <BindingSelectionDrawerLayout
       isOpen={open}
-      availableBindings={availableBindings}
-      disabledBindings={disabledBindings}
-      bindingKind={bindingKind}
-      bindingLabel={normalizedBindingLabel}
-      defs={defs}
-      bindingSchema={bindingSchema}
-      editingBindingName={editingBindingName}
+      isEditing={isEditing}
+      isCreateMode={isCreateMode}
       isSaving={isSaving}
+      bindingLabel={normalizedBindingLabel}
+      bindingLabelLower={bindingLabelLower}
+      bindingSchema={bindingSchema}
+      bindingUiSchema={bindingUiSchema}
+      bindingName={bindingName}
+      bindingNameError={bindingNameError}
+      bindingDescription={bindingDescription}
+      bindingData={bindingData}
+      bindingItems={bindingItems}
+      canCreateBindingDefinition={canCreateBindingDefinition}
       onSelectBinding={onSelectBinding}
-      onCreateBindingDefinition={onCreateBindingDefinition}
-      onUpdateBindingDefinition={onUpdateBindingDefinition}
+      onCreateMode={() => {
+        setMode("create");
+      }}
+      onSelectMode={() => {
+        setMode("select");
+      }}
+      onBindingNameCommit={setBindingName}
+      onBindingDescriptionCommit={setBindingDescription}
+      onBindingDataChange={setBindingData}
+      onVisibleErrorsChange={setHasVisibleErrors}
+      footerContent={
+        isCreateMode ? (
+          <DrawerPrimaryFooterAction
+            label={t("button.save")}
+            ariaLabel={t("button.save")}
+            onClick={handleSaveBindingDefinition}
+            disabled={isSaveDisabled}
+            startIcon={<Save size={18} />}
+            minWidth={220}
+          />
+        ) : undefined
+      }
       drawerId={drawerId}
       open={open}
       onClose={onClose}

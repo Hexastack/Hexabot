@@ -12,7 +12,6 @@ import {
 } from "@hexabot-ai/agentic";
 import {
   Box,
-  Button,
   FormControlLabel,
   Stack,
   Switch,
@@ -22,6 +21,7 @@ import {
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { JsonataFormulaField } from "@/app-components/inputs/JsonataFormulaField";
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -501,19 +501,13 @@ export const LoopFormDrawer = () => {
         </Box>
       }
       footerContent={
-        <Box display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={saveDisabled}
-            aria-label={t("button.save")}
-            startIcon={<Save size={18} />}
-            sx={{ minWidth: 200 }}
-          >
-            {t("button.save")}
-          </Button>
-        </Box>
+        <DrawerPrimaryFooterAction
+          label={t("button.save")}
+          ariaLabel={t("button.save")}
+          onClick={handleSave}
+          disabled={saveDisabled}
+          startIcon={<Save size={18} />}
+        />
       }
     />
   );

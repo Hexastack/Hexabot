@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { type RJSFSchema } from "@rjsf/utils";
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { EditableTypography } from "@/app-components/inputs/EditableTypography";
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -361,25 +362,20 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
         </Stack>
       }
       footerContent={
-        <Box display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={
-              !definition ||
-              !target ||
-              !resolvedTarget?.actionName ||
-              isSaving ||
-              Boolean(toolNameError) ||
-              hasActionSettingsVisibleErrors
-            }
-            startIcon={<Save size={18} />}
-            sx={{ minWidth: 200 }}
-          >
-            {t("button.save")}
-          </Button>
-        </Box>
+        <DrawerPrimaryFooterAction
+          label={t("button.save")}
+          ariaLabel={t("button.save")}
+          onClick={handleSave}
+          disabled={
+            !definition ||
+            !target ||
+            !resolvedTarget?.actionName ||
+            isSaving ||
+            Boolean(toolNameError) ||
+            hasActionSettingsVisibleErrors
+          }
+          startIcon={<Save size={18} />}
+        />
       }
     />
   );
