@@ -6,6 +6,17 @@
 
 import type { PropsWithChildren } from "react";
 
-export const GenericNodeContainer = ({ children }: PropsWithChildren) => {
-  return <div className="workflow-node-shell">{children}</div>;
+type GenericNodeContainerProps = PropsWithChildren<{
+  className?: string;
+}>;
+
+export const GenericNodeContainer = ({
+  children,
+  className,
+}: GenericNodeContainerProps) => {
+  return (
+    <div className={`workflow-node-shell${className ? ` ${className}` : ""}`}>
+      {children}
+    </div>
+  );
 };

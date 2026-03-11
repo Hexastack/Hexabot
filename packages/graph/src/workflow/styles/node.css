@@ -7,6 +7,10 @@
   box-sizing: border-box;
 }
 
+.workflow-node-shell--interactive {
+  cursor: pointer;
+}
+
 .workflow-node-card {
   position: relative;
   width: 100%;

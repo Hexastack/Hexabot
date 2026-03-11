@@ -21,7 +21,7 @@ export const BindingSingle: FC<NodeProps<GraphNode<ENodeType.BINDING_SINGLE>>> =
   id,
 }) => (
   <WorkflowNodeProvider id={id}>
-    <GenericNodeContainer>
+    <GenericNodeContainer className="workflow-node-shell--interactive">
       <GenericNodeRightContent>
         <GenericNodeTitle />
       </GenericNodeRightContent>

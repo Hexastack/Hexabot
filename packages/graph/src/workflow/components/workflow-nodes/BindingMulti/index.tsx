@@ -21,7 +21,7 @@ export const BindingMulti: FC<NodeProps<GraphNode<ENodeType.BINDING_MULTI>>> = (
   id,
 }) => (
   <WorkflowNodeProvider id={id}>
-    <GenericNodeContainer>
+    <GenericNodeContainer className="workflow-node-shell--interactive">
       <GenericNodeRightContent>
         <GenericNodeTitle />
       </GenericNodeRightContent>
