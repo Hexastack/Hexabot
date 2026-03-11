@@ -46,7 +46,10 @@ import type { IAction } from "@/types/action.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
-import { ActionFormDrawer } from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
+import {
+  ActionFormDrawer,
+  type ActionFormDrawerCreateTarget,
+} from "../components/main/ActionDrawer/ActionFormDrawer/ActionFormDrawer";
 import { ActionListDrawer } from "../components/main/ActionDrawer/ActionListDrawer";
 import { ConditionalFormDrawer } from "../components/main/ConditionalDrawer/ConditionalFormDrawer";
 import { FlowsDrawer } from "../components/main/FlowsDrawer";
@@ -84,7 +87,10 @@ import {
   getDisabledBindingRefs,
   isNonToolBindingKind,
 } from "../utils/workflow-binding-routing.utils";
-import { createBaseDefinition } from "../utils/workflow-definition.utils";
+import {
+  createBaseDefinition,
+  createTaskName,
+} from "../utils/workflow-definition.utils";
 import "./workflow-layout.css";
 
 const StyledBox = styled(Box)(() => ({
@@ -139,7 +145,6 @@ export const Workflow = () => {
     persistDefinition,
     publishVersion,
     unpublishVersion,
-    addActionStep,
     addConditionalStep,
     addLoopStep,
     addParallelStep,
@@ -152,6 +157,8 @@ export const Workflow = () => {
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [pendingInsertPath, setPendingInsertPath] =
     useState<FlowStepPath | null>(null);
+  const [pendingActionCreateTarget, setPendingActionCreateTarget] =
+    useState<ActionFormDrawerCreateTarget | null>(null);
   const [pendingToolBindingAdd, setPendingToolBindingAdd] =
     useState<WorkflowBindingAddPayload | null>(null);
   const [pendingBindingAdd, setPendingBindingAdd] =
@@ -226,6 +233,7 @@ export const Workflow = () => {
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
       setPendingBindingAdd(null);
       setEditingBindingTarget(null);
+      setPendingActionCreateTarget(null);
 
       if (insertType === StepType.Conditional) {
         setPendingInsertPath(null);
@@ -273,9 +281,9 @@ export const Workflow = () => {
           normalizeBindingName(action.name) || "tool",
           definition.defs,
         );
-        const toolSettingsDefaults =
-          (getSchemaDefaults<Record<string, JsonValue>>(action.settingSchema) ??
-            {}) as Record<string, unknown>;
+        const toolSettingsDefaults = (getSchemaDefaults<
+          Record<string, JsonValue>
+        >(action.settingSchema) ?? {}) as Record<string, unknown>;
 
         setToolDrawerTarget({
           mode: "create",
@@ -289,18 +297,35 @@ export const Workflow = () => {
         setActionsDrawerOpen(false);
         setPendingInsertPath(null);
         setPendingToolBindingAdd(null);
+        setPendingActionCreateTarget(null);
         setEditingBindingTarget(null);
 
         return;
       }
 
-      addActionStep(action, pendingInsertPath);
+      const baseDefinition = definition ?? createBaseDefinition();
+      const nextTaskName = createTaskName(
+        action.name,
+        baseDefinition.tasks ?? {},
+      );
+
+      setPendingActionCreateTarget({
+        action,
+        insertPath: pendingInsertPath ?? null,
+        initialTaskName: nextTaskName,
+        initialTaskDescription: action.description?.trim() || "",
+      });
+      setGraphSelection({
+        nodeIds: [],
+        nodes: [],
+      });
       setActionsDrawerOpen(false);
       setPendingInsertPath(null);
+      setPendingToolBindingAdd(null);
       setPendingBindingAdd(null);
       setEditingBindingTarget(null);
     },
-    [addActionStep, definition, pendingInsertPath, pendingToolBindingAdd],
+    [definition, pendingInsertPath, pendingToolBindingAdd, setGraphSelection],
   );
 
   useEffect(() => {
@@ -935,7 +960,17 @@ export const Workflow = () => {
           setToolDrawerTarget(null);
         }}
       />
-      <ActionFormDrawer />
+      <ActionFormDrawer
+        target={pendingActionCreateTarget}
+        onClose={(reason) => {
+          const isCreateFlow = Boolean(pendingActionCreateTarget);
+
+          setPendingActionCreateTarget(null);
+          if (reason === "cancel" && isCreateFlow) {
+            workflowGraphRef.current?.clearCenterAfterFirstInsert();
+          }
+        }}
+      />
       <ConditionalFormDrawer />
       <LoopFormDrawer />
       <ParallelFormDrawer />
