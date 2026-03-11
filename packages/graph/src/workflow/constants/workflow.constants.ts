@@ -25,6 +25,7 @@ import {
   ELinkType,
   ENodeType,
   type INodeConfig,
+  type TNodeCardMetrics,
   type WorkflowGraphData,
 } from "../types/workflow-node.types";
 import type { EdgeInsertType } from "../types/workflow-path.types";
@@ -99,15 +100,63 @@ export const DEFAULT_NODE_PROPS = {
   selectable: false,
 } satisfies Omit<Node, "id" | "data" | "position">;
 
-export const NODE_DIMENSIONS = {
-  [ENodeType.BINDING_SINGLE]: { width: 180, height: 68 },
-  [ENodeType.BINDING_MULTI]: { width: 180, height: 55 },
-  [ENodeType.BINDING_PLACEHOLDER]: { width: 64, height: 64 },
-  [ENodeType.INDICATOR]: { width: 128, height: 68 },
-  [ENodeType.TASK]: { width: 256, height: 86 },
-  [ENodeType.OPERATOR]: { width: 156, height: 68 },
-  [ENodeType.BRANCH_PLACEHOLDER]: { width: 64, height: 64 },
-} satisfies INodeConfig["dimensions"];
+const BASE_CARD_METRICS = {
+  paddingX: 16,
+  paddingY: 16,
+  borderWidth: 2,
+  borderRadius: 14,
+  titleMinHeight: 20,
+  descriptionIndent: 29,
+} as const;
+const TITLE_ONLY_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  contentVariant: "title-only",
+} satisfies TNodeCardMetrics;
+const BINDING_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  paddingY: 12,
+  contentVariant: "title-with-description",
+} satisfies TNodeCardMetrics;
+const TITLE_WITH_DESCRIPTION_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  contentVariant: "title-with-description",
+} satisfies TNodeCardMetrics;
+
+export const NODE_METRICS: Exclude<INodeConfig['nodeMetrics'], undefined> = {
+  [ENodeType.BINDING_SINGLE]: {
+    dimensions: { width: 200, height: 76 },
+    card: BINDING_CARD_METRICS,
+  },
+  [ENodeType.BINDING_MULTI]: {
+    dimensions: { width: 200, height: 76 },
+    card: BINDING_CARD_METRICS,
+  },
+  [ENodeType.BINDING_PLACEHOLDER]: {
+    dimensions: { width: 64, height: 64 },
+  },
+  [ENodeType.INDICATOR]: {
+    dimensions: { width: 128, height: 68 },
+    card: TITLE_ONLY_CARD_METRICS,
+  },
+  [ENodeType.TASK]: {
+    dimensions: { width: 256, height: 86 },
+    card: TITLE_WITH_DESCRIPTION_CARD_METRICS,
+  },
+  [ENodeType.OPERATOR]: {
+    dimensions: { width: 156, height: 68 },
+    card: TITLE_ONLY_CARD_METRICS,
+  },
+  [ENodeType.BRANCH_PLACEHOLDER]: {
+    dimensions: { width: 64, height: 64 },
+  },
+};
+
+export const NODE_DIMENSIONS = Object.fromEntries(
+  Object.entries(NODE_METRICS).map(([nodeType, nodeMetrics]) => [
+    nodeType,
+    nodeMetrics.dimensions,
+  ]),
+) as Exclude<INodeConfig["dimensions"], undefined>;
 
 export const OPERATOR_HIGHLIGHTS = {
   [StepType.Loop]: { color: "#fefbe8", padding: 64 },

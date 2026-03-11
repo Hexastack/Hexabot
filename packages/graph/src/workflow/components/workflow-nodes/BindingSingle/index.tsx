@@ -13,19 +13,28 @@ import {
   type GraphNode,
 } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
+import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const BindingSingle: FC<NodeProps<GraphNode<ENodeType.BINDING_SINGLE>>> = ({
   id,
-}) => (
-  <WorkflowNodeProvider id={id}>
-    <GenericNodeContainer className="workflow-node-shell--interactive">
-      <GenericNodeRightContent>
-        <GenericNodeTitle />
-      </GenericNodeRightContent>
-      <GenericNodePorts />
-    </GenericNodeContainer>
-  </WorkflowNodeProvider>
-);
+  data,
+}) => {
+  const hasDescription = Boolean(data?.description?.trim());
+
+  return (
+    <WorkflowNodeProvider id={id}>
+      <GenericNodeContainer className="workflow-node-shell--interactive">
+        <GenericNodeRightContent
+          variant={hasDescription ? "title-with-description" : "title-only"}
+        >
+          <GenericNodeTitle />
+          {hasDescription ? <GenericNodeDescription /> : null}
+        </GenericNodeRightContent>
+        <GenericNodePorts />
+      </GenericNodeContainer>
+    </WorkflowNodeProvider>
+  );
+};

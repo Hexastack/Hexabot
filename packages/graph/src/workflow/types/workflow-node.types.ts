@@ -6,6 +6,7 @@
 
 import type {
   CompiledStep,
+  DefDefinitions,
   StepType,
   TaskDefinitions,
 } from "@hexabot-ai/agentic";
@@ -213,8 +214,29 @@ export type THighlightGroups = {
   [K in EOperatorType]?: { padding?: number; color?: string };
 };
 
+export type TNodeCardContentVariant = "title-only" | "title-with-description";
+
+export type TNodeCardMetrics = {
+  paddingX: number;
+  paddingY: number;
+  borderWidth: number;
+  borderRadius: number;
+  titleMinHeight: number;
+  descriptionIndent: number;
+  contentVariant: TNodeCardContentVariant;
+};
+
+export type TNodeMetricsEntry = {
+  dimensions: { width: number; height: number };
+  card?: TNodeCardMetrics;
+};
+
+export type TNodeMetrics = {
+  [K in ENodeType]?: TNodeMetricsEntry;
+};
+
 export type TNodeDimensions = {
-  [K in ENodeType]?: { width: number; height: number };
+  [K in ENodeType]?: TNodeMetricsEntry["dimensions"];
 };
 
 export type TEdgeStyles = {
@@ -224,6 +246,7 @@ export type TEdgeStyles = {
 export interface INodeConfig {
   highlights?: THighlightGroups;
   direction?: ResizeControlDirection;
+  nodeMetrics?: TNodeMetrics;
   dimensions?: TNodeDimensions;
   edges?: TEdgeStyles;
   nodes: {
@@ -239,6 +262,7 @@ export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
   flow?: CompiledStep[];
   tasks?: TaskDefinitions;
+  defs?: DefDefinitions;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
 }

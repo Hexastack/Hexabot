@@ -208,6 +208,9 @@ Core graph types and enums:
 - `WorkflowAction`
 - `WorkflowExecutionStateMap`
 - `INodeConfig`
+- `TNodeMetrics`
+- `TNodeCardMetrics`
+- `TNodeCardContentVariant`
 
 Utilities:
 
@@ -233,10 +236,16 @@ Graph build and render pipeline:
 
 Main customization points:
 
-- `src/workflow/constants/workflow.constants.ts`: default node themes, dimensions, edge styling, operator highlights, insert menu definitions.
+- `src/workflow/constants/workflow.constants.ts`: default node themes, canonical node metrics (`NODE_METRICS`), derived dimensions (`NODE_DIMENSIONS`), edge styling, operator highlights, insert menu definitions.
 - `src/workflow/utils/graph-builder/traverse.ts`: how compiled workflow structures become semantic nodes and edges.
 - `src/workflow/utils/port-rules.ts`: handle placement and directional behavior for layout/render parity.
 - `src/workflow/styles/*.css`: graph visuals (`xy-theme.css`, `node.css`, `button-edge.css`, `workflow-insert-menu.css`).
+
+Node metrics source of truth:
+
+- `INodeConfig.nodeMetrics` is the preferred source for node sizing and card chrome tokens.
+- `INodeConfig.dimensions` remains supported for backward compatibility and is used as a fallback when `nodeMetrics` is missing.
+- Layout (ELK + attachment placement) and visual card styling both consume the same metrics model to avoid drift.
 
 Key runtime hooks:
 

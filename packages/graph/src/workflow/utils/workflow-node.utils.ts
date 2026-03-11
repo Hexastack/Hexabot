@@ -13,6 +13,7 @@ import {
   EDGE_STYLES,
   NODE_DEFINITIONS,
   NODE_DIMENSIONS,
+  NODE_METRICS,
   OPERATOR_HIGHLIGHTS,
 } from "../constants/workflow.constants";
 import {
@@ -31,6 +32,7 @@ import { decorateSemanticGraph } from "./graph-builder/decorate";
 import { projectSemanticGraph } from "./graph-builder/project";
 import { traverseWorkflow } from "./graph-builder/traverse";
 import type { GroupMeta } from "./graph-builder/types";
+import { getWorkflowNodeDimensions } from "./node-metrics.utils";
 import {
   isAttachmentSourceHandle,
   resolveWorkflowPortRule,
@@ -42,7 +44,7 @@ const GROUP_PADDING_DECAY_PER_LEVEL = 16;
 const GROUP_BASE_ALPHA = 0.22;
 const GROUP_ALPHA_DECAY_PER_LEVEL = 0.05;
 const GROUP_MIN_ALPHA = 0.08;
-const EXTRA_NODE_OFFSET = 80;
+const EXTRA_NODE_OFFSET = 120;
 const EXTRA_NODE_GAP = 20;
 const getGroupPadding = (basePadding: number, level: number) =>
   Math.max(
@@ -59,8 +61,6 @@ type LayoutContext = {
   config?: INodeConfig;
 };
 
-const getNodeDimensions = (nodeType: ENodeType, config?: INodeConfig) =>
-  config?.dimensions?.[nodeType] || { height: 0, width: 0 };
 const isHorizontalDirection = (ctx: LayoutContext) =>
   (ctx.config?.direction ?? "horizontal") === "horizontal";
 const isAttachmentEdge = (edge: Edge) =>
@@ -94,7 +94,10 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
   const nodeIds = new Set(nodes.map((node) => node.id));
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
   const nodeDimensions = new Map(
-    nodes.map((node) => [node.id, getNodeDimensions(node.type, ctx.config)]),
+    nodes.map((node) => [
+      node.id,
+      getWorkflowNodeDimensions(node.type, ctx.config),
+    ]),
   );
   const nodePorts = new Map<string, ElkPort[]>();
 
@@ -129,12 +132,12 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
 
       const sourceDimensions =
         nodeDimensions.get(sourceId) ??
-        getNodeDimensions(sourceNode.type, ctx.config);
+        getWorkflowNodeDimensions(sourceNode.type, ctx.config);
       const maxAttachmentHeight = Math.max(
         ...targets.map((target) => {
           const dimensions =
             nodeDimensions.get(target.id) ??
-            getNodeDimensions(target.type, ctx.config);
+            getWorkflowNodeDimensions(target.type, ctx.config);
 
           return dimensions.height;
         }),
@@ -209,7 +212,8 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
       nodePorts.set(node.id, ports);
 
       const dimensions =
-        nodeDimensions.get(node.id) ?? getNodeDimensions(node.type, ctx.config);
+        nodeDimensions.get(node.id) ??
+        getWorkflowNodeDimensions(node.type, ctx.config);
 
       return {
         id: node.id,
@@ -297,10 +301,10 @@ const addExtraNodes = (
       return;
     }
 
-    const sourceDimensions = getNodeDimensions(sourceNode.type, ctx.config);
+    const sourceDimensions = getWorkflowNodeDimensions(sourceNode.type, ctx.config);
     const targetsWithDimensions = targets.map((target) => ({
       node: target,
-      dimensions: getNodeDimensions(target.type, ctx.config),
+      dimensions: getWorkflowNodeDimensions(target.type, ctx.config),
     }));
     const totalBreadth =
       targetsWithDimensions.reduce(
@@ -387,6 +391,7 @@ export const buildNodesAndEdges = async ({
   config,
   flow,
   tasks,
+  defs,
   actionCatalog,
   bindingCatalog,
 }: IBuildNodesAndEdgesProps): Promise<
@@ -400,6 +405,7 @@ export const buildNodesAndEdges = async ({
     flow,
     config,
     tasks,
+    defs,
     actionCatalog,
     bindingCatalog,
   });
@@ -428,6 +434,7 @@ export const buildNodesAndEdges = async ({
 export const getWorkflowDefaultConfig = (direction?: ResizeControlDirection) =>
   ({
     direction,
+    nodeMetrics: NODE_METRICS,
     dimensions: NODE_DIMENSIONS,
     highlights: OPERATOR_HIGHLIGHTS,
     edges: EDGE_STYLES,

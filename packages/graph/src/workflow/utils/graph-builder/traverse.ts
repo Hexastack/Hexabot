@@ -10,6 +10,7 @@ import {
   type CompiledLoopStep,
   type CompiledParallelStep,
   type CompiledStep,
+  type DefDefinitions,
   type TaskDefinitions,
 } from "@hexabot-ai/agentic";
 
@@ -68,6 +69,7 @@ type TraversalExit = {
 type GraphBuilderContext = {
   config: INodeConfig;
   tasks?: TaskDefinitions;
+  defs?: DefDefinitions;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
 };
@@ -444,6 +446,17 @@ const getBindingNodeTheme = (
   ...(bindingDefinition?.color ? { borderColor: bindingDefinition.color } : {}),
   ...(bindingDefinition?.icon ? { icon: bindingDefinition.icon } : {}),
 });
+const getBindingNodeDescription = ({
+  bindingName,
+  defs,
+}: {
+  bindingName: string;
+  defs: DefDefinitions | undefined;
+}) => {
+  const def = defs?.[bindingName] as { description?: unknown } | undefined;
+
+  return typeof def?.description === "string" ? def.description.trim() : undefined;
+};
 const addTaskAttachments = (
   state: TraverseState,
   {
@@ -500,7 +513,10 @@ const addTaskAttachments = (
           ...bindingNodeBaseData,
           title: bindingName,
           i18nTitle: undefined,
-          description: bindingKind,
+          description: getBindingNodeDescription({
+            bindingName,
+            defs: state.defs,
+          }),
           stepId,
           stepPath,
           taskName,
@@ -957,6 +973,7 @@ export const traverseWorkflow = ({
   flow,
   config,
   tasks,
+  defs,
   actionCatalog,
   bindingCatalog,
 }: {
@@ -971,6 +988,7 @@ export const traverseWorkflow = ({
   const state: TraverseState = {
     config,
     tasks,
+    defs,
     actionCatalog,
     bindingCatalog,
     registry,

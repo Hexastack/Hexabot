@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
+import type { CompiledStep, DefDefinitions, TaskDefinitions } from "@hexabot-ai/agentic";
 import type { ResizeControlDirection } from "@xyflow/system";
 import { useEffect, useRef, useState } from "react";
 
@@ -22,6 +22,7 @@ import {
 type UseWorkflowGraphLayoutProps = {
   compiledFlow?: CompiledStep[];
   tasks?: TaskDefinitions;
+  defs?: DefDefinitions;
   layoutDirection?: ResizeControlDirection;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
@@ -30,6 +31,7 @@ type UseWorkflowGraphLayoutProps = {
 export const useWorkflowGraphLayout = ({
   compiledFlow,
   tasks,
+  defs,
   layoutDirection,
   actionCatalog,
   bindingCatalog,
@@ -60,6 +62,7 @@ export const useWorkflowGraphLayout = ({
           config,
           flow: compiledFlow,
           tasks,
+          defs,
           actionCatalog,
           bindingCatalog,
         });
@@ -86,6 +89,7 @@ export const useWorkflowGraphLayout = ({
     actionCatalog,
     bindingCatalog,
     compiledFlow,
+    defs,
     layoutDirection,
     tasks,
   ]);

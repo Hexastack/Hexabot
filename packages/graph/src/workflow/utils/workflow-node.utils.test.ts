@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ENodeType,
+  type INodeConfig,
   type WorkflowAction,
   type WorkflowBindingDefinition,
 } from "../types/workflow-node.types";
@@ -61,7 +62,13 @@ const createActionCatalog = (
 };
 const createBindingCatalog = (
   bindingKinds: Array<
-    string | { kind: string; multiple?: boolean; color?: string; icon?: string }
+    | string
+    | {
+        kind: string;
+        multiple?: boolean;
+        color?: string;
+        icon?: string;
+      }
   >,
 ): ReadonlyMap<string, WorkflowBindingDefinition> => {
   return new Map<string, WorkflowBindingDefinition>(
@@ -147,6 +154,113 @@ describe("buildNodesAndEdges", () => {
     const taskNodeId = createStepNodeId("0:worker", "task");
 
     expect(graph.nodes.some((node) => node.id === taskNodeId)).toBe(true);
+  });
+
+  it("projects node card style variables from node metrics", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          model: "gpt_4o",
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        agent_action: ["model"],
+      }),
+      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+    });
+    const taskNode = graph.nodes.find(
+      (node) => node.id === createStepNodeId("0:agent", "task"),
+    );
+    const bindingNode = graph.nodes.find(
+      (node) => node.type === ENodeType.BINDING_SINGLE,
+    );
+    const taskStyle = taskNode?.style as Record<string, string | undefined>;
+    const bindingStyle = bindingNode?.style as Record<string, string | undefined>;
+
+    expect(taskStyle["--workflow-node-padding-x"]).toBe("16px");
+    expect(taskStyle["--workflow-node-padding-y"]).toBe("16px");
+    expect(taskStyle["--workflow-node-title-min-height"]).toBe("20px");
+    expect(taskStyle["--workflow-node-card-content-variant"]).toBe(
+      "title-with-description",
+    );
+    expect(bindingStyle["--workflow-node-card-content-variant"]).toBe(
+      "title-with-description",
+    );
+  });
+
+  it("uses workflow def description for mounted binding nodes", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          model: "main_model",
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildNodesAndEdges({
+      config: getWorkflowDefaultConfig("horizontal"),
+      flow,
+      tasks,
+      defs: {
+        main_model: {
+          kind: "model",
+          description: "Primary model used by this task",
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["model"],
+      }),
+      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+    });
+    const bindingNode = graph?.nodes.find(
+      (node) => node.type === ENodeType.BINDING_SINGLE,
+    );
+
+    expect((bindingNode?.data as { description?: string } | undefined)?.description).toBe(
+      "Primary model used by this task",
+    );
+  });
+
+  it("falls back to legacy dimensions when nodeMetrics is omitted", async () => {
+    const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
+    const tasks: TaskDefinitions = {
+      worker: {
+        action: "worker_action",
+        settings: {},
+      },
+    };
+    const defaultConfig = getWorkflowDefaultConfig("horizontal");
+    const legacyConfig: INodeConfig = {
+      ...defaultConfig,
+      nodeMetrics: undefined,
+    };
+    const graph = await buildNodesAndEdges({
+      config: legacyConfig,
+      flow,
+      tasks,
+      actionCatalog: createActionCatalog({
+        worker_action: [],
+      }),
+      bindingCatalog: new Map(),
+    });
+
+    expect(graph).toBeDefined();
+    const taskNode = graph?.nodes.find(
+      (node) => node.id === createStepNodeId("0:worker", "task"),
+    );
+
+    expect(taskNode?.width).toBe(defaultConfig.dimensions?.[ENodeType.TASK]?.width);
+    expect(taskNode?.height).toBe(defaultConfig.dimensions?.[ENodeType.TASK]?.height);
+    expect(taskNode?.style).toBeUndefined();
   });
 
   it("creates unique tool node IDs for multiple agent tasks using the same binding ref", async () => {
@@ -267,7 +381,7 @@ describe("buildNodesAndEdges", () => {
     expect(memoryNodes).toHaveLength(1);
     expect((memoryNodes[0].data as { title?: string }).title).toBe("profile");
     expect((memoryNodes[0].data as { description?: string }).description).toBe(
-      "memory",
+      undefined,
     );
     expect(placeholderNodes).toHaveLength(2);
     expect(
