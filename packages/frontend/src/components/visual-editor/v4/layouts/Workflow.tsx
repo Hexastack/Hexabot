@@ -40,12 +40,12 @@ import { useWorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { IWorkflow } from "@/types/workfow.types";
 
-import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import {
   ActionFormDrawer,
   type ActionFormDrawerCreateTarget,
@@ -66,9 +66,7 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowExecutionState } from "../hooks/useWorkflowExecutionState";
-import {
-  humanizeBindingKind,
-} from "../utils/binding-kind.utils";
+import { humanizeBindingKind } from "../utils/binding-kind.utils";
 import {
   createUniqueBindingName,
   normalizeBindingName,
@@ -80,9 +78,7 @@ import {
   toBindingRefs,
   unmountTaskBindingRef,
 } from "../utils/task-bindings.utils";
-import {
-  TOOL_BINDING_KIND,
-} from "../utils/tool-bindings.utils";
+import { TOOL_BINDING_KIND } from "../utils/tool-bindings.utils";
 import {
   getDisabledBindingRefs,
   isNonToolBindingKind,
@@ -91,6 +87,7 @@ import {
   createBaseDefinition,
   createTaskName,
 } from "../utils/workflow-definition.utils";
+
 import "./workflow-layout.css";
 
 const StyledBox = styled(Box)(() => ({
@@ -152,6 +149,7 @@ export const Workflow = () => {
   const { actions, actionsByName } = useWorkflowActionsCatalog();
   const { bindingsByName } = useWorkflowBindingsCatalog();
   const dialogs = useDialogs();
+  const entityDialogs = useEntityDialogs(EntityType.WORKFLOW);
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const isEmptyWorkflow = !definition?.flow?.length;
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
@@ -226,8 +224,7 @@ export const Workflow = () => {
     });
   }, [bindingsByName, definition, pendingBindingAdd]);
   const isBindingDrawerOpen = Boolean(
-    activeBindingKind &&
-      (pendingBindingAdd || editingBindingTarget),
+    activeBindingKind && (pendingBindingAdd || editingBindingTarget),
   );
   const handleInsert = useCallback(
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
@@ -379,8 +376,7 @@ export const Workflow = () => {
     const baseDefinition = createBaseDefinition();
     const baseYaml = WorkflowHelper.stringifyDefinition(baseDefinition);
 
-    dialogs.open(
-      WorkflowFormDialog,
+    entityDialogs.open(
       {
         defaultValues: null,
         presetValues: {
@@ -395,8 +391,7 @@ export const Workflow = () => {
     );
   };
   const handleEditWorkflow = (workflowToEdit: IWorkflow) => {
-    dialogs.open(
-      WorkflowFormDialog,
+    entityDialogs.open(
       {
         defaultValues: workflowToEdit,
       },
@@ -478,11 +473,7 @@ export const Workflow = () => {
     );
   }, [definition, dialogs, handleSaveWorkflowSettings, isDefinitionSaving]);
   const handleAddBinding = useCallback(
-    ({
-      taskName,
-      bindingKind,
-      ...payload
-    }: WorkflowBindingAddPayload) => {
+    ({ taskName, bindingKind, ...payload }: WorkflowBindingAddPayload) => {
       if (!definition || !definition.tasks[taskName]) {
         return;
       }
@@ -579,7 +570,9 @@ export const Workflow = () => {
         return;
       }
 
-      if (Object.prototype.hasOwnProperty.call(definition.defs ?? {}, bindingName)) {
+      if (
+        Object.prototype.hasOwnProperty.call(definition.defs ?? {}, bindingName)
+      ) {
         return;
       }
 
@@ -718,12 +711,7 @@ export const Workflow = () => {
       setEditingBindingTarget(null);
       setPendingBindingAdd(null);
     },
-    [
-      bindingsByName,
-      definition,
-      editingBindingTarget,
-      updateDefinitionState,
-    ],
+    [bindingsByName, definition, editingBindingTarget, updateDefinitionState],
   );
   const handleCloseBindingDrawer = useCallback(() => {
     setPendingBindingAdd(null);
@@ -783,11 +771,7 @@ export const Workflow = () => {
     [bindingsByName],
   );
   const handleRemoveBinding = useCallback(
-    ({
-      taskName,
-      bindingKind,
-      bindingName,
-    }: WorkflowBindingRemovePayload) => {
+    ({ taskName, bindingKind, bindingName }: WorkflowBindingRemovePayload) => {
       if (!definition || !definition.tasks[taskName]) {
         return;
       }

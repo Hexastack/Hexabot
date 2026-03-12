@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FC } from "react";
+import type { ComponentType } from "react";
 
 import { ContentTypeFormDialog } from "@/components/content-types/ContentTypeFormDialog";
 import { ContentFormDialog } from "@/components/contents/ContentFormDialog";
@@ -12,57 +12,42 @@ import { CredentialFormDialog } from "@/components/credentials/CredentialFormDia
 import { LabelFormDialog } from "@/components/labels/LabelFormDialog";
 import { LanguageFormDialog } from "@/components/languages/LanguageFormDialog";
 import { MemoryDefinitionFormDialog } from "@/components/memory-definitions/MemoryDefinitionFormDialog";
+import { MenuFormDialog } from "@/components/menu/MenuFormDialog";
 import { RoleFormDialog } from "@/components/roles/RoleFormDialog";
+import { SubscriberFormDialog } from "@/components/subscribers/SubscriberFormDialog";
 import { TranslationFormDialog } from "@/components/translations/TranslationFormDialog";
+import { WorkflowFormDialog } from "@/components/visual-editor/v4/components/forms/WorkflowFormDialog";
 import { EntityType } from "@/services/types";
-import { THook } from "@/types/base.types";
-import {
-  ComponentFormDialogProps,
-  ComponentFormProps,
-} from "@/types/common/dialogs.types";
+
+type PayloadFromDialog<TDialog> =
+  TDialog extends ComponentType<infer TProps>
+    ? TProps extends { payload: infer TPayload }
+      ? TPayload
+      : never
+    : never;
+
+type PresetValuesFromDialog<TDialog> =
+  PayloadFromDialog<TDialog> extends { presetValues?: infer TPresetValues }
+    ? TPresetValues
+    : never;
+
+const withPresetValues = <TDialog extends ComponentType<any>>(
+  dialog: TDialog,
+) => ({
+  dialog,
+  presetValues: undefined as PresetValuesFromDialog<TDialog> | undefined,
+});
 
 export const BASE_ADD_DIALOG_MAP = {
-  [EntityType.CONTENT_TYPE]: {
-    dialog: ContentTypeFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.CONTENT]: {
-    dialog: ContentFormDialog,
-    presetValues: {} as unknown as THook<{
-      entity: EntityType.CONTENT_TYPE;
-    }>["basic"],
-  },
-  [EntityType.CREDENTIAL]: {
-    dialog: CredentialFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.LANGUAGE]: {
-    dialog: LanguageFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.LABEL]: {
-    dialog: LabelFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.MEMORY_DEFINITION]: {
-    dialog: MemoryDefinitionFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.ROLE]: {
-    dialog: RoleFormDialog,
-    presetValues: undefined,
-  },
-  [EntityType.TRANSLATION]: {
-    dialog: TranslationFormDialog,
-    presetValues: undefined,
-  },
-} as const satisfies {
-  [E in THook["entity"]]?: {
-    dialog: FC<
-      ComponentFormDialogProps<
-        FC<ComponentFormProps<THook<{ entity: E }>["current"], any>>
-      >
-    >;
-    presetValues?: unknown;
-  };
-};
+  [EntityType.CONTENT_TYPE]: withPresetValues(ContentTypeFormDialog),
+  [EntityType.CONTENT]: withPresetValues(ContentFormDialog),
+  [EntityType.CREDENTIAL]: withPresetValues(CredentialFormDialog),
+  [EntityType.LANGUAGE]: withPresetValues(LanguageFormDialog),
+  [EntityType.LABEL]: withPresetValues(LabelFormDialog),
+  [EntityType.MEMORY_DEFINITION]: withPresetValues(MemoryDefinitionFormDialog),
+  [EntityType.MENU]: withPresetValues(MenuFormDialog),
+  [EntityType.ROLE]: withPresetValues(RoleFormDialog),
+  [EntityType.SUBSCRIBER]: withPresetValues(SubscriberFormDialog),
+  [EntityType.TRANSLATION]: withPresetValues(TranslationFormDialog),
+  [EntityType.WORKFLOW]: withPresetValues(WorkflowFormDialog),
+} as const;

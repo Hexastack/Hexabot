@@ -16,7 +16,7 @@ import {
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
-import { useDialogs } from "@/hooks/useDialogs";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -24,18 +24,16 @@ import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { SubscriberFormDialog } from "./SubscriberFormDialog";
-
 export const Subscribers = () => {
   const { t } = useTranslate();
-  const dialogs = useDialogs();
+  const entityDialogs = useEntityDialogs(EntityType.SUBSCRIBER);
   const actionColumns = useActionColumns<ISubscriber>(
     EntityType.SUBSCRIBER,
     [
       {
         action: ColumnActionType.Manage_Labels,
         onClick: (row) => {
-          dialogs.open(SubscriberFormDialog, { defaultValues: row });
+          entityDialogs.open({ defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },

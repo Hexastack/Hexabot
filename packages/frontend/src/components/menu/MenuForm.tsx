@@ -23,7 +23,6 @@ const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
 
 export type MenuFormData = {
   row?: IMenuItem;
-  rowId?: string;
   parentId?: string;
 };
 
