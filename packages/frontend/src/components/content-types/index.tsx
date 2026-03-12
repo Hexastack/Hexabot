@@ -7,41 +7,26 @@
 import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { CreateEntityButton } from "@/app-components/buttons/entities/CreateEntityButton";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
+import { useDeleteEntity } from "@/hooks/useDeleteEntity";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IContentType } from "@/types/content-type.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { ContentTypeFormDialog } from "./ContentTypeFormDialog";
-
 export const ContentTypes = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
   const router = useAppRouter();
-  const dialogs = useDialogs();
-  const options = {
-    onError: (error: Error) => {
-      toast.error(error);
-    },
-    onSuccess: () => {
-      toast.success(t("message.item_delete_success"));
-    },
-  };
-  const { mutate: deleteContentType } = useDelete(
-    EntityType.CONTENT_TYPE,
-    options,
-  );
+  const entityDialogs = useEntityDialogs(EntityType.CONTENT_TYPE);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.CONTENT_TYPE);
   const actionColumns = useActionColumns<IContentType>(
     EntityType.CONTENT_TYPE,
     [
@@ -52,19 +37,13 @@ export const ContentTypes = () => {
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
-          dialogs.open(ContentTypeFormDialog, { defaultValues: row });
+          entityDialogs.open({ defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteContentType(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -99,8 +78,7 @@ export const ContentTypes = () => {
       buttons={[
         {
           permissionAction: PermissionAction.CREATE,
-          onClick: () =>
-            dialogs.open(ContentTypeFormDialog, { defaultValues: null }),
+          children: <CreateEntityButton entity={EntityType.CONTENT_TYPE} />,
         },
       ]}
       columns={columns}

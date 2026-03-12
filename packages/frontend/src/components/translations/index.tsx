@@ -8,16 +8,15 @@ import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Languages, RefreshCw } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
-import { useDialogs } from "@/hooks/useDialogs";
+import { useDeleteEntity } from "@/hooks/useDeleteEntity";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -26,26 +25,17 @@ import { PermissionAction } from "@/types/permission.types";
 import { ITranslation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { TranslationFormDialog } from "./TranslationFormDialog";
-
 export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const dialogs = useDialogs();
+  const entityDialogs = useEntityDialogs(EntityType.TRANSLATION);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.TRANSLATION);
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
       hasCount: false,
     },
   );
-  const { mutate: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const { mutate: checkRefreshTranslations, isPending } =
     useRefreshTranslations({
       onError: () => {
@@ -61,19 +51,13 @@ export const Translations = () => {
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
-          dialogs.open(TranslationFormDialog, { defaultValues: row });
+          entityDialogs.open({ defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteTranslation(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],

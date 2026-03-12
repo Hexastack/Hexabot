@@ -8,60 +8,39 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Tags } from "lucide-react";
 import { useState } from "react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { CreateEntityButton } from "@/app-components/buttons/entities/CreateEntityButton";
+import { DeleteEntityButton } from "@/app-components/buttons/entities/DeleteEntityButton";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
+import { useDeleteEntity } from "@/hooks/useDeleteEntity";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ILabel } from "@/types/label.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { LabelFormDialog } from "./LabelFormDialog";
-
 export const Labels = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
-  const dialogs = useDialogs();
-  const options = {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  };
-  const { mutate: deleteLabel } = useDelete(EntityType.LABEL, options);
-  const { mutate: deleteLabels } = useDeleteMany(EntityType.LABEL, options);
+  const entityDialogs = useEntityDialogs(EntityType.LABEL);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.LABEL);
   const actionColumns = useActionColumns<ILabel>(
     EntityType.LABEL,
     [
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
-          dialogs.open(LabelFormDialog, {
-            defaultValues: row,
-          });
+          entityDialogs.open({ defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteLabel(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -144,21 +123,20 @@ export const Labels = () => {
       buttons={[
         {
           permissionAction: PermissionAction.CREATE,
-          onClick: () => dialogs.open(LabelFormDialog, { defaultValues: null }),
+          children: <CreateEntityButton entity={EntityType.LABEL} />,
         },
         {
           permissionAction: PermissionAction.DELETE,
-          onClick: async () => {
-            const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-              mode: "selection",
-              count: selectedLabels.length,
-            });
-
-            if (isConfirmed) {
-              deleteLabels(selectedLabels);
-            }
-          },
-          disabled: !selectedLabels.length,
+          children: (
+            <DeleteEntityButton
+              entity={EntityType.LABEL}
+              slotProps={{ disabled: !selectedLabels.length }}
+              confirmOptions={{
+                mode: "selection",
+                ids: selectedLabels,
+              }}
+            />
+          ),
         },
       ]}
       columns={columns}

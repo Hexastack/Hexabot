@@ -9,7 +9,6 @@ import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft, ArrowLeft } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import {
   ColumnActionType,
@@ -17,13 +16,13 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { useDialogs } from "@/hooks/useDialogs";
+import { useDeleteEntity } from "@/hooks/useDeleteEntity";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -32,14 +31,13 @@ import { IContent } from "@/types/content.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { ContentFormDialog } from "./ContentFormDialog";
-
 export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useAppRouter();
   const queryClient = useTanstackQueryClient();
-  const dialogs = useDialogs();
+  const entityDialogs = useEntityDialogs(EntityType.CONTENT);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.CONTENT);
   const hasPermission = useHasPermission();
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT, {
     onError: (error) => {
@@ -49,11 +47,6 @@ export const Contents = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: deleteContent } = useDelete(EntityType.CONTENT, {
-    onSuccess: () => {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
   const actionColumns = useActionColumns<IContent>(
     EntityType.CONTENT,
@@ -61,7 +54,7 @@ export const Contents = () => {
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
-          dialogs.open(ContentFormDialog, {
+          entityDialogs.open({
             defaultValues: row,
             presetValues: contentType,
           });
@@ -70,13 +63,7 @@ export const Contents = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteContent(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -176,7 +163,7 @@ export const Contents = () => {
         {
           permissionAction: PermissionAction.CREATE,
           onClick: () =>
-            dialogs.open(ContentFormDialog, {
+            entityDialogs.open({
               presetValues: contentType,
             }),
         },

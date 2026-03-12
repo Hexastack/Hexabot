@@ -6,19 +6,19 @@
 
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { Flag, Plus } from "lucide-react";
+import { Flag } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { CreateEntityButton } from "@/app-components/buttons/entities/CreateEntityButton";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useDialogs } from "@/hooks/useDialogs";
+import { useDeleteEntity } from "@/hooks/useDeleteEntity";
+import { useEntityDialogs } from "@/hooks/useEntityDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -27,12 +27,11 @@ import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { LanguageFormDialog } from "./LanguageFormDialog";
-
 export const Languages = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const dialogs = useDialogs();
+  const entityDialogs = useEntityDialogs(EntityType.LANGUAGE);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.LANGUAGE);
   const hasPermission = useHasPermission();
   const { mutate: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
@@ -40,14 +39,6 @@ export const Languages = () => {
     },
     onSuccess() {
       toast.success(t("message.success_save"));
-    },
-  });
-  const { mutate: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
     },
   });
   const queryClient = useTanstackQueryClient();
@@ -80,19 +71,13 @@ export const Languages = () => {
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
-          dialogs.open(LanguageFormDialog, { defaultValues: row });
+          entityDialogs.open({ defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteLanguage(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
         isDisabled: (row) => row.isDefault,
       },
@@ -173,11 +158,7 @@ export const Languages = () => {
       buttons={[
         {
           permissionAction: PermissionAction.CREATE,
-          children: t("button.add"),
-          startIcon: <Plus />,
-          onClick: () => {
-            dialogs.open(LanguageFormDialog, { defaultValues: null });
-          },
+          children: <CreateEntityButton entity={EntityType.LANGUAGE} />,
         },
       ]}
       columns={columns}
