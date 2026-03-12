@@ -30,12 +30,14 @@ const AutoCompleteWidgetWrapper = ({
   valueKey = "",
   labelKey = "",
   onChange,
+  enableEntityAddButton,
 }: AutoCompleteWidgetOptions & {
   label?: ReactNode;
   inputLabelSx?: unknown;
   value: any;
   entity: keyof IEntityMapTypes;
   onChange: (value: any) => void;
+  enableEntityAddButton?: boolean;
 }) => {
   return (
     <AutoCompleteEntitySelect<any, string, boolean>
@@ -55,6 +57,7 @@ const AutoCompleteWidgetWrapper = ({
           onChange("");
         }
       }}
+      enableEntityAddButton={enableEntityAddButton}
     />
   );
 };
@@ -70,7 +73,10 @@ export const AutoCompleteWidget = ({
 }: WidgetProps) => {
   const description = getDescription(schema as RJSFSchema, options);
   const label = (
-    <LabelWithTooltip label={fieldLabel || undefined} description={description} />
+    <LabelWithTooltip
+      label={fieldLabel || undefined}
+      description={description}
+    />
   );
   const inputLabelSx = mergeLabelSx(
     labelTooltipInputLabelSx,
