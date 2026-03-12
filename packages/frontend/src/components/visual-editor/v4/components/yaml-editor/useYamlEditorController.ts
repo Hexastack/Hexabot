@@ -25,7 +25,7 @@ import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
 export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
-  const { yaml, updateDefinitionState, workflow } = useWorkflow();
+  const { yaml, updateDefinitionState, workflow, taskIds } = useWorkflow();
   const {
     data: actions = [],
     isLoading: actionsLoading,
@@ -96,15 +96,17 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
     if (!monaco) return;
 
     completionDisposableRef.current?.dispose();
-    completionDisposableRef.current = registerYamlCompletionProvider(monaco, () => availableActions);
+    completionDisposableRef.current = registerYamlCompletionProvider(
+      monaco,
+      () => availableActions,
+      () => taskIds,
+    );
 
     return () => {
       completionDisposableRef.current?.dispose();
       completionDisposableRef.current = null;
     };
-    // we only want to re-run when `availableActions` changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableActions]);
+  }, [availableActions, taskIds]);
 
   useEffect(() => {
     return () => {

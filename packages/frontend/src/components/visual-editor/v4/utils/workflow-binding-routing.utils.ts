@@ -20,14 +20,14 @@ export const isNonToolBindingKind = (
 
 type GetDisabledBindingRefsArgs = {
   definition: WorkflowDefinition;
-  taskName: string;
+  ownerDefName: string;
   bindingKind: string;
   bindingsByName: ReadonlyMap<string, WorkflowBindingDefinition>;
 };
 
 export const getDisabledBindingRefs = ({
   definition,
-  taskName,
+  ownerDefName,
   bindingKind,
   bindingsByName,
 }: GetDisabledBindingRefsArgs): string[] => {
@@ -47,11 +47,11 @@ export const getDisabledBindingRefs = ({
     return [];
   }
 
-  const taskDefinition = definition.tasks[taskName];
+  const ownerDefinition = definition.defs[ownerDefName];
 
-  if (!taskDefinition) {
+  if (!ownerDefinition) {
     return [];
   }
 
-  return toBindingRefs(taskDefinition.bindings?.[bindingKind], true);
+  return toBindingRefs(ownerDefinition.bindings?.[bindingKind], true);
 };

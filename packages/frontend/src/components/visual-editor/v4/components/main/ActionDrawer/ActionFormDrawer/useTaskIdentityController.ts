@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import type { TaskDefinition } from "@hexabot-ai/agentic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -16,7 +16,7 @@ type UseTaskIdentityControllerParams = {
   actionName?: string;
   taskName?: string;
   taskDescription?: string;
-  tasks?: WorkflowDefinition["tasks"];
+  tasks?: Record<string, TaskDefinition>;
 };
 
 export const useTaskIdentityController = ({

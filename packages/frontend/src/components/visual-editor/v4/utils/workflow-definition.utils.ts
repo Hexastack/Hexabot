@@ -9,12 +9,17 @@ import {
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
   type CompiledStep,
+  type TaskDefinition,
   type WorkflowCompileOptions,
   type WorkflowDefinition,
+  extractTaskDefinitions,
   isSnakeCaseName,
   validateWorkflow,
   toSnakeCase,
 } from "@hexabot-ai/agentic";
+import { parse as parseYaml } from "yaml";
+
+import { isRecord } from "@/utils/object";
 
 /**
  * Build a minimal workflow definition with defaults and optional metadata.
@@ -26,7 +31,7 @@ export const createBaseDefinition = (): WorkflowDefinition => ({
       retries: { ...DEFAULT_RETRY_SETTINGS },
     },
   },
-  tasks: {},
+  defs: {},
   flow: [],
   outputs: {},
 });
@@ -55,8 +60,10 @@ export const normalizeTaskName = (value: string): string => {
  */
 export const createTaskName = (
   actionName: string,
-  tasks: WorkflowDefinition["tasks"],
+  defs: WorkflowDefinition["defs"],
+  taskDefinitions?: Record<string, TaskDefinition>,
 ) => {
+  const tasks = taskDefinitions ?? extractTaskDefinitions(defs ?? {});
   const baseName = normalizeTaskName(actionName) || "new_task";
   const normalizedBase = isSnakeCaseName(baseName) ? baseName : "new_task";
   let candidate = normalizedBase;
@@ -69,13 +76,37 @@ export const createTaskName = (
 
   return candidate;
 };
+export const extractTaskIdsFromYaml = (yaml: string): string[] => {
+  try {
+    const parsed = parseYaml(yaml);
+
+    if (!isRecord(parsed) || !isRecord(parsed.defs)) {
+      return [];
+    }
+
+    return Object.keys(
+      extractTaskDefinitions(parsed.defs as WorkflowDefinition["defs"]),
+    ).sort();
+  } catch {
+    return [];
+  }
+};
 
 export const getDefinition = (
   yaml: string,
   options: WorkflowCompileOptions,
 ): { definition: WorkflowDefinition; flow: CompiledStep[] } => {
+  const actionValidationMetadata = Object.fromEntries(
+    Object.entries(options.actions).map(([actionName, actionDefinition]) => [
+      actionName,
+      {
+        supportedBindings: actionDefinition.supportedBindings ?? [],
+      },
+    ]),
+  );
   const validation = validateWorkflow(yaml, {
     bindingKinds: options.bindingKinds,
+    actions: actionValidationMetadata,
   });
 
   if (!validation.success) {

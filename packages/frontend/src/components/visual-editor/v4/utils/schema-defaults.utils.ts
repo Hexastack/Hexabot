@@ -9,6 +9,7 @@ import { getDefaultFormState, RJSFSchema, UiSchema } from "@rjsf/utils";
 import { JSONSchema7 } from "json-schema";
 import { JSONSchema } from "monaco-yaml";
 
+import { isRecord } from "@/utils/object";
 import validator from "@/utils/rjsf-zod-validator";
 
 export const getSchemaDefaults = <T extends Record<string, JsonValue>>(
@@ -65,10 +66,6 @@ const normalizeDefaults = (
 };
 
 type SchemaProperties = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
 
 export const getSchemaProperties = <T extends SchemaProperties>(
   schema?: RJSFSchema,

@@ -22,6 +22,8 @@ export type WorkflowBindingDefinition = {
   multiple: boolean;
   color?: string;
   icon?: string;
+  supportedBindings?: string[];
+  actionPolicy?: "forbidden" | "optional" | "required";
 };
 
 type WorkflowBindingsCatalog = Record<string, WorkflowBindingDefinition>;
@@ -70,6 +72,8 @@ export const WorkflowBindingsProvider = ({ children }: PropsWithChildren) => {
               >[0],
             ),
             multiple: bindingDefinition.multiple ?? true,
+            supportedBindings: bindingDefinition.supportedBindings ?? [],
+            actionPolicy: bindingDefinition.actionPolicy ?? "optional",
           },
         ]),
       ),

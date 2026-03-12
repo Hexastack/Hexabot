@@ -5,13 +5,14 @@
  */
 
 import {
+  type DefDefinition,
   JsonValue,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
 
 import {
-  mountTaskBindingRef,
-  setTaskBindingRefs,
+  mountDefBindingRef,
+  setDefBindingRefs,
   toBindingRefs,
 } from "./task-bindings.utils";
 
@@ -25,9 +26,9 @@ const sanitizeToolDescription = (value?: string): string | undefined => {
 };
 const sanitizeToolSettings = (
   value?: Record<string, unknown>,
-): Record<string, JsonValue> | undefined => {
+): Record<string, JsonValue> => {
   if (!value || Object.keys(value).length === 0) {
-    return undefined;
+    return {};
   }
 
   return value as Record<string, JsonValue>;
@@ -48,12 +49,12 @@ const createToolDefinition = ({
     kind: TOOL_BINDING_KIND,
     action: actionName,
     ...(normalizedDescription ? { description: normalizedDescription } : {}),
-    ...(normalizedSettings ? { settings: normalizedSettings } : {}),
+    settings: normalizedSettings,
   };
 };
 
 export type CreateToolBindingDefinitionMutationArgs = {
-  taskName: string;
+  ownerDefName: string;
   bindingKind: string;
   bindingName: string;
   actionName: string;
@@ -64,7 +65,7 @@ export type CreateToolBindingDefinitionMutationArgs = {
 export const createToolBindingDefinitionMutation = (
   definition: WorkflowDefinition,
   {
-    taskName,
+    ownerDefName,
     bindingKind,
     bindingName,
     actionName,
@@ -72,9 +73,9 @@ export const createToolBindingDefinitionMutation = (
     settings,
   }: CreateToolBindingDefinitionMutationArgs,
 ): WorkflowDefinition => {
-  const taskDefinition = definition.tasks[taskName];
+  const ownerDefinition = definition.defs[ownerDefName];
 
-  if (!taskDefinition) {
+  if (!ownerDefinition) {
     return definition;
   }
 
@@ -84,14 +85,14 @@ export const createToolBindingDefinitionMutation = (
     return definition;
   }
 
-  const nextTaskDefinition = mountTaskBindingRef(
-    taskDefinition,
+  const nextOwnerDefinition = mountDefBindingRef(
+    ownerDefinition,
     bindingKind,
     bindingName,
     true,
   );
 
-  if (nextTaskDefinition === taskDefinition) {
+  if (nextOwnerDefinition === ownerDefinition) {
     return definition;
   }
 
@@ -100,16 +101,13 @@ export const createToolBindingDefinitionMutation = (
     defs: {
       ...currentDefs,
       [bindingName]: createToolDefinition({ actionName, description, settings }),
-    },
-    tasks: {
-      ...definition.tasks,
-      [taskName]: nextTaskDefinition,
+      [ownerDefName]: nextOwnerDefinition,
     },
   };
 };
 
 export type UpdateToolBindingDefinitionMutationArgs = {
-  taskName: string;
+  ownerDefName: string;
   bindingKind: string;
   currentBindingName: string;
   nextBindingName: string;
@@ -149,18 +147,24 @@ export const updateToolBindingDefinitionMutation = (
     delete nextDefs[currentBindingName];
   }
 
-  nextDefs[nextBindingName] = createToolDefinition({
+  const nextToolDefinition = createToolDefinition({
     actionName,
     description,
     settings,
-  });
+  }) as DefDefinition;
+  const currentBindings = currentDef.bindings;
 
-  const nextTasks = Object.fromEntries(
-    Object.entries(definition.tasks).map(([taskName, taskDefinition]) => {
-      const refs = toBindingRefs(taskDefinition.bindings?.[bindingKind], true);
+  nextDefs[nextBindingName] = {
+    ...nextToolDefinition,
+    ...(currentBindings ? { bindings: currentBindings } : {}),
+  };
+
+  const nextDefsWithRenamedRefs = Object.fromEntries(
+    Object.entries(nextDefs).map(([defName, defDefinition]) => {
+      const refs = toBindingRefs(defDefinition.bindings?.[bindingKind], true);
 
       if (!refs.includes(currentBindingName)) {
-        return [taskName, taskDefinition];
+        return [defName, defDefinition];
       }
 
       const replacedRefs = refs.map((ref) =>
@@ -169,15 +173,14 @@ export const updateToolBindingDefinitionMutation = (
       const dedupedRefs = Array.from(new Set(replacedRefs));
 
       return [
-        taskName,
-        setTaskBindingRefs(taskDefinition, bindingKind, dedupedRefs, true),
+        defName,
+        setDefBindingRefs(defDefinition, bindingKind, dedupedRefs, true),
       ];
     }),
-  ) as WorkflowDefinition["tasks"];
+  ) as WorkflowDefinition["defs"];
 
   return {
     ...definition,
-    defs: nextDefs,
-    tasks: nextTasks,
+    defs: nextDefsWithRenamedRefs,
   };
 };

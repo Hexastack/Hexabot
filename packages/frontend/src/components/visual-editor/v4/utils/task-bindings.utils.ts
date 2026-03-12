@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { TaskDefinition } from "@hexabot-ai/agentic";
+import type { DefDefinition } from "@hexabot-ai/agentic";
 
 export const toBindingRefs = (value: unknown, multiple: boolean): string[] => {
   if (multiple) {
@@ -33,14 +33,14 @@ export const toBindingRefs = (value: unknown, multiple: boolean): string[] => {
     .filter(Boolean);
 };
 
-const withTaskBindingRefs = (
-  taskDefinition: TaskDefinition,
+const withDefBindingRefs = <TDefDefinition extends DefDefinition>(
+  defDefinition: TDefDefinition,
   bindingKind: string,
   refs: string[],
   multiple: boolean,
-): TaskDefinition => {
+): TDefDefinition => {
   const nextBindings: Record<string, string | string[]> = {
-    ...(taskDefinition.bindings ?? {}),
+    ...(defDefinition.bindings ?? {}),
   };
 
   if (refs.length > 0) {
@@ -50,39 +50,40 @@ const withTaskBindingRefs = (
   }
 
   if (Object.keys(nextBindings).length === 0) {
-    const { bindings: _bindings, ...taskWithoutBindings } = taskDefinition;
+    const { bindings: _bindings, ...defWithoutBindings } = defDefinition;
 
-    return taskWithoutBindings;
+    return defWithoutBindings as TDefDefinition;
   }
 
   return {
-    ...taskDefinition,
+    ...defDefinition,
     bindings: nextBindings,
-  };
+  } as TDefDefinition;
 };
 
-export const setTaskBindingRefs = (
-  taskDefinition: TaskDefinition,
+export const setDefBindingRefs = <TDefDefinition extends DefDefinition>(
+  defDefinition: TDefDefinition,
   bindingKind: string,
   refs: string[],
   multiple: boolean,
-): TaskDefinition => withTaskBindingRefs(taskDefinition, bindingKind, refs, multiple);
+): TDefDefinition =>
+  withDefBindingRefs(defDefinition, bindingKind, refs, multiple);
 
-export const mountTaskBindingRef = (
-  taskDefinition: TaskDefinition,
+export const mountDefBindingRef = <TDefDefinition extends DefDefinition>(
+  defDefinition: TDefDefinition,
   bindingKind: string,
   bindingRef: string,
   multiple: boolean,
-): TaskDefinition => {
-  const currentRefs = toBindingRefs(taskDefinition.bindings?.[bindingKind], multiple);
+): TDefDefinition => {
+  const currentRefs = toBindingRefs(defDefinition.bindings?.[bindingKind], multiple);
 
   if (multiple) {
     if (currentRefs.includes(bindingRef)) {
-      return taskDefinition;
+      return defDefinition;
     }
 
-    return setTaskBindingRefs(
-      taskDefinition,
+    return setDefBindingRefs(
+      defDefinition,
       bindingKind,
       [...currentRefs, bindingRef],
       true,
@@ -90,25 +91,30 @@ export const mountTaskBindingRef = (
   }
 
   if (currentRefs.length === 1 && currentRefs[0] === bindingRef) {
-    return taskDefinition;
+    return defDefinition;
   }
 
-  return setTaskBindingRefs(taskDefinition, bindingKind, [bindingRef], false);
+  return setDefBindingRefs(defDefinition, bindingKind, [bindingRef], false);
 };
 
-export const unmountTaskBindingRef = (
-  taskDefinition: TaskDefinition,
+export const unmountDefBindingRef = <TDefDefinition extends DefDefinition>(
+  defDefinition: TDefDefinition,
   bindingKind: string,
   bindingRef: string,
   multiple: boolean,
-): TaskDefinition => {
-  const currentRefs = toBindingRefs(taskDefinition.bindings?.[bindingKind], multiple);
+): TDefDefinition => {
+  const currentRefs = toBindingRefs(defDefinition.bindings?.[bindingKind], multiple);
 
   if (!currentRefs.includes(bindingRef)) {
-    return taskDefinition;
+    return defDefinition;
   }
 
   const nextRefs = currentRefs.filter((refName) => refName !== bindingRef);
 
-  return setTaskBindingRefs(taskDefinition, bindingKind, nextRefs, multiple);
+  return setDefBindingRefs(defDefinition, bindingKind, nextRefs, multiple);
 };
+
+// Deprecated aliases kept to avoid broad call-site churn.
+export const setTaskBindingRefs = setDefBindingRefs;
+export const mountTaskBindingRef = mountDefBindingRef;
+export const unmountTaskBindingRef = unmountDefBindingRef;

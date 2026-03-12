@@ -31,6 +31,7 @@ import {
 import { MouseEvent, useMemo, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
+import { isRecord } from "@/utils/object";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";
 
@@ -41,9 +42,6 @@ type ActionFieldUiOptions = {
   [key: string]: unknown;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
 const getObjectSchemaPropertyTitle = (
   schema: RJSFSchema,
   propertyName: string,

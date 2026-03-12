@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { isRecord } from "@/utils/object";
+
 type ActionButtonType = "web_url" | "postback";
 type ShowWhenCondition = {
   field: string;
@@ -29,9 +31,6 @@ const hasButtonType = (buttons: unknown, buttonType: ActionButtonType) => {
         (button as { type?: string }).type === buttonType,
     )
   );
-};
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 const getValueByPath = (
   source: Record<string, unknown> | undefined,

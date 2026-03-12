@@ -24,20 +24,32 @@ const createDefinition = (): WorkflowDefinition => ({
   defs: {
     openai_chatgpt: {
       kind: "model",
-      provider: "openai",
+      settings: {
+        provider: "openai",
+      },
     },
     profile: {
       kind: "memory",
-      provider: "redis",
+      settings: {
+        provider: "redis",
+      },
     },
-  },
-  tasks: {
     agent: {
+      kind: "task",
       action: "agent_action",
       bindings: {
         model: "openai_chatgpt",
         memory: ["profile"],
         tools: ["search"],
+      },
+    },
+    memory_router: {
+      kind: "memory_router",
+      settings: {
+        strategy: "all",
+      },
+      bindings: {
+        memory: ["profile"],
       },
     },
   },
@@ -64,7 +76,7 @@ describe("workflow-binding-routing.utils", () => {
     expect(
       getDisabledBindingRefs({
         definition,
-        taskName: "agent",
+        ownerDefName: "agent",
         bindingKind: "memory",
         bindingsByName,
       }),
@@ -78,11 +90,25 @@ describe("workflow-binding-routing.utils", () => {
     expect(
       getDisabledBindingRefs({
         definition,
-        taskName: "agent",
+        ownerDefName: "agent",
         bindingKind: "model",
         bindingsByName,
       }),
     ).toEqual([]);
+  });
+
+  it("supports disabled refs lookup for non-task owner defs", () => {
+    const definition = createDefinition();
+    const bindingsByName = createBindingsByName();
+
+    expect(
+      getDisabledBindingRefs({
+        definition,
+        ownerDefName: "memory_router",
+        bindingKind: "memory",
+        bindingsByName,
+      }),
+    ).toEqual(["profile"]);
   });
 
   it("returns an empty list for tools and unknown tasks", () => {
@@ -92,7 +118,7 @@ describe("workflow-binding-routing.utils", () => {
     expect(
       getDisabledBindingRefs({
         definition,
-        taskName: "agent",
+        ownerDefName: "agent",
         bindingKind: "tools",
         bindingsByName,
       }),
@@ -100,7 +126,7 @@ describe("workflow-binding-routing.utils", () => {
     expect(
       getDisabledBindingRefs({
         definition,
-        taskName: "unknown",
+        ownerDefName: "unknown",
         bindingKind: "memory",
         bindingsByName,
       }),

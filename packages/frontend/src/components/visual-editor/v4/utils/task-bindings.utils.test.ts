@@ -4,19 +4,30 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { TaskDefinition } from "@hexabot-ai/agentic";
+import type { DefDefinition, TaskDefinition } from "@hexabot-ai/agentic";
 import { describe, expect, it } from "vitest";
 
 import {
+  mountDefBindingRef,
   mountTaskBindingRef,
   toBindingRefs,
+  unmountDefBindingRef,
   unmountTaskBindingRef,
 } from "./task-bindings.utils";
 
 const createTaskDefinition = (
   bindings?: Record<string, string | string[]>,
 ): TaskDefinition => ({
+  kind: "task",
   action: "ai_generate_reply",
+  ...(bindings ? { bindings } : {}),
+});
+const createNonTaskDefinition = (
+  bindings?: Record<string, string | string[]>,
+): DefDefinition => ({
+  kind: "tools",
+  action: "search_web",
+  settings: {},
   ...(bindings ? { bindings } : {}),
 });
 
@@ -63,5 +74,14 @@ describe("task-bindings.utils", () => {
     const nextTask = mountTaskBindingRef(task, "model", "anthropic_claude", false);
 
     expect(nextTask.bindings?.model).toBe("anthropic_claude");
+  });
+
+  it("mounts and unmounts refs on non-task owner defs", () => {
+    const ownerDef = createNonTaskDefinition({ memory: ["profile"] });
+    const mounted = mountDefBindingRef(ownerDef, "memory", "session", true);
+    const unmounted = unmountDefBindingRef(mounted, "memory", "profile", true);
+
+    expect(mounted.bindings?.memory).toEqual(["profile", "session"]);
+    expect(unmounted.bindings?.memory).toEqual(["session"]);
   });
 });
