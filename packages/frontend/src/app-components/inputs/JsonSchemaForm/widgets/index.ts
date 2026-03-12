@@ -25,6 +25,8 @@ export const FORM_WIDGETS = {
   ...FORM_WIDGETS_BASE,
   TextWidget: JsonataTextWidget,
   TextareaWidget: JsonataTextWidget,
+  URLWidget: JsonataTextWidget,
+  UpDownWidget: JsonataTextWidget,
 } as const;
 
 export const getFormWidgets = (enableJsonataTextWidget = true) =>
