@@ -189,7 +189,11 @@ export const useActionFormDrawerController = ({
   });
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !taskDefinition) {
+      setInputData({});
+      setActionSettingsData({});
+      setExecutionSettingsData({});
+
       return;
     }
 
@@ -235,14 +239,9 @@ export const useActionFormDrawerController = ({
     setExecutionSettingsData(resolvedExecutionSettings);
     setIsUsingWorkflowExecutionDefaults(!hasExecutionOverride);
     setHasExecutionSettingsVisibleErrors(false);
-  }, [
-    isCreateMode,
-    open,
-    target,
-    taskDefinition?.inputs,
-    taskDefinition?.settings,
-    workflowExecutionSettingsDefaults,
-  ]);
+    // Hydrate only when opening the drawer or selecting a different node.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCreateMode, open, target]);
 
   useEffect(() => {
     if (open) {
