@@ -8,7 +8,6 @@ import type {
   CompiledStep,
   DefDefinitions,
   StepType,
-  TaskDefinitions,
 } from "@hexabot-ai/agentic";
 import type { Edge, Node, NodeProps } from "@xyflow/react";
 import type {
@@ -68,6 +67,8 @@ export type WorkflowBindingDefinition = {
   multiple: boolean;
   color?: string;
   icon?: string;
+  supportedBindings?: readonly string[];
+  actionPolicy?: "forbidden" | "optional" | "required";
 };
 export type WorkflowBindingCatalog = ReadonlyMap<
   string,
@@ -90,6 +91,8 @@ export type WorkflowNodeTheme = {
 export type CommonNodeDadaTypes = NodeDataTitle & {
   stepId?: string;
   taskName?: string;
+  ownerDefName?: string;
+  ownerBindingKind?: string;
   bindingKind?: string;
   bindingName?: string;
   description?: string;
@@ -120,14 +123,14 @@ export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER>
   onOpenInsertMenu?: OnOpenInsertMenu;
 };
 export type BindingPlaceholderData = CommonNodeData<ENodeType.BINDING_PLACEHOLDER> & {
-  taskName?: string;
+  ownerDefName?: string;
   bindingKind?: string;
 };
 
 export type WorkflowBindingBasePayload = {
   stepId?: string;
   stepPath?: FlowStepPath;
-  taskName: string;
+  ownerDefName: string;
   bindingKind: string;
   nodeId?: string;
 };
@@ -193,7 +196,9 @@ export type BindingOutPort =
 export type WorkflowPort = ELinkType | ConditionalOperatorOutPort | BindingOutPort;
 
 type WorkflowPortPrefix<P extends string> = P extends ENodeType.TASK
-  ? "task" | "bindingOut"
+  | ENodeType.BINDING_MULTI
+  | ENodeType.BINDING_SINGLE
+  ? P | "bindingOut"
   : P;
 
 export type Port<P extends string> = Extract<
@@ -261,7 +266,6 @@ export interface INodeConfig {
 export interface IBuildNodesAndEdgesProps {
   config: INodeConfig;
   flow?: CompiledStep[];
-  tasks?: TaskDefinitions;
   defs?: DefDefinitions;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;

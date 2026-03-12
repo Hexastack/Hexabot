@@ -18,7 +18,16 @@ const STEP_REMOVABLE_NODE_TYPES = new Set<StepRemovableNodeType>([
 
 export const GenericNodeDeleteButton = () => {
   const { translate, onRemoveStep, onRemoveBinding } = useWorkflowGraphHost();
-  const { id, type, stepId, stepPath, taskName, bindingKind, bindingName } =
+  const {
+    id,
+    type,
+    stepId,
+    stepPath,
+    ownerDefName,
+    ownerBindingKind,
+    bindingKind,
+    bindingName,
+  } =
     useWorkflowNode();
   const isStepRemovable =
     !!stepPath &&
@@ -28,8 +37,8 @@ export const GenericNodeDeleteButton = () => {
     onRemoveBinding &&
     stepPath &&
     stepId &&
-    taskName &&
-    bindingKind &&
+    ownerDefName &&
+    (ownerBindingKind || bindingKind) &&
     bindingName
   );
   const handleDelete = useCallback(
@@ -38,12 +47,18 @@ export const GenericNodeDeleteButton = () => {
       event.stopPropagation();
 
       if (isBindingRemovable) {
+        const resolvedBindingKind = ownerBindingKind ?? bindingKind;
+
+        if (!stepPath || !stepId || !ownerDefName || !bindingName || !resolvedBindingKind) {
+          return;
+        }
+
         onRemoveBinding?.({
           nodeId: id,
           stepId,
           stepPath,
-          taskName,
-          bindingKind,
+          ownerDefName,
+          bindingKind: resolvedBindingKind,
           bindingName,
         });
 
@@ -64,9 +79,10 @@ export const GenericNodeDeleteButton = () => {
       isStepRemovable,
       onRemoveBinding,
       onRemoveStep,
+      ownerBindingKind,
+      ownerDefName,
       stepId,
       stepPath,
-      taskName,
     ],
   );
 

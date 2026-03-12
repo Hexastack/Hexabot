@@ -274,16 +274,21 @@ const addExtraNodes = (
 ) => {
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const isHorizontal = isHorizontalDirection(ctx);
-  const adjacencyMap = edges.reduce((acc, { source, target }) => {
+  const adjacencyMap = new Map<string, GraphNode[]>();
+  const incomingAttachmentCounts = new Map<string, number>();
+
+  edges.forEach(({ source, target }) => {
     const sourceNode = nodesById.get(source);
     const targetNode = nodesById.get(target);
 
     if (sourceNode && targetNode) {
-      acc.set(source, [...(acc.get(source) || []), targetNode]);
+      adjacencyMap.set(source, [...(adjacencyMap.get(source) ?? []), targetNode]);
+      incomingAttachmentCounts.set(
+        target,
+        (incomingAttachmentCounts.get(target) ?? 0) + 1,
+      );
     }
-
-    return acc;
-  }, new Map<string, GraphNode[]>());
+  });
 
   if (adjacencyMap.size === 0) {
     return nodes;
@@ -293,14 +298,43 @@ const addExtraNodes = (
     string,
     Pick<GraphNode, "position" | "targetPosition" | "sourcePosition">
   >();
+  const resolvedPositions = new Map(nodes.map((node) => [node.id, node.position]));
+  const remainingIncoming = new Map(incomingAttachmentCounts);
+  const sourceIds = [...adjacencyMap.keys()];
+  const queue = sourceIds.filter(
+    (sourceId) => (remainingIncoming.get(sourceId) ?? 0) === 0,
+  );
+  const queued = new Set(queue);
+  const processed = new Set<string>();
 
-  adjacencyMap.forEach((targets, sourceId) => {
-    const sourceNode = nodesById.get(sourceId);
+  if (!queue.length) {
+    sourceIds.forEach((sourceId) => {
+      queue.push(sourceId);
+      queued.add(sourceId);
+    });
+  }
 
-    if (!sourceNode) {
+  const enqueueSource = (sourceId: string) => {
+    if (
+      !adjacencyMap.has(sourceId) ||
+      queued.has(sourceId) ||
+      processed.has(sourceId)
+    ) {
       return;
     }
 
+    queue.push(sourceId);
+    queued.add(sourceId);
+  };
+  const positionTargets = (sourceId: string) => {
+    const targets = adjacencyMap.get(sourceId);
+    const sourceNode = nodesById.get(sourceId);
+
+    if (!sourceNode || !targets?.length) {
+      return;
+    }
+
+    const sourcePosition = resolvedPositions.get(sourceId) ?? sourceNode.position;
     const sourceDimensions = getWorkflowNodeDimensions(sourceNode.type, ctx.config);
     const targetsWithDimensions = targets.map((target) => ({
       node: target,
@@ -315,25 +349,63 @@ const addExtraNodes = (
       EXTRA_NODE_GAP * (targets.length - 1);
 
     let cursor = isHorizontal
-      ? sourceNode.position.x + (sourceDimensions.width - totalBreadth) / 2
-      : sourceNode.position.y + (sourceDimensions.height - totalBreadth) / 2;
+      ? sourcePosition.x + (sourceDimensions.width - totalBreadth) / 2
+      : sourcePosition.y + (sourceDimensions.height - totalBreadth) / 2;
 
     targetsWithDimensions.forEach(({ node, dimensions }) => {
+      const position = isHorizontal
+        ? {
+            x: cursor,
+            y: sourcePosition.y + sourceDimensions.height + EXTRA_NODE_OFFSET,
+          }
+        : {
+            x: sourcePosition.x - EXTRA_NODE_OFFSET - dimensions.width,
+            y: cursor,
+          };
+
       overrides.set(node.id, {
-        position: isHorizontal
-          ? {
-              x: cursor,
-              y: sourceNode.position.y + sourceDimensions.height + EXTRA_NODE_OFFSET,
-            }
-          : {
-              x: sourceNode.position.x - EXTRA_NODE_OFFSET - dimensions.width,
-              y: cursor,
-            },
+        position,
         targetPosition: isHorizontal ? Position.Top : Position.Right,
         sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
       });
+      resolvedPositions.set(node.id, position);
       cursor += (isHorizontal ? dimensions.width : dimensions.height) + EXTRA_NODE_GAP;
+
+      const nextRemainingIncoming = (remainingIncoming.get(node.id) ?? 0) - 1;
+
+      remainingIncoming.set(node.id, nextRemainingIncoming);
+
+      if (nextRemainingIncoming <= 0) {
+        enqueueSource(node.id);
+      }
     });
+  };
+
+  // Nested attachment targets must read their parent's overridden coordinates.
+  while (queue.length) {
+    const sourceId = queue.shift();
+
+    if (!sourceId) {
+      continue;
+    }
+
+    queued.delete(sourceId);
+
+    if (processed.has(sourceId)) {
+      continue;
+    }
+
+    processed.add(sourceId);
+    positionTargets(sourceId);
+  }
+
+  sourceIds.forEach((sourceId) => {
+    if (processed.has(sourceId)) {
+      return;
+    }
+
+    positionTargets(sourceId);
+    processed.add(sourceId);
   });
 
   return nodes.map((node) => ({
@@ -390,7 +462,6 @@ const getGroupNodes = (
 export const buildNodesAndEdges = async ({
   config,
   flow,
-  tasks,
   defs,
   actionCatalog,
   bindingCatalog,
@@ -404,7 +475,6 @@ export const buildNodesAndEdges = async ({
   const traversal = traverseWorkflow({
     flow,
     config,
-    tasks,
     defs,
     actionCatalog,
     bindingCatalog,

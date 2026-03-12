@@ -4,15 +4,32 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { TaskDefinitions } from "@hexabot-ai/agentic";
+import {
+  isTaskDefinition,
+  type DefDefinitions,
+  type TaskDefinition,
+} from "@hexabot-ai/agentic";
+
+const getTaskDefinition = (
+  taskName: string,
+  defs?: DefDefinitions,
+): TaskDefinition | undefined => {
+  const definition = defs?.[taskName];
+
+  if (!definition || !isTaskDefinition(definition)) {
+    return undefined;
+  }
+
+  return definition;
+};
 
 export const getTaskDescription = (
   taskName: string,
-  tasks?: TaskDefinitions,
+  defs?: DefDefinitions,
 ): string => {
-  return tasks?.[taskName]?.description ?? "No description provided.";
+  return getTaskDefinition(taskName, defs)?.description ?? "No description provided.";
 };
 
-export const getTaskAction = (taskName: string, tasks?: TaskDefinitions) => {
-  return tasks?.[taskName]?.action;
+export const getTaskAction = (taskName: string, defs?: DefDefinitions) => {
+  return getTaskDefinition(taskName, defs)?.action;
 };

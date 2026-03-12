@@ -5,12 +5,13 @@
  */
 
 import {
+  type DefDefinitions,
   StepType,
   type CompiledConditionalStep,
   type CompiledLoopStep,
   type CompiledParallelStep,
   type CompiledStep,
-  type TaskDefinitions,
+  type TaskDefinition,
 } from "@hexabot-ai/agentic";
 import { describe, expect, it } from "vitest";
 
@@ -37,7 +38,21 @@ const taskStep = (id: string, taskName: string): CompiledStep => {
     taskName,
   };
 };
-const baseTasks = (taskNames: string[]): TaskDefinitions => {
+
+type TestTaskDefinitions = Record<string, Omit<TaskDefinition, "kind">>;
+
+const withTaskKind = (tasks: TestTaskDefinitions): DefDefinitions => {
+  return Object.fromEntries(
+    Object.entries(tasks).map(([taskName, taskDefinition]) => [
+      taskName,
+      {
+        kind: "task",
+        ...taskDefinition,
+      },
+    ]),
+  );
+};
+const baseTasks = (taskNames: string[]): TestTaskDefinitions => {
   return taskNames.reduce((acc, taskName) => {
     acc[taskName] = {
       action: `action_${taskName}`,
@@ -45,7 +60,7 @@ const baseTasks = (taskNames: string[]): TaskDefinitions => {
     };
 
     return acc;
-  }, {} as TaskDefinitions);
+  }, {} as TestTaskDefinitions);
 };
 const createActionCatalog = (
   bindingsByAction: Record<string, readonly string[]>,
@@ -68,6 +83,8 @@ const createBindingCatalog = (
         multiple?: boolean;
         color?: string;
         icon?: string;
+        supportedBindings?: readonly string[];
+        actionPolicy?: "forbidden" | "optional" | "required";
       }
   >,
 ): ReadonlyMap<string, WorkflowBindingDefinition> => {
@@ -90,6 +107,8 @@ const createBindingCatalog = (
           multiple: bindingKind.multiple ?? true,
           color: bindingKind.color,
           icon: bindingKind.icon,
+          supportedBindings: bindingKind.supportedBindings,
+          actionPolicy: bindingKind.actionPolicy,
         },
       ];
     }),
@@ -98,18 +117,23 @@ const createBindingCatalog = (
 const buildGraph = async ({
   flow,
   tasks,
+  defs = {},
   actionCatalog = new Map(),
   bindingCatalog = new Map(),
 }: {
   flow: CompiledStep[];
-  tasks: TaskDefinitions;
+  tasks: TestTaskDefinitions;
+  defs?: DefDefinitions;
   actionCatalog?: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog?: ReadonlyMap<string, WorkflowBindingDefinition>;
 }) => {
   const graph = await buildNodesAndEdges({
     config: getWorkflowDefaultConfig("horizontal"),
     flow,
-    tasks,
+    defs: {
+      ...defs,
+      ...withTaskKind(tasks),
+    },
     actionCatalog,
     bindingCatalog,
   });
@@ -133,11 +157,27 @@ const getNodePorts = (
 
   return ports.map((port) => (typeof port === "string" ? port : port.id));
 };
+const getNodeTitle = (node: { data?: unknown }): string | undefined => {
+  const data =
+    node.data && typeof node.data === "object"
+      ? (node.data as Record<string, unknown>)
+      : undefined;
+
+  return typeof data?.title === "string" ? data.title : undefined;
+};
+const getNodeOwnerDefName = (node: { data?: unknown }): string | undefined => {
+  const data =
+    node.data && typeof node.data === "object"
+      ? (node.data as Record<string, unknown>)
+      : undefined;
+
+  return typeof data?.ownerDefName === "string" ? data.ownerDefName : undefined;
+};
 
 describe("buildNodesAndEdges", () => {
   it("always renders action steps as task nodes", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         settings: {},
@@ -158,7 +198,7 @@ describe("buildNodesAndEdges", () => {
 
   it("projects node card style variables from node metrics", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         bindings: {
@@ -197,7 +237,7 @@ describe("buildNodesAndEdges", () => {
 
   it("uses workflow def description for mounted binding nodes", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         bindings: {
@@ -209,11 +249,12 @@ describe("buildNodesAndEdges", () => {
     const graph = await buildNodesAndEdges({
       config: getWorkflowDefaultConfig("horizontal"),
       flow,
-      tasks,
       defs: {
+        ...withTaskKind(tasks),
         main_model: {
           kind: "model",
           description: "Primary model used by this task",
+          settings: {},
         },
       },
       actionCatalog: createActionCatalog({
@@ -232,7 +273,7 @@ describe("buildNodesAndEdges", () => {
 
   it("falls back to legacy dimensions when nodeMetrics is omitted", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         settings: {},
@@ -246,7 +287,7 @@ describe("buildNodesAndEdges", () => {
     const graph = await buildNodesAndEdges({
       config: legacyConfig,
       flow,
-      tasks,
+      defs: withTaskKind(tasks),
       actionCatalog: createActionCatalog({
         worker_action: [],
       }),
@@ -268,7 +309,7 @@ describe("buildNodesAndEdges", () => {
       taskStep("0:first_agent", "first_agent"),
       taskStep("1:second_agent", "second_agent"),
     ];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       first_agent: {
         action: "agent_action_a",
         bindings: {
@@ -307,7 +348,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders mounted tool bindings from task.bindings.tools", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         bindings: {
@@ -348,7 +389,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders mounted memory bindings through generic multi-binding pipeline", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         bindings: {
@@ -402,9 +443,280 @@ describe("buildNodesAndEdges", () => {
     ).toBe(true);
   });
 
+  it("renders nested binding attachments from mounted binding defs", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TestTaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          tools: ["search_tool"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        search_tool: {
+          kind: "tools",
+          action: "search_action",
+          settings: {},
+          bindings: {
+            memory: ["profile_memory"],
+          },
+        },
+        profile_memory: {
+          kind: "memory",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+        search_action: ["memory"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "tools",
+          multiple: true,
+          actionPolicy: "required",
+          supportedBindings: ["model"],
+        },
+        { kind: "memory", multiple: true },
+        { kind: "model", multiple: false },
+      ]),
+    });
+    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const nestedMemoryNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "profile_memory",
+    );
+
+    expect(toolNode).toBeDefined();
+    expect(nestedMemoryNode).toBeDefined();
+    expect(
+      graph.edges.some(
+        (edge) =>
+          edge.source === toolNode?.id &&
+          edge.sourceHandle === "bindingOut-0-1-memory" &&
+          edge.target === nestedMemoryNode?.id,
+      ),
+    ).toBe(true);
+  });
+
+  it("positions nested binding placeholders below their owner binding node", async () => {
+    const flow: CompiledStep[] = [taskStep("0:ai_generate_reply", "ai_generate_reply")];
+    const tasks: TestTaskDefinitions = {
+      ai_generate_reply: {
+        action: "ai_generate_reply_action",
+        bindings: {
+          tools: ["ai_generate_reply_2"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        ai_generate_reply_2: {
+          kind: "tools",
+          action: "ai_generate_reply_action",
+          settings: {},
+          bindings: {
+            model: "model",
+          },
+        },
+        model: {
+          kind: "model",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        ai_generate_reply_action: ["tools", "model"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "tools",
+          multiple: true,
+          actionPolicy: "required",
+        },
+        { kind: "model", multiple: false },
+      ]),
+    });
+    const ownerBindingNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "ai_generate_reply_2",
+    );
+    const nestedPlaceholderNodes = graph.nodes.filter(
+      (node) =>
+        node.type === ENodeType.BINDING_PLACEHOLDER &&
+        getNodeOwnerDefName(node) === "ai_generate_reply_2",
+    );
+
+    expect(ownerBindingNode).toBeDefined();
+    expect(nestedPlaceholderNodes.length).toBeGreaterThan(0);
+
+    if (!ownerBindingNode) {
+      return;
+    }
+
+    nestedPlaceholderNodes.forEach((placeholderNode) => {
+      expect(placeholderNode.position.y).toBeGreaterThan(
+        ownerBindingNode.position.y + 100,
+      );
+    });
+  });
+
+  it("resolves required action-policy nested bindings from action allowlists", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TestTaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          tools: ["search_tool"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        search_tool: {
+          kind: "tools",
+          action: "search_action",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+        search_action: ["memory"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "tools",
+          multiple: true,
+          actionPolicy: "required",
+          supportedBindings: ["model"],
+        },
+        { kind: "memory", multiple: true },
+        { kind: "model", multiple: false },
+      ]),
+    });
+    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const nestedPlaceholder = graph.nodes.find(
+      (node) =>
+        node.type === ENodeType.BINDING_PLACEHOLDER &&
+        getNodeOwnerDefName(node) === "search_tool" &&
+        getNodeTitle(node) === "memory",
+    );
+
+    expect(toolNode).toBeDefined();
+    expect(getNodePorts(toolNode).includes("bindingOut-0-1-memory")).toBe(true);
+    expect(getNodePorts(toolNode).includes("bindingOut-0-1-model")).toBe(false);
+    expect(nestedPlaceholder).toBeDefined();
+  });
+
+  it("resolves optional action-policy nested bindings from kind allowlists", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TestTaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          tools: ["search_tool"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        search_tool: {
+          kind: "tools",
+          action: "search_action",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+        search_action: ["memory"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "tools",
+          multiple: true,
+          actionPolicy: "optional",
+          supportedBindings: ["model"],
+        },
+        { kind: "memory", multiple: true },
+        { kind: "model", multiple: false },
+      ]),
+    });
+    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const nestedPlaceholder = graph.nodes.find(
+      (node) =>
+        node.type === ENodeType.BINDING_PLACEHOLDER &&
+        getNodeOwnerDefName(node) === "search_tool" &&
+        getNodeTitle(node) === "model",
+    );
+
+    expect(toolNode).toBeDefined();
+    expect(getNodePorts(toolNode).includes("bindingOut-0-1-model")).toBe(true);
+    expect(getNodePorts(toolNode).includes("bindingOut-0-1-memory")).toBe(false);
+    expect(nestedPlaceholder).toBeDefined();
+  });
+
+  it("does not expose nested bindings when required action is missing or unresolved", async () => {
+    const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
+    const tasks: TestTaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          tools: ["search_tool"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        search_tool: {
+          kind: "tools",
+          action: "missing_action",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["tools"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        {
+          kind: "tools",
+          multiple: true,
+          actionPolicy: "required",
+          supportedBindings: ["memory"],
+        },
+        { kind: "memory", multiple: true },
+      ]),
+    });
+    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const nestedPlaceholders = graph.nodes.filter(
+      (node) =>
+        node.type === ENodeType.BINDING_PLACEHOLDER &&
+        getNodeOwnerDefName(node) === "search_tool",
+    );
+
+    expect(toolNode).toBeDefined();
+    expect(
+      getNodePorts(toolNode).some((port) => port.startsWith("bindingOut-")),
+    ).toBe(false);
+    expect(nestedPlaceholders).toHaveLength(0);
+  });
+
   it("applies binding color and icon metadata to mounted and placeholder nodes", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         bindings: {
@@ -450,7 +762,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders mounted single-ref model bindings from string task bindings", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         bindings: {
@@ -487,7 +799,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders model binding placeholder when model-capable action has no mounted model", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         settings: {},
@@ -521,7 +833,7 @@ describe("buildNodesAndEdges", () => {
 
   it("does not mount legacy settings.provider/model without task model binding", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         settings: {
@@ -549,7 +861,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders single-binding nodes for custom binding kinds when multiple=false", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         bindings: {
@@ -590,7 +902,7 @@ describe("buildNodesAndEdges", () => {
 
   it("renders binding placeholders for tasks with supported bindings", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         settings: {},
@@ -624,7 +936,7 @@ describe("buildNodesAndEdges", () => {
 
   it("filters unsupported binding kinds that are missing from the binding catalog", async () => {
     const flow: CompiledStep[] = [taskStep("0:worker", "worker")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       worker: {
         action: "worker_action",
         bindings: {
@@ -658,7 +970,7 @@ describe("buildNodesAndEdges", () => {
 
   it("does not mount legacy settings.tools without task bindings", async () => {
     const flow: CompiledStep[] = [taskStep("0:agent", "agent")];
-    const tasks: TaskDefinitions = {
+    const tasks: TestTaskDefinitions = {
       agent: {
         action: "agent_action",
         settings: {
@@ -992,7 +1304,7 @@ describe("buildNodesAndEdges", () => {
     const graph = await buildNodesAndEdges({
       config: getWorkflowDefaultConfig("horizontal"),
       flow: [],
-      tasks: {},
+      defs: {},
       actionCatalog: new Map(),
       bindingCatalog: new Map(),
     });
