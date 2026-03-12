@@ -73,6 +73,7 @@ export const aiModelBindingSchema = z.strictObject({
         entity: 'Credential',
         valueKey: 'id',
         labelKey: 'name',
+        enableEntityAddButton: true,
       },
     }),
   base_url: z
