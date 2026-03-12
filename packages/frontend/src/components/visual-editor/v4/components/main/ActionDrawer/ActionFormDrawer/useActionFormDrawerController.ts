@@ -190,6 +190,10 @@ export const useActionFormDrawerController = ({
 
   useEffect(() => {
     if (!open || !taskDefinition) {
+      setInputData({});
+      setActionSettingsData({});
+      setExecutionSettingsData({});
+
       return;
     }
 
