@@ -41,8 +41,9 @@ describe('WorkflowVersionController (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       definitionYml: WorkflowHelper.stringifyDefinition({
-        tasks: {
+        defs: {
           send_greeting: {
+            kind: 'task',
             action: 'send_text_message',
             inputs: { text: '="Hi"' },
           },
@@ -109,8 +110,9 @@ describe('WorkflowVersionController (TypeORM)', () => {
         action: WorkflowVersionAction.update,
         workflow: created.id,
         definitionYml: WorkflowHelper.stringifyDefinition({
-          tasks: {
+          defs: {
             send_greeting: {
+              kind: 'task',
               action: 'send_text_message',
               inputs: { text: '="Hello world"' },
             },

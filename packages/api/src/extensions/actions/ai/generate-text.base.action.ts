@@ -34,10 +34,10 @@ export abstract class AiGenerateTextBaseAction<
   }: ExecArgs<I, C, AiGenerateTextSettings>) {
     const logger = context.services.logger;
     const modelBinding = bindings.model;
-    const providerName = modelBinding?.provider ?? 'openai';
+    const providerName = modelBinding?.settings?.provider ?? 'openai';
     const modelId = this.resolveModelId(modelBinding);
     const credentials = await context.services.credentials.findOneValue(
-      modelBinding?.api_key,
+      modelBinding?.settings?.api_key,
     );
     const providerOptions = this.buildProviderInitOptions(
       providerName,

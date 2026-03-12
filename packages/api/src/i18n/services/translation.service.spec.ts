@@ -27,8 +27,9 @@ describe('TranslationService', () => {
       description: 'Workflow description',
       definition: {
         workflow: { description: 'Internal workflow description' },
-        tasks: {
+        defs: {
           send_text: {
+            kind: 'task',
             action: 'send_text_message',
             description: '=$t("Task description to ignore")',
             inputs: {
@@ -50,8 +51,9 @@ describe('TranslationService', () => {
       name: 'secondary',
       version: '0.1.0',
       definition: {
-        tasks: {
+        defs: {
           ask_choice: {
+            kind: 'task',
             action: 'send_quick_replies',
             settings: {
               prompt: '=$t("Settings prompt")',

@@ -108,7 +108,7 @@ describe('WorkflowVersionService (TypeORM)', () => {
             retries: { ...DEFAULT_RETRY_SETTINGS },
           },
         },
-        tasks: {},
+        defs: {},
         flow: [],
         outputs: {},
       });

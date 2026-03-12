@@ -13,8 +13,9 @@ import { stringify } from 'yaml';
  * until the next incoming message resumes the run.
  */
 export const defaultWorkflowDefinition: WorkflowDefinition = {
-  tasks: {
+  defs: {
     send_default_reply: {
+      kind: 'task',
       action: 'send_text_message',
       description: 'Send a basic acknowledgment using messaging actions.',
       inputs: {

@@ -45,8 +45,8 @@ describe('WorkflowRunService (TypeORM)', () => {
   let creatorId: string;
 
   const buildWorkflowDefinition = (): WorkflowDefinition => ({
-    tasks: {
-      greet: { action: 'greet' },
+    defs: {
+      greet: { kind: 'task', action: 'greet' },
     },
     flow: [{ do: 'greet' }],
     outputs: { result: '=1' },

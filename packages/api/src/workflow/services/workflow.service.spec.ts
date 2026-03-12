@@ -50,8 +50,8 @@ describe('WorkflowService (TypeORM)', () => {
         description: 'Test workflow definition',
       },
       definition: {
-        tasks: {
-          greet: { action: 'greet' },
+        defs: {
+          greet: { kind: 'task', action: 'greet' },
         },
         flow: [{ do: 'greet' }],
         outputs: { result: '=1' },

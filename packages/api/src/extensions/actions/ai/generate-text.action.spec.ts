@@ -77,12 +77,14 @@ describe('AiGenerateTextAction', () => {
     }> = {},
   ): any => ({
     model: {
-      provider: 'openai',
-      model_id: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
-      ...overrides,
+      settings: {
+        provider: 'openai',
+        model_id: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
     },
   });
 
@@ -292,7 +294,9 @@ describe('AiGenerateTextAction', () => {
         ...createModelBindings(),
         memory: {
           selected_profile: {
-            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+            settings: {
+              definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+            },
           },
         },
       } as any,
@@ -463,7 +467,7 @@ describe('AiGenerateTextAction', () => {
         context: createContext(),
         bindings: {
           model: {
-            openai_chatgpt: {
+            settings: {
               provider: 'openai',
             },
           },

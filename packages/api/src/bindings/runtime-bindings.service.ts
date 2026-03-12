@@ -26,6 +26,8 @@ export class RuntimeBindingsService {
     multiple,
     color,
     icon,
+    supportedBindings,
+    actionPolicy,
   }: RegisterRuntimeBindingKindParams): void {
     if (RuntimeBindingsService.registry.has(kind)) {
       throw new Error(
@@ -38,6 +40,8 @@ export class RuntimeBindingsService {
       multiple,
       color,
       icon,
+      supportedBindings,
+      actionPolicy,
     });
   }
 
@@ -92,6 +96,8 @@ export class RuntimeBindingsService {
           multiple: bindingDefinition.multiple,
           color: bindingDefinition.color,
           icon: bindingDefinition.icon,
+          supportedBindings: bindingDefinition.supportedBindings ?? [],
+          actionPolicy: bindingDefinition.actionPolicy ?? 'optional',
         },
       ]),
     );

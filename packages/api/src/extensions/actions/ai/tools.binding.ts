@@ -9,10 +9,7 @@ import z from 'zod';
 
 import { createBindingKind } from '@/bindings/create-binding-kind';
 
-export const aiToolBindingSchema = z.strictObject({
-  action: z.string().min(1),
-  settings: z.record(z.string(), z.unknown()).optional(),
-});
+export const aiToolBindingSchema = z.record(z.string(), z.unknown());
 
 declare global {
   interface RuntimeBindingKindRegistry {
@@ -24,6 +21,8 @@ export const ToolsBindingKind = createBindingKind({
   kind: 'tools',
   schema: aiToolBindingSchema,
   multiple: true,
+  actionPolicy: 'required',
+  supportedBindings: ['tools', 'model', 'memory'],
   color: '#f59e0b',
   icon: 'Wrench',
 });

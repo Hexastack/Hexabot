@@ -176,11 +176,13 @@ describe('AiBaseAction', () => {
       const options = action.buildProviderInitOptionsPublic(
         'custom',
         {
-          api_key: 'key',
-          base_url: 'https://example.com',
-          organization: 'org',
-          provider: 'openai',
-          model_id: 'gpt-4o-mini',
+          settings: {
+            api_key: 'key',
+            base_url: 'https://example.com',
+            organization: 'org',
+            provider: 'openai',
+            model_id: 'gpt-4o-mini',
+          },
         } as RuntimeBindings['model'],
         'key',
       );
@@ -200,7 +202,7 @@ describe('AiBaseAction', () => {
           'key',
         ),
       ).toThrow(
-        'No API key provided for provider "openai". Set bindings.model.<def>.api_key.',
+        'No API key provided for provider "openai". Set bindings.model.<def>.settings.api_key.',
       );
     });
   });
@@ -416,7 +418,9 @@ describe('AiBaseAction', () => {
     it('returns the model when provided', () => {
       expect(
         action.resolveModelIdPublic({
-          model_id: 'gpt-4o',
+          settings: {
+            model_id: 'gpt-4o',
+          },
         } as RuntimeBindings['model']),
       ).toBe('gpt-4o');
     });

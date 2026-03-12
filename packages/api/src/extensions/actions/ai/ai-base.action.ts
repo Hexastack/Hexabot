@@ -101,13 +101,14 @@ export abstract class AiBaseAction<
     credentials: string,
   ): ProviderInitOptions {
     const providerId = this.getProviderId(provider);
-    const apiKey = modelBinding?.api_key;
-    const baseURL = modelBinding?.base_url;
-    const organization = modelBinding?.organization;
+    const modelSettings = modelBinding?.settings;
+    const apiKey = modelSettings?.api_key;
+    const baseURL = modelSettings?.base_url;
+    const organization = modelSettings?.organization;
 
     if (!apiKey && this.shouldRequireApiKey(providerId)) {
       throw new Error(
-        `No API key provided for provider "${provider}". Set bindings.model.<def>.api_key.`,
+        `No API key provided for provider "${provider}". Set bindings.model.<def>.settings.api_key.`,
       );
     }
 
@@ -325,24 +326,30 @@ export abstract class AiBaseAction<
   protected isModelBindingConfig(
     value: unknown,
   ): value is RuntimeBindings['model'] {
-    const knownKeys: Array<keyof NonNullable<RuntimeBindings['model']>> = [
+    const knownKeys = [
       'provider',
       'model_id',
       'api_key',
       'base_url',
       'organization',
-    ];
+    ] as const;
+
+    if (!this.isPlainObject(value) || !this.isPlainObject(value.settings)) {
+      return false;
+    }
+
+    const settings = value.settings;
 
     return (
-      this.isPlainObject(value) &&
-      knownKeys.some((key) => key in value) &&
-      (value.model === undefined || typeof value.model === 'string') &&
-      (value.provider === undefined || typeof value.provider === 'string')
+      knownKeys.some((key) => key in settings) &&
+      (settings.model_id === undefined ||
+        typeof settings.model_id === 'string') &&
+      (settings.provider === undefined || typeof settings.provider === 'string')
     );
   }
 
   protected resolveModelId(modelBinding: RuntimeBindings['model']) {
-    const modelId = modelBinding?.model_id;
+    const modelId = modelBinding?.settings?.model_id;
 
     if (!modelId) {
       throw new Error(`A model is required to run ${this.name}.`);
@@ -491,10 +498,14 @@ export abstract class AiBaseAction<
 
     const selectedSlugs = new Set<string>();
     for (const [defName, binding] of Object.entries(memoryBindings)) {
-      const slug = idToSlug.get(binding.definition_id);
+      const definitionId = binding.settings?.definition_id;
+      const slug =
+        typeof definitionId === 'string'
+          ? idToSlug.get(definitionId)
+          : undefined;
       if (!slug) {
         throw new Error(
-          `Unable to resolve memory definition "${binding.definition_id}" from bindings.memory.${defName}.definition_id.`,
+          `Unable to resolve memory definition "${String(definitionId)}" from bindings.memory.${defName}.settings.definition_id.`,
         );
       }
 
@@ -643,7 +654,13 @@ export abstract class AiBaseAction<
       if (normalizedToolName.length === 0) {
         continue;
       }
-      const actionName = toolDefinition.action.trim() as ActionName;
+      const actionNameRaw = toolDefinition.action;
+      if (typeof actionNameRaw !== 'string' || actionNameRaw.trim() === '') {
+        throw new Error(
+          `Invalid tool action in bindings.tools.${normalizedToolName}.action`,
+        );
+      }
+      const actionName = actionNameRaw.trim() as ActionName;
       const action = actionService.get(actionName);
 
       tools[normalizedToolName] = {
@@ -651,7 +668,7 @@ export abstract class AiBaseAction<
         inputSchema: action.inputSchema,
         outputSchema: action.outputSchema,
         execute: async (input) =>
-          action.run(input, context, toolDefinition.settings),
+          action.run(input, context, toolDefinition.settings as any),
       };
     }
 
