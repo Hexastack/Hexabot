@@ -6,7 +6,15 @@
 
 import { z, type ZodIssue } from 'zod';
 
+const TASK_KIND = 'task';
+
 export type BindingKindSchema = z.ZodTypeAny;
+
+export type BindingActionPolicy = 'forbidden' | 'optional' | 'required';
+
+export type BindingValidationActionMetadata = {
+  supportedBindings?: readonly string[];
+};
 
 export type BindingKindDescriptor<
   TSchema extends z.ZodTypeAny = BindingKindSchema,
@@ -14,19 +22,29 @@ export type BindingKindDescriptor<
 > = {
   schema: TSchema;
   multiple: TMultiple;
+  supportedBindings?: readonly string[];
+  actionPolicy?: BindingActionPolicy;
 };
 
 export type BindingKindSchemas = Record<string, BindingKindDescriptor>;
 
+export type MountedBindingPayload<
+  TBindingKind extends BindingKindDescriptor = BindingKindDescriptor,
+> = {
+  settings: z.infer<TBindingKind['schema']>;
+  action?: string;
+  bindings?: Record<string, unknown>;
+};
+
 export type InferMountedBindingValue<
   TBindingKind extends BindingKindDescriptor = BindingKindDescriptor,
 > = TBindingKind['multiple'] extends true
-  ? Record<string, z.infer<TBindingKind['schema']>>
+  ? Record<string, MountedBindingPayload<TBindingKind>>
   : TBindingKind['multiple'] extends false
-    ? z.infer<TBindingKind['schema']>
+    ? MountedBindingPayload<TBindingKind>
     :
-        | z.infer<TBindingKind['schema']>
-        | Record<string, z.infer<TBindingKind['schema']>>;
+        | MountedBindingPayload<TBindingKind>
+        | Record<string, MountedBindingPayload<TBindingKind>>;
 
 export type InferWorkflowBindings<
   TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
@@ -36,45 +54,64 @@ export type InferWorkflowBindings<
   >;
 }>;
 
-export type DefLike = {
-  kind: string;
-  description?: string;
-  [key: string]: unknown;
-};
+export type CompiledTaskBindings = Record<string, unknown>;
 
 export type TaskBindingReferences = Record<string, string | string[]>;
 
-export type BindingAwareTaskLike = {
+export type DefLike = {
+  kind: string;
+  description?: string;
+  action?: string;
+  settings?: unknown;
   bindings?: TaskBindingReferences;
+  [key: string]: unknown;
 };
 
 export type BindingAwareWorkflowLike = {
-  defs?: Record<string, DefLike>;
-  tasks: Record<string, BindingAwareTaskLike>;
+  defs: Record<string, DefLike>;
 };
 
 export type ResolvedBindingDef = {
   kind: string;
-  payload: unknown;
+  payload: MountedBindingPayload;
 };
 
 export type ResolvedBindingDefs = Record<string, ResolvedBindingDef>;
 
-export type CompiledTaskBindings = Record<string, unknown>;
+export type ValidateAndResolveBindingsOptions = {
+  bindingKinds?: BindingKindSchemas;
+  actions?: Record<string, BindingValidationActionMetadata>;
+};
 
 type BindingValidationResult = {
   errors: string[];
   resolvedDefs: ResolvedBindingDefs;
 };
 
-const hasBindingsConfigured = (workflow: BindingAwareWorkflowLike): boolean => {
-  if (workflow.defs && Object.keys(workflow.defs).length > 0) {
-    return true;
+const resolveValidationOptions = (
+  options?: BindingKindSchemas | ValidateAndResolveBindingsOptions,
+): ValidateAndResolveBindingsOptions => {
+  if (!options) {
+    return {};
   }
 
-  return Object.values(workflow.tasks).some(
-    (task) => task.bindings && Object.keys(task.bindings).length > 0,
+  if ('bindingKinds' in options || 'actions' in options) {
+    return options as ValidateAndResolveBindingsOptions;
+  }
+
+  return { bindingKinds: options as BindingKindSchemas };
+};
+const hasBindingsConfigured = (workflow: BindingAwareWorkflowLike): boolean => {
+  const defs = workflow.defs ?? {};
+  const hasNonTaskDefs = Object.values(defs).some(
+    (definition) => definition.kind !== TASK_KIND,
   );
+  const hasNestedBindings = Object.values(defs).some(
+    (definition) =>
+      definition.bindings && Object.keys(definition.bindings).length > 0,
+  );
+
+  return hasNonTaskDefs || hasNestedBindings;
 };
 const formatZodIssues = (issues: ZodIssue[], prefix: string): string[] =>
   issues.map((issue) => {
@@ -82,11 +119,6 @@ const formatZodIssues = (issues: ZodIssue[], prefix: string): string[] =>
 
     return `${prefix}.${path}: ${issue.message}`;
   });
-const stripDefMeta = (definition: DefLike): unknown => {
-  const { kind: _kind, description: _description, ...payload } = definition;
-
-  return payload;
-};
 const collectDuplicateReferences = (refs: string[]): string[] => {
   const seen = new Set<string>();
   const duplicates = new Set<string>();
@@ -104,25 +136,136 @@ const collectDuplicateReferences = (refs: string[]): string[] => {
 };
 const toBindingRefs = (refs: string | string[]): string[] =>
   Array.isArray(refs) ? refs : [refs];
+const collectBindingRefs = (
+  bindings?: TaskBindingReferences,
+): Array<{ kind: string; ref: string }> => {
+  if (!bindings) {
+    return [];
+  }
+
+  const refs: Array<{ kind: string; ref: string }> = [];
+  for (const [bindingKind, bindingRefs] of Object.entries(bindings)) {
+    for (const ref of toBindingRefs(bindingRefs)) {
+      refs.push({ kind: bindingKind, ref });
+    }
+  }
+
+  return refs;
+};
+const detectBindingCycles = (defs: Record<string, DefLike>): string[] => {
+  const errors: string[] = [];
+  const reportedCycles = new Set<string>();
+  const states = new Map<string, 'visiting' | 'visited'>();
+  const stack: string[] = [];
+  const defNames = Object.keys(defs);
+  const visit = (defName: string) => {
+    const state = states.get(defName);
+    if (state === 'visited') {
+      return;
+    }
+
+    if (state === 'visiting') {
+      const cycleStart = stack.indexOf(defName);
+      if (cycleStart === -1) {
+        return;
+      }
+
+      const cyclePath = [...stack.slice(cycleStart), defName];
+      const cycleKey = cyclePath.join('->');
+
+      if (!reportedCycles.has(cycleKey)) {
+        reportedCycles.add(cycleKey);
+        errors.push(
+          `defs.${defName}.bindings: Circular binding reference detected (${cyclePath.join(' -> ')}).`,
+        );
+      }
+
+      return;
+    }
+
+    states.set(defName, 'visiting');
+    stack.push(defName);
+
+    const definition = defs[defName];
+    for (const { ref } of collectBindingRefs(definition?.bindings)) {
+      if (!Object.prototype.hasOwnProperty.call(defs, ref)) {
+        continue;
+      }
+
+      visit(ref);
+    }
+
+    stack.pop();
+    states.set(defName, 'visited');
+  };
+
+  for (const defName of defNames) {
+    visit(defName);
+  }
+
+  return errors;
+};
+const resolveSupportedBindingKinds = (
+  definition: DefLike,
+  defName: string,
+  kinds: BindingKindSchemas,
+  actions: Record<string, BindingValidationActionMetadata> | undefined,
+  errors: string[],
+): readonly string[] | null => {
+  if (definition.action) {
+    if (!actions) {
+      return null;
+    }
+
+    const action = actions[definition.action];
+    if (!action) {
+      errors.push(
+        `defs.${defName}.action: No action implementation provided for "${definition.action}".`,
+      );
+
+      return [];
+    }
+
+    return action.supportedBindings ?? [];
+  }
+
+  if (definition.kind === TASK_KIND) {
+    return [];
+  }
+
+  return kinds[definition.kind]?.supportedBindings ?? [];
+};
 
 export const validateAndResolveBindings = (
   workflow: BindingAwareWorkflowLike,
-  bindingKinds?: BindingKindSchemas,
+  options?: BindingKindSchemas | ValidateAndResolveBindingsOptions,
 ): BindingValidationResult => {
   const errors: string[] = [];
   const resolvedDefs: ResolvedBindingDefs = {};
   const defs = workflow.defs ?? {};
-  const kinds = bindingKinds ?? {};
+  const resolvedOptions = resolveValidationOptions(options);
+  const kinds = resolvedOptions.bindingKinds ?? {};
+  const actions = resolvedOptions.actions;
   const kindNames = Object.keys(kinds);
   const hasBindingUsage = hasBindingsConfigured(workflow);
+  const parsedSettingsByDefName = new Map<string, unknown>();
 
   if (hasBindingUsage && kindNames.length === 0) {
     errors.push(
-      'Workflows that declare defs or task bindings require a non-empty "bindingKinds" registry.',
+      'Workflows that declare non-task defs or nested bindings require a non-empty "bindingKinds" registry.',
     );
   }
 
   for (const [defName, defDefinition] of Object.entries(defs)) {
+    if (defDefinition.kind === TASK_KIND) {
+      if (defDefinition.action && actions && !actions[defDefinition.action]) {
+        errors.push(
+          `defs.${defName}.action: No action implementation provided for "${defDefinition.action}".`,
+        );
+      }
+      continue;
+    }
+
     const kindDefinition = kinds[defDefinition.kind];
 
     if (!kindDefinition) {
@@ -132,36 +275,61 @@ export const validateAndResolveBindings = (
       continue;
     }
 
+    const actionPolicy = kindDefinition.actionPolicy ?? 'optional';
+    if (actionPolicy === 'required' && !defDefinition.action) {
+      errors.push(
+        `defs.${defName}.action: Binding kind "${defDefinition.kind}" requires an action.`,
+      );
+    }
+    if (actionPolicy === 'forbidden' && defDefinition.action) {
+      errors.push(
+        `defs.${defName}.action: Binding kind "${defDefinition.kind}" does not allow action declarations.`,
+      );
+    }
+    if (defDefinition.action && actions && !actions[defDefinition.action]) {
+      errors.push(
+        `defs.${defName}.action: No action implementation provided for "${defDefinition.action}".`,
+      );
+    }
+
     const { schema } = kindDefinition;
-    const payload = stripDefMeta(defDefinition);
-    const parsedPayload = schema.safeParse(payload);
+    const parsedPayload = schema.safeParse(defDefinition.settings);
 
     if (!parsedPayload.success) {
       errors.push(
-        ...formatZodIssues(parsedPayload.error.issues, `defs.${defName}`),
+        ...formatZodIssues(
+          parsedPayload.error.issues,
+          `defs.${defName}.settings`,
+        ),
       );
       continue;
     }
 
-    resolvedDefs[defName] = {
-      kind: defDefinition.kind,
-      payload: parsedPayload.data,
-    };
+    parsedSettingsByDefName.set(defName, parsedPayload.data);
   }
 
-  for (const [taskName, taskDefinition] of Object.entries(workflow.tasks)) {
-    const taskBindings = taskDefinition.bindings;
+  for (const [defName, defDefinition] of Object.entries(defs)) {
+    const defBindings = defDefinition.bindings;
 
-    if (!taskBindings) {
+    if (!defBindings) {
       continue;
     }
 
-    for (const [bindingKind, bindingRefs] of Object.entries(taskBindings)) {
+    const supportedKinds = resolveSupportedBindingKinds(
+      defDefinition,
+      defName,
+      kinds,
+      actions,
+      errors,
+    );
+    const shouldValidateSupportedKinds = Array.isArray(supportedKinds);
+
+    for (const [bindingKind, bindingRefs] of Object.entries(defBindings)) {
       const kindDefinition = kinds[bindingKind];
 
       if (!kindDefinition) {
         errors.push(
-          `tasks.${taskName}.bindings.${bindingKind}: Unknown binding kind "${bindingKind}".`,
+          `defs.${defName}.bindings.${bindingKind}: Unknown binding kind "${bindingKind}".`,
         );
         continue;
       }
@@ -169,22 +337,34 @@ export const validateAndResolveBindings = (
       const { multiple } = kindDefinition;
       if (multiple && !Array.isArray(bindingRefs)) {
         errors.push(
-          `tasks.${taskName}.bindings.${bindingKind}: Expected an array of def references for binding kind "${bindingKind}".`,
+          `defs.${defName}.bindings.${bindingKind}: Expected an array of def references for binding kind "${bindingKind}".`,
         );
         continue;
       }
       if (!multiple && typeof bindingRefs !== 'string') {
         errors.push(
-          `tasks.${taskName}.bindings.${bindingKind}: Expected a single def reference string for binding kind "${bindingKind}".`,
+          `defs.${defName}.bindings.${bindingKind}: Expected a single def reference string for binding kind "${bindingKind}".`,
         );
         continue;
+      }
+
+      if (
+        shouldValidateSupportedKinds &&
+        supportedKinds &&
+        !supportedKinds.includes(bindingKind)
+      ) {
+        const supportedKindsLabel =
+          supportedKinds.length > 0 ? supportedKinds.join(', ') : '<none>';
+        errors.push(
+          `defs.${defName}.bindings.${bindingKind}: "${defDefinition.action ?? defDefinition.kind}" does not support binding kind "${bindingKind}". Supported binding kinds: ${supportedKindsLabel}.`,
+        );
       }
 
       const refs = toBindingRefs(bindingRefs);
       const duplicateRefs = collectDuplicateReferences(refs);
       if (duplicateRefs.length > 0) {
         errors.push(
-          `tasks.${taskName}.bindings.${bindingKind}: Duplicate def reference(s): ${duplicateRefs.join(', ')}`,
+          `defs.${defName}.bindings.${bindingKind}: Duplicate def reference(s): ${duplicateRefs.join(', ')}`,
         );
       }
 
@@ -193,18 +373,75 @@ export const validateAndResolveBindings = (
 
         if (!definition) {
           errors.push(
-            `tasks.${taskName}.bindings.${bindingKind}: Unknown def reference "${ref}".`,
+            `defs.${defName}.bindings.${bindingKind}: Unknown def reference "${ref}".`,
           );
           continue;
         }
 
         if (definition.kind !== bindingKind) {
           errors.push(
-            `tasks.${taskName}.bindings.${bindingKind}: Def "${ref}" has kind "${definition.kind}" and cannot be mounted as "${bindingKind}".`,
+            `defs.${defName}.bindings.${bindingKind}: Def "${ref}" has kind "${definition.kind}" and cannot be mounted as "${bindingKind}".`,
           );
         }
       }
     }
+  }
+
+  errors.push(...detectBindingCycles(defs));
+
+  const inProgress = new Set<string>();
+  const mountResolvedDef = (
+    defName: string,
+  ): MountedBindingPayload | undefined => {
+    const existing = resolvedDefs[defName];
+    if (existing) {
+      return existing.payload;
+    }
+
+    const definition = defs[defName];
+    if (!definition || definition.kind === TASK_KIND) {
+      return undefined;
+    }
+
+    const parsedSettings = parsedSettingsByDefName.get(defName);
+    if (parsedSettings === undefined) {
+      return undefined;
+    }
+
+    if (inProgress.has(defName)) {
+      return undefined;
+    }
+
+    inProgress.add(defName);
+    const nestedBindings = mountTaskBindings(
+      definition.bindings,
+      resolvedDefs,
+      kinds,
+      mountResolvedDef,
+    );
+    const payload: MountedBindingPayload = {
+      settings: parsedSettings,
+      ...(definition.action ? { action: definition.action } : {}),
+      ...(Object.keys(nestedBindings).length > 0
+        ? { bindings: nestedBindings }
+        : {}),
+    };
+
+    resolvedDefs[defName] = {
+      kind: definition.kind,
+      payload,
+    };
+    inProgress.delete(defName);
+
+    return payload;
+  };
+
+  for (const [defName, definition] of Object.entries(defs)) {
+    if (definition.kind === TASK_KIND) {
+      continue;
+    }
+
+    mountResolvedDef(defName);
   }
 
   return { errors, resolvedDefs };
@@ -214,6 +451,7 @@ export const mountTaskBindings = (
   taskBindings: TaskBindingReferences | undefined,
   resolvedDefs: ResolvedBindingDefs,
   bindingKinds?: BindingKindSchemas,
+  resolveDef?: (defName: string) => MountedBindingPayload | undefined,
 ): CompiledTaskBindings => {
   if (!taskBindings) {
     return {};
@@ -234,26 +472,28 @@ export const mountTaskBindings = (
         continue;
       }
 
-      const resolvedDef = resolvedDefs[ref];
+      const resolvedDefPayload =
+        resolvedDefs[ref]?.payload ?? resolveDef?.(ref) ?? undefined;
 
-      if (!resolvedDef) {
+      if (!resolvedDefPayload) {
         continue;
       }
 
-      mounted[bindingKind] = resolvedDef.payload;
+      mounted[bindingKind] = resolvedDefPayload;
       continue;
     }
 
     const mountedKindDefs: Record<string, unknown> = {};
 
     for (const ref of refs) {
-      const resolvedDef = resolvedDefs[ref];
+      const resolvedDefPayload =
+        resolvedDefs[ref]?.payload ?? resolveDef?.(ref) ?? undefined;
 
-      if (!resolvedDef) {
+      if (!resolvedDefPayload) {
         continue;
       }
 
-      mountedKindDefs[ref] = resolvedDef.payload;
+      mountedKindDefs[ref] = resolvedDefPayload;
     }
 
     if (Object.keys(mountedKindDefs).length > 0) {

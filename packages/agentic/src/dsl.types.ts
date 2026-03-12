@@ -197,7 +197,10 @@ export const SettingsSchema = BaseSettingsSchema.catchall(JsonValueSchema);
 const TaskBindingReferenceSchema = z.union([z.string(), z.array(z.string())]);
 const TaskBindingsSchema = z.record(z.string(), TaskBindingReferenceSchema);
 
+export const TASK_KIND = 'task' as const;
+
 export const TaskDefinitionSchema = z.strictObject({
+  kind: z.literal(TASK_KIND),
   description: z.string().optional(),
   action: z.string(),
   inputs: z.record(z.string(), JsonValueSchema).optional(),
@@ -205,12 +208,23 @@ export const TaskDefinitionSchema = z.strictObject({
   settings: SettingsSchema.optional(),
 });
 
-const DefDefinitionSchema = z
-  .object({
-    kind: z.string(),
-    description: z.string().optional(),
-  })
-  .catchall(z.unknown());
+const NonTaskDefinitionSchema = z.strictObject({
+  kind: z
+    .string()
+    .refine(
+      (kind) => kind !== TASK_KIND,
+      `kind "${TASK_KIND}" must follow the task definition shape.`,
+    ),
+  description: z.string().optional(),
+  action: z.string().optional(),
+  settings: z.record(z.string(), z.unknown()),
+  bindings: TaskBindingsSchema.optional(),
+});
+
+export const DefDefinitionSchema = z.union([
+  TaskDefinitionSchema,
+  NonTaskDefinitionSchema,
+]);
 const ConditionalWhenSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
   z.strictObject({
     condition: ExpressionStringSchema,
@@ -290,8 +304,7 @@ export const WorkflowDefinitionSchema = z.strictObject({
   inputs: InputsSchema.optional(),
   context: z.record(z.string(), JsonValueSchema).optional(),
   defaults: DefaultsSchema.optional(),
-  defs: z.record(z.string(), DefDefinitionSchema).optional(),
-  tasks: z.record(z.string(), TaskDefinitionSchema),
+  defs: z.record(z.string(), DefDefinitionSchema),
   flow: z.array(FlowStepSchema),
   outputs: z.record(z.string(), ExpressionStringSchema),
 });
@@ -304,16 +317,21 @@ export type TaskDefinition = z.infer<typeof TaskDefinitionSchema>;
 
 export type DefDefinition = z.infer<typeof DefDefinitionSchema>;
 
-export type TaskDefinitions = z.infer<typeof WorkflowDefinitionSchema>['tasks'];
-
 export type DefDefinitions = z.infer<typeof WorkflowDefinitionSchema>['defs'];
+
+export type TaskDefinitions = Record<string, TaskDefinition>;
 
 export type WorkflowMetadata = z.infer<typeof WorkflowMetadataSchema>;
 
 export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;
 
+export type WorkflowValidationActionMetadata = {
+  supportedBindings?: readonly string[];
+};
+
 export type ValidateWorkflowOptions = {
   bindingKinds?: BindingKindSchemas;
+  actions?: Record<string, WorkflowValidationActionMetadata>;
 };
 
 export type WorkflowValidationResult =
@@ -352,6 +370,20 @@ const collectTaskReferences = (steps: FlowStep[]): string[] => {
 
   return refs;
 };
+
+export const isTaskDefinition = (
+  definition: DefDefinition,
+): definition is TaskDefinition => definition.kind === TASK_KIND;
+
+export const extractTaskDefinitions = (defs: DefDefinitions): TaskDefinitions =>
+  Object.entries(defs).reduce<TaskDefinitions>((tasks, [defName, def]) => {
+    if (isTaskDefinition(def)) {
+      tasks[defName] = def;
+    }
+
+    return tasks;
+  }, {});
+
 const formatZodErrors = (issues: z.ZodIssue[]): string[] =>
   issues.map((issue) => {
     const path = issue.path.join('.') || '<root>';
@@ -386,9 +418,10 @@ export function validateWorkflow(
   }
 
   const errors: string[] = [];
+  const taskDefinitions = extractTaskDefinitions(parsed.data.defs);
   const referencedTasks = new Set(collectTaskReferences(parsed.data.flow));
   const missingTasks = Array.from(referencedTasks).filter(
-    (task) => !Object.prototype.hasOwnProperty.call(parsed.data.tasks, task),
+    (task) => !Object.prototype.hasOwnProperty.call(taskDefinitions, task),
   );
 
   if (missingTasks.length > 0) {
@@ -397,10 +430,10 @@ export function validateWorkflow(
     );
   }
 
-  const bindingValidation = validateAndResolveBindings(
-    parsed.data,
-    options?.bindingKinds,
-  );
+  const bindingValidation = validateAndResolveBindings(parsed.data, {
+    bindingKinds: options?.bindingKinds,
+    actions: options?.actions,
+  });
 
   if (bindingValidation.errors.length > 0) {
     errors.push(...bindingValidation.errors);

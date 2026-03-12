@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { FlowStep, WorkflowDefinition } from '../dsl.types';
+import {
+  TASK_KIND,
+  type FlowStep,
+  type WorkflowDefinition,
+} from '../dsl.types';
 
 const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -139,22 +143,25 @@ export const safeRenameTaskInDefinition = (
     return definition;
   }
 
-  if (
-    !Object.prototype.hasOwnProperty.call(definition.tasks, currentTaskName)
-  ) {
+  if (!Object.prototype.hasOwnProperty.call(definition.defs, currentTaskName)) {
     return definition;
   }
 
-  const renamedTasks = Object.entries(definition.tasks).reduce<
-    WorkflowDefinition['tasks']
-  >((acc, [taskName, task]) => {
-    acc[taskName === currentTaskName ? nextTaskName : taskName] = task;
+  const currentDefinition = definition.defs[currentTaskName];
+  if (!currentDefinition || currentDefinition.kind !== TASK_KIND) {
+    return definition;
+  }
+
+  const renamedDefs = Object.entries(definition.defs).reduce<
+    WorkflowDefinition['defs']
+  >((acc, [defName, def]) => {
+    acc[defName === currentTaskName ? nextTaskName : defName] = def;
 
     return acc;
   }, {});
   const definitionWithRenamedFlow: WorkflowDefinition = {
     ...definition,
-    tasks: renamedTasks,
+    defs: renamedDefs,
     flow: renameTaskInFlow(definition.flow, currentTaskName, nextTaskName),
   };
 

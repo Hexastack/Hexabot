@@ -10,11 +10,10 @@ import type { InferWorkflowBindings } from '../../src';
 
 export const bindingKinds = {
   tools: {
-    schema: z.strictObject({
-      action: z.string(),
-      settings: z.record(z.string(), z.unknown()).optional(),
-    }),
+    schema: z.record(z.string(), z.unknown()),
     multiple: true,
+    actionPolicy: 'required' as const,
+    supportedBindings: ['tools'],
   },
 };
 

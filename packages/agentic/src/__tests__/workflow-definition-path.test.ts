@@ -7,15 +7,17 @@
 import type { FlowStep, WorkflowDefinition } from '../dsl.types';
 import { Workflow, type FlowStepPath } from '../workflow';
 
+import { createTaskDefs } from './test-helpers';
+
 const createDefinition = (): WorkflowDefinition => ({
-  tasks: {
+  defs: createTaskDefs({
     task_one: { action: 'noop' },
     task_two: { action: 'noop' },
     task_three: { action: 'noop' },
     task_four: { action: 'noop' },
     task_five: { action: 'noop' },
     task_six: { action: 'noop' },
-  },
+  }),
   flow: [
     { do: 'task_one' },
     { parallel: { steps: [{ do: 'task_two' }, { do: 'task_three' }] } },
@@ -71,12 +73,12 @@ describe('workflow definition path helpers', () => {
       const definition = createDefinition();
       const updated = Workflow.setValueAtPath(
         definition,
-        ['tasks', 'task_one', 'action'],
+        ['defs', 'task_one', 'action'],
         'updated_action',
       );
 
       expect(updated).not.toBe(definition);
-      expect(updated.tasks.task_one.action).toBe('updated_action');
+      expect(updated.defs.task_one.action).toBe('updated_action');
       expect(updated.flow).toBe(definition.flow);
     });
 
@@ -112,8 +114,14 @@ describe('workflow definition path helpers', () => {
 
       expect(nextDefinition.flow).toHaveLength(2);
       expect(nextDefinition.flow[1]).toEqual(definition.flow[2]);
-      expect(nextDefinition.tasks.task_two).toEqual({ action: 'noop' });
-      expect(nextDefinition.tasks.task_three).toEqual({ action: 'noop' });
+      expect(nextDefinition.defs.task_two).toEqual({
+        kind: 'task',
+        action: 'noop',
+      });
+      expect(nextDefinition.defs.task_three).toEqual({
+        kind: 'task',
+        action: 'noop',
+      });
       expect(definition.flow).toHaveLength(3);
     });
 
@@ -133,8 +141,11 @@ describe('workflow definition path helpers', () => {
 
       expect(steps).toHaveLength(1);
       expect(steps[0]).toEqual({ do: 'task_three' });
-      expect(nextDefinition.tasks.task_two).toBeUndefined();
-      expect(nextDefinition.tasks.task_three).toEqual({ action: 'noop' });
+      expect(nextDefinition.defs.task_two).toBeUndefined();
+      expect(nextDefinition.defs.task_three).toEqual({
+        kind: 'task',
+        action: 'noop',
+      });
     });
 
     it('removes an unreferenced task definition when deleting a task step', () => {
@@ -144,7 +155,7 @@ describe('workflow definition path helpers', () => {
       expect(updated).not.toBeNull();
       const nextDefinition = updated as WorkflowDefinition;
 
-      expect(nextDefinition.tasks.task_one).toBeUndefined();
+      expect(nextDefinition.defs.task_one).toBeUndefined();
       expect(nextDefinition.flow).toEqual(definition.flow.slice(1));
     });
 
@@ -162,7 +173,10 @@ describe('workflow definition path helpers', () => {
       expect(updated).not.toBeNull();
       const nextDefinition = updated as WorkflowDefinition;
 
-      expect(nextDefinition.tasks.task_one).toEqual({ action: 'noop' });
+      expect(nextDefinition.defs.task_one).toEqual({
+        kind: 'task',
+        action: 'noop',
+      });
       expect(nextDefinition.flow).toEqual([
         ...definition.flow.slice(1),
         { do: 'task_one' },
@@ -175,7 +189,7 @@ describe('workflow definition path helpers', () => {
       expect(Workflow.removeStepAtPath(definition, [])).toBeNull();
       expect(Workflow.removeStepAtPath(definition, ['flow', '1'])).toBeNull();
       expect(
-        Workflow.removeStepAtPath(definition, ['tasks', 'task_one', 0]),
+        Workflow.removeStepAtPath(definition, ['defs', 'task_one', 0]),
       ).toBeNull();
       expect(Workflow.removeStepAtPath(definition, ['flow', 99])).toBeNull();
     });
@@ -242,7 +256,7 @@ describe('workflow definition path helpers', () => {
         Workflow.insertStepAtPath(definition, ['flow', '1'], step),
       ).toBeNull();
       expect(
-        Workflow.insertStepAtPath(definition, ['tasks', 'task_one', 0], step),
+        Workflow.insertStepAtPath(definition, ['defs', 'task_one', 0], step),
       ).toBeNull();
     });
   });
@@ -252,9 +266,10 @@ describe('workflow definition path helpers', () => {
       const baseDefinition = createDefinition();
       const definition: WorkflowDefinition = {
         ...baseDefinition,
-        tasks: {
-          ...baseDefinition.tasks,
+        defs: {
+          ...baseDefinition.defs,
           task_two: {
+            kind: 'task',
             action: 'noop',
             inputs: {
               from_dot: '=$output.task_one.value',
@@ -301,8 +316,11 @@ describe('workflow definition path helpers', () => {
         'renamed_task',
       );
 
-      expect(nextDefinition.tasks.task_one).toBeUndefined();
-      expect(nextDefinition.tasks.renamed_task).toEqual({ action: 'noop' });
+      expect(nextDefinition.defs.task_one).toBeUndefined();
+      expect(nextDefinition.defs.renamed_task).toEqual({
+        kind: 'task',
+        action: 'noop',
+      });
       expect(nextDefinition.flow).toEqual([
         { do: 'renamed_task' },
         {
@@ -327,7 +345,9 @@ describe('workflow definition path helpers', () => {
           },
         },
       ]);
-      expect(nextDefinition.tasks.task_two.inputs).toEqual({
+      expect(
+        (nextDefinition.defs.task_two as { inputs?: unknown }).inputs,
+      ).toEqual({
         from_dot: '=$output.renamed_task.value',
         from_single: "=$output['renamed_task']",
         from_double: '=$output["renamed_task"]',

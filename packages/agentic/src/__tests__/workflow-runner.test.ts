@@ -19,6 +19,8 @@ import {
 import { WorkflowRunner } from '../workflow-runner';
 import type { ExecutionState } from '../workflow-types';
 
+import { createTaskDefs } from './test-helpers';
+
 class MemoryEmitter implements WorkflowEventEmitterLike<{}> {
   private listeners: Partial<{
     [K in keyof WorkflowEventMap]: Array<
@@ -114,7 +116,7 @@ describe('WorkflowRunner', () => {
           retries: defaultRetries,
         },
       },
-      tasks: {
+      defs: createTaskDefs({
         inherit_task: {
           action: 'inspect_settings_action',
           inputs: { label: '="inherit"' },
@@ -137,7 +139,7 @@ describe('WorkflowRunner', () => {
             },
           },
         },
-      },
+      }),
       flow: [
         { do: 'inherit_task' },
         { do: 'override_timeout_task' },
@@ -217,7 +219,7 @@ describe('WorkflowRunner', () => {
     });
     const definition: WorkflowDefinition = {
       defaults: { settings: { timeout_ms: 0, retries: baseRetries } },
-      tasks: {
+      defs: createTaskDefs({
         first_task: {
           action: 'first_action',
         },
@@ -234,7 +236,7 @@ describe('WorkflowRunner', () => {
           action: 'echo_action',
           inputs: { message: '=$iteration.item' },
         },
-      },
+      }),
       flow: [
         {
           parallel: {
@@ -364,7 +366,7 @@ describe('WorkflowRunner', () => {
     });
     const definition: WorkflowDefinition = {
       defaults: { settings: { timeout_ms: 0, retries: baseRetries } },
-      tasks: {
+      defs: createTaskDefs({
         first_task: {
           action: 'first_action',
         },
@@ -375,7 +377,7 @@ describe('WorkflowRunner', () => {
           action: 'echo_action',
           inputs: { message: '=$iteration.item' },
         },
-      },
+      }),
       flow: [
         {
           parallel: {
@@ -472,12 +474,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         wait_step: {
           action: 'suspend_action',
           inputs: { prompt: '="Ping"' },
         },
-      },
+      }),
       flow: [{ do: 'wait_step' }],
       outputs: { reply: '=$output.wait_step.reply' },
     };
@@ -521,9 +523,9 @@ describe('WorkflowRunner', () => {
       execute: async () => ({ ok: true }),
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         ping_step: { action: 'ping_action' },
-      },
+      }),
       flow: [{ do: 'ping_step' }],
       outputs: { ok: '=$output.ping_step.ok' },
     };
@@ -599,12 +601,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         emit_step: {
           action: 'emit_action',
           inputs: { note: '=$input.note' },
         },
-      },
+      }),
       flow: [{ do: 'emit_step' }],
       outputs: { note: '=$output.emit_step.note' },
       inputs: {
@@ -643,12 +645,12 @@ describe('WorkflowRunner', () => {
       },
     );
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         fail_step: {
           action: 'failing_action',
           inputs: { value: 1 },
         },
-      },
+      }),
       flow: [{ do: 'fail_step' }],
       outputs: { value: '=$output.fail_step.value' },
     };
@@ -708,7 +710,7 @@ describe('WorkflowRunner', () => {
       execute: followExecute,
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         wait_step: {
           action: 'resume_suspend_action',
           inputs: { prompt: '="Ping?"' },
@@ -717,7 +719,7 @@ describe('WorkflowRunner', () => {
           action: 'follow_action',
           inputs: { message: '=$output.wait_step.reply' },
         },
-      },
+      }),
       flow: [{ do: 'wait_step' }, { do: 'follow_step' }],
       outputs: {
         reply: '=$output.wait_step.reply',
@@ -774,9 +776,9 @@ describe('WorkflowRunner', () => {
       execute: async ({ input }) => `echo:${input.value}`,
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         raw_step: { action: 'raw_action', inputs: { value: '="hello"' } },
-      },
+      }),
       flow: [{ do: 'raw_step' }],
       outputs: { final: '=$output.raw_step' },
     };
@@ -814,9 +816,9 @@ describe('WorkflowRunner', () => {
       execute: async () => ({ ok: true }),
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         only_step: { action: 'noop_action', inputs: {} },
-      },
+      }),
       flow: [{ do: 'only_step' }],
       outputs: { ok: '=$output.only_step.ok' },
     };
@@ -859,12 +861,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         wait_step: {
           action: 'loop_suspend_action',
           inputs: { prompt: '="Ping"' },
         },
-      },
+      }),
       flow: [
         {
           loop: {
@@ -957,12 +959,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         wait_step: {
           action: 'multi_suspend_action',
           inputs: {},
         },
-      },
+      }),
       flow: [{ do: 'wait_step' }],
       outputs: {
         firstReply: '=$output.wait_step.firstReply',
@@ -1052,12 +1054,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         wait_step: {
           action: 'single_suspend_action',
           inputs: {},
         },
-      },
+      }),
       flow: [{ do: 'wait_step' }],
       outputs: { reply: '=$output.wait_step.reply' },
     };
@@ -1124,12 +1126,12 @@ describe('WorkflowRunner', () => {
       execute: async ({ input }) => ({ delivered: input.text }),
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         send_goodbye: {
           action: 'send_action',
           inputs: { text: "=$i18n('Bye bye')" },
         },
-      },
+      }),
       flow: [{ do: 'send_goodbye' }],
       outputs: { message: '=$output.send_goodbye.delivered' },
     };
@@ -1167,12 +1169,12 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         count_step: {
           action: 'count_action',
           inputs: { amount: '=$input.amount' },
         },
-      },
+      }),
       flow: [{ do: 'count_step' }],
       outputs: { total: '=$output.count_step.total' },
       inputs: {
@@ -1236,9 +1238,9 @@ describe('WorkflowRunner', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         mutate_step: { action: 'mutate_action' },
-      },
+      }),
       flow: [{ do: 'mutate_step' }],
       outputs: { ok: '=$output.mutate_step.ok' },
     };

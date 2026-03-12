@@ -7,9 +7,8 @@ defs:
     settings:
       multiplier: 2
       bias: 1
-
-tasks:
   my_agent:
+    kind: task
     action: ai_agent
     inputs:
       prompt: "Caculate the score for x=10"

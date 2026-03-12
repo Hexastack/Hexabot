@@ -9,8 +9,8 @@ import { WorkflowDefinitionSchema } from '../dsl.types';
 describe('WorkflowDefinitionSchema', () => {
   it('parses a minimal valid workflow', () => {
     const minimal = {
-      tasks: {
-        noop: { action: 'call' },
+      defs: {
+        noop: { kind: 'task', action: 'call' },
       },
       flow: [{ do: 'noop' }],
       outputs: { result: '=$output.noop' },
@@ -21,8 +21,8 @@ describe('WorkflowDefinitionSchema', () => {
 
   it('rejects workflows with invalid JSONata expressions', () => {
     const invalid = {
-      tasks: {
-        noop: { action: 'call' },
+      defs: {
+        noop: { kind: 'task', action: 'call' },
       },
       flow: [{ do: 'noop' }],
       outputs: { result: '=$sum([1,2' }, // missing closing bracket makes JSONata invalid
@@ -35,8 +35,8 @@ describe('WorkflowDefinitionSchema', () => {
 
   it('rejects task output mappings', () => {
     const invalid = {
-      tasks: {
-        noop: { action: 'call', outputs: { value: '=1' } },
+      defs: {
+        noop: { kind: 'task', action: 'call', outputs: { value: '=1' } },
       },
       flow: [{ do: 'noop' }],
       outputs: { result: '=$output.noop' },
@@ -55,9 +55,8 @@ describe('WorkflowDefinitionSchema', () => {
           action: 'calculate_score',
           settings: { multiplier: 2 },
         },
-      },
-      tasks: {
         agent_step: {
+          kind: 'task',
           action: 'ai_agent',
           bindings: {
             tools: ['calculate'],
@@ -77,10 +76,10 @@ describe('WorkflowDefinitionSchema', () => {
         calculate: {
           kind: 'tools',
           action: 'calculate_score',
+          settings: {},
         },
-      },
-      tasks: {
         agent_step: {
+          kind: 'task',
           action: 'ai_agent',
           bindings: {
             tools: 42,

@@ -12,6 +12,8 @@ import { Settings, WorkflowDefinition, validateWorkflow } from '../dsl.types';
 import { Workflow, WorkflowEventEmitter } from '../workflow';
 import { EventEmitterLike } from '../workflow-event-emitter';
 
+import { createTaskDefs } from './test-helpers';
+
 class TestContext extends BaseWorkflowContext {
   public eventEmitter: EventEmitterLike = { emit: jest.fn(), on: jest.fn() };
 
@@ -55,7 +57,7 @@ describe('Workflow execution', () => {
           },
         },
       },
-      tasks: {
+      defs: createTaskDefs({
         greet_user: {
           action: 'greet_action',
           inputs: {
@@ -73,7 +75,7 @@ describe('Workflow execution', () => {
             },
           },
         },
-      },
+      }),
       flow: [{ do: 'greet_user' }],
       outputs: {
         final: "='Hello ' & $output.greet_user.name",
@@ -116,12 +118,12 @@ describe('Workflow execution', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         ask_user: {
           action: 'await_reply',
           inputs: { prompt: '="Ping"' },
         },
-      },
+      }),
       flow: [{ do: 'ask_user' }],
       outputs: { reply: '=$output.ask_user.reply' },
     };
@@ -164,12 +166,12 @@ describe('Workflow execution', () => {
       execute: async ({ input }) => ({ doubled: input.value * 2 }),
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         double_step: {
           action: 'double_value',
           inputs: { value: '=$input.value' },
         },
-      },
+      }),
       flow: [{ do: 'double_step' }],
       outputs: { result: '=$output.double_step.doubled' },
       inputs: {
@@ -213,7 +215,7 @@ describe('Workflow execution', () => {
 
   it('throws on invalid YAML input', () => {
     expect(() =>
-      Workflow.fromYaml('tasks: {}', {
+      Workflow.fromYaml('defs: {}', {
         actions: {} as Record<string, never>,
       }),
     ).toThrow(/Workflow validation failed/);
@@ -221,12 +223,12 @@ describe('Workflow execution', () => {
 
   it('stringifies a workflow definition to YAML', () => {
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         greet_user: {
           action: 'greet_action',
           inputs: { name: '=$input.name' },
         },
-      },
+      }),
       flow: [{ do: 'greet_user' }],
       outputs: { result: '=$output.greet_user.name' },
     };
@@ -251,12 +253,12 @@ describe('Workflow execution', () => {
       },
     );
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         failing_task: {
           action: 'failing_action',
           inputs: {},
         },
-      },
+      }),
       flow: [{ do: 'failing_task' }],
       outputs: { result: '=$output.failing_task' },
     };
@@ -293,12 +295,12 @@ describe('Workflow execution', () => {
       },
     });
     const definition: WorkflowDefinition = {
-      tasks: {
+      defs: createTaskDefs({
         pause_step: {
           action: 'suspending_action',
           inputs: {},
         },
-      },
+      }),
       flow: [{ do: 'pause_step' }],
       outputs: { reply: '=$output.pause_step.reply' },
     };
