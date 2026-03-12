@@ -6,12 +6,16 @@
 
 import { WorkflowDefinition, validateWorkflow } from '@hexabot-ai/agentic';
 
+import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
+
 export const parseWorkflowDefinition = (
   definitionYaml: string,
 ): WorkflowDefinition => {
   // @todo: we should rather use compile in order to check if
   // actions provided in the yml matches the workflow type (workflowTypes)
-  const validation = validateWorkflow(definitionYaml);
+  const validation = validateWorkflow(definitionYaml, {
+    bindingKinds: RuntimeBindingsService.getRegistry(),
+  });
 
   if (!validation.success) {
     throw new Error(`Invalid workflow YAML: ${validation.errors.join('; ')}`);

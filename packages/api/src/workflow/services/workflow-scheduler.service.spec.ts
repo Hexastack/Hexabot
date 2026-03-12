@@ -171,7 +171,6 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       description: 'Created by workflow scheduler test',
       type: WorkflowType.scheduled,
       schedule: workflow.schedule ?? '*/10 * * * * *',
-      memoryDefinitions: [],
       createdBy: workflow.createdBy,
     });
 

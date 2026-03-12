@@ -19,6 +19,10 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
+import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
+import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
+import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
+import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -48,6 +52,10 @@ import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
 
 import { WorkflowController } from './workflow.controller';
+
+const weatherBindingSchema = z.strictObject({
+  city: z.string().min(1),
+});
 
 class ManualOnlyAction extends BaseAction<
   Record<string, never>,
@@ -82,6 +90,7 @@ describe('WorkflowController (TypeORM)', () => {
   let agenticService: AgenticService;
   let logger: LoggerService;
   let actionService: ActionService;
+  let runtimeBindingsService: RuntimeBindingsService;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
 
@@ -92,7 +101,6 @@ describe('WorkflowController (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       inputSchema: conversationalWorkflowInputJsonSchema,
-      memoryDefinitions: [],
       createdBy: userFixtureIds.admin,
       direction: DirectionType.HORIZONTAL,
       x: 0,
@@ -124,13 +132,48 @@ describe('WorkflowController (TypeORM)', () => {
       },
     });
     module = testingModule;
-    [agenticService, workflowController, workflowService, actionService] =
-      await getMocks([
-        AgenticService,
-        WorkflowController,
-        WorkflowService,
-        ActionService,
-      ]);
+    [
+      agenticService,
+      workflowController,
+      workflowService,
+      actionService,
+      runtimeBindingsService,
+    ] = await getMocks([
+      AgenticService,
+      WorkflowController,
+      WorkflowService,
+      ActionService,
+      RuntimeBindingsService,
+    ]);
+    runtimeBindingsService.reset();
+    runtimeBindingsService.register({
+      kind: 'tools',
+      schema: aiToolBindingSchema,
+      multiple: true,
+      color: '#f59e0b',
+      icon: 'Wrench',
+    });
+    runtimeBindingsService.register({
+      kind: 'model',
+      schema: aiModelBindingSchema,
+      multiple: false,
+      color: '#ad46fc',
+      icon: 'Brain',
+    });
+    runtimeBindingsService.register({
+      kind: 'memory',
+      schema: aiMemoryBindingSchema,
+      multiple: true,
+      color: '#0ea5e9',
+      icon: 'Database',
+    });
+    runtimeBindingsService.register({
+      kind: 'weather',
+      schema: weatherBindingSchema,
+      multiple: false,
+      color: '#22c55e',
+      icon: 'CloudSun',
+    });
     logger = workflowController.logger;
     actionService.register(new SendTextMessageAction(actionService));
     actionService.register(new ManualOnlyAction(actionService));
@@ -195,6 +238,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(action?.inputSchema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
+      expect(action?.supportedBindings).toEqual([]);
     });
 
     it('filters actions by workflow type when provided', () => {
@@ -214,6 +258,56 @@ describe('WorkflowController (TypeORM)', () => {
       expect(() =>
         workflowController.findActions('invalid' as WorkflowType),
       ).toThrow(new BadRequestException('Invalid workflow type "invalid"'));
+    });
+  });
+
+  describe('findBindings', () => {
+    it('returns runtime binding schema definitions', () => {
+      const bindings = workflowController.findBindings();
+
+      expect(bindings.tools).toBeDefined();
+      expect(bindings.model).toBeDefined();
+      expect(bindings.memory).toBeDefined();
+      expect(bindings.weather).toBeDefined();
+      expect(bindings.tools.multiple).toBe(true);
+      expect(bindings.model.multiple).toBe(false);
+      expect(bindings.memory.multiple).toBe(true);
+      expect(bindings.weather.multiple).toBe(false);
+      expect(bindings.tools.color).toBe('#f59e0b');
+      expect(bindings.tools.icon).toBe('Wrench');
+      expect(bindings.model.color).toBe('#ad46fc');
+      expect(bindings.model.icon).toBe('Brain');
+      expect(bindings.memory.color).toBe('#0ea5e9');
+      expect(bindings.memory.icon).toBe('Database');
+      expect(bindings.weather.color).toBe('#22c55e');
+      expect(bindings.weather.icon).toBe('CloudSun');
+      expect(bindings.tools.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      expect(bindings.model.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      expect(bindings.memory.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      const toolsDefinition = bindings.tools.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+      const modelDefinition = bindings.model.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+      const memoryDefinition = bindings.memory.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+      const weatherDefinition = bindings.weather.schema as
+        | { properties?: Record<string, { type?: string }> }
+        | undefined;
+
+      expect(toolsDefinition?.properties?.action?.type).toBe('string');
+      expect(modelDefinition?.properties?.provider?.type).toBe('string');
+      expect(modelDefinition?.properties?.model_id?.type).toBe('string');
+      expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');
+      expect(weatherDefinition?.properties?.city?.type).toBe('string');
     });
   });
 

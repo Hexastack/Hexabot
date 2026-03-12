@@ -19,7 +19,7 @@ export const Indicator: FC<NodeProps<GraphNode<ENodeType.INDICATOR>>> = ({
 }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeRightContent>
+      <GenericNodeRightContent variant="title-only">
         <GenericNodeTitle />
       </GenericNodeRightContent>
       <GenericNodePorts />

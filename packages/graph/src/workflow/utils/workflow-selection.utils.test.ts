@@ -28,36 +28,23 @@ const createNode = (
 };
 
 describe("workflow-selection.utils", () => {
-  it("extracts task metadata for task and agent nodes", () => {
+  it("extracts task metadata for task nodes", () => {
     const taskNode = createNode("task-node", ENodeType.TASK, {
       title: "send_message",
       actionName: "send_message_action",
     });
-    const agentNode = createNode("agent-node", ENodeType.AGENT, {
-      title: "agent_step",
-      actionName: "agent_action",
-    });
     const selection = createWorkflowSelectionSnapshot(
-      ["task-node", "agent-node"],
-      [taskNode, agentNode],
+      ["task-node"],
+      [taskNode],
     );
 
-    expect(selection.nodeIds).toEqual(["task-node", "agent-node"]);
+    expect(selection.nodeIds).toEqual(["task-node"]);
     expect(selection.nodes).toEqual([
       {
         id: "task-node",
         type: ENodeType.TASK,
         taskName: "send_message",
         actionName: "send_message_action",
-        operatorType: undefined,
-        stepId: undefined,
-        stepPath: undefined,
-      },
-      {
-        id: "agent-node",
-        type: ENodeType.AGENT,
-        taskName: "agent_step",
-        actionName: "agent_action",
         operatorType: undefined,
         stepId: undefined,
         stepPath: undefined,

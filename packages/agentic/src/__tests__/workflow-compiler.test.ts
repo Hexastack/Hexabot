@@ -7,6 +7,7 @@
 import { z } from 'zod';
 
 import type { Action } from '../action/action.types';
+import type { BindingKindSchemas } from '../bindings/base-binding';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
 import { compileWorkflow } from '../workflow-compiler';
@@ -201,5 +202,308 @@ describe('compileWorkflow', () => {
         >,
       }),
     ).toThrow(/No action implementations provided/);
+  });
+
+  it('mounts task bindings from defs using parsed binding payloads', () => {
+    const { action } = createAction({
+      supportedBindings: ['tools'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+          settings: z.strictObject({
+            multiplier: z.number(),
+            bias: z.number(),
+          }),
+        }),
+        multiple: true,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          description: 'Compute a score',
+          action: 'calculate_score',
+          settings: {
+            multiplier: 2,
+            bias: 1,
+          },
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+      bindingKinds,
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({
+      tools: {
+        calculate: {
+          action: 'calculate_score',
+          settings: {
+            multiplier: 2,
+            bias: 1,
+          },
+        },
+      },
+    });
+  });
+
+  it('mounts single-ref bindings as direct payloads', () => {
+    const { action } = createAction({
+      supportedBindings: ['model'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      model: {
+        schema: z.strictObject({
+          provider: z.string(),
+          model: z.string(),
+        }),
+        multiple: false,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        openai_chatgpt: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            model: 'openai_chatgpt',
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+      bindingKinds,
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({
+      model: {
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+      },
+    });
+  });
+
+  it('throws when single-ref binding kinds are provided as arrays', () => {
+    const { action } = createAction({
+      supportedBindings: ['model'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      model: {
+        schema: z.strictObject({
+          provider: z.string(),
+          model: z.string(),
+        }),
+        multiple: false,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        openai_chatgpt: {
+          kind: 'model',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            model: ['openai_chatgpt'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/Expected a single def reference string/);
+  });
+
+  it('throws when multi-ref binding kinds are provided as strings', () => {
+    const { action } = createAction({
+      supportedBindings: ['tools'],
+    });
+    const bindingKinds: BindingKindSchemas = {
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: 'calculate',
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/Expected an array of def references/);
+  });
+
+  it('throws when a task mounts bindings not supported by the action', () => {
+    const { action } = createAction();
+    const bindingKinds: BindingKindSchemas = {
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/does not support binding kind "tools"/);
+  });
+
+  it('allows actions with no supported bindings when tasks do not mount bindings', () => {
+    const { action } = createAction();
+    const definition: WorkflowDefinition = {
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          inputs: { value: 1 },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+    });
+
+    expect(compiled.tasks.worker_task.bindings).toEqual({});
+  });
+
+  it('throws when a def payload fails binding schema validation', () => {
+    const { action } = createAction();
+    const bindingKinds: BindingKindSchemas = {
+      tools: {
+        schema: z.strictObject({
+          action: z.string(),
+        }),
+        multiple: true,
+      },
+    };
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 42,
+        } as any,
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+        bindingKinds,
+      }),
+    ).toThrow(/defs\.calculate\.action/);
+  });
+
+  it('throws when defs or task bindings are provided without bindingKinds', () => {
+    const { action } = createAction();
+    const definition: WorkflowDefinition = {
+      defs: {
+        calculate: {
+          kind: 'tools',
+          action: 'calculate_score',
+        },
+      },
+      tasks: {
+        worker_task: {
+          action: 'worker_action',
+          bindings: {
+            tools: ['calculate'],
+          },
+        },
+      },
+      flow: [{ do: 'worker_task' }],
+      outputs: { out: '=$output.worker_task' },
+    };
+
+    expect(() =>
+      compileWorkflow(definition, {
+        actions: { worker_action: action },
+      }),
+    ).toThrow(/bindingKinds/);
   });
 });

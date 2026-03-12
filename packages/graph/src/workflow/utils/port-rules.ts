@@ -11,23 +11,18 @@ import type { CSSProperties } from "react";
 import type { WorkflowPort } from "../types/workflow-node.types";
 
 const LINK = {
-  MODEL_IN: "modelIn",
-  TOOL_IN: "toolIn",
-  AGENT_IN: "agentIn",
-  AGENT_OUT: "agentOut",
-  AGENT_MEMORY: "agentMemory",
-  AGENT_MODEL: "agentModel",
-  AGENT_TOOL: "agentTool",
+  BINDING_SINGLE_IN: "bindingSingleIn",
+  BINDING_MULTI_IN: "bindingMultiIn",
+  BINDING_PLACEHOLDER_IN: "bindingPlaceholderIn",
   TASK_IN: "taskIn",
   TASK_OUT: "taskOut",
-  TASK_TOOL: "taskTool",
+  BINDING_OUT: "bindingOut",
   INDICATOR_IN: "indicatorIn",
   INDICATOR_OUT: "indicatorOut",
   OPERATOR_IN: "operatorIn",
   OPERATOR_OUT: "operatorOut",
   GROUP_IN: "groupIn",
   GROUP_OUT: "groupOut",
-  MEMORY_IN: "memoryIn",
   BRANCH_PLACEHOLDER_IN: "branchPlaceholderIn",
   BRANCH_PLACEHOLDER_OUT: "branchPlaceholderOut",
 } as const;
@@ -36,26 +31,7 @@ type LinkType = (typeof LINK)[keyof typeof LINK];
 type HandleType = "target" | "source";
 
 const CONDITIONAL_OPERATOR_OUT_PATTERN = /^operatorOut-(\d+)-(\d+)$/;
-
-type AgentOutHandle =
-  | typeof LINK.AGENT_MODEL
-  | typeof LINK.AGENT_MEMORY
-  | typeof LINK.AGENT_TOOL;
-
-const AGENT_OUT_HANDLE_PROGRESS: Record<
-  AgentOutHandle,
-  { horizontal: number; vertical: number }
-> = {
-  agentModel: { horizontal: 10, vertical: 30 },
-  agentMemory: { horizontal: 50, vertical: 50 },
-  agentTool: { horizontal: 90, vertical: 70 },
-};
-
-export const AGENT_ATTACHMENT_SOURCE_HANDLES = new Set<string>([
-  LINK.AGENT_TOOL,
-  LINK.AGENT_MODEL,
-  LINK.AGENT_MEMORY,
-]);
+const BINDING_OUT_PATTERN = /^bindingOut-(\d+)-(\d+)-(.+)$/;
 
 export const getConditionalOperatorOutHandleMeta = (
   id: WorkflowPort | string,
@@ -82,25 +58,66 @@ export const getConditionalOperatorOutHandleMeta = (
   return { index, total } as const;
 };
 
-export const getAgentOutHandleMeta = (id: WorkflowPort | string) => {
-  const handleId = String(id) as AgentOutHandle;
-  const progress = AGENT_OUT_HANDLE_PROGRESS[handleId];
+export const getBindingOutHandleMeta = (id: WorkflowPort | string) => {
+  const match = String(id).match(BINDING_OUT_PATTERN);
 
-  if (!progress) {
+  if (!match) {
+    return;
+  }
+
+  const index = Number(match[1]);
+  const total = Number(match[2]);
+  let bindingKind = match[3];
+
+  try {
+    bindingKind = decodeURIComponent(match[3]);
+  } catch {
+    return;
+  }
+
+  if (
+    !Number.isInteger(index) ||
+    !Number.isInteger(total) ||
+    index < 0 ||
+    total < 1 ||
+    index >= total ||
+    !bindingKind
+  ) {
     return;
   }
 
   return {
-    handleId,
-    horizontal: progress.horizontal,
-    vertical: progress.vertical,
+    baseId: LINK.BINDING_OUT,
+    index,
+    total,
+    bindingKind,
   } as const;
 };
 
+export const isAttachmentSourceHandle = (
+  id: WorkflowPort | string | null | undefined,
+): boolean => {
+  if (!id) {
+    return false;
+  }
+
+  return Boolean(getBindingOutHandleMeta(String(id)));
+};
+
 const getPortBaseId = (id: WorkflowPort): LinkType => {
-  return getConditionalOperatorOutHandleMeta(id)
-    ? LINK.OPERATOR_OUT
-    : (id as LinkType);
+  const conditionalMeta = getConditionalOperatorOutHandleMeta(id);
+
+  if (conditionalMeta) {
+    return LINK.OPERATOR_OUT;
+  }
+
+  const bindingMeta = getBindingOutHandleMeta(id);
+
+  if (bindingMeta) {
+    return bindingMeta.baseId;
+  }
+
+  return id as LinkType;
 };
 const getConditionalOperatorOutStyle = (
   id: WorkflowPort,
@@ -118,19 +135,21 @@ const getConditionalOperatorOutStyle = (
     ? { top: `${progress}%` }
     : { left: `${progress}%` };
 };
-const getAgentOutStyle = (
+const getBindingOutStyle = (
   id: WorkflowPort,
   direction: ResizeControlDirection,
 ): CSSProperties | undefined => {
-  const meta = getAgentOutHandleMeta(id);
+  const meta = getBindingOutHandleMeta(id);
 
   if (!meta) {
     return;
   }
 
+  const progress = ((meta.index + 1) / (meta.total + 1)) * 100;
+
   return direction === "horizontal"
-    ? { left: `${meta.horizontal}%` }
-    : { top: `${meta.vertical}%` };
+    ? { left: `${progress}%` }
+    : { top: `${progress}%` };
 };
 
 type PortRule = {
@@ -176,50 +195,24 @@ const PORT_RULES: Partial<Record<LinkType, PortRule>> = {
     type: "source",
     position: { horizontal: Position.Right, vertical: Position.Bottom },
   },
-  [LINK.TASK_TOOL]: {
+  [LINK.BINDING_OUT]: {
     type: "source",
     position: { horizontal: Position.Bottom, vertical: Position.Left },
+    style: getBindingOutStyle,
   },
-  [LINK.AGENT_IN]: {
-    type: "target",
-    position: { horizontal: Position.Left, vertical: Position.Top },
-    style: (_, direction) =>
-      direction === "horizontal" ? { top: "50%" } : undefined,
-  },
-  [LINK.AGENT_OUT]: {
-    type: "source",
-    position: { horizontal: Position.Right, vertical: Position.Bottom },
-    style: (_, direction) =>
-      direction === "horizontal" ? { top: "50%" } : undefined,
-  },
-  [LINK.AGENT_MODEL]: {
-    type: "source",
-    position: { horizontal: Position.Bottom, vertical: Position.Left },
-    style: getAgentOutStyle,
-  },
-  [LINK.AGENT_MEMORY]: {
-    type: "source",
-    position: { horizontal: Position.Bottom, vertical: Position.Left },
-    style: getAgentOutStyle,
-  },
-  [LINK.AGENT_TOOL]: {
-    type: "source",
-    position: { horizontal: Position.Bottom, vertical: Position.Left },
-    style: getAgentOutStyle,
-  },
-  [LINK.TOOL_IN]: {
+  [LINK.BINDING_MULTI_IN]: {
     type: "target",
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
       direction === "horizontal" ? { left: "50%" } : undefined,
   },
-  [LINK.MODEL_IN]: {
+  [LINK.BINDING_PLACEHOLDER_IN]: {
     type: "target",
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
       direction === "horizontal" ? { left: "50%" } : undefined,
   },
-  [LINK.MEMORY_IN]: {
+  [LINK.BINDING_SINGLE_IN]: {
     type: "target",
     position: { horizontal: Position.Top, vertical: Position.Right },
     style: (_, direction) =>
@@ -239,12 +232,10 @@ const DEFAULT_PORT_RULE: PortRule = {
   position: { horizontal: Position.Left, vertical: Position.Top },
 };
 const SPECIAL_DIMENSION_HANDLES = new Set<LinkType>([
-  LINK.TOOL_IN,
-  LINK.MODEL_IN,
-  LINK.MEMORY_IN,
-  LINK.AGENT_TOOL,
-  LINK.AGENT_MODEL,
-  LINK.AGENT_MEMORY,
+  LINK.BINDING_MULTI_IN,
+  LINK.BINDING_PLACEHOLDER_IN,
+  LINK.BINDING_SINGLE_IN,
+  LINK.BINDING_OUT,
 ]);
 
 export const resolveWorkflowPortRule = (
@@ -282,22 +273,22 @@ export const getWorkflowPortDimensions = (
 
   if (isHorizontalLeftRight) {
     return {
-      width: '6px',
-      height: '14px',
+      width: "6px",
+      height: "14px",
     };
   }
 
   if (isVerticalTopBottom) {
     return {
-      width: '14px',
-      height: '6px',
+      width: "14px",
+      height: "6px",
     };
   }
 
   if (SPECIAL_DIMENSION_HANDLES.has(baseId)) {
-    return direction === 'horizontal'
-      ? { width: '14px', height: '6px' }
-      : { width: '6px', height: '14px' };
+    return direction === "horizontal"
+      ? { width: "14px", height: "6px" }
+      : { width: "6px", height: "14px" };
   }
 };
 

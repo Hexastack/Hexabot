@@ -17,6 +17,7 @@ export type {
   ActionMetadata,
   Actions,
   InferActionArgs,
+  InferActionBindings,
   InferActionContext,
   InferActionInput,
   InferActionOutput,
@@ -36,6 +37,13 @@ export {
 } from './context';
 
 export * from './dsl.types';
+
+export type {
+  BindingKindDescriptor,
+  BindingKindSchemas,
+  InferMountedBindingValue,
+  InferWorkflowBindings,
+} from './bindings/base-binding';
 
 export {
   compileWorkflow,
@@ -66,6 +74,7 @@ export type {
   ParallelStep as CompiledParallelStep,
   CompiledStep,
   CompiledTask,
+  CompiledTaskBindings,
   TaskStep as CompiledTaskStep,
   CompiledValue,
   CompiledWorkflow,

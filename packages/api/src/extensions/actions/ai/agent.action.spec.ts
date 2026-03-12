@@ -64,6 +64,24 @@ describe('AiAgentAction', () => {
     ({
       services: { logger, credentials: createCredentialService(), ...services },
     }) as unknown as WorkflowRuntimeContext;
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model_id: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      base_url: 'https://api.openai.com',
+      organization: 'org-1',
+      ...overrides,
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -79,12 +97,13 @@ describe('AiAgentAction', () => {
         languageModel: jest.fn(),
       },
     );
+    const toolRun = jest.fn().mockResolvedValue({ ok: true });
     const actionsService = {
       get: jest.fn().mockReturnValue({
         description: 'demo tool',
         inputSchema: {},
         outputSchema: {},
-        run: jest.fn(),
+        run: toolRun,
       }),
     };
     const context = createContext({ actions: actionsService });
@@ -135,13 +154,8 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -150,14 +164,20 @@ describe('AiAgentAction', () => {
       stop_sequences: ['stop'],
       max_output_tokens: 50,
       seed: 7,
-      tools: ['search', 'translate', 'search'],
+    };
+    const bindings = {
+      ...createModelBindings(),
+      tools: {
+        search: { action: 'search_action', settings: { scope: 'web' } },
+        translate: { action: 'translate_action' },
+      },
     };
     const input = {
       input_mode: 'prompt' as const,
       prompt: 'Hello there',
       system: 'system prompt',
     };
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({ input, settings, context, bindings });
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
       string,
       unknown
@@ -168,7 +188,7 @@ describe('AiAgentAction', () => {
       baseURL: 'https://api.openai.com',
       organization: 'org-1',
     });
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, []);
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
     expect(agentOptions).toEqual(
@@ -192,21 +212,13 @@ describe('AiAgentAction', () => {
       'translate',
     ]);
     expect(stepCountIsMock).toHaveBeenCalledWith(2);
+    await (agentOptions.tools as any).search.execute({ query: 'hello' });
+    expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+      scope: 'web',
+    });
     expect(toolLoopAgentGenerateMock).toHaveBeenCalledWith({
       prompt: 'Hello there',
     });
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_agent action using provider "openai"',
-      {
-        provider: 'openai',
-        base_url: 'https://api.openai.com',
-        tools: ['search', 'translate', 'search'],
-        stop_when: {
-          step_count: 2,
-          tool_call: undefined,
-        },
-      },
-    );
     expect(result).toEqual({
       text: 'Agent reply',
       content: [{ type: 'text', text: 'Agent reply' }],
@@ -275,6 +287,7 @@ describe('AiAgentAction', () => {
       [
         'user_profile',
         {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
           name: 'User Profile',
           slug: 'user_profile',
         },
@@ -303,12 +316,8 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      memory_enabled: true,
     };
     const input = {
       input_mode: 'prompt' as const,
@@ -316,7 +325,19 @@ describe('AiAgentAction', () => {
       system: 'Base system',
     };
 
-    await action.execute({ input, settings, context });
+    await action.execute({
+      input,
+      settings,
+      context,
+      bindings: {
+        ...createModelBindings(),
+        memory: {
+          selected_profile: {
+            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          },
+        },
+      } as any,
+    });
 
     const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as Record<
       string,
@@ -326,6 +347,11 @@ describe('AiAgentAction', () => {
     expect(instances.user_profile.fields).toHaveBeenCalledWith({
       includeAdditional: true,
     });
+    expect(actionsService.get).toHaveBeenCalledWith('update_memory');
+    expect(
+      (context as any).memoryStore.buildUpdateMemorySchema,
+    ).toHaveBeenCalledWith(['user_profile']);
+    expect(agentOptions.tools).toHaveProperty('update_memory');
     expect(agentOptions.instructions).toContain('Base system');
     expect(agentOptions.instructions).toContain('# Working Memory');
     expect(agentOptions.instructions).toContain('## User Profile');
@@ -359,18 +385,20 @@ describe('AiAgentAction', () => {
     } as any);
 
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      tools: ['search'],
       stop_step_count: 5,
       stop_tool_call: 'finalize',
     };
     const input = { input_mode: 'prompt' as const, prompt: 'Hello there' };
+    const bindings = {
+      ...createModelBindings(),
+      tools: {
+        search: { action: 'search_action' },
+      },
+    };
 
-    await action.execute({ input, settings, context });
+    await action.execute({ input, settings, context, bindings });
     const { stopWhen } = ToolLoopAgentMock.mock.calls[0][0] as {
       stopWhen: Array<(params: any) => boolean>;
     };
@@ -386,17 +414,34 @@ describe('AiAgentAction', () => {
     ).toBe(true);
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { input_mode: 'prompt', prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow('A model is required to run ai_agent.');
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { input_mode: 'prompt', prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: {
+          model: {
+            provider: 'openai',
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_agent.');
   });

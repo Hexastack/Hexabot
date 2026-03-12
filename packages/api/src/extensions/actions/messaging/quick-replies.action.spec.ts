@@ -56,6 +56,7 @@ describe('SendQuickRepliesAction', () => {
       input,
       context,
       settings: {} as MessageActionSettings,
+      bindings: {} as any,
     });
 
     expect(prepareSpy).toHaveBeenCalledWith(context);

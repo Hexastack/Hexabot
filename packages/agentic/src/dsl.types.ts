@@ -8,6 +8,9 @@ import jsonata from 'jsonata';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
+import type { BindingKindSchemas } from './bindings/base-binding';
+import { validateAndResolveBindings } from './bindings/base-binding';
+
 export const ExpressionStringSchema = z
   .string()
   .regex(/^=/, 'Expression strings must start with "="')
@@ -191,13 +194,23 @@ export const BaseSettingsSchema = z.strictObject({
 
 export const SettingsSchema = BaseSettingsSchema.catchall(JsonValueSchema);
 
+const TaskBindingReferenceSchema = z.union([z.string(), z.array(z.string())]);
+const TaskBindingsSchema = z.record(z.string(), TaskBindingReferenceSchema);
+
 export const TaskDefinitionSchema = z.strictObject({
   description: z.string().optional(),
   action: z.string(),
   inputs: z.record(z.string(), JsonValueSchema).optional(),
+  bindings: TaskBindingsSchema.optional(),
   settings: SettingsSchema.optional(),
 });
 
+const DefDefinitionSchema = z
+  .object({
+    kind: z.string(),
+    description: z.string().optional(),
+  })
+  .catchall(z.unknown());
 const ConditionalWhenSchema: z.ZodType<ConditionalBranch> = z.lazy(() =>
   z.strictObject({
     condition: ExpressionStringSchema,
@@ -277,6 +290,7 @@ export const WorkflowDefinitionSchema = z.strictObject({
   inputs: InputsSchema.optional(),
   context: z.record(z.string(), JsonValueSchema).optional(),
   defaults: DefaultsSchema.optional(),
+  defs: z.record(z.string(), DefDefinitionSchema).optional(),
   tasks: z.record(z.string(), TaskDefinitionSchema),
   flow: z.array(FlowStepSchema),
   outputs: z.record(z.string(), ExpressionStringSchema),
@@ -288,11 +302,19 @@ export type Conditional = z.infer<typeof ConditionalSchema>;
 
 export type TaskDefinition = z.infer<typeof TaskDefinitionSchema>;
 
+export type DefDefinition = z.infer<typeof DefDefinitionSchema>;
+
 export type TaskDefinitions = z.infer<typeof WorkflowDefinitionSchema>['tasks'];
+
+export type DefDefinitions = z.infer<typeof WorkflowDefinitionSchema>['defs'];
 
 export type WorkflowMetadata = z.infer<typeof WorkflowMetadataSchema>;
 
 export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;
+
+export type ValidateWorkflowOptions = {
+  bindingKinds?: BindingKindSchemas;
+};
 
 export type WorkflowValidationResult =
   | { success: true; data: WorkflowDefinition }
@@ -339,6 +361,7 @@ const formatZodErrors = (issues: z.ZodIssue[]): string[] =>
 
 export function validateWorkflow(
   input: string | unknown,
+  options?: ValidateWorkflowOptions,
 ): WorkflowValidationResult {
   let candidate: unknown = input;
 
@@ -362,18 +385,29 @@ export function validateWorkflow(
     return { success: false, errors: formatZodErrors(parsed.error.issues) };
   }
 
+  const errors: string[] = [];
   const referencedTasks = new Set(collectTaskReferences(parsed.data.flow));
   const missingTasks = Array.from(referencedTasks).filter(
     (task) => !Object.prototype.hasOwnProperty.call(parsed.data.tasks, task),
   );
 
   if (missingTasks.length > 0) {
-    return {
-      success: false,
-      errors: [
-        `Unknown task(s) referenced in flow: ${missingTasks.join(', ')}`,
-      ],
-    };
+    errors.push(
+      `Unknown task(s) referenced in flow: ${missingTasks.join(', ')}`,
+    );
+  }
+
+  const bindingValidation = validateAndResolveBindings(
+    parsed.data,
+    options?.bindingKinds,
+  );
+
+  if (bindingValidation.errors.length > 0) {
+    errors.push(...bindingValidation.errors);
+  }
+
+  if (errors.length > 0) {
+    return { success: false, errors };
   }
 
   return { success: true, data: parsed.data };

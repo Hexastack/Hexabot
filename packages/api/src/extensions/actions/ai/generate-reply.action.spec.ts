@@ -62,6 +62,20 @@ describe('AiGenerateReplyAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model_id: string;
+      api_key: string;
+    }> = {},
+  ): any => ({
+    model: {
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      ...overrides,
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -88,11 +102,8 @@ describe('AiGenerateReplyAction', () => {
       system: 'system prompt',
     };
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
     };
 
     jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
@@ -112,9 +123,14 @@ describe('AiGenerateReplyAction', () => {
       warnings: [],
     } as any);
 
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: createModelBindings(),
+    });
 
-    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, settings);
+    expect(buildPromptSpy).toHaveBeenCalledWith(input, context, []);
     expect(generateTextMock).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: [{ role: 'user', content: 'Hi' }],
@@ -122,11 +138,21 @@ describe('AiGenerateReplyAction', () => {
         model: 'model-instance',
       }),
     );
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_generate_reply action using provider "openai"',
-      expect.any(Object),
-    );
     expect(result.text).toBe('Generated reply');
+  });
+
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { input_mode: 'prompt', prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow('A model is required to run ai_generate_reply.');
   });
 
   it('throws when the model id is missing', async () => {
@@ -134,12 +160,17 @@ describe('AiGenerateReplyAction', () => {
       action.execute({
         input: { input_mode: 'prompt', prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
         } as any,
         context: createContext(),
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_reply.');
   });

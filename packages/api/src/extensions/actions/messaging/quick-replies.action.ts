@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
@@ -65,7 +65,7 @@ export class SendQuickRepliesAction extends MessageAction<
     input,
     context,
     settings,
-  }: ActionExecutionArgs<
+  }: ExecArgs<
     QuickRepliesInput,
     ConversationalWorkflowContext,
     QuickRepliesSettings

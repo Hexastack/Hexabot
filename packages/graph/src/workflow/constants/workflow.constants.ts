@@ -10,7 +10,6 @@ import {
   Brain,
   ChartNoAxesGantt,
   CircleStop,
-  Database,
   GitBranch,
   ListTree,
   Play,
@@ -18,7 +17,7 @@ import {
   Repeat,
   Zap,
   type LucideIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
 import {
   EEdgeType,
@@ -26,10 +25,10 @@ import {
   ELinkType,
   ENodeType,
   type INodeConfig,
+  type TNodeCardMetrics,
   type WorkflowGraphData,
 } from "../types/workflow-node.types";
 import type { EdgeInsertType } from "../types/workflow-path.types";
-import { getTaskAction, getTaskDescription } from "../utils/workflow-task.utils";
 
 const WORKFLOW_OPERATOR_GRAPH_THEME = {
   [StepType.Parallel]: {
@@ -101,24 +100,71 @@ export const DEFAULT_NODE_PROPS = {
   selectable: false,
 } satisfies Omit<Node, "id" | "data" | "position">;
 
-export const DIMENSIONS = {
-  [ENodeType.MODEL]: { width: 180, height: 68 },
-  [ENodeType.TOOL]: { width: 180, height: 55 },
-  [ENodeType.AGENT]: { width: 256, height: 86 },
-  [ENodeType.INDICATOR]: { width: 128, height: 68 },
-  [ENodeType.TASK]: { width: 256, height: 86 },
-  [ENodeType.OPERATOR]: { width: 156, height: 68 },
-  [ENodeType.MEMORY]: { width: 256, height: 86 },
-  [ENodeType.BRANCH_PLACEHOLDER]: { width: 64, height: 64 },
-} satisfies INodeConfig['dimensions'];
+const BASE_CARD_METRICS = {
+  paddingX: 16,
+  paddingY: 16,
+  borderWidth: 2,
+  borderRadius: 14,
+  titleMinHeight: 20,
+  descriptionIndent: 29,
+} as const;
+const TITLE_ONLY_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  contentVariant: "title-only",
+} satisfies TNodeCardMetrics;
+const BINDING_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  paddingY: 12,
+  contentVariant: "title-with-description",
+} satisfies TNodeCardMetrics;
+const TITLE_WITH_DESCRIPTION_CARD_METRICS = {
+  ...BASE_CARD_METRICS,
+  contentVariant: "title-with-description",
+} satisfies TNodeCardMetrics;
 
-export const HIGHLIGHTS = {
+export const NODE_METRICS: Exclude<INodeConfig['nodeMetrics'], undefined> = {
+  [ENodeType.BINDING_SINGLE]: {
+    dimensions: { width: 200, height: 76 },
+    card: BINDING_CARD_METRICS,
+  },
+  [ENodeType.BINDING_MULTI]: {
+    dimensions: { width: 200, height: 76 },
+    card: BINDING_CARD_METRICS,
+  },
+  [ENodeType.BINDING_PLACEHOLDER]: {
+    dimensions: { width: 64, height: 64 },
+  },
+  [ENodeType.INDICATOR]: {
+    dimensions: { width: 128, height: 68 },
+    card: TITLE_ONLY_CARD_METRICS,
+  },
+  [ENodeType.TASK]: {
+    dimensions: { width: 256, height: 86 },
+    card: TITLE_WITH_DESCRIPTION_CARD_METRICS,
+  },
+  [ENodeType.OPERATOR]: {
+    dimensions: { width: 156, height: 68 },
+    card: TITLE_ONLY_CARD_METRICS,
+  },
+  [ENodeType.BRANCH_PLACEHOLDER]: {
+    dimensions: { width: 64, height: 64 },
+  },
+};
+
+export const NODE_DIMENSIONS = Object.fromEntries(
+  Object.entries(NODE_METRICS).map(([nodeType, nodeMetrics]) => [
+    nodeType,
+    nodeMetrics.dimensions,
+  ]),
+) as Exclude<INodeConfig["dimensions"], undefined>;
+
+export const OPERATOR_HIGHLIGHTS = {
   [StepType.Loop]: { color: "#fefbe8", padding: 64 },
   [StepType.Parallel]: { color: "#fefbe8", padding: 64 },
   [StepType.Conditional]: { color: "#fefbe8", padding: 64 },
 } satisfies INodeConfig["highlights"];
 
-export const EDGES = {
+export const EDGE_STYLES = {
   [EEdgeType.EDGE_WITH_BUTTON]: {
     markerEnd: {
       type: MarkerType.ArrowClosed,
@@ -129,66 +175,49 @@ export const EDGES = {
   },
 } satisfies INodeConfig["edges"];
 
-export const NODES = {
-  [ENodeType.MEMORY]: {
-    theme: {
-      Icon: Database,
-      borderColor: '#7bb0ff',
-    },
-    ports: [ELinkType.MEMORY_IN],
-    title: '',
-  },
-  [ENodeType.AGENT]: {
-    memory: '',
-    model: '',
-    tools: [],
-    ports: [
-      ELinkType.AGENT_IN,
-      ELinkType.AGENT_OUT,
-      { id: ELinkType.AGENT_TOOL, label: 'visual_editor.port_label.tools' },
-      { id: ELinkType.AGENT_MODEL, label: 'visual_editor.port_label.model' },
-      {
-        id: ELinkType.AGENT_MEMORY,
-        label: 'visual_editor.port_label.memory',
-      },
-    ],
-    theme: {
-      borderColor: '#b65bfd',
-    },
-    title: '',
-  },
-  [ENodeType.TOOL]: {
-    title: '',
-    ports: [ELinkType.TOOL_IN],
+export const NODE_DEFINITIONS = {
+  [ENodeType.BINDING_MULTI]: {
+    title: "",
+    ports: [ELinkType.BINDING_MULTI_IN],
     theme: {
       Icon: Zap,
-      borderColor: 'orange',
+      borderColor: "orange",
     },
   },
-  [ENodeType.MODEL]: {
-    title: '',
-    ports: [ELinkType.MODEL_IN],
+  [ENodeType.BINDING_PLACEHOLDER]: {
+    title: "",
+    description: "",
+    bindingKind: "",
+    ports: [ELinkType.BINDING_PLACEHOLDER_IN],
+    theme: {
+      Icon: Plus,
+      borderColor: "#7f8ea3",
+    },
+  },
+  [ENodeType.BINDING_SINGLE]: {
+    title: "",
+    ports: [ELinkType.BINDING_SINGLE_IN],
     theme: {
       Icon: Brain,
-      borderColor: '#ad46fc',
+      borderColor: "#ad46fc",
     },
   },
   [ENodeType.INDICATOR]: {
     [EIndicatorType.WORKFLOW_START]: {
       theme: {
         Icon: Play,
-        borderColor: '#37b765',
+        borderColor: "#37b765",
       },
       ports: [ELinkType.INDICATOR_OUT],
-      i18nTitle: 'message.start',
+      i18nTitle: "message.start",
     },
     [EIndicatorType.WORKFLOW_END]: {
       theme: {
         Icon: CircleStop,
-        borderColor: '#e95d32',
+        borderColor: "#e95d32",
       },
       ports: [ELinkType.INDICATOR_IN],
-      i18nTitle: 'message.stop',
+      i18nTitle: "message.stop",
     },
   },
   [ENodeType.OPERATOR]: {
@@ -211,27 +240,25 @@ export const NODES = {
       ports: [ELinkType.OPERATOR_IN, ELinkType.OPERATOR_OUT],
     },
   },
-  [ENodeType.TASK]: (_nodeId, taskName, tasks) => {
-    return {
-      title: taskName,
-      actionName: getTaskAction(taskName, tasks),
-      description: getTaskDescription(taskName, tasks),
-      ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
-      theme: {},
-    };
+  [ENodeType.TASK]: {
+    title: "",
+    actionName: "",
+    description: "",
+    ports: [ELinkType.TASK_IN, ELinkType.TASK_OUT],
+    theme: {},
   },
   [ENodeType.GROUP]: {
     ports: [ELinkType.GROUP_IN, ELinkType.GROUP_OUT],
     theme: {
-      bgColor: '#7bb0ff',
+      bgColor: "#7bb0ff",
     },
   },
   [ENodeType.BRANCH_PLACEHOLDER]: {
-    i18nTitle: 'button.add',
+    i18nTitle: "button.add",
     ports: [ELinkType.BRANCH_PLACEHOLDER_IN, ELinkType.BRANCH_PLACEHOLDER_OUT],
     theme: {
       Icon: Plus,
-      borderColor: '#7f8ea3',
+      borderColor: "#7f8ea3",
     },
   },
-} satisfies INodeConfig['nodes'];
+} satisfies INodeConfig["nodes"];

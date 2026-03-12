@@ -171,7 +171,6 @@ const ensureWorkflowFixture = async (dataSource: DataSource) => {
     type: WorkflowType.conversational,
     schedule: null,
     createdBy: user ? { id: user.id } : undefined,
-    memoryDefinitions: [],
     builtin: false,
     direction: DirectionType.HORIZONTAL,
     x: 0,

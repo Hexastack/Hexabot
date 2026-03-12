@@ -7,7 +7,6 @@
 import { StepType, Workflow as WorkflowHelper, type FlowStep } from "@hexabot-ai/agentic";
 import {
   Box,
-  Button,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -19,6 +18,7 @@ import {
 import { Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { DrawerPrimaryFooterAction } from "@/app-components/drawers/DrawerPrimaryFooterAction";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
@@ -219,19 +219,13 @@ export const ParallelFormDrawer = () => {
         </Box>
       }
       footerContent={
-        <Box display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSave}
-            disabled={saveDisabled}
-            aria-label={saveLabel}
-            startIcon={<Save size={18} />}
-            sx={{ minWidth: 200 }}
-          >
-            {saveLabel}
-          </Button>
-        </Box>
+        <DrawerPrimaryFooterAction
+          label={saveLabel}
+          ariaLabel={saveLabel}
+          onClick={handleSave}
+          disabled={saveDisabled}
+          startIcon={<Save size={18} />}
+        />
       }
     />
   );

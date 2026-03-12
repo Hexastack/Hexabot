@@ -264,7 +264,6 @@ export const WorkflowEntity = new schema.Entity(
   {
     currentVersion: WorkflowVersionEntity,
     publishedVersion: WorkflowVersionEntity,
-    memoryDefinitions: [MemoryDefinitionEntity],
   },
   {
     idAttribute: ({ id }) => id,

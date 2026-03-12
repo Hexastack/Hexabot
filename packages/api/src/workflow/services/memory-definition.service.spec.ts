@@ -11,10 +11,7 @@ import {
   memoryDefinitionFixtureIds,
   memoryDefinitionOrmFixtures,
 } from '@/utils/test/fixtures/memory-definition';
-import {
-  installMemoryRecordFixturesTypeOrm,
-  memoryWorkflowFixtureId,
-} from '@/utils/test/fixtures/memory-record';
+import { installMemoryRecordFixturesTypeOrm } from '@/utils/test/fixtures/memory-record';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -99,10 +96,11 @@ describe('MemoryDefinitionService (TypeORM)', () => {
       expect(scopes).toEqual(new Set([MemoryScope.global]));
     });
 
-    it('includes workflow definitions when workflowId is provided', async () => {
-      const cache = await memoryDefinitionService.buildDefinitionCache(
-        memoryWorkflowFixtureId,
-      );
+    it('includes requested definitions when ids are provided', async () => {
+      const cache = await memoryDefinitionService.buildDefinitionCache([
+        memoryDefinitionFixtureIds.workflow,
+        memoryDefinitionFixtureIds.run,
+      ]);
 
       expect(cache.get(globalDefinition.slug)?.id).toBe(globalDefinition.id);
       expect(cache.get(workflowDefinition.slug)?.id).toBe(
@@ -110,6 +108,17 @@ describe('MemoryDefinitionService (TypeORM)', () => {
       );
       expect(cache.get(runDefinition.slug)?.id).toBe(runDefinition.id);
       expect(cache.size).toBe(3);
+    });
+
+    it('fails when one or more requested definitions are missing', async () => {
+      await expect(
+        memoryDefinitionService.buildDefinitionCache([
+          memoryDefinitionFixtureIds.workflow,
+          'dddddddd-dddd-dddd-dddd-dddddddddddd',
+        ]),
+      ).rejects.toThrow(
+        'Unable to find memory definition(s): dddddddd-dddd-dddd-dddd-dddddddddddd',
+      );
     });
   });
 });

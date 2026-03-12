@@ -47,6 +47,7 @@ describe('SendTextMessageAction', () => {
       input: { text: 'Hello' },
       context,
       settings: {} as MessageActionSettings,
+      bindings: {} as any,
     });
 
     expect(prepareSpy).toHaveBeenCalledWith(context);

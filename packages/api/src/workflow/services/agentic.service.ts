@@ -14,6 +14,7 @@ import {
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
+import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
@@ -37,6 +38,7 @@ export class AgenticService {
     private readonly workflowService: WorkflowService,
     private readonly workflowRunService: WorkflowRunService,
     private readonly actionService: ActionService,
+    private readonly runtimeBindingsService: RuntimeBindingsService,
     private readonly logger: LoggerService,
     private readonly workflowContextFactory: WorkflowContextFactory,
     private readonly i18n: I18nService,
@@ -127,9 +129,14 @@ export class AgenticService {
     }
     const workflowInstance = AgenticWorkflow.fromDefinition(definition, {
       actions: this.actionService.getRegistry(),
+      bindingKinds: this.runtimeBindingsService.getRegistry(),
       jsonataFunctions: this.buildJsonataFunctions(event),
     });
-    const context = await this.workflowContextFactory.create(run, event);
+    const context = await this.workflowContextFactory.create(
+      run,
+      event,
+      definition,
+    );
 
     this.logger.debug('Preparing workflow runner', {
       mode,

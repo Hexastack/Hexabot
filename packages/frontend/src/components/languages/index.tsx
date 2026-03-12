@@ -14,7 +14,9 @@ import {
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -48,14 +50,28 @@ export const Languages = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
+  const queryClient = useTanstackQueryClient();
   const toggleDefault = (row: ILanguage) => {
     if (!row.isDefault) {
-      updateLanguage({
-        id: row.id,
-        params: {
-          isDefault: true,
+      updateLanguage(
+        {
+          id: row.id,
+          params: {
+            isDefault: true,
+          },
         },
-      });
+        {
+          onSuccess() {
+            queryClient.invalidateQueries({
+              predicate: ({ queryKey }) => {
+                const [_qType, qEntity] = queryKey;
+
+                return isSameEntity(qEntity, EntityType.LANGUAGE);
+              },
+            });
+          },
+        },
+      );
     }
   };
   const actionColumns = useActionColumns<ILanguage>(
@@ -115,6 +131,7 @@ export const Languages = () => {
       headerAlign: "left",
       renderCell: (params) => (
         <Switch
+          key={params.value}
           checked={params.value}
           slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={

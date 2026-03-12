@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { attachmentPayloadSchema, FileType } from '@/chat/types/attachment';
 import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
@@ -68,7 +68,7 @@ export class SendAttachmentAction extends MessageAction<
     input,
     context,
     settings,
-  }: ActionExecutionArgs<
+  }: ExecArgs<
     AttachmentInput,
     ConversationalWorkflowContext,
     AttachmentSettings

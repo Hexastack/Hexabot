@@ -74,6 +74,20 @@ describe("workflow-theme.utils", () => {
     expect(resolved.borderColor).toBe("#789789");
   });
 
+  it("resolves base theme lucide icon names before action icons", () => {
+    const resolved = resolveWorkflowStepTheme({
+      baseTheme: {
+        icon: "Database",
+      },
+      action: {
+        name: "send_message",
+        icon: "Brain",
+      },
+    });
+
+    expect(resolved.Icon).toBe(Icons.Database);
+  });
+
   it("prioritizes execution state theme over base and action colors", () => {
     const failedConfig = getWorkflowStateConfig("failed");
     const resolved = resolveWorkflowStepTheme({

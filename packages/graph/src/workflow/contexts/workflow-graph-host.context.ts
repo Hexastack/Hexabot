@@ -9,6 +9,8 @@ import { createContext, useContext } from "react";
 
 import type {
   WorkflowAction,
+  WorkflowBindingAddPayload,
+  WorkflowBindingRemovePayload,
   WorkflowExecutionStateMap,
 } from "../types/workflow-node.types";
 import type { FlowStepPath } from "../types/workflow-path.types";
@@ -25,6 +27,8 @@ export type WorkflowGraphHostContextValue = {
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   executionStates: WorkflowExecutionStateMap;
   onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
+  onAddBinding?: (payload: WorkflowBindingAddPayload) => void;
+  onRemoveBinding?: (payload: WorkflowBindingRemovePayload) => void;
 };
 
 export const WorkflowGraphHostContext =

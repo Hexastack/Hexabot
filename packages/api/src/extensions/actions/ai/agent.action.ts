@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionExecutionArgs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { ToolLoopAgent, ToolSet } from 'ai';
 
+import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
@@ -46,31 +46,38 @@ export class AiAgentAction extends AiBaseAction<
     input,
     settings,
     context,
-  }: ActionExecutionArgs<
-    AiAgentInput,
-    WorkflowRuntimeContext,
-    AiAgentSettings
-  >) {
+    bindings,
+  }: ExecArgs<AiAgentInput, WorkflowRuntimeContext, AiAgentSettings>) {
     const logger = context.services.logger;
-    const providerName = settings.provider ?? 'openai';
-    const modelId = this.resolveModelId(settings);
+    const modelBinding = bindings.model;
+    const providerName = modelBinding?.provider ?? 'openai';
+    const modelId = this.resolveModelId(modelBinding);
     const credentials = await context.services.credentials.findOneValue(
-      settings.api_key,
+      modelBinding?.api_key,
     );
     const providerOptions = this.buildProviderInitOptions(
       providerName,
-      settings,
+      modelBinding,
       credentials,
     );
     const provider = await this.loadProvider(providerName, providerOptions);
     const model = this.createModel(provider, modelId);
-    const promptPayload = await this.buildPrompt(input, context, settings);
+    const selectedMemorySlugs = this.resolveMemoryBindingSlugs(
+      context,
+      bindings.memory,
+    );
+    const promptPayload = await this.buildPrompt(
+      input,
+      context,
+      selectedMemorySlugs,
+    );
     const callSettings = this.buildCallSettings(settings);
     const tools = this.buildTools(
       context,
-      settings.tools,
-      settings.memory_enabled,
+      bindings.tools,
+      selectedMemorySlugs,
     ) as ToolSet | undefined;
+    const toolNames = Object.keys(bindings.tools ?? {});
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
       settings,
       tools,
@@ -88,7 +95,7 @@ export class AiAgentAction extends AiBaseAction<
       {
         provider: providerName,
         base_url: providerOptions.baseURL,
-        tools: settings.tools,
+        tools: toolNames,
         stop_when: {
           step_count: stepCount,
           tool_call: toolCall,

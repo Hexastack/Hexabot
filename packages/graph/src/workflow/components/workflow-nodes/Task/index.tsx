@@ -18,7 +18,7 @@ import { GenericNodeTitle } from "../GenericNodeTitle";
 export const Task: FC<NodeProps<GraphNode<ENodeType.TASK>>> = ({ id }) => (
   <WorkflowNodeProvider id={id}>
     <GenericNodeContainer>
-      <GenericNodeRightContent>
+      <GenericNodeRightContent variant="title-with-description">
         <GenericNodeTitle />
         <GenericNodeDescription />
       </GenericNodeRightContent>

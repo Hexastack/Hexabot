@@ -30,9 +30,6 @@ const toStepPath = (value: unknown): FlowStepPath | undefined => {
 const toStringValue = (value: unknown): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
-const isActionSelectionNodeType = (nodeType: ENodeType): boolean => {
-  return nodeType === ENodeType.TASK || nodeType === ENodeType.AGENT;
-};
 
 export const createWorkflowSelectionNode = (
   node: GraphNode,
@@ -53,10 +50,10 @@ export const createWorkflowSelectionNode = (
     operatorType: isOperatorType(nodeData.operatorType)
       ? nodeData.operatorType
       : undefined,
-    taskName: isActionSelectionNodeType(node.type)
+    taskName: node.type === ENodeType.TASK
       ? toStringValue(nodeData.title)
       : undefined,
-    actionName: isActionSelectionNodeType(node.type)
+    actionName: node.type === ENodeType.TASK
       ? toStringValue(nodeData.actionName)
       : undefined,
   };

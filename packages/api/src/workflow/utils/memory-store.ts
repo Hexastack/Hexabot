@@ -102,15 +102,27 @@ export class MemoryStore {
 
   /**
    * Build a Zod input schema for the update_memory tool.
+   * @param allowedSlugs - Optional list of memory slugs to include.
    * @returns Zod schema keyed by memory slug, or undefined when empty.
    */
-  public buildUpdateMemorySchema(): ZodSchema | undefined {
+  public buildUpdateMemorySchema(
+    allowedSlugs?: string[],
+  ): ZodSchema | undefined {
     if (this.definitionCache.size === 0) {
+      return undefined;
+    }
+
+    const allowedSlugSet = allowedSlugs ? new Set(allowedSlugs) : undefined;
+    if (allowedSlugSet && allowedSlugSet.size === 0) {
       return undefined;
     }
 
     const shape: Record<string, ZodSchema> = {};
     for (const [slug] of this.definitionCache.entries()) {
+      if (allowedSlugSet && !allowedSlugSet.has(slug)) {
+        continue;
+      }
+
       const schema = this.zodSchemaCache.get(slug);
       if (!schema) {
         continue;

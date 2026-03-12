@@ -64,6 +64,7 @@ export const ROUTES = {
   STATS_SUMMARY: "/stats/summary",
   WORKFLOW_PUBLISH: "/workflow/:id/publish",
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
+  WORKFLOW_BINDINGS: "/workflow/bindings",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -261,6 +262,12 @@ export class ApiClient {
     const { data } = await this.request.get(
       `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
     );
+
+    return data;
+  }
+
+  async getWorkflowBindings<T = Record<string, unknown>>() {
+    const { data } = await this.request.get<T>(ROUTES.WORKFLOW_BINDINGS);
 
     return data;
   }

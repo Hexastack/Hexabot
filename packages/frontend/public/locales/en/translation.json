@@ -474,7 +474,6 @@
     "message_creative_id": "Creative ID",
     "broadcast_id": "Broadcast ID",
     "label_id": "Label ID",
-    "user_count": "User Count",
     "msg_read": "Read",
     "msg_delivered": "Delivered",
     "email": "E-mail",
@@ -799,6 +798,69 @@
           "placeholder": "Optional step description."
         }
       }
+    },
+    "tool_drawer": {
+      "title": "Tool",
+      "description": "Configure this tool binding.",
+      "form": {
+        "action_label": "Action",
+        "tool_id": {
+          "label": "Tool ID",
+          "placeholder": "tool_name",
+          "errors": {
+            "required": "Tool ID is required.",
+            "snake_case": "Tool ID must use lowercase letters, numbers, and underscores.",
+            "unique": "Tool ID already exists in this workflow."
+          }
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Optional tool description."
+        },
+        "empty_schema": {
+          "settings": "No settings schema available for this action."
+        },
+        "empty_state": {
+          "no_tool": "No tool selected."
+        }
+      }
+    },
+    "single_binding_drawer": {
+      "title": {
+        "edit": "Edit {{bindingLabel}} definition",
+        "create": "Add {{bindingLabel}} binding"
+      },
+      "selection": {
+        "use_existing": {
+          "title": "Use existing definition",
+          "description": "Select an existing {{bindingLabelLower}} definition from this workflow."
+        },
+        "create_new": {
+          "title": "Create new definition",
+          "description": "Define and attach a new {{bindingLabelLower}} definition."
+        }
+      },
+      "form": {
+        "binding_id": {
+          "label": "{{bindingLabel}} ID",
+          "errors": {
+            "required": "{{bindingLabel}} ID is required.",
+            "snake_case": "{{bindingLabel}} ID must use lowercase letters, numbers, and underscores.",
+            "unique": "A definition with this ID already exists."
+          }
+        },
+        "description": {
+          "placeholder": "Optional {{bindingLabelLower}} description."
+        },
+        "back": "Back to {{bindingLabelLower}} selection",
+        "empty_schema": "{{bindingLabel}} schema is unavailable."
+      },
+      "list": {
+        "description_fallback": "No description provided.",
+        "disabled_reason": "Already used by this task."
+      },
+      "add_new": "Add a new {{bindingLabelLower}} definition",
+      "empty": "No {{bindingLabelLower}} definitions are available yet."
     },
     "conditional_drawer": {
       "title": "Conditional",

@@ -6,15 +6,19 @@
 
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
-import { forwardRef, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 
 import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
 import { useSearch } from "@/hooks/useSearch";
 import { Format, QueryType } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
+import { PermissionAction } from "@/types/permission.types";
 import { TFilterStringFields } from "@/types/search.types";
 import { generateId } from "@/utils/generateId";
+
+import { WithEntityButton } from "../buttons/entities/WithEntityButton";
+import { BASE_ADD_DIALOG_MAP } from "../dialogs/dialog.constants";
 
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
@@ -49,6 +53,7 @@ export type AutoCompleteEntitySelectProps<
   preprocess?: (data: Value[]) => Value[];
   noOptionsWarning?: string;
   isDisabledWhenEmpty?: boolean;
+  enableEntityAddButton?: boolean;
 };
 
 const AutoCompleteEntitySelect = <
@@ -65,6 +70,7 @@ const AutoCompleteEntitySelect = <
     idKey = "id",
     sortKey = "id",
     labelKey,
+    enableEntityAddButton,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
@@ -129,16 +135,22 @@ const AutoCompleteEntitySelect = <
   }, [JSON.stringify(searchPayload)]);
 
   return (
-    <AutoCompleteSelect<Value, Label, Multiple>
-      ref={ref}
-      idKey={idKey}
-      labelKey={labelKey}
-      options={options || []}
-      onSearch={onSearch}
-      loading={isFetching}
-      data-multiple={rest.multiple}
-      {...rest}
-    />
+    <WithEntityButton
+      entity={entity as keyof typeof BASE_ADD_DIALOG_MAP}
+      permissionAction={PermissionAction.CREATE}
+      enableEntityAddButton={enableEntityAddButton}
+    >
+      <AutoCompleteSelect<Value, Label, Multiple>
+        ref={ref}
+        idKey={idKey}
+        labelKey={labelKey}
+        options={options || []}
+        onSearch={onSearch}
+        loading={isFetching}
+        data-multiple={rest.multiple}
+        {...rest}
+      />
+    </WithEntityButton>
   );
 };
 

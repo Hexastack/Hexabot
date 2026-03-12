@@ -109,7 +109,6 @@ describe('WorkflowRunService (TypeORM)', () => {
       type: WorkflowType.conversational,
       schedule: null,
       createdBy: creatorId,
-      memoryDefinitions: [],
     });
 
     const definition = buildWorkflowDefinition();

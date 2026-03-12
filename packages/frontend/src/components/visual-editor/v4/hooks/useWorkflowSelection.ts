@@ -21,7 +21,7 @@ type OperatorStepType =
   | StepType.Parallel;
 
 export type SelectedActionNode = WorkflowSelectionNode & {
-  type: ENodeType.TASK | ENodeType.AGENT;
+  type: ENodeType.TASK;
   taskName: string;
 };
 
@@ -51,7 +51,7 @@ export const getSelectedActionNode = (
 
   if (
     !selectedNode ||
-    (selectedNode.type !== ENodeType.TASK && selectedNode.type !== ENodeType.AGENT) ||
+    selectedNode.type !== ENodeType.TASK ||
     typeof selectedNode.taskName !== "string"
   ) {
     return undefined;

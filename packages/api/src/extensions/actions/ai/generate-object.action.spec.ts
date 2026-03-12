@@ -65,6 +65,24 @@ describe('AiGenerateObjectAction', () => {
         ...services,
       },
     }) as unknown as WorkflowRuntimeContext;
+  const createModelBindings = (
+    overrides: Partial<{
+      provider: string;
+      model_id: string;
+      api_key: string;
+      base_url: string;
+      organization: string;
+    }> = {},
+  ): any => ({
+    model: {
+      provider: 'openai',
+      model_id: 'gpt-4o-mini',
+      api_key: 'test-key',
+      base_url: 'https://api.openai.com',
+      organization: 'org-1',
+      ...overrides,
+    },
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -122,13 +140,8 @@ describe('AiGenerateObjectAction', () => {
       required: ['foo'],
     } satisfies JSONSchema7;
     const settings = {
-      provider: 'openai' as const,
       timeout_ms: 0,
       retries: defaultRetries,
-      model: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
       temperature: 0.7,
       top_p: 0.8,
       top_k: 5,
@@ -144,7 +157,12 @@ describe('AiGenerateObjectAction', () => {
       system: 'system prompt',
     };
     const context = createContext();
-    const result = await action.execute({ input, settings, context });
+    const result = await action.execute({
+      input,
+      settings,
+      context,
+      bindings: createModelBindings(),
+    });
 
     expect(loadProviderSpy).toHaveBeenCalledWith('openai', {
       apiKey: 'test-key',
@@ -158,7 +176,7 @@ describe('AiGenerateObjectAction', () => {
         system: input.system,
       },
       context,
-      settings,
+      [],
     );
     expect(buildCallSettingsSpy).toHaveBeenCalledWith(settings);
     expect(createModelSpy).toHaveBeenCalledWith(provider, 'gpt-4o-mini');
@@ -190,10 +208,6 @@ describe('AiGenerateObjectAction', () => {
       },
     });
     expect(callArgs.stopSequences).toBeUndefined();
-    expect(logger.debug).toHaveBeenCalledWith(
-      'Calling model "gpt-4o-mini" via ai_generate_object action using provider "openai"',
-      expect.any(Object),
-    );
 
     expect(result).toEqual({
       text: 'Generated text',
@@ -227,18 +241,38 @@ describe('AiGenerateObjectAction', () => {
     });
   });
 
+  it('throws when the model binding is missing', async () => {
+    await expect(
+      action.execute({
+        input: { prompt: 'hi' },
+        settings: {
+          timeout_ms: 0,
+          retries: defaultRetries,
+          output_schema: { type: 'object' },
+        } as any,
+        context: createContext(),
+        bindings: {},
+      }),
+    ).rejects.toThrow('A model is required to run ai_generate_object.');
+  });
+
   it('throws when the model id is missing', async () => {
     await expect(
       action.execute({
         input: { prompt: 'hi' },
         settings: {
-          provider: 'openai',
           timeout_ms: 0,
           retries: defaultRetries,
-          api_key: 'key',
           output_schema: { type: 'object' },
         } as any,
         context: createContext(),
+        bindings: {
+          model: {
+            openai_chatgpt: {
+              provider: 'openai',
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow('A model is required to run ai_generate_object.');
   });

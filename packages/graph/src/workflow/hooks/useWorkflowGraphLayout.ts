@@ -4,13 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { CompiledStep, TaskDefinitions } from "@hexabot-ai/agentic";
+import type { CompiledStep, DefDefinitions, TaskDefinitions } from "@hexabot-ai/agentic";
 import type { ResizeControlDirection } from "@xyflow/system";
 import { useEffect, useRef, useState } from "react";
 
 import { EMPTY_WORKFLOW_GRAPH } from "../constants/workflow.constants";
 import type {
-  MemoryDefinition,
+  WorkflowBindingCatalog,
+  WorkflowAction,
   WorkflowGraphData,
 } from "../types/workflow-node.types";
 import {
@@ -21,15 +22,19 @@ import {
 type UseWorkflowGraphLayoutProps = {
   compiledFlow?: CompiledStep[];
   tasks?: TaskDefinitions;
-  memoryDefinitions?: MemoryDefinition[];
+  defs?: DefDefinitions;
   layoutDirection?: ResizeControlDirection;
+  actionCatalog: ReadonlyMap<string, WorkflowAction>;
+  bindingCatalog: WorkflowBindingCatalog;
 };
 
 export const useWorkflowGraphLayout = ({
   compiledFlow,
   tasks,
-  memoryDefinitions,
+  defs,
   layoutDirection,
+  actionCatalog,
+  bindingCatalog,
 }: UseWorkflowGraphLayoutProps) => {
   const [graphData, setGraphData] =
     useState<WorkflowGraphData>(EMPTY_WORKFLOW_GRAPH);
@@ -57,7 +62,9 @@ export const useWorkflowGraphLayout = ({
           config,
           flow: compiledFlow,
           tasks,
-          memoryDefinitions: memoryDefinitions ?? [],
+          defs,
+          actionCatalog,
+          bindingCatalog,
         });
 
         if (!cancelled && requestTokenRef.current === requestToken) {
@@ -78,7 +85,14 @@ export const useWorkflowGraphLayout = ({
     return () => {
       cancelled = true;
     };
-  }, [compiledFlow, layoutDirection, memoryDefinitions, tasks]);
+  }, [
+    actionCatalog,
+    bindingCatalog,
+    compiledFlow,
+    defs,
+    layoutDirection,
+    tasks,
+  ]);
 
   return {
     graphData,

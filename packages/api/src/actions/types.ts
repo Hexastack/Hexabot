@@ -6,11 +6,16 @@
 
 import {
   Action,
+  ActionExecutionArgs,
   ActionMetadata as BaseActionMetadata,
   BaseWorkflowContext,
 } from '@hexabot-ai/agentic';
 import type { ZodType } from 'zod';
 
+import {
+  RuntimeBindingKind,
+  RuntimeBindings,
+} from '@/bindings/runtime-bindings';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 
@@ -28,11 +33,12 @@ export type ActionWorkflowTypes = WorkflowType[];
 
 export type ActionMetadata<I, O, S = unknown> = Omit<
   BaseActionMetadata<I, O, S>,
-  'inputSchema' | 'outputSchema' | 'settingsSchema'
+  'inputSchema' | 'outputSchema' | 'settingsSchema' | 'supportedBindings'
 > & {
   inputSchema?: ZodType<I>;
   outputSchema?: ZodType<O>;
   settingsSchema?: ZodType<S>;
+  supportedBindings?: readonly RuntimeBindingKind[];
   icon?: string;
   color?: string;
   group?: string;
@@ -49,3 +55,9 @@ export type AnyAction = Action<
 export type ActionRegistry<
   A extends Action<unknown, unknown, BaseWorkflowContext, unknown> = AnyAction,
 > = Map<ActionName, A>;
+
+export type ExecArgs<
+  I,
+  C extends BaseWorkflowContext,
+  S = unknown,
+> = ActionExecutionArgs<I, C, S, RuntimeBindings>;

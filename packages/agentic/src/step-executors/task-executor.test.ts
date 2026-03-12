@@ -57,6 +57,7 @@ const createTask = (runImpl: jest.Mock): CompiledTask => ({
   action: createAction(runImpl),
   inputs: { payload: { kind: 'literal', value: 123 } },
   settings: {} as any,
+  bindings: { tools: { calculate: { action: 'calculate_score' } } },
 });
 const createCompiled = (task: CompiledTask): CompiledWorkflow =>
   ({
@@ -118,6 +119,7 @@ describe('executeTaskStep', () => {
       { payload: 123 },
       env.context,
       task.settings,
+      task.bindings,
     );
     expect(env.setCurrentStep).toHaveBeenNthCalledWith(1, stepInfo);
     expect(env.markSnapshot).toHaveBeenNthCalledWith(1, stepInfo, 'running');

@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Link, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
+import { WithEntityButton } from "@/app-components/buttons/entities/WithEntityButton";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -16,6 +17,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
+import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
 
 const getFullName = (subscriber: ISubscriber | null) =>
@@ -82,34 +84,33 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntityDistinctSelect
+                      <WithEntityButton
                         entity={EntityType.LABEL}
-                        subEntity={EntityType.LABEL_GROUP}
-                        error={!!errors.labels}
-                        helperText={
-                          errors.labels ? errors.labels.message : null
-                        }
-                        onChange={(_e, selected) =>
-                          onChange(selected.map(({ id }) => id))
-                        }
-                        label={t("label.labels")}
-                        labelKey="name"
-                        sortKey="group"
-                        groupKey="name"
-                        defaultGroupTitle={t("title.default_group")}
-                        {...rest}
-                      />
+                        permissionAction={PermissionAction.CREATE}
+                        enableEntityAddButton
+                      >
+                        <AutoCompleteEntityDistinctSelect
+                          entity={EntityType.LABEL}
+                          subEntity={EntityType.LABEL_GROUP}
+                          error={!!errors.labels}
+                          helperText={
+                            errors.labels ? errors.labels.message : null
+                          }
+                          onChange={(_e, selected) =>
+                            onChange(selected.map(({ id }) => id))
+                          }
+                          label={t("label.labels")}
+                          labelKey="name"
+                          sortKey="group"
+                          groupKey="name"
+                          defaultGroupTitle={t("title.default_group")}
+                          {...rest}
+                        />
+                      </WithEntityButton>
                     );
                   }}
                   control={control}
                 />
-              </Grid>
-              <Grid size="auto" alignContent="end">
-                <Link href="/subscribers/labels">
-                  <Button variant="contained" size="small">
-                    {t("button.manage")}
-                  </Button>
-                </Link>
               </Grid>
             </Grid>
           </ContentItem>

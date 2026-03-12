@@ -9,11 +9,22 @@ import { withStepDrawerLayout } from "../../StepDrawer/withStepDrawerLayout";
 import { ActionFormDrawerContent } from "./ActionFormDrawerContent";
 import { ActionFormDrawerFooter } from "./ActionFormDrawerFooter";
 import { ActionFormDrawerHeader } from "./ActionFormDrawerHeader";
-import { useActionFormDrawerController } from "./useActionFormDrawerController";
+import {
+  type ActionFormDrawerCloseReason,
+  type ActionFormDrawerCreateTarget,
+  useActionFormDrawerController,
+} from "./useActionFormDrawerController";
 
 const ActionFormDrawerLayout = withStepDrawerLayout(ActionFormDrawerContent);
 
-export const ActionFormDrawer = () => {
+export type { ActionFormDrawerCloseReason, ActionFormDrawerCreateTarget };
+
+type ActionFormDrawerProps = {
+  target: ActionFormDrawerCreateTarget | null;
+  onClose?: (reason: ActionFormDrawerCloseReason) => void;
+};
+
+export const ActionFormDrawer = ({ target, onClose }: ActionFormDrawerProps) => {
   const {
     open,
     actionSchema,
@@ -32,7 +43,8 @@ export const ActionFormDrawer = () => {
     onExecutionSettingsVisibleErrorsChange,
     headerProps,
     footerProps,
-  } = useActionFormDrawerController();
+    onClose: handleClose,
+  } = useActionFormDrawerController({ target, onClose });
 
   return (
     <ActionFormDrawerLayout
@@ -53,6 +65,7 @@ export const ActionFormDrawer = () => {
       onExecutionSettingsVisibleErrorsChange={
         onExecutionSettingsVisibleErrorsChange
       }
+      onClose={handleClose}
       open={open}
       headerContent={<ActionFormDrawerHeader {...headerProps} />}
       footerContent={<ActionFormDrawerFooter {...footerProps} />}
