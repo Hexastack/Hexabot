@@ -54,7 +54,7 @@ export type InferWorkflowBindings<
   >;
 }>;
 
-export type CompiledTaskBindings = Record<string, unknown>;
+export type CompiledTaskBindings = InferWorkflowBindings;
 
 export type TaskBindingReferences = Record<string, string | string[]>;
 
@@ -483,7 +483,7 @@ export const mountTaskBindings = (
       continue;
     }
 
-    const mountedKindDefs: Record<string, unknown> = {};
+    const mountedKindDefs: Record<string, MountedBindingPayload> = {};
 
     for (const ref of refs) {
       const resolvedDefPayload =

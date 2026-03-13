@@ -65,7 +65,7 @@ export async function executeTaskStep(
 
   try {
     const actionPromise = Promise.resolve().then(() =>
-      task.action.run(inputs, env.context, task.settings, task.bindings as any),
+      task.action.run(inputs, env.context, task.settings, task.bindings),
     );
     const outcome = await waitForTaskProgress(env, stepInfo.id, actionPromise);
 

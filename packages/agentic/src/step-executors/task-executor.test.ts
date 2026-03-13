@@ -57,7 +57,9 @@ const createTask = (runImpl: jest.Mock): CompiledTask => ({
   action: createAction(runImpl),
   inputs: { payload: { kind: 'literal', value: 123 } },
   settings: {} as any,
-  bindings: { tools: { calculate: { action: 'calculate_score' } } },
+  bindings: {
+    tools: { calculate: { action: 'calculate_score', settings: {} } },
+  },
 });
 const createCompiled = (task: CompiledTask): CompiledWorkflow =>
   ({
