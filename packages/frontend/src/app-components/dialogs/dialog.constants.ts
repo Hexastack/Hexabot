@@ -19,6 +19,7 @@ import { THook } from "@/types/base.types";
 import {
   ComponentFormDialogProps,
   ComponentFormProps,
+  OpenDialogOptions,
 } from "@/types/common/dialogs.types";
 
 export const BASE_ADD_DIALOG_MAP = {
@@ -47,6 +48,7 @@ export const BASE_ADD_DIALOG_MAP = {
   [EntityType.MEMORY_DEFINITION]: {
     dialog: MemoryDefinitionFormDialog,
     presetValues: undefined,
+    options: { maxWidth: "lg" },
   },
   [EntityType.ROLE]: {
     dialog: RoleFormDialog,
@@ -60,9 +62,10 @@ export const BASE_ADD_DIALOG_MAP = {
   [E in THook["entity"]]?: {
     dialog: FC<
       ComponentFormDialogProps<
-        FC<ComponentFormProps<THook<{ entity: E }>["current"], any>>
+        FC<ComponentFormProps<THook<{ entity: E }>["basic"], any>>
       >
     >;
     presetValues?: unknown;
+    options?: OpenDialogOptions<THook<{ entity: E }>["basic"]>;
   };
 };

@@ -30,7 +30,10 @@ export const useEntityDialogs = <
   ] as unknown as DialogComponent<TP, TD>;
   const open = (payload: TP, options?: OpenDialogOptions<TD>) => {
     if (EntityDialogComponent) {
-      dialogs.open(EntityDialogComponent, payload, options);
+      dialogs.open(EntityDialogComponent, payload, {
+        ...BASE_ADD_DIALOG_MAP[entity]?.["options"],
+        ...options,
+      });
     }
   };
   const confirmDelete = async (options?: ConfirmOptions) => {
