@@ -213,7 +213,7 @@ describe('AiAgentAction', () => {
       'search',
       'translate',
     ]);
-    expect(stepCountIsMock).toHaveBeenCalledWith(2);
+    expect(stepCountIsMock).toHaveBeenCalledWith(3);
     await (agentOptions.tools as any).search.execute({ query: 'hello' });
     expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
       scope: 'web',

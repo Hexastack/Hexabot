@@ -319,7 +319,7 @@ describe('AiGenerateTextAction', () => {
     expect(callArgs.system).toContain('- Name: Ada');
   });
 
-  it('defaults stopWhen to the number of bound tools and forwards tool settings', async () => {
+  it('defaults stopWhen to bound tools count plus one output step and forwards tool settings', async () => {
     const provider = Object.assign(
       jest.fn().mockReturnValue('model-instance'),
       {
@@ -366,10 +366,10 @@ describe('AiGenerateTextAction', () => {
     const callArgs = generateTextMock.mock.calls[0][0] as any;
     const stopWhen = callArgs.stopWhen;
 
-    expect(stepCountIsMock).toHaveBeenCalledWith(2);
+    expect(stepCountIsMock).toHaveBeenCalledWith(3);
     expect(typeof stopWhen).toBe('function');
-    expect(stopWhen({ steps: [{}, {}] })).toBe(true);
-    expect(stopWhen({ steps: [{}] })).toBe(false);
+    expect(stopWhen({ steps: [{}, {}, {}] })).toBe(true);
+    expect(stopWhen({ steps: [{}, {}] })).toBe(false);
     await callArgs.tools.search.execute({ query: 'hello' });
     expect(toolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
       locale: 'en',
