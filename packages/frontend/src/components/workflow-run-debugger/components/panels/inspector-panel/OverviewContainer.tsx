@@ -12,5 +12,5 @@ type OverviewContainerProps = {
 };
 
 export const OverviewContainer = ({ children }: OverviewContainerProps) => (
-  <Box sx={{ p: 2, height: "100%", overflow: "auto" }}>{children}</Box>
+  <Box sx={{ p: 2 }}>{children}</Box>
 );

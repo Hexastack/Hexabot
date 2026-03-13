@@ -12,6 +12,9 @@ import { handleEditorWillMount } from "./JsonataFormulaField/monaco";
 
 export type JsonViewerProps = {
   value: unknown;
+  autoHeight?: boolean;
+  minHeightPx?: number;
+  lineHeightPx?: number;
 };
 
 const JSON_VIEWER_OPTIONS = {
@@ -19,6 +22,10 @@ const JSON_VIEWER_OPTIONS = {
   domReadOnly: true,
   automaticLayout: true,
   minimap: { enabled: false },
+  scrollbar: {
+    handleMouseWheel: true,
+    alwaysConsumeMouseWheel: false,
+  },
   scrollBeyondLastLine: false,
   wordWrap: "on" as const,
   lineNumbers: "off" as const,
@@ -58,16 +65,28 @@ const safeJsonStringify = (input: unknown): string => {
   }
 };
 
-export function JsonViewer({ value }: JsonViewerProps) {
+export function JsonViewer({
+  value,
+  autoHeight = false,
+  minHeightPx = 220,
+  lineHeightPx = 20,
+}: JsonViewerProps) {
   const jsonText = React.useMemo(() => safeJsonStringify(value), [value]);
   const { mode } = useColorScheme();
+  const editorHeight = React.useMemo(() => {
+    if (!autoHeight) return "100%";
+
+    const lineCount = jsonText ? jsonText.split("\n").length : 1;
+
+    return Math.max(minHeightPx, lineCount * lineHeightPx + 24);
+  }, [autoHeight, jsonText, lineHeightPx, minHeightPx]);
 
   return (
     <Editor
       value={jsonText}
       defaultLanguage="json"
       theme={mode}
-      height="100%"
+      height={editorHeight}
       width="100%"
       options={JSON_VIEWER_OPTIONS}
       beforeMount={handleEditorWillMount}

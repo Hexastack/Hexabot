@@ -25,10 +25,8 @@ import validator from "@/utils/rjsf-zod-validator";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 
-const headerOffset = 65;
 const defaultDrawerHeight = 380;
 const minDrawerHeight = 160;
-const maxDrawerHeightOffset = 120;
 const columnDividerWidth = 16;
 const minChatColumnWidth = 280;
 const minDetailsColumnWidth = 240;
@@ -178,29 +176,11 @@ export const WorkflowBottomDrawer = () => {
   const { user } = useAuth();
   const isConversationalWorkflow = workflow?.type === WorkflowType.conversational;
   const isStacked = useMediaQuery(theme.breakpoints.down("md"));
-  const getMaxDrawerHeight = useCallback(() => {
-    if (typeof window === "undefined") {
-      return defaultDrawerHeight * 2;
-    }
-
-    return Math.max(
-      120,
-      window.innerHeight - headerOffset - maxDrawerHeightOffset,
-    );
-  }, []);
   const clampDrawerHeight = useCallback(
-    (height: number) => {
-      const maxHeight = getMaxDrawerHeight();
-
-      return Math.min(Math.max(height, minDrawerHeight), maxHeight);
-    },
-    [getMaxDrawerHeight],
+    (height: number) => Math.max(height, minDrawerHeight),
+    [],
   );
-  const [drawerHeight, setDrawerHeight] = useState(() =>
-    typeof window === "undefined"
-      ? defaultDrawerHeight
-      : Math.min(defaultDrawerHeight, getMaxDrawerHeight()),
-  );
+  const [drawerHeight, setDrawerHeight] = useState(defaultDrawerHeight);
   const [workflowInput, setWorkflowInput] = useState<Record<string, unknown>>(
     {},
   );

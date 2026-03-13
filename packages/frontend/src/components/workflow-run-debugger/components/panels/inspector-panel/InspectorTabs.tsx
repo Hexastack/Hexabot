@@ -154,13 +154,10 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
   const stepStatusLabel = step ? statusLabels[step.status] : t("label.none");
 
   return (
-    <Box
-      sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Tabs
         value={value}
         onChange={(_, nextValue) => setValue(nextValue)}
-        variant="scrollable"
         allowScrollButtonsMobile
         aria-label={t("label.inspector")}
       >
@@ -178,8 +175,7 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
         id={panelId(value)}
         aria-labelledby={tabId(value)}
         sx={{
-          flex: "1 1 300px",
-          minHeight: 0,
+          pt: 1,
         }}
       >
         {activeKey === "overview" ? (
@@ -201,7 +197,7 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
             />
           </OverviewContainer>
         ) : (
-          <JsonViewer value={activePanel.value} />
+          <JsonViewer value={activePanel.value} autoHeight />
         )}
       </Box>
     </Box>

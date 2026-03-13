@@ -27,7 +27,7 @@ export const StepTracePanel = ({
   const [includeSkipped, setIncludeSkipped] = useState(true);
 
   return (
-    <Grid size={{ xs: 12, lg: 6 }}>
+    <Grid size={{ xs: 12, lg: 4 }}>
       <Paper
         variant="outlined"
         sx={{
