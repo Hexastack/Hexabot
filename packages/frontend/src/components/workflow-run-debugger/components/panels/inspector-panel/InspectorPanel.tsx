@@ -19,7 +19,7 @@ type InspectorPanelProps = {
 
 export const InspectorPanel = ({ run, step }: InspectorPanelProps) => {
   return (
-    <Grid size={{ xs: 12, lg: 6 }}>
+    <Grid size={{ xs: 12, lg: 8 }}>
       <Paper
         variant="outlined"
         sx={{
