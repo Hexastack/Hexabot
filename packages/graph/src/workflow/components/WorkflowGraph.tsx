@@ -152,7 +152,6 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
       compiledFlow: model.compiledFlow,
-      tasks: model.definition?.tasks,
       defs: model.definition?.defs,
       layoutDirection: model.layoutDirection,
       actionCatalog: model.actionCatalog,

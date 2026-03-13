@@ -5,10 +5,12 @@
  */
 
 import type {
+  DefDefinitions,
   JsonValue,
   TaskDefinition,
   TaskDefinitions,
 } from '@hexabot-ai/agentic';
+import { extractTaskDefinitions as extractTaskDefinitionsFromDefs } from '@hexabot-ai/agentic';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import jsonata from 'jsonata';
@@ -53,14 +55,15 @@ export class TranslationService extends BaseOrmService<
     const allStrings: string[] = [];
 
     for (const workflow of workflows) {
-      if (!workflow.definition?.tasks) {
+      if (!workflow.definition?.defs) {
         continue;
       }
 
       try {
-        allStrings.push(
-          ...this.collectTaskTranslationStrings(workflow.definition.tasks),
+        const taskDefinitions = this.extractTaskDefinitions(
+          workflow.definition.defs,
         );
+        allStrings.push(...this.collectTaskTranslationStrings(taskDefinitions));
       } catch (err) {
         this.logger.warn(
           `Unable to collect workflow translations from ${workflow.id}`,
@@ -113,6 +116,10 @@ export class TranslationService extends BaseOrmService<
     return Object.values(tasks).flatMap((task) =>
       this.collectTaskDefinitionTranslations(task),
     );
+  }
+
+  private extractTaskDefinitions(defs: DefDefinitions): TaskDefinitions {
+    return extractTaskDefinitionsFromDefs(defs);
   }
 
   /**

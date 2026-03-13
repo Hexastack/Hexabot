@@ -75,10 +75,10 @@ import {
 } from "../utils/binding-name.utils";
 import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
-  mountTaskBindingRef,
-  setTaskBindingRefs,
+  mountDefBindingRef,
+  setDefBindingRefs,
   toBindingRefs,
-  unmountTaskBindingRef,
+  unmountDefBindingRef,
 } from "../utils/task-bindings.utils";
 import {
   TOOL_BINDING_KIND,
@@ -136,6 +136,7 @@ export const Workflow = () => {
     updateWorkflow,
     updateWorkflowURL,
     definition,
+    taskDefinitions,
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
@@ -220,7 +221,7 @@ export const Workflow = () => {
 
     return getDisabledBindingRefs({
       definition,
-      taskName: pendingBindingAdd.taskName,
+      ownerDefName: pendingBindingAdd.ownerDefName,
       bindingKind: pendingBindingAdd.bindingKind,
       bindingsByName,
     });
@@ -287,7 +288,7 @@ export const Workflow = () => {
 
         setToolDrawerTarget({
           mode: "create",
-          taskName: pendingToolBindingAdd.taskName,
+          ownerDefName: pendingToolBindingAdd.ownerDefName,
           bindingKind: TOOL_BINDING_KIND,
           actionName: action.name,
           initialBindingName: nextToolName,
@@ -306,7 +307,8 @@ export const Workflow = () => {
       const baseDefinition = definition ?? createBaseDefinition();
       const nextTaskName = createTaskName(
         action.name,
-        baseDefinition.tasks ?? {},
+        baseDefinition.defs ?? {},
+        taskDefinitions,
       );
 
       setPendingActionCreateTarget({
@@ -325,7 +327,13 @@ export const Workflow = () => {
       setPendingBindingAdd(null);
       setEditingBindingTarget(null);
     },
-    [definition, pendingInsertPath, pendingToolBindingAdd, setGraphSelection],
+    [
+      definition,
+      pendingInsertPath,
+      pendingToolBindingAdd,
+      setGraphSelection,
+      taskDefinitions,
+    ],
   );
 
   useEffect(() => {
@@ -479,11 +487,11 @@ export const Workflow = () => {
   }, [definition, dialogs, handleSaveWorkflowSettings, isDefinitionSaving]);
   const handleAddBinding = useCallback(
     ({
-      taskName,
+      ownerDefName,
       bindingKind,
       ...payload
     }: WorkflowBindingAddPayload) => {
-      if (!definition || !definition.tasks[taskName]) {
+      if (!definition || !definition.defs[ownerDefName]) {
         return;
       }
 
@@ -493,7 +501,7 @@ export const Workflow = () => {
         setEditingBindingTarget(null);
         setPendingToolBindingAdd({
           ...payload,
-          taskName,
+          ownerDefName,
           bindingKind,
         });
         setActionsDrawerOpen(true);
@@ -516,7 +524,7 @@ export const Workflow = () => {
       setEditingBindingTarget(null);
       setPendingBindingAdd({
         ...payload,
-        taskName,
+        ownerDefName,
         bindingKind,
       });
     },
@@ -528,10 +536,10 @@ export const Workflow = () => {
         return;
       }
 
-      const { taskName, bindingKind } = pendingBindingAdd;
-      const taskDefinition = definition.tasks[taskName];
+      const { ownerDefName, bindingKind } = pendingBindingAdd;
+      const ownerDefinition = definition.defs[ownerDefName];
 
-      if (!taskDefinition) {
+      if (!ownerDefinition) {
         return;
       }
 
@@ -542,14 +550,14 @@ export const Workflow = () => {
       }
 
       const multiple = bindingDefinition.multiple ?? true;
-      const nextTaskDefinition = mountTaskBindingRef(
-        taskDefinition,
+      const nextOwnerDefinition = mountDefBindingRef(
+        ownerDefinition,
         bindingKind,
         bindingName,
         multiple,
       );
 
-      if (nextTaskDefinition === taskDefinition) {
+      if (nextOwnerDefinition === ownerDefinition) {
         setPendingBindingAdd(null);
 
         return;
@@ -557,9 +565,9 @@ export const Workflow = () => {
 
       const nextDefinition = {
         ...definition,
-        tasks: {
-          ...definition.tasks,
-          [taskName]: nextTaskDefinition,
+        defs: {
+          ...definition.defs,
+          [ownerDefName]: nextOwnerDefinition,
         },
       };
 
@@ -583,10 +591,10 @@ export const Workflow = () => {
         return;
       }
 
-      const { taskName, bindingKind } = pendingBindingAdd;
-      const taskDefinition = definition.tasks[taskName];
+      const { ownerDefName, bindingKind } = pendingBindingAdd;
+      const ownerDefinition = definition.defs[ownerDefName];
 
-      if (!taskDefinition) {
+      if (!ownerDefinition) {
         return;
       }
 
@@ -597,14 +605,14 @@ export const Workflow = () => {
       }
 
       const multiple = bindingDefinition.multiple ?? true;
-      const nextTaskDefinition = mountTaskBindingRef(
-        taskDefinition,
+      const nextOwnerDefinition = mountDefBindingRef(
+        ownerDefinition,
         bindingKind,
         bindingName,
         multiple,
       );
 
-      if (nextTaskDefinition === taskDefinition) {
+      if (nextOwnerDefinition === ownerDefinition) {
         setPendingBindingAdd(null);
 
         return;
@@ -614,17 +622,14 @@ export const Workflow = () => {
         ...definition,
         defs: {
           ...(definition.defs ?? {}),
+          [ownerDefName]: nextOwnerDefinition,
           [bindingName]: {
-            ...bindingDefinitionPayload,
             kind: bindingKind,
+            settings: bindingDefinitionPayload,
             ...(normalizedDescription
               ? { description: normalizedDescription }
               : {}),
-          } as { [key: string]: unknown; kind: string },
-        },
-        tasks: {
-          ...definition.tasks,
-          [taskName]: nextTaskDefinition,
+          },
         },
       };
 
@@ -667,28 +672,35 @@ export const Workflow = () => {
         delete nextDefs[currentBindingName];
       }
 
-      nextDefs[nextBindingName] = {
-        ...bindingDefinitionPayload,
+      const updatedDefinition = {
+        ...currentDef,
         kind: bindingKind,
+        settings: bindingDefinitionPayload,
         ...(normalizedDescription
           ? { description: normalizedDescription }
           : {}),
-      } as { [key: string]: unknown; kind: string };
+      };
+
+      if (!normalizedDescription) {
+        delete updatedDefinition.description;
+      }
+
+      nextDefs[nextBindingName] = updatedDefinition;
 
       const bindingDefinition = bindingsByName.get(bindingKind);
-      const multiple = bindingDefinition?.multiple ?? false;
-      const nextTasks =
+      const multiple = bindingDefinition?.multiple ?? true;
+      const nextDefsWithRenamedRefs =
         currentBindingName !== nextBindingName
           ? (Object.fromEntries(
-              Object.entries(definition.tasks).map(
-                ([taskName, taskDefinition]) => {
+              Object.entries(nextDefs).map(
+                ([defName, defDefinition]) => {
                   const refs = toBindingRefs(
-                    taskDefinition.bindings?.[bindingKind],
+                    defDefinition.bindings?.[bindingKind],
                     multiple,
                   );
 
                   if (!refs.includes(currentBindingName)) {
-                    return [taskName, taskDefinition];
+                    return [defName, defDefinition];
                   }
 
                   const replacedRefs = refs.map((refName) =>
@@ -697,9 +709,9 @@ export const Workflow = () => {
                   const dedupedRefs = Array.from(new Set(replacedRefs));
 
                   return [
-                    taskName,
-                    setTaskBindingRefs(
-                      taskDefinition,
+                    defName,
+                    setDefBindingRefs(
+                      defDefinition,
                       bindingKind,
                       dedupedRefs,
                       multiple,
@@ -707,13 +719,12 @@ export const Workflow = () => {
                   ];
                 },
               ),
-            ) as typeof definition.tasks)
-          : definition.tasks;
+            ) as typeof definition.defs)
+          : nextDefs;
 
       updateDefinitionState({
         ...definition,
-        defs: nextDefs,
-        tasks: nextTasks,
+        defs: nextDefsWithRenamedRefs,
       });
       setEditingBindingTarget(null);
       setPendingBindingAdd(null);
@@ -744,17 +755,20 @@ export const Workflow = () => {
           : undefined;
       const bindingKind = nodeData?.bindingKind;
       const bindingName = nodeData?.bindingName;
-      const taskName = nodeData?.taskName;
+      const ownerDefName = nodeData?.ownerDefName;
 
       if (node.type === ENodeType.BINDING_MULTI) {
         if (bindingKind === TOOL_BINDING_KIND) {
-          if (typeof bindingName !== "string" || typeof taskName !== "string") {
+          if (
+            typeof bindingName !== "string" ||
+            typeof ownerDefName !== "string"
+          ) {
             return;
           }
 
           setToolDrawerTarget({
             mode: "edit",
-            taskName,
+            ownerDefName,
             bindingKind: TOOL_BINDING_KIND,
             bindingName,
           });
@@ -768,7 +782,10 @@ export const Workflow = () => {
         return;
       }
 
-      if (!isNonToolBindingKind(bindingKind, bindingsByName)) {
+      const resolvedBindingKind =
+        definition?.defs?.[bindingName]?.kind ?? bindingKind;
+
+      if (!isNonToolBindingKind(resolvedBindingKind, bindingsByName)) {
         return;
       }
 
@@ -776,23 +793,23 @@ export const Workflow = () => {
       setPendingToolBindingAdd(null);
       setToolDrawerTarget(null);
       setEditingBindingTarget({
-        bindingKind,
+        bindingKind: resolvedBindingKind,
         bindingName,
       });
     },
-    [bindingsByName],
+    [bindingsByName, definition?.defs],
   );
   const handleRemoveBinding = useCallback(
     ({
-      taskName,
+      ownerDefName,
       bindingKind,
       bindingName,
     }: WorkflowBindingRemovePayload) => {
-      if (!definition || !definition.tasks[taskName]) {
+      if (!definition || !definition.defs[ownerDefName]) {
         return;
       }
 
-      const taskDefinition = definition.tasks[taskName];
+      const ownerDefinition = definition.defs[ownerDefName];
       const bindingDefinition = bindingsByName.get(bindingKind);
 
       if (!bindingDefinition) {
@@ -801,7 +818,7 @@ export const Workflow = () => {
 
       const multiple = bindingDefinition.multiple ?? true;
       const currentRefs = toBindingRefs(
-        taskDefinition.bindings?.[bindingKind],
+        ownerDefinition.bindings?.[bindingKind],
         multiple,
       );
 
@@ -809,17 +826,17 @@ export const Workflow = () => {
         return;
       }
 
-      const nextTaskDefinition = unmountTaskBindingRef(
-        taskDefinition,
+      const nextOwnerDefinition = unmountDefBindingRef(
+        ownerDefinition,
         bindingKind,
         bindingName,
         multiple,
       );
       const nextDefinition = {
         ...definition,
-        tasks: {
-          ...definition.tasks,
-          [taskName]: nextTaskDefinition,
+        defs: {
+          ...definition.defs,
+          [ownerDefName]: nextOwnerDefinition,
         },
       };
 

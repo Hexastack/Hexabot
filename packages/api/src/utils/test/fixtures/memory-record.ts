@@ -41,8 +41,9 @@ export const memoryRecordFixtureIds = {
 } as const;
 
 const memoryWorkflowDefinition: WorkflowDefinition = {
-  tasks: {
+  defs: {
     noop: {
+      kind: 'task',
       action: 'noop_task',
     },
   },

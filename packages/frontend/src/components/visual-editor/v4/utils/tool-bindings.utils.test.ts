@@ -18,22 +18,40 @@ import {
 
 const createDefinition = (): WorkflowDefinition => ({
   defs: {
+    profile_memory: {
+      kind: "memory",
+      settings: {
+        provider: "redis",
+      },
+    },
     search: {
       kind: "tools",
       action: "search_web",
       description: "Search",
       settings: { timeout: 10 },
+      bindings: {
+        memory: ["profile_memory"],
+      },
     },
-  },
-  tasks: {
     ai_generate_reply: {
+      kind: "task",
       action: "ai_generate_reply",
       bindings: {
         tools: ["search"],
       },
     },
     summarize: {
+      kind: "task",
       action: "ai_summarize",
+      bindings: {
+        tools: ["search"],
+      },
+    },
+    tool_router: {
+      kind: "tool_router",
+      settings: {
+        strategy: "round_robin",
+      },
       bindings: {
         tools: ["search"],
       },
@@ -49,7 +67,7 @@ describe("tool-bindings.utils", () => {
   it("creates a tool def and mounts it on the target task bindings", () => {
     const definition = createDefinition();
     const nextDefinition = createToolBindingDefinitionMutation(definition, {
-      taskName: "ai_generate_reply",
+      ownerDefName: "ai_generate_reply",
       bindingKind: "tools",
       bindingName: "calculate",
       actionName: "calculate_score",
@@ -63,7 +81,7 @@ describe("tool-bindings.utils", () => {
       description: "Calculator",
       settings: { multiplier: 2, bias: 1 },
     });
-    expect(nextDefinition.tasks.ai_generate_reply.bindings?.tools).toEqual([
+    expect(nextDefinition.defs.ai_generate_reply.bindings?.tools).toEqual([
       "search",
       "calculate",
     ]);
@@ -89,7 +107,7 @@ describe("tool-bindings.utils", () => {
   it("updates an existing tool settings and description", () => {
     const definition = createDefinition();
     const nextDefinition = updateToolBindingDefinitionMutation(definition, {
-      taskName: "ai_generate_reply",
+      ownerDefName: "ai_generate_reply",
       bindingKind: "tools",
       currentBindingName: "search",
       nextBindingName: "search",
@@ -103,13 +121,16 @@ describe("tool-bindings.utils", () => {
       action: "search_web",
       description: "Web Search",
       settings: { timeout: 25 },
+      bindings: {
+        memory: ["profile_memory"],
+      },
     });
   });
 
-  it("renames tool defs and updates mounted refs across all tasks", () => {
+  it("renames tool defs and updates mounted refs across all defs", () => {
     const definition = createDefinition();
     const nextDefinition = updateToolBindingDefinitionMutation(definition, {
-      taskName: "ai_generate_reply",
+      ownerDefName: "ai_generate_reply",
       bindingKind: "tools",
       currentBindingName: "search",
       nextBindingName: "search_tool",
@@ -124,17 +145,23 @@ describe("tool-bindings.utils", () => {
       action: "search_web",
       description: "Search tool",
       settings: { timeout: 50 },
+      bindings: {
+        memory: ["profile_memory"],
+      },
     });
-    expect(nextDefinition.tasks.ai_generate_reply.bindings?.tools).toEqual([
+    expect(nextDefinition.defs.ai_generate_reply.bindings?.tools).toEqual([
       "search_tool",
     ]);
-    expect(nextDefinition.tasks.summarize.bindings?.tools).toEqual(["search_tool"]);
+    expect(nextDefinition.defs.summarize.bindings?.tools).toEqual(["search_tool"]);
+    expect(nextDefinition.defs.tool_router.bindings?.tools).toEqual([
+      "search_tool",
+    ]);
   });
 
   it("strips empty optional fields on create and update", () => {
     const definition = createDefinition();
     const withNewTool = createToolBindingDefinitionMutation(definition, {
-      taskName: "ai_generate_reply",
+      ownerDefName: "ai_generate_reply",
       bindingKind: "tools",
       bindingName: "translate",
       actionName: "translate_text",
@@ -145,10 +172,11 @@ describe("tool-bindings.utils", () => {
     expect(withNewTool.defs?.translate).toEqual({
       kind: "tools",
       action: "translate_text",
+      settings: {},
     });
 
     const updated = updateToolBindingDefinitionMutation(withNewTool, {
-      taskName: "ai_generate_reply",
+      ownerDefName: "ai_generate_reply",
       bindingKind: "tools",
       currentBindingName: "search",
       nextBindingName: "search",
@@ -160,6 +188,10 @@ describe("tool-bindings.utils", () => {
     expect(updated.defs?.search).toEqual({
       kind: "tools",
       action: "search_web",
+      settings: {},
+      bindings: {
+        memory: ["profile_memory"],
+      },
     });
   });
 });

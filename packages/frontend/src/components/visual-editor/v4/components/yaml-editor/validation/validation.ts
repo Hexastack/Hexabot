@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BaseSettingsSchema, WorkflowDefinitionSchema } from "@hexabot-ai/agentic";
+import {
+  BaseSettingsSchema,
+  WorkflowDefinitionSchema,
+  extractTaskDefinitions,
+} from "@hexabot-ai/agentic";
 import type { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { LineCounter, parseDocument } from "yaml";
@@ -109,7 +113,8 @@ export const applyWorkflowValidationMarkers = ({
     return;
   }
 
-  const knownTasks = new Set(Object.keys(parsed.data.tasks));
+  const taskDefinitions = extractTaskDefinitions(parsed.data.defs);
+  const knownTasks = new Set(Object.keys(taskDefinitions));
   const references = collectTaskReferences(parsed.data.flow, ["flow"]);
   const actionsByName =
     actions?.reduce<Record<string, IAction>>((acc, action) => {
@@ -131,10 +136,10 @@ export const applyWorkflowValidationMarkers = ({
 
   if (actionsByName) {
     // Validate task inputs/settings/outputs against action schemas.
-    Object.entries(parsed.data.tasks).forEach(([taskName, task]) => {
+    Object.entries(taskDefinitions).forEach(([taskName, task]) => {
       const actionName = task.action;
       const actionDefinition = actionsByName[actionName];
-      const taskPath: ReferencePath = ["tasks", taskName];
+      const taskPath: ReferencePath = ["defs", taskName];
 
       if (!actionDefinition) {
         markers.push({

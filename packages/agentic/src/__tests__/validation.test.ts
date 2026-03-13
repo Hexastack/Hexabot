@@ -12,6 +12,8 @@ import { z } from 'zod';
 
 import { validateWorkflow } from '../dsl.types';
 
+import { mergeTaskDefs } from './test-helpers';
+
 const fixturePath = path.join(
   __dirname,
   '..',
@@ -23,11 +25,9 @@ const fixturePath = path.join(
 const fixtureYaml = fs.readFileSync(fixturePath, 'utf8');
 const bindingKinds = {
   tools: {
-    schema: z.strictObject({
-      action: z.string(),
-      settings: z.record(z.string(), z.unknown()).optional(),
-    }),
+    schema: z.record(z.string(), z.unknown()),
     multiple: true,
+    actionPolicy: 'required' as const,
   },
   toolset: {
     schema: z.strictObject({
@@ -51,7 +51,7 @@ describe('validateWorkflow', () => {
     expect(result.success).toBe(true);
 
     if (result.success) {
-      expect(Object.keys(result.data.tasks)).toContain('understand_request');
+      expect(Object.keys(result.data.defs)).toContain('understand_request');
       expect(result.data.flow.length).toBeGreaterThan(0);
       expect(result.data.outputs).toHaveProperty('delivered');
     }
@@ -130,21 +130,23 @@ describe('validateWorkflow', () => {
 
   it('accepts defs and task bindings when all refs and kinds are valid', () => {
     const workflow = {
-      defs: {
-        calculate: {
-          kind: 'tools',
-          action: 'calculate_score',
-          settings: { multiplier: 2 },
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: ['calculate'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: ['calculate'],
+            },
           },
         },
-      },
+        {
+          calculate: {
+            kind: 'tools',
+            action: 'calculate_score',
+            settings: { multiplier: 2 },
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -155,21 +157,25 @@ describe('validateWorkflow', () => {
 
   it('accepts single-ref task bindings for kinds with multiple=false', () => {
     const workflow = {
-      defs: {
-        chat_model: {
-          kind: 'model',
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            model: 'chat_model',
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              model: 'chat_model',
+            },
           },
         },
-      },
+        {
+          chat_model: {
+            kind: 'model',
+            settings: {
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+            },
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -180,21 +186,25 @@ describe('validateWorkflow', () => {
 
   it('fails when single-ref binding kinds are provided as arrays', () => {
     const workflow = {
-      defs: {
-        chat_model: {
-          kind: 'model',
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            model: ['chat_model'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              model: ['chat_model'],
+            },
           },
         },
-      },
+        {
+          chat_model: {
+            kind: 'model',
+            settings: {
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+            },
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -214,20 +224,23 @@ describe('validateWorkflow', () => {
 
   it('fails when multi-ref binding kinds are provided as strings', () => {
     const workflow = {
-      defs: {
-        calculate: {
-          kind: 'tools',
-          action: 'calculate_score',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: 'calculate',
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: 'calculate',
+            },
           },
         },
-      },
+        {
+          calculate: {
+            kind: 'tools',
+            action: 'calculate_score',
+            settings: {},
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -247,15 +260,17 @@ describe('validateWorkflow', () => {
 
   it('fails when task bindings reference unknown defs', () => {
     const workflow = {
-      defs: {},
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: ['missing_tool'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: ['missing_tool'],
+            },
           },
         },
-      },
+        {},
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -271,20 +286,22 @@ describe('validateWorkflow', () => {
 
   it('fails when a task binding references a def with a different kind', () => {
     const workflow = {
-      defs: {
-        calculator_pack: {
-          kind: 'toolset',
-          name: 'calc',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: ['calculator_pack'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: ['calculator_pack'],
+            },
           },
         },
-      },
+        {
+          calculator_pack: {
+            kind: 'toolset',
+            settings: { name: 'calc' },
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -300,17 +317,21 @@ describe('validateWorkflow', () => {
 
   it('fails when defs declare undeclared kinds', () => {
     const workflow = {
-      defs: {
-        remote_server: {
-          kind: 'mcp_server',
-          endpoint: 'http://localhost:3000',
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+          },
         },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
+        {
+          remote_server: {
+            kind: 'mcp_server',
+            settings: {
+              endpoint: 'http://localhost:3000',
+            },
+          },
         },
-      },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -326,20 +347,23 @@ describe('validateWorkflow', () => {
 
   it('fails when task bindings use undeclared kinds', () => {
     const workflow = {
-      defs: {
-        calculate: {
-          kind: 'tools',
-          action: 'calculate_score',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            mcp_server: ['calculate'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              mcp_server: ['calculate'],
+            },
           },
         },
-      },
+        {
+          calculate: {
+            kind: 'tools',
+            action: 'calculate_score',
+            settings: {},
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -349,7 +373,7 @@ describe('validateWorkflow', () => {
     if (!result.success) {
       expect(
         result.errors.some((error) =>
-          error.includes('tasks.agent_step.bindings.mcp_server'),
+          error.includes('defs.agent_step.bindings.mcp_server'),
         ),
       ).toBe(true);
     }
@@ -357,20 +381,23 @@ describe('validateWorkflow', () => {
 
   it('fails when defs or bindings are present without bindingKinds', () => {
     const workflow = {
-      defs: {
-        calculate: {
-          kind: 'tools',
-          action: 'calculate_score',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: ['calculate'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: ['calculate'],
+            },
           },
         },
-      },
+        {
+          calculate: {
+            kind: 'tools',
+            action: 'calculate_score',
+            settings: {},
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };
@@ -386,20 +413,23 @@ describe('validateWorkflow', () => {
 
   it('fails when task bindings include duplicate refs', () => {
     const workflow = {
-      defs: {
-        calculate: {
-          kind: 'tools',
-          action: 'calculate_score',
-        },
-      },
-      tasks: {
-        agent_step: {
-          action: 'understand_request_action',
-          bindings: {
-            tools: ['calculate', 'calculate'],
+      defs: mergeTaskDefs(
+        {
+          agent_step: {
+            action: 'understand_request_action',
+            bindings: {
+              tools: ['calculate', 'calculate'],
+            },
           },
         },
-      },
+        {
+          calculate: {
+            kind: 'tools',
+            action: 'calculate_score',
+            settings: {},
+          },
+        },
+      ),
       flow: [{ do: 'agent_step' }],
       outputs: { result: '=$output.agent_step' },
     };

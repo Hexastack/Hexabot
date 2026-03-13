@@ -24,10 +24,10 @@ export const BindingPlaceholder: FC<
   const { translate, onAddBinding } = useWorkflowGraphHost();
   const stepId = data?.stepId;
   const stepPath = data?.stepPath;
-  const taskName = data?.taskName;
+  const ownerDefName = data?.ownerDefName;
   const bindingKind = data?.bindingKind;
   const canAddBinding = Boolean(
-    onAddBinding && stepId && stepPath && taskName && bindingKind,
+    onAddBinding && stepId && stepPath && ownerDefName && bindingKind,
   );
   const addLabel = translate("button.add");
   const handleAddBinding = useCallback(
@@ -35,7 +35,7 @@ export const BindingPlaceholder: FC<
       event.preventDefault();
       event.stopPropagation();
 
-      if (!canAddBinding || !onAddBinding || !taskName || !bindingKind) {
+      if (!canAddBinding || !onAddBinding || !ownerDefName || !bindingKind) {
         return;
       }
 
@@ -43,7 +43,7 @@ export const BindingPlaceholder: FC<
         nodeId: id,
         stepId,
         stepPath,
-        taskName,
+        ownerDefName,
         bindingKind,
       });
     },
@@ -52,9 +52,9 @@ export const BindingPlaceholder: FC<
       canAddBinding,
       id,
       onAddBinding,
+      ownerDefName,
       stepId,
       stepPath,
-      taskName,
     ],
   );
 

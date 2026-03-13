@@ -19,10 +19,11 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Run the suspend/resume quickstart: `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`
 
 ## DSL essentials (YAML or JS object)
-- Workflow parts: optional `inputs.schema`, `context`, `defaults.settings`, `tasks`, `flow`, `outputs`. Long-term state should be stored on the workflow context.
-- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `tasks.*.outputs`).
-- Flow primitives: `do` (single task), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` (`for_each`, optional `until`, `accumulate`, `max_concurrency` hint).
-- Tasks: names must be `snake_case`; each declares `action`, optional `inputs`/`outputs` maps, and `settings` that merge over `defaults.settings`.
+- Workflow parts: optional `inputs.schema`, `context`, `defaults.settings`, required `defs`, `flow`, `outputs`. Long-term state should be stored on the workflow context.
+- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `defs.<task>.outputs` for `kind: task` defs).
+- Flow primitives: `do` (single task def reference), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` (`for_each`, optional `until`, `accumulate`, `max_concurrency` hint).
+- Defs: `defs.<name>` is the only root registry. `kind: task` defs execute actions (`action`, optional `inputs`/`outputs`/`settings`/`bindings`), non-task defs require `settings` and may also declare nested `bindings`.
+- Bindings: any def may declare `bindings`; validation is recursive and enforces cardinality, kind matching, duplicates, cycles, and allowlists from `action.supportedBindings` or `kind.supportedBindings`.
 - Outputs: required map evaluated after the flow; values are expressions that usually reference `$output.<task>.*`.
 
 ## Runtime architecture (TS)
@@ -31,7 +32,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Step ids: generated from the flow path (e.g., `0.branch.1:conditional`); loop iterations append `[i.j]` suffixes.
 - Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|skipped`).
 - Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
-- Evaluation order: task inputs are evaluated before marking a step as running; outputs are mapped via `evaluateMapping` (falls back to raw result when no outputs map is provided). Final workflow outputs are evaluated only after the flow completes.
+- Evaluation order: task-def inputs are evaluated before marking a step as running; outputs are mapped via `evaluateMapping` (falls back to raw result when no outputs map is provided). Final workflow outputs are evaluated only after the flow completes.
 - Parallel semantics: executed sequentially for determinism; `wait_any` short-circuits after the first completed child, `wait_all` waits for all.
 - Loop semantics: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator; `until` is checked after each iteration; accumulated values are exposed under `$output.<loop_name>.<accumulator_alias>` when `name` is set.
 
@@ -39,11 +40,14 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Create actions with `defineAction` (or extend `AbstractAction`): provide `name` (snake_case), optional `description`, `inputSchema`, `outputSchema`, optional `settingSchema`, and an async `execute`.
 - `AbstractAction.run` handles `parseInput`, merges/parses settings (defaults live in `SettingsSchema`, including `timeout_ms` and retry policy), wraps `execute` with timeout/retries, and validates the output.
 - Suspension: inside `execute`, `await context.workflow.suspend(options)`; the runner marks the step as `suspended` and returns `{ status: 'suspended', step, reason?, data? }`. On resume, the suspended action continues from the `await` with the provided data.
-- Settings merge: `mergeSettings` deep-merges `defaults.settings` with task-level overrides; undefined values do not clobber defaults.
+- Settings merge: `mergeSettings` deep-merges `defaults.settings` with task-def overrides; undefined values do not clobber defaults.
 
 ## Conventions and gotchas
 - Expressions must start with `=`; validation will parse JSONata and fail early on syntax errors.
 - Task/action names are enforced as `snake_case` by `assertSnakeCaseName`.
+- Root `tasks` is invalid; use `defs` only.
+- Non-task defs must include `settings` (empty object is valid).
+- If compile-time `actions` are provided, any def declaring `action` must resolve to a known action.
 - `max_concurrency` in loops is accepted in the DSL but not yet enforced by the in-process runner (treat it as a hint for now).
 - `timeout_ms: 0` disables timeouts. Default retries come from `DEFAULT_RETRY_SETTINGS` (3 attempts, exponential backoff starting at 25ms, capped at 10s, no jitter).
 - Outputs mapping is optional; when omitted the entire raw action result is stored under `$output.<task>`.
@@ -52,7 +56,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 ## When extending the package
 - Add or adjust DSL shape in `packages/agentic/src/dsl.types.ts` and update `packages/agentic/DSL.md` plus the example workflow if behavior changes.
 - Extend runtime behavior in `packages/agentic/src/workflow-*.ts`; keep tests in `packages/agentic/src/__tests__` in sync.
-- For new actions in the example, update `packages/agentic/example/actions/*` and `example/workflow.yml` so the runnable demo continues to work.
+- For new actions in the example, update `packages/agentic/examples/full/actions/*` and `packages/agentic/examples/full/workflow.yml` so the runnable demo continues to work.
 - Prefer small, well-named helper functions; keep the public surface re-exported via `packages/agentic/src/index.ts`.
 
 ## Quick reference: examples

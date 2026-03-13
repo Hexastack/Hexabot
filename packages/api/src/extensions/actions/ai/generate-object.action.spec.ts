@@ -75,12 +75,14 @@ describe('AiGenerateObjectAction', () => {
     }> = {},
   ): any => ({
     model: {
-      provider: 'openai',
-      model_id: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
-      ...overrides,
+      settings: {
+        provider: 'openai',
+        model_id: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
     },
   });
 
@@ -268,7 +270,7 @@ describe('AiGenerateObjectAction', () => {
         context: createContext(),
         bindings: {
           model: {
-            openai_chatgpt: {
+            settings: {
               provider: 'openai',
             },
           },

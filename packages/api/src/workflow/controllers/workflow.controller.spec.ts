@@ -152,6 +152,8 @@ describe('WorkflowController (TypeORM)', () => {
       multiple: true,
       color: '#f59e0b',
       icon: 'Wrench',
+      supportedBindings: ['tools', 'model', 'memory'],
+      actionPolicy: 'required',
     });
     runtimeBindingsService.register({
       kind: 'model',
@@ -159,6 +161,8 @@ describe('WorkflowController (TypeORM)', () => {
       multiple: false,
       color: '#ad46fc',
       icon: 'Brain',
+      supportedBindings: [],
+      actionPolicy: 'forbidden',
     });
     runtimeBindingsService.register({
       kind: 'memory',
@@ -166,6 +170,8 @@ describe('WorkflowController (TypeORM)', () => {
       multiple: true,
       color: '#0ea5e9',
       icon: 'Database',
+      supportedBindings: [],
+      actionPolicy: 'forbidden',
     });
     runtimeBindingsService.register({
       kind: 'weather',
@@ -281,6 +287,18 @@ describe('WorkflowController (TypeORM)', () => {
       expect(bindings.memory.icon).toBe('Database');
       expect(bindings.weather.color).toBe('#22c55e');
       expect(bindings.weather.icon).toBe('CloudSun');
+      expect(bindings.tools.supportedBindings).toEqual([
+        'tools',
+        'model',
+        'memory',
+      ]);
+      expect(bindings.model.supportedBindings).toEqual([]);
+      expect(bindings.memory.supportedBindings).toEqual([]);
+      expect(bindings.weather.supportedBindings).toEqual([]);
+      expect(bindings.tools.actionPolicy).toBe('required');
+      expect(bindings.model.actionPolicy).toBe('forbidden');
+      expect(bindings.memory.actionPolicy).toBe('forbidden');
+      expect(bindings.weather.actionPolicy).toBe('optional');
       expect(bindings.tools.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
@@ -291,7 +309,10 @@ describe('WorkflowController (TypeORM)', () => {
         'http://json-schema.org/draft-07/schema#',
       );
       const toolsDefinition = bindings.tools.schema as
-        | { properties?: Record<string, { type?: string }> }
+        | {
+            properties?: Record<string, { type?: string }>;
+            additionalProperties?: unknown;
+          }
         | undefined;
       const modelDefinition = bindings.model.schema as
         | { properties?: Record<string, { type?: string }> }
@@ -303,7 +324,8 @@ describe('WorkflowController (TypeORM)', () => {
         | { properties?: Record<string, { type?: string }> }
         | undefined;
 
-      expect(toolsDefinition?.properties?.action?.type).toBe('string');
+      expect(toolsDefinition?.properties?.action).toBeUndefined();
+      expect(toolsDefinition?.additionalProperties).toBeDefined();
       expect(modelDefinition?.properties?.provider?.type).toBe('string');
       expect(modelDefinition?.properties?.model_id?.type).toBe('string');
       expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');

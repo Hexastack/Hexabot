@@ -6,6 +6,7 @@
 
 import type {
   CompiledStep,
+  TaskDefinition,
   WorkflowDefinition,
   WorkflowEventMap,
 } from "@hexabot-ai/agentic";
@@ -64,6 +65,8 @@ export interface IWorkflowContext {
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   definition?: WorkflowDefinition;
   flow?: CompiledStep[];
+  taskDefinitions: Record<string, TaskDefinition>;
+  taskIds: string[];
 }
 
 export interface WorkflowContextProps {

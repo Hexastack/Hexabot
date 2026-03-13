@@ -9,6 +9,7 @@ import { Form } from "@rjsf/mui";
 import { getDefaultFormState, type RJSFSchema, type UiSchema } from "@rjsf/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { isRecord } from "@/utils/object";
 import validator from "@/utils/rjsf-zod-validator";
 
 import { FORM_FIELDS } from "./fields";
@@ -20,9 +21,6 @@ const FORM_UI_SCHEMA = {
     norender: true,
   },
 } as const;
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
 const withSchemaDefaults = (
   schema: RJSFSchema,
   formData: Record<string, unknown>,

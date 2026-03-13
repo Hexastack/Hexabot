@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-function isObject(item: any): item is Record<string, any> {
-  return item && typeof item === "object" && !Array.isArray(item);
-}
+export const isRecord = (item: unknown): item is Record<string, unknown> => {
+  return item !== null && typeof item === "object" && !Array.isArray(item);
+};
 
 export function merge<
   T extends Record<string, any>,
@@ -14,7 +14,7 @@ export function merge<
 >(target: T, source: U): T & U {
   const output: Record<string, any> = { ...target };
 
-  if (isObject(target) && isObject(source)) {
+  if (isRecord(target) && isRecord(source)) {
     Object.keys(source).forEach((key) => {
       if (Array.isArray(source[key])) {
         if (Array.isArray(target[key])) {
@@ -23,7 +23,7 @@ export function merge<
         } else {
           output[key] = source[key];
         }
-      } else if (isObject(source[key])) {
+      } else if (isRecord(source[key])) {
         if (!(key in target)) {
           output[key] = source[key];
         } else {

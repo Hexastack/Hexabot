@@ -8,6 +8,7 @@ import { stringify as stringifyYaml } from 'yaml';
 
 import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
 import {
+  TASK_KIND,
   WorkflowDefinition,
   WorkflowDefinitionSchema,
   validateWorkflow,
@@ -114,6 +115,7 @@ export class Workflow {
   ): Workflow {
     const validation = validateWorkflow(definition, {
       bindingKinds: options.bindingKinds,
+      actions: options.actions,
     });
     if (!validation.success) {
       throw new Error(
@@ -133,6 +135,7 @@ export class Workflow {
   static fromYaml(yaml: string, options: WorkflowCompileOptions): Workflow {
     const validation = validateWorkflow(yaml, {
       bindingKinds: options.bindingKinds,
+      actions: options.actions,
     });
     if (!validation.success) {
       throw new Error(
@@ -255,10 +258,14 @@ export class Workflow {
     if (
       !removedTaskName ||
       !Object.prototype.hasOwnProperty.call(
-        nextDefinition.tasks,
+        nextDefinition.defs,
         removedTaskName,
       )
     ) {
+      return nextDefinition;
+    }
+
+    if (nextDefinition.defs[removedTaskName]?.kind !== TASK_KIND) {
       return nextDefinition;
     }
 
@@ -266,12 +273,12 @@ export class Workflow {
       return nextDefinition;
     }
 
-    const { [removedTaskName]: _removedTask, ...remainingTasks } =
-      nextDefinition.tasks;
+    const { [removedTaskName]: _removedTask, ...remainingDefs } =
+      nextDefinition.defs;
 
     return {
       ...nextDefinition,
-      tasks: remainingTasks,
+      defs: remainingDefs,
     };
   }
 

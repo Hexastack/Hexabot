@@ -58,6 +58,8 @@ describe('RuntimeBindingsService', () => {
       multiple: true,
       color: '#f59e0b',
       icon: 'Wrench',
+      supportedBindings: ['tools', 'model', 'memory'],
+      actionPolicy: 'required',
     });
     service.register({
       kind: 'model',
@@ -65,6 +67,8 @@ describe('RuntimeBindingsService', () => {
       multiple: false,
       color: '#ad46fc',
       icon: 'Brain',
+      supportedBindings: [],
+      actionPolicy: 'forbidden',
     });
     service.register({
       kind: 'memory',
@@ -72,6 +76,8 @@ describe('RuntimeBindingsService', () => {
       multiple: true,
       color: '#0ea5e9',
       icon: 'Database',
+      supportedBindings: [],
+      actionPolicy: 'forbidden',
     });
     const definitions = service.getAllSchemaDefinitions();
 
@@ -87,6 +93,16 @@ describe('RuntimeBindingsService', () => {
     expect(definitions.model.icon).toBe('Brain');
     expect(definitions.memory.color).toBe('#0ea5e9');
     expect(definitions.memory.icon).toBe('Database');
+    expect(definitions.tools.supportedBindings).toEqual([
+      'tools',
+      'model',
+      'memory',
+    ]);
+    expect(definitions.model.supportedBindings).toEqual([]);
+    expect(definitions.memory.supportedBindings).toEqual([]);
+    expect(definitions.tools.actionPolicy).toBe('required');
+    expect(definitions.model.actionPolicy).toBe('forbidden');
+    expect(definitions.memory.actionPolicy).toBe('forbidden');
     expect(definitions.tools.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
@@ -97,7 +113,10 @@ describe('RuntimeBindingsService', () => {
       'http://json-schema.org/draft-07/schema#',
     );
     const toolsDefinition = definitions.tools.schema as
-      | { properties?: Record<string, { type?: string }> }
+      | {
+          properties?: Record<string, { type?: string }>;
+          additionalProperties?: unknown;
+        }
       | undefined;
     const modelDefinition = definitions.model.schema as
       | { properties?: Record<string, { type?: string }> }
@@ -106,7 +125,8 @@ describe('RuntimeBindingsService', () => {
       | { properties?: Record<string, { type?: string }> }
       | undefined;
 
-    expect(toolsDefinition?.properties?.action?.type).toBe('string');
+    expect(toolsDefinition?.properties?.action).toBeUndefined();
+    expect(toolsDefinition?.additionalProperties).toBeDefined();
     expect(modelDefinition?.properties?.provider?.type).toBe('string');
     expect(modelDefinition?.properties?.model_id?.type).toBe('string');
     expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');
@@ -158,5 +178,7 @@ describe('RuntimeBindingsService', () => {
 
     expect(definitions[customKind]).toBeDefined();
     expect(definitions[customKind]?.multiple).toBe(false);
+    expect(definitions[customKind]?.supportedBindings).toEqual([]);
+    expect(definitions[customKind]?.actionPolicy).toBe('forbidden');
   });
 });

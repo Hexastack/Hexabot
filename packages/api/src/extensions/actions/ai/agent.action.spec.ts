@@ -74,12 +74,14 @@ describe('AiAgentAction', () => {
     }> = {},
   ): any => ({
     model: {
-      provider: 'openai',
-      model_id: 'gpt-4o-mini',
-      api_key: 'test-key',
-      base_url: 'https://api.openai.com',
-      organization: 'org-1',
-      ...overrides,
+      settings: {
+        provider: 'openai',
+        model_id: 'gpt-4o-mini',
+        api_key: 'test-key',
+        base_url: 'https://api.openai.com',
+        organization: 'org-1',
+        ...overrides,
+      },
     },
   });
 
@@ -333,7 +335,9 @@ describe('AiAgentAction', () => {
         ...createModelBindings(),
         memory: {
           selected_profile: {
-            definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+            settings: {
+              definition_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+            },
           },
         },
       } as any,
@@ -439,7 +443,9 @@ describe('AiAgentAction', () => {
         context: createContext(),
         bindings: {
           model: {
-            provider: 'openai',
+            settings: {
+              provider: 'openai',
+            },
           },
         } as any,
       }),

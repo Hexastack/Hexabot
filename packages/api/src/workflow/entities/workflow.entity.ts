@@ -61,7 +61,7 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
           retries: { ...DEFAULT_RETRY_SETTINGS },
         },
       },
-      tasks: {},
+      defs: {},
       flow: [],
       outputs: {},
     });

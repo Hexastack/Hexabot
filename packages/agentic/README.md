@@ -23,24 +23,31 @@ The package ships both ESM (`import`) and CommonJS (`require`) entrypoints plus 
 
 ## DSL essentials
 
-A workflow is a single YAML (or object) that declares inputs, context, defaults, tasks, control-flow, and outputs. The full annotated reference lives in `./DSL.md` and `example/workflow.yml`. The important pieces:
+A workflow is a single YAML (or object) that declares inputs, context, defaults, definitions, control-flow, and outputs. The full annotated reference lives in `./DSL.md` and `examples/full/workflow.yml`. The important pieces:
 
 - `inputs.schema`: JSON-schema-like fields validated at runtime.
 - `context`: read-only values injected by the host (including any long-term state) and exposed to expressions.
 - `defaults.settings`: inherited by every task (timeouts, retries, and action-specific settings).
-- `defs`: reusable typed entities that tasks can mount through bindings.
-- `tasks`: catalog of actions to call; names must be `snake_case`. Each task declares `inputs` and `settings`.
-- `tasks.<task>.bindings`: optional kind-based refs that mount parsed defs into action runtime args (`<kind>: [<defName>...]` for `multiple: true`, `<kind>: <defName>` for `multiple: false`).
+- `defs`: required root registry for all definitions.
+- `defs.<name>` with `kind: task`: executable task defs with `action` and optional `inputs`, `settings`, `bindings`, `description`.
+- `defs.<name>` with `kind != task`: binding defs; `settings` is required (use `{}` when empty), with optional `action`, `bindings`, `description`.
+- `flow[].do`: must reference a `defs.<name>` entry where `kind: task`.
+- `defs.<name>.bindings`: optional kind-based refs on any def (`<kind>: [<defName>...]` for `multiple: true`, `<kind>: <defName>` for `multiple: false`).
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
 
 Task results are stored automatically under `$output.<task>` for downstream expressions.
 
-When workflows use `defs` or task `bindings`, pass `bindingKinds` (a map of binding kind names to `{ schema, multiple }`) to `Workflow.fromYaml` / `Workflow.fromDefinition`. The engine validates kind names, def payloads, and task binding refs before compilation.
+When workflows use defs with bindings, pass `bindingKinds` to `Workflow.fromYaml` / `Workflow.fromDefinition`. Each kind descriptor supports `{ schema, multiple, supportedBindings?, actionPolicy? }`.
+
+Binding validation is recursive and enforces cardinality, reference existence, kind matching, duplicate references, cycle detection, and allowlists:
+- if a def has `action`, allowlist comes from `actions[action].supportedBindings`.
+- otherwise allowlist comes from `bindingKinds[def.kind].supportedBindings`.
+- when `actions` are provided at compile time, defs declaring `action` must resolve.
 
 At runtime, mounted bindings follow kind cardinality:
-- `multiple: true` kinds mount as `{ [defName]: parsedPayload }`.
-- `multiple: false` kinds mount as the direct `parsedPayload`.
+- `multiple: true` kinds mount as `{ [defName]: { settings, action?, bindings? } }`.
+- `multiple: false` kinds mount as `{ settings, action?, bindings? }`.
 
 Any string starting with `=` is parsed as JSONata; everything else is literal. Expressions receive `{ input, context, output, iteration, accumulator }` as scope; `$context` resolves to your workflow context state.
 
@@ -61,11 +68,11 @@ class AppContext extends BaseWorkflowContext<{ user_id: string }> {
 
 const bindingKinds = {
   tools: {
-    schema: z.object({
-      action: z.string(),
-      settings: z.record(z.string(), z.unknown()).optional(),
-    }),
+    // For non-task kinds, schema validates the "settings" payload.
+    schema: z.record(z.string(), z.unknown()),
     multiple: true,
+    actionPolicy: 'required' as const,
+    supportedBindings: ['tools'] as const,
   },
 };
 type AppBindings = InferWorkflowBindings<typeof bindingKinds>;
@@ -77,7 +84,7 @@ export const call_api = defineAction<
   Settings,
   AppBindings
 >({
-  name: 'call_api', // must match task.action
+  name: 'call_api', // must match defs.<task>.action
   description: 'Fetches data from an API',
   inputSchema: z.object({ id: z.string() }),
   outputSchema: z.object({ body: z.string() }),
@@ -101,7 +108,7 @@ import { Workflow, WorkflowEventEmitter, BaseWorkflowContext } from '@hexabot-ai
 import fs from 'node:fs';
 
 const yamlSource = fs.readFileSync('workflow.yml', 'utf8');
-const actions = { call_api }; // keys are task.action names
+const actions = { call_api }; // keys are action names referenced by defs.*.action
 
 class AppContext extends BaseWorkflowContext<{ user_id: string; thread_id: string }> {}
 
@@ -132,7 +139,7 @@ if (startResult.status === 'finished') {
 You can also skip YAML and use `Workflow.fromDefinition` with a typed object that matches `WorkflowDefinition`.
 Attach an event emitter to your workflow context (via the constructor or by setting `context.eventEmitter`); it accepts any object with `emit` and `on` methods. `WorkflowEventEmitter` is a small, dependency-free helper with typed payloads (`WorkflowEventEmitterLike` describes the shape).
 
-If your YAML declares `defs` / `tasks.*.bindings`, pass the same `bindingKinds` registry:
+If your YAML declares `defs.*.bindings`, pass the same `bindingKinds` registry:
 
 ```ts
 const workflow = Workflow.fromYaml(yamlSource, {
@@ -148,8 +155,9 @@ inputs:
   schema:
     user_id:
       type: string
-tasks:
+defs:
   greet_user:
+    kind: task
     action: call_api
     inputs:
       id: "=$input.user_id"
@@ -173,7 +181,7 @@ const workflow = Workflow.fromYaml(yamlSource, {
 });
 ```
 
-These helpers are registered on every expression and can be referenced from YAML, e.g. `text: "=$i18n('Bye bye')"` inside a task input.
+These helpers are registered on every expression and can be referenced from YAML, e.g. `text: "=$i18n('Bye bye')"` inside `defs.<task>.inputs`.
 
 ## Suspension and human-in-the-loop
 

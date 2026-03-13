@@ -7,7 +7,9 @@
 import {
   WorkflowDefinition,
   Workflow as WorkflowHelper,
+  extractTaskDefinitions,
   type FlowStep,
+  type TaskDefinition,
 } from "@hexabot-ai/agentic";
 import {
   isSameWorkflowSelection,
@@ -33,12 +35,11 @@ import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
   createBaseDefinition,
   createTaskName,
+  extractTaskIdsFromYaml,
 } from "../utils/workflow-definition.utils";
 
-type TaskInputs = NonNullable<WorkflowDefinition["tasks"][string]["inputs"]>;
-type TaskSettings = NonNullable<
-  WorkflowDefinition["tasks"][string]["settings"]
->;
+type TaskInputs = NonNullable<TaskDefinition["inputs"]>;
+type TaskSettings = NonNullable<TaskDefinition["settings"]>;
 const EMPTY_GRAPH_SELECTION: WorkflowSelectionSnapshot = {
   nodeIds: [],
   nodes: [],
@@ -84,25 +85,36 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   } = useWorkflowDefinitionState({
     workflow,
   });
+  const taskDefinitions = useMemo(
+    () => extractTaskDefinitions(definition?.defs ?? {}),
+    [definition?.defs],
+  );
+  const taskIds = useMemo(
+    () => extractTaskIdsFromYaml(yaml),
+    [yaml],
+  );
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition();
     const nextTaskName = createTaskName(
       action.name,
-      baseDefinition.tasks ?? {},
+      baseDefinition.defs ?? {},
+      taskDefinitions,
     );
     const taskDescription = action.description?.trim();
     const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
     const settingDefaults = getSchemaDefaults<TaskSettings>(
       action.settingSchema,
     )!;
-    const nextTasks = {
-      ...baseDefinition.tasks,
-      [nextTaskName]: {
-        action: action.name,
-        ...(taskDescription ? { description: taskDescription } : {}),
-        ...(inputDefaults !== undefined ? { inputs: inputDefaults } : {}),
-        ...(settingDefaults !== undefined ? { settings: settingDefaults } : {}),
-      },
+    const nextTaskDefinition: TaskDefinition = {
+      kind: "task",
+      action: action.name,
+      ...(taskDescription ? { description: taskDescription } : {}),
+      ...(inputDefaults !== undefined ? { inputs: inputDefaults } : {}),
+      ...(settingDefaults !== undefined ? { settings: settingDefaults } : {}),
+    };
+    const nextDefs = {
+      ...baseDefinition.defs,
+      [nextTaskName]: nextTaskDefinition,
     };
     const nextOutputs =
       baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
@@ -111,7 +123,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     const nextStep: FlowStep = { do: nextTaskName };
     const definitionWithTask: WorkflowDefinition = {
       ...baseDefinition,
-      tasks: nextTasks,
+      defs: nextDefs,
       outputs: nextOutputs,
     };
     const insertedDefinition = insertPath
@@ -320,6 +332,8 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         removeStepAtPath,
         definition,
         flow,
+        taskDefinitions,
+        taskIds,
       }}
     >
       {children}

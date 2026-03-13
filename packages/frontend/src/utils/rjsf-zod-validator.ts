@@ -15,6 +15,8 @@ import {
 } from "@rjsf/utils";
 import { z } from "zod";
 
+import { isRecord } from "@/utils/object";
+
 type ErrorPathSegment = number | string | symbol;
 type ErrorPath = ErrorPathSegment[];
 type JsonRecord = Record<string, unknown>;
@@ -31,9 +33,6 @@ type ZodSchemaLike = {
 
 let schemaCache = new WeakMap<object, ZodSchemaLike>();
 
-const isRecord = (value: unknown): value is JsonRecord => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
 const mergeSchemaWithRootRefs = (
   schema: RJSFSchema,
   rootSchema: RJSFSchema,

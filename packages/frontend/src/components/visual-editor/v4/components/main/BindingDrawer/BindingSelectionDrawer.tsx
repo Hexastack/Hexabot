@@ -106,10 +106,37 @@ const asRecord = (value: unknown): Record<string, unknown> | undefined => {
 
   return value as Record<string, unknown>;
 };
-const toBindingFormData = (definition: Record<string, unknown>) => {
-  const { kind: _kind, description: _description, ...rest } = definition;
+const getSchemaPropertyNames = (schema?: JSONSchema): string[] => {
+  const schemaRecord = asRecord(schema);
+  const schemaProperties = asRecord(schemaRecord?.properties);
 
-  return rest;
+  if (!schemaProperties) {
+    return [];
+  }
+
+  return Object.keys(schemaProperties);
+};
+const pickSchemaFields = (
+  value: Record<string, unknown>,
+  schema?: JSONSchema,
+): Record<string, unknown> => {
+  const schemaPropertyNames = getSchemaPropertyNames(schema);
+
+  if (!schemaPropertyNames.length) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).filter(([key]) => schemaPropertyNames.includes(key)),
+  );
+};
+const toBindingFormData = (
+  definition: Record<string, unknown>,
+  schema?: JSONSchema,
+) => {
+  const settings = asRecord(definition.settings);
+
+  return pickSchemaFields(settings ?? {}, schema);
 };
 const BindingSelectionDrawerContent = ({
   isOpen,
@@ -489,7 +516,9 @@ export const BindingSelectionDrawer = ({
       setBindingName(editingBindingName);
       setBindingDescription(existingDescription);
       setBindingData(
-        existingDefinition ? toBindingFormData(existingDefinition) : {},
+        existingDefinition
+          ? toBindingFormData(existingDefinition, bindingSchema)
+          : {},
       );
       setMode("create");
       setHasVisibleErrors(false);
@@ -510,6 +539,7 @@ export const BindingSelectionDrawer = ({
   }, [
     availableBindings.length,
     bindingKind,
+    bindingSchema,
     defaultBindingData,
     defs,
     editingBindingName,

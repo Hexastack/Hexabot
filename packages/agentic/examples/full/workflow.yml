@@ -50,8 +50,9 @@ defaults:
       multiplier: 1.5
 
 # Task catalog: each task has a unique name, description, action, inputs, settings.
-tasks:
+defs:
   understand_request:
+    kind: task
     description: "LLM categorizes the incoming query, extracts a short summary, and lists missing must-have fields."
     action: call_llm
     inputs:
@@ -76,6 +77,7 @@ tasks:
         multiplier: 1.2
 
   fetch_user_profile:
+    kind: task
     description: "Look up CRM profile and recent cases for the authenticated user."
     action: get_user_profile
     inputs:
@@ -84,6 +86,7 @@ tasks:
 
   # Three distinct actions will run in parallel; their outputs will later be merged.
   search_recent_news:
+    kind: task
     description: "Web search for fresh information about the user's company or topic."
     action: search_web
     inputs:
@@ -93,6 +96,7 @@ tasks:
       timeout_ms: 7000
 
   retrieve_memory_thread:
+    kind: task
     description: "Recall summarized prior conversation for continuity."
     action: query_memory
     inputs:
@@ -102,6 +106,7 @@ tasks:
       timeout_ms: 3000
 
   fetch_calendar_events:
+    kind: task
     description: "Pull the user's upcoming meetings for scheduling-aware replies."
     action: get_calendar_events
     inputs:
@@ -112,6 +117,7 @@ tasks:
 
   # Human-in-the-loop primitive: ask the user a clarifying question and pause the run until they respond.
   ask_for_missing_detail:
+    kind: task
     description: >
       Send a clarifying question to the end user when the request lacks required fields.
       The engine MUST pause the workflow here and resume once a reply is received or a timeout occurs.
@@ -126,6 +132,7 @@ tasks:
       timeout_ms: 86400000                 # 24h; engines may choose a default if omitted
 
   synthesize_research:
+    kind: task
     description: "LLM that combines all signals (including any user clarification) into a concise brief."
     action: call_llm
     inputs:
@@ -141,6 +148,7 @@ tasks:
       temperature: 0.35
 
   route_by_intent:
+    kind: task
     description: "Decide which downstream path to take using a branching table."
     action: decision_router
     inputs:
@@ -162,6 +170,7 @@ tasks:
       default_next: send_generic_summary
 
   draft_support_reply:
+    kind: task
     description: "Generate troubleshooting steps tailored to the user."
     action: call_llm
     inputs:
@@ -175,6 +184,7 @@ tasks:
       temperature: 0.3
 
   craft_sales_pitch:
+    kind: task
     description: "Write a sales email using retrieved company insights."
     action: call_llm
     inputs:
@@ -188,6 +198,7 @@ tasks:
       temperature: 0.55
 
   escalate_to_human:
+    kind: task
     description: "Open or update a human-agent ticket with full context."
     action: create_ticket
     inputs:
@@ -197,6 +208,7 @@ tasks:
       clarification: "=$exists($output.ask_for_missing_detail.text) ? $output.ask_for_missing_detail.text : ''"
 
   send_generic_summary:
+    kind: task
     description: "Fallback response when no specialized branch applies."
     action: call_llm
     inputs:
@@ -207,6 +219,7 @@ tasks:
       model: gpt-4o-mini
 
   send_email_response:
+    kind: task
     description: "Deliver the chosen response via email."
     action: send_email
     inputs:
@@ -226,6 +239,7 @@ tasks:
 
   # Loop-specific tasks used by the for-each demo in the flow below.
   draft_stakeholder_update:
+    kind: task
     description: "LLM crafts a short FYI note for each stakeholder iterated in the loop."
     action: call_llm
     inputs:
@@ -238,6 +252,7 @@ tasks:
       temperature: 0.35
 
   send_stakeholder_update:
+    kind: task
     description: "Deliver FYI notes to stakeholders and capture acknowledgement."
     action: send_email
     inputs:

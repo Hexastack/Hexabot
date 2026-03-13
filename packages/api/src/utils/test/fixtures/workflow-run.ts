@@ -44,8 +44,9 @@ export const workflowRunFixtureIds = {
 } as const;
 
 const workflowRunWorkflowDefinition: WorkflowDefinition = {
-  tasks: {
+  defs: {
     noop: {
+      kind: 'task',
       action: 'noop_task',
     },
   },

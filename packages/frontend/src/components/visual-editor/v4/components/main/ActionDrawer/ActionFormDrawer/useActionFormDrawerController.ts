@@ -116,7 +116,8 @@ export const useActionFormDrawerController = ({
   onClose,
 }: UseActionFormDrawerControllerParams): UseActionFormDrawerControllerResult => {
   const { t } = useTranslate();
-  const { definition, updateDefinitionState, isSaving } = useWorkflow();
+  const { definition, updateDefinitionState, isSaving, taskDefinitions } =
+    useWorkflow();
   const { actionsByName } = useWorkflowActionsCatalog();
   const selectedActionNode = useSelectedActionNode();
   const selectedNodeId = selectedActionNode?.id;
@@ -125,7 +126,7 @@ export const useActionFormDrawerController = ({
   const taskName = target?.initialTaskName ?? selectedActionNode?.taskName;
   const actionSchema = target?.action ?? (actionName ? actionsByName.get(actionName) : undefined);
   const taskDefinition =
-    !isCreateMode && taskName ? definition?.tasks?.[taskName] : undefined;
+    !isCreateMode && taskName ? taskDefinitions[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});
   const [actionSettingsData, setActionSettingsData] = useState<
     Record<string, unknown>
@@ -182,7 +183,7 @@ export const useActionFormDrawerController = ({
     actionName,
     taskName,
     taskDescription: target?.initialTaskDescription ?? taskDefinition?.description,
-    tasks: definition?.tasks,
+    tasks: taskDefinitions,
   });
   const handleSaveClose = useStepDrawerClose(() => {
     onClose?.("save");
@@ -322,11 +323,12 @@ export const useActionFormDrawerController = ({
     const hasSettingValues = Object.keys(nextSettingsData).length > 0;
 
     if (isCreateMode && target) {
-      if (Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)) {
+      if (Object.prototype.hasOwnProperty.call(taskDefinitions, nextTaskName)) {
         return;
       }
 
       const nextTask: TaskDefinition = {
+        kind: "task",
         action: actionSchema.name,
         ...(normalizedDescription ? { description: normalizedDescription } : {}),
         ...(hasInputValues
@@ -339,8 +341,8 @@ export const useActionFormDrawerController = ({
       const nextStep: FlowStep = { do: nextTaskName };
       const definitionWithTask: WorkflowDefinition = {
         ...definition,
-        tasks: {
-          ...(definition.tasks ?? {}),
+        defs: {
+          ...(definition.defs ?? {}),
           [nextTaskName]: nextTask,
         },
         outputs:
@@ -368,12 +370,12 @@ export const useActionFormDrawerController = ({
 
     if (
       nextTaskName !== taskName &&
-      Object.prototype.hasOwnProperty.call(definition.tasks, nextTaskName)
+      Object.prototype.hasOwnProperty.call(taskDefinitions, nextTaskName)
     ) {
       return;
     }
 
-    const currentTask = definition.tasks?.[taskName];
+    const currentTask = taskName ? taskDefinitions[taskName] : undefined;
 
     if (!currentTask) {
       return;
@@ -394,14 +396,18 @@ export const useActionFormDrawerController = ({
     };
     let nextDefinition: WorkflowDefinition = {
       ...definition,
-      tasks: {
-        ...(definition.tasks ?? {}),
+      defs: {
+        ...(definition.defs ?? {}),
         [taskName]: nextTask,
       },
     };
 
     if (!normalizedDescription) {
-      delete nextDefinition.tasks[taskName].description;
+      const nextTaskDefinition = nextDefinition.defs[taskName];
+
+      if (nextTaskDefinition?.kind === "task") {
+        delete nextTaskDefinition.description;
+      }
     }
 
     if (nextTaskName !== taskName) {
@@ -427,7 +433,7 @@ export const useActionFormDrawerController = ({
     (isCreateMode
       ? !target ||
         !normalizedTaskName ||
-        Object.prototype.hasOwnProperty.call(definition.tasks, normalizedTaskName)
+        Object.prototype.hasOwnProperty.call(taskDefinitions, normalizedTaskName)
       : !selectedActionNode || !taskDefinition);
 
   return {

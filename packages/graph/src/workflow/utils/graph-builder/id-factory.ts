@@ -41,20 +41,23 @@ export const createPlaceholderNodeId = (
 
 export const createAttachmentNodeId = (
   stepId: string,
+  ownerDefName: string,
   name: string,
   index: number,
   namespace?: string,
 ): string => {
   const namespacePart = namespace ? `${normalizeName(namespace)}:` : "";
+  const ownerPart = toToken(ownerDefName);
 
-  return `attachment:${toToken(stepId)}:binding:${namespacePart}${index}:${normalizeName(name)}`;
+  return `attachment:${toToken(stepId)}:binding:${ownerPart}:${namespacePart}${index}:${normalizeName(name)}`;
 };
 
 export const createBindingPlaceholderNodeId = (
   stepId: string,
+  ownerDefName: string,
   kind: string,
 ): string => {
-  return `attachment:${toToken(stepId)}:binding-placeholder:${normalizeName(kind)}`;
+  return `attachment:${toToken(stepId)}:binding-placeholder:${toToken(ownerDefName)}:${normalizeName(kind)}`;
 };
 
 export const createEdgeId = ({

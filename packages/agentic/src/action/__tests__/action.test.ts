@@ -9,6 +9,7 @@ import { z } from 'zod';
 import type {
   BindingKindSchemas,
   InferWorkflowBindings,
+  MountedBindingPayload,
 } from '../../bindings/base-binding';
 import { BaseWorkflowContext } from '../../context';
 import { Settings, SettingsSchema } from '../../dsl.types';
@@ -42,11 +43,9 @@ const OutputSchema = z.object({ result: z.number() });
 const NoSettingsSchema = z.any();
 const _bindingKindSchemas = {
   tools: {
-    schema: z.strictObject({
-      action: z.string(),
-      settings: z.record(z.string(), z.unknown()).optional(),
-    }),
+    schema: z.record(z.string(), z.unknown()),
     multiple: true,
+    actionPolicy: 'required',
   },
   model: {
     schema: z.strictObject({
@@ -281,6 +280,7 @@ describe('workflow step primitives', () => {
         tools: {
           calculate: {
             action: 'calculate_score',
+            settings: {},
           },
         },
       } as any),
@@ -300,6 +300,7 @@ describe('workflow step primitives', () => {
           tools: {
             calculate: {
               action: 'calculate_score',
+              settings: {},
             },
           },
         },
@@ -368,13 +369,13 @@ describe('workflow step primitives', () => {
     expectType<
       Equal<
         NonNullable<TestBindings['tools']>,
-        Record<string, z.infer<typeof _bindingKindSchemas.tools.schema>>
+        Record<string, MountedBindingPayload<typeof _bindingKindSchemas.tools>>
       >
     >();
     expectType<
       Equal<
         NonNullable<TestBindings['model']>,
-        z.infer<typeof _bindingKindSchemas.model.schema>
+        MountedBindingPayload<typeof _bindingKindSchemas.model>
       >
     >();
 

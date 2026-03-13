@@ -40,7 +40,11 @@ export class WorkflowContextFactory {
 
     const ids = Object.values(definition.defs)
       .filter((def) => def?.kind === 'memory')
-      .map((def) => (def as { definition_id?: unknown }).definition_id)
+      .map(
+        (def) =>
+          (def as { settings?: { definition_id?: unknown } }).settings
+            ?.definition_id,
+      )
       .filter((value): value is string => typeof value === 'string' && !!value);
 
     return Array.from(new Set(ids));

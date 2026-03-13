@@ -32,14 +32,16 @@ type WorkflowFixture = WorkflowCreateDto & { definitionYml: string };
  * It sends an initial text and follows up with a quick reply prompt.
  */
 export const messagingWorkflowDefinition: WorkflowDefinition = {
-  tasks: {
+  defs: {
     send_greeting: {
+      kind: 'task',
       action: 'send_text_message',
       inputs: {
         text: '="Welcome to Hexabot! Let us know how to help."',
       },
     },
     prompt_next_step: {
+      kind: 'task',
       action: 'send_quick_replies',
       description: 'Offer quick replies to continue the conversation.',
       inputs: {
@@ -69,8 +71,9 @@ export const messagingWorkflowDefinition: WorkflowDefinition = {
  * Scheduled workflow definition used to validate cron-based execution.
  */
 export const scheduledWorkflowDefinition: WorkflowDefinition = {
-  tasks: {
+  defs: {
     send_update: {
+      kind: 'task',
       // Dummy action used only for scheduled workflow testing.
       action: 'noop_task',
       inputs: {

@@ -74,10 +74,12 @@ describe('AiInferObjectAction', () => {
     }> = {},
   ): any => ({
     model: {
-      provider: 'openai',
-      model_id: 'gpt-4o-mini',
-      api_key: 'test-key',
-      ...overrides,
+      settings: {
+        provider: 'openai',
+        model_id: 'gpt-4o-mini',
+        api_key: 'test-key',
+        ...overrides,
+      },
     },
   });
 
@@ -199,7 +201,7 @@ describe('AiInferObjectAction', () => {
         context: createContext(),
         bindings: {
           model: {
-            openai_chatgpt: {
+            settings: {
               provider: 'openai',
             },
           },

@@ -149,6 +149,20 @@ export const useWorkflowDefinitionState = ({
       ),
     [actionsByName],
   );
+  const actionValidationMetadata = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(compileActionsByName).map(
+          ([actionName, actionDefinition]) => [
+            actionName,
+            {
+              supportedBindings: actionDefinition.supportedBindings ?? [],
+            },
+          ],
+        ),
+      ),
+    [compileActionsByName],
+  );
   const definitionSignatureRef = useRef("");
   const {
     definition,
@@ -199,6 +213,7 @@ export const useWorkflowDefinitionState = ({
 
       const validation = validateWorkflow(nextDefinitionYml, {
         bindingKinds,
+        actions: actionValidationMetadata,
       });
 
       if (!validation.success) {
@@ -210,7 +225,7 @@ export const useWorkflowDefinitionState = ({
         definitionYml: nextDefinitionYml,
       });
     }, 4000),
-    [bindingKinds, workflow?.id, commitVersion],
+    [actionValidationMetadata, bindingKinds, workflow?.id, commitVersion],
     (memoizedFn) => {
       memoizedFn.clear();
     },

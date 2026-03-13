@@ -5,14 +5,16 @@ inputs:
       type: string
       description: "Prompt shown to the user when the workflow suspends."
 
-tasks:
+defs:
   wait_for_confirmation:
+    kind: task
     description: "Sends a prompt and suspends until the reply is provided via resume."
     action: wait_for_user
     inputs:
       prompt: "=$input.question"
 
   format_acknowledgement:
+    kind: task
     description: "Formats a message using the reply captured after resuming the run."
     action: format_reply
     inputs:

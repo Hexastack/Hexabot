@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import {
+  extractTaskDefinitions,
+  type TaskDefinition,
+  type WorkflowDefinition,
+} from "@hexabot-ai/agentic";
 
 import type {
   GlobalsSchema,
@@ -12,20 +16,20 @@ import type {
 } from "@/app-components/inputs/JsonataFormulaField";
 import type { IAction } from "@/types/action.types";
 import type { IMemoryDefinition } from "@/types/memory-definition.types";
+import { isRecord } from "@/utils/object";
 
-type WorkflowTaskDefinition = NonNullable<WorkflowDefinition["tasks"]>[string];
+type WorkflowTaskDefinition = TaskDefinition;
 
 const MEMORY_BINDING_KIND = "memory";
 
 type BuildJsonataGlobalsSchemaArgs = {
   definition?: WorkflowDefinition;
+  taskDefinitions?: Record<string, WorkflowTaskDefinition>;
   actionsByName: ReadonlyMap<string, IAction>;
   memoryDefinitions?: IMemoryDefinition[];
   inputSchema?: unknown;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
 const createOpenObjectSchema = (): JsonSchemaLike => ({
   type: "object",
   properties: {},
@@ -49,7 +53,10 @@ export const extractMemoryDefinitionIdsFromWorkflowDefinition = (
         return acc;
       }
 
-      const definitionId = defDefinition.definition_id;
+      const definitionSettings = isRecord(defDefinition.settings)
+        ? defDefinition.settings
+        : undefined;
+      const definitionId = definitionSettings?.definition_id;
 
       if (typeof definitionId !== "string" || !definitionId.trim()) {
         return acc;
@@ -124,11 +131,14 @@ const getContextSchema = (
 
 export const buildJsonataGlobalsSchema = ({
   definition,
+  taskDefinitions,
   actionsByName,
   memoryDefinitions,
   inputSchema,
 }: BuildJsonataGlobalsSchemaArgs): GlobalsSchema => {
-  const outputProperties = Object.entries(definition?.tasks ?? {}).reduce<
+  const resolvedTaskDefinitions =
+    taskDefinitions ?? extractTaskDefinitions(definition?.defs ?? {});
+  const outputProperties = Object.entries(resolvedTaskDefinitions).reduce<
     Record<string, JsonSchemaLike>
   >((acc, [taskName, taskDefinition]) => {
     acc[taskName] = getTaskOutputSchema({

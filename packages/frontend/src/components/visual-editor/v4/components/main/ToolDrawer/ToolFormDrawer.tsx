@@ -47,7 +47,7 @@ type ToolFormDrawerContentProps = {
 
 type ToolFormDrawerCreateTarget = {
   mode: "create";
-  taskName: string;
+  ownerDefName: string;
   bindingKind: typeof TOOL_BINDING_KIND;
   actionName: string;
   initialBindingName: string;
@@ -57,7 +57,7 @@ type ToolFormDrawerCreateTarget = {
 
 type ToolFormDrawerEditTarget = {
   mode: "edit";
-  taskName: string;
+  ownerDefName: string;
   bindingKind: typeof TOOL_BINDING_KIND;
   bindingName: string;
 };
@@ -195,13 +195,13 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
   const actionSchema = actionName ? actionsByName.get(actionName) : undefined;
   const panelKeyBase = target
     ? target.mode === "create"
-      ? `tool-create-${target.taskName}-${target.initialBindingName}`
-      : `tool-edit-${target.taskName}-${target.bindingName}`
+      ? `tool-create-${target.ownerDefName}-${target.initialBindingName}`
+      : `tool-edit-${target.ownerDefName}-${target.bindingName}`
     : "tool";
   const targetKey = target
     ? target.mode === "create"
-      ? `create:${target.taskName}:${target.initialBindingName}:${target.actionName}`
-      : `edit:${target.taskName}:${target.bindingName}`
+      ? `create:${target.ownerDefName}:${target.initialBindingName}:${target.actionName}`
+      : `edit:${target.ownerDefName}:${target.bindingName}`
     : "";
   const hasSettingsSchema = useMemo(
     () =>
@@ -278,7 +278,7 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
     const nextDefinition =
       target.mode === "create"
         ? createToolBindingDefinitionMutation(definition, {
-            taskName: target.taskName,
+            ownerDefName: target.ownerDefName,
             bindingKind: target.bindingKind,
             bindingName: normalizedToolName,
             actionName: resolvedTarget.actionName,
@@ -286,7 +286,7 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
             settings: actionSettingsData,
           })
         : updateToolBindingDefinitionMutation(definition, {
-            taskName: target.taskName,
+            ownerDefName: target.ownerDefName,
             bindingKind: target.bindingKind,
             currentBindingName: target.bindingName,
             nextBindingName: normalizedToolName,

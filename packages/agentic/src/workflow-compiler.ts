@@ -19,6 +19,7 @@ import type {
   TaskDefinition,
   WorkflowDefinition,
 } from './dsl.types';
+import { extractTaskDefinitions as extractTaskDefinitionsFromDefs } from './dsl.types';
 import { assertSnakeCaseName } from './utils/naming';
 import { StepType } from './workflow-event-emitter';
 import type {
@@ -152,10 +153,11 @@ const compileTasks = (
 ): Record<string, CompiledTask> => {
   const compiled: Record<string, CompiledTask> = {};
   const defaultSettings = definition.defaults?.settings;
-  const bindingValidation = validateAndResolveBindings(
-    definition,
-    options.bindingKinds,
-  );
+  const taskDefinitions = extractTaskDefinitionsFromDefs(definition.defs);
+  const bindingValidation = validateAndResolveBindings(definition, {
+    bindingKinds: options.bindingKinds,
+    actions: options.actions,
+  });
 
   if (bindingValidation.errors.length > 0) {
     throw new Error(
@@ -163,41 +165,9 @@ const compileTasks = (
     );
   }
 
-  assertActionsBound(definition.tasks, options.actions);
+  assertActionsBound(taskDefinitions, options.actions);
 
-  const unsupportedBindingErrors: string[] = [];
-
-  for (const [taskName, task] of Object.entries(definition.tasks)) {
-    const taskBindingKinds = Object.keys(task.bindings ?? {});
-    if (taskBindingKinds.length === 0) {
-      continue;
-    }
-
-    const action = options.actions[task.action];
-    const supportedBindingKinds = action.supportedBindings ?? [];
-
-    for (const bindingKind of taskBindingKinds) {
-      if (supportedBindingKinds.includes(bindingKind)) {
-        continue;
-      }
-
-      const supportedKindsLabel =
-        supportedBindingKinds.length > 0
-          ? supportedBindingKinds.join(', ')
-          : '<none>';
-      unsupportedBindingErrors.push(
-        `tasks.${taskName}.bindings.${bindingKind}: Action "${task.action}" does not support binding kind "${bindingKind}". Supported binding kinds: ${supportedKindsLabel}.`,
-      );
-    }
-  }
-
-  if (unsupportedBindingErrors.length > 0) {
-    throw new Error(
-      `Workflow bindings validation failed: ${unsupportedBindingErrors.join('; ')}`,
-    );
-  }
-
-  for (const [taskName, task] of Object.entries(definition.tasks)) {
+  for (const [taskName, task] of Object.entries(taskDefinitions)) {
     assertSnakeCaseName(taskName, 'action');
 
     const action = options.actions[task.action];

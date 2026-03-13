@@ -6,7 +6,6 @@
 
 import type { Monaco } from "@monaco-editor/react";
 import type { IDisposable, IPosition, editor } from "monaco-editor";
-import { parse as parseYaml } from "yaml";
 
 import type { IAction } from "@/types/action.types";
 
@@ -29,42 +28,24 @@ const isCommentOrBlank = (line: string) => {
 
   return trimmed.length === 0 || trimmed.startsWith("#");
 };
-const isInTasksBlock = (model: editor.ITextModel, position: IPosition) => {
+const isInDefsBlock = (model: editor.ITextModel, position: IPosition) => {
   for (let lineNumber = position.lineNumber; lineNumber >= 1; lineNumber -= 1) {
     const line = model.getLineContent(lineNumber);
 
     if (isCommentOrBlank(line)) continue;
 
     if (countIndent(line) === 0) {
-      return /^tasks:\s*(#.*)?$/.test(line.trim());
+      return /^defs:\s*(#.*)?$/.test(line.trim());
     }
   }
 
   return false;
 };
-const extractTaskIds = (value: string) => {
-  try {
-    const parsed = parseYaml(value);
-
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return [];
-    }
-
-    const tasks = (parsed as { tasks?: unknown }).tasks;
-
-    if (!tasks || typeof tasks !== "object" || Array.isArray(tasks)) {
-      return [];
-    }
-
-    return Object.keys(tasks as Record<string, unknown>).sort();
-  } catch {
-    return [];
-  }
-};
 const buildTaskCompletionItems = (
   monacoInstance: Monaco,
   model: editor.ITextModel,
   position: IPosition,
+  taskIds?: string[],
 ) => {
   const linePrefix = model
     .getLineContent(position.lineNumber)
@@ -74,9 +55,7 @@ const buildTaskCompletionItems = (
     return [];
   }
 
-  const taskIds = extractTaskIds(model.getValue());
-
-  if (taskIds.length === 0) {
+  if (!taskIds?.length) {
     return [];
   }
 
@@ -118,7 +97,7 @@ const buildActionCompletionItems = (
     return [];
   }
 
-  if (!isInTasksBlock(model, position)) {
+  if (!isInDefsBlock(model, position)) {
     return [];
   }
 
@@ -155,6 +134,7 @@ const buildActionCompletionItems = (
 export const registerYamlCompletionProvider = (
   monacoInstance: Monaco,
   getActions?: () => IAction[] | undefined,
+  getTaskIds?: () => string[] | undefined,
 ): IDisposable => {
   const suggestions = buildYamlCompletionItems(monacoInstance);
 
@@ -167,6 +147,7 @@ export const registerYamlCompletionProvider = (
           monacoInstance,
           model,
           position,
+          getTaskIds?.(),
         );
         const actionSuggestions = buildActionCompletionItems(
           monacoInstance,

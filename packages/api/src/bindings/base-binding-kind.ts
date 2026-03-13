@@ -31,6 +31,10 @@ export abstract class BaseBindingKindProvider<
 
   public readonly icon: string;
 
+  public readonly supportedBindings: readonly string[];
+
+  public readonly actionPolicy: 'forbidden' | 'optional' | 'required';
+
   private readonly runtimeBindingsService: RuntimeBindingsService;
 
   protected constructor(
@@ -43,6 +47,8 @@ export abstract class BaseBindingKindProvider<
     this.multiple = metadata.multiple;
     this.color = metadata.color ?? BaseBindingKindProvider.DEFAULT_COLOR;
     this.icon = metadata.icon ?? BaseBindingKindProvider.DEFAULT_ICON;
+    this.supportedBindings = metadata.supportedBindings ?? [];
+    this.actionPolicy = metadata.actionPolicy ?? 'forbidden';
   }
 
   onModuleInit() {
@@ -52,6 +58,8 @@ export abstract class BaseBindingKindProvider<
       multiple: this.multiple,
       color: this.color,
       icon: this.icon,
+      supportedBindings: this.supportedBindings,
+      actionPolicy: this.actionPolicy,
     });
   }
 }

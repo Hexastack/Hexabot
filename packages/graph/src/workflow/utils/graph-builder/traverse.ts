@@ -6,12 +6,12 @@
 
 import {
   StepType,
+  isTaskDefinition,
   type CompiledConditionalStep,
   type CompiledLoopStep,
   type CompiledParallelStep,
   type CompiledStep,
   type DefDefinitions,
-  type TaskDefinitions,
 } from "@hexabot-ai/agentic";
 
 import {
@@ -68,7 +68,6 @@ type TraversalExit = {
 
 type GraphBuilderContext = {
   config: INodeConfig;
-  tasks?: TaskDefinitions;
   defs?: DefDefinitions;
   actionCatalog: ReadonlyMap<string, WorkflowAction>;
   bindingCatalog: WorkflowBindingCatalog;
@@ -124,14 +123,19 @@ const buildBindingOutPort = (
   total: number,
 ): BindingOutPort =>
   `${ELinkType.BINDING_OUT}-${index}-${total}-${encodeURIComponent(bindingKind)}`;
-const buildBindingPorts = (
+const buildBindingPorts = <
+  TNodeType extends
+    | ENodeType.TASK
+    | ENodeType.BINDING_MULTI
+    | ENodeType.BINDING_SINGLE,
+>(
   bindingKinds: string[],
-): WorkflowNodePort<ENodeType.TASK>[] => {
+): WorkflowNodePort<TNodeType>[] => {
   return bindingKinds.map((bindingKind, index) => {
     return {
       id: buildBindingOutPort(bindingKind, index, bindingKinds.length),
       label: getBindingPortLabel(bindingKind),
-    };
+    } as WorkflowNodePort<TNodeType>;
   });
 };
 const toBindingRefs = (
@@ -165,16 +169,14 @@ const toBindingRefs = (
     .filter((entry): entry is string => typeof entry === "string")
     .filter(Boolean);
 };
-const resolveEffectiveBindingKinds = (
-  taskAction: string,
-  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+const resolveCatalogBindingKinds = (
+  candidateKinds: readonly string[],
   bindingCatalog: WorkflowBindingCatalog,
-) => {
-  const supportedKinds = actionCatalog.get(taskAction)?.supportedBindings ?? [];
+): string[] => {
   const availableKinds = new Set(bindingCatalog.keys());
   const resolvedKinds: string[] = [];
 
-  supportedKinds.forEach((bindingKind) => {
+  candidateKinds.forEach((bindingKind) => {
     if (
       typeof bindingKind !== "string" ||
       !bindingKind ||
@@ -189,32 +191,56 @@ const resolveEffectiveBindingKinds = (
 
   return resolvedKinds;
 };
-const getTaskMeta = (
-  taskName: string,
-  tasks: TaskDefinitions | undefined,
+const resolveActionSupportedBindingKinds = (
+  actionName: string,
   actionCatalog: ReadonlyMap<string, WorkflowAction>,
   bindingCatalog: WorkflowBindingCatalog,
-) => {
-  const taskDefinition = tasks?.[taskName];
-  const actionName =
-    typeof taskDefinition?.action === "string" ? taskDefinition.action : "";
-  const bindingKinds = resolveEffectiveBindingKinds(
-    actionName,
-    actionCatalog,
+): string[] => {
+  if (!actionName) {
+    return [];
+  }
+
+  const supportedKinds = actionCatalog.get(actionName)?.supportedBindings ?? [];
+
+  return resolveCatalogBindingKinds(supportedKinds, bindingCatalog);
+};
+const resolveEffectiveBindingKindsForDef = (
+  defDefinition: DefDefinitions[string],
+  actionCatalog: ReadonlyMap<string, WorkflowAction>,
+  bindingCatalog: WorkflowBindingCatalog,
+): string[] => {
+  if (isTaskDefinition(defDefinition)) {
+    return resolveActionSupportedBindingKinds(
+      defDefinition.action,
+      actionCatalog,
+      bindingCatalog,
+    );
+  }
+
+  const bindingKindDefinition = bindingCatalog.get(defDefinition.kind);
+
+  if (!bindingKindDefinition) {
+    return [];
+  }
+
+  const actionPolicy = bindingKindDefinition.actionPolicy ?? "optional";
+
+  if (actionPolicy === "required") {
+    if (typeof defDefinition.action !== "string" || !defDefinition.action) {
+      return [];
+    }
+
+    return resolveActionSupportedBindingKinds(
+      defDefinition.action,
+      actionCatalog,
+      bindingCatalog,
+    );
+  }
+
+  return resolveCatalogBindingKinds(
+    bindingKindDefinition.supportedBindings ?? [],
     bindingCatalog,
   );
-  const bindings = taskDefinition?.bindings as Record<string, unknown> | undefined;
-
-  return {
-    actionName,
-    bindingKinds,
-    mountedBindings: Object.fromEntries(
-      bindingKinds.map((bindingKind) => [
-        bindingKind,
-        toBindingRefs(bindings?.[bindingKind], bindingCatalog.get(bindingKind)),
-      ]),
-    ) as Record<string, string[]>,
-  };
 };
 const buildConditionalOperatorOutPort = (
   branchIndex: number,
@@ -457,30 +483,53 @@ const getBindingNodeDescription = ({
 
   return typeof def?.description === "string" ? def.description.trim() : undefined;
 };
-const addTaskAttachments = (
+const addDefAttachments = (
   state: TraverseState,
   {
     stepId,
     stepPath,
+    ownerDefName,
     taskName,
     parentNodeId,
     level,
-    bindingKinds,
-    mountedBindings,
+    visitedOwnerDefs,
   }: {
     stepId: string;
     stepPath: FlowStepPath;
+    ownerDefName: string;
     taskName: string;
     parentNodeId: string;
     level: number;
-    bindingKinds: string[];
-    mountedBindings: Record<string, string[]>;
+    visitedOwnerDefs: Set<string>;
   },
 ) => {
+  if (visitedOwnerDefs.has(ownerDefName)) {
+    return;
+  }
+
+  const ownerDefinition = state.defs?.[ownerDefName];
+
+  if (!ownerDefinition) {
+    return;
+  }
+
+  const bindingKinds = resolveEffectiveBindingKindsForDef(
+    ownerDefinition,
+    state.actionCatalog,
+    state.bindingCatalog,
+  );
+  const nextVisitedOwnerDefs = new Set(visitedOwnerDefs);
+
+  nextVisitedOwnerDefs.add(ownerDefName);
+
   bindingKinds.forEach((bindingKind, bindingIndex) => {
     const bindingDefinition = state.bindingCatalog.get(bindingKind);
+
+    if (!bindingDefinition) {
+      return;
+    }
+
     const isMultiple = bindingDefinition?.multiple ?? true;
-    const bindingNodeTheme = getBindingNodeTheme(bindingDefinition);
     const bindingPlaceholderTheme = bindingDefinition?.color
       ? { borderColor: bindingDefinition.color }
       : {};
@@ -489,18 +538,44 @@ const addTaskAttachments = (
       bindingIndex,
       bindingKinds.length,
     );
-    const mountedRefs = mountedBindings[bindingKind] ?? [];
-    const placeholderNodeId = createBindingPlaceholderNodeId(stepId, bindingKind);
+    const mountedRefs = toBindingRefs(
+      ownerDefinition.bindings?.[bindingKind],
+      bindingDefinition,
+    );
+    const placeholderNodeId = createBindingPlaceholderNodeId(
+      stepId,
+      ownerDefName,
+      bindingKind,
+    );
 
     mountedRefs.forEach((bindingName, bindingRefIndex) => {
+      const mountedDefinition = state.defs?.[bindingName];
+      const mountedBindingKind =
+        typeof mountedDefinition?.kind === "string"
+          ? mountedDefinition.kind
+          : bindingKind;
+      const mountedBindingDefinition =
+        state.bindingCatalog.get(mountedBindingKind) ?? bindingDefinition;
+      const nestedBindingKinds = mountedDefinition
+        ? resolveEffectiveBindingKindsForDef(
+            mountedDefinition,
+            state.actionCatalog,
+            state.bindingCatalog,
+          )
+        : [];
       const bindingNodeType = resolveBindingNodeType(isMultiple);
       const bindingNodeId = createAttachmentNodeId(
         stepId,
+        ownerDefName,
         bindingName,
         bindingRefIndex,
         bindingKind,
       );
       const bindingNodeBaseData = state.config.nodes[bindingNodeType];
+      const ports = [
+        ...bindingNodeBaseData.ports,
+        ...buildBindingPorts<typeof bindingNodeType>(nestedBindingKinds),
+      ] as typeof bindingNodeBaseData.ports;
 
       addSemanticNode(state, {
         id: bindingNodeId,
@@ -520,12 +595,15 @@ const addTaskAttachments = (
           stepId,
           stepPath,
           taskName,
-          bindingKind,
+          ownerDefName,
+          ownerBindingKind: bindingKind,
+          bindingKind: mountedBindingKind,
           bindingName,
           level,
+          ports,
           theme: {
             ...bindingNodeBaseData.theme,
-            ...bindingNodeTheme,
+            ...getBindingNodeTheme(mountedBindingDefinition),
           },
         },
       });
@@ -534,6 +612,16 @@ const addTaskAttachments = (
         source: parentNodeId,
         target: bindingNodeId,
         sourceHandle,
+      });
+
+      addDefAttachments(state, {
+        stepId,
+        stepPath,
+        ownerDefName: bindingName,
+        taskName,
+        parentNodeId: bindingNodeId,
+        level,
+        visitedOwnerDefs: nextVisitedOwnerDefs,
       });
     });
 
@@ -556,6 +644,7 @@ const addTaskAttachments = (
           stepId,
           stepPath,
           taskName,
+          ownerDefName,
           bindingKind,
           level,
           theme: {
@@ -755,20 +844,25 @@ const walkStep = ({
   const entryInsertPath = disableEntryInsertPath ? undefined : stepPath;
 
   if (step.type === StepType.Task) {
-    const taskMeta = getTaskMeta(
-      step.taskName,
-      state.tasks,
-      state.actionCatalog,
-      state.bindingCatalog,
-    );
+    const taskDefinition = state.defs?.[step.taskName];
     const actionName =
-      taskMeta.actionName || getTaskAction(step.taskName, state.tasks) || "";
+      taskDefinition && isTaskDefinition(taskDefinition)
+        ? taskDefinition.action
+        : (getTaskAction(step.taskName, state.defs) ?? "");
+    const bindingKinds =
+      taskDefinition && isTaskDefinition(taskDefinition)
+        ? resolveEffectiveBindingKindsForDef(
+            taskDefinition,
+            state.actionCatalog,
+            state.bindingCatalog,
+          )
+        : [];
     const taskNodeId = createStepNodeId(step.id, "task");
     const groupName = getGroupName(groupPath);
     const taskBaseData = state.config.nodes[ENodeType.TASK];
     const ports: WorkflowNodePort<ENodeType.TASK>[] = [
       ...taskBaseData.ports,
-      ...buildBindingPorts(taskMeta.bindingKinds),
+      ...buildBindingPorts<ENodeType.TASK>(bindingKinds),
     ];
 
     addSemanticNode(state, {
@@ -782,7 +876,7 @@ const walkStep = ({
       data: {
         ...taskBaseData,
         title: step.taskName,
-        description: getTaskDescription(step.taskName, state.tasks),
+        description: getTaskDescription(step.taskName, state.defs),
         actionName,
         stepId: step.id,
         level,
@@ -792,14 +886,14 @@ const walkStep = ({
       },
     });
 
-    addTaskAttachments(state, {
+    addDefAttachments(state, {
       stepId: step.id,
       stepPath,
+      ownerDefName: step.taskName,
       taskName: step.taskName,
       parentNodeId: taskNodeId,
       level,
-      bindingKinds: taskMeta.bindingKinds,
-      mountedBindings: taskMeta.mountedBindings,
+      visitedOwnerDefs: new Set(),
     });
 
     connectIncoming(state, {
@@ -972,7 +1066,6 @@ const walkSteps = ({
 export const traverseWorkflow = ({
   flow,
   config,
-  tasks,
   defs,
   actionCatalog,
   bindingCatalog,
@@ -987,7 +1080,6 @@ export const traverseWorkflow = ({
   const groups = new Map<string, GroupMeta>();
   const state: TraverseState = {
     config,
-    tasks,
     defs,
     actionCatalog,
     bindingCatalog,
