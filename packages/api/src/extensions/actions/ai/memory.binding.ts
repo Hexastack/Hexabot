@@ -22,6 +22,7 @@ export const aiMemoryBindingSchema = z.strictObject({
         entity: 'MemoryDefinition',
         valueKey: 'id',
         labelKey: 'name',
+        enableEntityAddButton: true,
       },
     }),
 });

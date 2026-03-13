@@ -747,7 +747,9 @@ export abstract class AiBaseAction<
     const stopConditions: Array<
       ReturnType<typeof stepCountIs> | ReturnType<typeof hasToolCall>
     > = [];
-    const defaultStepCount = tools ? Object.keys(tools).length : 0;
+    // By default the default step count would be the max number of tools
+    // that could be called + 1 step pour generating the output
+    const defaultStepCount = tools ? 1 + Object.keys(tools).length : 0;
     const resolvedStepCount = settings.stop_step_count ?? defaultStepCount;
 
     if (resolvedStepCount > 0) {
