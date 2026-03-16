@@ -18,13 +18,13 @@ import { MenuOrmEntity } from './entities/menu.entity';
 import { ContentTypeRepository } from './repositories/content-type.repository';
 import { ContentRepository } from './repositories/content.repository';
 import { MenuRepository } from './repositories/menu.repository';
-import { ContentRagIndexerService } from './services/content-rag-indexer.service';
-import { ContentRagRetrieverService } from './services/content-rag-retriever.service';
-import { ContentRagService } from './services/content-rag.service';
 import { ContentTypeService } from './services/content-type.service';
 import { ContentService } from './services/content.service';
 import { MenuService } from './services/menu.service';
 import { RagBackendService } from './services/rag-backend.service';
+import { RagIndexerService } from './services/rag-indexer.service';
+import { RagRetrieverService } from './services/rag-retriever.service';
+import { RagService } from './services/rag.service';
 
 @Module({
   imports: [
@@ -40,14 +40,14 @@ import { RagBackendService } from './services/rag-backend.service';
     ContentTypeService,
     ContentService,
     RagBackendService,
-    ContentRagIndexerService,
-    ContentRagRetrieverService,
-    ContentRagService,
+    RagIndexerService,
+    RagRetrieverService,
+    RagService,
     ContentTypeRepository,
     ContentRepository,
     MenuRepository,
     MenuService,
   ],
-  exports: [MenuService, ContentService, ContentTypeService, ContentRagService],
+  exports: [MenuService, ContentService, ContentTypeService],
 })
 export class CmsModule {}

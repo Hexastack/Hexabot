@@ -32,13 +32,9 @@ import {
   ContentUpdateDto,
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
-import {
-  ContentRagHit,
-  ContentRagMode,
-  ContentRagQueryOptions,
-} from '../types/rag';
+import { RagService } from '../services/rag.service';
+import { RagHit, RagMode, RagQueryOptions } from '../types/rag';
 
-import { ContentRagService } from './../services/content-rag.service';
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
@@ -50,7 +46,7 @@ export class ContentController extends BaseOrmController<
   constructor(
     protected readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
-    private readonly contentRagService: ContentRagService,
+    private readonly ragService: RagService,
   ) {
     super(contentService);
   }
@@ -109,7 +105,7 @@ export class ContentController extends BaseOrmController<
   @Post('rag/reindex')
   @HttpCode(202)
   async reindexRag(): Promise<{ accepted: true }> {
-    this.contentRagService.scheduleReindexAll();
+    this.ragService.scheduleReindexAll();
 
     return { accepted: true };
   }
@@ -124,11 +120,11 @@ export class ContentController extends BaseOrmController<
   @Get('rag/search')
   async searchRag(
     @Query('query') query: string,
-    @Query('mode') mode?: ContentRagMode,
+    @Query('mode') mode?: RagMode,
     @Query('limit') limit?: string,
     @Query('contentTypeId') contentTypeId?: string,
     @Query('includeInactive') includeInactive?: string,
-  ): Promise<ContentRagHit[]> {
+  ): Promise<RagHit[]> {
     const parsedLimit =
       typeof limit === 'string' && limit.trim() !== ''
         ? Number.parseInt(limit, 10)
@@ -137,7 +133,7 @@ export class ContentController extends BaseOrmController<
       includeInactive === undefined
         ? undefined
         : includeInactive.toLowerCase() === 'true' || includeInactive === '1';
-    const options: ContentRagQueryOptions = {
+    const options: RagQueryOptions = {
       ...(mode ? { mode } : {}),
       ...(Number.isFinite(parsedLimit) ? { limit: parsedLimit } : {}),
       ...(contentTypeId ? { contentTypeId } : {}),
@@ -146,7 +142,7 @@ export class ContentController extends BaseOrmController<
         : { includeInactive: parsedIncludeInactive }),
     };
 
-    return await this.contentRagService.retrieve(query, options);
+    return await this.contentService.retrieve(query, options);
   }
 
   /**

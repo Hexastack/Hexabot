@@ -18,9 +18,9 @@ import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/content
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentRagService } from '../services/content-rag.service';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
+import { RagService } from '../services/rag.service';
 
 import { ContentController } from './content.controller';
 
@@ -29,7 +29,7 @@ describe('ContentController (TypeORM)', () => {
   let controller: ContentController;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
-  let contentRagService: ContentRagService;
+  let contentRagService: RagService;
   let logger: LoggerService;
   const createdContentIds = new Set<string>();
 
@@ -53,7 +53,7 @@ describe('ContentController (TypeORM)', () => {
         ContentController,
         ContentService,
         ContentTypeService,
-        ContentRagService,
+        RagService,
       ]);
     logger = controller.logger;
   });
@@ -265,7 +265,7 @@ describe('ContentController (TypeORM)', () => {
   describe('searchRag', () => {
     it('parses rag search options and forwards mode', async () => {
       const retrieveSpy = jest
-        .spyOn(contentRagService, 'retrieve')
+        .spyOn(contentService, 'retrieve')
         .mockResolvedValue([]);
 
       await controller.searchRag('culture', 'lexical', '7', 'ct-1', '1');
@@ -280,7 +280,7 @@ describe('ContentController (TypeORM)', () => {
 
     it('ignores invalid optional query params in rag search', async () => {
       const retrieveSpy = jest
-        .spyOn(contentRagService, 'retrieve')
+        .spyOn(contentService, 'retrieve')
         .mockResolvedValue([]);
 
       await controller.searchRag('culture', undefined, 'bad-limit');

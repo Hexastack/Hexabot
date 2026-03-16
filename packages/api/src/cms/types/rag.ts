@@ -4,20 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-export type ContentRagMode = 'embedding' | 'lexical';
+export type RagMode = 'embedding' | 'lexical';
 
-export interface ContentRagQueryOptions {
-  mode?: ContentRagMode;
+export interface RagQueryOptions {
+  mode?: RagMode;
   limit?: number;
   contentTypeId?: string;
   includeInactive?: boolean;
 }
 
-export interface ContentRagHit {
+export interface RagHit {
   contentId: string;
   title: string;
   text: string;
   score?: number;
   contentTypeId?: string;
-  source: ContentRagMode;
+  source: RagMode;
 }
