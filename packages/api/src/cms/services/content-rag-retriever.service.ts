@@ -46,6 +46,12 @@ export class ContentRagRetrieverService {
     private readonly ragBackendService: RagBackendService,
   ) {}
 
+  /**
+   * Retrieves RAG hits using the requested retrieval mode.
+   * @param query Query text.
+   * @param options Retrieval options.
+   * @returns Matching RAG hits.
+   */
   async retrieve(
     query: string,
     options: ContentRagQueryOptions = {},
@@ -64,6 +70,12 @@ export class ContentRagRetrieverService {
     return await this.retrieveEmbedding(query, resolvedOptions);
   }
 
+  /**
+   * Retrieves lexical matches from the keyword index.
+   * @param query Query text.
+   * @param options Resolved query options.
+   * @returns Lexical retrieval hits.
+   */
   private async retrieveLexical(
     query: string,
     options: ResolvedContentRagQueryOptions,
@@ -84,6 +96,12 @@ export class ContentRagRetrieverService {
     return this.dedupeLexicalHits(filteredHits).slice(0, options.limit);
   }
 
+  /**
+   * Retrieves semantic matches from the embedding index.
+   * @param query Query text.
+   * @param options Resolved query options.
+   * @returns Embedding retrieval hits.
+   */
   private async retrieveEmbedding(
     query: string,
     options: ResolvedContentRagQueryOptions,
@@ -102,6 +120,11 @@ export class ContentRagRetrieverService {
     return this.dedupeEmbeddingHits(filteredHits).slice(0, options.limit);
   }
 
+  /**
+   * Builds metadata filters for embedding retrieval.
+   * @param options Query options.
+   * @returns Metadata filters or undefined when none are needed.
+   */
   private buildEmbeddingFilters(
     options: ContentRagQueryOptions,
   ): MetadataFilters | undefined {
@@ -134,6 +157,12 @@ export class ContentRagRetrieverService {
     };
   }
 
+  /**
+   * Resolves query options with defaults from RAG settings.
+   * @param options User-provided options.
+   * @param ragSettings RAG defaults.
+   * @returns Fully resolved query options.
+   */
   private resolveQueryOptions(
     options: ContentRagQueryOptions,
     ragSettings: {
@@ -148,6 +177,12 @@ export class ContentRagRetrieverService {
     };
   }
 
+  /**
+   * Converts a retriever entry to an internal candidate hit.
+   * @param entry Retriever entry.
+   * @param source Retrieval mode source.
+   * @returns Parsed candidate hit.
+   */
   private toCandidateHit(
     entry: RetrieverEntry,
     source: ContentRagMode,
@@ -167,28 +202,61 @@ export class ContentRagRetrieverService {
     };
   }
 
+  /**
+   * Parses a content identifier with fallback support.
+   * @param contentId Candidate content identifier.
+   * @param fallback Fallback identifier.
+   * @returns Parsed content identifier.
+   */
   private parseContentId(contentId: unknown, fallback: string): string {
     return this.isNonEmptyString(contentId) ? contentId : fallback;
   }
 
+  /**
+   * Parses a title with fallback support.
+   * @param title Candidate title value.
+   * @param fallback Fallback title.
+   * @returns Parsed title.
+   */
   private parseTitle(title: unknown, fallback: string): string {
     return this.isNonEmptyString(title) ? title : fallback;
   }
 
+  /**
+   * Parses a content type identifier.
+   * @param contentTypeId Candidate content type value.
+   * @returns Parsed content type identifier.
+   */
   private parseContentTypeId(contentTypeId: unknown): string | undefined {
     return this.isNonEmptyString(contentTypeId) ? contentTypeId : undefined;
   }
 
+  /**
+   * Parses a content status value.
+   * @param status Candidate status value.
+   * @returns Parsed status value.
+   */
   private parseStatus(status: unknown): number {
     const statusValue = typeof status === 'number' ? status : Number(status);
 
     return Number.isFinite(statusValue) ? statusValue : 1;
   }
 
+  /**
+   * Parses a numeric relevance score.
+   * @param score Candidate score value.
+   * @returns Parsed score.
+   */
   private parseScore(score: unknown): number | undefined {
     return typeof score === 'number' ? score : undefined;
   }
 
+  /**
+   * Checks whether a candidate hit satisfies query filters.
+   * @param hit Candidate hit.
+   * @param options Query options.
+   * @returns True when the hit should be included.
+   */
   private shouldIncludeHit(
     hit: ContentRagCandidateHit,
     options: ContentRagQueryOptions,
@@ -205,6 +273,11 @@ export class ContentRagRetrieverService {
     return true;
   }
 
+  /**
+   * Deduplicates lexical hits by content identifier.
+   * @param hits Candidate hits.
+   * @returns Deduplicated lexical hits.
+   */
   private dedupeLexicalHits(hits: ContentRagCandidateHit[]): ContentRagHit[] {
     const byContentId = new Map<string, ContentRagHit>();
     for (const hit of hits) {
@@ -218,6 +291,11 @@ export class ContentRagRetrieverService {
     return Array.from(byContentId.values());
   }
 
+  /**
+   * Deduplicates embedding hits and keeps the highest score per content item.
+   * @param hits Candidate hits.
+   * @returns Deduplicated and score-sorted embedding hits.
+   */
   private dedupeEmbeddingHits(hits: ContentRagCandidateHit[]): ContentRagHit[] {
     const byContentId = new Map<string, ContentRagHit>();
     for (const hit of hits) {
@@ -237,16 +315,31 @@ export class ContentRagRetrieverService {
     );
   }
 
+  /**
+   * Removes internal fields from a candidate hit.
+   * @param hit Candidate hit.
+   * @returns Public hit representation.
+   */
   private toPublicHit(hit: ContentRagCandidateHit): ContentRagHit {
     const { _status: _, ...publicHit } = hit;
 
     return publicHit;
   }
 
+  /**
+   * Returns a comparable score value for sorting.
+   * @param hit Hit with optional score.
+   * @returns Comparable score value.
+   */
   private getScore(hit: Pick<ContentRagHit, 'score'>): number {
     return hit.score ?? Number.NEGATIVE_INFINITY;
   }
 
+  /**
+   * Checks whether a value is a non-empty string.
+   * @param value Candidate value.
+   * @returns True when the value is a non-empty string.
+   */
   private isNonEmptyString(value: unknown): value is string {
     return typeof value === 'string' && value.length > 0;
   }

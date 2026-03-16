@@ -36,6 +36,11 @@ export class ContentRagIndexerService {
     private readonly logger: LoggerService,
   ) {}
 
+  /**
+   * Upserts a single content item into embedding and lexical indexes.
+   * @param contentId Content identifier.
+   * @returns Resolves when indexing is complete.
+   */
   async upsertContentIndex(contentId: string): Promise<void> {
     const ragSettings = await this.getRagSettings();
     if (!ragSettings) {
@@ -66,6 +71,11 @@ export class ContentRagIndexerService {
     );
   }
 
+  /**
+   * Removes a single content item from embedding and lexical indexes.
+   * @param contentId Content identifier.
+   * @returns Resolves when removal is complete.
+   */
   async removeContentIndex(contentId: string): Promise<void> {
     const ragSettings = await this.getRagSettings();
     if (!ragSettings) {
@@ -84,6 +94,10 @@ export class ContentRagIndexerService {
     );
   }
 
+  /**
+   * Rebuilds indexes for all content items allowed by current RAG settings.
+   * @returns Resolves when reindexing completes.
+   */
   async reindexAll(): Promise<void> {
     const settings = await this.getRagSettings();
     if (!settings) {
@@ -135,6 +149,14 @@ export class ContentRagIndexerService {
     }
   }
 
+  /**
+   * Upserts a content document into configured RAG indexes.
+   * @param content Full content payload.
+   * @param settings Active RAG settings.
+   * @param embeddingIndex Embedding index instance.
+   * @param lexicalIndex Lexical index instance.
+   * @returns Resolves when upsert processing completes.
+   */
   private async upsertContent(
     content: ContentFull,
     settings: Settings['rag_settings'],
@@ -164,6 +186,13 @@ export class ContentRagIndexerService {
     await this.upsertContentInLexicalIndex(content.id, document, lexicalIndex);
   }
 
+  /**
+   * Upserts a content document in the embedding index with hash-based deduplication.
+   * @param contentId Content identifier.
+   * @param document Document to upsert.
+   * @param embeddingIndex Embedding index instance.
+   * @returns Resolves when embedding upsert is complete.
+   */
   private async upsertContentInEmbeddingIndex(
     contentId: string,
     document: Document,
@@ -183,6 +212,13 @@ export class ContentRagIndexerService {
     await embeddingIndex.docStore.setDocumentHash(contentId, document.hash);
   }
 
+  /**
+   * Upserts a content document in the lexical index with extracted keywords.
+   * @param contentId Content identifier.
+   * @param document Document to upsert.
+   * @param lexicalIndex Lexical index instance.
+   * @returns Resolves when lexical upsert is complete.
+   */
   private async upsertContentInLexicalIndex(
     contentId: string,
     document: Document,
@@ -208,10 +244,22 @@ export class ContentRagIndexerService {
     await lexicalIndex.indexStore?.addIndexStruct(lexicalIndex.indexStruct);
   }
 
+  /**
+   * Extracts lexical keywords from raw text.
+   * @param text Source text.
+   * @returns Extracted keywords.
+   */
   private extractKeywords(text: string): string[] {
     return [...simpleExtractKeywords(text)];
   }
 
+  /**
+   * Removes a content item from all available indexes.
+   * @param contentId Content identifier.
+   * @param embeddingIndex Embedding index instance.
+   * @param lexicalIndex Lexical index instance.
+   * @returns Resolves when removal from indexes completes.
+   */
   private async removeContentFromIndexes(
     contentId: string,
     embeddingIndex: VectorStoreIndex | null,
@@ -224,6 +272,11 @@ export class ContentRagIndexerService {
     await lexicalIndex.deleteRefDoc(contentId, true);
   }
 
+  /**
+   * Converts a content entity into a LlamaIndex document.
+   * @param content Full content payload.
+   * @returns Document ready for indexing.
+   */
   private toDocument(content: ContentFull): Document {
     return new Document({
       id_: content.id,
@@ -245,6 +298,10 @@ export class ContentRagIndexerService {
     });
   }
 
+  /**
+   * Returns the embedding index, or null when initialization fails.
+   * @returns Embedding index instance or null.
+   */
   private async getEmbeddingIndexOrNull(): Promise<VectorStoreIndex | null> {
     try {
       return await this.embeddingBackendService.getEmbeddingIndex();
@@ -258,6 +315,10 @@ export class ContentRagIndexerService {
     }
   }
 
+  /**
+   * Returns enabled RAG settings.
+   * @returns Enabled settings or null.
+   */
   private async getRagSettings(): Promise<Settings['rag_settings'] | null> {
     const settings = await this.settingService.getSettings();
     const ragSettings = settings.rag_settings;

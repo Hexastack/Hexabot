@@ -69,6 +69,10 @@ export class RagBackendService implements OnModuleInit {
     private readonly logger: LoggerService,
   ) {}
 
+  /**
+   * Warms up embedding and lexical RAG backends on module startup.
+   * @returns Resolves when warm-up attempts complete.
+   */
   async onModuleInit(): Promise<void> {
     await this.warmUpBackend(
       () => this.ensureEmbeddingBackend(),
@@ -80,6 +84,10 @@ export class RagBackendService implements OnModuleInit {
     );
   }
 
+  /**
+   * Returns the initialized embedding index.
+   * @returns Initialized embedding index.
+   */
   async getEmbeddingIndex(): Promise<VectorStoreIndex> {
     await this.ensureEmbeddingBackend();
 
@@ -90,12 +98,20 @@ export class RagBackendService implements OnModuleInit {
     return this.embeddingIndex;
   }
 
+  /**
+   * Returns the initialized lexical keyword index.
+   * @returns Initialized lexical index.
+   */
   async getLexicalIndex(): Promise<KeywordTableIndex> {
     await this.ensureLexicalBackend();
 
     return this.getLexicalIndexOrThrow();
   }
 
+  /**
+   * Checks whether lexical index storage contains no indexed content.
+   * @returns True when lexical index is empty.
+   */
   async areLexicalIndexEmpty(): Promise<boolean> {
     const index = await this.getLexicalIndex();
     const allRefDocInfo = await index.docStore.getAllRefDocInfo();
@@ -110,6 +126,10 @@ export class RagBackendService implements OnModuleInit {
     return true;
   }
 
+  /**
+   * Clears cached backend instances and initialization state.
+   * @returns No return value.
+   */
   reset(): void {
     this.embeddingIndex = undefined;
     this.lexicalIndex = undefined;
@@ -117,6 +137,10 @@ export class RagBackendService implements OnModuleInit {
     this.lexicalBackendInitPromise = undefined;
   }
 
+  /**
+   * Returns the lexical index or throws when unavailable.
+   * @returns Initialized lexical index.
+   */
   private getLexicalIndexOrThrow(): KeywordTableIndex {
     if (!this.lexicalIndex) {
       throw new Error('Unable to initialize lexical keyword index.');
@@ -125,6 +149,12 @@ export class RagBackendService implements OnModuleInit {
     return this.lexicalIndex;
   }
 
+  /**
+   * Runs a backend initializer and logs warnings on failure.
+   * @param initializer Backend initializer function.
+   * @param warningMessage Warning message for failures.
+   * @returns Resolves after initializer completes or fails.
+   */
   private async warmUpBackend(
     initializer: () => Promise<void>,
     warningMessage: string,
@@ -136,6 +166,10 @@ export class RagBackendService implements OnModuleInit {
     }
   }
 
+  /**
+   * Ensures the embedding backend is initialized once.
+   * @returns Resolves when initialization is complete.
+   */
   private async ensureEmbeddingBackend(): Promise<void> {
     if (this.embeddingIndex) {
       return;
@@ -152,6 +186,10 @@ export class RagBackendService implements OnModuleInit {
     await this.embeddingBackendInitPromise;
   }
 
+  /**
+   * Initializes embedding backend resources when RAG is enabled.
+   * @returns Resolves when embedding backend is initialized.
+   */
   private async initializeEmbeddingBackend(): Promise<void> {
     const ragSettings = await this.getEnabledRagSettings();
     if (!ragSettings) {
@@ -172,6 +210,10 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Ensures the lexical backend is initialized once.
+   * @returns Resolves when initialization is complete.
+   */
   private async ensureLexicalBackend(): Promise<void> {
     if (this.lexicalIndex) {
       return;
@@ -189,6 +231,10 @@ export class RagBackendService implements OnModuleInit {
     await this.lexicalBackendInitPromise;
   }
 
+  /**
+   * Initializes lexical backend resources when RAG is enabled.
+   * @returns Resolves when lexical backend is initialized.
+   */
   private async initializeLexicalBackend(): Promise<void> {
     const ragSettings = await this.getEnabledRagSettings();
     if (!ragSettings) {
@@ -198,6 +244,10 @@ export class RagBackendService implements OnModuleInit {
     this.lexicalIndex = await this.createKeywordIndex();
   }
 
+  /**
+   * Creates the lexical keyword index for the configured database backend.
+   * @returns Initialized keyword index.
+   */
   private async createKeywordIndex(): Promise<KeywordTableIndex> {
     if (config.database.type === 'sqlite') {
       const storageContext = await this.createSqliteLexicalStorageContext();
@@ -216,6 +266,10 @@ export class RagBackendService implements OnModuleInit {
     );
   }
 
+  /**
+   * Returns RAG settings when the feature is enabled.
+   * @returns Enabled RAG settings or null.
+   */
   private async getEnabledRagSettings(): Promise<RagSettings | null> {
     const settings = await this.settingService.getSettings();
     if (!settings.rag_settings.enabled) {
@@ -225,6 +279,11 @@ export class RagBackendService implements OnModuleInit {
     return settings.rag_settings;
   }
 
+  /**
+   * Validates required embedding settings before backend initialization.
+   * @param ragSettings RAG settings to validate.
+   * @returns No return value.
+   */
   private validateEmbeddingSettings(ragSettings: RagSettings): void {
     if (!ragSettings.embedding_provider) {
       throw new Error(
@@ -239,6 +298,11 @@ export class RagBackendService implements OnModuleInit {
     }
   }
 
+  /**
+   * Creates the embedding model from RAG settings.
+   * @param ragSettings RAG settings.
+   * @returns Configured embedding model.
+   */
   private createEmbeddingModel(ragSettings: RagSettings): OpenAIEmbedding {
     return new OpenAIEmbedding({
       model: ragSettings.embedding_model,
@@ -252,6 +316,12 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Creates storage context for embedding retrieval.
+   * @param ragSettings RAG settings.
+   * @param embedModel Embedding model instance.
+   * @returns Embedding storage context.
+   */
   private async createEmbeddingStorageContext(
     ragSettings: RagSettings,
     embedModel: OpenAIEmbedding,
@@ -272,6 +342,11 @@ export class RagBackendService implements OnModuleInit {
     );
   }
 
+  /**
+   * Creates SQLite-backed storage context for embedding retrieval.
+   * @param embedModel Embedding model instance.
+   * @returns SQLite embedding storage context.
+   */
   private async createSqliteEmbeddingStorageContext(
     embedModel: OpenAIEmbedding,
   ): Promise<StorageContext> {
@@ -287,6 +362,12 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Creates PostgreSQL-backed storage context for embedding retrieval.
+   * @param dimensions Embedding vector dimensions.
+   * @param embedModel Embedding model instance.
+   * @returns PostgreSQL embedding storage context.
+   */
   private async createPostgresEmbeddingStorageContext(
     dimensions: number,
     embedModel: OpenAIEmbedding,
@@ -319,6 +400,10 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Creates SQLite-backed storage context for lexical retrieval.
+   * @returns SQLite lexical storage context.
+   */
   private async createSqliteLexicalStorageContext(): Promise<StorageContext> {
     const persistDir = this.resolveSqlitePersistDir(LEXICAL_SQLITE_SUBDIR);
     const docStore = await SimpleDocumentStore.fromPersistDir(persistDir);
@@ -330,6 +415,10 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Creates PostgreSQL-backed storage context for lexical retrieval.
+   * @returns PostgreSQL lexical storage context.
+   */
   private async createPostgresLexicalStorageContext(): Promise<StorageContext> {
     const clientConfig = this.resolvePostgresClientConfig();
     const namespace = `${LEXICAL_NAMESPACE_PREFIX}_${LEXICAL_RETRIEVER}`;
@@ -350,6 +439,11 @@ export class RagBackendService implements OnModuleInit {
     });
   }
 
+  /**
+   * Creates lexical storage context from document and index stores.
+   * @param params Storage context stores.
+   * @returns Lexical storage context.
+   */
   private createLexicalStorageContext(params: {
     docStore: StorageContext['docStore'];
     indexStore: StorageContext['indexStore'];
@@ -362,10 +456,20 @@ export class RagBackendService implements OnModuleInit {
     };
   }
 
+  /**
+   * Resolves SQLite persist directory for the given subpath.
+   * @param segments Path segments under the RAG persist root.
+   * @returns Absolute persist directory path.
+   */
   private resolveSqlitePersistDir(...segments: string[]): string {
     return path.join(process.cwd(), SQLITE_PERSIST_DIR, ...segments);
   }
 
+  /**
+   * Initializes lexical keyword index from storage context.
+   * @param storageContext Storage context used by lexical index.
+   * @returns Initialized keyword index.
+   */
   private async initKeywordIndex(
     storageContext: StorageContext,
   ): Promise<KeywordTableIndex> {
@@ -404,6 +508,10 @@ export class RagBackendService implements OnModuleInit {
     );
   }
 
+  /**
+   * Resolves PostgreSQL client configuration from application database settings.
+   * @returns PostgreSQL client configuration.
+   */
   private resolvePostgresClientConfig(): PostgresClientConfig {
     const db = config.database;
 
