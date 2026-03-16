@@ -11,6 +11,16 @@ import { ISubscriberStub } from "@/types/subscriber.types";
 
 import { EntityType } from "./types";
 
+export const applySubscriberDerivedFields = <T extends ISubscriberStub>(
+  subscriber: T,
+): T => {
+  if (subscriber.firstName && subscriber.lastName) {
+    subscriber.fullName = `${subscriber.firstName} ${subscriber.lastName}`;
+  }
+
+  return subscriber;
+};
+
 const processCommonStrategy = <T extends IBaseSchema>(entity: T) => ({
   ...entity,
   ...(entity.createdAt && { createdAt: new Date(entity.createdAt) }),
@@ -63,9 +73,7 @@ export const SubscriberEntity = new schema.Entity(
         entity.retainedFrom = new Date(entity.retainedFrom);
       }
 
-      if (entity.firstName && entity.lastName) {
-        entity.fullName = `${entity.firstName} ${entity.lastName}`;
-      }
+      entity.fullName = applySubscriberDerivedFields(entity).fullName;
 
       return processCommonStrategy(entity);
     },

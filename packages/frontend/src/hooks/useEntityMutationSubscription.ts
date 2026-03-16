@@ -9,11 +9,30 @@ import { useCallback } from "react";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import { ENTITY_MAP } from "@/services/entities";
+import {
+  applySubscriberDerivedFields,
+  ENTITY_MAP,
+} from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
 import { InfiniteData } from "@/types/tanstack.types";
 import { useSocketGetQuery, useSubscribe } from "@/websocket/socket-hooks";
+
+export const SYNC_TARGET_BY_ENTITY_TYPE = {
+  [EntityType.USER]: EntityType.SUBSCRIBER,
+} as const;
+export const PAYLOAD_TRANSFORMERS_BY_ENTITY_TYPE = {
+  [EntityType.USER]: applySubscriberDerivedFields,
+  [EntityType.SUBSCRIBER]: applySubscriberDerivedFields,
+} as const;
+
+const getAffectedEntityTypes = (entityType: EntityType): EntityType[] => {
+  const syncTarget = SYNC_TARGET_BY_ENTITY_TYPE[entityType];
+
+  return syncTarget ? [entityType, syncTarget] : [entityType];
+};
+const transformEntityPayload = (entityType: EntityType, payload: unknown) =>
+  PAYLOAD_TRANSFORMERS_BY_ENTITY_TYPE[entityType]?.(payload) ?? payload;
 
 type EntityMutationEvent<E extends IBaseSchema = IBaseSchema> = {
   entity: string;
@@ -125,12 +144,14 @@ export const useEntityMutationSubscription = () => {
   useSocketGetQuery("/entity/subscribe/");
 
   const handleEntityMutation = useCallback(
-    ({ entity: targetEntity, op, data }: EntityMutationEvent) => {
-      const entity = resolveEntityType(targetEntity);
+    ({ entity: eventEntityName, op, data }: EntityMutationEvent) => {
+      const entityType = resolveEntityType(eventEntityName);
 
-      if (!entity || !(entity in ENTITY_MAP)) {
+      if (!entityType || !(entityType in ENTITY_MAP)) {
         return;
       }
+
+      const affectedEntityTypes = getAffectedEntityTypes(entityType);
 
       if (op === "delete") {
         const id = data.id;
@@ -140,49 +161,52 @@ export const useEntityMutationSubscription = () => {
         }
 
         queryClient.removeQueries({
-          queryKey: [QueryType.item, entity, id],
+          queryKey: [QueryType.item, entityType, id],
           exact: true,
         });
 
         queryClient.refetchQueries({
           predicate: ({ queryKey }) =>
-            isCountOrCollectionQuery(queryKey, entity),
+            isCountOrCollectionQuery(queryKey, entityType),
         });
 
         return;
       }
 
-      const schemaEntity = ENTITY_MAP[entity];
+      const entitySchema = ENTITY_MAP[entityType];
       const { result, entities } = normalize(
         data,
-        Array.isArray(data) ? [schemaEntity] : schemaEntity,
+        Array.isArray(data) ? [entitySchema] : entitySchema,
       );
 
-      Object.entries(entities).forEach(([entityType, dataDict]) => {
-        if (!dataDict) {
+      Object.entries(entities).forEach(([, entitiesById]) => {
+        if (!entitiesById) {
           return;
         }
 
-        Object.entries(dataDict).forEach(([id, newData]) => {
-          if (!id || !newData) {
+        Object.entries(entitiesById).forEach(([id, nextEntityData]) => {
+          if (!id || !nextEntityData) {
             return;
           }
-          queryClient.setQueryData(
-            [QueryType.item, entityType, id],
-            (previousData: Record<string, unknown> | undefined) => {
-              return {
-                ...previousData,
-                ...newData,
-              };
-            },
-          );
+
+          affectedEntityTypes.forEach((affectedEntityType) => {
+            queryClient.setQueryData(
+              [QueryType.item, affectedEntityType, id],
+              (previousData: Record<string, unknown> | undefined) => {
+                return transformEntityPayload(affectedEntityType, {
+                  ...previousData,
+                  ...nextEntityData,
+                });
+              },
+            );
+          });
         });
       });
 
       if (op === "create") {
         queryClient.refetchQueries({
           predicate: ({ queryKey }) =>
-            isCountOrCollectionQuery(queryKey, entity),
+            isCountOrCollectionQuery(queryKey, entityType),
         });
         const updateInfiniteQuery = (
           predicate: (queryKey: readonly unknown[]) => boolean,
@@ -195,7 +219,7 @@ export const useEntityMutationSubscription = () => {
           );
         };
 
-        if (entity === EntityType.SUBSCRIBER) {
+        if (entityType === EntityType.SUBSCRIBER) {
           updateInfiniteQuery((queryKey) => {
             const [qType, qEntity, qParams] = queryKey;
 
@@ -213,7 +237,7 @@ export const useEntityMutationSubscription = () => {
 
             return !params.where || channelFilter?.["$in"]?.length === 0;
           });
-        } else if (entity === EntityType.MESSAGE) {
+        } else if (entityType === EntityType.MESSAGE) {
           const subscriberId = getMessageSubscriberId(data);
 
           if (subscriberId) {
@@ -240,20 +264,26 @@ export const useEntityMutationSubscription = () => {
           }
         }
       } else {
-        queryClient.setQueriesData(
-          {
-            predicate({ queryKey }) {
-              const [qType, qEntity] = queryKey;
+        affectedEntityTypes.forEach((affectedEntityType) => {
+          queryClient.setQueriesData(
+            {
+              predicate({ queryKey }) {
+                const [qType, qEntity] = queryKey;
 
-              return (
-                qType === QueryType.collection && isSameEntity(qEntity, entity)
-              );
+                return (
+                  (qType === QueryType.collection ||
+                    qType === QueryType.infinite) &&
+                  isSameEntity(qEntity, affectedEntityType)
+                );
+              },
             },
-          },
-          (collection: unknown[]) => {
-            return [...collection];
-          },
-        );
+            (collection: unknown) => {
+              return Array.isArray(collection)
+                ? [...collection]
+                : structuredClone(collection);
+            },
+          );
+        });
       }
     },
     [queryClient],
