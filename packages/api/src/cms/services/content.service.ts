@@ -12,7 +12,11 @@ import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentCreateDto, ContentDtoConfig } from '../dto/content.dto';
+import {
+  ContentCreateDto,
+  ContentDtoConfig,
+  ContentFull,
+} from '../dto/content.dto';
 import { ContentType } from '../dto/contentType.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
@@ -30,11 +34,19 @@ export class ContentService extends BaseOrmService<
    * Performs a text search on the content repository.
    *
    * @param query - The text query to search for.
+   * @param options - Optional filtering options.
    *
    * @return A list of content matching the search query.
    */
-  async textSearch(query: string): Promise<ContentOrmEntity[]> {
-    return await this.repository.textSearch(query);
+  async textSearch(
+    query: string,
+    options?: {
+      status?: boolean;
+      contentTypeId?: string;
+      limit?: number;
+    },
+  ): Promise<ContentFull[]> {
+    return await this.repository.textSearch(query, options);
   }
 
   /**
@@ -153,7 +165,7 @@ export class ContentService extends BaseOrmService<
             ),
         } satisfies ContentCreateDto,
       ],
-      [],
+      [] as ContentCreateDto[],
     );
     this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
     try {

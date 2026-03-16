@@ -445,9 +445,55 @@ export abstract class BaseOrmRepository<
     suffix: EHook,
     event: OrmLifecycleEvent<Entity>,
   ): Promise<void> {
+    this.ensureEntityIdOnEventEntity(event);
     if (!this.eventEmitter) return;
     const eventName = this.getEventName(event.metadata, suffix);
     await this.eventEmitter.emitAsync(eventName, event);
+  }
+
+  private ensureEntityIdOnEventEntity(event: OrmLifecycleEvent<Entity>): void {
+    const eventEntity = event.entity as Record<string, unknown> | undefined;
+    if (!eventEntity || typeof eventEntity !== 'object') {
+      return;
+    }
+
+    if (typeof eventEntity.id === 'string' && eventEntity.id) {
+      return;
+    }
+
+    const resolvedId = this.resolveEventEntityId(event);
+    if (resolvedId) {
+      eventEntity.id = resolvedId;
+    }
+  }
+
+  private resolveEventEntityId(
+    event: OrmLifecycleEvent<Entity>,
+  ): string | null {
+    const candidates: unknown[] = [];
+
+    if ('entityId' in event) {
+      candidates.push(event.entityId);
+    }
+
+    if ('databaseEntity' in event && event.databaseEntity) {
+      candidates.push((event.databaseEntity as Record<string, unknown>).id);
+    }
+
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate) {
+        return candidate;
+      }
+
+      if (candidate && typeof candidate === 'object') {
+        const nestedId = (candidate as Record<string, unknown>).id;
+        if (typeof nestedId === 'string' && nestedId) {
+          return nestedId;
+        }
+      }
+    }
+
+    return null;
   }
 
   protected async onBeforeInsert(_event: InsertEvent<Entity>): Promise<void> {}

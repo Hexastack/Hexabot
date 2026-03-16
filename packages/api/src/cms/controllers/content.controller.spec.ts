@@ -18,6 +18,7 @@ import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/content
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { ContentRagService } from '../services/content-rag.service';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
 
@@ -28,6 +29,7 @@ describe('ContentController (TypeORM)', () => {
   let controller: ContentController;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
+  let contentRagService: ContentRagService;
   let logger: LoggerService;
   const createdContentIds = new Set<string>();
 
@@ -46,11 +48,13 @@ describe('ContentController (TypeORM)', () => {
       ],
     });
     module = testingModule;
-    [controller, contentService, contentTypeService] = await getMocks([
-      ContentController,
-      ContentService,
-      ContentTypeService,
-    ]);
+    [controller, contentService, contentTypeService, contentRagService] =
+      await getMocks([
+        ContentController,
+        ContentService,
+        ContentTypeService,
+        ContentRagService,
+      ]);
     logger = controller.logger;
   });
 
@@ -255,6 +259,45 @@ describe('ContentController (TypeORM)', () => {
       ).rejects.toThrow(NotFoundException);
 
       expect(warnSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('searchRag', () => {
+    it('parses rag search options and forwards mode', async () => {
+      const retrieveSpy = jest
+        .spyOn(contentRagService, 'retrieve')
+        .mockResolvedValue([]);
+
+      await controller.searchRag('culture', 'lexical', '7', 'ct-1', '1');
+
+      expect(retrieveSpy).toHaveBeenCalledWith('culture', {
+        mode: 'lexical',
+        limit: 7,
+        contentTypeId: 'ct-1',
+        includeInactive: true,
+      });
+    });
+
+    it('ignores invalid optional query params in rag search', async () => {
+      const retrieveSpy = jest
+        .spyOn(contentRagService, 'retrieve')
+        .mockResolvedValue([]);
+
+      await controller.searchRag('culture', undefined, 'bad-limit');
+
+      expect(retrieveSpy).toHaveBeenCalledWith('culture', {});
+    });
+  });
+
+  describe('reindexRag', () => {
+    it('queues rag reindex and returns acceptance response', async () => {
+      const reindexSpy = jest
+        .spyOn(contentRagService, 'scheduleReindexAll')
+        .mockImplementation();
+      const response = await controller.reindexRag();
+
+      expect(reindexSpy).toHaveBeenCalledTimes(1);
+      expect(response).toEqual({ accepted: true });
     });
   });
 });
