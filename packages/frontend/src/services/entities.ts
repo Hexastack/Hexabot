@@ -8,18 +8,10 @@ import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
 import { ISubscriberStub } from "@/types/subscriber.types";
+import { IUserStub } from "@/types/user.types";
+import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
 import { EntityType } from "./types";
-
-export const applySubscriberDerivedFields = <T extends ISubscriberStub>(
-  subscriber: T,
-): T => {
-  if (subscriber.firstName && subscriber.lastName) {
-    subscriber.fullName = `${subscriber.firstName} ${subscriber.lastName}`;
-  }
-
-  return subscriber;
-};
 
 const processCommonStrategy = <T extends IBaseSchema>(entity: T) => ({
   ...entity,
@@ -49,7 +41,8 @@ export const UserEntity = new schema.Entity(
   },
   {
     idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
+    processStrategy: <T extends IUserStub>(entity: T) =>
+      processCommonStrategy(applyFullNameDerivedFields(entity)),
   },
 );
 
@@ -73,9 +66,7 @@ export const SubscriberEntity = new schema.Entity(
         entity.retainedFrom = new Date(entity.retainedFrom);
       }
 
-      entity.fullName = applySubscriberDerivedFields(entity).fullName;
-
-      return processCommonStrategy(entity);
+      return processCommonStrategy(applyFullNameDerivedFields(entity));
     },
   },
 );

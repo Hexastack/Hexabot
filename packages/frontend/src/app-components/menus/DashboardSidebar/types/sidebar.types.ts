@@ -44,7 +44,7 @@ export type TPopoverMenuItem = { text: string; href: string };
 
 export type TPopoverMenuLogoutItem = { text: string; onClick: () => void };
 export type PopoverMenuProps = {
-  user?: Pick<IUser, "email" | "firstName" | "lastName">;
+  user?: Pick<IUser, "email" | "firstName" | "lastName" | "fullName">;
   links?: TPopoverMenuItem[];
   logout?: TPopoverMenuLogoutItem;
   handleClose?: () => void;

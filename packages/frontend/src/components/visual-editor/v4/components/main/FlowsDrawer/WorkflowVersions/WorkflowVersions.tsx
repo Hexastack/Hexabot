@@ -11,6 +11,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import { getFullName } from "@/utils/full-name.utils";
 
 import { useWorkflow } from "../../../../hooks/useWorkflow";
 
@@ -58,7 +59,7 @@ export const WorkflowVersions = () => {
       }
 
       const email = typeof user.email === "string" ? user.email : "";
-      const fullName = `${user.firstName} ${user.lastName}`.trim();
+      const fullName = getFullName(user);
 
       return (
         fullName || email || t("visual_editor.workflow_versions.unknown_user")

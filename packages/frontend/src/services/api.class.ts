@@ -21,6 +21,7 @@ import {
   IUserStub,
 } from "@/types/user.types";
 import { IWorkflow } from "@/types/workfow.types";
+import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
 
@@ -115,7 +116,7 @@ export class ApiClient {
       ILoginAttributes
     >(ROUTES.LOGIN, payload);
 
-    return data;
+    return applyFullNameDerivedFields(data);
   }
 
   async logout() {
@@ -127,7 +128,7 @@ export class ApiClient {
   async getCurrentSession() {
     const { data } = await this.request.get<IUser>(ROUTES.ME);
 
-    return data;
+    return applyFullNameDerivedFields(data);
   }
 
   async updateProfile(id: string, payload: Partial<IProfileAttributes>) {
@@ -153,7 +154,7 @@ export class ApiClient {
       },
     });
 
-    return data;
+    return applyFullNameDerivedFields(data);
   }
 
   async invite(payload: IInvitationAttributes) {

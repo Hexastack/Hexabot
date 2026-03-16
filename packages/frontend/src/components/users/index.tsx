@@ -27,6 +27,7 @@ import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { IUser } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
+import { getFullName } from "@/utils/full-name.utils";
 
 import { EditUserFormDialog } from "./EditUserFormDialog";
 import { InviteUserFormDialog } from "./InviteUserFormDialog";
@@ -85,7 +86,7 @@ export const Users = () => {
       headerName: t("label.name"),
       sortable: false,
       disableColumnMenu: true,
-      valueGetter: (_params, val) => `${val.firstName} ${val.lastName}`,
+      valueGetter: (_params, val) => getFullName(val),
       headerAlign: "left",
     },
     {

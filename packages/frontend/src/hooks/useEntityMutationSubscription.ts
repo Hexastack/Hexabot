@@ -9,21 +9,19 @@ import { useCallback } from "react";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import {
-  applySubscriberDerivedFields,
-  ENTITY_MAP,
-} from "@/services/entities";
+import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
 import { InfiniteData } from "@/types/tanstack.types";
+import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 import { useSocketGetQuery, useSubscribe } from "@/websocket/socket-hooks";
 
 export const SYNC_TARGET_BY_ENTITY_TYPE = {
   [EntityType.USER]: EntityType.SUBSCRIBER,
 } as const;
 export const PAYLOAD_TRANSFORMERS_BY_ENTITY_TYPE = {
-  [EntityType.USER]: applySubscriberDerivedFields,
-  [EntityType.SUBSCRIBER]: applySubscriberDerivedFields,
+  [EntityType.USER]: applyFullNameDerivedFields,
+  [EntityType.SUBSCRIBER]: applyFullNameDerivedFields,
 } as const;
 
 const getAffectedEntityTypes = (entityType: EntityType): EntityType[] => {

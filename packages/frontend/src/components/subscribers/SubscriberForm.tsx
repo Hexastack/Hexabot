@@ -19,9 +19,7 @@ import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
-
-const getFullName = (subscriber: ISubscriber | null) =>
-  `${subscriber?.firstName} ${subscriber?.lastName}`;
+import { getFullName } from "@/utils/full-name.utils";
 
 export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
   data: { defaultValues: subscriber },

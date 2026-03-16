@@ -18,8 +18,7 @@ import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { IRole } from "@/types/role.types";
 import { IUser, IUserAttributes } from "@/types/user.types";
-
-const getFullName = (user?: IUser) => `${user?.firstName} ${user?.lastName}`;
+import { getFullName } from "@/utils/full-name.utils";
 
 export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
   data: { defaultValues: user, presetValues: roles },
