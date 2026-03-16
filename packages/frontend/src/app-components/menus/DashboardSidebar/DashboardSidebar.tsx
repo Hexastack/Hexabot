@@ -43,6 +43,7 @@ export const DashboardSidebar = ({
     fullyExpanded: expanded,
     fullyCollapsed: !expanded,
   });
+  const shouldUseTemporaryDrawer = !isMd && (!isSm || disableCollapsibleSidebar);
 
   React.useEffect(() => {
     const duration = expanded
@@ -202,7 +203,7 @@ export const DashboardSidebar = ({
       <Drawer
         container={container}
         variant="temporary"
-        open={expanded}
+        open={shouldUseTemporaryDrawer && expanded}
         onClose={() => setExpanded(false)}
         ModalProps={{ keepMounted: true }}
         sx={{
