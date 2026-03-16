@@ -31,7 +31,7 @@ import { ContentTypeOrmEntity } from './content-type.entity';
 
 @Entity({ name: 'contents' })
 @Index(['title'])
-@Index(['rag'])
+@Index(['searchText'])
 export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
   plainCls = Content;
 
@@ -66,8 +66,8 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
   @JsonColumn({ name: 'properties', nullable: true })
   properties!: Record<string, any> | null;
 
-  @Column({ type: 'text', nullable: true })
-  rag?: string | null;
+  @Column({ name: 'searchText', type: 'text', nullable: false })
+  searchText: string;
 
   /**
    * Helper to return the internal url of this content.
@@ -99,15 +99,22 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
 
   @BeforeInsert()
   @BeforeUpdate()
-  applyPropertiesTransformation(): void {
-    const properties = this.properties ?? {};
-    this.rag = this.stringifyProperties(properties);
+  async applySearchTextTransformation(): Promise<void> {
+    this.searchText = await this.buildSearchText();
   }
 
-  private stringifyProperties(obj: Record<string, any>): string {
-    return Object.entries(obj).reduce(
-      (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
-      '',
-    );
+  async buildSearchText(): Promise<string> {
+    const lines = [`title: ${this.title}`];
+    const properties = this.properties ?? {};
+
+    for (const [key, value] of Object.entries(properties)) {
+      if (typeof value !== 'string') {
+        continue;
+      }
+
+      lines.push(`${key}: ${value}`);
+    }
+
+    return lines.join('\n');
   }
 }

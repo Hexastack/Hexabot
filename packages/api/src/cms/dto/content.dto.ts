@@ -29,7 +29,7 @@ export class ContentStub extends BaseStub {
   properties!: Record<string, any> | null;
 
   @Expose()
-  rag?: string | null;
+  searchText: string;
 }
 
 @Exclude()

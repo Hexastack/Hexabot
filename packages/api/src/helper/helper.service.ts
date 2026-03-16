@@ -66,9 +66,14 @@ export class HelperService {
    * @returns - The helpers
    */
   public getAllByType<T extends HelperType>(type: T) {
-    const helpers = this.registry.get(type) as Map<string, TypeOfHelper<T>>;
+    const helpers = this.registry.get(type);
+    if (!helpers) {
+      this.logger.warn(`Unknown helper type requested: ${String(type)}`);
 
-    return Array.from(helpers.values());
+      return [];
+    }
+
+    return Array.from((helpers as Map<string, TypeOfHelper<T>>).values());
   }
 
   /**

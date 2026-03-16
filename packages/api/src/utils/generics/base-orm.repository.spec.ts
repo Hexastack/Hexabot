@@ -500,6 +500,27 @@ describe('BaseOrmRepository', () => {
       expect(extractIds(postCalls)).toEqual([...targetIds].sort());
     });
 
+    it('should assign id on event.entity before emitting hooks', async () => {
+      const emitSpy = jest
+        .spyOn(eventEmitter, 'emitAsync')
+        .mockResolvedValue([]);
+      const entity = ormRepository.create({ dummy: 'event without id' });
+
+      await dummyRepository.afterRemove({
+        metadata: ormRepository.metadata,
+        entity,
+        entityId: 'resolved-id',
+      } as RemoveEvent<DummyOrmEntity>);
+
+      const postCall = emitSpy.mock.calls.find(
+        ([event]) => event === hookEvent(EHook.postDelete),
+      ) as [string, RemoveEvent<DummyOrmEntity>] | undefined;
+
+      expect(postCall).toBeDefined();
+      const [, postEvent] = postCall!;
+      expect(postEvent.entity?.id).toBe('resolved-id');
+    });
+
     it('should not emit hooks when findOneOrCreate reuses an existing entity', async () => {
       const target = baselineEntities[0];
       const emitSpy = jest

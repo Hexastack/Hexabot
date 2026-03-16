@@ -32,7 +32,13 @@ import {
   ContentUpdateDto,
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
+import {
+  ContentRagHit,
+  ContentRagMode,
+  ContentRagQueryOptions,
+} from '../types/rag';
 
+import { ContentRagService } from './../services/content-rag.service';
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
@@ -44,6 +50,7 @@ export class ContentController extends BaseOrmController<
   constructor(
     protected readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
+    private readonly contentRagService: ContentRagService,
   ) {
     super(contentService);
   }
@@ -92,6 +99,54 @@ export class ContentController extends BaseOrmController<
       datasetContent,
       contentType,
     );
+  }
+
+  /**
+   * Triggers a full RAG reindex for content.
+   *
+   * @returns An acknowledgement payload once reindexing is queued.
+   */
+  @Post('rag/reindex')
+  @HttpCode(202)
+  async reindexRag(): Promise<{ accepted: true }> {
+    this.contentRagService.scheduleReindexAll();
+
+    return { accepted: true };
+  }
+
+  /**
+   * Executes a RAG search query for content.
+   *
+   * @param query - Search query text.
+   *
+   * @returns Ranked matching content hits.
+   */
+  @Get('rag/search')
+  async searchRag(
+    @Query('query') query: string,
+    @Query('mode') mode?: ContentRagMode,
+    @Query('limit') limit?: string,
+    @Query('contentTypeId') contentTypeId?: string,
+    @Query('includeInactive') includeInactive?: string,
+  ): Promise<ContentRagHit[]> {
+    const parsedLimit =
+      typeof limit === 'string' && limit.trim() !== ''
+        ? Number.parseInt(limit, 10)
+        : undefined;
+    const parsedIncludeInactive =
+      includeInactive === undefined
+        ? undefined
+        : includeInactive.toLowerCase() === 'true' || includeInactive === '1';
+    const options: ContentRagQueryOptions = {
+      ...(mode ? { mode } : {}),
+      ...(Number.isFinite(parsedLimit) ? { limit: parsedLimit } : {}),
+      ...(contentTypeId ? { contentTypeId } : {}),
+      ...(includeInactive === undefined
+        ? {}
+        : { includeInactive: parsedIncludeInactive }),
+    };
+
+    return await this.contentRagService.retrieve(query, options);
   }
 
   /**

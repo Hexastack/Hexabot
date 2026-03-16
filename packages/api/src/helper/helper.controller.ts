@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Controller, Get, Param } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param } from '@nestjs/common';
 
 import { Roles } from '@/utils/decorators/roles.decorator';
 
@@ -15,6 +15,15 @@ import { HelperType } from './types';
 export class HelperController {
   constructor(private readonly helperService: HelperService) {}
 
+  private normalizeHelperType(type: string): HelperType {
+    const normalizedType = type === 'nlu' ? HelperType.LLM : type;
+    if (!Object.values(HelperType).includes(normalizedType as HelperType)) {
+      throw new BadRequestException(`Unknown helper type "${type}"`);
+    }
+
+    return normalizedType as HelperType;
+  }
+
   /**
    * Retrieves a list of helpers.
    *
@@ -22,8 +31,10 @@ export class HelperController {
    */
   @Roles('public')
   @Get(':type')
-  getHelpers(@Param('type') type: HelperType) {
-    return this.helperService.getAllByType(type).map((helper) => {
+  getHelpers(@Param('type') type: string) {
+    const helperType = this.normalizeHelperType(type);
+
+    return this.helperService.getAllByType(helperType).map((helper) => {
       return {
         name: helper.getName(),
       };

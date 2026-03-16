@@ -34,11 +34,21 @@ export * from './repositories/menu.repository';
 
 export * from './services/content-type.service';
 
+export * from './services/content-rag-indexer.service';
+
+export * from './services/content-rag-retriever.service';
+
+export * from './services/content-rag.service';
+
 export * from './services/content.service';
 
 export * from './services/menu.service';
 
+export * from './services/rag-backend.service';
+
 export * from './types/content';
+
+export * from './types/rag';
 
 export * from './types/menu-types';
 

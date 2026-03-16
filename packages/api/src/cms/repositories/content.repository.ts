@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { ContentDtoConfig } from '../dto/content.dto';
+import { ContentDtoConfig, ContentFull } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 
 @Injectable()
@@ -32,13 +32,41 @@ export class ContentRepository extends BaseOrmRepository<
    * @param query - The text query string to search for.
    * @returns A promise that resolves to the matching content entities.
    */
-  async textSearch(query: string): Promise<ContentOrmEntity[]> {
+  async textSearch(
+    query: string,
+    options?: {
+      status?: boolean;
+      contentTypeId?: string;
+      limit?: number;
+    },
+  ): Promise<ContentFull[]> {
     const pattern = `%${query}%`;
-
-    return await this.repository
+    const queryBuilder = this.repository
       .createQueryBuilder('content')
-      .where('LOWER(content.title) LIKE LOWER(:pattern)', { pattern })
-      .orWhere('LOWER(content.rag) LIKE LOWER(:pattern)', { pattern })
-      .getMany();
+      .leftJoinAndSelect('content.contentType', 'contentType')
+      .where(
+        "(LOWER(content.title) LIKE LOWER(:pattern) OR LOWER(COALESCE(content.searchText, '')) LIKE LOWER(:pattern))",
+        { pattern },
+      );
+
+    if (typeof options?.status === 'boolean') {
+      queryBuilder.andWhere('content.status = :status', {
+        status: options.status,
+      });
+    }
+
+    if (options?.contentTypeId) {
+      queryBuilder.andWhere('contentType.id = :contentTypeId', {
+        contentTypeId: options.contentTypeId,
+      });
+    }
+
+    if (typeof options?.limit === 'number' && options.limit > 0) {
+      queryBuilder.take(options.limit);
+    }
+
+    const results = await queryBuilder.getMany();
+
+    return results.map((content) => content.toFullCls());
   }
 }

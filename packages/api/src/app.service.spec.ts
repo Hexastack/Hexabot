@@ -281,14 +281,14 @@ describe('AppService', () => {
       });
     });
 
-    it('broadcasts delete events with entity id fallback', () => {
+    it('broadcasts delete events using repository-normalized entity data', () => {
       const entity = buildEntity({
+        id: 'message-id',
         message: { text: 'Hello' },
       });
 
       appService.handleEntityDeleted({
         metadata: { name: 'MessageOrmEntity' },
-        entityId: 'message-id',
         entity,
       } as any);
 

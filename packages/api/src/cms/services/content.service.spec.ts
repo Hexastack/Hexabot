@@ -120,6 +120,14 @@ describe('ContentService (TypeORM)', () => {
       expect(
         results.some((content) => content.title === contentFixtures[0].title),
       ).toBe(true);
+      expect(
+        results.every(
+          (content) =>
+            typeof content.contentType === 'object' &&
+            content.contentType !== null &&
+            typeof content.contentType.id === 'string',
+        ),
+      ).toBe(true);
     });
   });
 
