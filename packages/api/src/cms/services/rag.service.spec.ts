@@ -10,11 +10,11 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
-import { ContentRagIndexerService } from './content-rag-indexer.service';
-import { ContentRagRetrieverService } from './content-rag-retriever.service';
-import { ContentRagService } from './content-rag.service';
 import { ContentService } from './content.service';
 import { RagBackendService } from './rag-backend.service';
+import { RagIndexerService } from './rag-indexer.service';
+import { RagRetrieverService } from './rag-retriever.service';
+import { RagService } from './rag.service';
 
 jest.mock('llamaindex', () => {
   const retrieve = jest.fn();
@@ -457,11 +457,11 @@ const makeSettings = (overrides?: Record<string, unknown>) =>
     },
   }) as unknown as Settings;
 
-describe('ContentRagService', () => {
-  let service: ContentRagService;
+describe('RagService', () => {
+  let service: RagService;
   let backendService: RagBackendService;
-  let indexerService: ContentRagIndexerService;
-  let retrieverService: ContentRagRetrieverService;
+  let indexerService: RagIndexerService;
+  let retrieverService: RagRetrieverService;
   let contentService: ContentServiceMock;
   let settingService: SettingServiceMock;
   let logger: LoggerServiceMock;
@@ -486,17 +486,17 @@ describe('ContentRagService', () => {
       settingService as unknown as SettingService,
       logger as unknown as LoggerService,
     );
-    indexerService = new ContentRagIndexerService(
+    indexerService = new RagIndexerService(
       contentService as unknown as ContentService,
       settingService as unknown as SettingService,
       backendService,
       logger as unknown as LoggerService,
     );
-    retrieverService = new ContentRagRetrieverService(
+    retrieverService = new RagRetrieverService(
       settingService as unknown as SettingService,
       backendService,
     );
-    service = new ContentRagService(
+    service = new RagService(
       retrieverService,
       indexerService,
       backendService,

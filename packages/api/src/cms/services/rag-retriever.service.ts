@@ -16,19 +16,15 @@ import { KeywordTableRetrieverMode } from 'llamaindex';
 
 import { SettingService } from '@/setting/services/setting.service';
 
-import {
-  ContentRagHit,
-  ContentRagMode,
-  ContentRagQueryOptions,
-} from '../types/rag';
+import { RagHit, RagMode, RagQueryOptions } from '../types/rag';
 
 import { RagBackendService } from './rag-backend.service';
 
-type ResolvedContentRagQueryOptions = Omit<ContentRagQueryOptions, 'limit'> & {
+type ResolvedRagQueryOptions = Omit<RagQueryOptions, 'limit'> & {
   limit: number;
 };
 
-type ContentRagCandidateHit = ContentRagHit & { _status: number };
+type RagCandidateHit = RagHit & { _status: number };
 
 type RetrieverEntry = {
   node: {
@@ -40,7 +36,7 @@ type RetrieverEntry = {
 };
 
 @Injectable()
-export class ContentRagRetrieverService {
+export class RagRetrieverService {
   constructor(
     private readonly settingService: SettingService,
     private readonly ragBackendService: RagBackendService,
@@ -54,8 +50,8 @@ export class ContentRagRetrieverService {
    */
   async retrieve(
     query: string,
-    options: ContentRagQueryOptions = {},
-  ): Promise<ContentRagHit[]> {
+    options: RagQueryOptions = {},
+  ): Promise<RagHit[]> {
     const settings = await this.settingService.getSettings();
     const ragSettings = settings.rag_settings;
     if (!ragSettings.enabled || !query?.trim()) {
@@ -78,8 +74,8 @@ export class ContentRagRetrieverService {
    */
   private async retrieveLexical(
     query: string,
-    options: ResolvedContentRagQueryOptions,
-  ): Promise<ContentRagHit[]> {
+    options: ResolvedRagQueryOptions,
+  ): Promise<RagHit[]> {
     const index = await this.ragBackendService.getLexicalIndex();
     const entries = await Settings.withLLM({} as any, async () => {
       const retriever = index.asRetriever({
@@ -104,8 +100,8 @@ export class ContentRagRetrieverService {
    */
   private async retrieveEmbedding(
     query: string,
-    options: ResolvedContentRagQueryOptions,
-  ): Promise<ContentRagHit[]> {
+    options: ResolvedRagQueryOptions,
+  ): Promise<RagHit[]> {
     const embeddingIndex = await this.ragBackendService.getEmbeddingIndex();
     const filters = this.buildEmbeddingFilters(options);
     const retriever = embeddingIndex.asRetriever({
@@ -126,7 +122,7 @@ export class ContentRagRetrieverService {
    * @returns Metadata filters or undefined when none are needed.
    */
   private buildEmbeddingFilters(
-    options: ContentRagQueryOptions,
+    options: RagQueryOptions,
   ): MetadataFilters | undefined {
     const filters: MetadataFilters['filters'] = [];
     const includeInactive = options.includeInactive ?? false;
@@ -164,12 +160,12 @@ export class ContentRagRetrieverService {
    * @returns Fully resolved query options.
    */
   private resolveQueryOptions(
-    options: ContentRagQueryOptions,
+    options: RagQueryOptions,
     ragSettings: {
-      default_mode: ContentRagMode;
+      default_mode: RagMode;
       top_k: number;
     },
-  ): ResolvedContentRagQueryOptions {
+  ): ResolvedRagQueryOptions {
     return {
       ...options,
       mode: options.mode ?? ragSettings.default_mode,
@@ -185,8 +181,8 @@ export class ContentRagRetrieverService {
    */
   private toCandidateHit(
     entry: RetrieverEntry,
-    source: ContentRagMode,
-  ): ContentRagCandidateHit {
+    source: RagMode,
+  ): RagCandidateHit {
     const metadata = entry.node.metadata;
     const contentId = this.parseContentId(metadata.contentId, entry.node.id_);
     const title = this.parseTitle(metadata.title, contentId);
@@ -258,8 +254,8 @@ export class ContentRagRetrieverService {
    * @returns True when the hit should be included.
    */
   private shouldIncludeHit(
-    hit: ContentRagCandidateHit,
-    options: ContentRagQueryOptions,
+    hit: RagCandidateHit,
+    options: RagQueryOptions,
   ): boolean {
     const includeInactive = options.includeInactive ?? false;
     if (!includeInactive && hit._status !== 1) {
@@ -278,8 +274,8 @@ export class ContentRagRetrieverService {
    * @param hits Candidate hits.
    * @returns Deduplicated lexical hits.
    */
-  private dedupeLexicalHits(hits: ContentRagCandidateHit[]): ContentRagHit[] {
-    const byContentId = new Map<string, ContentRagHit>();
+  private dedupeLexicalHits(hits: RagCandidateHit[]): RagHit[] {
+    const byContentId = new Map<string, RagHit>();
     for (const hit of hits) {
       if (byContentId.has(hit.contentId)) {
         continue;
@@ -296,8 +292,8 @@ export class ContentRagRetrieverService {
    * @param hits Candidate hits.
    * @returns Deduplicated and score-sorted embedding hits.
    */
-  private dedupeEmbeddingHits(hits: ContentRagCandidateHit[]): ContentRagHit[] {
-    const byContentId = new Map<string, ContentRagHit>();
+  private dedupeEmbeddingHits(hits: RagCandidateHit[]): RagHit[] {
+    const byContentId = new Map<string, RagHit>();
     for (const hit of hits) {
       const currentHit = byContentId.get(hit.contentId);
       if (!currentHit) {
@@ -320,7 +316,7 @@ export class ContentRagRetrieverService {
    * @param hit Candidate hit.
    * @returns Public hit representation.
    */
-  private toPublicHit(hit: ContentRagCandidateHit): ContentRagHit {
+  private toPublicHit(hit: RagCandidateHit): RagHit {
     const { _status: _, ...publicHit } = hit;
 
     return publicHit;
@@ -331,7 +327,7 @@ export class ContentRagRetrieverService {
    * @param hit Hit with optional score.
    * @returns Comparable score value.
    */
-  private getScore(hit: Pick<ContentRagHit, 'score'>): number {
+  private getScore(hit: Pick<RagHit, 'score'>): number {
     return hit.score ?? Number.NEGATIVE_INFINITY;
   }
 

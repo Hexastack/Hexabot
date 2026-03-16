@@ -34,11 +34,9 @@ export * from './repositories/menu.repository';
 
 export * from './services/content-type.service';
 
-export * from './services/content-rag-indexer.service';
+export * from './services/rag-indexer.service';
 
-export * from './services/content-rag-retriever.service';
-
-export * from './services/content-rag.service';
+export * from './services/rag-retriever.service';
 
 export * from './services/content.service';
 

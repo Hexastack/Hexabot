@@ -26,7 +26,7 @@ import { ContentService } from './content.service';
 import { RagBackendService } from './rag-backend.service';
 
 @Injectable()
-export class ContentRagIndexerService {
+export class RagIndexerService {
   private static readonly REINDEX_CONCURRENCY = 8;
 
   constructor(
@@ -114,9 +114,7 @@ export class ContentRagIndexerService {
         : {}),
       order: { createdAt: 'DESC' },
     });
-    const concurrencyLimit = pLimit(
-      ContentRagIndexerService.REINDEX_CONCURRENCY,
-    );
+    const concurrencyLimit = pLimit(RagIndexerService.REINDEX_CONCURRENCY);
     const failedContentIds: string[] = [];
     const results = await Promise.allSettled(
       contents.map((content) =>

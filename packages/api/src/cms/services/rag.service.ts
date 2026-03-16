@@ -12,21 +12,21 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { ContentOrmEntity } from '../entities/content.entity';
-import { ContentRagHit, ContentRagQueryOptions } from '../types/rag';
+import { RagHit, RagQueryOptions } from '../types/rag';
 
-import { ContentRagIndexerService } from './content-rag-indexer.service';
-import { ContentRagRetrieverService } from './content-rag-retriever.service';
 import { RagBackendService } from './rag-backend.service';
+import { RagIndexerService } from './rag-indexer.service';
+import { RagRetrieverService } from './rag-retriever.service';
 
 @Injectable()
-export class ContentRagService {
+export class RagService {
   private ragSettingsReindexPromise?: Promise<void>;
 
   private manualReindexPromise?: Promise<void>;
 
   constructor(
-    private readonly retrieverService: ContentRagRetrieverService,
-    private readonly indexerService: ContentRagIndexerService,
+    private readonly retrieverService: RagRetrieverService,
+    private readonly indexerService: RagIndexerService,
     private readonly embeddingBackendService: RagBackendService,
     private readonly settingService: SettingService,
     private readonly logger: LoggerService,
@@ -40,8 +40,8 @@ export class ContentRagService {
    */
   async retrieve(
     query: string,
-    options: ContentRagQueryOptions = {},
-  ): Promise<ContentRagHit[]> {
+    options: RagQueryOptions = {},
+  ): Promise<RagHit[]> {
     return await this.retrieverService.retrieve(query, options);
   }
 

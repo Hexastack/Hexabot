@@ -20,14 +20,35 @@ import {
 import { ContentType } from '../dto/contentType.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
+import { RagHit, RagQueryOptions } from '../types/rag';
+
+import { RagRetrieverService } from './rag-retriever.service';
 
 @Injectable()
 export class ContentService extends BaseOrmService<
   ContentOrmEntity,
   ContentDtoConfig
 > {
-  constructor(readonly repository: ContentRepository) {
+  constructor(
+    readonly repository: ContentRepository,
+    private readonly ragRetrieverService: RagRetrieverService,
+  ) {
     super(repository);
+  }
+
+  /**
+   * Retrieves RAG hits for the provided query.
+   *
+   * @param query - User query text.
+   * @param options - Optional retrieval options.
+   *
+   * @returns Matching RAG hits.
+   */
+  async retrieve(
+    query: string,
+    options: RagQueryOptions = {},
+  ): Promise<RagHit[]> {
+    return await this.ragRetrieverService.retrieve(query, options);
   }
 
   /**

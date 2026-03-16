@@ -41,6 +41,7 @@ export function createAction<
           description: params.description,
           color: params.color,
           group: params.group,
+          icon: params.icon,
           workflowTypes: params.workflowTypes,
           supportedBindings: params.supportedBindings,
           inputSchema: params.inputSchema,
