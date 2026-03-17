@@ -36,6 +36,10 @@ export enum MemoryScope {
   run = 'run',
 }
 
+export enum McpServerTransport {
+  http = 'http',
+}
+
 export type MemoryValue = Record<string, unknown>;
 
 export type WorkflowResult = WorkflowStartResult | WorkflowResumeResult;
@@ -97,6 +101,16 @@ export type MemoryStorePersistRecordFn = (params: {
   runId?: string | null;
   value: MemoryValue;
 }) => Promise<void>;
+
+export type McpToolBindingDefinitions = Record<
+  string,
+  {
+    settings?: {
+      server_id?: string;
+      tool_names?: string[];
+    };
+  }
+>;
 
 export enum DirectionType {
   HORIZONTAL = 'horizontal',

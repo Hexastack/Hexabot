@@ -29,5 +29,6 @@ export type TModel =
   | 'workflowrun'
   | 'memorydefinition'
   | 'memoryrecord'
+  | 'mcpserver'
   | 'model'
   | 'credential';
