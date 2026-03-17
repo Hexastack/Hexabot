@@ -389,4 +389,14 @@ describe('McpClientPoolService', () => {
       firstDefinitions.tools.map((tool: { name: string }) => tool.name),
     ).toEqual(['calculator', 'translate']);
   });
+
+  it('validates required server_id using mcp binding path', async () => {
+    await expect(
+      service.buildToolSet({
+        planner: {
+          settings: {},
+        },
+      }),
+    ).rejects.toThrow('bindings.mcp.planner.settings.server_id is required');
+  });
 });

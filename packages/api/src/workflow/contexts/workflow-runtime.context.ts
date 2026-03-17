@@ -20,6 +20,7 @@ import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
+import { McpClientPoolService } from '../services/mcp-client-pool.service';
 import { MemoryStore } from '../utils/memory-store';
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -55,6 +56,9 @@ export abstract class WorkflowRuntimeContext<
   @Inject(CredentialService)
   protected readonly credentialService: CredentialService;
 
+  @Inject(McpClientPoolService)
+  protected readonly mcp: McpClientPoolService;
+
   public memoryStore: MemoryStore;
 
   constructor() {
@@ -71,6 +75,7 @@ export abstract class WorkflowRuntimeContext<
       message: this.message,
       actions: this.actionService,
       credentials: this.credentialService,
+      mcp: this.mcp,
     };
   }
 

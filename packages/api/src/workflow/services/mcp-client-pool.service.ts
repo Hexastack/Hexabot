@@ -238,7 +238,7 @@ export class McpClientPoolService implements OnModuleDestroy {
       const serverId = definition?.settings?.server_id?.trim();
       if (!serverId) {
         throw new BadRequestException(
-          `bindings.tools.${normalizedBindingName}.settings.server_id is required`,
+          `bindings.mcp.${normalizedBindingName}.settings.server_id is required`,
         );
       }
 
