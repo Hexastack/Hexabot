@@ -37,6 +37,8 @@ type GetClientOptions = {
 };
 
 export type McpToolSummary = {
+  id: string;
+  serverId: string;
   name: string;
   title?: string;
   description?: string;
@@ -163,7 +165,7 @@ export class McpClientPoolService implements OnModuleDestroy {
       allowDisabled: true,
     });
     const definitions = await client.listTools();
-    const tools = this.normalizeTools(definitions);
+    const tools = this.normalizeTools(serverId, definitions);
 
     return {
       server: this.toServerConnectionInfo(server),
@@ -592,13 +594,18 @@ export class McpClientPoolService implements OnModuleDestroy {
    * @param definitions - Raw MCP listTools payload.
    * @returns Normalized tool summaries.
    */
-  private normalizeTools(definitions: ListToolsResult): McpToolSummary[] {
+  private normalizeTools(
+    serverId: string,
+    definitions: ListToolsResult,
+  ): McpToolSummary[] {
     return definitions.tools.map((tool) => {
       const meta = this.toObject(tool._meta);
       const annotations = this.toObject(tool.annotations);
       const outputSchema = this.toObject(tool.outputSchema);
 
       return {
+        id: `${serverId}:${tool.name}`,
+        serverId,
         name: tool.name,
         ...(tool.title ? { title: tool.title } : {}),
         ...(tool.description ? { description: tool.description } : {}),

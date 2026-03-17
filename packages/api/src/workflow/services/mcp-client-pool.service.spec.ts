@@ -226,6 +226,8 @@ describe('McpClientPoolService', () => {
 
     expect(result.server.enabled).toBe(false);
     expect(result.toolCount).toBe(1);
+    expect(result.tools[0]?.serverId).toBe(disabledServer.id);
+    expect(result.tools[0]?.id).toBe(`${disabledServer.id}:calculator`);
     expect(result.tools.map((tool) => tool.name)).toEqual(['calculator']);
   });
 

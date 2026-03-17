@@ -17,11 +17,9 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import {
-  useGetMcpServerTools,
-  useTestMcpServer,
-} from "@/hooks/entities/mcp-server-hooks";
+import { useTestMcpServer } from "@/hooks/entities/mcp-server-hooks";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
@@ -31,6 +29,7 @@ import {
   IMcpServer,
   IMcpServerDiagnostics,
   IMcpServerToolsDiscovery,
+  IMcpServerTool,
   McpServerTransport,
 } from "@/types/mcp-server.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -40,16 +39,14 @@ import { McpServerFormDialog } from "./McpServerFormDialog";
 import { McpServerResultDrawer } from "./McpServerResultDrawer";
 
 type DrawerState = {
-  open: boolean;
-  title: string;
   status: "idle" | "loading" | "success" | "error";
-  data?: IMcpServerDiagnostics | IMcpServerToolsDiscovery;
+  data?: IMcpServerDiagnostics;
   error?: unknown;
 };
 
+type DrawerMode = "test" | "tools" | null;
+
 const INITIAL_DRAWER_STATE: DrawerState = {
-  open: false,
-  title: "",
   status: "idle",
 };
 
@@ -58,9 +55,11 @@ export const McpServers = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const [drawerState, setDrawerState] = useState<DrawerState>(
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
+  const [testDrawerState, setTestDrawerState] = useState<DrawerState>(
     INITIAL_DRAWER_STATE,
   );
+  const [selectedToolsServer, setSelectedToolsServer] = useState<IMcpServer>();
   const { mutate: updateMcpServer } = useUpdate(EntityType.MCP_SERVER, {
     onError: (error: Error) => {
       toast.error(error);
@@ -78,58 +77,96 @@ export const McpServers = () => {
     },
   });
   const { mutateAsync: testMcpServer } = useTestMcpServer();
-  const { mutateAsync: getMcpServerTools } = useGetMcpServerTools();
-  const closeDrawer = () => setDrawerState(INITIAL_DRAWER_STATE);
+  const {
+    data: tools = [],
+    isLoading: isToolsLoading,
+    isFetching: isToolsFetching,
+    error: toolsError,
+  } = useFind(
+    {
+      entity: EntityType.MCP_SERVER_TOOL,
+    },
+    {
+      hasCount: false,
+    },
+    {
+      enabled: drawerMode === "tools" && !!selectedToolsServer?.id,
+      routeParams: selectedToolsServer
+        ? {
+            id: selectedToolsServer.id,
+          }
+        : undefined,
+    },
+  );
+  const closeDrawer = () => {
+    setDrawerMode(null);
+    setTestDrawerState(INITIAL_DRAWER_STATE);
+    setSelectedToolsServer(undefined);
+  };
   const handleTest = async (row: IMcpServer) => {
-    setDrawerState({
-      open: true,
-      title: t("title.mcp_server_test_result"),
+    setDrawerMode("test");
+    setTestDrawerState({
       status: "loading",
     });
 
     try {
       const data = await testMcpServer(row.id);
 
-      setDrawerState({
-        open: true,
-        title: t("title.mcp_server_test_result"),
+      setTestDrawerState({
         status: "success",
         data,
       });
     } catch (error) {
-      setDrawerState({
-        open: true,
-        title: t("title.mcp_server_test_result"),
+      setTestDrawerState({
         status: "error",
         error,
       });
     }
   };
-  const handleTools = async (row: IMcpServer) => {
-    setDrawerState({
-      open: true,
-      title: t("title.mcp_server_tools"),
-      status: "loading",
-    });
-
-    try {
-      const data = await getMcpServerTools(row.id);
-
-      setDrawerState({
-        open: true,
-        title: t("title.mcp_server_tools"),
-        status: "success",
-        data,
-      });
-    } catch (error) {
-      setDrawerState({
-        open: true,
-        title: t("title.mcp_server_tools"),
-        status: "error",
-        error,
-      });
-    }
+  const handleTools = (row: IMcpServer) => {
+    setDrawerMode("tools");
+    setSelectedToolsServer(row);
   };
+  const toolsDiscovery: IMcpServerToolsDiscovery | undefined = selectedToolsServer
+    ? {
+        server: {
+          id: selectedToolsServer.id,
+          name: selectedToolsServer.name,
+          enabled: selectedToolsServer.enabled,
+          transport: selectedToolsServer.transport,
+          url: selectedToolsServer.url,
+          ...(selectedToolsServer.command
+            ? { command: selectedToolsServer.command }
+            : {}),
+          ...(selectedToolsServer.args ? { args: selectedToolsServer.args } : {}),
+          ...(selectedToolsServer.cwd ? { cwd: selectedToolsServer.cwd } : {}),
+        },
+        toolCount: tools.length,
+        tools: tools as IMcpServerTool[],
+      }
+    : undefined;
+  let drawerTitle = "";
+  let drawerStatus: "idle" | "loading" | "success" | "error" = "idle";
+  let drawerData: IMcpServerDiagnostics | IMcpServerToolsDiscovery | undefined;
+  let drawerError: unknown;
+
+  if (drawerMode === "test") {
+    drawerTitle = t("title.mcp_server_test_result");
+    drawerStatus = testDrawerState.status;
+    drawerData = testDrawerState.data;
+    drawerError = testDrawerState.error;
+  } else if (drawerMode === "tools") {
+    drawerTitle = t("title.mcp_server_tools");
+    drawerStatus =
+      isToolsLoading || isToolsFetching
+        ? "loading"
+        : toolsError
+          ? "error"
+          : "success";
+    drawerData = toolsDiscovery;
+    drawerError = toolsError;
+  }
+
   const actionColumns = useActionColumns<IMcpServer>(
     EntityType.MCP_SERVER,
     [
@@ -292,12 +329,12 @@ export const McpServers = () => {
         headerI18nTitle="title.mcp_servers"
       />
       <McpServerResultDrawer
-        open={drawerState.open}
+        open={drawerMode !== null}
         onClose={closeDrawer}
-        title={drawerState.title}
-        status={drawerState.status}
-        data={drawerState.data}
-        error={drawerState.error}
+        title={drawerTitle}
+        status={drawerStatus}
+        data={drawerData}
+        error={drawerError}
       />
     </>
   );

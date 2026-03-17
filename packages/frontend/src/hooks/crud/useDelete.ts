@@ -5,7 +5,7 @@
  */
 
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, THook } from "@/types/base.types";
+import { THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
@@ -13,7 +13,7 @@ import { useTanstackMutation, useTanstackQueryClient } from "./useTanstack";
 
 export const useDelete = <
   TE extends THook["entity"],
-  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
+  TBasic = THook<{ entity: TE }>["basic"],
 >(
   entity: TE,
   options?: TMutationOptions<string, Error, string, TBasic>,

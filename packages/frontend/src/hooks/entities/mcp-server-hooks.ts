@@ -5,10 +5,7 @@
  */
 
 import { TMutationOptions } from "@/services/types";
-import {
-  IMcpServerDiagnostics,
-  IMcpServerToolsDiscovery,
-} from "@/types/mcp-server.types";
+import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 
 import { useTanstackMutation } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
@@ -22,19 +19,6 @@ export const useTestMcpServer = (
     ...options,
     async mutationFn(id) {
       return await apiClient.testMcpServer(id);
-    },
-  });
-};
-
-export const useGetMcpServerTools = (
-  options?: TMutationOptions<IMcpServerToolsDiscovery, Error, string>,
-) => {
-  const { apiClient } = useApiClient();
-
-  return useTanstackMutation({
-    ...options,
-    async mutationFn(id) {
-      return await apiClient.getMcpServerTools(id);
     },
   });
 };

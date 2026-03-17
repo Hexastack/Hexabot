@@ -33,7 +33,7 @@ import {
 import { McpServerOrmEntity } from '../entities/mcp-server.entity';
 import {
   McpServerDiagnostics,
-  McpToolsDiscovery,
+  McpToolSummary,
 } from '../services/mcp-client-pool.service';
 import { McpServerService } from '../services/mcp-server.service';
 
@@ -191,10 +191,10 @@ export class McpServerController extends BaseOrmController<
    * Retrieves normalized tool metadata for an MCP server.
    *
    * @param id - MCP server identifier.
-   * @returns Tool discovery payload.
+   * @returns MCP server tools list.
    */
   @Get(':id/tools')
-  async tools(@Param('id') id: string): Promise<McpToolsDiscovery> {
+  async tools(@Param('id') id: string): Promise<McpToolSummary[]> {
     await this.ensureServerExists(id, 'discover');
 
     return await this.mcpServerService.discoverTools(id);

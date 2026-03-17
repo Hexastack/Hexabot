@@ -144,6 +144,15 @@ export const McpServerEntity = new schema.Entity(
   },
 );
 
+export const McpServerToolEntity = new schema.Entity(
+  EntityType.MCP_SERVER_TOOL,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const MenuLeafEntity = new schema.Entity(EntityType.MENU, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -337,6 +346,7 @@ export const ENTITY_MAP = {
   [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
   [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
   [EntityType.MCP_SERVER]: McpServerEntity,
+  [EntityType.MCP_SERVER_TOOL]: McpServerToolEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,

@@ -13,10 +13,7 @@ import { THook } from "@/types/base.types";
 import { StatsType } from "@/types/bot-stat.types";
 import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
-import {
-  IMcpServerDiagnostics,
-  IMcpServerToolsDiscovery,
-} from "@/types/mcp-server.types";
+import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import {
   IProfileAttributes,
@@ -70,7 +67,6 @@ export const ROUTES = {
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
   WORKFLOW_BINDINGS: "/workflow/bindings",
   MCP_SERVER_TEST: "/mcpserver/:id/test",
-  MCP_SERVER_TOOLS: "/mcpserver/:id/tools",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -101,6 +97,7 @@ export const ROUTES = {
   [EntityType.WORKFLOW_ACTIONS]: "/workflow/actions/:type",
   [EntityType.WORKFLOW_RUN]: "/workflowrun",
   [EntityType.MCP_SERVER]: "/mcpserver",
+  [EntityType.MCP_SERVER_TOOL]: "/mcpserver/:id/tools",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
 } as const;
 
@@ -285,13 +282,6 @@ export class ApiClient {
     const { data } = await this.request.post<IMcpServerDiagnostics>(route, {
       _csrf,
     });
-
-    return data;
-  }
-
-  async getMcpServerTools(id: string) {
-    const route = resolveRoute(ROUTES.MCP_SERVER_TOOLS, { id });
-    const { data } = await this.request.get<IMcpServerToolsDiscovery>(route);
 
     return data;
   }

@@ -37,7 +37,8 @@ export interface IMcpServerFull extends IMcpServerStub, IFormat<Format.FULL> {
   credential?: ICredential | null;
 }
 
-export type IMcpToolSummary = {
+export interface IMcpServerToolAttributes {
+  serverId: string;
   name: string;
   title?: string;
   description?: string;
@@ -45,7 +46,15 @@ export type IMcpToolSummary = {
   outputSchema?: Record<string, unknown>;
   annotations?: Record<string, unknown>;
   meta?: Record<string, unknown>;
-};
+}
+
+export interface IMcpServerTool
+  extends IMcpServerToolAttributes,
+    IFormat<Format.BASIC> {
+  id: string;
+}
+
+export type IMcpToolSummary = IMcpServerTool;
 
 export type IMcpServerInfo = {
   id: string;

@@ -32,6 +32,8 @@ import {
   IMcpServer,
   IMcpServerAttributes,
   IMcpServerFull,
+  IMcpServerTool,
+  IMcpServerToolAttributes,
 } from "./mcp-server.types";
 import {
   IMemoryDefinition,
@@ -100,6 +102,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.WORKFLOW_RUN]: ["workflow", "workflowVersion", "triggeredBy"],
   [EntityType.MCP_SERVER]: ["credential"],
+  [EntityType.MCP_SERVER_TOOL]: [],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
@@ -175,6 +178,10 @@ export interface IEntityMapTypes {
     IMcpServerAttributes,
     never,
     IMcpServerFull
+  >;
+  [EntityType.MCP_SERVER_TOOL]: IEntityTypes<
+    IMcpServerTool,
+    IMcpServerToolAttributes
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,

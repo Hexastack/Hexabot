@@ -352,16 +352,10 @@ describe('McpServerController (TypeORM)', () => {
     it('returns normalized tools list', async () => {
       const id = mcpServerFixtureIds.enabled;
       const payload = {
-        server: {
-          id,
-          name: 'Primary MCP Server',
-          enabled: true,
-          transport: McpServerTransport.http,
-          url: 'https://mcp.example.com/main',
-        },
-        toolCount: 1,
         tools: [
           {
+            id: `${id}:calculator`,
+            serverId: id,
             name: 'calculator',
             title: 'Calculator',
             description: 'Performs arithmetic operations',
@@ -370,7 +364,6 @@ describe('McpServerController (TypeORM)', () => {
             },
           },
         ],
-        meta: { source: 'mcp' },
       };
       jest
         .spyOn(mcpClientPoolService, 'listToolsForDiagnostics')
@@ -381,7 +374,7 @@ describe('McpServerController (TypeORM)', () => {
       expect(mcpClientPoolService.listToolsForDiagnostics).toHaveBeenCalledWith(
         id,
       );
-      expect(result).toEqualPayload(payload);
+      expect(result).toEqualPayload(payload.tools);
     });
   });
 });

@@ -96,7 +96,14 @@ describe('McpServerService', () => {
         url: 'https://mcp.example.com',
       },
       toolCount: 0,
-      tools: [],
+      tools: [
+        {
+          id: 'server-1:calculator',
+          serverId: 'server-1',
+          name: 'calculator',
+          inputSchema: { type: 'object' },
+        },
+      ],
     };
     mcpClientPoolService.listToolsForDiagnostics.mockResolvedValue(discovery);
 
@@ -105,6 +112,6 @@ describe('McpServerService', () => {
     expect(mcpClientPoolService.listToolsForDiagnostics).toHaveBeenCalledWith(
       'server-1',
     );
-    expect(result).toEqual(discovery);
+    expect(result).toEqual(discovery.tools);
   });
 });

@@ -15,7 +15,7 @@ import { McpServerRepository } from '../repositories/mcp-server.repository';
 import {
   McpClientPoolService,
   McpServerDiagnostics,
-  McpToolsDiscovery,
+  McpToolSummary,
 } from './mcp-client-pool.service';
 
 @Injectable()
@@ -51,9 +51,12 @@ export class McpServerService extends BaseOrmService<
    * Discovers tools exposed by an MCP server.
    *
    * @param id - MCP server identifier.
-   * @returns MCP tool discovery payload.
+   * @returns MCP server tools list.
    */
-  async discoverTools(id: string): Promise<McpToolsDiscovery> {
-    return await this.mcpClientPoolService.listToolsForDiagnostics(id);
+  async discoverTools(id: string): Promise<McpToolSummary[]> {
+    const discovery =
+      await this.mcpClientPoolService.listToolsForDiagnostics(id);
+
+    return discovery.tools;
   }
 }
