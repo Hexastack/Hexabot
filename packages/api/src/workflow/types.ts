@@ -38,6 +38,7 @@ export enum MemoryScope {
 
 export enum McpServerTransport {
   http = 'http',
+  stdio = 'stdio',
 }
 
 export type MemoryValue = Record<string, unknown>;

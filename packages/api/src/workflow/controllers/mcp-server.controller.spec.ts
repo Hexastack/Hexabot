@@ -6,7 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
@@ -43,6 +43,9 @@ describe('McpServerController (TypeORM)', () => {
       enabled: true,
       transport: McpServerTransport.http,
       url: `https://mcp.example.com/${counter}`,
+      command: null,
+      args: null,
+      cwd: null,
       credential: null,
     };
   };
@@ -97,6 +100,39 @@ describe('McpServerController (TypeORM)', () => {
 
       expect(createSpy).toHaveBeenCalledWith(payload);
       expect(created).toEqualPayload(payload, [...IGNORED_TEST_FIELDS]);
+    });
+
+    it('creates a stdio MCP server', async () => {
+      const payload = {
+        name: `Stdio MCP Server ${counter + 1}`,
+        enabled: true,
+        transport: McpServerTransport.stdio,
+        url: null,
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem'],
+        cwd: '/tmp',
+        credential: null,
+      };
+      const created = await controller.create(payload);
+      createdIds.add(created.id);
+
+      expect(created).toEqualPayload(payload, [...IGNORED_TEST_FIELDS]);
+    });
+
+    it('rejects stdio MCP server when credential is provided', async () => {
+      const payload = {
+        ...buildPayload(),
+        transport: McpServerTransport.stdio,
+        url: null,
+        command: 'npx',
+        credential: randomUUID(),
+      };
+
+      await expect(controller.create(payload)).rejects.toThrow(
+        new BadRequestException(
+          'credential is not supported when transport is "stdio"',
+        ),
+      );
     });
   });
 
@@ -164,6 +200,53 @@ describe('McpServerController (TypeORM)', () => {
       ]);
     });
 
+    it('switches HTTP server to stdio and clears incompatible fields', async () => {
+      const created = await service.create(buildPayload());
+      createdIds.add(created.id);
+
+      const result = await controller.updateOne(created.id, {
+        transport: McpServerTransport.stdio,
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem'],
+        cwd: '/tmp',
+      });
+
+      expect(result.transport).toBe(McpServerTransport.stdio);
+      expect(result.url).toBeNull();
+      expect(result.credential).toBeNull();
+      expect(result.command).toBe('npx');
+      expect(result.args).toEqual([
+        '-y',
+        '@modelcontextprotocol/server-filesystem',
+      ]);
+      expect(result.cwd).toBe('/tmp');
+    });
+
+    it('switches stdio server to HTTP and clears incompatible fields', async () => {
+      const created = await service.create({
+        name: `Stdio MCP Server ${counter + 1}`,
+        enabled: true,
+        transport: McpServerTransport.stdio,
+        url: null,
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem'],
+        cwd: '/tmp',
+        credential: null,
+      });
+      createdIds.add(created.id);
+
+      const result = await controller.updateOne(created.id, {
+        transport: McpServerTransport.http,
+        url: 'https://mcp.example.com/migrated',
+      });
+
+      expect(result.transport).toBe(McpServerTransport.http);
+      expect(result.url).toBe('https://mcp.example.com/migrated');
+      expect(result.command).toBeNull();
+      expect(result.args).toBeNull();
+      expect(result.cwd).toBeNull();
+    });
+
     it('throws NotFoundException when updating a missing server', async () => {
       const id = randomUUID();
       const warnSpy = jest.spyOn(logger, 'warn');
@@ -175,6 +258,21 @@ describe('McpServerController (TypeORM)', () => {
       );
       expect(warnSpy).toHaveBeenCalledWith(
         `Unable to update MCP server by id ${id}`,
+      );
+    });
+
+    it('rejects stdio update when command is missing', async () => {
+      const created = await service.create(buildPayload());
+      createdIds.add(created.id);
+
+      await expect(
+        controller.updateOne(created.id, {
+          transport: McpServerTransport.stdio,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'command is required when transport is "stdio"',
+        ),
       );
     });
   });

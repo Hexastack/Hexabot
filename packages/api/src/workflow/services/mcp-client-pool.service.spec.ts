@@ -5,6 +5,7 @@
  */
 
 import { createMCPClient } from '@ai-sdk/mcp';
+import { Experimental_StdioMCPTransport } from '@ai-sdk/mcp/mcp-stdio';
 import { ToolSet } from 'ai';
 
 import { CredentialService } from '@/user';
@@ -68,6 +69,9 @@ const enabledServer = {
   enabled: true,
   transport: McpServerTransport.http,
   url: 'https://mcp.example.com/enabled',
+  command: null,
+  args: null,
+  cwd: null,
   credential: null,
 };
 const disabledServer = {
@@ -76,6 +80,20 @@ const disabledServer = {
   enabled: false,
   transport: McpServerTransport.http,
   url: 'https://mcp.example.com/disabled',
+  command: null,
+  args: null,
+  cwd: null,
+  credential: null,
+};
+const stdioServer = {
+  id: '33333333-3333-4333-8333-333333333333',
+  name: 'Stdio MCP',
+  enabled: true,
+  transport: McpServerTransport.stdio,
+  url: null,
+  command: 'npx',
+  args: ['-y', '@modelcontextprotocol/server-filesystem'],
+  cwd: '/tmp',
   credential: null,
 };
 
@@ -235,6 +253,57 @@ describe('McpClientPoolService', () => {
         }),
       }),
     );
+  });
+
+  it('creates stdio transport with command, args and cwd', async () => {
+    mcpServerRepository.findOne.mockResolvedValue(stdioServer);
+    const client = createClient();
+    (createMCPClient as jest.Mock).mockResolvedValue(client);
+
+    await service.getOrCreateClient(stdioServer.id);
+
+    const config = (createMCPClient as jest.Mock).mock.calls[0][0] as {
+      transport: Experimental_StdioMCPTransport;
+    };
+    expect(config.transport).toBeInstanceOf(Experimental_StdioMCPTransport);
+    expect((config.transport as any).serverParams).toEqual({
+      command: stdioServer.command,
+      args: stdioServer.args,
+      cwd: stdioServer.cwd,
+    });
+  });
+
+  it('rejects stdio servers with credentials', async () => {
+    mcpServerRepository.findOne.mockResolvedValue({
+      ...stdioServer,
+      credential: '33333333-3333-4333-8333-333333333334',
+    });
+
+    await expect(service.getOrCreateClient(stdioServer.id)).rejects.toThrow(
+      `Credential is not supported for stdio MCP server "${stdioServer.name}"`,
+    );
+    expect(createMCPClient).not.toHaveBeenCalled();
+  });
+
+  it('invalidates pooled client when stdio settings change', async () => {
+    mcpServerRepository.findOne
+      .mockResolvedValueOnce(stdioServer)
+      .mockResolvedValueOnce({
+        ...stdioServer,
+        args: ['-y', '@modelcontextprotocol/server-git'],
+      });
+
+    const firstClient = createClient();
+    const secondClient = createClient();
+    (createMCPClient as jest.Mock)
+      .mockResolvedValueOnce(firstClient)
+      .mockResolvedValueOnce(secondClient);
+
+    await service.getOrCreateClient(stdioServer.id);
+    await service.getOrCreateClient(stdioServer.id);
+
+    expect(firstClient.close).toHaveBeenCalledTimes(1);
+    expect(createMCPClient).toHaveBeenCalledTimes(2);
   });
 
   it('returns a failure diagnostics payload when connectivity fails', async () => {

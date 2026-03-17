@@ -9,6 +9,7 @@ import {
   type ListToolsResult,
   type MCPClient,
 } from '@ai-sdk/mcp';
+import { Experimental_StdioMCPTransport } from '@ai-sdk/mcp/mcp-stdio';
 import {
   BadRequestException,
   Injectable,
@@ -45,13 +46,7 @@ export type McpToolSummary = {
 };
 
 export type McpToolsDiscovery = {
-  server: {
-    id: string;
-    name: string;
-    enabled: boolean;
-    transport: McpServerTransport;
-    url: string;
-  };
+  server: McpServerConnectionInfo;
   toolCount: number;
   tools: McpToolSummary[];
   meta?: Record<string, unknown>;
@@ -61,17 +56,22 @@ export type McpServerDiagnostics = {
   ok: boolean;
   checkedAt: string;
   latencyMs: number;
-  server: {
-    id: string;
-    name: string;
-    enabled: boolean;
-    transport: McpServerTransport;
-    url: string;
-  };
+  server: McpServerConnectionInfo;
   toolCount: number;
   sampledToolNames: string[];
   meta?: Record<string, unknown>;
   error?: string;
+};
+
+export type McpServerConnectionInfo = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  transport: McpServerTransport;
+  url: string | null;
+  command?: string;
+  args?: string[];
+  cwd?: string;
 };
 
 @Injectable()
@@ -162,13 +162,7 @@ export class McpClientPoolService implements OnModuleDestroy {
     const tools = this.normalizeTools(definitions);
 
     return {
-      server: {
-        id: server.id,
-        name: server.name,
-        enabled: server.enabled,
-        transport: server.transport,
-        url: server.url,
-      },
+      server: this.toServerConnectionInfo(server),
       toolCount: tools.length,
       tools,
       ...(this.toObject(definitions._meta)
@@ -211,13 +205,7 @@ export class McpClientPoolService implements OnModuleDestroy {
         ok: false,
         checkedAt: new Date().toISOString(),
         latencyMs,
-        server: {
-          id: server.id,
-          name: server.name,
-          enabled: server.enabled,
-          transport: server.transport,
-          url: server.url,
-        },
+        server: this.toServerConnectionInfo(server),
         toolCount: 0,
         sampledToolNames: [],
         error: message,
@@ -360,27 +348,62 @@ export class McpClientPoolService implements OnModuleDestroy {
    * @returns Connected MCP client.
    */
   private async createClient(server: McpServer): Promise<MCPClient> {
-    if (server.transport !== McpServerTransport.http) {
-      throw new BadRequestException(
-        `Unsupported MCP transport "${server.transport}" for server "${server.name}"`,
+    const onUncaughtError = (error: unknown) => {
+      this.logger.error(
+        `Unhandled error in MCP client for server "${server.id}"`,
+        error,
       );
+    };
+
+    if (server.transport === McpServerTransport.http) {
+      const url = this.trimmedOrNull(server.url);
+      if (!url) {
+        throw new BadRequestException(
+          `Missing URL for HTTP MCP server "${server.name}"`,
+        );
+      }
+
+      const headers = await this.buildHeaders(server);
+
+      return await createMCPClient({
+        transport: {
+          type: 'http',
+          url,
+          ...(headers ? { headers } : {}),
+        },
+        onUncaughtError,
+      });
     }
 
-    const headers = await this.buildHeaders(server);
-
-    return await createMCPClient({
-      transport: {
-        type: 'http',
-        url: server.url,
-        ...(headers ? { headers } : {}),
-      },
-      onUncaughtError: (error) => {
-        this.logger.error(
-          `Unhandled error in MCP client for server "${server.id}"`,
-          error,
+    if (server.transport === McpServerTransport.stdio) {
+      if (server.credential) {
+        throw new BadRequestException(
+          `Credential is not supported for stdio MCP server "${server.name}"`,
         );
-      },
-    });
+      }
+
+      const command = this.trimmedOrNull(server.command);
+      if (!command) {
+        throw new BadRequestException(
+          `Missing command for stdio MCP server "${server.name}"`,
+        );
+      }
+
+      const cwd = this.trimmedOrNull(server.cwd);
+
+      return await createMCPClient({
+        transport: new Experimental_StdioMCPTransport({
+          command,
+          ...(server.args ? { args: server.args } : {}),
+          ...(cwd ? { cwd } : {}),
+        }),
+        onUncaughtError,
+      });
+    }
+
+    throw new BadRequestException(
+      `Unsupported MCP transport "${server.transport}" for server "${server.name}"`,
+    );
   }
 
   /**
@@ -431,7 +454,49 @@ export class McpClientPoolService implements OnModuleDestroy {
    * @returns Deterministic cache signature.
    */
   private computeServerSignature(server: McpServer): string {
-    return [server.transport, server.url, server.credential ?? ''].join('|');
+    return JSON.stringify({
+      transport: server.transport,
+      url: server.url,
+      credential: server.credential ?? null,
+      command: server.command,
+      args: server.args ?? null,
+      cwd: server.cwd,
+    });
+  }
+
+  /**
+   * Maps one MCP server entity to diagnostics/discovery connection info.
+   *
+   * @param server - MCP server configuration.
+   * @returns Normalized connection info.
+   */
+  private toServerConnectionInfo(server: McpServer): McpServerConnectionInfo {
+    return {
+      id: server.id,
+      name: server.name,
+      enabled: server.enabled,
+      transport: server.transport,
+      url: server.url,
+      ...(server.command ? { command: server.command } : {}),
+      ...(server.args ? { args: server.args } : {}),
+      ...(server.cwd ? { cwd: server.cwd } : {}),
+    };
+  }
+
+  /**
+   * Trims a string value and converts empty values to null.
+   *
+   * @param value - Value to normalize.
+   * @returns Trimmed string or null.
+   */
+  private trimmedOrNull(value: string | null | undefined): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const normalized = value.trim();
+
+    return normalized ? normalized : null;
   }
 
   /**

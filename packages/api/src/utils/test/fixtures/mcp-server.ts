@@ -15,7 +15,10 @@ type McpServerOrmFixture = {
   name: string;
   enabled: boolean;
   transport: McpServerTransport;
-  url: string;
+  url: string | null;
+  command: string | null;
+  args: string[] | null;
+  cwd: string | null;
   credential?: null;
 };
 
@@ -31,6 +34,9 @@ export const mcpServerOrmFixtures: McpServerOrmFixture[] = [
     enabled: true,
     transport: McpServerTransport.http,
     url: 'https://mcp.example.com/main',
+    command: null,
+    args: null,
+    cwd: null,
     credential: null,
   },
   {
@@ -39,6 +45,9 @@ export const mcpServerOrmFixtures: McpServerOrmFixture[] = [
     enabled: false,
     transport: McpServerTransport.http,
     url: 'https://mcp.example.com/disabled',
+    command: null,
+    args: null,
+    cwd: null,
     credential: null,
   },
 ];

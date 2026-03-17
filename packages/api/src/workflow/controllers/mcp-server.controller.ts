@@ -76,7 +76,7 @@ export class McpServerController extends BaseOrmController<
     populate: string[] = [],
     @Query(
       new TypeOrmSearchFilterPipe<McpServerOrmEntity>({
-        allowedFields: ['name', 'enabled', 'transport', 'url'],
+        allowedFields: ['name', 'enabled', 'transport', 'url', 'command'],
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -99,7 +99,14 @@ export class McpServerController extends BaseOrmController<
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<McpServerOrmEntity>({
-        allowedFields: ['name', 'enabled', 'transport', 'url', 'credential.id'],
+        allowedFields: [
+          'name',
+          'enabled',
+          'transport',
+          'url',
+          'command',
+          'credential.id',
+        ],
       }),
     )
     options?: FindManyOptions<McpServerOrmEntity>,

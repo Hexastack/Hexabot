@@ -7,12 +7,14 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
+  ValidateIf,
 } from 'class-validator';
 
 import { Credential } from '@/user';
@@ -37,7 +39,16 @@ export class McpServerStub extends BaseStub {
   transport!: McpServerTransport;
 
   @Expose()
-  url!: string;
+  url!: string | null;
+
+  @Expose()
+  command!: string | null;
+
+  @Expose()
+  args!: string[] | null;
+
+  @Expose()
+  cwd!: string | null;
 }
 
 @Exclude()
@@ -82,17 +93,65 @@ export class McpServerCreateDto {
   @IsEnum(McpServerTransport)
   transport?: McpServerTransport;
 
-  @ApiProperty({
-    description: 'MCP server URL',
+  @ApiPropertyOptional({
+    description: 'MCP server URL (required for HTTP transport)',
     type: String,
     example: 'https://mcp.example.com/mcp',
   })
+  @ValidateIf(
+    (payload: McpServerCreateDto) =>
+      (payload.transport ?? McpServerTransport.http) ===
+      McpServerTransport.http,
+  )
   @IsNotEmpty()
   @IsString()
   @IsUrl({
     require_tld: false,
   })
-  url!: string;
+  url!: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Command executed for stdio transport (required for stdio)',
+    type: String,
+    example: 'npx',
+  })
+  @ValidateIf(
+    (payload: McpServerCreateDto) =>
+      (payload.transport ?? McpServerTransport.http) ===
+      McpServerTransport.stdio,
+  )
+  @IsNotEmpty()
+  @IsString()
+  command!: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Arguments passed to stdio command',
+    type: [String],
+    example: ['-y', '@modelcontextprotocol/server-filesystem'],
+  })
+  @ValidateIf(
+    (payload: McpServerCreateDto) =>
+      (payload.transport ?? McpServerTransport.http) ===
+      McpServerTransport.stdio,
+  )
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  args?: string[] | null;
+
+  @ApiPropertyOptional({
+    description: 'Working directory used by stdio command',
+    type: String,
+    example: '/opt/mcp',
+  })
+  @ValidateIf(
+    (payload: McpServerCreateDto) =>
+      (payload.transport ?? McpServerTransport.http) ===
+      McpServerTransport.stdio,
+  )
+  @IsOptional()
+  @IsString()
+  cwd?: string | null;
 
   @ApiPropertyOptional({
     description: 'Credential identifier used to build Authorization headers',
