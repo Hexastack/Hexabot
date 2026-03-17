@@ -6,7 +6,7 @@
 
 import { Box, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { PlugZap, Plus } from "lucide-react";
+import { Plug, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -284,7 +284,7 @@ export const McpServers = () => {
           },
         ]}
         columns={columns}
-        headerIcon={PlugZap}
+        headerIcon={Plug}
         searchParams={{
           $or: ["name", "url", "command"] as any,
           syncUrl: true,
