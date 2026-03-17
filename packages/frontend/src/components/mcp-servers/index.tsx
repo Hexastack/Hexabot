@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Switch } from "@mui/material";
+import { Box, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { PlugZap, Plus } from "lucide-react";
 import { useState } from "react";
@@ -31,6 +31,7 @@ import {
   IMcpServer,
   IMcpServerDiagnostics,
   IMcpServerToolsDiscovery,
+  McpServerTransport,
 } from "@/types/mcp-server.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -204,10 +205,33 @@ export const McpServers = () => {
     },
     {
       flex: 2,
-      field: "url",
-      headerName: t("label.url"),
+      field: "connection",
+      headerName: t("label.connection"),
       disableColumnMenu: true,
       headerAlign: "left",
+      renderCell: ({ row }) => {
+        if (row.transport === McpServerTransport.http) {
+          return row.url || t("label.none");
+        }
+
+        const args = Array.isArray(row.args)
+          ? row.args.map((arg) => arg.trim()).filter(Boolean)
+          : [];
+        const connection = row.command
+          ? `${row.command}${args.length ? ` ${args.join(" ")}` : ""}`
+          : t("label.none");
+
+        return (
+          <Box display="flex" flexDirection="column" py={0.5}>
+            <Typography variant="body2">{connection}</Typography>
+            {row.cwd ? (
+              <Typography variant="caption" color="text.secondary">
+                {row.cwd}
+              </Typography>
+            ) : null}
+          </Box>
+        );
+      },
     },
     {
       minWidth: 180,
@@ -262,7 +286,7 @@ export const McpServers = () => {
         columns={columns}
         headerIcon={PlugZap}
         searchParams={{
-          $or: ["name", "url"],
+          $or: ["name", "url", "command"] as any,
           syncUrl: true,
         }}
         headerI18nTitle="title.mcp_servers"

@@ -10,6 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -45,6 +46,8 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
   const { mutate: createMcpServer } = useCreate(EntityType.MCP_SERVER, options);
   const { mutate: updateMcpServer } = useUpdate(EntityType.MCP_SERVER, options);
   const {
+    watch,
+    setValue,
     reset,
     register,
     control,
@@ -56,28 +59,85 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
       enabled: mcpServer?.enabled ?? true,
       transport: mcpServer?.transport || McpServerTransport.http,
       url: mcpServer?.url || "",
+      command: mcpServer?.command || "",
+      args: mcpServer?.args || [],
+      cwd: mcpServer?.cwd || "",
       credential: mcpServer?.credential || null,
     },
   });
+  const transportValue = watch("transport");
+  const credentialValue = watch("credential");
+  const isHttpTransport = transportValue === McpServerTransport.http;
+  const isStdioTransport = transportValue === McpServerTransport.stdio;
   const validationRules = {
     name: {
       required: t("message.name_is_required"),
     },
     url: {
-      required: t("message.url_is_required"),
-      validate: (value: string) =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
+      validate: (value: string | null) => {
+        if (!isHttpTransport) {
+          return true;
+        }
+
+        const normalized = typeof value === "string" ? value.trim() : "";
+
+        if (!normalized) {
+          return t("message.url_is_required");
+        }
+
+        return isAbsoluteUrl(normalized) || t("message.url_is_invalid");
+      },
+    },
+    command: {
+      validate: (value: string | null) => {
+        if (!isStdioTransport) {
+          return true;
+        }
+
+        const normalized = typeof value === "string" ? value.trim() : "";
+
+        return Boolean(normalized) || t("message.command_is_required");
+      },
     },
     transport: {
       required: t("message.type_is_required"),
     },
   };
   const onSubmitForm = (params: IMcpServerAttributes) => {
+    const normalizedUrl =
+      typeof params.url === "string" ? params.url.trim() : "";
+    const normalizedCommand =
+      typeof params.command === "string" ? params.command.trim() : "";
+    const normalizedCwd =
+      typeof params.cwd === "string" ? params.cwd.trim() : "";
+    const normalizedArgs = Array.isArray(params.args)
+      ? params.args.map((arg) => arg.trim()).filter(Boolean)
+      : [];
     const payload: IMcpServerAttributes = {
       ...params,
       name: params.name.trim(),
-      url: params.url.trim(),
-      credential: params.credential || null,
+      url:
+        params.transport === McpServerTransport.http
+          ? normalizedUrl || null
+          : null,
+      command:
+        params.transport === McpServerTransport.stdio
+          ? normalizedCommand || null
+          : null,
+      args:
+        params.transport === McpServerTransport.stdio
+          ? normalizedArgs.length
+            ? normalizedArgs
+            : null
+          : null,
+      cwd:
+        params.transport === McpServerTransport.stdio
+          ? normalizedCwd || null
+          : null,
+      credential:
+        params.transport === McpServerTransport.http
+          ? params.credential || null
+          : null,
     };
 
     if (mcpServer) {
@@ -93,7 +153,10 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
         name: mcpServer.name,
         enabled: mcpServer.enabled,
         transport: mcpServer.transport,
-        url: mcpServer.url,
+        url: mcpServer.url || "",
+        command: mcpServer.command || "",
+        args: mcpServer.args || [],
+        cwd: mcpServer.cwd || "",
         credential: mcpServer.credential || null,
       });
     } else {
@@ -102,10 +165,19 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
         enabled: true,
         transport: McpServerTransport.http,
         url: "",
+        command: "",
+        args: [],
+        cwd: "",
         credential: null,
       });
     }
   }, [mcpServer, reset]);
+
+  useEffect(() => {
+    if (isStdioTransport && credentialValue) {
+      setValue("credential", null, { shouldDirty: true });
+    }
+  }, [credentialValue, isStdioTransport, setValue]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -122,15 +194,6 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
             />
           </ContentItem>
           <ContentItem>
-            <TextField
-              label={t("label.url")}
-              error={!!errors.url}
-              required
-              helperText={errors.url ? errors.url.message : null}
-              {...register("url", validationRules.url)}
-            />
-          </ContentItem>
-          <ContentItem>
             <Controller
               name="transport"
               control={control}
@@ -141,42 +204,90 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
                   required
                   label={t("label.transport")}
                   error={!!errors.transport}
-                  helperText={errors.transport ? errors.transport.message : null}
+                  helperText={
+                    errors.transport ? errors.transport.message : null
+                  }
                   {...field}
                 >
                   {Object.values(McpServerTransport).map((transport) => (
                     <MenuItem key={transport} value={transport}>
-                      {transport.toUpperCase()}
+                      {t(`label.${transport}`, {
+                        defaultValue: transport.toUpperCase(),
+                      })}
                     </MenuItem>
                   ))}
                 </TextField>
               )}
             />
           </ContentItem>
-          <ContentItem>
-            <Controller
-              name="credential"
-              control={control}
-              render={({ field }) => {
-                const { onChange, ...restField } = field;
+          {isHttpTransport ? (
+            <>
+              <ContentItem>
+                <TextField
+                  label={t("label.url")}
+                  error={!!errors.url}
+                  required
+                  helperText={errors.url ? errors.url.message : null}
+                  {...register("url", validationRules.url)}
+                />
+              </ContentItem>
+              <ContentItem>
+                <Controller
+                  name="credential"
+                  control={control}
+                  render={({ field }) => {
+                    const { onChange, ...restField } = field;
 
-                return (
-                  <AutoCompleteEntitySelect<ICredential, "name", false>
-                    entity={EntityType.CREDENTIAL}
-                    format={Format.BASIC}
-                    searchFields={["name"]}
-                    labelKey="name"
-                    label={t("label.credential")}
-                    multiple={false}
-                    onChange={(_event, selected) =>
-                      onChange(selected?.id || null)
-                    }
-                    {...restField}
-                  />
-                );
-              }}
-            />
-          </ContentItem>
+                    return (
+                      <AutoCompleteEntitySelect<ICredential, "name", false>
+                        entity={EntityType.CREDENTIAL}
+                        format={Format.BASIC}
+                        searchFields={["name"]}
+                        labelKey="name"
+                        label={t("label.credential")}
+                        multiple={false}
+                        onChange={(_event, selected) =>
+                          onChange(selected?.id || null)
+                        }
+                        {...restField}
+                      />
+                    );
+                  }}
+                />
+              </ContentItem>
+            </>
+          ) : null}
+          {isStdioTransport ? (
+            <>
+              <ContentItem>
+                <TextField
+                  label={t("label.command")}
+                  error={!!errors.command}
+                  required
+                  helperText={errors.command ? errors.command.message : null}
+                  {...register("command", validationRules.command)}
+                />
+              </ContentItem>
+              <ContentItem>
+                <Controller
+                  name="args"
+                  control={control}
+                  render={({ field }) => (
+                    <MultipleInput
+                      label={t("label.args")}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      minInput={1}
+                      fullWidth={true}
+                    />
+                  )}
+                />
+              </ContentItem>
+              <ContentItem>
+                <TextField label={t("label.cwd")} {...register("cwd")} />
+              </ContentItem>
+            </>
+          ) : null}
           <ContentItem>
             <Controller
               name="enabled"

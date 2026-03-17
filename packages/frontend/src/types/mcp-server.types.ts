@@ -11,13 +11,17 @@ import { ICredential } from "./credential.types";
 
 export enum McpServerTransport {
   http = "http",
+  stdio = "stdio",
 }
 
 export interface IMcpServerAttributes {
   name: string;
   enabled: boolean;
   transport: McpServerTransport;
-  url: string;
+  url: string | null;
+  command: string | null;
+  args: string[] | null;
+  cwd: string | null;
   credential: string | null;
 }
 
@@ -48,7 +52,10 @@ export type IMcpServerInfo = {
   name: string;
   enabled: boolean;
   transport: McpServerTransport;
-  url: string;
+  url: string | null;
+  command?: string;
+  args?: string[];
+  cwd?: string;
 };
 
 export type IMcpServerToolsDiscovery = {
