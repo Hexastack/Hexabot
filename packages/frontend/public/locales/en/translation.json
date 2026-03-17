@@ -171,6 +171,7 @@
     "visual_editor": "Visual Editor",
     "memory_definitions": "Memory Definitions",
     "workflow_runs": "Workflow Runs",
+    "mcp_servers": "MCP Servers",
     "inbox": "Inbox",
     "persistent_menu": "Persistent Menu",
     "manage_content": "Manage Content",
@@ -265,7 +266,12 @@
     "group_label": "Group Label",
     "default_group": "Default Group",
     "workflow_runs": "Workflow Runs",
-    "recent_runs": "Recent Runs"
+    "recent_runs": "Recent Runs",
+    "mcp_servers": "MCP Servers",
+    "new_mcp_server": "New MCP Server",
+    "edit_mcp_server": "Edit MCP Server",
+    "mcp_server_test_result": "MCP Server Test Result",
+    "mcp_server_tools": "MCP Server Tools"
   },
   "dashboard": {
     "kpi": {
@@ -382,6 +388,7 @@
     "none": "None",
     "title": "Title",
     "type": "Type",
+    "transport": "Transport",
     "version": "Version",
     "schedule": "Schedule",
     "conversational": "Conversational",
@@ -444,6 +451,7 @@
     "updatedAt": "Updated At",
     "mid": "Message ID",
     "labels": "Labels",
+    "credential": "Credential",
     "user": "User",
     "language": "Language",
     "target_users_with_label": "Target subscribers with label",
@@ -610,6 +618,8 @@
     "edit": "Edit",
     "save": "Save",
     "run": "Run",
+    "test_connection": "Test Connection",
+    "tools": "Tools",
     "publish": "Publish",
     "unpublish": "Unpublish",
     "submit": "Submit",

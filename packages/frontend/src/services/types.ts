@@ -38,6 +38,7 @@ export enum EntityType {
   WORKFLOW_VERSION = "WorkflowVersion",
   WORKFLOW_ACTIONS = "WorkflowActions",
   WORKFLOW_RUN = "WorkflowRun",
+  MCP_SERVER = "McpServer",
   MEMORY_DEFINITION = "MemoryDefinition",
   STATS = "Stats",
 }

@@ -171,6 +171,7 @@
     "visual_editor": "Editeur Visuel",
     "memory_definitions": "Définitions de mémoire",
     "workflow_runs": "Exécutions de Workflow",
+    "mcp_servers": "Serveurs MCP",
     "inbox": "Boîte de réception",
     "persistent_menu": "Menu persistant",
     "manage_content": "Gérer le contenu",
@@ -265,7 +266,12 @@
     "group_label": "Groupe de l'étiquette",
     "default_group": "Groupe par défaut",
     "workflow_runs": "Exécutions de Workflow",
-    "recent_runs": "Exécutions récentes"
+    "recent_runs": "Exécutions récentes",
+    "mcp_servers": "Serveurs MCP",
+    "new_mcp_server": "Nouveau serveur MCP",
+    "edit_mcp_server": "Modifier le serveur MCP",
+    "mcp_server_test_result": "Résultat du test du serveur MCP",
+    "mcp_server_tools": "Outils du serveur MCP"
   },
   "dashboard": {
     "kpi": {
@@ -381,6 +387,7 @@
     "none": "Aucun",
     "title": "Titre",
     "type": "Type",
+    "transport": "Transport",
     "version": "Version",
     "schedule": "Planification",
     "conversational": "Conversationnel",
@@ -443,6 +450,7 @@
     "updatedAt": "Modifié le",
     "mid": "ID du message",
     "labels": "Étiquettes",
+    "credential": "Identifiant",
     "user": "Utilisateurs",
     "language": "Langue",
     "target_users_with_label": "Cibler les abonnés ayant des étiquettes",
@@ -608,6 +616,8 @@
     "edit": "Modifier",
     "save": "Sauvegarder",
     "run": "Exécuter",
+    "test_connection": "Tester la connexion",
+    "tools": "Outils",
     "publish": "Publier",
     "unpublish": "Dépublier",
     "submit": "Valider",

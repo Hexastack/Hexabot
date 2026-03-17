@@ -29,6 +29,11 @@ import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
 import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
+  IMcpServer,
+  IMcpServerAttributes,
+  IMcpServerFull,
+} from "./mcp-server.types";
+import {
   IMemoryDefinition,
   IMemoryDefinitionAttributes,
 } from "./memory-definition.types";
@@ -94,6 +99,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
   [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.WORKFLOW_RUN]: ["workflow", "workflowVersion", "triggeredBy"],
+  [EntityType.MCP_SERVER]: ["credential"],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
@@ -163,6 +169,12 @@ export interface IEntityMapTypes {
     IWorkflowRunAttributes,
     IWorkflowRunFilters,
     IWorkflowRunFull
+  >;
+  [EntityType.MCP_SERVER]: IEntityTypes<
+    IMcpServer,
+    IMcpServerAttributes,
+    never,
+    IMcpServerFull
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,

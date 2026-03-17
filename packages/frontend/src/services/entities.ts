@@ -135,6 +135,15 @@ export const CredentialEntity = new schema.Entity(
   },
 );
 
+export const McpServerEntity = new schema.Entity(
+  EntityType.MCP_SERVER,
+  { credential: CredentialEntity },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const MenuLeafEntity = new schema.Entity(EntityType.MENU, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -327,6 +336,7 @@ export const ENTITY_MAP = {
   [EntityType.WORKFLOW_VERSION]: WorkflowVersionEntity,
   [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
   [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
+  [EntityType.MCP_SERVER]: McpServerEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,

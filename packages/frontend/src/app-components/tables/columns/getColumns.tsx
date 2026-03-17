@@ -19,8 +19,10 @@ import {
   RefreshCw,
   Shield,
   Tag,
+  TestTube,
   Trash2,
   UserCog,
+  Wrench,
 } from "lucide-react";
 import { FunctionComponent } from "react";
 
@@ -38,6 +40,8 @@ export enum ColumnActionType {
   Content = "Content",
   Manage_Labels = "Manage_Labels",
   Annotate = "Annotate",
+  Test = "Test",
+  Tools = "Tools",
 }
 
 const COLUMN_ACTION_CONFIG_MAP: Record<
@@ -69,6 +73,8 @@ const COLUMN_ACTION_CONFIG_MAP: Record<
     icon: Tag,
   },
   [ColumnActionType.Annotate]: { label: "button.annotate", icon: RefreshCw },
+  [ColumnActionType.Test]: { label: "button.test_connection", icon: TestTube },
+  [ColumnActionType.Tools]: { label: "button.tools", icon: Wrench },
 } as const;
 
 export interface ActionColumn<T extends GridValidRowModel> {
