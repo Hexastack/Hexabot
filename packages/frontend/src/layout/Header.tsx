@@ -24,7 +24,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { getFullName } from "@/utils/full-name.utils";
 import { getRandom } from "@/utils/safeRandom";
 
 import { theme } from "./theme";
@@ -84,7 +83,6 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   useEffect(() => {
     setRandomSeed(getRandom().toString());
   }, [user]);
-  const userFullName = getFullName(user);
 
   return (
     <StyledAppBar open={isSideBarOpen}>
@@ -143,7 +141,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   lineHeight={1}
                   textTransform="capitalize"
                 >
-                  {userFullName || user?.email}
+                  {user?.fullName || user?.email}
                 </Typography>
                 <Typography
                   lineHeight={1}

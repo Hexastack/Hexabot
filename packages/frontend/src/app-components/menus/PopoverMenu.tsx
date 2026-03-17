@@ -15,8 +15,6 @@ import {
 import { FC } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-import { getFullName } from "@/utils/full-name.utils";
-
 import { PopoverMenuProps } from "./DashboardSidebar/types/sidebar.types";
 
 export const PopoverMenu: FC<PopoverMenuProps> = ({
@@ -27,8 +25,6 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
   handleClose,
   ...other
 }) => {
-  const userFullName = getFullName(user);
-
   return (
     <Popover
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -48,11 +44,11 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
       onClose={handleClose}
       {...other}
     >
-      {(userFullName || user?.email) && (
+      {(user?.fullName || user?.email) && (
         <Box sx={{ py: 1.5, px: 2 }}>
-          {userFullName && (
+          {user?.fullName && (
             <Typography variant="subtitle2" noWrap>
-              {userFullName}
+              {user.fullName}
             </Typography>
           )}
           {user?.email && (

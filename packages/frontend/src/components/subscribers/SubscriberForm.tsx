@@ -19,7 +19,6 @@ import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
-import { getFullName } from "@/utils/full-name.utils";
 
 export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
   data: { defaultValues: subscriber },
@@ -64,7 +63,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
           <ContentItem>
             <TextField
               label={t("label.user")}
-              value={subscriber ? getFullName(subscriber) : undefined}
+              value={subscriber?.fullName}
               disabled
               slotProps={{
                 input: {

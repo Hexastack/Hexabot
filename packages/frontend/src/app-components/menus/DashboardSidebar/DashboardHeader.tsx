@@ -23,7 +23,6 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import ColorModeIconDropdown from "@/layout/ColorModeIconDropdown";
 import { EntityType } from "@/services/types";
-import { getFullName } from "@/utils/full-name.utils";
 import { getRandom } from "@/utils/safeRandom";
 
 import { PopoverMenu } from "../PopoverMenu";
@@ -49,7 +48,6 @@ export const DashboardHeader = ({
   React.useEffect(() => {
     setRandomSeed(getRandom().toString());
   }, [user]);
-  const userFullName = getFullName(user);
   const label = menuOpen ? "Collapse" : "Expand";
 
   return (
@@ -93,7 +91,7 @@ export const DashboardHeader = ({
                   lineHeight={1}
                   textTransform="capitalize"
                 >
-                  {userFullName || user?.email}
+                  {user?.fullName || user?.email}
                 </Typography>
                 <Typography
                   color="text.secondary"
