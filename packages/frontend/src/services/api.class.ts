@@ -272,6 +272,30 @@ export class ApiClient {
     return data;
   }
 
+  async getSettingsCatalog<T = Record<string, unknown>>() {
+    const { data } = await this.request.get<T>(ROUTES[EntityType.SETTING], {
+      params: { view: "catalog" },
+    });
+
+    return data;
+  }
+
+  async updateSettingGroup<T = Record<string, unknown>>(
+    group: string,
+    values: Record<string, unknown>,
+  ) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.patch<T>(
+      `${ROUTES[EntityType.SETTING]}/group/${encodeURIComponent(group)}`,
+      {
+        _csrf,
+        values,
+      },
+    );
+
+    return data;
+  }
+
   async publishWorkflow(id: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES.WORKFLOW_PUBLISH, { id });

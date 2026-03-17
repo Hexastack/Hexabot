@@ -5,7 +5,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
@@ -26,7 +26,15 @@ import {
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeeder } from '../seeds/setting.seed';
-import { TextSetting } from '../types';
+import { BUILTIN_SETTING_GROUPS } from '../utils/builtin-setting-groups';
+import { withSettingDefault } from '../utils/setting-schema-definition.utils';
+import {
+  SettingSchemaCatalogEntry,
+  buildSettingGroupJsonSchema,
+  buildSettingGroupValues,
+  buildSettingGroupZodSchema,
+  mergeSettingGroupSources,
+} from '../utils/setting-schema.utils';
 
 @Injectable()
 export class SettingService extends BaseOrmService<
@@ -42,16 +50,18 @@ export class SettingService extends BaseOrmService<
   }
 
   /**
-   * Seeds the settings if they don't already exist for the provided group.
+   * Synchronizes settings for the provided group by creating any missing rows.
    *
-   * @param group - The group of settings to check.
-   * @param data - The array of settings to seed if none exist.
+   * Existing values are preserved.
+   *
+   * @param _group - The logical group name requested by the caller.
+   * @param data - The array of settings definitions to sync.
    */
-  async seedIfNotExist(group: string, data: SettingCreateDto[]): Promise<void> {
-    const count = await this.count({ where: { group } });
-    if (count === 0) {
-      await this.seeder.seed(data);
-    }
+  async seedIfNotExist(
+    _group: string,
+    data: SettingCreateDto[],
+  ): Promise<void> {
+    await this.seeder.seed(data);
   }
 
   /**
@@ -108,6 +118,82 @@ export class SettingService extends BaseOrmService<
     );
   }
 
+  async getSchemaCatalog(): Promise<SettingSchemaCatalogEntry[]> {
+    const settings = await this.findAll({
+      order: { weight: 'ASC' },
+    });
+    const grouped = this.group(settings);
+    const groups = new Set([
+      ...Object.keys(BUILTIN_SETTING_GROUPS),
+      ...Object.keys(grouped),
+    ]);
+
+    return Array.from(groups)
+      .map((group) => this.buildSchemaCatalogEntry(group, grouped[group] ?? []))
+      .filter((entry): entry is SettingSchemaCatalogEntry => entry !== null)
+      .sort((left, right) => left.group.localeCompare(right.group));
+  }
+
+  async getSchemaGroup(group: string): Promise<SettingSchemaCatalogEntry> {
+    const settings = await this.find({
+      where: { group },
+      order: { weight: 'ASC' },
+    });
+    const catalogEntry = this.buildSchemaCatalogEntry(group, settings);
+
+    if (!catalogEntry) {
+      throw new NotFoundException(`Unable to find settings group "${group}"`);
+    }
+
+    return catalogEntry;
+  }
+
+  async updateGroup(
+    group: string,
+    values: Record<string, unknown>,
+  ): Promise<SettingSchemaCatalogEntry> {
+    const currentSettings = await this.find({
+      where: { group },
+      order: { weight: 'ASC' },
+    });
+    const sources = this.resolveGroupSources(group, currentSettings);
+
+    if (sources.length === 0) {
+      throw new NotFoundException(`Unable to find settings group "${group}"`);
+    }
+
+    const parsedValues = buildSettingGroupZodSchema(sources).parse(values);
+    const currentSettingsByLabel = new Map(
+      currentSettings.map((setting) => [setting.label, setting]),
+    );
+
+    for (const source of sources) {
+      if (!(source.label in parsedValues)) {
+        continue;
+      }
+
+      const value = parsedValues[source.label] as Setting['value'];
+      const existingSetting = currentSettingsByLabel.get(source.label);
+
+      if (existingSetting?.id) {
+        await this.updateOne(existingSetting.id, { value });
+      } else {
+        await this.create({
+          group: source.group,
+          subgroup: source.subgroup,
+          label: source.label,
+          schema: withSettingDefault(source.schema, value as Setting['value']),
+          weight: source.weight,
+          translatable: source.translatable,
+        });
+      }
+    }
+
+    await this.clearCache();
+
+    return await this.getSchemaGroup(group);
+  }
+
   /**
    * Retrieves the application configuration object.
    *
@@ -146,9 +232,9 @@ export class SettingService extends BaseOrmService<
    */
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
   async getAllowedOrigins(): Promise<string[]> {
-    const settings = (await this.find({
+    const settings = await this.find({
       where: { label: 'allowed_domains' },
-    })) as TextSetting[];
+    });
     const allowedDomains = settings.flatMap((setting) =>
       (typeof setting.value === 'string' ? setting.value : '')
         .split(',')
@@ -174,5 +260,33 @@ export class SettingService extends BaseOrmService<
     const settings = await this.findAll();
 
     return this.buildTree(settings);
+  }
+
+  private resolveGroupSources(group: string, settings: Setting[]) {
+    return mergeSettingGroupSources(BUILTIN_SETTING_GROUPS[group], settings);
+  }
+
+  private buildSchemaCatalogEntry(
+    group: string,
+    settings: Setting[],
+  ): SettingSchemaCatalogEntry | null {
+    const sources = this.resolveGroupSources(group, settings);
+
+    if (sources.length === 0) {
+      return null;
+    }
+
+    const schema = buildSettingGroupJsonSchema(sources);
+    const propertyCount = Object.keys(schema.properties ?? {}).length;
+
+    if (propertyCount === 0) {
+      return null;
+    }
+
+    return {
+      group,
+      schema,
+      values: buildSettingGroupValues(sources),
+    };
   }
 }

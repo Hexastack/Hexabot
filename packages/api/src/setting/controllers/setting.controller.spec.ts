@@ -5,6 +5,7 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 
 import {
   installSettingFixturesTypeOrm,
@@ -16,12 +17,25 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { Setting } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
+import {
+  getSettingConfig,
+  getSettingDefault,
+  getSettingOptions,
+  withSettingDefault,
+} from '../utils/setting-schema-definition.utils';
 
 import { SettingController } from './setting.controller';
 
-const expectedSettings = settingFixtures.map((s) => ({
-  translatable: false,
-  ...s,
+const expectedSettings = settingFixtures.map((setting) => ({
+  ...setting,
+  value: getSettingDefault(setting.schema),
+  ...(getSettingOptions(setting.schema)
+    ? { options: getSettingOptions(setting.schema) }
+    : {}),
+  ...(getSettingConfig(setting.schema)
+    ? { config: getSettingConfig(setting.schema) }
+    : {}),
+  translatable: setting.translatable ?? false,
 }));
 
 describe('SettingController', () => {
@@ -71,6 +85,33 @@ describe('SettingController', () => {
     });
   });
 
+  describe('find', () => {
+    it('returns schema-driven groups with current values when requested', async () => {
+      jest.spyOn(settingService, 'getSchemaCatalog');
+      const result = (await settingController.find(
+        { order: { weight: 'ASC' as any } },
+        'catalog',
+      )) as {
+        group: string;
+        schema: JsonSchema;
+        values: Record<string, unknown>;
+      }[];
+      const contactGroup = result.find(({ group }) => group === 'contact');
+      const contactSchema = contactGroup?.schema as JsonSchema | undefined;
+
+      expect(settingService.getSchemaCatalog).toHaveBeenCalled();
+      expect(contactGroup?.values.company_name).toBe('Your company name');
+      expect(contactSchema?.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+      expect(contactSchema?.properties?.company_name).toEqualPayload({
+        title: 'company_name',
+        type: 'string',
+        default: 'Your company name',
+      });
+    });
+  });
+
   describe('updateOne', () => {
     it('Should update and return a specific Setting', async () => {
       jest.spyOn(settingService, 'updateOne');
@@ -81,14 +122,15 @@ describe('SettingController', () => {
         where: { label: 'contact_email_recipient' },
       })) as Setting;
       const result = await settingController.updateOne(id, payload);
+      const target = expectedSettings.find(
+        (settingFixture) => settingFixture.label === 'contact_email_recipient',
+      )!;
 
       expect(settingService.updateOne).toHaveBeenCalledWith(id, payload);
       expect(result).toEqualPayload(
         {
-          ...expectedSettings.find(
-            (settingFixture) =>
-              settingFixture.label === 'contact_email_recipient',
-          ),
+          ...target,
+          schema: withSettingDefault(target.schema, payload.value),
           value: payload.value,
         },
         ['id', 'createdAt', 'updatedAt'],
@@ -113,6 +155,23 @@ describe('SettingController', () => {
       } finally {
         assertValidValueSpy.mockRestore();
       }
+    });
+  });
+
+  describe('updateGroup', () => {
+    it('updates a schema-driven group payload', async () => {
+      jest.spyOn(settingService, 'updateGroup');
+      const result = await settingController.updateGroup('contact', {
+        values: {
+          company_name: 'Acme',
+        },
+      });
+
+      expect(settingService.updateGroup).toHaveBeenCalledWith('contact', {
+        company_name: 'Acme',
+      });
+      expect(result.values.company_name).toBe('Acme');
+      expect(result.values.company_country).toBe('US');
     });
   });
 });

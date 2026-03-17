@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingService, SettingType } from '@/setting';
+import { SettingService } from '@/setting';
+import { createTextSettingSchema } from '@/setting/utils/setting-schema-definition.utils';
 
 export const SettingServiceProvider = {
   provide: SettingService,
@@ -24,7 +25,9 @@ export const SettingServiceProvider = {
           group: 'default',
           value: 'Global fallback message',
           label: 'fallback_message',
-          type: SettingType.text,
+          schema: createTextSettingSchema({
+            defaultValue: 'Global fallback message',
+          }),
         },
       ].filter((s) =>
         criteria && 'translatable' in criteria

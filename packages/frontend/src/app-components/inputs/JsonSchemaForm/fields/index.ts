@@ -7,9 +7,13 @@
 import { ActionAttachmentField } from "./ActionAttachmentField";
 import { AutoCompleteField } from "./AutoCompleteField";
 import { JsonSchemaObjectField } from "./JsonSchemaObjectField";
+import { SettingAttachmentField } from "./SettingAttachmentField";
+import { SettingMultipleAttachmentField } from "./SettingMultipleAttachmentField";
 
 export const FORM_FIELDS = {
   ActionAttachmentField,
   AutoCompleteField,
   JsonSchemaObjectField,
+  SettingAttachmentField,
+  SettingMultipleAttachmentField,
 } as const;

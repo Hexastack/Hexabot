@@ -7,11 +7,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import {
-  IsArray,
   IsBoolean,
   IsDefined,
-  IsIn,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -22,7 +21,7 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { SettingType } from '../types';
+import { SettingSchema, SettingValue } from '../types';
 
 @Exclude()
 export class SettingStub extends BaseStub {
@@ -30,17 +29,17 @@ export class SettingStub extends BaseStub {
   group!: string;
 
   @Expose()
-  @Transform(({ obj }) => obj.options || undefined)
+  @Transform(({ obj }) => obj.subgroup || undefined)
   subgroup?: string;
 
   @Expose()
   label!: string;
 
   @Expose()
-  type!: SettingType;
+  schema!: SettingSchema;
 
   @Expose()
-  value!: null | string | number | boolean | string[] | Record<string, any>;
+  value!: SettingValue;
 
   @Expose()
   @Transform(({ obj }) => obj.options || undefined)
@@ -77,36 +76,13 @@ export class SettingCreateDto {
   label: string;
 
   @ApiProperty({
-    description: 'Setting type',
-    enum: [
-      'text',
-      'multiple_text',
-      'checkbox',
-      'select',
-      'number',
-      'attachment',
-      'multiple_attachment',
-    ],
+    description: 'JSON Schema describing the setting value',
+    type: Object,
+    additionalProperties: true,
   })
-  @IsNotEmpty()
-  @IsIn(Object.values(SettingType))
-  type: SettingType;
-
-  @ApiProperty({ description: 'Setting value' })
-  @IsNotEmpty()
-  value: any;
-
-  @ApiPropertyOptional({
-    description: 'Setting options (required when type is select)',
-    isArray: true,
-    type: Array,
-  })
-  @IsArray()
-  @IsOptional()
-  options?: string[];
-
-  //TODO: adding swagger decorators
-  config?: Record<string, any>;
+  @IsDefined()
+  @IsObject()
+  schema: SettingSchema;
 
   @ApiPropertyOptional({
     description:
@@ -128,7 +104,7 @@ export class SettingCreateDto {
 export class SettingUpdateDto {
   @ApiProperty({ description: 'value of the setting' })
   @IsDefined()
-  value: null | string | number | boolean | string[] | Record<string, any>;
+  value: SettingValue;
 
   @ApiPropertyOptional({
     description:
@@ -137,6 +113,13 @@ export class SettingUpdateDto {
   })
   @IsOptional()
   weight?: number;
+}
+
+export class SettingGroupUpdateDto {
+  @ApiProperty({ description: 'Values to persist for the settings group' })
+  @IsDefined()
+  @IsObject()
+  values!: Record<string, unknown>;
 }
 
 export type SettingTransformerDto = DtoTransformerConfig<{

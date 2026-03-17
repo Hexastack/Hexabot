@@ -5,7 +5,7 @@
  */
 
 import { DEFAULT_SETTINGS } from './seeds/setting.seed-model';
-import { SettingByType, SettingSeed, SettingType } from './types';
+import { SettingSeed } from './types';
 
 declare global {
   type TNativeType<T> = T extends string
@@ -14,28 +14,79 @@ declare global {
       ? number
       : T extends boolean
         ? boolean
-        : T extends Array<infer U>
+        : T extends readonly (infer U)[]
           ? TNativeType<U>[]
           : T extends object
             ? { [K in keyof T]: TNativeType<T[K]> }
             : T;
 
-  type SettingValue<K> = K['type'] extends SettingType.select
-    ? K['options'][number]
-    : TNativeType<K['value']>;
+  type SchemaLike = {
+    type?: unknown;
+    default?: unknown;
+    enum?: readonly string[] | string[];
+    items?: unknown;
+  };
 
-  type SettingObject<T extends SettingSeed[]> = {
+  type HasNullSchemaType<TSchema extends SchemaLike> = TSchema extends {
+    type: readonly unknown[];
+  }
+    ? Extract<TSchema['type'][number], 'null'> extends never
+      ? false
+      : true
+    : TSchema extends { type: 'null' }
+      ? true
+      : false;
+
+  type SchemaValueFromType<
+    TSchema extends SchemaLike,
+    TType = TSchema['type'],
+  > = TType extends readonly unknown[]
+    ? SchemaValueFromType<TSchema, TType[number]>
+    : TType extends 'string'
+      ? string
+      : TType extends 'number' | 'integer'
+        ? number
+        : TType extends 'boolean'
+          ? boolean
+          : TType extends 'null'
+            ? null
+            : TType extends 'array'
+              ? TSchema extends { items: infer TItems extends SchemaLike }
+                ? SettingValueFromSchema<{ schema: TItems }>[]
+                : unknown[]
+              : TType extends 'object'
+                ? Record<string, unknown>
+                : unknown;
+
+  type SettingValueFromSchema<T extends { schema: SchemaLike }> =
+    T['schema'] extends infer TSchema extends SchemaLike
+      ? TSchema extends { enum: readonly (infer TOption extends string)[] }
+        ? HasNullSchemaType<TSchema> extends true
+          ? TOption | null
+          : TOption
+        : TSchema extends { default: infer TDefault }
+          ? [TDefault] extends [null]
+            ? SchemaValueFromType<TSchema>
+            : TNativeType<TDefault>
+          : SchemaValueFromType<TSchema>
+      : unknown;
+
+  type SettingValue<K extends { schema: SchemaLike }> =
+    SettingValueFromSchema<K>;
+
+  type SettingObject<T extends readonly SettingSeed[]> = {
     [K in T[number] as K['label']]: SettingValue<K>;
   };
 
-  type SettingMapByType<T extends SettingSeed[]> = {
-    [K in T[number] as K['label']]: SettingByType<K['type']>;
+  type SettingMapByType<T extends readonly SettingSeed[]> = {
+    [K in T[number] as K['label']]: K;
   };
 
-  type SettingTree<T extends SettingSeed[]> = {
-    [G in T[number] as G['group']]: {
-      [K in T[number] as K['label']]: SettingValue<K>;
+  type SettingTree<T extends readonly SettingSeed[]> = {
+    [G in T[number]['group']]: {
+      [K in Extract<T[number], { group: G }> as K['label']]: SettingValue<K>;
     };
   };
+
   interface Settings extends SettingTree<typeof DEFAULT_SETTINGS> {}
 }

@@ -18,11 +18,63 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../dto/setting.dto';
+import { Setting, SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingType } from '../types';
+import {
+  createAttachmentSettingSchema,
+  createCheckboxSettingSchema,
+  createMultipleAttachmentSettingSchema,
+  createMultipleTextSettingSchema,
+  createNumberSettingSchema,
+  createSecretSettingSchema,
+  createSelectSettingSchema,
+  createTextSettingSchema,
+  createTextareaSettingSchema,
+  getSettingConfig,
+  getSettingDefault,
+} from '../utils/setting-schema-definition.utils';
 
 import { SettingRepository } from './setting.repository';
+
+const toExpectedSetting = (fixture: SettingCreateDto) => ({
+  ...fixture,
+  value: getSettingDefault(fixture.schema),
+  translatable: fixture.translatable ?? false,
+});
+const buildSchema = (type: SettingType, value: unknown) => {
+  switch (type) {
+    case SettingType.text:
+      return createTextSettingSchema({ defaultValue: value as string });
+    case SettingType.textarea:
+      return createTextareaSettingSchema({ defaultValue: value as string });
+    case SettingType.secret:
+      return createSecretSettingSchema({ defaultValue: value as string });
+    case SettingType.multiple_text:
+      return createMultipleTextSettingSchema({
+        defaultValue: value as string[],
+      });
+    case SettingType.checkbox:
+      return createCheckboxSettingSchema({ defaultValue: value as boolean });
+    case SettingType.select:
+      return createSelectSettingSchema({
+        defaultValue: value as string,
+        options: ['option'] as const,
+      });
+    case SettingType.number:
+      return createNumberSettingSchema({ defaultValue: value as number });
+    case SettingType.attachment:
+      return createAttachmentSettingSchema({
+        defaultValue: value as string | null,
+      });
+    case SettingType.multiple_attachment:
+      return createMultipleAttachmentSettingSchema({
+        defaultValue: value as string[],
+      });
+  }
+
+  throw new Error(`Unsupported setting type: ${type}`);
+};
 
 describe('SettingRepository (TypeORM)', () => {
   let settingRepository: SettingRepository;
@@ -80,9 +132,9 @@ describe('SettingRepository (TypeORM)', () => {
         where: { group: 'contact' },
         order: { weight: 'asc' },
       });
-      const expected = settingFixtures.filter(
-        (fixture) => fixture.group === 'contact',
-      );
+      const expected = settingFixtures
+        .filter((fixture) => fixture.group === 'contact')
+        .map(toExpectedSetting);
 
       expect(result).toEqualPayload(expected, [
         'id',
@@ -90,7 +142,6 @@ describe('SettingRepository (TypeORM)', () => {
         'updatedAt',
         'options',
         'config',
-        'translatable',
         'subgroup',
       ]);
     });
@@ -122,13 +173,12 @@ describe('SettingRepository (TypeORM)', () => {
       });
 
       expect(found).toBeDefined();
-      expect(found).toEqualPayload(target, [
+      expect(found).toEqualPayload(toExpectedSetting(target), [
         'id',
         'createdAt',
         'updatedAt',
         'options',
         'config',
-        'translatable',
         'subgroup',
       ]);
     });
@@ -139,8 +189,7 @@ describe('SettingRepository (TypeORM)', () => {
       const base = {
         group: `group_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        type: SettingType.text,
-        value: 'initial value',
+        schema: createTextSettingSchema({ defaultValue: 'initial value' }),
         weight: 99,
       };
       const created = await settingRepository.create(base);
@@ -149,9 +198,17 @@ describe('SettingRepository (TypeORM)', () => {
       expect(created).toMatchObject({
         group: base.group,
         label: base.label,
-        type: base.type,
-        value: base.value,
+        schema: base.schema,
+        value: 'initial value',
         weight: base.weight,
+      });
+      const persistedAfterCreate = await repository.findOneByOrFail({
+        id: created.id,
+      });
+
+      expect(persistedAfterCreate.schema).toMatchObject({
+        type: 'string',
+        default: 'initial value',
       });
 
       const updated = await settingRepository.updateOne(created.id, {
@@ -165,6 +222,14 @@ describe('SettingRepository (TypeORM)', () => {
         value: 'updated value',
         weight: 100,
       });
+      const persistedAfterUpdate = await repository.findOneByOrFail({
+        id: created.id,
+      });
+
+      expect(persistedAfterUpdate.schema).toMatchObject({
+        type: 'string',
+        default: 'updated value',
+      });
     });
   });
 
@@ -175,9 +240,7 @@ describe('SettingRepository (TypeORM)', () => {
     ): Parameters<typeof settingRepository.create>[0] => ({
       group: `group_${getRandom()}`,
       label: `label_${randomUUID()}`,
-      type,
-      value,
-      ...(type === SettingType.select ? { options: ['option'] } : {}),
+      schema: buildSchema(type, value),
     });
     const passingCases: ReadonlyArray<
       [SettingType, () => Parameters<typeof buildPayload>[1]]
@@ -201,8 +264,7 @@ describe('SettingRepository (TypeORM)', () => {
         createdIds.push(created.id);
 
         expect(created).toMatchObject({
-          type,
-          value: payload.value,
+          value: getSettingDefault(payload.schema),
         });
       },
     );
@@ -245,8 +307,7 @@ describe('SettingRepository (TypeORM)', () => {
       const base = {
         group: `group_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        type: SettingType.text,
-        value: 'valid',
+        schema: createTextSettingSchema({ defaultValue: 'valid' }),
       };
       const created = await settingRepository.create(base);
       createdIds.push(created.id);
@@ -264,16 +325,35 @@ describe('SettingRepository (TypeORM)', () => {
 
       const emitSpy = jest.spyOn(eventEmitter!, 'emit');
       try {
+        const schema = createSelectSettingSchema({
+          defaultValue: 'en',
+          options: ['en'] as const,
+          entity: 'LocaleEntity',
+          valueKey: 'code',
+          labelKey: 'label',
+          enableEntityAddButton: true,
+        });
         const databaseEntity = Object.assign(new SettingOrmEntity(), {
           group: 'chatbot_settings',
           label: 'locale',
-          type: SettingType.text,
-          value: 'en',
-          options: ['en'],
-          config: { featureFlag: true },
+          schema,
           weight: 10,
           translatable: true,
         });
+
+        expect(databaseEntity.schema).toMatchObject({
+          type: 'string',
+          default: 'en',
+          enum: ['en'],
+          'ui:widget': 'AutoCompleteWidget',
+          'ui:options': {
+            entity: 'LocaleEntity',
+            valueKey: 'code',
+            labelKey: 'label',
+            enableEntityAddButton: true,
+          },
+        });
+
         const updateEvent = {
           databaseEntity,
           metadata: repository.metadata,
@@ -288,10 +368,10 @@ describe('SettingRepository (TypeORM)', () => {
         expect(payload).toMatchObject({
           group: 'chatbot_settings',
           label: 'locale',
-          type: SettingType.text,
+          schema,
           value: 'en',
           options: ['en'],
-          config: { featureFlag: true },
+          config: getSettingConfig(schema),
           weight: 10,
           translatable: true,
         });
@@ -306,8 +386,7 @@ describe('SettingRepository (TypeORM)', () => {
       const payloads = Array.from({ length: 2 }, () => ({
         group: `cleanup_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        type: SettingType.text,
-        value: 'to delete',
+        schema: createTextSettingSchema({ defaultValue: 'to delete' }),
         weight: 5,
       }));
       const inserted = await settingRepository.createMany(payloads);

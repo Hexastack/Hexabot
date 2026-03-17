@@ -7,9 +7,10 @@
 import { Injectable } from '@nestjs/common';
 import { IHookSettingsGroupLabelOperationMap } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateEvent } from 'typeorm';
+import { DeepPartial, Repository, UpdateEvent } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+import { DtoAction, InferActionDto } from '@/utils/types/dto.types';
 
 import { SettingDtoConfig } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
@@ -24,6 +25,21 @@ export class SettingRepository extends BaseOrmRepository<
     repository: Repository<SettingOrmEntity>,
   ) {
     super(repository, []);
+  }
+
+  public actionDtoToEntity(
+    data: InferActionDto<DtoAction, SettingDtoConfig>,
+  ): DeepPartial<SettingOrmEntity> {
+    if (
+      data &&
+      typeof data === 'object' &&
+      'value' in data &&
+      !('schema' in data)
+    ) {
+      return data as DeepPartial<SettingOrmEntity>;
+    }
+
+    return super.actionDtoToEntity(data);
   }
 
   /**

@@ -28,6 +28,7 @@ export class SettingSeeder extends BaseOrmSeeder<
   }
 
   async seed(models: SettingCreateDto[]): Promise<boolean> {
+    let didCreate = false;
     const grouped = models.reduce<Record<string, SettingCreateDto[]>>(
       (acc, model) => {
         acc[model.group] = acc[model.group] || [];
@@ -39,13 +40,23 @@ export class SettingSeeder extends BaseOrmSeeder<
     );
 
     for (const [group, settings] of Object.entries(grouped)) {
-      if (await this.isEmpty({ where: { group } })) {
-        await this.repository.createMany(settings);
+      const existing = await this.repository.find({
+        where: { group },
+        order: { weight: 'ASC' },
+      });
+      const existingLabels = new Set(existing.map((setting) => setting.label));
+      const missingSettings = settings.filter(
+        (setting) => !existingLabels.has(setting.label),
+      );
+
+      if (missingSettings.length > 0) {
+        await this.repository.createMany(missingSettings);
+        didCreate = true;
       }
     }
 
     await this.cacheManager.del(SETTING_CACHE_KEY);
 
-    return true;
+    return didCreate;
   }
 }

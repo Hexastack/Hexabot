@@ -72,6 +72,7 @@ export const JsonSchemaForm = ({
     null,
   );
   const visibleErrorFieldIdsRef = useRef<Set<string>>(new Set());
+  const onVisibleErrorsChangeRef = useRef(onVisibleErrorsChange);
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
   const normalizedFormData = useMemo(
     () => withSchemaDefaults(schema, formData),
@@ -107,8 +108,12 @@ export const JsonSchemaForm = ({
   }, [normalizedFormData]);
 
   useEffect(() => {
-    onVisibleErrorsChange?.(hasVisibleErrors);
-  }, [hasVisibleErrors, onVisibleErrorsChange]);
+    onVisibleErrorsChangeRef.current = onVisibleErrorsChange;
+  }, [onVisibleErrorsChange]);
+
+  useEffect(() => {
+    onVisibleErrorsChangeRef.current?.(hasVisibleErrors);
+  }, [hasVisibleErrors]);
 
   useEffect(() => {
     if (!validateOnMount) {
@@ -120,9 +125,9 @@ export const JsonSchemaForm = ({
 
   useEffect(() => {
     return () => {
-      onVisibleErrorsChange?.(false);
+      onVisibleErrorsChangeRef.current?.(false);
     };
-  }, [onVisibleErrorsChange]);
+  }, []);
 
   return (
     <Form

@@ -7,12 +7,19 @@
 import { BadRequestException } from '@nestjs/common';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
 
-import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Setting, SettingTransformerDto } from '../dto/setting.dto';
-import { SettingType } from '../types';
+import { SettingSchema, SettingValue } from '../types';
+import {
+  cloneSettingSchema,
+  getSettingConfig,
+  getSettingDefault,
+  getSettingOptions,
+  getSettingValidationError,
+  withSettingDefault,
+} from '../utils/setting-schema-definition.utils';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
@@ -32,17 +39,24 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
   @Index()
   label!: string;
 
-  @EnumColumn({ enum: SettingType })
-  type!: SettingType;
+  @JsonColumn()
+  schema!: SettingSchema;
 
-  @JsonColumn({ nullable: true })
-  value: any;
+  get value(): SettingValue | undefined {
+    return getSettingDefault(this.schema);
+  }
 
-  @JsonColumn({ nullable: true })
-  options?: string[];
+  set value(value: SettingValue | undefined) {
+    this.schema = withSettingDefault(this.schema ?? {}, value);
+  }
 
-  @JsonColumn({ nullable: true })
-  config?: Record<string, any>;
+  get options(): string[] | undefined {
+    return getSettingOptions(this.schema);
+  }
+
+  get config(): Record<string, any> | undefined {
+    return getSettingConfig(this.schema);
+  }
 
   @Column({ default: 0 })
   weight?: number;
@@ -53,67 +67,15 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
   @BeforeInsert()
   @BeforeUpdate()
   protected validateValueBeforePersist(): void {
+    this.schema = cloneSettingSchema(this.schema);
     this.assertValidValue();
   }
 
   private assertValidValue(): void {
-    const value = this.value;
-    switch (this.type) {
-      case SettingType.text:
-      case SettingType.textarea:
-        if (typeof value !== 'string' && value !== null) {
-          throw new BadRequestException('Setting value must be a string.');
-        }
-        break;
-      case SettingType.multiple_text:
-        if (!this.isArrayOfString(value)) {
-          throw new BadRequestException(
-            'Setting value must be an array of strings.',
-          );
-        }
-        break;
-      case SettingType.checkbox:
-        if (typeof value !== 'boolean' && value !== null) {
-          throw new BadRequestException('Setting value must be a boolean.');
-        }
-        break;
-      case SettingType.number:
-        if (typeof value !== 'number' && value !== null) {
-          throw new BadRequestException('Setting value must be a number.');
-        }
-        break;
-      case SettingType.multiple_attachment:
-        if (!this.isArrayOfString(value)) {
-          throw new BadRequestException(
-            'Setting value must be an array of attachment ids.',
-          );
-        }
-        break;
-      case SettingType.attachment:
-        if (typeof value !== 'string' && value !== null) {
-          throw new BadRequestException(
-            'Setting value must be a string or null.',
-          );
-        }
-        break;
-      case SettingType.secret:
-        if (typeof value !== 'string') {
-          throw new BadRequestException('Setting value must be a string.');
-        }
-        break;
-      case SettingType.select:
-        if (typeof value !== 'string') {
-          throw new BadRequestException('Setting value must be a string.');
-        }
-        break;
-      default:
-        break;
-    }
-  }
+    const error = getSettingValidationError(this.schema, this.value);
 
-  private isArrayOfString(value: unknown): value is string[] {
-    return (
-      Array.isArray(value) && value.every((item) => typeof item === 'string')
-    );
+    if (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

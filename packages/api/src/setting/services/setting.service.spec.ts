@@ -5,6 +5,7 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
+import { JSONSchema7 as JsonSchema } from 'json-schema';
 
 import {
   installSettingFixturesTypeOrm,
@@ -16,7 +17,14 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
-import { SettingType } from '../types';
+import {
+  cloneSettingSchema,
+  createTextSettingSchema,
+  getSettingConfig,
+  getSettingDefault,
+  getSettingOptions,
+  withSettingDefault,
+} from '../utils/setting-schema-definition.utils';
 
 import { SettingService } from './setting.service';
 
@@ -25,21 +33,32 @@ describe('SettingService', () => {
   let settingRepository: SettingRepository;
   let module: TestingModule;
   const makeSetting = (overrides: Partial<Setting>): Setting => {
+    const baseSchema = cloneSettingSchema(
+      overrides.schema ?? createTextSettingSchema({ defaultValue: '' }),
+    );
+    const schema = Object.prototype.hasOwnProperty.call(overrides, 'value')
+      ? withSettingDefault(baseSchema, overrides.value as Setting['value'])
+      : baseSchema;
     const setting = new Setting();
+
     Object.assign(setting, {
       id: '',
       group: 'group',
       label: 'label',
-      value: '',
-      type: SettingType.text,
       createdAt: new Date(),
       updatedAt: new Date(),
-      subgroup: undefined,
-      options: undefined,
-      config: undefined,
       weight: undefined,
       translatable: false,
-      ...overrides,
+    });
+    Object.assign(setting, overrides);
+    Object.assign(setting, {
+      schema,
+      value: Object.prototype.hasOwnProperty.call(overrides, 'value')
+        ? overrides.value
+        : getSettingDefault(schema),
+      options: getSettingOptions(schema),
+      config: getSettingConfig(schema),
+      translatable: overrides.translatable ?? false,
     });
 
     return setting;
@@ -68,7 +87,7 @@ describe('SettingService', () => {
   });
 
   afterEach(async () => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
     await settingService.clearCache();
   });
 
@@ -130,13 +149,11 @@ describe('SettingService', () => {
           makeSetting({
             group: 'group1',
             label: 'setting1',
-            type: SettingType.text,
             value: 'value1',
           }),
           makeSetting({
             group: 'group1',
             label: 'setting2',
-            type: SettingType.text,
             value: 'value2',
           }),
         ],
@@ -144,7 +161,6 @@ describe('SettingService', () => {
           makeSetting({
             group: 'group2',
             label: 'setting1',
-            type: SettingType.text,
             value: 'value3',
           }),
         ],
@@ -208,6 +224,75 @@ describe('SettingService', () => {
         where: { label: 'allowed_domains' },
       });
       expect(result).toEqual(['*', 'https://example.com']);
+    });
+  });
+
+  describe('getSchemaCatalog', () => {
+    it('should include built-in schema defaults for partially seeded groups', async () => {
+      const catalog = await settingService.getSchemaCatalog();
+      const chatbotSettings = catalog.find(
+        ({ group }) => group === 'chatbot_settings',
+      );
+      const schema = chatbotSettings?.schema as JsonSchema | undefined;
+      const properties = schema?.properties as
+        | Record<string, JsonSchema>
+        | undefined;
+
+      expect(chatbotSettings?.values.default_storage_helper).toBe(
+        'local-storage-helper',
+      );
+      expect(chatbotSettings?.values.default_nlu_helper).toBe('llm-nlu-helper');
+      expect(properties?.default_nlu_helper).toMatchObject({
+        title: 'default_nlu_helper',
+        type: 'string',
+        default: 'llm-nlu-helper',
+        'ui:widget': 'AutoCompleteWidget',
+      });
+      expect(properties?.fallback_message).toMatchObject({
+        title: 'fallback_message',
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        default: [
+          "Sorry but i didn't understand your request. Maybe you can check the menu",
+          "I'm really sorry but i don't quite understand what you are saying :(",
+        ],
+      });
+    });
+  });
+
+  describe('updateGroup', () => {
+    it('should persist missing built-in settings when a schema group is updated', async () => {
+      const existingSetting = await settingService.findOne({
+        where: {
+          group: 'chatbot_settings',
+          label: 'default_nlu_helper',
+        },
+      });
+
+      expect(existingSetting).toBeNull();
+
+      const result = await settingService.updateGroup('chatbot_settings', {
+        default_nlu_helper: 'custom-nlu-helper',
+      });
+      const storedSetting = await settingService.findOne({
+        where: {
+          group: 'chatbot_settings',
+          label: 'default_nlu_helper',
+        },
+      });
+
+      expect(storedSetting?.value).toBe('custom-nlu-helper');
+      expect(result.values.default_nlu_helper).toBe('custom-nlu-helper');
+    });
+
+    it('should reject invalid values against the generated group schema', async () => {
+      await expect(
+        settingService.updateGroup('contact', {
+          company_name: 123,
+        }),
+      ).rejects.toThrow();
     });
   });
 });
