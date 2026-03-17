@@ -9,7 +9,6 @@ import {
   type ListToolsResult,
   type MCPClient,
 } from '@ai-sdk/mcp';
-import { Experimental_StdioMCPTransport } from '@ai-sdk/mcp/mcp-stdio';
 import {
   BadRequestException,
   Injectable,
@@ -24,6 +23,8 @@ import { CredentialService } from '@/user';
 import { McpServer } from '../dto/mcp-server.dto';
 import { McpServerRepository } from '../repositories/mcp-server.repository';
 import { McpServerTransport, McpToolBindingDefinitions } from '../types';
+
+import { StdioStderrCaptureTransport } from './stdio-stderr-capture.transport';
 
 type PooledClientEntry = {
   client: MCPClient;
@@ -84,6 +85,8 @@ export class McpClientPoolService implements OnModuleDestroy {
 
   private readonly initFlights = new Map<string, Promise<MCPClient>>();
 
+  private readonly stdioCapturedStderr = new Map<string, string>();
+
   /**
    * Creates the MCP client pool service.
    *
@@ -107,6 +110,7 @@ export class McpClientPoolService implements OnModuleDestroy {
     const entries = Array.from(this.clientPool.entries());
     this.clientPool.clear();
     this.initFlights.clear();
+    this.stdioCapturedStderr.clear();
 
     await Promise.allSettled(
       entries.map(async ([serverId, entry]) => {
@@ -180,6 +184,7 @@ export class McpClientPoolService implements OnModuleDestroy {
   async testServer(serverId: string): Promise<McpServerDiagnostics> {
     const server = await this.findServerOrFail(serverId);
     const startedAt = Date.now();
+    this.stdioCapturedStderr.delete(serverId);
 
     try {
       const discovery = await this.listToolsForDiagnostics(serverId);
@@ -200,6 +205,8 @@ export class McpClientPoolService implements OnModuleDestroy {
       const latencyMs = Date.now() - startedAt;
       const message =
         error instanceof Error ? error.message : 'Unknown connection error';
+      const stderrMessage = this.stdioCapturedStderr.get(serverId);
+      const effectiveError = stderrMessage || message;
 
       return {
         ok: false,
@@ -208,7 +215,7 @@ export class McpClientPoolService implements OnModuleDestroy {
         server: this.toServerConnectionInfo(server),
         toolCount: 0,
         sampledToolNames: [],
-        error: message,
+        error: effectiveError,
       };
     }
   }
@@ -348,6 +355,7 @@ export class McpClientPoolService implements OnModuleDestroy {
    * @returns Connected MCP client.
    */
   private async createClient(server: McpServer): Promise<MCPClient> {
+    this.stdioCapturedStderr.delete(server.id);
     const onUncaughtError = (error: unknown) => {
       this.logger.error(
         `Unhandled error in MCP client for server "${server.id}"`,
@@ -390,13 +398,21 @@ export class McpClientPoolService implements OnModuleDestroy {
       }
 
       const cwd = this.trimmedOrNull(server.cwd);
+      const env = this.buildStdioEnv();
 
       return await createMCPClient({
-        transport: new Experimental_StdioMCPTransport({
-          command,
-          ...(server.args ? { args: server.args } : {}),
-          ...(cwd ? { cwd } : {}),
-        }),
+        transport: new StdioStderrCaptureTransport(
+          {
+            command,
+            ...(server.args ? { args: server.args } : {}),
+            ...(cwd ? { cwd } : {}),
+            env,
+            stderr: 'pipe',
+          },
+          (message) => {
+            this.stdioCapturedStderr.set(server.id, message);
+          },
+        ),
         onUncaughtError,
       });
     }
@@ -500,6 +516,24 @@ export class McpClientPoolService implements OnModuleDestroy {
   }
 
   /**
+   * Builds environment variables for stdio MCP servers.
+   *
+   * @returns Process environment with string-only values.
+   */
+  private buildStdioEnv(): Record<string, string> {
+    return Object.entries(process.env).reduce<Record<string, string>>(
+      (acc, [key, value]) => {
+        if (typeof value === 'string') {
+          acc[key] = value;
+        }
+
+        return acc;
+      },
+      {},
+    );
+  }
+
+  /**
    * Refreshes the idle timeout for a pooled client.
    *
    * @param serverId - MCP server identifier.
@@ -540,6 +574,7 @@ export class McpClientPoolService implements OnModuleDestroy {
     }
 
     this.clientPool.delete(serverId);
+    this.stdioCapturedStderr.delete(serverId);
     this.clearIdleTimeout(entry);
     try {
       await entry.client.close();

@@ -256,21 +256,37 @@ describe('McpClientPoolService', () => {
   });
 
   it('creates stdio transport with command, args and cwd', async () => {
-    mcpServerRepository.findOne.mockResolvedValue(stdioServer);
-    const client = createClient();
-    (createMCPClient as jest.Mock).mockResolvedValue(client);
+    const previousGoogleOAuthCredentials = process.env.GOOGLE_OAUTH_CREDENTIALS;
+    process.env.GOOGLE_OAUTH_CREDENTIALS = '/tmp/gcp-oauth.keys.json';
+    try {
+      mcpServerRepository.findOne.mockResolvedValue(stdioServer);
+      const client = createClient();
+      (createMCPClient as jest.Mock).mockResolvedValue(client);
 
-    await service.getOrCreateClient(stdioServer.id);
+      await service.getOrCreateClient(stdioServer.id);
 
-    const config = (createMCPClient as jest.Mock).mock.calls[0][0] as {
-      transport: Experimental_StdioMCPTransport;
-    };
-    expect(config.transport).toBeInstanceOf(Experimental_StdioMCPTransport);
-    expect((config.transport as any).serverParams).toEqual({
-      command: stdioServer.command,
-      args: stdioServer.args,
-      cwd: stdioServer.cwd,
-    });
+      const config = (createMCPClient as jest.Mock).mock.calls[0][0] as {
+        transport: Experimental_StdioMCPTransport;
+      };
+      expect(config.transport).toBeInstanceOf(Experimental_StdioMCPTransport);
+      expect((config.transport as any).serverParams).toEqual(
+        expect.objectContaining({
+          command: stdioServer.command,
+          args: stdioServer.args,
+          cwd: stdioServer.cwd,
+          stderr: 'pipe',
+          env: expect.objectContaining({
+            GOOGLE_OAUTH_CREDENTIALS: '/tmp/gcp-oauth.keys.json',
+          }),
+        }),
+      );
+    } finally {
+      if (previousGoogleOAuthCredentials === undefined) {
+        delete process.env.GOOGLE_OAUTH_CREDENTIALS;
+      } else {
+        process.env.GOOGLE_OAUTH_CREDENTIALS = previousGoogleOAuthCredentials;
+      }
+    }
   });
 
   it('rejects stdio servers with credentials', async () => {
@@ -317,6 +333,28 @@ describe('McpClientPoolService', () => {
     expect(result.ok).toBe(false);
     expect(result.error).toBe('Connection refused');
     expect(result.toolCount).toBe(0);
+  });
+
+  it('prefers captured stderr output over generic connection-closed errors', async () => {
+    mcpServerRepository.findOne.mockResolvedValue(stdioServer);
+    (createMCPClient as jest.Mock).mockImplementation(async () => {
+      (service as any).stdioCapturedStderr.set(
+        stdioServer.id,
+        [
+          'Failed to start server: Error loading OAuth keys',
+          '1. Set GOOGLE_OAUTH_CREDENTIALS',
+        ].join('\n'),
+      );
+      throw new Error('Connection closed');
+    });
+
+    const result = await service.testServer(stdioServer.id);
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain(
+      'Failed to start server: Error loading OAuth keys',
+    );
+    expect(result.error).toContain('GOOGLE_OAUTH_CREDENTIALS');
   });
 
   it('builds namespaced ToolSet and respects requested tool names', async () => {

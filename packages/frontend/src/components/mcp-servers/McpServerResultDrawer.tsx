@@ -4,15 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Alert, Box, CircularProgress, Divider, Stack, Typography } from "@mui/material";
+import { Alert, CircularProgress, Stack, Typography } from "@mui/material";
+import { ReactNode } from "react";
 
 import { DrawerLayout } from "@/app-components/drawers/DrawerLayout";
-import { JsonViewer } from "@/app-components/inputs/JsonViewer";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
   IMcpServerDiagnostics,
   IMcpServerToolsDiscovery,
 } from "@/types/mcp-server.types";
+
+import { DiagnosticsResultSection } from "./result-drawer/DiagnosticsResultSection";
+import { ToolsDiscoveryResultSection } from "./result-drawer/ToolsDiscoveryResultSection";
+import { extractErrorMessage, formatErrorMessage } from "./result-drawer/utils";
 
 type McpServerResultDrawerProps = {
   open: boolean;
@@ -43,23 +47,6 @@ const isMcpServerToolsDiscovery = (
     "tools" in value
   );
 };
-const extractErrorMessage = (error: unknown) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "object" && error !== null && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-
-    return typeof message === "string" ? message : JSON.stringify(message);
-  }
-
-  return "";
-};
 
 export const McpServerResultDrawer = ({
   open,
@@ -70,7 +57,62 @@ export const McpServerResultDrawer = ({
   error,
 }: McpServerResultDrawerProps) => {
   const { t } = useTranslate();
-  const errorMessage = extractErrorMessage(error);
+  const defaultErrorMessage = t("message.internal_server_error");
+  const errorMessage = formatErrorMessage(
+    extractErrorMessage(error) || defaultErrorMessage,
+  );
+
+  let content: ReactNode = (
+    <Typography variant="body2" color="text.secondary">
+      {t("message.no_data_to_display")}
+    </Typography>
+  );
+
+  if (status === "loading") {
+    content = (
+      <Stack
+        alignItems="center"
+        justifyContent="center"
+        minHeight={220}
+        gap={2}
+      >
+        <CircularProgress size={28} />
+        <Typography variant="body2">{t("message.loading")}</Typography>
+      </Stack>
+    );
+  } else if (status === "error") {
+    content = (
+      <Stack gap={2}>
+        <Alert severity="error">
+          <Typography
+            component="pre"
+            variant="body2"
+            sx={{
+              m: 0,
+              whiteSpace: "pre-wrap",
+              tabSize: 2,
+              fontFamily: "monospace",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {errorMessage}
+          </Typography>
+        </Alert>
+      </Stack>
+    );
+  } else if (status === "success") {
+    if (data && isMcpServerDiagnostics(data)) {
+      content = <DiagnosticsResultSection diagnostics={data} />;
+    } else if (data && isMcpServerToolsDiscovery(data)) {
+      content = <ToolsDiscoveryResultSection discovery={data} />;
+    } else if (data) {
+      content = (
+        <Stack gap={2}>
+          <Alert severity="info">{t("message.no_data_to_display")}</Alert>
+        </Stack>
+      );
+    }
+  }
 
   return (
     <DrawerLayout
@@ -79,51 +121,7 @@ export const McpServerResultDrawer = ({
       title={title}
       closeLabel={t("button.close")}
     >
-      {status === "loading" ? (
-        <Stack alignItems="center" justifyContent="center" minHeight={220} gap={2}>
-          <CircularProgress size={28} />
-          <Typography variant="body2">{t("message.loading")}</Typography>
-        </Stack>
-      ) : null}
-      {status === "error" ? (
-        <Stack gap={2}>
-          <Alert severity="error">
-            {errorMessage || t("message.internal_server_error")}
-          </Alert>
-          {error ? <JsonViewer value={error} autoHeight /> : null}
-        </Stack>
-      ) : null}
-      {status === "success" && data ? (
-        <Stack gap={2}>
-          {isMcpServerDiagnostics(data) ? (
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                {`${t("label.status")}: ${
-                  data.ok ? t("label.enabled") : t("label.disabled")
-                }`}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {`${t("label.duration")}: ${data.latencyMs}ms`}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {`${t("label.createdAt")}: ${data.checkedAt}`}
-              </Typography>
-            </Box>
-          ) : null}
-          {isMcpServerToolsDiscovery(data) ? (
-            <Typography variant="body2" color="text.secondary">
-              {`${t("button.tools")}: ${data.toolCount}`}
-            </Typography>
-          ) : null}
-          <Divider />
-          <JsonViewer value={data} autoHeight />
-        </Stack>
-      ) : null}
-      {status === "idle" ? (
-        <Typography variant="body2" color="text.secondary">
-          {t("message.no_data_to_display")}
-        </Typography>
-      ) : null}
+      {content}
     </DrawerLayout>
   );
 };
