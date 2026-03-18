@@ -138,7 +138,16 @@ describe('RuntimeBindingsService', () => {
         }
       | undefined;
     const mcpToolsDefinition = definitions.mcp.schema as
-      | { properties?: Record<string, { type?: string }> }
+      | {
+          properties?: Record<
+            string,
+            {
+              type?: string;
+              'ui:widget'?: string;
+              'ui:options'?: Record<string, unknown>;
+            }
+          >;
+        }
       | undefined;
     const modelDefinition = definitions.model.schema as
       | { properties?: Record<string, { type?: string }> }
@@ -150,6 +159,20 @@ describe('RuntimeBindingsService', () => {
     expect(toolsDefinition?.properties?.action).toBeUndefined();
     expect(toolsDefinition?.additionalProperties).toBeDefined();
     expect(mcpToolsDefinition?.properties?.server_id?.type).toBe('string');
+    expect(mcpToolsDefinition?.properties?.tool_names?.type).toBe('array');
+    expect(mcpToolsDefinition?.properties?.tool_names?.['ui:widget']).toBe(
+      'AutoCompleteWidget',
+    );
+    expect(
+      mcpToolsDefinition?.properties?.tool_names?.['ui:options'],
+    ).toMatchObject({
+      entity: 'McpServerTool',
+      valueKey: 'name',
+      labelKey: 'name',
+      idFormPath: 'server_id',
+      routeParamKey: 'id',
+      disableSearch: true,
+    });
     expect(modelDefinition?.properties?.provider?.type).toBe('string');
     expect(modelDefinition?.properties?.model_id?.type).toBe('string');
     expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');

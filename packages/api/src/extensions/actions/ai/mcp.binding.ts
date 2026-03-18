@@ -28,8 +28,14 @@ export const aiMcpToolBindingSchema = z.strictObject({
       title: 'Tool names',
       description:
         'Optional allow-list of MCP tool names. Leave empty to expose all server tools.',
+      'ui:widget': 'AutoCompleteWidget',
       'ui:options': {
-        hideUntilAdded: true,
+        entity: 'McpServerTool',
+        valueKey: 'name',
+        labelKey: 'name',
+        idFormPath: 'server_id',
+        routeParamKey: 'id',
+        disableSearch: true,
       },
     }),
 });
