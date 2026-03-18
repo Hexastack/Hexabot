@@ -665,12 +665,20 @@ export abstract class AiBaseAction<
           `Skipping duplicate tool name "${normalizedToolName}" from bindings.tools`,
         );
       } else {
+        const nestedBindings = toolDefinition.bindings;
         tools[normalizedToolName] = {
           description: action.description,
           inputSchema: action.inputSchema,
           outputSchema: action.outputSchema,
           execute: async (input) =>
-            action.run(input, context, toolDefinition.settings as any),
+            nestedBindings
+              ? action.run(
+                  input,
+                  context,
+                  toolDefinition.settings as any,
+                  nestedBindings as RuntimeBindings,
+                )
+              : action.run(input, context, toolDefinition.settings as any),
         } as ToolSet[string];
       }
     }

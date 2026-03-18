@@ -854,6 +854,62 @@ describe('AiBaseAction', () => {
       );
     });
 
+    it('forwards nested tool bindings to tool actions', async () => {
+      const actionToolRun = jest.fn().mockResolvedValue({ ok: true });
+      const actionsService = {
+        get: jest.fn((actionName: string) => {
+          if (actionName === 'delegate_action') {
+            return {
+              description: 'delegate tool',
+              inputSchema: {},
+              outputSchema: {},
+              run: actionToolRun,
+            };
+          }
+
+          throw new Error(`Unexpected action lookup ${actionName}`);
+        }),
+      };
+      const context = {
+        services: {
+          actions: actionsService,
+        },
+      } as unknown as WorkflowRuntimeContext;
+      const nestedBindings: RuntimeBindings = {
+        model: {
+          settings: {
+            provider: 'openai',
+            model_id: 'gpt-5.2',
+          },
+        },
+        memory: {
+          profile: {
+            settings: {
+              definition_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            },
+          },
+        },
+      };
+      const tools = await action.buildToolsPublic(context, {
+        delegate: {
+          action: 'delegate_action',
+          settings: { scope: 'child' },
+          bindings: nestedBindings,
+        },
+      } as RuntimeBindings['tools']);
+
+      await (tools as Record<string, any>).delegate.execute({
+        query: 'hello',
+      });
+
+      expect(actionToolRun).toHaveBeenCalledWith(
+        { query: 'hello' },
+        context,
+        { scope: 'child' },
+        nestedBindings,
+      );
+    });
+
     it('logs a warning and keeps first tool when action and MCP tools resolve the same name', async () => {
       const actionsService = {
         get: jest.fn((actionName: string) => {

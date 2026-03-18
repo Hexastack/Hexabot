@@ -6,7 +6,7 @@
 
 import type {
   BindingKindDescriptor,
-  InferMountedBindingValue,
+  InferWorkflowBindings,
 } from '@hexabot-ai/agentic';
 import { z } from 'zod';
 
@@ -56,16 +56,19 @@ export type BindingKindMetadata<
 type RuntimeBindingDescriptor<K extends RuntimeBindingKind> =
   RuntimeBindingKindRegistry[K] & RuntimeBindingKindDescriptor;
 
+type RuntimeBindingDescriptors = {
+  [K in RuntimeBindingKind]: RuntimeBindingDescriptor<K>;
+};
+
 export type RuntimeBindingPayload<K extends RuntimeBindingKind> = z.infer<
   RuntimeBindingDescriptor<K>['schema']
 >;
 
-export type RuntimeBindingValue<K extends RuntimeBindingKind> =
-  InferMountedBindingValue<RuntimeBindingDescriptor<K>>;
+export type RuntimeBindings = InferWorkflowBindings<RuntimeBindingDescriptors>;
 
-export type RuntimeBindings = Partial<{
-  [K in RuntimeBindingKind]: RuntimeBindingValue<K>;
-}>;
+export type RuntimeBindingValue<K extends RuntimeBindingKind> = NonNullable<
+  RuntimeBindings[K]
+>;
 
 export type RegisterRuntimeBindingKindParams<
   K extends string = string,
