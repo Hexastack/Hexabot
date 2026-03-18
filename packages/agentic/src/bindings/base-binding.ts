@@ -30,27 +30,30 @@ export type BindingKindSchemas = Record<string, BindingKindDescriptor>;
 
 export type MountedBindingPayload<
   TBindingKind extends BindingKindDescriptor = BindingKindDescriptor,
+  TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
 > = {
   settings: z.infer<TBindingKind['schema']>;
   action?: string;
-  bindings?: Record<string, unknown>;
+  bindings?: InferWorkflowBindings<TBindingKinds>;
 };
 
 export type InferMountedBindingValue<
   TBindingKind extends BindingKindDescriptor = BindingKindDescriptor,
+  TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
 > = TBindingKind['multiple'] extends true
-  ? Record<string, MountedBindingPayload<TBindingKind>>
+  ? Record<string, MountedBindingPayload<TBindingKind, TBindingKinds>>
   : TBindingKind['multiple'] extends false
-    ? MountedBindingPayload<TBindingKind>
+    ? MountedBindingPayload<TBindingKind, TBindingKinds>
     :
-        | MountedBindingPayload<TBindingKind>
-        | Record<string, MountedBindingPayload<TBindingKind>>;
+        | MountedBindingPayload<TBindingKind, TBindingKinds>
+        | Record<string, MountedBindingPayload<TBindingKind, TBindingKinds>>;
 
 export type InferWorkflowBindings<
   TBindingKinds extends BindingKindSchemas = BindingKindSchemas,
 > = Partial<{
   [K in keyof TBindingKinds & string]: InferMountedBindingValue<
-    TBindingKinds[K]
+    TBindingKinds[K],
+    TBindingKinds
   >;
 }>;
 

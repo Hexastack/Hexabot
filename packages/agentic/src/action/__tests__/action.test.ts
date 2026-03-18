@@ -369,13 +369,46 @@ describe('workflow step primitives', () => {
     expectType<
       Equal<
         NonNullable<TestBindings['tools']>,
-        Record<string, MountedBindingPayload<typeof _bindingKindSchemas.tools>>
+        Record<
+          string,
+          MountedBindingPayload<
+            typeof _bindingKindSchemas.tools,
+            typeof _bindingKindSchemas
+          >
+        >
       >
     >();
     expectType<
       Equal<
         NonNullable<TestBindings['model']>,
-        MountedBindingPayload<typeof _bindingKindSchemas.model>
+        MountedBindingPayload<
+          typeof _bindingKindSchemas.model,
+          typeof _bindingKindSchemas
+        >
+      >
+    >();
+    type NestedToolBindings = NonNullable<
+      NonNullable<TestBindings['tools']>[string]['bindings']
+    >;
+    expectType<
+      Equal<
+        NonNullable<NestedToolBindings['model']>,
+        MountedBindingPayload<
+          typeof _bindingKindSchemas.model,
+          typeof _bindingKindSchemas
+        >
+      >
+    >();
+    expectType<
+      Equal<
+        NonNullable<NestedToolBindings['tools']>,
+        Record<
+          string,
+          MountedBindingPayload<
+            typeof _bindingKindSchemas.tools,
+            typeof _bindingKindSchemas
+          >
+        >
       >
     >();
 
