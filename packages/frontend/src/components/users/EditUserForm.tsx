@@ -19,8 +19,6 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { IRole } from "@/types/role.types";
 import { IUser, IUserAttributes } from "@/types/user.types";
 
-const getFullName = (user?: IUser) => `${user?.firstName} ${user?.lastName}`;
-
 export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
   data: { defaultValues: user, presetValues: roles },
   Wrapper = Fragment,
@@ -75,7 +73,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
             <TextField
               disabled
               label={t("label.full_name")}
-              value={user ? getFullName(user) : undefined}
+              value={user?.fullName}
               slotProps={{
                 input: {
                   readOnly: true,

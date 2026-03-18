@@ -44,16 +44,16 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
       onClose={handleClose}
       {...other}
     >
-      {(user?.firstName || user?.email) && (
+      {(user?.fullName || user?.email) && (
         <Box sx={{ py: 1.5, px: 2 }}>
-          {user.firstName && (
+          {user?.fullName && (
             <Typography variant="subtitle2" noWrap>
-              {user.firstName} {user.lastName}
+              {user.fullName}
             </Typography>
           )}
-          {user.email && (
+          {user?.email && (
             <Typography variant="body2" color="text.secondary" noWrap>
-              {user.email}
+              {user?.email}
             </Typography>
           )}
         </Box>

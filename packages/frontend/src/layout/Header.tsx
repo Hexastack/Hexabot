@@ -141,7 +141,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   lineHeight={1}
                   textTransform="capitalize"
                 >
-                  {user?.firstName} {user?.lastName}
+                  {user?.fullName || user?.email}
                 </Typography>
                 <Typography
                   lineHeight={1}
@@ -163,11 +163,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
             {user ? (
               <PopoverMenu
                 open={isMenuPopoverOpen}
-                user={{
-                  email: user.email,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                }}
+                user={user}
                 links={
                   !ssoEnabled
                     ? [

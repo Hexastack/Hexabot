@@ -23,7 +23,9 @@ export interface IUserAttributes {
 
 export interface IUserStub
   extends IBaseSchema,
-    OmitPopulate<IUserAttributes, EntityType.USER> {}
+    OmitPopulate<IUserAttributes, EntityType.USER> {
+  fullName?: string;
+}
 
 export interface IProfileAttributes extends Partial<IUserStub> {
   password2?: string;

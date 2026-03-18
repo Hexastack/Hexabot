@@ -58,10 +58,11 @@ export const WorkflowVersions = () => {
       }
 
       const email = typeof user.email === "string" ? user.email : "";
-      const fullName = `${user.firstName} ${user.lastName}`.trim();
 
       return (
-        fullName || email || t("visual_editor.workflow_versions.unknown_user")
+        user.fullName ||
+        email ||
+        t("visual_editor.workflow_versions.unknown_user")
       );
     },
     [getUserFromCache, t],

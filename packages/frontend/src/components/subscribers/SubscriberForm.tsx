@@ -20,9 +20,6 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
 
-const getFullName = (subscriber: ISubscriber | null) =>
-  `${subscriber?.firstName} ${subscriber?.lastName}`;
-
 export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
   data: { defaultValues: subscriber },
   Wrapper = Fragment,
@@ -66,7 +63,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
           <ContentItem>
             <TextField
               label={t("label.user")}
-              value={subscriber ? getFullName(subscriber) : undefined}
+              value={subscriber?.fullName}
               disabled
               slotProps={{
                 input: {

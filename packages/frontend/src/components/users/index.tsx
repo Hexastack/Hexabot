@@ -85,7 +85,6 @@ export const Users = () => {
       headerName: t("label.name"),
       sortable: false,
       disableColumnMenu: true,
-      valueGetter: (_params, val) => `${val.firstName} ${val.lastName}`,
       headerAlign: "left",
     },
     {

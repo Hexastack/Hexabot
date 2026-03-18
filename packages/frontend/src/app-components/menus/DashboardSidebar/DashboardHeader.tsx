@@ -48,7 +48,6 @@ export const DashboardHeader = ({
   React.useEffect(() => {
     setRandomSeed(getRandom().toString());
   }, [user]);
-
   const label = menuOpen ? "Collapse" : "Expand";
 
   return (
@@ -92,7 +91,7 @@ export const DashboardHeader = ({
                   lineHeight={1}
                   textTransform="capitalize"
                 >
-                  {user?.firstName} {user?.lastName}
+                  {user?.fullName || user?.email}
                 </Typography>
                 <Typography
                   color="text.secondary"
