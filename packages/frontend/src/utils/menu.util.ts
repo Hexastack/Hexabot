@@ -17,6 +17,7 @@ import {
   MemoryStick,
   Menu,
   MessagesSquare,
+  Plug,
   Settings,
   Shield,
   Tag,
@@ -59,6 +60,14 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     Icon: Activity,
     requires: {
       [EntityType.WORKFLOW_RUN]: [PermissionAction.READ],
+    },
+  },
+  {
+    text: "menu.mcp_servers",
+    href: "/workflow/mcp-servers",
+    Icon: Plug,
+    requires: {
+      [EntityType.MCP_SERVER]: [PermissionAction.READ],
     },
   },
   {

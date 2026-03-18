@@ -56,12 +56,16 @@ export abstract class AiGenerateTextBaseAction<
       selectedMemorySlugs,
     );
     const callSettings = this.buildCallSettings(settings);
-    const tools = this.buildTools(
+    const tools = (await this.buildTools(
       context,
       bindings.tools,
+      bindings.mcp,
       selectedMemorySlugs,
-    ) as ToolSet | undefined;
-    const toolNames = Object.keys(bindings.tools ?? {});
+    )) as ToolSet | undefined;
+    const toolNames = [
+      ...Object.keys(bindings.tools ?? {}),
+      ...Object.keys(bindings.mcp ?? {}),
+    ];
     const { stopWhen, stepCount, toolCall } = this.buildStopWhen(
       settings,
       tools,

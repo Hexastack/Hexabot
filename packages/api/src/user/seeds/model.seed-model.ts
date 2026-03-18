@@ -98,6 +98,11 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
+    name: 'McpServer',
+    identity: 'mcpserver',
+    attributes: {},
+  },
+  {
     name: 'Stats',
     identity: 'stats',
     attributes: {},

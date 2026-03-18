@@ -16,15 +16,18 @@ import { ConversationalWorkflowContext } from './contexts/conversational-workflo
 import { ManualWorkflowContext } from './contexts/manual-workflow.context';
 import { ScheduledWorkflowContext } from './contexts/scheduled-workflow.context';
 import { WorkflowContextFactory } from './contexts/workflow-context-factory';
+import { McpServerController } from './controllers/mcp-server.controller';
 import { MemoryDefinitionController } from './controllers/memory-definition.controller';
 import { WorkflowRunController } from './controllers/workflow-run.controller';
 import { WorkflowVersionController } from './controllers/workflow-version.controller';
 import { WorkflowController } from './controllers/workflow.controller';
+import { McpServerOrmEntity } from './entities/mcp-server.entity';
 import { MemoryDefinitionOrmEntity } from './entities/memory-definition.entity';
 import { MemoryRecordOrmEntity } from './entities/memory-record.entity';
 import { WorkflowRunOrmEntity } from './entities/workflow-run.entity';
 import { WorkflowVersionOrmEntity } from './entities/workflow-version.entity';
 import { WorkflowOrmEntity } from './entities/workflow.entity';
+import { McpServerRepository } from './repositories/mcp-server.repository';
 import { MemoryDefinitionRepository } from './repositories/memory-definition.repository';
 import { MemoryRecordRepository } from './repositories/memory-record.repository';
 import { WorkflowRunRepository } from './repositories/workflow-run.repository';
@@ -33,6 +36,8 @@ import { WorkflowRepository } from './repositories/workflow.repository';
 import { MemoryDefinitionSeeder } from './seeds/memory-definition.seed';
 import { WorkflowSeeder } from './seeds/workflow.seed';
 import { AgenticService } from './services/agentic.service';
+import { McpClientPoolService } from './services/mcp-client-pool.service';
+import { McpServerService } from './services/mcp-server.service';
 import { MemoryDefinitionService } from './services/memory-definition.service';
 import { MemoryRecordService } from './services/memory-record.service';
 import { MemoryService } from './services/memory.service';
@@ -49,6 +54,7 @@ import { WorkflowService } from './services/workflow.service';
       WorkflowRunOrmEntity,
       MemoryDefinitionOrmEntity,
       MemoryRecordOrmEntity,
+      McpServerOrmEntity,
     ]),
     forwardRef(() => CmsModule),
     forwardRef(() => ChatModule),
@@ -59,6 +65,7 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowVersionController,
     WorkflowRunController,
     MemoryDefinitionController,
+    McpServerController,
   ],
   providers: [
     WorkflowRepository,
@@ -66,6 +73,7 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     MemoryDefinitionRepository,
     MemoryRecordRepository,
+    McpServerRepository,
     MemoryDefinitionSeeder,
     WorkflowSeeder,
     WorkflowService,
@@ -74,6 +82,8 @@ import { WorkflowService } from './services/workflow.service';
     MemoryDefinitionService,
     MemoryRecordService,
     MemoryService,
+    McpServerService,
+    McpClientPoolService,
     SchedulerRegistry,
     WorkflowSchedulerService,
     ConversationalWorkflowContext,
@@ -88,12 +98,15 @@ import { WorkflowService } from './services/workflow.service';
     WorkflowRunRepository,
     MemoryDefinitionRepository,
     MemoryRecordRepository,
+    McpServerRepository,
     WorkflowService,
     WorkflowVersionService,
     WorkflowRunService,
     MemoryDefinitionService,
     MemoryRecordService,
     MemoryService,
+    McpServerService,
+    McpClientPoolService,
     ConversationalWorkflowContext,
     AgenticService,
   ],

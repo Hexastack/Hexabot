@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import { BindingsModule } from '@/bindings/bindings.module';
 import { createBindingKind } from '@/bindings/create-binding-kind';
+import { aiMcpToolBindingSchema } from '@/extensions/actions/ai/mcp.binding';
 import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
 import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
@@ -79,20 +80,33 @@ describe('RuntimeBindingsService', () => {
       supportedBindings: [],
       actionPolicy: 'forbidden',
     });
+    service.register({
+      kind: 'mcp',
+      schema: aiMcpToolBindingSchema,
+      multiple: true,
+      color: '#14b8a6',
+      icon: 'Plug',
+      supportedBindings: [],
+      actionPolicy: 'forbidden',
+    });
     const definitions = service.getAllSchemaDefinitions();
 
     expect(definitions.tools).toBeDefined();
     expect(definitions.model).toBeDefined();
     expect(definitions.memory).toBeDefined();
+    expect(definitions.mcp).toBeDefined();
     expect(definitions.tools.multiple).toBe(true);
     expect(definitions.model.multiple).toBe(false);
     expect(definitions.memory.multiple).toBe(true);
+    expect(definitions.mcp.multiple).toBe(true);
     expect(definitions.tools.color).toBe('#f59e0b');
     expect(definitions.tools.icon).toBe('Wrench');
     expect(definitions.model.color).toBe('#ad46fc');
     expect(definitions.model.icon).toBe('Brain');
     expect(definitions.memory.color).toBe('#0ea5e9');
     expect(definitions.memory.icon).toBe('Database');
+    expect(definitions.mcp.color).toBe('#14b8a6');
+    expect(definitions.mcp.icon).toBe('Plug');
     expect(definitions.tools.supportedBindings).toEqual([
       'tools',
       'model',
@@ -100,9 +114,11 @@ describe('RuntimeBindingsService', () => {
     ]);
     expect(definitions.model.supportedBindings).toEqual([]);
     expect(definitions.memory.supportedBindings).toEqual([]);
+    expect(definitions.mcp.supportedBindings).toEqual([]);
     expect(definitions.tools.actionPolicy).toBe('required');
     expect(definitions.model.actionPolicy).toBe('forbidden');
     expect(definitions.memory.actionPolicy).toBe('forbidden');
+    expect(definitions.mcp.actionPolicy).toBe('forbidden');
     expect(definitions.tools.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
@@ -112,10 +128,25 @@ describe('RuntimeBindingsService', () => {
     expect(definitions.memory.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
+    expect(definitions.mcp.schema.$schema).toBe(
+      'http://json-schema.org/draft-07/schema#',
+    );
     const toolsDefinition = definitions.tools.schema as
       | {
           properties?: Record<string, { type?: string }>;
           additionalProperties?: unknown;
+        }
+      | undefined;
+    const mcpToolsDefinition = definitions.mcp.schema as
+      | {
+          properties?: Record<
+            string,
+            {
+              type?: string;
+              'ui:widget'?: string;
+              'ui:options'?: Record<string, unknown>;
+            }
+          >;
         }
       | undefined;
     const modelDefinition = definitions.model.schema as
@@ -127,6 +158,21 @@ describe('RuntimeBindingsService', () => {
 
     expect(toolsDefinition?.properties?.action).toBeUndefined();
     expect(toolsDefinition?.additionalProperties).toBeDefined();
+    expect(mcpToolsDefinition?.properties?.server_id?.type).toBe('string');
+    expect(mcpToolsDefinition?.properties?.tool_names?.type).toBe('array');
+    expect(mcpToolsDefinition?.properties?.tool_names?.['ui:widget']).toBe(
+      'AutoCompleteWidget',
+    );
+    expect(
+      mcpToolsDefinition?.properties?.tool_names?.['ui:options'],
+    ).toMatchObject({
+      entity: 'McpServerTool',
+      valueKey: 'name',
+      labelKey: 'name',
+      idFormPath: 'server_id',
+      routeParamKey: 'id',
+      disableSearch: true,
+    });
     expect(modelDefinition?.properties?.provider?.type).toBe('string');
     expect(modelDefinition?.properties?.model_id?.type).toBe('string');
     expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');

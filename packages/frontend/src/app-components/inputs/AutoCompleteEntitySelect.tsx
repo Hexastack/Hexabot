@@ -7,10 +7,11 @@
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
 import type { ReactNode } from "react";
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 
 import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
 import { useSearch } from "@/hooks/useSearch";
+import type { RouteParams } from "@/services/api.class";
 import { Format, QueryType } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -54,6 +55,8 @@ export type AutoCompleteEntitySelectProps<
   noOptionsWarning?: string;
   isDisabledWhenEmpty?: boolean;
   enableEntityAddButton?: boolean;
+  routeParams?: RouteParams;
+  queryEnabled?: boolean;
 };
 
 const AutoCompleteEntitySelect = <
@@ -71,6 +74,8 @@ const AutoCompleteEntitySelect = <
     sortKey = "id",
     labelKey,
     enableEntityAddButton,
+    routeParams,
+    queryEnabled = true,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
@@ -86,6 +91,14 @@ const AutoCompleteEntitySelect = <
         },
   );
   const idRef = useRef(generateId());
+  const serializedRouteParams = useMemo(
+    () => JSON.stringify(routeParams || {}),
+    [routeParams],
+  );
+  const serializedSearchPayload = useMemo(
+    () => JSON.stringify(searchPayload),
+    [searchPayload],
+  );
   const params = {
     where: {
       or: searchPayload.where?.or || [],
@@ -113,7 +126,13 @@ const AutoCompleteEntitySelect = <
         };
       },
       placeholderData: (prev) => prev,
-      queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
+      enabled: queryEnabled,
+      routeParams,
+      queryKey: [
+        QueryType.collection,
+        entity,
+        `autocomplete/${idRef.current}/${serializedRouteParams}`,
+      ],
     },
   );
   // flatten & filter unique & sort
@@ -130,9 +149,13 @@ const AutoCompleteEntitySelect = <
       : ((flattenedData || []) as Value[]);
 
   useEffect(() => {
+    if (!queryEnabled) {
+      return;
+    }
+
     fetchNextPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(searchPayload)]);
+  }, [queryEnabled, serializedRouteParams, serializedSearchPayload]);
 
   return (
     <WithEntityButton

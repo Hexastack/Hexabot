@@ -10,6 +10,7 @@ import {
   LanguageModel,
   LanguageModelUsage,
   ModelMessage,
+  ToolSet,
   hasToolCall,
   stepCountIs,
 } from 'ai';
@@ -22,6 +23,7 @@ import { Message } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
+import { McpToolBindingDefinitions } from '@/workflow/types';
 
 import {
   AiCommonSettings,
@@ -47,13 +49,6 @@ export type LanguageModelProvider =
     })
   | ProviderV3
   | ProviderV2;
-
-type ToolDefinition = {
-  description?: string;
-  inputSchema: unknown;
-  outputSchema?: unknown;
-  execute: (input: unknown) => Promise<unknown>;
-};
 
 type PromptPayload =
   | {
@@ -87,6 +82,7 @@ export abstract class AiBaseAction<
         icon: 'Sparkles',
         supportedBindings: metadata.supportedBindings ?? [
           'tools',
+          'mcp',
           'model',
           'memory',
         ],
@@ -634,17 +630,19 @@ export abstract class AiBaseAction<
     return resolved;
   }
 
-  protected buildTools(
+  protected async buildTools(
     context: C,
     toolBindings?: RuntimeBindings['tools'],
+    mcpToolBindings?: RuntimeBindings['mcp'],
     selectedMemorySlugs: string[] = [],
-  ): Record<string, ToolDefinition> | undefined {
+  ): Promise<ToolSet | undefined> {
     const actionService = context.services.actions;
+    const logger = context.services.logger;
     if (!actionService) {
       throw new Error('Action service is unavailable in the workflow context.');
     }
 
-    const tools: Record<string, ToolDefinition> = {};
+    const tools: ToolSet = {};
     const mountedTools = (toolBindings ?? {}) as NonNullable<
       RuntimeBindings['tools']
     >;
@@ -662,14 +660,44 @@ export abstract class AiBaseAction<
       }
       const actionName = actionNameRaw.trim() as ActionName;
       const action = actionService.get(actionName);
+      if (normalizedToolName in tools) {
+        logger?.warn(
+          `Skipping duplicate tool name "${normalizedToolName}" from bindings.tools`,
+        );
+      } else {
+        tools[normalizedToolName] = {
+          description: action.description,
+          inputSchema: action.inputSchema,
+          outputSchema: action.outputSchema,
+          execute: async (input) =>
+            action.run(input, context, toolDefinition.settings as any),
+        } as ToolSet[string];
+      }
+    }
 
-      tools[normalizedToolName] = {
-        description: action.description,
-        inputSchema: action.inputSchema,
-        outputSchema: action.outputSchema,
-        execute: async (input) =>
-          action.run(input, context, toolDefinition.settings as any),
-      };
+    const mountedMcpTools = (mcpToolBindings ?? {}) as NonNullable<
+      RuntimeBindings['mcp']
+    >;
+    if (Object.keys(mountedMcpTools).length > 0) {
+      const mcpClientPool = context.services.mcp;
+      if (!mcpClientPool) {
+        throw new Error(
+          'MCP client pool service is unavailable in the workflow context.',
+        );
+      }
+
+      const mcpTools = await mcpClientPool.buildToolSet(
+        mountedMcpTools as McpToolBindingDefinitions,
+      );
+      for (const [toolName, toolDefinition] of Object.entries(mcpTools)) {
+        if (toolName in tools) {
+          logger?.warn(
+            `Skipping duplicate tool name "${toolName}" from bindings.mcp`,
+          );
+        } else {
+          tools[toolName] = toolDefinition as ToolSet[string];
+        }
+      }
     }
 
     if (selectedMemorySlugs.length > 0) {
@@ -680,12 +708,18 @@ export abstract class AiBaseAction<
         return Object.keys(tools).length > 0 ? tools : undefined;
       }
 
-      tools['update_memory'] = {
-        description: updateMemoryAction.description,
-        inputSchema: memorySchema,
-        outputSchema: memorySchema,
-        execute: async (input) => updateMemoryAction.run(input, context),
-      };
+      if ('update_memory' in tools) {
+        logger?.warn(
+          'Skipping duplicate tool name "update_memory" from memory',
+        );
+      } else {
+        tools['update_memory'] = {
+          description: updateMemoryAction.description,
+          inputSchema: memorySchema,
+          outputSchema: memorySchema,
+          execute: async (input) => updateMemoryAction.run(input, context),
+        } as ToolSet[string];
+      }
     }
 
     return Object.keys(tools).length > 0 ? tools : undefined;

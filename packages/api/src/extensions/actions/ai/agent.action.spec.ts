@@ -418,6 +418,90 @@ describe('AiAgentAction', () => {
     ).toBe(true);
   });
 
+  it('loads MCP tools and merges them with action tools', async () => {
+    const provider = Object.assign(
+      jest.fn().mockReturnValue('model-instance'),
+      {
+        languageModel: jest.fn(),
+      },
+    );
+    const actionToolRun = jest.fn().mockResolvedValue({ ok: true });
+    const mcpToolRun = jest.fn().mockResolvedValue({ source: 'mcp' });
+    const actionsService = {
+      get: jest.fn().mockReturnValue({
+        description: 'demo tool',
+        inputSchema: {},
+        outputSchema: {},
+        run: actionToolRun,
+      }),
+    };
+    const mcpClientPool = {
+      buildToolSet: jest.fn().mockResolvedValue({
+        planner__lookup: {
+          description: 'planner lookup',
+          inputSchema: {},
+          execute: mcpToolRun,
+        },
+      }),
+    };
+    const context = createContext({
+      actions: actionsService,
+      mcp: mcpClientPool,
+    });
+
+    jest.spyOn(action as any, 'loadProvider').mockResolvedValue(provider);
+    jest.spyOn(action as any, 'createModel').mockReturnValue('model-instance');
+    toolLoopAgentGenerateMock.mockResolvedValue({
+      text: 'Done',
+      finishReason: 'stop',
+      rawFinishReason: 'stop',
+      steps: [],
+    } as any);
+
+    await action.execute({
+      input: { input_mode: 'prompt', prompt: 'hello' },
+      settings: {
+        timeout_ms: 0,
+        retries: defaultRetries,
+      } as any,
+      context,
+      bindings: {
+        ...createModelBindings(),
+        tools: {
+          search: { action: 'search_action', settings: { locale: 'en' } },
+        },
+        mcp: {
+          planner: {
+            settings: {
+              server_id: '11111111-1111-4111-8111-111111111111',
+            },
+          },
+        },
+      } as any,
+    });
+
+    const agentOptions = ToolLoopAgentMock.mock.calls[0][0] as any;
+
+    expect(mcpClientPool.buildToolSet).toHaveBeenCalledWith({
+      planner: {
+        settings: {
+          server_id: '11111111-1111-4111-8111-111111111111',
+        },
+      },
+    });
+    expect(Object.keys(agentOptions.tools)).toEqual([
+      'search',
+      'planner__lookup',
+    ]);
+    expect(stepCountIsMock).toHaveBeenCalledWith(3);
+    await agentOptions.tools.search.execute({ query: 'hello' });
+    expect(actionToolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+      locale: 'en',
+    });
+    await agentOptions.tools.planner__lookup.execute({ query: 'hello' });
+    expect(mcpToolRun).toHaveBeenCalledWith({ query: 'hello' });
+  });
+
   it('throws when the model binding is missing', async () => {
     await expect(
       action.execute({

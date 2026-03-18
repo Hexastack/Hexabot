@@ -145,6 +145,20 @@ class TestAiBaseAction extends AiBaseAction<
     return this.buildCallSettings(settings);
   }
 
+  public buildToolsPublic(
+    context: WorkflowRuntimeContext,
+    toolBindings?: RuntimeBindings['tools'],
+    mcpToolBindings?: RuntimeBindings['mcp'],
+    selectedMemorySlugs: string[] = [],
+  ) {
+    return this.buildTools(
+      context as any,
+      toolBindings,
+      mcpToolBindings as any,
+      selectedMemorySlugs,
+    );
+  }
+
   public normalizeUsagePublic(usage?: LanguageModelUsage) {
     return this.normalizeUsage(usage);
   }
@@ -167,8 +181,13 @@ describe('AiBaseAction', () => {
     action = new TestAiBaseAction(actionService);
   });
 
-  it('defaults supported bindings to tools, model, and memory', () => {
-    expect(action.supportedBindings).toEqual(['tools', 'model', 'memory']);
+  it('defaults supported bindings to tools, mcp, model, and memory', () => {
+    expect(action.supportedBindings).toEqual([
+      'tools',
+      'mcp',
+      'model',
+      'memory',
+    ]);
   });
 
   describe('buildProviderInitOptions', () => {
@@ -734,6 +753,163 @@ describe('AiBaseAction', () => {
       const result = action.buildCallSettingsPublic({} as AiCommonSettings);
 
       expect(result).toEqual({});
+    });
+  });
+
+  describe('buildTools', () => {
+    it('merges action tools, MCP tools, and memory update tool', async () => {
+      const actionToolRun = jest.fn().mockResolvedValue({ ok: true });
+      const updateMemoryRun = jest.fn().mockResolvedValue({ updated: true });
+      const mcpToolRun = jest.fn().mockResolvedValue({ source: 'mcp' });
+      const actionsService = {
+        get: jest.fn((actionName: string) => {
+          if (actionName === 'search_action') {
+            return {
+              description: 'search tool',
+              inputSchema: {},
+              outputSchema: {},
+              run: actionToolRun,
+            };
+          }
+
+          if (actionName === 'update_memory') {
+            return {
+              description: 'update memory',
+              inputSchema: {},
+              outputSchema: {},
+              run: updateMemoryRun,
+            };
+          }
+
+          throw new Error(`Unexpected action lookup ${actionName}`);
+        }),
+      };
+      const mcpClientPool = {
+        buildToolSet: jest.fn().mockResolvedValue({
+          planner__search: {
+            description: 'mcp search',
+            inputSchema: {},
+            execute: mcpToolRun,
+          },
+        }),
+      };
+      const context = {
+        services: {
+          actions: actionsService,
+          mcp: mcpClientPool,
+        },
+        memoryStore: {
+          buildUpdateMemorySchema: jest.fn().mockReturnValue({
+            type: 'object',
+            properties: {},
+          }),
+        },
+      } as unknown as WorkflowRuntimeContext;
+      const tools = await action.buildToolsPublic(
+        context,
+        {
+          search: {
+            action: 'search_action',
+            settings: { scope: 'web' },
+          },
+        } as RuntimeBindings['tools'],
+        {
+          planner: {
+            settings: {
+              server_id: '11111111-1111-4111-8111-111111111111',
+              tool_names: ['search'],
+            },
+          },
+        } as RuntimeBindings['mcp'],
+        ['user_profile'],
+      );
+
+      expect(Object.keys(tools ?? {})).toEqual([
+        'search',
+        'planner__search',
+        'update_memory',
+      ]);
+      expect(mcpClientPool.buildToolSet).toHaveBeenCalledWith({
+        planner: {
+          settings: {
+            server_id: '11111111-1111-4111-8111-111111111111',
+            tool_names: ['search'],
+          },
+        },
+      });
+      await (tools as Record<string, any>).search.execute({ query: 'hello' });
+      expect(actionToolRun).toHaveBeenCalledWith({ query: 'hello' }, context, {
+        scope: 'web',
+      });
+      await (tools as Record<string, any>).planner__search.execute({
+        query: 'hello',
+      });
+      expect(mcpToolRun).toHaveBeenCalledWith({ query: 'hello' });
+      await (tools as Record<string, any>).update_memory.execute({
+        user_profile: {},
+      });
+      expect(updateMemoryRun).toHaveBeenCalledWith(
+        { user_profile: {} },
+        context,
+      );
+    });
+
+    it('logs a warning and keeps first tool when action and MCP tools resolve the same name', async () => {
+      const actionsService = {
+        get: jest.fn((actionName: string) => {
+          if (actionName === 'search_action') {
+            return {
+              description: 'search tool',
+              inputSchema: {},
+              outputSchema: {},
+              run: jest.fn().mockResolvedValue({ ok: true }),
+            };
+          }
+
+          throw new Error(`Unexpected action lookup ${actionName}`);
+        }),
+      };
+      const mcpClientPool = {
+        buildToolSet: jest.fn().mockResolvedValue({
+          search: {
+            description: 'duplicate search tool',
+            inputSchema: {},
+            execute: jest.fn().mockResolvedValue({ source: 'mcp' }),
+          },
+        }),
+      };
+      const logger = { warn: jest.fn() };
+      const context = {
+        services: {
+          actions: actionsService,
+          mcp: mcpClientPool,
+          logger,
+        },
+        memoryStore: {
+          buildUpdateMemorySchema: jest.fn().mockReturnValue(undefined),
+        },
+      } as unknown as WorkflowRuntimeContext;
+      const tools = await action.buildToolsPublic(
+        context,
+        {
+          search: {
+            action: 'search_action',
+            settings: {},
+          },
+        } as RuntimeBindings['tools'],
+        {
+          planner: {
+            settings: {
+              server_id: '11111111-1111-4111-8111-111111111111',
+            },
+          },
+        } as RuntimeBindings['mcp'],
+      );
+
+      expect(Object.keys(tools ?? {})).toEqual(['search']);
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Skipping duplicate tool name "search" from bindings.mcp',
+      );
     });
   });
 

@@ -6,13 +6,20 @@
 
 import type { RJSFSchema, WidgetProps } from "@rjsf/utils";
 import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import type { RouteParams } from "@/services/api.class";
 import { Format, normalizeEntity } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 
 import { Rjsf } from "../fields/AutoCompleteField";
 
+import {
+  resolveDependencyQueryConfig,
+  shouldResetDependentValue,
+  toAutoCompleteWidgetValue,
+} from "./auto-complete-widget.utils";
 import {
   getDescription,
   labelTooltipInputLabelSx,
@@ -20,44 +27,68 @@ import {
   mergeLabelSx,
 } from "./shared";
 
-type AutoCompleteWidgetOptions = Omit<Rjsf["uiSchema"]["ui:options"], "label">;
+type AutoCompleteWidgetOptions = Omit<Rjsf["uiSchema"]["ui:options"], "label"> & {
+  labelKey?: string;
+  routeParamKey?: string;
+  multiple?: boolean;
+};
 
 const AutoCompleteWidgetWrapper = ({
   value,
   label,
   inputLabelSx,
   entity,
-  valueKey = "",
-  labelKey = "",
+  valueKey = "id",
+  labelKey = "id",
+  multiple = false,
+  routeParams,
+  queryEnabled = true,
   onChange,
   enableEntityAddButton,
+  ...rest
 }: AutoCompleteWidgetOptions & {
   label?: ReactNode;
   inputLabelSx?: unknown;
   value: any;
   entity: keyof IEntityMapTypes;
+  multiple?: boolean;
+  routeParams?: RouteParams;
+  queryEnabled?: boolean;
   onChange: (value: any) => void;
   enableEntityAddButton?: boolean;
 }) => {
+  const normalizedValue = useMemo(
+    () =>
+      multiple
+        ? (Array.isArray(value) ? value : [])
+        : (typeof value === "string" ? value : ""),
+    [multiple, value],
+  );
+
   return (
     <AutoCompleteEntitySelect<any, string, boolean>
       searchFields={[]}
       entity={entity}
       format={Format.BASIC}
+      idKey={valueKey}
       labelKey={labelKey}
       label={label ?? ""}
       inputLabelSx={inputLabelSx}
-      value={value}
+      value={normalizedValue}
+      multiple={multiple}
+      routeParams={routeParams}
+      queryEnabled={queryEnabled}
       onChange={(_e, selected, ..._) => {
-        if (selected) {
-          if (valueKey in selected) {
-            onChange(selected[valueKey]);
-          }
-        } else {
-          onChange("");
-        }
+        onChange(
+          toAutoCompleteWidgetValue({
+            selection: selected,
+            valueKey,
+            multiple,
+          }),
+        );
       }}
       enableEntityAddButton={enableEntityAddButton}
+      {...rest}
     />
   );
 };
@@ -70,6 +101,7 @@ export const AutoCompleteWidget = ({
   InputLabelProps,
   uiSchema,
   onChange,
+  registry,
 }: WidgetProps) => {
   const description = getDescription(schema as RJSFSchema, options);
   const label = (
@@ -84,9 +116,45 @@ export const AutoCompleteWidget = ({
   );
   const {
     entity,
-    labelKey = "",
+    valueKey = "id",
+    labelKey = "id",
+    idFormPath,
+    routeParamKey = "id",
+    multiple: uiMultiple,
     ...props
   } = uiSchema?.["ui:options"] as AutoCompleteWidgetOptions;
+  const isMultiple = schema?.type === "array" || Boolean(uiMultiple);
+  const dependencyQueryConfig = useMemo(
+    () =>
+      resolveDependencyQueryConfig({
+        formData: registry?.formContext?.formData,
+        idFormPath,
+        routeParamKey,
+      }),
+    [idFormPath, registry?.formContext?.formData, routeParamKey],
+  );
+  const previousDependencyValueRef = useRef(
+    dependencyQueryConfig.dependencyValue,
+  );
+
+  useEffect(() => {
+    const previousDependencyValue = previousDependencyValueRef.current;
+    const nextDependencyValue = dependencyQueryConfig.dependencyValue;
+
+    previousDependencyValueRef.current = nextDependencyValue;
+
+    if (
+      !shouldResetDependentValue({
+        idFormPath,
+        previousDependencyValue,
+        nextDependencyValue,
+      })
+    ) {
+      return;
+    }
+
+    onChange(isMultiple ? [] : "");
+  }, [dependencyQueryConfig.dependencyValue, idFormPath, isMultiple, onChange]);
 
   if (entity) {
     return (
@@ -95,7 +163,11 @@ export const AutoCompleteWidget = ({
         value={value}
         label={label}
         inputLabelSx={inputLabelSx}
+        valueKey={valueKey}
         labelKey={labelKey}
+        multiple={isMultiple}
+        routeParams={dependencyQueryConfig.routeParams}
+        queryEnabled={dependencyQueryConfig.queryEnabled}
         onChange={onChange}
         {...props}
       />

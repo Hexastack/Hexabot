@@ -22,6 +22,7 @@ import { Dashboard } from "@/components/dashboard";
 import { Inbox } from "@/components/inbox";
 import { Labels } from "@/components/labels";
 import { Languages } from "@/components/languages";
+import { McpServers } from "@/components/mcp-servers";
 import { MediaLibrary } from "@/components/media-library";
 import { MemoryDefinitions } from "@/components/memory-definitions";
 import { Menu } from "@/components/menu";
@@ -93,6 +94,13 @@ export const routes: RouteObjectItem[] = [
     Component: WorkflowRuns,
     handle: {
       requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
+    },
+  },
+  {
+    path: "/workflow/mcp-servers",
+    Component: McpServers,
+    handle: {
+      requiredPermissions: [[EntityType.MCP_SERVER, PermissionAction.READ]],
     },
   },
   {

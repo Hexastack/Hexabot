@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.9",
+    "@ai-sdk/mcp": "^1.0.25",
     "@ai-sdk/openai": "^3.0.7",
     "@ai-sdk/provider": "^3.0.2",
     "@hexabot-ai/agentic": "workspace:*",
