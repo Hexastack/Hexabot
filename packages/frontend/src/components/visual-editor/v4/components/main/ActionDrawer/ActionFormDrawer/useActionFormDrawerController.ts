@@ -190,7 +190,7 @@ export const useActionFormDrawerController = ({
   });
 
   useEffect(() => {
-    if (!open || !taskDefinition) {
+    if (!open) {
       setInputData({});
       setActionSettingsData({});
       setExecutionSettingsData({});
@@ -220,6 +220,14 @@ export const useActionFormDrawerController = ({
       setExecutionSettingsData(resolvedExecutionSettings);
       setIsUsingWorkflowExecutionDefaults(!hasExecutionOverride);
       setHasExecutionSettingsVisibleErrors(false);
+
+      return;
+    }
+
+    if (!taskDefinition) {
+      setInputData({});
+      setActionSettingsData({});
+      setExecutionSettingsData({});
 
       return;
     }
