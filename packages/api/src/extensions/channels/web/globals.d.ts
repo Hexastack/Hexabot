@@ -4,13 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
-import DEFAULT_WEB_CHANNEL_SETTINGS, {
+import {
   WEB_CHANNEL_NAME,
   WEB_CHANNEL_NAMESPACE,
+  WEB_CHANNEL_SETTING_FIELDS,
+  webChannelSettingsSchema,
 } from './settings';
 
+type WebChannelSettingsTree = SettingTreeFromSchemaMap<
+  Record<typeof WEB_CHANNEL_NAMESPACE, typeof webChannelSettingsSchema>
+>;
+
+type WebChannelSettingDefinitions = SettingDefinitionMapFromFields<
+  Record<typeof WEB_CHANNEL_NAMESPACE, typeof WEB_CHANNEL_SETTING_FIELDS>
+>;
+
 declare global {
-  interface Settings extends SettingTree<typeof DEFAULT_WEB_CHANNEL_SETTINGS> {}
+  interface Settings extends WebChannelSettingsTree {}
 
   interface SubscriberChannelDict {
     [WEB_CHANNEL_NAME]: {
@@ -25,7 +35,7 @@ declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
     [WEB_CHANNEL_NAMESPACE]: TDefinition<
       object,
-      SettingMapByType<typeof DEFAULT_WEB_CHANNEL_SETTINGS>
+      WebChannelSettingDefinitions[typeof WEB_CHANNEL_NAMESPACE]
     >;
   }
 }

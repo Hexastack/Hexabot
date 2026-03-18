@@ -4,11 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { Setting, SettingCreateDto } from '../dto/setting.dto';
-import { SettingSchema } from '../types';
 
 import {
   buildSettingValueZodSchema,
@@ -21,12 +19,6 @@ export type SettingSchemaSource = Pick<
   SettingCreateDto,
   'group' | 'subgroup' | 'label' | 'schema' | 'weight' | 'translatable'
 >;
-
-export type SettingSchemaCatalogEntry = {
-  group: string;
-  schema: JsonSchema;
-  values: Record<string, unknown>;
-};
 
 const sortSettingSchemaSources = <T extends { label: string; weight?: number }>(
   settings: readonly T[],
@@ -42,15 +34,6 @@ const sortSettingSchemaSources = <T extends { label: string; weight?: number }>(
     return left.label.localeCompare(right.label);
   });
 };
-const withSchemaTitle = (schema: JsonSchema, title: string): SettingSchema => {
-  const next = cloneSettingSchema(schema);
-
-  if (typeof next.title !== 'string' || next.title.length === 0) {
-    next.title = title;
-  }
-
-  return next;
-};
 
 export const buildSettingGroupZodSchema = (
   settings: readonly SettingSchemaSource[],
@@ -64,35 +47,6 @@ export const buildSettingGroupZodSchema = (
   );
 
   return z.strictObject(shape);
-};
-
-export const buildSettingGroupJsonSchema = (
-  settings: readonly SettingSchemaSource[],
-): JsonSchema => {
-  const sortedSettings = sortSettingSchemaSources(settings);
-
-  return {
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    type: 'object',
-    properties: Object.fromEntries(
-      sortedSettings.map((setting) => [
-        setting.label,
-        withSchemaTitle(setting.schema, setting.label),
-      ]),
-    ),
-    additionalProperties: false,
-  } satisfies JsonSchema;
-};
-
-export const buildSettingGroupValues = (
-  settings: readonly SettingSchemaSource[],
-) => {
-  return Object.fromEntries(
-    sortSettingSchemaSources(settings).map((setting) => [
-      setting.label,
-      getSettingDefault(setting.schema),
-    ]),
-  );
 };
 
 export const groupSettingSchemaSources = <T extends SettingSchemaSource>(

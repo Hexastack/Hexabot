@@ -41,17 +41,17 @@ const getScopedSettingsStorageKey = ({
 export type ChannelSettings = {
   menu: IMenuNode[];
   secret: string;
-  allowed_domains: string;
+  allowed_domains: string[];
   start_button: boolean;
   input_disabled: boolean;
   persistent_menu: boolean;
   theme?: ThemeOverrides;
-  window_title: string;
-  avatar_url: string;
+  window_title?: string;
+  avatar_url?: string;
   show_emoji: boolean;
   show_file: boolean;
   show_location: boolean;
-  allowed_upload_types: string;
+  allowed_upload_types: string[];
   greeting_message: string;
   messages?: TMessage[];
   profile?: ISubscriber;
@@ -123,10 +123,13 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
   const [settings, setSettingsState] = useState(
     defaultOrSavedSettings || defaultSettings,
   );
-  const setSettings = useCallback((settings: ChatSettings) => {
-    SessionStorage.setItem(settingsStorageKey, settings);
-    setSettingsState(settings);
-  }, [settingsStorageKey]);
+  const setSettings = useCallback(
+    (settings: ChatSettings) => {
+      SessionStorage.setItem(settingsStorageKey, settings);
+      setSettingsState(settings);
+    },
+    [settingsStorageKey],
+  );
 
   useEffect(() => {
     if (!scopedSettings && legacySettings) {
@@ -140,17 +143,18 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
       showEmoji: settings.show_emoji,
       showFile: settings.show_file,
       showLocation: settings.show_location,
-      title: settings.window_title,
-      titleImageUrl: settings.avatar_url,
+      title: settings.window_title ?? defaultSettings.title,
+      titleImageUrl: settings.avatar_url ?? defaultSettings.titleImageUrl,
       menu: settings.menu,
-      allowedUploadTypes: settings.allowed_upload_types
-        ? settings.allowed_upload_types.split(",")
-        : defaultSettings.allowedUploadTypes,
+      allowedUploadTypes:
+        settings.allowed_upload_types.length > 0
+          ? settings.allowed_upload_types
+          : defaultSettings.allowedUploadTypes,
       inputDisabled: settings.input_disabled,
       theme: settings.theme,
       greetingMessage: settings.greeting_message,
       placeholder: t("settings.placeholder"),
-      avatarUrl: settings.avatar_url,
+      avatarUrl: settings.avatar_url ?? defaultSettings.avatarUrl,
     });
   });
 

@@ -13,14 +13,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Progress } from "@/app-components/displays/Progress";
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
-import { useTanstackMutation, useTanstackQuery, useTanstackQueryClient } from "@/hooks/crud/useTanstack";
+import {
+  useTanstackMutation,
+  useTanstackQuery,
+  useTanstackQueryClient,
+} from "@/hooks/crud/useTanstack";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, QueryType, RouterType } from "@/services/types";
-import { ISettingCatalogGroup } from "@/types/setting.types";
+import { ISetting } from "@/types/setting.types";
 import { isRecord } from "@/utils/object";
 
 import { buildSettingsUiSchema } from "../visual-editor/v4/utils/settings-ui-schema.utils";
@@ -30,9 +34,41 @@ const StyledPanel = styled("div")({
   padding: "16px 24px",
 });
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
-const SETTINGS_CATALOG_QUERY_KEY = ["settings-catalog"] as const;
+const SETTINGS_QUERY_KEY = [
+  QueryType.collection,
+  EntityType.SETTING,
+  "settings-page",
+] as const;
+
+type SettingFormGroup = {
+  group: string;
+  schema: RJSFSchema;
+  values: Record<string, unknown>;
+};
 const hasSchemaProperties = (schema: RJSFSchema) => {
-  return isRecord(schema.properties) && Object.keys(schema.properties).length > 0;
+  return (
+    isRecord(schema.properties) && Object.keys(schema.properties).length > 0
+  );
+};
+const sortSettings = <T extends Pick<ISetting, "group" | "label" | "weight">>(
+  settings: readonly T[],
+) => {
+  return [...settings].sort((left, right) => {
+    const groupComparison = left.group.localeCompare(right.group);
+
+    if (groupComparison !== 0) {
+      return groupComparison;
+    }
+
+    const leftWeight = left.weight ?? Number.MAX_SAFE_INTEGER;
+    const rightWeight = right.weight ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftWeight !== rightWeight) {
+      return leftWeight - rightWeight;
+    }
+
+    return left.label.localeCompare(right.label);
+  });
 };
 const localizeSettingsSchema = (
   schema: RJSFSchema,
@@ -83,20 +119,76 @@ const localizeSettingsSchema = (
     properties,
   };
 };
-const replaceCatalogGroup = (
-  current: ISettingCatalogGroup[] | undefined,
-  next: ISettingCatalogGroup,
+const buildSettingsGroupSchema = (
+  settings: readonly ISetting[],
+): RJSFSchema => {
+  return {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    type: "object",
+    properties: Object.fromEntries(
+      sortSettings(settings).map((setting) => {
+        const propertySchema = isRecord(setting.schema) ? setting.schema : {};
+        const title =
+          typeof propertySchema.title === "string" &&
+          propertySchema.title.length > 0
+            ? propertySchema.title
+            : setting.label;
+
+        return [
+          setting.label,
+          {
+            ...propertySchema,
+            title,
+          },
+        ];
+      }),
+    ),
+    additionalProperties: false,
+  };
+};
+const buildSettingsGroupValues = (settings: readonly ISetting[]) => {
+  return Object.fromEntries(
+    sortSettings(settings).map((setting) => [setting.label, setting.value]),
+  );
+};
+const buildSettingFormGroups = (
+  settings: readonly ISetting[],
+): SettingFormGroup[] => {
+  const settingsByGroup = sortSettings(settings).reduce(
+    (acc, setting) => {
+      const groupSettings = acc[setting.group] ?? [];
+
+      groupSettings.push(setting);
+      acc[setting.group] = groupSettings;
+
+      return acc;
+    },
+    {} as Record<string, ISetting[]>,
+  );
+
+  return Object.entries(settingsByGroup)
+    .map(([group, groupSettings]) => ({
+      group,
+      schema: buildSettingsGroupSchema(groupSettings),
+      values: buildSettingsGroupValues(groupSettings),
+    }))
+    .filter((group) => hasSchemaProperties(group.schema))
+    .sort((left, right) => left.group.localeCompare(right.group));
+};
+const replaceSettingsGroup = (
+  current: ISetting[] | undefined,
+  next: ISetting[],
 ) => {
-  if (!current) {
-    return [next];
+  if (next.length === 0) {
+    return current ?? [];
   }
 
-  const hasExisting = current.some((group) => group.group === next.group);
-  const nextCatalog = hasExisting
-    ? current.map((group) => (group.group === next.group ? next : group))
-    : [...current, next];
+  const group = next[0].group;
 
-  return nextCatalog.sort((left, right) => left.group.localeCompare(right.group));
+  return sortSettings([
+    ...(current ?? []).filter((setting) => setting.group !== group),
+    ...next,
+  ]);
 };
 
 export const Settings = () => {
@@ -116,56 +208,61 @@ export const Settings = () => {
   const [visibleErrorsByGroup, setVisibleErrorsByGroup] = useState<
     Record<string, boolean>
   >({});
-  const { data: catalog = [], isLoading } = useTanstackQuery({
-    queryKey: SETTINGS_CATALOG_QUERY_KEY,
-    queryFn: () => apiClient.getSettingsCatalog<ISettingCatalogGroup[]>(),
+  const { data: settings = [], isLoading } = useTanstackQuery({
+    queryKey: SETTINGS_QUERY_KEY,
+    queryFn: () =>
+      apiClient.buildEntityClient(EntityType.SETTING).find({}, undefined),
   });
   const groups = useMemo(() => {
-    return catalog
-      .map((group) => ({
+    return buildSettingFormGroups(settings);
+  }, [settings]);
+  const localizedGroups = useMemo(
+    () =>
+      groups.map((group) => ({
         ...group,
         schema: localizeSettingsSchema(group.schema, group.group, t),
-      }))
-      .filter((group) => hasSchemaProperties(group.schema))
-      .sort((left, right) => left.group.localeCompare(right.group));
-  }, [catalog, t]);
-  const { mutate: saveSettingsGroup, isPending: isSaving } = useTanstackMutation(
-    {
+      })),
+    [groups, t],
+  );
+  const { mutate: saveSettingsGroup, isPending: isSaving } =
+    useTanstackMutation({
       mutationFn: ({
         group,
         values,
       }: {
         group: string;
         values: Record<string, unknown>;
-      }) => apiClient.updateSettingGroup<ISettingCatalogGroup>(group, values),
+      }) => apiClient.updateSettingGroup<ISetting[]>(group, values),
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
-      onSuccess: (updatedGroup) => {
+      onSuccess: (updatedSettings) => {
+        const updatedGroup = updatedSettings[0]?.group;
+
         toast.success(t("message.success_save"));
-        setFormDataByGroup((current) => ({
-          ...current,
-          [updatedGroup.group]: updatedGroup.values,
-        }));
-        queryClient.setQueryData<ISettingCatalogGroup[]>(
-          SETTINGS_CATALOG_QUERY_KEY,
-          (current) => replaceCatalogGroup(current, updatedGroup),
-        );
+
+        if (updatedGroup) {
+          setFormDataByGroup((current) => ({
+            ...current,
+            [updatedGroup]: buildSettingsGroupValues(updatedSettings),
+          }));
+          queryClient.setQueryData<ISetting[]>(SETTINGS_QUERY_KEY, (current) =>
+            replaceSettingsGroup(current, updatedSettings),
+          );
+        }
+
         queryClient.invalidateQueries({
           queryKey: [QueryType.collection, EntityType.SETTING],
         });
       },
-    },
-  );
+    });
 
   useEffect(() => {
     setFormDataByGroup(
-      Object.fromEntries(
-        catalog.map((group) => [group.group, group.values ?? {}]),
-      ),
+      Object.fromEntries(groups.map((group) => [group.group, group.values])),
     );
     setVisibleErrorsByGroup({});
-  }, [catalog]);
+  }, [groups]);
 
   useEffect(() => {
     const fallbackGroup = groups[0]?.group ?? DEFAULT_SETTINGS_GROUP;
@@ -215,7 +312,7 @@ export const Settings = () => {
         <Paper variant="spaced">
           {isLoading ? (
             <Progress />
-          ) : groups.length === 0 ? (
+          ) : localizedGroups.length === 0 ? (
             <Grid sx={{ padding: 3 }}>
               <Typography>{t("label.no_data")}</Typography>
             </Grid>
@@ -227,7 +324,7 @@ export const Settings = () => {
                 value={selectedTab}
                 onChange={handleChange}
               >
-                {groups.map((group, index) => (
+                {localizedGroups.map((group, index) => (
                   <Tab
                     value={group.group}
                     key={group.group}
@@ -240,9 +337,8 @@ export const Settings = () => {
                 ))}
               </Tabs>
               <StyledPanel>
-                {groups.map((group) => {
-                  const formData =
-                    formDataByGroup[group.group] ?? group.values ?? {};
+                {localizedGroups.map((group) => {
+                  const formData = formDataByGroup[group.group] ?? group.values;
 
                   return (
                     <TabPanel
@@ -268,7 +364,9 @@ export const Settings = () => {
                         enableJsonataTextWidget={false}
                         idPrefix={`settings-${group.group}`}
                       />
-                      <Grid sx={{ display: "flex", justifyContent: "flex-end" }}>
+                      <Grid
+                        sx={{ display: "flex", justifyContent: "flex-end" }}
+                      >
                         <Button
                           variant="contained"
                           onClick={() =>
@@ -278,7 +376,8 @@ export const Settings = () => {
                             })
                           }
                           disabled={
-                            isSaving || Boolean(visibleErrorsByGroup[group.group])
+                            isSaving ||
+                            Boolean(visibleErrorsByGroup[group.group])
                           }
                         >
                           {t("button.save")}

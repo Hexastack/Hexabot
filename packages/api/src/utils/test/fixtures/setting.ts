@@ -8,107 +8,104 @@ import { DataSource } from 'typeorm';
 
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import { createTextSettingSchema } from '@/setting/utils/setting-schema-definition.utils';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [
   {
     group: 'chatbot_settings',
     label: 'default_storage_helper',
-    schema: createTextSettingSchema({ defaultValue: 'local-storage-helper' }),
+    schema: { type: 'string', default: 'local-storage-helper' },
     weight: 1,
   },
   {
     group: 'contact',
     label: 'contact_email_recipient',
-    schema: createTextSettingSchema({ defaultValue: 'admin@example.com' }),
+    schema: { type: 'string', default: 'admin@example.com' },
     weight: 1,
   },
   {
     group: 'contact',
     label: 'company_name',
-    schema: createTextSettingSchema({ defaultValue: 'Your company name' }),
+    schema: { type: 'string', default: 'Your company name' },
     weight: 2,
   },
   {
     group: 'contact',
     label: 'company_phone',
-    schema: createTextSettingSchema({ defaultValue: '(+999) 9999 9999 999' }),
+    schema: { type: 'string', default: '(+999) 9999 9999 999' },
     weight: 3,
   },
   {
     group: 'contact',
     label: 'company_email',
-    schema: createTextSettingSchema({
-      defaultValue: 'contact[at]mycompany.com',
-    }),
+    schema: { type: 'string', default: 'contact[at]mycompany.com' },
     weight: 4,
   },
   {
     group: 'contact',
     label: 'company_address1',
-    schema: createTextSettingSchema({ defaultValue: '71 Pilgrim Avenue' }),
+    schema: { type: 'string', default: '71 Pilgrim Avenue' },
     weight: 5,
   },
   {
     group: 'contact',
     label: 'company_address2',
-    schema: createTextSettingSchema({ defaultValue: '' }),
+    schema: { type: 'string', default: '' },
     weight: 6,
   },
   {
     group: 'contact',
     label: 'company_city',
-    schema: createTextSettingSchema({ defaultValue: 'Chevy Chase' }),
+    schema: { type: 'string', default: 'Chevy Chase' },
     weight: 7,
   },
   {
     group: 'contact',
     label: 'company_zipcode',
-    schema: createTextSettingSchema({ defaultValue: '85705' }),
+    schema: { type: 'string', default: '85705' },
     weight: 8,
   },
   {
     group: 'contact',
     label: 'company_state',
-    schema: createTextSettingSchema({ defaultValue: 'Orlando' }),
+    schema: { type: 'string', default: 'Orlando' },
     weight: 9,
   },
   {
     group: 'contact',
     label: 'company_country',
-    schema: createTextSettingSchema({ defaultValue: 'US' }),
+    schema: { type: 'string', default: 'US' },
     weight: 10,
   },
   {
     group: `${getRandom()}_channel`,
     label: `${getRandom()}`,
-    schema: createTextSettingSchema({ defaultValue: '' }),
+    schema: { type: 'string', default: '' },
     weight: 11,
   },
   {
     group: `${getRandom()}_helper`,
     label: `${getRandom()}`,
-    schema: createTextSettingSchema({ defaultValue: '' }),
+    schema: { type: 'string', default: '' },
     weight: 12,
   },
   {
     group: `${getRandom()}_channel`,
     label: `${getRandom()}`,
-    schema: createTextSettingSchema({ defaultValue: '' }),
+    schema: { type: 'string', default: '' },
     weight: 13,
   },
   {
     group: `${getRandom()}_helper`,
     label: `${getRandom()}`,
-    schema: createTextSettingSchema({ defaultValue: '' }),
+    schema: { type: 'string', default: '' },
     weight: 14,
     translatable: true,
   },
   {
     group: 'local_storage_helper',
     label: 'default storage helper label',
-    schema: createTextSettingSchema({ defaultValue: 'local-storage-helper' }),
+    schema: { type: 'string', default: 'local-storage-helper' },
     weight: 15,
   },
 ];

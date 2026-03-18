@@ -272,14 +272,6 @@ export class ApiClient {
     return data;
   }
 
-  async getSettingsCatalog<T = Record<string, unknown>>() {
-    const { data } = await this.request.get<T>(ROUTES[EntityType.SETTING], {
-      params: { view: "catalog" },
-    });
-
-    return data;
-  }
-
   async updateSettingGroup<T = Record<string, unknown>>(
     group: string,
     values: Record<string, unknown>,

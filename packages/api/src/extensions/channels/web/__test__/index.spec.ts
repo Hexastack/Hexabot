@@ -125,9 +125,12 @@ describe('WebChannelHandler', () => {
     } as any;
 
     jest.spyOn(handler, 'getSettings').mockResolvedValue({
-      allowed_domains:
-        'https://example.com/,https://test.com,http://invalid-url',
-    });
+      allowed_domains: [
+        'https://example.com/',
+        'https://test.com',
+        'http://invalid-url',
+      ],
+    } as any);
 
     await expect(handler['validateCors'](req, res)).resolves.not.toThrow();
 
@@ -150,9 +153,12 @@ describe('WebChannelHandler', () => {
     } as unknown as Request;
 
     jest.spyOn(handler, 'getSettings').mockResolvedValue({
-      allowed_domains:
-        'https://example.com/,https://test.com,http://invalid-url',
-    });
+      allowed_domains: [
+        'https://example.com/',
+        'https://test.com',
+        'http://invalid-url',
+      ],
+    } as any);
 
     const res = {
       set: jest.fn(),

@@ -55,6 +55,8 @@ export interface SettingSeed extends SettingSeedBase {
   weight?: number;
 }
 
+export type SettingFieldDefinition = Omit<SettingSeed, 'group' | 'label'>;
+
 export type ExtensionSetting<E extends object = object> = E &
   SettingSeedBase & {
     group: string;

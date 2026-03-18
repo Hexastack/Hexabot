@@ -5,7 +5,6 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
-import { JSONSchema7 as JsonSchema } from 'json-schema';
 
 import {
   installSettingFixturesTypeOrm,
@@ -19,7 +18,6 @@ import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import {
   cloneSettingSchema,
-  createTextSettingSchema,
   getSettingConfig,
   getSettingDefault,
   getSettingOptions,
@@ -34,7 +32,7 @@ describe('SettingService', () => {
   let module: TestingModule;
   const makeSetting = (overrides: Partial<Setting>): Setting => {
     const baseSchema = cloneSettingSchema(
-      overrides.schema ?? createTextSettingSchema({ defaultValue: '' }),
+      overrides.schema ?? { type: 'string', default: '' },
     );
     const schema = Object.prototype.hasOwnProperty.call(overrides, 'value')
       ? withSettingDefault(baseSchema, overrides.value as Setting['value'])
@@ -227,41 +225,6 @@ describe('SettingService', () => {
     });
   });
 
-  describe('getSchemaCatalog', () => {
-    it('should include built-in schema defaults for partially seeded groups', async () => {
-      const catalog = await settingService.getSchemaCatalog();
-      const chatbotSettings = catalog.find(
-        ({ group }) => group === 'chatbot_settings',
-      );
-      const schema = chatbotSettings?.schema as JsonSchema | undefined;
-      const properties = schema?.properties as
-        | Record<string, JsonSchema>
-        | undefined;
-
-      expect(chatbotSettings?.values.default_storage_helper).toBe(
-        'local-storage-helper',
-      );
-      expect(chatbotSettings?.values.default_nlu_helper).toBe('llm-nlu-helper');
-      expect(properties?.default_nlu_helper).toMatchObject({
-        title: 'default_nlu_helper',
-        type: 'string',
-        default: 'llm-nlu-helper',
-        'ui:widget': 'AutoCompleteWidget',
-      });
-      expect(properties?.fallback_message).toMatchObject({
-        title: 'fallback_message',
-        type: 'array',
-        items: {
-          type: 'string',
-        },
-        default: [
-          "Sorry but i didn't understand your request. Maybe you can check the menu",
-          "I'm really sorry but i don't quite understand what you are saying :(",
-        ],
-      });
-    });
-  });
-
   describe('updateGroup', () => {
     it('should persist missing built-in settings when a schema group is updated', async () => {
       const existingSetting = await settingService.findOne({
@@ -284,7 +247,9 @@ describe('SettingService', () => {
       });
 
       expect(storedSetting?.value).toBe('custom-nlu-helper');
-      expect(result.values.default_nlu_helper).toBe('custom-nlu-helper');
+      expect(
+        result.find((setting) => setting.label === 'default_nlu_helper')?.value,
+      ).toBe('custom-nlu-helper');
     });
 
     it('should reject invalid values against the generated group schema', async () => {

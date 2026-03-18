@@ -19,8 +19,6 @@ import {
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
-type SettingView = 'catalog' | undefined;
-
 @Controller('setting')
 export class SettingController extends BaseOrmController<
   SettingOrmEntity,
@@ -46,12 +44,7 @@ export class SettingController extends BaseOrmController<
       }),
     )
     options: FindManyOptions<SettingOrmEntity>,
-    @Query('view') view?: SettingView,
   ) {
-    if (view === 'catalog') {
-      return await this.settingService.getSchemaCatalog();
-    }
-
     return await this.settingService.find(options);
   }
 
@@ -61,7 +54,7 @@ export class SettingController extends BaseOrmController<
    * @param group - The group identifier to update.
    * @param settingGroupUpdateDto - The values to persist.
    *
-   * @returns The refreshed schema-driven group payload.
+   * @returns The refreshed settings of the group.
    */
   @Patch('group/:group')
   async updateGroup(

@@ -18,6 +18,7 @@ import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -50,14 +51,22 @@ import { ChannelName, ChannelSetting } from '../types';
 
 import ConversationalEventWrapper from './ConversationalEventWrapper';
 
+type ChannelSettings<N extends ChannelName> =
+  HyphenToUnderscore<N> extends keyof Settings
+    ? Settings[HyphenToUnderscore<N>]
+    : Record<string, unknown>;
+
 @Injectable()
 export default abstract class ChannelHandler<
     N extends ChannelName = ChannelName,
+    TSettings = ChannelSettings<N>,
   >
   extends Extension
   implements OnModuleInit
 {
   private readonly settings: ChannelSetting<N>[];
+
+  private readonly settingsSchema?: z.ZodType<TSettings>;
 
   @Inject(I18nService)
   protected readonly i18n: I18nService;
@@ -87,7 +96,13 @@ export default abstract class ChannelHandler<
   constructor(name: N) {
     super(name);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.settings = require(path.join(this.getPath(), 'settings')).default;
+    const settingsModule = require(path.join(this.getPath(), 'settings')) as {
+      default: ChannelSetting<N>[];
+      settingsSchema?: z.ZodType<TSettings>;
+    };
+
+    this.settings = settingsModule.default;
+    this.settingsSchema = settingsModule.settingsSchema;
   }
 
   getName() {
@@ -112,11 +127,15 @@ export default abstract class ChannelHandler<
    * Returns the channel's settings
    * @returns Channel's settings
    */
-  async getSettings<S extends string = HyphenToUnderscore<N>>() {
+  async getSettings(): Promise<TSettings> {
     const settings = await this.settingService.getSettings();
+    const rawSettings = settings[this.getNamespace() as keyof Settings];
 
-    // @ts-expect-error workaround typing
-    return settings[this.getNamespace() as keyof Settings] as Settings[S];
+    if (this.settingsSchema) {
+      return this.settingsSchema.parse(rawSettings);
+    }
+
+    return rawSettings as TSettings;
   }
 
   /**

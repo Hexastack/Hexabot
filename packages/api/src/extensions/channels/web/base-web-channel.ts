@@ -58,7 +58,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
+import { WEB_CHANNEL_NAME } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
 
@@ -76,10 +76,25 @@ const upload = multer({
   })(),
 }).single('file'); // 'file' is the field name in the form
 
+type WebLikeChannelSettings = {
+  allowed_domains: string[];
+  start_button: boolean;
+  input_disabled: boolean;
+  persistent_menu: boolean;
+  greeting_message: string;
+  show_emoji: boolean;
+  show_file: boolean;
+  show_location: boolean;
+  allowed_upload_types: string[];
+  window_title?: string;
+  avatar_url?: string;
+};
+
 @Injectable()
 export default abstract class BaseWebChannelHandler<
   N extends ChannelName,
-> extends ChannelHandler<N> {
+  TSettings extends WebLikeChannelSettings = WebLikeChannelSettings,
+> extends ChannelHandler<N, TSettings> {
   @Inject(SubscriberService)
   protected readonly subscriberService: SubscriberService;
 
@@ -374,9 +389,9 @@ export default abstract class BaseWebChannelHandler<
       throw new Error('CORS - Invalid origin!');
     }
 
-    const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
+    const settings = await this.getSettings();
     // Get the allowed origins
-    const origins: string[] = settings.allowed_domains.split(',');
+    const origins = settings.allowed_domains;
     const foundOrigin = origins
       .filter((origin) => origin.trim() !== '*') // Skip "*"
       .map((origin) => {

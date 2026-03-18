@@ -4,211 +4,329 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingCreateDto } from '../dto/setting.dto';
-import {
-  createCheckboxSettingSchema,
-  createMultipleTextSettingSchema,
-  createNumberSettingSchema,
-  createSecretSettingSchema,
-  createSelectSettingSchema,
-  createTextSettingSchema,
-} from '../utils/setting-schema-definition.utils';
+import { z } from 'zod';
 
-export const DEFAULT_SETTINGS = [
-  {
-    group: 'chatbot_settings',
-    label: 'default_nlu_helper',
-    schema: createSelectSettingSchema({
-      defaultValue: 'llm-nlu-helper',
-      entity: 'NluHelper',
-    }),
+import { SettingCreateDto } from '../dto/setting.dto';
+import { SettingFieldDefinition } from '../types';
+
+export const chatbotSettingsSchema = z
+  .object({
+    default_nlu_helper: z.string(),
+    default_nlu_penalty_factor: z.number().min(0).max(1),
+    default_llm_helper: z.string(),
+    default_flow_escape_helper: z.string(),
+    default_storage_helper: z.string(),
+    global_fallback: z.boolean(),
+    fallback_message: z.array(z.string()),
+  })
+  .strict();
+
+export const ragSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    default_mode: z.enum(['embedding', 'lexical']),
+    embedding_provider: z.string(),
+    embedding_model: z.string(),
+    embedding_api_key: z.string(),
+    embedding_base_url: z.string(),
+    embedding_dimensions: z.number().int().min(1).max(4096),
+    top_k: z.number().int().min(1).max(50),
+    index_only_active_content: z.boolean(),
+  })
+  .strict();
+
+export const contactSettingsSchema = z
+  .object({
+    contact_email_recipient: z.string(),
+    company_name: z.string(),
+    company_phone: z.string(),
+    company_email: z.string(),
+    company_address1: z.string(),
+    company_address2: z.string(),
+    company_city: z.string(),
+    company_zipcode: z.string(),
+    company_state: z.string(),
+    company_country: z.string(),
+  })
+  .strict();
+
+export type ChatbotSettings = z.infer<typeof chatbotSettingsSchema>;
+
+export type RagSettings = z.infer<typeof ragSettingsSchema>;
+
+export type ContactSettings = z.infer<typeof contactSettingsSchema>;
+
+export const CHATBOT_SETTING_FIELDS = {
+  default_nlu_helper: {
+    schema: {
+      type: 'string',
+      default: 'llm-nlu-helper',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'NluHelper',
+        valueKey: 'name',
+        labelKey: 'name',
+        enableEntityAddButton: false,
+      },
+    },
     weight: 1,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'default_nlu_penalty_factor',
-    schema: createNumberSettingSchema({
-      defaultValue: 0.95,
-      min: 0,
-      max: 1,
-      step: 0.01,
-    }),
+  default_nlu_penalty_factor: {
+    schema: {
+      type: 'number',
+      default: 0.95,
+      minimum: 0,
+      maximum: 1,
+      'ui:options': { step: 0.01 },
+    },
     weight: 2,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'default_llm_helper',
-    schema: createSelectSettingSchema({
-      defaultValue: 'ollama-helper',
-      entity: 'LlmHelper',
-    }),
+  default_llm_helper: {
+    schema: {
+      type: 'string',
+      default: 'ollama-helper',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'LlmHelper',
+        valueKey: 'name',
+        labelKey: 'name',
+        enableEntityAddButton: false,
+      },
+    },
     weight: 3,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'default_flow_escape_helper',
-    schema: createSelectSettingSchema({
-      defaultValue: '',
-      entity: 'FlowEscapeHelper',
-    }),
+  default_flow_escape_helper: {
+    schema: {
+      type: 'string',
+      default: '',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'FlowEscapeHelper',
+        valueKey: 'name',
+        labelKey: 'name',
+        enableEntityAddButton: false,
+      },
+    },
     weight: 3,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'default_storage_helper',
-    schema: createSelectSettingSchema({
-      defaultValue: 'local-storage-helper',
-      entity: 'StorageHelper',
-    }),
+  default_storage_helper: {
+    schema: {
+      type: 'string',
+      default: 'local-storage-helper',
+      'ui:widget': 'AutoCompleteWidget',
+      'ui:options': {
+        entity: 'StorageHelper',
+        valueKey: 'name',
+        labelKey: 'name',
+        enableEntityAddButton: false,
+      },
+    },
     weight: 4,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'global_fallback',
-    schema: createCheckboxSettingSchema({ defaultValue: true }),
+  global_fallback: {
+    schema: {
+      type: 'boolean',
+      default: true,
+    },
     weight: 5,
   },
-  {
-    group: 'chatbot_settings',
-    label: 'fallback_message',
-    schema: createMultipleTextSettingSchema({
-      defaultValue: [
+  fallback_message: {
+    schema: {
+      type: 'array',
+      items: { type: 'string' },
+      default: [
         "Sorry but i didn't understand your request. Maybe you can check the menu",
         "I'm really sorry but i don't quite understand what you are saying :(",
       ],
-    }),
+    },
     weight: 6,
     translatable: true,
   },
-  {
-    group: 'rag_settings',
-    label: 'enabled',
-    schema: createCheckboxSettingSchema({ defaultValue: false }),
+} as const satisfies Record<keyof ChatbotSettings, SettingFieldDefinition>;
+
+export const RAG_SETTING_FIELDS = {
+  enabled: {
+    schema: {
+      type: 'boolean',
+      default: false,
+    },
     weight: 1,
   },
-  {
-    group: 'rag_settings',
-    label: 'default_mode',
-    schema: createSelectSettingSchema({
-      defaultValue: 'lexical',
-      options: ['embedding', 'lexical'] as const,
-    }),
+  default_mode: {
+    schema: {
+      type: 'string',
+      default: 'lexical',
+      enum: ['embedding', 'lexical'] as const,
+    },
     weight: 2,
   },
-  {
-    group: 'rag_settings',
-    label: 'embedding_provider',
-    schema: createTextSettingSchema({ defaultValue: 'openai' }),
+  embedding_provider: {
+    schema: {
+      type: 'string',
+      default: 'openai',
+    },
     weight: 3,
   },
-  {
-    group: 'rag_settings',
-    label: 'embedding_model',
-    schema: createTextSettingSchema({ defaultValue: 'text-embedding-3-small' }),
+  embedding_model: {
+    schema: {
+      type: 'string',
+      default: 'text-embedding-3-small',
+    },
     weight: 4,
   },
-  {
-    group: 'rag_settings',
-    label: 'embedding_api_key',
-    schema: createSecretSettingSchema({ defaultValue: '' }),
+  embedding_api_key: {
+    schema: {
+      type: 'string',
+      default: '',
+      'ui:widget': 'password',
+    },
     weight: 5,
   },
-  {
-    group: 'rag_settings',
-    label: 'embedding_base_url',
-    schema: createTextSettingSchema({ defaultValue: '' }),
+  embedding_base_url: {
+    schema: {
+      type: 'string',
+      default: '',
+    },
     weight: 6,
   },
-  {
-    group: 'rag_settings',
-    label: 'embedding_dimensions',
-    schema: createNumberSettingSchema({
-      defaultValue: 1536,
-      min: 1,
-      max: 4096,
-      step: 1,
-      integer: true,
-    }),
+  embedding_dimensions: {
+    schema: {
+      type: 'integer',
+      default: 1536,
+      minimum: 1,
+      maximum: 4096,
+      'ui:options': { step: 1 },
+    },
     weight: 7,
   },
-  {
-    group: 'rag_settings',
-    label: 'top_k',
-    schema: createNumberSettingSchema({
-      defaultValue: 3,
-      min: 1,
-      max: 50,
-      step: 1,
-      integer: true,
-    }),
+  top_k: {
+    schema: {
+      type: 'integer',
+      default: 3,
+      minimum: 1,
+      maximum: 50,
+      'ui:options': { step: 1 },
+    },
     weight: 8,
   },
-  {
-    group: 'rag_settings',
-    label: 'index_only_active_content',
-    schema: createCheckboxSettingSchema({ defaultValue: true }),
+  index_only_active_content: {
+    schema: {
+      type: 'boolean',
+      default: true,
+    },
     weight: 9,
   },
-  {
-    group: 'contact',
-    label: 'contact_email_recipient',
-    schema: createTextSettingSchema({ defaultValue: 'admin@example.com' }),
+} as const satisfies Record<keyof RagSettings, SettingFieldDefinition>;
+
+export const CONTACT_SETTING_FIELDS = {
+  contact_email_recipient: {
+    schema: {
+      type: 'string',
+      default: 'admin@example.com',
+    },
     weight: 1,
   },
-  {
-    group: 'contact',
-    label: 'company_name',
-    schema: createTextSettingSchema({ defaultValue: 'Your company name' }),
+  company_name: {
+    schema: {
+      type: 'string',
+      default: 'Your company name',
+    },
     weight: 2,
   },
-  {
-    group: 'contact',
-    label: 'company_phone',
-    schema: createTextSettingSchema({ defaultValue: '(+999) 9999 9999 999' }),
+  company_phone: {
+    schema: {
+      type: 'string',
+      default: '(+999) 9999 9999 999',
+    },
     weight: 3,
   },
-  {
-    group: 'contact',
-    label: 'company_email',
-    schema: createTextSettingSchema({
-      defaultValue: 'contact[at]mycompany.com',
-    }),
+  company_email: {
+    schema: {
+      type: 'string',
+      default: 'contact[at]mycompany.com',
+    },
     weight: 4,
   },
-  {
-    group: 'contact',
-    label: 'company_address1',
-    schema: createTextSettingSchema({ defaultValue: '71 Pilgrim Avenue' }),
+  company_address1: {
+    schema: {
+      type: 'string',
+      default: '71 Pilgrim Avenue',
+    },
     weight: 5,
   },
-  {
-    group: 'contact',
-    label: 'company_address2',
-    schema: createTextSettingSchema({ defaultValue: '' }),
+  company_address2: {
+    schema: {
+      type: 'string',
+      default: '',
+    },
     weight: 6,
   },
-  {
-    group: 'contact',
-    label: 'company_city',
-    schema: createTextSettingSchema({ defaultValue: 'Chevy Chase' }),
+  company_city: {
+    schema: {
+      type: 'string',
+      default: 'Chevy Chase',
+    },
     weight: 7,
   },
-  {
-    group: 'contact',
-    label: 'company_zipcode',
-    schema: createTextSettingSchema({ defaultValue: '85705' }),
+  company_zipcode: {
+    schema: {
+      type: 'string',
+      default: '85705',
+    },
     weight: 8,
   },
-  {
-    group: 'contact',
-    label: 'company_state',
-    schema: createTextSettingSchema({ defaultValue: 'Orlando' }),
+  company_state: {
+    schema: {
+      type: 'string',
+      default: 'Orlando',
+    },
     weight: 9,
   },
-  {
-    group: 'contact',
-    label: 'company_country',
-    schema: createTextSettingSchema({ defaultValue: 'US' }),
+  company_country: {
+    schema: {
+      type: 'string',
+      default: 'US',
+    },
     weight: 10,
   },
-] as const satisfies SettingCreateDto[];
+} as const satisfies Record<keyof ContactSettings, SettingFieldDefinition>;
+
+export const DEFAULT_SETTING_SCHEMAS = {
+  chatbot_settings: chatbotSettingsSchema,
+  rag_settings: ragSettingsSchema,
+  contact: contactSettingsSchema,
+} as const;
+
+export const DEFAULT_SETTING_FIELDS = {
+  chatbot_settings: CHATBOT_SETTING_FIELDS,
+  rag_settings: RAG_SETTING_FIELDS,
+  contact: CONTACT_SETTING_FIELDS,
+} as const;
+
+const CHATBOT_SETTINGS = Object.entries(CHATBOT_SETTING_FIELDS).map(
+  ([label, definition]) => ({
+    group: 'chatbot_settings',
+    label,
+    ...definition,
+  }),
+) satisfies SettingCreateDto[];
+const RAG_SETTINGS = Object.entries(RAG_SETTING_FIELDS).map(
+  ([label, definition]) => ({
+    group: 'rag_settings',
+    label,
+    ...definition,
+  }),
+) satisfies SettingCreateDto[];
+const CONTACT_SETTINGS = Object.entries(CONTACT_SETTING_FIELDS).map(
+  ([label, definition]) => ({
+    group: 'contact',
+    label,
+    ...definition,
+  }),
+) satisfies SettingCreateDto[];
+
+export const DEFAULT_SETTINGS = [
+  ...CHATBOT_SETTINGS,
+  ...RAG_SETTINGS,
+  ...CONTACT_SETTINGS,
+] satisfies SettingCreateDto[];

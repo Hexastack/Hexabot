@@ -25,9 +25,3 @@ export interface ISettingAttributes {
 export interface ISettingStub extends IBaseSchema, ISettingAttributes {}
 
 export interface ISetting extends ISettingStub, IFormat<Format.BASIC> {}
-
-export interface ISettingCatalogGroup {
-  group: string;
-  schema: RJSFSchema;
-  values: Record<string, unknown>;
-}

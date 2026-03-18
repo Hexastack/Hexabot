@@ -30,7 +30,7 @@ export default abstract class ConversationalEventWrapper<
   },
   E,
   N extends ChannelName = ChannelName,
-  C extends ChannelHandler = ChannelHandler<N>,
+  C extends ChannelHandler<any, any> = ChannelHandler<N, any>,
   S = SubscriberChannelDict[N],
 > extends TriggerEventWrapper<Subscriber> {
   readonly triggerType = WorkflowType.conversational;
@@ -167,9 +167,9 @@ export default abstract class ConversationalEventWrapper<
         this as ConversationalEventWrapper<
           any,
           any,
-          ChannelName,
-          ChannelHandler<ChannelName>,
-          Record<string, any>
+          any,
+          ChannelHandler<any, any>,
+          any
         >,
       );
     }

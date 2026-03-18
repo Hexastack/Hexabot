@@ -6,13 +6,26 @@
 
 export * from './channels/console/index.channel';
 
-export * from './channels/console/settings';
+export {
+  CONSOLE_CHANNEL_NAME,
+  CONSOLE_CHANNEL_NAMESPACE,
+  consoleChannelSettingsSchema,
+} from './channels/console/settings';
+
+export type { ConsoleChannelSettings } from './channels/console/settings';
 
 export * from './channels/web/base-web-channel';
 
 export * from './channels/web/index.channel';
 
-export * from './channels/web/settings';
+export {
+  DEFAULT_ALLOWED_UPLOAD_TYPES,
+  WEB_CHANNEL_NAME,
+  WEB_CHANNEL_NAMESPACE,
+  webChannelSettingsSchema,
+} from './channels/web/settings';
+
+export type { WebChannelSettings } from './channels/web/settings';
 
 export * from './channels/web/types';
 
@@ -20,7 +33,13 @@ export * from './channels/web/wrapper';
 
 export * from './helpers/local-storage/index.helper';
 
-export * from './helpers/local-storage/settings';
+export {
+  LOCAL_STORAGE_HELPER_NAME,
+  LOCAL_STORAGE_HELPER_NAMESPACE,
+  localStorageHelperSettingsSchema,
+} from './helpers/local-storage/settings';
+
+export type { LocalStorageHelperSettings } from './helpers/local-storage/settings';
 
 export * from './actions/ai/model.binding';
 

@@ -7,6 +7,7 @@
 import path from 'path';
 
 import { Inject, OnModuleInit } from '@nestjs/common';
+import { z } from 'zod';
 
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
@@ -15,11 +16,21 @@ import { HyphenToUnderscore } from '@/utils/types/extension';
 import { HelperService } from '../helper.service';
 import { HelperName, HelperSetting, HelperType } from '../types';
 
-export default abstract class BaseHelper<N extends HelperName = HelperName>
+type HelperSettings<N extends HelperName> =
+  HyphenToUnderscore<N> extends keyof Settings
+    ? Settings[HyphenToUnderscore<N>]
+    : Record<string, unknown>;
+
+export default abstract class BaseHelper<
+    N extends HelperName = HelperName,
+    TSettings = HelperSettings<N>,
+  >
   extends Extension
   implements OnModuleInit
 {
   protected readonly settings: HelperSetting<N>[] = [];
+
+  protected readonly settingsSchema?: z.ZodType<TSettings>;
 
   protected abstract type: HelperType;
 
@@ -32,7 +43,13 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
   constructor(name: N) {
     super(name);
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.settings = require(path.join(this.getPath(), 'settings')).default;
+    const settingsModule = require(path.join(this.getPath(), 'settings')) as {
+      default: HelperSetting<N>[];
+      settingsSchema?: z.ZodType<TSettings>;
+    };
+
+    this.settings = settingsModule.default;
+    this.settingsSchema = settingsModule.settingsSchema;
   }
 
   async onModuleInit() {
@@ -59,10 +76,14 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
    *
    * @returns Helper's settings
    */
-  async getSettings<S extends string = HyphenToUnderscore<N>>() {
+  async getSettings(): Promise<TSettings> {
     const settings = await this.settingService.getSettings();
+    const rawSettings = settings[this.getNamespace() as keyof Settings];
 
-    // @ts-expect-error workaround typing
-    return settings[this.getNamespace() as keyof Settings] as Settings[S];
+    if (this.settingsSchema) {
+      return this.settingsSchema.parse(rawSettings);
+    }
+
+    return rawSettings as TSettings;
   }
 }

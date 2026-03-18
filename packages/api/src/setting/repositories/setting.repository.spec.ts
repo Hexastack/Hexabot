@@ -20,17 +20,8 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Setting, SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
-import { SettingType } from '../types';
+import { SettingSchema, SettingType } from '../types';
 import {
-  createAttachmentSettingSchema,
-  createCheckboxSettingSchema,
-  createMultipleAttachmentSettingSchema,
-  createMultipleTextSettingSchema,
-  createNumberSettingSchema,
-  createSecretSettingSchema,
-  createSelectSettingSchema,
-  createTextSettingSchema,
-  createTextareaSettingSchema,
   getSettingConfig,
   getSettingDefault,
 } from '../utils/setting-schema-definition.utils';
@@ -42,35 +33,61 @@ const toExpectedSetting = (fixture: SettingCreateDto) => ({
   value: getSettingDefault(fixture.schema),
   translatable: fixture.translatable ?? false,
 });
-const buildSchema = (type: SettingType, value: unknown) => {
+const buildSchema = (type: SettingType, value: unknown): SettingSchema => {
   switch (type) {
     case SettingType.text:
-      return createTextSettingSchema({ defaultValue: value as string });
+      return {
+        type: 'string',
+        default: value as string,
+      } satisfies SettingSchema;
     case SettingType.textarea:
-      return createTextareaSettingSchema({ defaultValue: value as string });
+      return {
+        type: 'string',
+        default: value as string,
+        'ui:widget': 'textarea',
+        'ui:options': { rows: 5 },
+      } satisfies SettingSchema;
     case SettingType.secret:
-      return createSecretSettingSchema({ defaultValue: value as string });
+      return {
+        type: 'string',
+        default: value as string,
+        'ui:widget': 'password',
+      } satisfies SettingSchema;
     case SettingType.multiple_text:
-      return createMultipleTextSettingSchema({
-        defaultValue: value as string[],
-      });
+      return {
+        type: 'array',
+        items: { type: 'string' },
+        default: value as string[],
+      } satisfies SettingSchema;
     case SettingType.checkbox:
-      return createCheckboxSettingSchema({ defaultValue: value as boolean });
+      return {
+        type: 'boolean',
+        default: value as boolean,
+      } satisfies SettingSchema;
     case SettingType.select:
-      return createSelectSettingSchema({
-        defaultValue: value as string,
-        options: ['option'] as const,
-      });
+      return {
+        type: 'string',
+        default: value as string,
+        enum: ['option'] as const,
+      } satisfies SettingSchema;
     case SettingType.number:
-      return createNumberSettingSchema({ defaultValue: value as number });
+      return {
+        type: 'number',
+        default: value as number,
+      } satisfies SettingSchema;
     case SettingType.attachment:
-      return createAttachmentSettingSchema({
-        defaultValue: value as string | null,
-      });
+      return {
+        type: value === null ? ['string', 'null'] : 'string',
+        default: value as string | null,
+        'ui:field': 'SettingAttachmentField',
+      } satisfies SettingSchema;
     case SettingType.multiple_attachment:
-      return createMultipleAttachmentSettingSchema({
-        defaultValue: value as string[],
-      });
+      return {
+        type: 'array',
+        items: { type: 'string' },
+        default: value as string[],
+        'ui:field': 'SettingMultipleAttachmentField',
+      } satisfies SettingSchema;
   }
 
   throw new Error(`Unsupported setting type: ${type}`);
@@ -189,7 +206,10 @@ describe('SettingRepository (TypeORM)', () => {
       const base = {
         group: `group_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        schema: createTextSettingSchema({ defaultValue: 'initial value' }),
+        schema: {
+          type: 'string',
+          default: 'initial value',
+        } satisfies SettingSchema,
         weight: 99,
       };
       const created = await settingRepository.create(base);
@@ -307,7 +327,10 @@ describe('SettingRepository (TypeORM)', () => {
       const base = {
         group: `group_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        schema: createTextSettingSchema({ defaultValue: 'valid' }),
+        schema: {
+          type: 'string',
+          default: 'valid',
+        } satisfies SettingSchema,
       };
       const created = await settingRepository.create(base);
       createdIds.push(created.id);
@@ -325,14 +348,18 @@ describe('SettingRepository (TypeORM)', () => {
 
       const emitSpy = jest.spyOn(eventEmitter!, 'emit');
       try {
-        const schema = createSelectSettingSchema({
-          defaultValue: 'en',
-          options: ['en'] as const,
-          entity: 'LocaleEntity',
-          valueKey: 'code',
-          labelKey: 'label',
-          enableEntityAddButton: true,
-        });
+        const schema = {
+          type: 'string',
+          default: 'en',
+          enum: ['en'] as const,
+          'ui:widget': 'AutoCompleteWidget',
+          'ui:options': {
+            entity: 'LocaleEntity',
+            valueKey: 'code',
+            labelKey: 'label',
+            enableEntityAddButton: true,
+          },
+        } satisfies SettingSchema;
         const databaseEntity = Object.assign(new SettingOrmEntity(), {
           group: 'chatbot_settings',
           label: 'locale',
@@ -386,7 +413,10 @@ describe('SettingRepository (TypeORM)', () => {
       const payloads = Array.from({ length: 2 }, () => ({
         group: `cleanup_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        schema: createTextSettingSchema({ defaultValue: 'to delete' }),
+        schema: {
+          type: 'string',
+          default: 'to delete',
+        } satisfies SettingSchema,
         weight: 5,
       }));
       const inserted = await settingRepository.createMany(payloads);

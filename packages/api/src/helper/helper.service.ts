@@ -31,7 +31,7 @@ export class HelperService {
    *
    * @param name - The helper to be registered.
    */
-  public register<H extends BaseHelper>(helper: H) {
+  public register<H extends BaseHelper<any, any>>(helper: H) {
     const helpers = this.registry.get(helper.getType()) as Map<string, H>;
     if (helpers.has(helper.getName())) {
       throw new InternalServerErrorException(
@@ -51,7 +51,10 @@ export class HelperService {
    * @returns - The helper
    */
   public get<T extends HelperType>(type: T, name: HelperName) {
-    const helpers = this.registry.get(type) as Map<string, BaseHelper>;
+    const helpers = this.registry.get(type) as Map<
+      string,
+      BaseHelper<any, any>
+    >;
 
     if (!helpers.has(name)) {
       throw new Error('Uknown type of helpers');
@@ -81,7 +84,7 @@ export class HelperService {
    *
    * @returns An array containing all the registered helpers.
    */
-  public getAll(): BaseHelper[] {
+  public getAll(): BaseHelper<any, any>[] {
     return Array.from(this.registry.values()) // Get all the inner maps
       .flatMap((innerMap) => Array.from(innerMap.values())); // Flatten and get the values from each inner map
   }

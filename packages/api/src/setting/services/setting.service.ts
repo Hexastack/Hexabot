@@ -27,11 +27,9 @@ import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeeder } from '../seeds/setting.seed';
 import { BUILTIN_SETTING_GROUPS } from '../utils/builtin-setting-groups';
+import { parseCsvString } from '../utils/setting-group-definition.utils';
 import { withSettingDefault } from '../utils/setting-schema-definition.utils';
 import {
-  SettingSchemaCatalogEntry,
-  buildSettingGroupJsonSchema,
-  buildSettingGroupValues,
   buildSettingGroupZodSchema,
   mergeSettingGroupSources,
 } from '../utils/setting-schema.utils';
@@ -118,40 +116,10 @@ export class SettingService extends BaseOrmService<
     );
   }
 
-  async getSchemaCatalog(): Promise<SettingSchemaCatalogEntry[]> {
-    const settings = await this.findAll({
-      order: { weight: 'ASC' },
-    });
-    const grouped = this.group(settings);
-    const groups = new Set([
-      ...Object.keys(BUILTIN_SETTING_GROUPS),
-      ...Object.keys(grouped),
-    ]);
-
-    return Array.from(groups)
-      .map((group) => this.buildSchemaCatalogEntry(group, grouped[group] ?? []))
-      .filter((entry): entry is SettingSchemaCatalogEntry => entry !== null)
-      .sort((left, right) => left.group.localeCompare(right.group));
-  }
-
-  async getSchemaGroup(group: string): Promise<SettingSchemaCatalogEntry> {
-    const settings = await this.find({
-      where: { group },
-      order: { weight: 'ASC' },
-    });
-    const catalogEntry = this.buildSchemaCatalogEntry(group, settings);
-
-    if (!catalogEntry) {
-      throw new NotFoundException(`Unable to find settings group "${group}"`);
-    }
-
-    return catalogEntry;
-  }
-
   async updateGroup(
     group: string,
     values: Record<string, unknown>,
-  ): Promise<SettingSchemaCatalogEntry> {
+  ): Promise<Setting[]> {
     const currentSettings = await this.find({
       where: { group },
       order: { weight: 'ASC' },
@@ -191,7 +159,10 @@ export class SettingService extends BaseOrmService<
 
     await this.clearCache();
 
-    return await this.getSchemaGroup(group);
+    return await this.find({
+      where: { group },
+      order: { weight: 'ASC' },
+    });
   }
 
   /**
@@ -236,9 +207,7 @@ export class SettingService extends BaseOrmService<
       where: { label: 'allowed_domains' },
     });
     const allowedDomains = settings.flatMap((setting) =>
-      (typeof setting.value === 'string' ? setting.value : '')
-        .split(',')
-        .filter((origin) => origin),
+      typeof setting.value === 'string' ? parseCsvString(setting.value) : [],
     );
     const uniqueOrigins = new Set([
       ...config.security.cors.allowOrigins,
@@ -264,29 +233,5 @@ export class SettingService extends BaseOrmService<
 
   private resolveGroupSources(group: string, settings: Setting[]) {
     return mergeSettingGroupSources(BUILTIN_SETTING_GROUPS[group], settings);
-  }
-
-  private buildSchemaCatalogEntry(
-    group: string,
-    settings: Setting[],
-  ): SettingSchemaCatalogEntry | null {
-    const sources = this.resolveGroupSources(group, settings);
-
-    if (sources.length === 0) {
-      return null;
-    }
-
-    const schema = buildSettingGroupJsonSchema(sources);
-    const propertyCount = Object.keys(schema.properties ?? {}).length;
-
-    if (propertyCount === 0) {
-      return null;
-    }
-
-    return {
-      group,
-      schema,
-      values: buildSettingGroupValues(sources),
-    };
   }
 }
