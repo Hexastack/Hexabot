@@ -38,7 +38,6 @@ export const Inbox = () => {
   return (
     <ChatProvider>
       <Stack
-        data-inbox-root
         direction="row"
         spacing={0}
         sx={{
@@ -48,7 +47,6 @@ export const Inbox = () => {
         }}
       >
         <Paper
-          data-inbox-sidebar="true"
           variant="outlined"
           sx={{
             minWidth: 375,

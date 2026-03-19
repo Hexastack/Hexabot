@@ -65,32 +65,29 @@ export const ConversationsList = (props: {
   return (
     <List
       onScroll={handleScroll}
-      data-inbox-conversations-list="true"
+      sx={{
+        height: "100%",
+        overflow: "auto",
+      }}
       subheader={
-        <ListSubheader component="div" data-inbox-list-subheader="true">
+        <ListSubheader component="div">
           <Title title={t(props.assignedTo)} Icon={Inbox} />
         </ListSubheader>
       }
     >
       {subscribers?.map((sub) => (
-        <ListItem
-          disablePadding
-          key={sub.id}
-          data-inbox-conversation-item-wrapper="true"
-        >
+        <ListItem disablePadding key={sub.id}>
           <ListItemButton
-            data-inbox-conversation-item="true"
             selected={chat.subscriber?.id === sub.id}
             onClick={() => {
               chat.setSubscriberId(sub.id);
               router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
             }}
           >
-            <ListItemAvatar data-inbox-conversation-avatar="true">
+            <ListItemAvatar>
               <SubscriberAvatars subscriber={sub} />
             </ListItemAvatar>
             <ListItemText
-              data-inbox-conversation-text="true"
               primary={sub.fullName}
               secondary={normalizeDate(i18n.language, sub.lastvisit)}
               primaryTypographyProps={{
@@ -100,11 +97,7 @@ export const ConversationsList = (props: {
                 variant: "caption",
               }}
             />
-            <Chip
-              data-inbox-channel-chip="true"
-              size="small"
-              label={sub.channel.name}
-            />
+            <Chip size="small" label={sub.channel.name} />
           </ListItemButton>
         </ListItem>
       ))}

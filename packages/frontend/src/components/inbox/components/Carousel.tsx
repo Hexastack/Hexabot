@@ -141,7 +141,6 @@ export const Carousel = (props: StdOutgoingListMessage) => {
   return (
     <Box
       className={CAROUSEL_WRAPPER_CLASSNAME}
-      data-inbox-carousel="true"
       sx={{
         width: CARD_WIDTH,
         maxWidth: "100%",

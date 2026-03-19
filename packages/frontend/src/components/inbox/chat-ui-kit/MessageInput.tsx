@@ -152,7 +152,6 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
 
     return (
       <Box
-        data-inbox-message-input="true"
         className={className}
         sx={{
           display: "flex",

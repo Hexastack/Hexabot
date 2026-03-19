@@ -11,7 +11,6 @@ import type {} from "@mui/x-data-grid/themeAugmentation";
 import { dataDisplayCustomizations } from "./customizations/dataDisplay";
 import { datagridCustomizations } from "./customizations/dataGrid";
 import { feedbackCustomizations } from "./customizations/feedback";
-import { inboxCustomizations } from "./customizations/inbox";
 import { inputsCustomizations } from "./customizations/inputs";
 import { labCustomizations } from "./customizations/lab";
 import { navigationCustomizations } from "./customizations/navigation";
@@ -31,7 +30,6 @@ export const theme = createTheme({
     ...inputsCustomizations,
     ...dataDisplayCustomizations,
     ...feedbackCustomizations,
-    ...inboxCustomizations,
     ...navigationCustomizations,
     ...surfacesCustomizations,
     ...datagridCustomizations,

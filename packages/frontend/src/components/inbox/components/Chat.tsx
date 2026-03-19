@@ -73,7 +73,6 @@ export function Chat() {
 
   return (
     <Box
-      data-inbox-chat="true"
       sx={{
         display: "flex",
         flexDirection: "column",
