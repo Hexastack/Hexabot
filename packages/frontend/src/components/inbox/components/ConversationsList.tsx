@@ -68,6 +68,7 @@ export const ConversationsList = (props: {
       sx={{
         height: "100%",
         overflow: "auto",
+        p: 2,
       }}
       subheader={
         <ListSubheader component="div">
@@ -76,7 +77,7 @@ export const ConversationsList = (props: {
       }
     >
       {subscribers?.map((sub) => (
-        <ListItem disablePadding key={sub.id}>
+        <ListItem disablePadding key={sub.id} sx={{ mt: 0.5 }}>
           <ListItemButton
             selected={chat.subscriber?.id === sub.id}
             onClick={() => {
