@@ -6,6 +6,7 @@
 
 import { Paper, styled, Tab, Tabs, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import debounce from "@mui/utils/debounce";
 import type { RJSFSchema } from "@rjsf/utils";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -202,6 +203,13 @@ export const Settings = () => {
       toast.success(t("message.success_save"));
     },
   });
+  const debouncedUpdateSetting = useMemo(
+    () =>
+      debounce((id: string, params: { schema: RJSFSchema }) => {
+        updateSetting({ id, params });
+      }, 300),
+    [updateSetting],
+  );
 
   useEffect(() => {
     const fallbackGroup = groups[0]?.group ?? DEFAULT_SETTINGS_GROUP;
@@ -227,14 +235,11 @@ export const Settings = () => {
     );
 
     if (setting?.id) {
-      updateSetting({
-        id: setting.id,
-        params: {
-          schema: {
-            ...setting.schema,
-            default: value,
-          } as RJSFSchema,
-        },
+      debouncedUpdateSetting(setting.id, {
+        schema: {
+          ...setting.schema,
+          default: value,
+        } as RJSFSchema,
       });
     }
   };
