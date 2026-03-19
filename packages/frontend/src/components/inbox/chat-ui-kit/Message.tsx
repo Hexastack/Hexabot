@@ -21,6 +21,9 @@ import {
   MessageType,
 } from "./types";
 
+const AVATAR_SLOT_WIDTH = 42;
+const AVATAR_SPACER_WIDTH = 50;
+
 function getComponentName(element: ReactElement): string {
   if (typeof element.type === "string") return element.type;
 
@@ -50,7 +53,9 @@ function normalizeDirection(
   return "outgoing";
 }
 
-function normalizePosition(position?: MessagePosition): Exclude<MessagePosition, 0 | 1 | 2 | 3> {
+function normalizePosition(
+  position?: MessagePosition,
+): Exclude<MessagePosition, 0 | 1 | 2 | 3> {
   if (position === 0 || position === "single") return "single";
   if (position === 1 || position === "first") return "first";
   if (position === 3 || position === "last") return "last";
@@ -58,7 +63,9 @@ function normalizePosition(position?: MessagePosition): Exclude<MessagePosition,
   return "normal";
 }
 
-function getAvatarAlign(avatarPosition?: AvatarPosition): "flex-start" | "center" | "flex-end" {
+function getAvatarAlign(
+  avatarPosition?: AvatarPosition,
+): "flex-start" | "center" | "flex-end" {
   if (!avatarPosition) return "flex-end";
 
   if (
@@ -85,8 +92,9 @@ function getAvatarAlign(avatarPosition?: AvatarPosition): "flex-start" | "center
 function getBorderRadius(
   direction: "incoming" | "outgoing",
   position: Exclude<MessagePosition, 0 | 1 | 2 | 3>,
+  radius: number,
 ): string {
-  const r = 12;
+  const r = radius;
 
   if (direction === "incoming") {
     if (position === "single") return `0 ${r}px ${r}px ${r}px`;
@@ -222,7 +230,7 @@ function MessageBase({
       : renderFallbackContent(displayMessageType, resolvedPayload);
   const incomingBackground =
     theme.palette.mode === "dark"
-      ? alpha(theme.palette.primary.light, 0.15)
+      ? alpha(theme.palette.text.primary, 0.14)
       : theme.palette.grey[100];
   const messageBackground =
     normalizedDirection === "outgoing"
@@ -232,7 +240,15 @@ function MessageBase({
     normalizedDirection === "outgoing"
       ? theme.palette.primary.contrastText
       : theme.palette.text.primary;
-  const borderRadius = getBorderRadius(normalizedDirection, normalizedPosition);
+  const baseBorderRadius =
+    typeof theme.shape.borderRadius === "number"
+      ? theme.shape.borderRadius + 4
+      : 12;
+  const borderRadius = getBorderRadius(
+    normalizedDirection,
+    normalizedPosition,
+    baseBorderRadius,
+  );
   const ariaLabel =
     sender && sentTime ? `${sender}: ${sentTime}` : sender || undefined;
 
@@ -246,15 +262,15 @@ function MessageBase({
         flexDirection: normalizedDirection === "outgoing" ? "row-reverse" : "row",
         alignItems: "flex-end",
         width: "fit-content",
-        maxWidth: "85%",
+        maxWidth: { xs: "92%", sm: "85%" },
         mt: 0.5,
         ...(normalizedDirection === "incoming"
           ? { mr: "auto" }
           : { ml: "auto" }),
         ...(avatarSpacer
           ? normalizedDirection === "incoming"
-            ? { ml: "50px" }
-            : { mr: "50px" }
+            ? { ml: `${AVATAR_SPACER_WIDTH}px` }
+            : { mr: `${AVATAR_SPACER_WIDTH}px` }
           : {}),
       }}
       {...rest}
@@ -263,7 +279,7 @@ function MessageBase({
         <Box
           component="div"
           sx={{
-            width: 42,
+            width: AVATAR_SLOT_WIDTH,
             display: "flex",
             justifyContent: getAvatarAlign(avatarPosition),
             ...(normalizedDirection === "incoming"
@@ -280,15 +296,14 @@ function MessageBase({
           sx={{
             bgcolor: messageBackground,
             color: messageColor,
-            px: 1.4,
-            py: 0.95,
+            px: 1.5,
+            py: 1,
             borderRadius,
             whiteSpace: "pre-wrap",
             overflowWrap: "anywhere",
             wordBreak: "break-word",
-            fontWeight: 400,
-            fontSize: "0.91em",
-            lineHeight: 1.35,
+            ...theme.typography.body2,
+            lineHeight: 1.4,
           }}
         >
           {content}

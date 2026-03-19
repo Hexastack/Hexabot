@@ -13,19 +13,23 @@ export function MessageFooter({
   sentTime = "",
   children,
   className,
+  sx,
   ...rest
 }: MessageFooterProps) {
   return (
     <Box
       component="div"
       className={className}
-      sx={{
-        display: "flex",
-        fontSize: "0.8em",
-        mt: 0.2,
-        mx: 0.2,
-        color: "text.secondary",
-      }}
+      sx={[
+        {
+          display: "flex",
+          typography: "caption",
+          mt: 0.5,
+          mx: 0.5,
+          color: "text.secondary",
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
       {...rest}
     >
       {typeof children !== "undefined" ? (
@@ -33,7 +37,7 @@ export function MessageFooter({
       ) : (
         <>
           <Box component="div">{sender}</Box>
-          <Box component="div" sx={{ ml: "auto", pl: 0.8 }}>
+          <Box component="div" sx={{ ml: "auto", pl: 1 }}>
             {sentTime}
           </Box>
         </>

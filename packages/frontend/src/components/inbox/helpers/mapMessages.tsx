@@ -4,14 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Chip, Tooltip } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import { Theme, alpha } from "@mui/material/styles";
+import Tooltip from "@mui/material/Tooltip";
 import DOMPurify from "dompurify";
 import { Menu, Reply } from "lucide-react";
 import { marked } from "marked";
 import React, { ReactNode } from "react";
 
-import { theme } from "@/layout/theme";
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
@@ -64,7 +66,7 @@ export function isSubsequent(
 /**
  * @description Converts markdown to safe HTML for rendering in chat messages
  */
-function formatMessageText(text: string): ReactNode {
+function formatMessageText(text: string, theme: Theme): ReactNode {
   try {
     const unsafeHtml = marked.parse(text, {
       gfm: true,
@@ -83,7 +85,7 @@ function formatMessageText(text: string): ReactNode {
         sx={{
           whiteSpace: "normal",
           "& p": {
-            margin: "0.35rem 0",
+            margin: theme.spacing(0.5, 0),
           },
           "& p:first-of-type": {
             marginTop: 0,
@@ -92,15 +94,18 @@ function formatMessageText(text: string): ReactNode {
             marginBottom: 0,
           },
           "& ul, & ol": {
-            margin: "0.35rem 0",
-            paddingLeft: "1.25rem",
+            margin: theme.spacing(0.5, 0),
+            paddingLeft: theme.spacing(2.5),
           },
           "& pre": {
-            margin: "0.35rem 0",
-            padding: "0.4rem 0.5rem",
-            borderRadius: "0.375rem",
+            margin: theme.spacing(0.5, 0),
+            padding: theme.spacing(0.5, 0.75),
+            borderRadius: theme.shape.borderRadius,
             overflowX: "auto",
-            background: "rgba(0, 0, 0, 0.08)",
+            backgroundColor: alpha(
+              theme.palette.text.primary,
+              theme.palette.mode === "dark" ? 0.2 : 0.08,
+            ),
           },
           "& code": {
             fontSize: "0.9em",
@@ -108,9 +113,9 @@ function formatMessageText(text: string): ReactNode {
               'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           },
           "& blockquote": {
-            margin: "0.35rem 0",
-            paddingLeft: "0.75rem",
-            borderLeft: "2px solid rgba(0, 0, 0, 0.25)",
+            margin: theme.spacing(0.5, 0),
+            paddingLeft: theme.spacing(1.5),
+            borderLeft: `2px solid ${theme.palette.divider}`,
           },
           "& a": {
             color: "inherit",
@@ -141,6 +146,7 @@ function formatMessageText(text: string): ReactNode {
  */
 export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
+  theme: Theme,
   formattedTimestamp?: string,
   normalizedTimestamp?: string,
 ): ReactNode[] {
@@ -172,13 +178,13 @@ export function getMessageContent(
             component="span"
             key={`timestamp-${keySuffix}`}
             sx={{
-              fontSize: "0.65rem",
-              marginTop: "6px",
+              fontSize: theme.typography.pxToRem(10),
+              marginTop: theme.spacing(0.75),
               userSelect: "none",
               float: messageEntity.recipient ? "right" : "left",
               color: messageEntity.recipient
-                ? "rgba(255, 255, 255, 0.7)"
-                : "rgba(0, 0, 0, 0.6)",
+                ? alpha(theme.palette.primary.contrastText, 0.75)
+                : alpha(theme.palette.text.primary, 0.65),
             }}
           >
             {formattedTimestamp}
@@ -199,7 +205,7 @@ export function getMessageContent(
   if ("text" in message) {
     content.push(
       <Message.CustomContent key={messageEntity.id}>
-        {formatMessageText(message.text)}
+        {formatMessageText(message.text, theme)}
         {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
@@ -210,35 +216,47 @@ export function getMessageContent(
 
   if ("buttons" in message) {
     chips = message.buttons;
-    chipsIcon = <Menu color={theme.palette.action.disabled} size={16} />;
+    chipsIcon = (
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", color: "text.disabled" }}
+      >
+        <Menu size={16} />
+      </Box>
+    );
   }
   if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
     chips = message.quickReplies as { title: string }[];
-    chipsIcon = <Reply color={theme.palette.action.disabled} size={16} />;
+    chipsIcon = (
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", color: "text.disabled" }}
+      >
+        <Reply size={16} />
+      </Box>
+    );
   }
 
   if (chips.length > 0) {
     content.push(
-      <Message.Footer
-        style={{ marginTop: "5px" }}
-        key={`chips-${messageEntity.id}`}
-      >
-        <Grid
-          container
-          justifyItems="center"
-          justifyContent="start"
+      <Message.Footer sx={{ mt: 0.75 }} key={`chips-${messageEntity.id}`}>
+        <Stack
+          direction="row"
+          spacing={0.75}
           alignItems="center"
-          gap="0.5rem"
+          useFlexGap
+          flexWrap="wrap"
         >
-          <Grid size="auto" height="fit-content" display="flex">
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center" }}
+          >
             {chipsIcon}
-          </Grid>
+          </Box>
           {chips.map((chip) => (
-            <Grid key={chip.title} size="auto">
-              <Chip label={chip.title} />
-            </Grid>
+            <Chip size="small" key={chip.title} label={chip.title} />
           ))}
-        </Grid>
+        </Stack>
       </Message.Footer>,
     );
   }

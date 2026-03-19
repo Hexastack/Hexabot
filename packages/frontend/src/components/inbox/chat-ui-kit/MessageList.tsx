@@ -6,6 +6,7 @@
 
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
+import { alpha } from "@mui/material/styles";
 import React, {
   forwardRef,
   useCallback,
@@ -200,7 +201,11 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "rgba(255, 255, 255, 0.35)",
+              bgcolor: (theme) =>
+                alpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === "dark" ? 0.55 : 0.65,
+                ),
               backdropFilter: "blur(1px)",
             }}
           >
@@ -219,7 +224,7 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
             px: 1.5,
             py: 0.5,
             overscrollBehaviorY: "none",
-            pb: typingIndicator ? "3.2rem" : 0.5,
+            pb: typingIndicator ? 6 : 0.5,
           }}
         >
           {children}

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SxProps, Theme } from "@mui/material/styles";
 import { MouseEvent, ReactNode } from "react";
 
 export type Size = "xs" | "sm" | "md" | "lg" | "fluid";
@@ -81,6 +82,7 @@ export interface MessageCustomContentProps
 export interface MessageFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   sender?: string;
   sentTime?: string;
+  sx?: SxProps<Theme>;
 }
 
 export interface MessageProps extends React.HTMLAttributes<HTMLElement> {

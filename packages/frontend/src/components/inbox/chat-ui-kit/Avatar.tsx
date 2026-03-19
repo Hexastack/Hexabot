@@ -6,7 +6,6 @@
 
 import MuiAvatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import { useTheme } from "@mui/material/styles";
 import React, { forwardRef } from "react";
 
 import { AvatarProps, Size, UserStatus } from "./types";
@@ -39,7 +38,6 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(function Avatar(
   },
   ref,
 ) {
-  const theme = useTheme();
   const side = size === "fluid" ? "100%" : SIZE_MAP[size];
   const statusSide =
     size === "xs" ? 6 : size === "sm" ? 9 : size === "lg" ? 15 : 12;
@@ -54,9 +52,9 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(function Avatar(
         height: side,
         borderRadius: "50%",
         flexShrink: 0,
-        outline: active
-          ? `2px solid ${theme.palette.primary.main}`
-          : "2px solid transparent",
+        outlineStyle: "solid",
+        outlineWidth: 2,
+        outlineColor: active ? "primary.main" : "transparent",
         outlineOffset: 1,
       }}
       {...rest}
@@ -82,7 +80,9 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(function Avatar(
                 height: statusSide,
                 borderRadius: "50%",
                 backgroundColor: STATUS_COLOR_MAP[status],
-                border: `2px solid ${theme.palette.background.paper}`,
+                border: 2,
+                borderStyle: "solid",
+                borderColor: "background.paper",
               }}
             />
           )}

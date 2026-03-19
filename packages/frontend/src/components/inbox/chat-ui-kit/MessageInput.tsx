@@ -152,15 +152,16 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
 
     return (
       <Box
+        data-inbox-message-input="true"
         className={className}
         sx={{
           display: "flex",
           flexDirection: "row",
           alignItems: "flex-end",
-          gap: 0.5,
-          px: 0.5,
-          py: 1.6,
-          boxShadow: "0px 4px 10px 10px rgba(0, 0, 0, 0.066)",
+          gap: 1,
+          px: 1,
+          py: 1,
+          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
           bgcolor: "background.paper",
           flexShrink: 0,
         }}
@@ -183,14 +184,14 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
             flexGrow: 1,
             bgcolor: disabled ? "action.disabledBackground" : "action.hover",
             border: (theme) => `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            px: 1.1,
+            borderRadius: 1.5,
+            px: 1.25,
             py: 0.75,
           }}
         >
           <Box
             sx={{
-              maxHeight: fancyScroll ? "5.4em" : "none",
+              maxHeight: fancyScroll ? 88 : "none",
               overflowY: "auto",
             }}
           >
@@ -215,8 +216,9 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
                 }
               }}
               sx={{
-                minHeight: "1.35em",
-                lineHeight: "1.35em",
+                typography: "body2",
+                minHeight: "1.4em",
+                lineHeight: 1.4,
                 outline: 0,
                 border: 0,
                 whiteSpace: "pre-wrap",

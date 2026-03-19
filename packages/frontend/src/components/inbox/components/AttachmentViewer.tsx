@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Typography } from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { Download } from "lucide-react";
 import { FC, useState } from "react";
 
@@ -32,15 +36,17 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (imageErrored || !url) {
-      return <p>{t("message.image_error")}</p>;
-    }
-    if (url)
       return (
-        <img
+        <Typography variant="caption" color="text.secondary">
+          {t("message.image_error")}
+        </Typography>
+      );
+    }
+    if (url) {
+      return (
+        <Box
+          component="img"
           onError={() => setImageErrored(true)}
-          width="auto"
-          height={200}
-          style={{ objectFit: "contain", cursor: "pointer", display: "block" }}
           alt={url}
           src={url}
           onClick={() =>
@@ -52,13 +58,27 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
               },
             )
           }
+          sx={{
+            width: "auto",
+            maxWidth: "100%",
+            height: 200,
+            objectFit: "contain",
+            cursor: "pointer",
+            display: "block",
+            borderRadius: 1,
+          }}
         />
       );
+    }
 
     return (
-      <>
-        An error has occured:<a href={url}>{url}</a>
-      </>
+      <Typography variant="caption" color="text.secondary">
+        An error has occurred:
+        {" "}
+        <Link href={url} target="_blank" rel="noreferrer">
+          {url}
+        </Link>
+      </Typography>
     );
   },
   [FileType.audio]: (props: AttachmentInterface) => {
@@ -66,26 +86,37 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (audioErrored || !props.url) {
-      return <p>{t("message.audio_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.audio_error")}
+        </Typography>
+      );
     }
 
     return (
-      <audio controls src={props.url} onError={() => setAudioErrored(true)} />
+      <Box
+        component="audio"
+        controls
+        src={props.url}
+        onError={() => setAudioErrored(true)}
+        sx={{ maxWidth: "100%" }}
+      />
     );
   },
   [FileType.file]: (props: AttachmentInterface) => {
     const { t } = useTranslate();
 
     if (!props.url) {
-      return <p>{t("message.file_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.file_error")}
+        </Typography>
+      );
     }
 
     return (
-      <Box>
-        <Typography
-          component="span"
-          mr={2}
-        >
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography component="span" variant="body2">
           {props.name}
         </Typography>
         <Button
@@ -96,7 +127,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
         >
           {t("button.download")}
         </Button>
-      </Box>
+      </Stack>
     );
   },
   [FileType.video]: ({ url }: AttachmentInterface) => {
@@ -104,16 +135,28 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (videoErrored) {
-      return <p>{t("message.video_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.video_error")}
+        </Typography>
+      );
     }
 
     return (
-      <video controls width="250">
+      <Box
+        component="video"
+        controls
+        sx={{ width: 250, maxWidth: "100%", borderRadius: 1 }}
+      >
         <source src={url} onError={() => setVideoErrored(true)} />
-      </video>
+      </Box>
     );
   },
-  [FileType.unknown]: ({ url }: AttachmentInterface) => <>Unknown Type:{url}</>,
+  [FileType.unknown]: ({ url }: AttachmentInterface) => (
+    <Typography variant="caption" color="text.secondary">
+      Unknown Type: {url}
+    </Typography>
+  ),
 };
 
 export const MessageAttachmentViewer = ({
@@ -125,7 +168,11 @@ export const MessageAttachmentViewer = ({
   const AttachmentViewerForType = componentMap[attachment.type];
 
   if (!metadata) {
-    return <>No attachment to display</>;
+    return (
+      <Typography variant="caption" color="text.secondary">
+        No attachment to display
+      </Typography>
+    );
   }
 
   return <AttachmentViewerForType url={metadata.url} name={metadata.name} />;
@@ -140,7 +187,11 @@ export const MessageAttachmentsViewer = (props: {
   // TODO: Implenent this
 
   if (!message.attachment) {
-    return <>No attachment to display</>;
+    return (
+      <Typography variant="caption" color="text.secondary">
+        No attachment to display
+      </Typography>
+    );
   }
 
   const attachments = Array.isArray(message.attachment)

@@ -68,9 +68,12 @@ export const ChatActions = () => {
                   <Avatar
                     alt={chatUser.firstName || ""}
                     src={getAvatarSrc(apiUrl, EntityType.USER, chatUser.id)}
-                    style={{ width: 24, height: 24 }}
+                    sx={{ width: 24, height: 24 }}
                   />
-                  <Typography style={{ textTransform: "capitalize" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ textTransform: "capitalize" }}
+                  >
                     {chatUser.firstName} {chatUser.lastName}
                   </Typography>
                 </Stack>
@@ -90,7 +93,11 @@ export const ChatActions = () => {
           })
         }
         color="default"
-        style={{ border: "text.primary" }}
+        sx={{
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1.5,
+        }}
       >
         <Hand size={18} />
       </IconButton>
