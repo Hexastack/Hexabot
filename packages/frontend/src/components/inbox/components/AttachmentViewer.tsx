@@ -6,7 +6,6 @@
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Download } from "lucide-react";
@@ -42,43 +41,32 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
         </Typography>
       );
     }
-    if (url) {
-      return (
-        <Box
-          component="img"
-          onError={() => setImageErrored(true)}
-          alt={url}
-          src={url}
-          onClick={() =>
-            dialogs.open(
-              AttachmentViewerFormDialog,
-              { defaultValues: { url } },
-              {
-                hasButtons: false,
-              },
-            )
-          }
-          sx={{
-            width: "auto",
-            maxWidth: "100%",
-            height: 200,
-            objectFit: "contain",
-            cursor: "pointer",
-            display: "block",
-            borderRadius: 1,
-          }}
-        />
-      );
-    }
 
     return (
-      <Typography variant="caption" color="text.secondary">
-        An error has occurred:
-        {" "}
-        <Link href={url} target="_blank" rel="noreferrer">
-          {url}
-        </Link>
-      </Typography>
+      <Box
+        component="img"
+        onError={() => setImageErrored(true)}
+        alt={t("label.image")}
+        src={url}
+        onClick={() =>
+          dialogs.open(
+            AttachmentViewerFormDialog,
+            { defaultValues: { url } },
+            {
+              hasButtons: false,
+            },
+          )
+        }
+        sx={{
+          width: "auto",
+          maxWidth: "100%",
+          height: 200,
+          objectFit: "contain",
+          cursor: "pointer",
+          display: "block",
+          borderRadius: 1,
+        }}
+      />
     );
   },
   [FileType.audio]: (props: AttachmentInterface) => {
@@ -152,11 +140,15 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
       </Box>
     );
   },
-  [FileType.unknown]: ({ url }: AttachmentInterface) => (
-    <Typography variant="caption" color="text.secondary">
-      Unknown Type: {url}
-    </Typography>
-  ),
+  [FileType.unknown]: ({ url }: AttachmentInterface) => {
+    const { t } = useTranslate();
+
+    return (
+      <Typography variant="caption" color="text.secondary">
+        {t("message.unknown")}: {url}
+      </Typography>
+    );
+  },
 };
 
 export const MessageAttachmentViewer = ({
@@ -164,13 +156,14 @@ export const MessageAttachmentViewer = ({
 }: {
   attachment: IAttachmentPayload;
 }) => {
+  const { t } = useTranslate();
   const metadata = useGetAttachmentMetadata(attachment.payload);
   const AttachmentViewerForType = componentMap[attachment.type];
 
   if (!metadata) {
     return (
       <Typography variant="caption" color="text.secondary">
-        No attachment to display
+        {t("message.attachment_not_found")}
       </Typography>
     );
   }
@@ -181,6 +174,7 @@ export const MessageAttachmentViewer = ({
 export const MessageAttachmentsViewer = (props: {
   message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
+  const { t } = useTranslate();
   const message = props.message;
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
@@ -189,7 +183,7 @@ export const MessageAttachmentsViewer = (props: {
   if (!message.attachment) {
     return (
       <Typography variant="caption" color="text.secondary">
-        No attachment to display
+        {t("message.attachment_not_found")}
       </Typography>
     );
   }

@@ -19,7 +19,7 @@ import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
 
 import { Chat } from "./components/Chat";
-import { SubscribersList } from "./components/ConversationsList";
+import { ConversationsList } from "./components/ConversationsList";
 import { ChatProvider } from "./hooks/ChatContext";
 import { AssignedTo } from "./types";
 
@@ -61,10 +61,7 @@ export const Inbox = () => {
         >
           <Stack spacing={2} sx={{ height: "100%" }}>
             <Stack spacing={1} sx={{ p: 2, pb: 1.5 }}>
-              <FilterTextfield
-                onChange={onSearch}
-                defaultValue={searchText}
-              />
+              <FilterTextfield onChange={onSearch} defaultValue={searchText} />
               <AutoCompleteEntitySelect<IChannel, "name">
                 searchFields={["name"]}
                 entity={EntityType.CHANNEL}
@@ -85,12 +82,14 @@ export const Inbox = () => {
                 label={t("label.assigned_to")}
                 select
               >
-                <MenuItem value={AssignedTo.ALL}>All</MenuItem>
-                <MenuItem value={AssignedTo.ME}>To Me</MenuItem>
-                <MenuItem value={AssignedTo.OTHERS}>To Others</MenuItem>
+                <MenuItem value={AssignedTo.ALL}>{t(AssignedTo.ALL)}</MenuItem>
+                <MenuItem value={AssignedTo.ME}>{t(AssignedTo.ME)}</MenuItem>
+                <MenuItem value={AssignedTo.OTHERS}>
+                  {t(AssignedTo.OTHERS)}
+                </MenuItem>
               </TextField>
             </Stack>
-            <SubscribersList
+            <ConversationsList
               channels={channels}
               searchPayload={searchPayload}
               assignedTo={assignment}

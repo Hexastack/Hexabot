@@ -9,6 +9,7 @@ import AvatarGroup from "@mui/material/AvatarGroup";
 import { FC } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ISubscriber } from "@/types/subscriber.types";
 
@@ -18,6 +19,7 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
   subscriber,
 }) => {
   const { apiUrl } = useConfig();
+  const { t } = useTranslate();
 
   return (
     <AvatarGroup
@@ -60,7 +62,7 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
       {subscriber.assignedTo && (
         <Avatar
           src={getAvatarSrc(apiUrl, EntityType.USER, subscriber.assignedTo)}
-          alt="Assigned Human Agent"
+          alt={t("label.assigned_to")}
         />
       )}
     </AvatarGroup>

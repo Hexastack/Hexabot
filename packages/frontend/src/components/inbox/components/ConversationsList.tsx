@@ -28,7 +28,7 @@ import { AssignedTo } from "../types";
 
 import { SubscriberAvatars } from "./SubscriberAvatars";
 
-export const SubscribersList = (props: {
+export const ConversationsList = (props: {
   channels: string[];
   searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
@@ -67,10 +67,7 @@ export const SubscribersList = (props: {
       onScroll={handleScroll}
       data-inbox-conversations-list="true"
       subheader={
-        <ListSubheader
-          component="div"
-          data-inbox-list-subheader="true"
-        >
+        <ListSubheader component="div" data-inbox-list-subheader="true">
           <Title title={t(props.assignedTo)} Icon={Inbox} />
         </ListSubheader>
       }

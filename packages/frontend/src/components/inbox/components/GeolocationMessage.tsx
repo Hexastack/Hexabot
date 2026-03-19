@@ -7,6 +7,7 @@
 import Box from "@mui/material/Box";
 import { useRef } from "react";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { StdIncomingLocationMessage } from "@/types/message.types";
 
 export interface GeolocationMessageProps {
@@ -17,9 +18,10 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   const embedWidth = 200;
   const embedHeight = 150;
   const iframeRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslate();
 
   if (!("coordinates" in message)) {
-    throw new Error("Unable to find coordinates");
+    throw new Error(t("message.unable_to_process_request"));
   }
 
   const { lat, lon } = message.coordinates || { lat: 0.0, lng: 0.0 };
@@ -40,7 +42,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
     >
       <Box
         component="iframe"
-        title="location-preview"
+        title={t("title.user_location")}
         loading="lazy"
         frameBorder="0"
         scrolling="no"
