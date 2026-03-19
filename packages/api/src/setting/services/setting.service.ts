@@ -5,7 +5,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
@@ -26,17 +26,8 @@ import {
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeeder } from '../seeds/setting.seed';
-import { SettingValue } from '../types';
-import { BUILTIN_SETTING_GROUPS } from '../utils/builtin-setting-groups';
 import { parseCsvString } from '../utils/setting-group-definition.utils';
-import {
-  getSettingDefault,
-  withSettingDefault,
-} from '../utils/setting-schema-definition.utils';
-import {
-  buildSettingGroupZodSchema,
-  mergeSettingGroupSources,
-} from '../utils/setting-schema.utils';
+import { getSettingDefault } from '../utils/setting-schema-definition.utils';
 
 @Injectable()
 export class SettingService extends BaseOrmService<
@@ -120,57 +111,6 @@ export class SettingService extends BaseOrmService<
     );
   }
 
-  async updateGroup(
-    group: string,
-    values: Record<string, unknown>,
-  ): Promise<Setting[]> {
-    const currentSettings = await this.find({
-      where: { group },
-      order: { weight: 'ASC' },
-    });
-    const sources = this.resolveGroupSources(group, currentSettings);
-
-    if (sources.length === 0) {
-      throw new NotFoundException(`Unable to find settings group "${group}"`);
-    }
-
-    const parsedValues = buildSettingGroupZodSchema(sources).parse(values);
-    const currentSettingsByLabel = new Map(
-      currentSettings.map((setting) => [setting.label, setting]),
-    );
-
-    for (const source of sources) {
-      if (!(source.label in parsedValues)) {
-        continue;
-      }
-
-      const value = parsedValues[source.label] as SettingValue;
-      const existingSetting = currentSettingsByLabel.get(source.label);
-
-      if (existingSetting?.id) {
-        await this.updateOne(existingSetting.id, {
-          schema: withSettingDefault(existingSetting.schema, value),
-        });
-      } else {
-        await this.create({
-          group: source.group,
-          subgroup: source.subgroup,
-          label: source.label,
-          schema: withSettingDefault(source.schema, value),
-          weight: source.weight,
-          translatable: source.translatable,
-        });
-      }
-    }
-
-    await this.clearCache();
-
-    return await this.find({
-      where: { group },
-      order: { weight: 'ASC' },
-    });
-  }
-
   /**
    * Retrieves the application configuration object.
    *
@@ -239,9 +179,5 @@ export class SettingService extends BaseOrmService<
     const settings = await this.findAll();
 
     return this.buildTree(settings);
-  }
-
-  private resolveGroupSources(group: string, settings: Setting[]) {
-    return mergeSettingGroupSources(BUILTIN_SETTING_GROUPS[group], settings);
   }
 }

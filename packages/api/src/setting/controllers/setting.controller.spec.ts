@@ -18,7 +18,6 @@ import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 import {
   getSettingConfig,
-  getSettingDefault,
   getSettingOptions,
   withSettingDefault,
 } from '../utils/setting-schema-definition.utils';
@@ -127,31 +126,6 @@ describe('SettingController', () => {
       } finally {
         assertValidValueSpy.mockRestore();
       }
-    });
-  });
-
-  describe('updateGroup', () => {
-    it('updates a schema-driven group payload', async () => {
-      jest.spyOn(settingService, 'updateGroup');
-      const result = await settingController.updateGroup('contact', {
-        values: {
-          company_name: 'Acme',
-        },
-      });
-
-      expect(settingService.updateGroup).toHaveBeenCalledWith('contact', {
-        company_name: 'Acme',
-      });
-      expect(
-        getSettingDefault(
-          result.find((setting) => setting.label === 'company_name')?.schema,
-        ),
-      ).toBe('Acme');
-      expect(
-        getSettingDefault(
-          result.find((setting) => setting.label === 'company_country')?.schema,
-        ),
-      ).toBe('US');
     });
   });
 });

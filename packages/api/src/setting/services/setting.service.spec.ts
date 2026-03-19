@@ -20,7 +20,6 @@ import { SettingValue } from '../types';
 import {
   cloneSettingSchema,
   getSettingConfig,
-  getSettingDefault,
   getSettingOptions,
   withSettingDefault,
 } from '../utils/setting-schema-definition.utils';
@@ -222,47 +221,6 @@ describe('SettingService', () => {
         where: { label: 'allowed_domains' },
       });
       expect(result).toEqual(['*', 'https://example.com']);
-    });
-  });
-
-  describe('updateGroup', () => {
-    it('should persist missing built-in settings when a schema group is updated', async () => {
-      const existingSetting = await settingService.findOne({
-        where: {
-          group: 'chatbot_settings',
-          label: 'default_nlu_helper',
-        },
-      });
-
-      expect(existingSetting).toBeNull();
-
-      const result = await settingService.updateGroup('chatbot_settings', {
-        default_nlu_helper: 'custom-nlu-helper',
-      });
-      const storedSetting = await settingService.findOne({
-        where: {
-          group: 'chatbot_settings',
-          label: 'default_nlu_helper',
-        },
-      });
-
-      expect(getSettingDefault(storedSetting?.schema)).toBe(
-        'custom-nlu-helper',
-      );
-      expect(
-        getSettingDefault(
-          result.find((setting) => setting.label === 'default_nlu_helper')
-            ?.schema,
-        ),
-      ).toBe('custom-nlu-helper');
-    });
-
-    it('should reject invalid values against the generated group schema', async () => {
-      await expect(
-        settingService.updateGroup('contact', {
-          company_name: 123,
-        }),
-      ).rejects.toThrow();
     });
   });
 });

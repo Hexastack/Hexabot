@@ -16,6 +16,7 @@ import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
 import { useTanstackMutation } from "@/hooks/crud/useTanstack";
+import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
@@ -207,6 +208,14 @@ export const Settings = () => {
       })),
     [groups, t],
   );
+  const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
+    onError: () => {
+      toast.error(t("message.internal_server_error"));
+    },
+    onSuccess: () => {
+      toast.success(t("message.success_save"));
+    },
+  });
   const { mutate: saveSettingsGroup, isPending: isSaving } =
     useTanstackMutation({
       mutationFn: ({
@@ -301,20 +310,6 @@ export const Settings = () => {
     setSelectedTab(nextSelectedGroup);
   }, [groups, routeGroup]);
 
-  const handleGroupFormDataChange = useCallback(
-    (group: string, nextFormData: Record<string, unknown>) => {
-      if (formDataByGroup[group] === nextFormData) {
-        return;
-      }
-
-      setFormDataByGroup((current) => ({
-        ...current,
-        [group]: nextFormData,
-      }));
-      setPendingSave({ group, values: nextFormData });
-    },
-    [formDataByGroup],
-  );
   const handleGroupVisibleErrorsChange = useCallback(
     (group: string, hasVisibleErrors: boolean) => {
       setVisibleErrorsByGroup((current) =>
@@ -378,9 +373,29 @@ export const Settings = () => {
                       <JsonSchemaForm
                         schema={group.schema}
                         formData={formData}
-                        onFormDataChange={(nextFormData) =>
-                          handleGroupFormDataChange(group.group, nextFormData)
-                        }
+                        onFormDataChange={(nextFormData, id) => {
+                          const updatedProperty = id
+                            ?.split(`${group.group}_`)
+                            .at(-1);
+
+                          if (updatedProperty) {
+                            const setting = settings
+                              .filter((s) => s.group === group.group)
+                              .find((s) => s.label === updatedProperty);
+
+                            if (setting?.id) {
+                              updateSetting({
+                                id: setting.id,
+                                params: {
+                                  schema: {
+                                    ...setting["schema"],
+                                    default: nextFormData[updatedProperty],
+                                  } as RJSFSchema,
+                                },
+                              });
+                            }
+                          }
+                        }}
                         onVisibleErrorsChange={(hasVisibleErrors) =>
                           handleGroupVisibleErrorsChange(
                             group.group,

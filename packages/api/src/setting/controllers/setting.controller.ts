@@ -13,7 +13,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   Setting,
   SettingDtoConfig,
-  SettingGroupUpdateDto,
   SettingUpdateDto,
 } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
@@ -46,25 +45,6 @@ export class SettingController extends BaseOrmController<
     options: FindManyOptions<SettingOrmEntity>,
   ) {
     return await this.settingService.find(options);
-  }
-
-  /**
-   * Updates an entire settings group from a schema-backed payload.
-   *
-   * @param group - The group identifier to update.
-   * @param settingGroupUpdateDto - The values to persist.
-   *
-   * @returns The refreshed settings of the group.
-   */
-  @Patch('group/:group')
-  async updateGroup(
-    @Param('group') group: string,
-    @Body() settingGroupUpdateDto: SettingGroupUpdateDto,
-  ) {
-    return await this.settingService.updateGroup(
-      group,
-      settingGroupUpdateDto.values,
-    );
   }
 
   /**
