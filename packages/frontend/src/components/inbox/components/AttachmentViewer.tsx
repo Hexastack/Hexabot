@@ -84,7 +84,6 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
       <Box>
         <Typography
           component="span"
-          className="cs-message__custom-content"
           mr={2}
         >
           {props.name}

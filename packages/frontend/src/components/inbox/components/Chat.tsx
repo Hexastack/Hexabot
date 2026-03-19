@@ -4,12 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Avatar as ChatAvatar,
-  Message,
-  MessageInput,
-  MessageList,
-} from "@chatscope/chat-ui-kit-react";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -25,6 +19,12 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
+import {
+  Avatar as ChatAvatar,
+  Message,
+  MessageInput,
+  MessageList,
+} from "../chat-ui-kit";
 import {
   getAvatarSrc,
   getMessageContent,
@@ -66,7 +66,14 @@ export function Chat() {
   }, 400);
 
   return (
-    <Box className="cs-chat-container">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        backgroundColor: "background.paper",
+      }}
+    >
       <Box px={2} py={1.5} sx={{ backgroundColor: "background.paper" }}>
         <Stack
           direction="row"
@@ -83,62 +90,65 @@ export function Chat() {
         </Stack>
       </Box>
       <Divider />
-      {messages?.length > 0 && (
-        <MessageList
-          loading={isFetching}
-          loadingMore={isFetching}
-          onYReachStart={handleLoadMore}
-          loadingMorePosition="top"
-          disableOnYReachWhenNoScroll={true}
-          scrollBehavior="auto"
-          autoScrollToBottom={true}
-          autoScrollToBottomOnMount={true}
-        >
-          {messages.map((message, i) => {
-            const position = getMessagePosition(
-              message,
-              messages[i - 1],
-              messages[i + 1],
-            );
+      <Box sx={{ flex: 1, minHeight: 0 }}>
+        {messages?.length > 0 && (
+          <MessageList
+            loading={isFetching}
+            loadingMore={isFetching}
+            onYReachStart={handleLoadMore}
+            loadingMorePosition="top"
+            disableOnYReachWhenNoScroll={true}
+            scrollBehavior="auto"
+            autoScrollToBottom={true}
+            autoScrollToBottomOnMount={true}
+          >
+            {messages.map((message, i) => {
+              const position = getMessagePosition(
+                message,
+                messages[i - 1],
+                messages[i + 1],
+              );
 
-            return (
-              <Message
-                key={message.id}
-                model={{
-                  direction: message.recipient ? "outgoing" : "incoming",
-                  position,
-                  sentTime: message.createdAt.toLocaleDateString(),
-                }}
-                avatarSpacer={position === "first" || position === "normal"}
-                // eslint-disable-next-line react/no-children-prop
-                children={[
-                  ...(position === "last" || position === "single"
-                    ? [
-                        <ChatAvatar
-                          key={message.id}
-                          title={`${subscriber.firstName} ${subscriber.lastName}`}
-                          src={getAvatarSrc(
-                            apiUrl,
-                            message.sender
-                              ? EntityType.SUBSCRIBER
-                              : EntityType.USER,
-                            (message.sender ? subscriber.id : message.sentBy) ||
-                              "",
-                          )}
-                        />,
-                      ]
-                    : []),
-                  ...getMessageContent(
-                    message,
-                    formatSmartDate(message.createdAt, i18n.language),
-                    normalizeDate(i18n.language, message.createdAt),
-                  ),
-                ]}
-              />
-            );
-          })}
-        </MessageList>
-      )}
+              return (
+                <Message
+                  key={message.id}
+                  model={{
+                    direction: message.recipient ? "outgoing" : "incoming",
+                    position,
+                    sentTime: message.createdAt.toLocaleDateString(),
+                  }}
+                  avatarSpacer={position === "first" || position === "normal"}
+                  // eslint-disable-next-line react/no-children-prop
+                  children={[
+                    ...(position === "last" || position === "single"
+                      ? [
+                          <ChatAvatar
+                            key={message.id}
+                            title={`${subscriber.firstName} ${subscriber.lastName}`}
+                            src={getAvatarSrc(
+                              apiUrl,
+                              message.sender
+                                ? EntityType.SUBSCRIBER
+                                : EntityType.USER,
+                              (message.sender
+                                ? subscriber.id
+                                : message.sentBy) || "",
+                            )}
+                          />,
+                        ]
+                      : []),
+                    ...getMessageContent(
+                      message,
+                      formatSmartDate(message.createdAt, i18n.language),
+                      normalizeDate(i18n.language, message.createdAt),
+                    ),
+                  ]}
+                />
+              );
+            })}
+          </MessageList>
+        )}
+      </Box>
       <MessageInput
         attachButton={false}
         placeholder={t("placeholder.type_message_here")}

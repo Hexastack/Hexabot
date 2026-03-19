@@ -4,8 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import { Chip, Tooltip } from "@mui/material";
+import { Box, Chip, Tooltip } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import DOMPurify from "dompurify";
 import { Menu, Reply } from "lucide-react";
@@ -18,6 +17,7 @@ import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
 import { buildURL } from "@/utils/URL";
 
+import { Message, MessageModel } from "../chat-ui-kit";
 import { MessageAttachmentsViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
@@ -75,15 +75,65 @@ function formatMessageText(text: string): ReactNode {
     );
 
     return (
-      <div
-        className="markdown-content"
+      <Box
+        component="div"
         dangerouslySetInnerHTML={{
           __html: safeHtml,
+        }}
+        sx={{
+          whiteSpace: "normal",
+          "& p": {
+            margin: "0.35rem 0",
+          },
+          "& p:first-of-type": {
+            marginTop: 0,
+          },
+          "& p:last-of-type": {
+            marginBottom: 0,
+          },
+          "& ul, & ol": {
+            margin: "0.35rem 0",
+            paddingLeft: "1.25rem",
+          },
+          "& pre": {
+            margin: "0.35rem 0",
+            padding: "0.4rem 0.5rem",
+            borderRadius: "0.375rem",
+            overflowX: "auto",
+            background: "rgba(0, 0, 0, 0.08)",
+          },
+          "& code": {
+            fontSize: "0.9em",
+            fontFamily:
+              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          },
+          "& blockquote": {
+            margin: "0.35rem 0",
+            paddingLeft: "0.75rem",
+            borderLeft: "2px solid rgba(0, 0, 0, 0.25)",
+          },
+          "& a": {
+            color: "inherit",
+            textDecoration: "underline",
+            wordBreak: "break-word",
+          },
+          "& a:hover": {
+            opacity: 0.8,
+          },
         }}
       />
     );
   } catch (_error) {
-    return <div className="markdown-content">{text}</div>;
+    return (
+      <Box
+        component="div"
+        sx={{
+          whiteSpace: "normal",
+        }}
+      >
+        {text}
+      </Box>
+    );
   }
 }
 /**
@@ -118,14 +168,21 @@ export function getMessageContent(
   const renderTimestamp = (keySuffix: string) =>
     formattedTimestamp
       ? wrapWithTooltip(
-          <span
+          <Box
+            component="span"
             key={`timestamp-${keySuffix}`}
-            className={`timestamp ${
-              messageEntity.recipient ? "timestamp-right" : "timestamp-left"
-            }`}
+            sx={{
+              fontSize: "0.65rem",
+              marginTop: "6px",
+              userSelect: "none",
+              float: messageEntity.recipient ? "right" : "left",
+              color: messageEntity.recipient
+                ? "rgba(255, 255, 255, 0.7)"
+                : "rgba(0, 0, 0, 0.6)",
+            }}
           >
             {formattedTimestamp}
-          </span>,
+          </Box>,
           `timestamp-${keySuffix}`,
         )
       : null;

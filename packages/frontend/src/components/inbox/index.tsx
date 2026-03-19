@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { MenuItem, Paper, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
