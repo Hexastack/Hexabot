@@ -6,18 +6,15 @@
 
 import { Paper, styled, Tab, Tabs, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import debounce from "@mui/utils/debounce";
 import type { RJSFSchema } from "@rjsf/utils";
 import { Settings as SettingsIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
-import { useTanstackMutation } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -175,7 +172,6 @@ const buildSettingFormGroups = (
 
 export const Settings = () => {
   const { t } = useTranslate();
-  const { apiClient } = useApiClient();
   const router = useAppRouter();
   const rawGroup = router.query.group;
   const routeGroup = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
@@ -183,16 +179,6 @@ export const Settings = () => {
   const [selectedTab, setSelectedTab] = useState(
     routeGroup || DEFAULT_SETTINGS_GROUP,
   );
-  const [formDataByGroup, setFormDataByGroup] = useState<
-    Record<string, Record<string, unknown>>
-  >({});
-  const [visibleErrorsByGroup, setVisibleErrorsByGroup] = useState<
-    Record<string, boolean>
-  >({});
-  const [pendingSave, setPendingSave] = useState<{
-    group: string;
-    values: Record<string, unknown>;
-  } | null>(null);
   const { data: settings = [], isLoading } = useFind({
     entity: EntityType.SETTING,
   });
@@ -216,89 +202,6 @@ export const Settings = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: saveSettingsGroup, isPending: isSaving } =
-    useTanstackMutation({
-      mutationFn: ({
-        group,
-        values,
-      }: {
-        group: string;
-        values: Record<string, unknown>;
-      }) => apiClient.updateSettingGroup<ISetting[]>(group, values),
-      onError: () => {
-        toast.error(t("message.internal_server_error"));
-      },
-      onSuccess: (updatedSettings) => {
-        const updatedGroup = updatedSettings[0]?.group;
-
-        toast.success(t("message.success_save"));
-
-        if (updatedGroup) {
-          setFormDataByGroup((current) => ({
-            ...current,
-            [updatedGroup]: buildSettingsGroupValues(updatedSettings),
-          }));
-        }
-      },
-    });
-  const debouncedSaveSettingsGroup = useMemo(
-    () =>
-      debounce((next: { group: string; values: Record<string, unknown> }) => {
-        saveSettingsGroup(next);
-      }, 300),
-    [saveSettingsGroup],
-  );
-
-  useEffect(() => {
-    if (groups.length === 0) return;
-
-    const nextFormData = Object.fromEntries(
-      groups.map((group) => [group.group, group.values]),
-    );
-
-    setFormDataByGroup((current) => {
-      const isSame =
-        Object.keys(nextFormData).length === Object.keys(current).length &&
-        Object.keys(nextFormData).every(
-          (key) => current[key] === nextFormData[key],
-        );
-
-      return isSame ? current : nextFormData;
-    });
-
-    setVisibleErrorsByGroup((current) => {
-      if (Object.keys(current).length === 0) return current;
-
-      return {};
-    });
-    setPendingSave(null);
-  }, [groups]);
-
-  useEffect(() => {
-    if (!pendingSave) return;
-    if (isSaving || visibleErrorsByGroup[pendingSave.group]) {
-      return;
-    }
-
-    const syncedValues = groups.find(
-      (group) => group.group === pendingSave.group,
-    )?.values;
-
-    if (syncedValues === pendingSave.values) {
-      setPendingSave(null);
-
-      return;
-    }
-
-    debouncedSaveSettingsGroup(pendingSave);
-    setPendingSave(null);
-  }, [
-    pendingSave,
-    isSaving,
-    visibleErrorsByGroup,
-    groups,
-    debouncedSaveSettingsGroup,
-  ]);
 
   useEffect(() => {
     const fallbackGroup = groups[0]?.group ?? DEFAULT_SETTINGS_GROUP;
@@ -310,22 +213,30 @@ export const Settings = () => {
     setSelectedTab(nextSelectedGroup);
   }, [groups, routeGroup]);
 
-  const handleGroupVisibleErrorsChange = useCallback(
-    (group: string, hasVisibleErrors: boolean) => {
-      setVisibleErrorsByGroup((current) =>
-        current[group] === hasVisibleErrors
-          ? current
-          : {
-              ...current,
-              [group]: hasVisibleErrors,
-            },
-      );
-    },
-    [],
-  );
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);
     router.push(`/${RouterType.SETTINGS}/groups/${newValue}`);
+  };
+  const handleSettingChange = (
+    group: string,
+    updatedProperty: string,
+    value: unknown,
+  ) => {
+    const setting = settings.find(
+      (s) => s.group === group && s.label === updatedProperty,
+    );
+
+    if (setting?.id) {
+      updateSetting({
+        id: setting.id,
+        params: {
+          schema: {
+            ...setting.schema,
+            default: value,
+          } as RJSFSchema,
+        },
+      });
+    }
   };
 
   return (
@@ -361,7 +272,7 @@ export const Settings = () => {
               </Tabs>
               <StyledPanel>
                 {localizedGroups.map((group) => {
-                  const formData = formDataByGroup[group.group] ?? group.values;
+                  const formData = group.values;
 
                   return (
                     <TabPanel
@@ -379,29 +290,13 @@ export const Settings = () => {
                             .at(-1);
 
                           if (updatedProperty) {
-                            const setting = settings
-                              .filter((s) => s.group === group.group)
-                              .find((s) => s.label === updatedProperty);
-
-                            if (setting?.id) {
-                              updateSetting({
-                                id: setting.id,
-                                params: {
-                                  schema: {
-                                    ...setting["schema"],
-                                    default: nextFormData[updatedProperty],
-                                  } as RJSFSchema,
-                                },
-                              });
-                            }
+                            handleSettingChange(
+                              group.group,
+                              updatedProperty,
+                              nextFormData[updatedProperty],
+                            );
                           }
                         }}
-                        onVisibleErrorsChange={(hasVisibleErrors) =>
-                          handleGroupVisibleErrorsChange(
-                            group.group,
-                            hasVisibleErrors,
-                          )
-                        }
                         validateOnMount
                         uiSchema={buildSettingsUiSchema(group.schema, formData)}
                         enableJsonataTextWidget={false}
