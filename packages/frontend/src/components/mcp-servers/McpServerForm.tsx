@@ -85,7 +85,10 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
           return t("message.url_is_required");
         }
 
-        return isAbsoluteUrl(normalized) || t("message.url_is_invalid");
+        return (
+          isAbsoluteUrl(normalized, { requireTld: false }) ||
+          t("message.url_is_invalid")
+        );
       },
     },
     command: {
