@@ -16,11 +16,11 @@ export const Title = (props: {
 }) => {
   return (
     <Grid container gap={1} alignContent="center">
-      <Grid sx={{ height: "24px", alignSelf: "center" }}>
+      <Grid sx={{ alignSelf: "center" }}>
         {props.Icon ? <props.Icon /> : null}
       </Grid>
       <Grid>
-        <Typography variant="h4" fontWeight={700} height="fit-content">
+        <Typography variant="h5" fontWeight={700} height="fit-content">
           {props.title}
           {props.chip ? ":" : ""}
         </Typography>

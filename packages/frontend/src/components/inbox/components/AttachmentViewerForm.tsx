@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import Box from "@mui/material/Box";
 import { FC, Fragment } from "react";
 
 import { ComponentFormProps } from "@/types/common/dialogs.types";
@@ -23,15 +24,16 @@ export const AttachmentViewerForm: FC<
 }) => {
   return (
     <Wrapper {...WrapperProps}>
-      <img
-        width="100%"
-        style={{
+      <Box
+        component="img"
+        alt={attachment?.url}
+        src={attachment?.url}
+        sx={{
+          width: "100%",
           cursor: "pointer",
           objectFit: "contain",
           maxHeight: "70vh",
         }}
-        alt={attachment?.url}
-        src={attachment?.url}
       />
     </Wrapper>
   );

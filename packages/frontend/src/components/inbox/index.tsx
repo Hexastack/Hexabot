@@ -4,9 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { MenuItem, Paper, TextField } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 import { useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -17,7 +19,7 @@ import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
 
 import { Chat } from "./components/Chat";
-import { SubscribersList } from "./components/ConversationsList";
+import { ConversationsList } from "./components/ConversationsList";
 import { ChatProvider } from "./hooks/ChatContext";
 import { AssignedTo } from "./types";
 
@@ -35,73 +37,67 @@ export const Inbox = () => {
 
   return (
     <ChatProvider>
-      <Grid
-        container
+      <Stack
+        direction="row"
         spacing={0}
-        wrap="nowrap"
         sx={{
           height: "calc(100vh - 64px)",
           maxHeight: "calc(100vh - 64px)",
+          minWidth: 0,
         }}
       >
-        <Grid width="100%" height="100%" flexDirection="row" display="flex">
-          <Paper
-            sx={{
-              minWidth: "375px",
-              height: "100%",
-              overflow: "hidden",
-              borderRadius: 0,
-            }}
-          >
-            <Grid gap={2} flexDirection="column" display="flex" height="100%">
-              <Grid
-                m={2}
-                mb={0}
-                gap={0.5}
-                flexDirection="column"
-                display="flex"
-              >
-                <FilterTextfield
-                  onChange={onSearch}
-                  defaultValue={searchText}
-                />
-                <AutoCompleteEntitySelect<IChannel, "name">
-                  searchFields={["name"]}
-                  entity={EntityType.CHANNEL}
-                  format={Format.BASIC}
-                  idKey="name"
-                  labelKey="name"
-                  multiple={true}
-                  onChange={(_e, selected, ..._) => {
-                    setChannels((selected || [])?.map(({ name }) => name));
-                  }}
-                  label={t("label.channel")}
-                  value={channels}
-                  limitTags={2}
-                />
-                <TextField
-                  onChange={(e) => setAssignment(e.target.value as AssignedTo)}
-                  label={t("label.assigned_to")}
-                  select
-                  defaultValue={AssignedTo.ALL}
-                >
-                  <MenuItem value={AssignedTo.ALL}>All</MenuItem>
-                  <MenuItem value={AssignedTo.ME}>To Me</MenuItem>
-                  <MenuItem value={AssignedTo.OTHERS}>To Others</MenuItem>
-                </TextField>
-              </Grid>
-              <SubscribersList
-                channels={channels}
-                searchPayload={searchPayload}
-                assignedTo={assignment}
+        <Paper
+          variant="outlined"
+          sx={{
+            minWidth: 375,
+            width: 390,
+            height: "100%",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Stack spacing={2} sx={{ height: "100%" }}>
+            <Stack spacing={1} sx={{ p: 2, pb: 1.5 }}>
+              <FilterTextfield onChange={onSearch} defaultValue={searchText} />
+              <AutoCompleteEntitySelect<IChannel, "name">
+                searchFields={["name"]}
+                entity={EntityType.CHANNEL}
+                format={Format.BASIC}
+                idKey="name"
+                labelKey="name"
+                multiple={true}
+                onChange={(_e, selected, ..._) => {
+                  setChannels((selected || [])?.map(({ name }) => name));
+                }}
+                label={t("label.channel")}
+                value={channels}
+                limitTags={2}
               />
-            </Grid>
-          </Paper>
-          <Grid flex="auto" height="100%" alignContent="center">
-            <Chat />
-          </Grid>
-        </Grid>
-      </Grid>
+              <TextField
+                value={assignment}
+                onChange={(e) => setAssignment(e.target.value as AssignedTo)}
+                label={t("label.assigned_to")}
+                select
+              >
+                <MenuItem value={AssignedTo.ALL}>{t(AssignedTo.ALL)}</MenuItem>
+                <MenuItem value={AssignedTo.ME}>{t(AssignedTo.ME)}</MenuItem>
+                <MenuItem value={AssignedTo.OTHERS}>
+                  {t(AssignedTo.OTHERS)}
+                </MenuItem>
+              </TextField>
+            </Stack>
+            <ConversationsList
+              channels={channels}
+              searchPayload={searchPayload}
+              assignedTo={assignment}
+            />
+          </Stack>
+        </Paper>
+        <Box sx={{ flex: 1, minWidth: 0, height: "100%" }}>
+          <Chat />
+        </Box>
+      </Stack>
     </ChatProvider>
   );
 };

@@ -4,8 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Chip, List, MenuItem, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Chip from "@mui/material/Chip";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import ListSubheader from "@mui/material/ListSubheader";
 import debounce from "@mui/utils/debounce";
 import { Inbox } from "lucide-react";
 import { UIEventHandler, useCallback, useEffect } from "react";
@@ -23,7 +28,7 @@ import { AssignedTo } from "../types";
 
 import { SubscriberAvatars } from "./SubscriberAvatars";
 
-export const SubscribersList = (props: {
+export const ConversationsList = (props: {
   channels: string[];
   searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
@@ -46,7 +51,7 @@ export const SubscribersList = (props: {
       chat.setSubscriberId(subscriber);
     }
   }, [subscriber]);
-  const handleScroll: UIEventHandler<HTMLDivElement> = useCallback(
+  const handleScroll: UIEventHandler<HTMLUListElement> = useCallback(
     (event) => {
       const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
 
@@ -60,48 +65,47 @@ export const SubscribersList = (props: {
   return (
     <List
       onScroll={handleScroll}
-      component="div"
       sx={{
-        display: "flex",
-        gap: 1,
         height: "100%",
         overflow: "auto",
-        p: 1.5,
-        pt: 0,
+        px: 1,
       }}
       subheader={
-        <Grid
+        <ListSubheader
+          component="div"
           sx={{
-            px: 1.5,
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-            bgcolor: "background.default",
-            borderRadius: "shape.borderRadius",
+            bgcolor: "background.paper",
           }}
         >
           <Title title={t(props.assignedTo)} Icon={Inbox} />
-        </Grid>
+        </ListSubheader>
       }
     >
       {subscribers?.map((sub) => (
-        <MenuItem
-          key={sub.id}
-          selected={chat.subscriber?.id === sub.id}
-          onClick={() => {
-            chat.setSubscriberId(sub.id);
-            router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
-          }}
-        >
-          <SubscriberAvatars subscriber={sub} />
-          <Grid textAlign="left" flex={1}>
-            <Typography variant="body2">{sub.fullName}</Typography>
-            <Typography variant="caption">
-              {normalizeDate(i18n.language, sub.lastvisit)}
-            </Typography>
-          </Grid>
-          <Chip size="medium" label={sub.channel.name} />
-        </MenuItem>
+        <ListItem disablePadding key={sub.id} sx={{ mt: 0.5 }}>
+          <ListItemButton
+            selected={chat.subscriber?.id === sub.id}
+            onClick={() => {
+              chat.setSubscriberId(sub.id);
+              router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
+            }}
+          >
+            <ListItemAvatar>
+              <SubscriberAvatars subscriber={sub} />
+            </ListItemAvatar>
+            <ListItemText
+              primary={sub.fullName}
+              secondary={normalizeDate(i18n.language, sub.lastvisit)}
+              primaryTypographyProps={{
+                variant: "body2",
+              }}
+              secondaryTypographyProps={{
+                variant: "caption",
+              }}
+            />
+            <Chip size="small" label={sub.channel.name} />
+          </ListItemButton>
+        </ListItem>
       ))}
     </List>
   );

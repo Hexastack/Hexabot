@@ -4,20 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import { Chip, Tooltip } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import { Theme, alpha } from "@mui/material/styles";
+import Tooltip from "@mui/material/Tooltip";
 import DOMPurify from "dompurify";
 import { Menu, Reply } from "lucide-react";
 import { marked } from "marked";
 import React, { ReactNode } from "react";
 
-import { theme } from "@/layout/theme";
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
 import { buildURL } from "@/utils/URL";
 
+import { Message, MessageModel } from "../chat-ui-kit";
 import { MessageAttachmentsViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
@@ -64,7 +66,7 @@ export function isSubsequent(
 /**
  * @description Converts markdown to safe HTML for rendering in chat messages
  */
-function formatMessageText(text: string): ReactNode {
+function formatMessageText(text: string, theme: Theme): ReactNode {
   try {
     const unsafeHtml = marked.parse(text, {
       gfm: true,
@@ -75,15 +77,68 @@ function formatMessageText(text: string): ReactNode {
     );
 
     return (
-      <div
-        className="markdown-content"
+      <Box
+        component="div"
         dangerouslySetInnerHTML={{
           __html: safeHtml,
+        }}
+        sx={{
+          whiteSpace: "normal",
+          "& p": {
+            margin: theme.spacing(0.5, 0),
+          },
+          "& p:first-of-type": {
+            marginTop: 0,
+          },
+          "& p:last-of-type": {
+            marginBottom: 0,
+          },
+          "& ul, & ol": {
+            margin: theme.spacing(0.5, 0),
+            paddingLeft: theme.spacing(2.5),
+          },
+          "& pre": {
+            margin: theme.spacing(0.5, 0),
+            padding: theme.spacing(0.5, 0.75),
+            borderRadius: theme.shape.borderRadius,
+            overflowX: "auto",
+            backgroundColor: alpha(
+              theme.palette.text.primary,
+              theme.palette.mode === "dark" ? 0.2 : 0.08,
+            ),
+          },
+          "& code": {
+            fontSize: "0.9em",
+            fontFamily:
+              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          },
+          "& blockquote": {
+            margin: theme.spacing(0.5, 0),
+            paddingLeft: theme.spacing(1.5),
+            borderLeft: `2px solid ${theme.palette.divider}`,
+          },
+          "& a": {
+            color: "inherit",
+            textDecoration: "underline",
+            wordBreak: "break-word",
+          },
+          "& a:hover": {
+            opacity: 0.8,
+          },
         }}
       />
     );
   } catch (_error) {
-    return <div className="markdown-content">{text}</div>;
+    return (
+      <Box
+        component="div"
+        sx={{
+          whiteSpace: "normal",
+        }}
+      >
+        {text}
+      </Box>
+    );
   }
 }
 /**
@@ -91,12 +146,18 @@ function formatMessageText(text: string): ReactNode {
  */
 export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
+  theme: Theme,
   formattedTimestamp?: string,
   normalizedTimestamp?: string,
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
-
+  const outgoingTimestampColor = theme.vars
+    ? `rgba(${theme.vars.palette.primary.contrastTextChannel} / 0.75)`
+    : alpha(theme.palette.primary.contrastText, 0.75);
+  const incomingTimestampColor = theme.vars
+    ? `rgba(${theme.vars.palette.text.primaryChannel} / 0.65)`
+    : alpha(theme.palette.text.primary, 0.65);
   const wrapWithTooltip = (
     child: React.ReactElement,
     key: string,
@@ -118,14 +179,21 @@ export function getMessageContent(
   const renderTimestamp = (keySuffix: string) =>
     formattedTimestamp
       ? wrapWithTooltip(
-          <span
+          <Box
+            component="span"
             key={`timestamp-${keySuffix}`}
-            className={`timestamp ${
-              messageEntity.recipient ? "timestamp-right" : "timestamp-left"
-            }`}
+            sx={{
+              fontSize: theme.typography.pxToRem(10),
+              marginTop: theme.spacing(0.75),
+              userSelect: "none",
+              float: messageEntity.recipient ? "right" : "left",
+              color: messageEntity.recipient
+                ? outgoingTimestampColor
+                : incomingTimestampColor,
+            }}
           >
             {formattedTimestamp}
-          </span>,
+          </Box>,
           `timestamp-${keySuffix}`,
         )
       : null;
@@ -142,7 +210,7 @@ export function getMessageContent(
   if ("text" in message) {
     content.push(
       <Message.CustomContent key={messageEntity.id}>
-        {formatMessageText(message.text)}
+        {formatMessageText(message.text, theme)}
         {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
@@ -153,35 +221,47 @@ export function getMessageContent(
 
   if ("buttons" in message) {
     chips = message.buttons;
-    chipsIcon = <Menu color={theme.palette.action.disabled} size={16} />;
+    chipsIcon = (
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", color: "text.disabled" }}
+      >
+        <Menu size={16} />
+      </Box>
+    );
   }
   if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
     chips = message.quickReplies as { title: string }[];
-    chipsIcon = <Reply color={theme.palette.action.disabled} size={16} />;
+    chipsIcon = (
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", color: "text.disabled" }}
+      >
+        <Reply size={16} />
+      </Box>
+    );
   }
 
   if (chips.length > 0) {
     content.push(
-      <Message.Footer
-        style={{ marginTop: "5px" }}
-        key={`chips-${messageEntity.id}`}
-      >
-        <Grid
-          container
-          justifyItems="center"
-          justifyContent="start"
+      <Message.Footer sx={{ mt: 0.75 }} key={`chips-${messageEntity.id}`}>
+        <Stack
+          direction="row"
+          spacing={0.75}
           alignItems="center"
-          gap="0.5rem"
+          useFlexGap
+          flexWrap="wrap"
         >
-          <Grid size="auto" height="fit-content" display="flex">
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center" }}
+          >
             {chipsIcon}
-          </Grid>
+          </Box>
           {chips.map((chip) => (
-            <Grid key={chip.title} size="auto">
-              <Chip label={chip.title} />
-            </Grid>
+            <Chip size="small" key={chip.title} label={chip.title} />
           ))}
-        </Grid>
+        </Stack>
       </Message.Footer>,
     );
   }

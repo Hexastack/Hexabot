@@ -4,7 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Typography } from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { Download } from "lucide-react";
 import { FC, useState } from "react";
 
@@ -32,33 +35,38 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (imageErrored || !url) {
-      return <p>{t("message.image_error")}</p>;
-    }
-    if (url)
       return (
-        <img
-          onError={() => setImageErrored(true)}
-          width="auto"
-          height={200}
-          style={{ objectFit: "contain", cursor: "pointer", display: "block" }}
-          alt={url}
-          src={url}
-          onClick={() =>
-            dialogs.open(
-              AttachmentViewerFormDialog,
-              { defaultValues: { url } },
-              {
-                hasButtons: false,
-              },
-            )
-          }
-        />
+        <Typography variant="caption" color="text.secondary">
+          {t("message.image_error")}
+        </Typography>
       );
+    }
 
     return (
-      <>
-        An error has occured:<a href={url}>{url}</a>
-      </>
+      <Box
+        component="img"
+        onError={() => setImageErrored(true)}
+        alt={t("label.image")}
+        src={url}
+        onClick={() =>
+          dialogs.open(
+            AttachmentViewerFormDialog,
+            { defaultValues: { url } },
+            {
+              hasButtons: false,
+            },
+          )
+        }
+        sx={{
+          width: "auto",
+          maxWidth: "100%",
+          height: 200,
+          objectFit: "contain",
+          cursor: "pointer",
+          display: "block",
+          borderRadius: 1,
+        }}
+      />
     );
   },
   [FileType.audio]: (props: AttachmentInterface) => {
@@ -66,27 +74,37 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (audioErrored || !props.url) {
-      return <p>{t("message.audio_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.audio_error")}
+        </Typography>
+      );
     }
 
     return (
-      <audio controls src={props.url} onError={() => setAudioErrored(true)} />
+      <Box
+        component="audio"
+        controls
+        src={props.url}
+        onError={() => setAudioErrored(true)}
+        sx={{ maxWidth: "100%" }}
+      />
     );
   },
   [FileType.file]: (props: AttachmentInterface) => {
     const { t } = useTranslate();
 
     if (!props.url) {
-      return <p>{t("message.file_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.file_error")}
+        </Typography>
+      );
     }
 
     return (
-      <Box>
-        <Typography
-          component="span"
-          className="cs-message__custom-content"
-          mr={2}
-        >
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography component="span" variant="body2">
           {props.name}
         </Typography>
         <Button
@@ -97,7 +115,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
         >
           {t("button.download")}
         </Button>
-      </Box>
+      </Stack>
     );
   },
   [FileType.video]: ({ url }: AttachmentInterface) => {
@@ -105,16 +123,32 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     if (videoErrored) {
-      return <p>{t("message.video_error")}</p>;
+      return (
+        <Typography variant="caption" color="text.secondary">
+          {t("message.video_error")}
+        </Typography>
+      );
     }
 
     return (
-      <video controls width="250">
+      <Box
+        component="video"
+        controls
+        sx={{ width: 250, maxWidth: "100%", borderRadius: 1 }}
+      >
         <source src={url} onError={() => setVideoErrored(true)} />
-      </video>
+      </Box>
     );
   },
-  [FileType.unknown]: ({ url }: AttachmentInterface) => <>Unknown Type:{url}</>,
+  [FileType.unknown]: ({ url }: AttachmentInterface) => {
+    const { t } = useTranslate();
+
+    return (
+      <Typography variant="caption" color="text.secondary">
+        {t("message.unknown")}: {url}
+      </Typography>
+    );
+  },
 };
 
 export const MessageAttachmentViewer = ({
@@ -122,11 +156,16 @@ export const MessageAttachmentViewer = ({
 }: {
   attachment: IAttachmentPayload;
 }) => {
+  const { t } = useTranslate();
   const metadata = useGetAttachmentMetadata(attachment.payload);
   const AttachmentViewerForType = componentMap[attachment.type];
 
   if (!metadata) {
-    return <>No attachment to display</>;
+    return (
+      <Typography variant="caption" color="text.secondary">
+        {t("message.attachment_not_found")}
+      </Typography>
+    );
   }
 
   return <AttachmentViewerForType url={metadata.url} name={metadata.name} />;
@@ -135,13 +174,18 @@ export const MessageAttachmentViewer = ({
 export const MessageAttachmentsViewer = (props: {
   message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
+  const { t } = useTranslate();
   const message = props.message;
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
   // TODO: Implenent this
 
   if (!message.attachment) {
-    return <>No attachment to display</>;
+    return (
+      <Typography variant="caption" color="text.secondary">
+        {t("message.attachment_not_found")}
+      </Typography>
+    );
   }
 
   const attachments = Array.isArray(message.attachment)

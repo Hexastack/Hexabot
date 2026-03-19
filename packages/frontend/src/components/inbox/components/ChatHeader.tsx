@@ -24,10 +24,10 @@ export const ChatHeader = () => {
       flexGrow={1}
       width={240}
     >
-      <Typography fontSize="1.17em" fontWeight={700} color="text.primary">
+      <Typography variant="subtitle1" fontWeight={700} color="text.primary">
         {subscriber?.fullName}:
       </Typography>
-      <Stack direction="row" spacing={0.5} flexWrap="wrap">
+      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
         {(subscriber?.labels || []).map((label) => (
           <ChipEntity
             id={label}

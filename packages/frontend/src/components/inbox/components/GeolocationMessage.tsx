@@ -4,8 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import Box from "@mui/material/Box";
 import { useRef } from "react";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { StdIncomingLocationMessage } from "@/types/message.types";
 
 export interface GeolocationMessageProps {
@@ -13,10 +15,13 @@ export interface GeolocationMessageProps {
 }
 
 const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
+  const embedWidth = 200;
+  const embedHeight = 150;
   const iframeRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslate();
 
   if (!("coordinates" in message)) {
-    throw new Error("Unable to find coordinates");
+    throw new Error(t("message.unable_to_process_request"));
   }
 
   const { lat, lon } = message.coordinates || { lat: 0.0, lng: 0.0 };
@@ -25,27 +30,35 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   },${lat - 0.1},${lon + 0.1},${lat + 0.1}&layer=mapnik&marker=${lat},${lon}`;
 
   return (
-    <div
-      style={{
-        borderRadius: "0.5rem",
-        width: "200px",
-      }}
+    <Box
       ref={iframeRef}
+      sx={{
+        width: embedWidth,
+        overflow: "hidden",
+        borderRadius: 1.5,
+        border: 1,
+        borderColor: "divider",
+      }}
     >
-      <iframe
-        style={{
-          width: "200px",
-          height: "150px",
-          borderRadius: "0.5rem",
-        }}
+      <Box
+        component="iframe"
+        title={t("title.user_location")}
         loading="lazy"
         frameBorder="0"
         scrolling="no"
         marginHeight={0}
         marginWidth={0}
         src={openStreetMapUrl}
+        sx={{
+          display: "block",
+          width: embedWidth,
+          height: embedHeight,
+          border: 0,
+          borderRadius: 1.5,
+          backgroundColor: "background.default",
+        }}
       />
-    </div>
+    </Box>
   );
 };
 

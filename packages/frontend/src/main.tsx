@@ -27,7 +27,6 @@ import { ApiClientProvider } from "./providers/ApiClientProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 import { PermissionProvider } from "./providers/PermissionProvider";
 
-import "@/components/inbox/inbox.css";
 import "@/components/visual-editor/v4/components/yaml-editor/styles/yaml-editor.css";
 import "@/i18n/config";
 import "@/styles/globals.css";

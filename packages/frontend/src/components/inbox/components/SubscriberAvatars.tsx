@@ -4,45 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Avatar, AvatarGroup, styled } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
+import AvatarGroup from "@mui/material/AvatarGroup";
 import { FC } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ISubscriber } from "@/types/subscriber.types";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 
-const AvatarItem = styled(Avatar)(() => ({
-  transform: "scale(0.8)",
-  opacity: 0.7,
-  transition: "transform 0.2s ease, opacity 0.2s ease",
-  cursor: "pointer",
-
-  "&.firstAvatar, &.secondAvatar:hover": {
-    transform: "scale(1)",
-    opacity: 1,
-  },
-
-  "&.secondAvatar": {
-    position: "relative",
-    right: 4,
-  },
-
-  "&.secondAvatar:hover": {
-    zIndex: 2,
-  },
-
-  "&.secondAvatar:hover ~ .firstAvatar": {
-    transform: "scale(0.8)",
-    opacity: 0.7,
-  },
-}));
-
 export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
   subscriber,
 }) => {
   const { apiUrl } = useConfig();
+  const { t } = useTranslate();
 
   return (
     <AvatarGroup
@@ -50,18 +27,42 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
       sx={{
         width: 90,
         justifyContent: "center",
+        "& .MuiAvatar-root": {
+          width: 34,
+          height: 34,
+          fontSize: "0.875rem",
+          transition: (theme) =>
+            theme.transitions.create(["transform", "opacity"], {
+              duration: theme.transitions.duration.shortest,
+            }),
+        },
+        "& .MuiAvatar-root:first-of-type": {
+          transform: "scale(1)",
+          opacity: 1,
+        },
+        "& .MuiAvatar-root:last-of-type": {
+          transform: "scale(0.88)",
+          opacity: 0.7,
+        },
+        "&:hover .MuiAvatar-root:last-of-type": {
+          transform: "scale(1)",
+          opacity: 1,
+          zIndex: 2,
+        },
+        "&:hover .MuiAvatar-root:first-of-type": {
+          transform: "scale(0.88)",
+          opacity: 0.7,
+        },
       }}
     >
-      <AvatarItem
+      <Avatar
         src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
         alt={subscriber.fullName}
-        className="firstAvatar"
       />
       {subscriber.assignedTo && (
-        <AvatarItem
+        <Avatar
           src={getAvatarSrc(apiUrl, EntityType.USER, subscriber.assignedTo)}
-          alt="Assigned Human Agent"
-          className="secondAvatar"
+          alt={t("label.assigned_to")}
         />
       )}
     </AvatarGroup>
