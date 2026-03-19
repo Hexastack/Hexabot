@@ -22,10 +22,10 @@ describe("isAbsoluteUrl", () => {
   it("rejects local hosts when requireTld is enabled", () => {
     expect(
       isAbsoluteUrl("http://127.0.0.1:8000/mcp", { requireTld: true }),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       isAbsoluteUrl("http://localhost:8000/mcp", { requireTld: true }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("rejects unsupported protocols", () => {
