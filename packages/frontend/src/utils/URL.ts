@@ -24,15 +24,34 @@ export const buildURL = (baseUrl: string, relativePath: string): string => {
   }
 };
 
-export const isAbsoluteUrl = (value: string = ""): boolean => {
+type AbsoluteUrlOptions = {
+  requireTld?: boolean;
+};
+
+export const isAbsoluteUrl = (
+  value: string = "",
+  options: AbsoluteUrlOptions = {},
+): boolean => {
+  const { requireTld = false } = options;
+
   try {
     const url = new URL(value);
+    const hasValidProtocol = url.protocol === "http:" || url.protocol === "https:";
+    const hasMatchingProtocolPrefix =
+      (url.href.startsWith("http://") && value.startsWith("http://")) ||
+      (url.href.startsWith("https://") && value.startsWith("https://"));
+
+    if (!hasValidProtocol || !hasMatchingProtocolPrefix) {
+      return false;
+    }
+
+    if (!requireTld) {
+      return Boolean(url.hostname);
+    }
+
     const hostnameParts = url.hostname.split(".");
 
     return (
-      (url.protocol === "http:" || url.protocol === "https:") &&
-      ((url.href.startsWith("http://") && value.startsWith("http://")) ||
-        (url.href.startsWith("https://") && value.startsWith("https://"))) &&
       hostnameParts.length > 1 &&
       hostnameParts[hostnameParts.length - 1].length > 1
     );
