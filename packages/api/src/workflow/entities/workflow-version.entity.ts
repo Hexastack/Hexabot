@@ -126,10 +126,18 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
     }
 
     const manager = WorkflowVersionOrmEntity.getEntityManager();
-    const workflow = manager.create(WorkflowOrmEntity, {
-      id: workflowId,
-      currentVersion: { id: this.id },
+    const workflowRepository = manager.getRepository(WorkflowOrmEntity);
+    const workflow = await workflowRepository.findOne({
+      where: { id: workflowId },
     });
-    await manager.save(WorkflowOrmEntity, workflow);
+
+    if (!workflow) {
+      return;
+    }
+
+    workflow.currentVersion = manager.create(WorkflowVersionOrmEntity, {
+      id: this.id,
+    });
+    await workflowRepository.save(workflow);
   }
 }
