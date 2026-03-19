@@ -68,10 +68,15 @@ export const ConversationsList = (props: {
       sx={{
         height: "100%",
         overflow: "auto",
-        p: 2,
+        px: 1,
       }}
       subheader={
-        <ListSubheader component="div">
+        <ListSubheader
+          component="div"
+          sx={{
+            bgcolor: "background.paper",
+          }}
+        >
           <Title title={t(props.assignedTo)} Icon={Inbox} />
         </ListSubheader>
       }
