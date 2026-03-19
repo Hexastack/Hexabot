@@ -152,7 +152,12 @@ export function getMessageContent(
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
-
+  const outgoingTimestampColor = theme.vars
+    ? `rgba(${theme.vars.palette.primary.contrastTextChannel} / 0.75)`
+    : alpha(theme.palette.primary.contrastText, 0.75);
+  const incomingTimestampColor = theme.vars
+    ? `rgba(${theme.vars.palette.text.primaryChannel} / 0.65)`
+    : alpha(theme.palette.text.primary, 0.65);
   const wrapWithTooltip = (
     child: React.ReactElement,
     key: string,
@@ -183,8 +188,8 @@ export function getMessageContent(
               userSelect: "none",
               float: messageEntity.recipient ? "right" : "left",
               color: messageEntity.recipient
-                ? alpha(theme.palette.primary.contrastText, 0.75)
-                : alpha(theme.palette.text.primary, 0.65),
+                ? outgoingTimestampColor
+                : incomingTimestampColor,
             }}
           >
             {formattedTimestamp}

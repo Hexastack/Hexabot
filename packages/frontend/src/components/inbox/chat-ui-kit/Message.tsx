@@ -228,18 +228,10 @@ function MessageBase({
     contentElements.length > 0
       ? contentElements
       : renderFallbackContent(displayMessageType, resolvedPayload);
-  const incomingBackground =
-    theme.palette.mode === "dark"
-      ? alpha(theme.palette.text.primary, 0.14)
-      : theme.palette.grey[100];
-  const messageBackground =
-    normalizedDirection === "outgoing"
-      ? theme.palette.primary.main
-      : incomingBackground;
-  const messageColor =
-    normalizedDirection === "outgoing"
-      ? theme.palette.primary.contrastText
-      : theme.palette.text.primary;
+  const isOutgoing = normalizedDirection === "outgoing";
+  const darkIncomingBackground = theme.vars
+    ? `rgba(${theme.vars.palette.text.primaryChannel} / 0.14)`
+    : alpha(theme.palette.text.primary, 0.14);
   const baseBorderRadius =
     typeof theme.shape.borderRadius === "number"
       ? theme.shape.borderRadius + 4
@@ -259,11 +251,12 @@ function MessageBase({
       className={className}
       sx={{
         display: "flex",
-        flexDirection: normalizedDirection === "outgoing" ? "row-reverse" : "row",
+        flexDirection:
+          normalizedDirection === "outgoing" ? "row-reverse" : "row",
         alignItems: "flex-end",
         width: "fit-content",
         maxWidth: { xs: "92%", sm: "85%" },
-        mt: 0.5,
+        mt: 2,
         ...(normalizedDirection === "incoming"
           ? { mr: "auto" }
           : { ml: "auto" }),
@@ -282,22 +275,32 @@ function MessageBase({
             width: AVATAR_SLOT_WIDTH,
             display: "flex",
             justifyContent: getAvatarAlign(avatarPosition),
-            ...(normalizedDirection === "incoming"
-              ? { mr: 1 }
-              : { ml: 1 }),
+            ...(normalizedDirection === "incoming" ? { mr: 1 } : { ml: 1 }),
           }}
         >
           {avatarElement}
         </Box>
       )}
-      <Box component="div" sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <Box
+        component="div"
+        sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}
+      >
         <Box
           component="div"
           sx={{
-            bgcolor: messageBackground,
-            color: messageColor,
-            px: 1.5,
-            py: 1,
+            ...(isOutgoing
+              ? {
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                }
+              : {
+                  bgcolor: theme.palette.grey[100],
+                  color: "text.primary",
+                  ...theme.applyStyles("dark", {
+                    bgcolor: darkIncomingBackground,
+                  }),
+                }),
+            p: 2,
             borderRadius,
             whiteSpace: "pre-wrap",
             overflowWrap: "anywhere",
