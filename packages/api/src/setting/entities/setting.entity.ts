@@ -11,14 +11,13 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Setting, SettingTransformerDto } from '../dto/setting.dto';
-import { SettingSchema, SettingValue } from '../types';
+import { SettingSchema } from '../types';
 import {
   cloneSettingSchema,
   getSettingConfig,
   getSettingDefault,
   getSettingOptions,
   getSettingValidationError,
-  withSettingDefault,
 } from '../utils/setting-schema-definition.utils';
 
 @Entity({ name: 'settings' })
@@ -42,14 +41,6 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
   @JsonColumn()
   schema!: SettingSchema;
 
-  get value(): SettingValue | undefined {
-    return getSettingDefault(this.schema);
-  }
-
-  set value(value: SettingValue | undefined) {
-    this.schema = withSettingDefault(this.schema ?? {}, value);
-  }
-
   get options(): string[] | undefined {
     return getSettingOptions(this.schema);
   }
@@ -72,7 +63,10 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
   }
 
   private assertValidValue(): void {
-    const error = getSettingValidationError(this.schema, this.value);
+    const error = getSettingValidationError(
+      this.schema,
+      getSettingDefault(this.schema),
+    );
 
     if (error) {
       throw new BadRequestException(error);

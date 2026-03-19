@@ -26,9 +26,13 @@ import {
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeeder } from '../seeds/setting.seed';
+import { SettingValue } from '../types';
 import { BUILTIN_SETTING_GROUPS } from '../utils/builtin-setting-groups';
 import { parseCsvString } from '../utils/setting-group-definition.utils';
-import { withSettingDefault } from '../utils/setting-schema-definition.utils';
+import {
+  getSettingDefault,
+  withSettingDefault,
+} from '../utils/setting-schema-definition.utils';
 import {
   buildSettingGroupZodSchema,
   mergeSettingGroupSources,
@@ -89,7 +93,7 @@ export class SettingService extends BaseOrmService<
       const groupKey = setting.group || 'undefinedGroup';
 
       acc[groupKey] = acc[groupKey] || {};
-      acc[groupKey][setting.label] = setting.value;
+      acc[groupKey][setting.label] = getSettingDefault(setting.schema);
 
       return acc;
     }, {} as Settings);
@@ -140,17 +144,19 @@ export class SettingService extends BaseOrmService<
         continue;
       }
 
-      const value = parsedValues[source.label] as Setting['value'];
+      const value = parsedValues[source.label] as SettingValue;
       const existingSetting = currentSettingsByLabel.get(source.label);
 
       if (existingSetting?.id) {
-        await this.updateOne(existingSetting.id, { value });
+        await this.updateOne(existingSetting.id, {
+          schema: withSettingDefault(existingSetting.schema, value),
+        });
       } else {
         await this.create({
           group: source.group,
           subgroup: source.subgroup,
           label: source.label,
-          schema: withSettingDefault(source.schema, value as Setting['value']),
+          schema: withSettingDefault(source.schema, value),
           weight: source.weight,
           translatable: source.translatable,
         });
@@ -206,9 +212,13 @@ export class SettingService extends BaseOrmService<
     const settings = await this.find({
       where: { label: 'allowed_domains' },
     });
-    const allowedDomains = settings.flatMap((setting) =>
-      typeof setting.value === 'string' ? parseCsvString(setting.value) : [],
-    );
+    const allowedDomains = settings.flatMap((setting) => {
+      const defaultValue = getSettingDefault(setting.schema);
+
+      return typeof defaultValue === 'string'
+        ? parseCsvString(defaultValue)
+        : [];
+    });
     const uniqueOrigins = new Set([
       ...config.security.cors.allowOrigins,
       ...config.sockets.onlyAllowOrigins,

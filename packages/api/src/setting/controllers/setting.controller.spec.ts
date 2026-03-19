@@ -27,7 +27,6 @@ import { SettingController } from './setting.controller';
 
 const expectedSettings = settingFixtures.map((setting) => ({
   ...setting,
-  value: getSettingDefault(setting.schema),
   ...(getSettingOptions(setting.schema)
     ? { options: getSettingOptions(setting.schema) }
     : {}),
@@ -87,23 +86,23 @@ describe('SettingController', () => {
   describe('updateOne', () => {
     it('Should update and return a specific Setting', async () => {
       jest.spyOn(settingService, 'updateOne');
-      const payload = {
-        value: 'updated setting value',
-      };
+      const updatedDefault = 'updated setting value';
       const { id } = (await settingService.findOne({
         where: { label: 'contact_email_recipient' },
       })) as Setting;
-      const result = await settingController.updateOne(id, payload);
       const target = expectedSettings.find(
         (settingFixture) => settingFixture.label === 'contact_email_recipient',
       )!;
+      const payload = {
+        schema: withSettingDefault(target.schema, updatedDefault),
+      };
+      const result = await settingController.updateOne(id, payload);
 
       expect(settingService.updateOne).toHaveBeenCalledWith(id, payload);
       expect(result).toEqualPayload(
         {
           ...target,
-          schema: withSettingDefault(target.schema, payload.value),
-          value: payload.value,
+          schema: withSettingDefault(target.schema, updatedDefault),
         },
         ['id', 'createdAt', 'updatedAt'],
       );
@@ -117,10 +116,11 @@ describe('SettingController', () => {
         SettingOrmEntity.prototype as any,
         'assertValidValue',
       );
+      const invalidSchema = withSettingDefault(setting.schema, 123 as any);
 
       try {
         await expect(
-          settingController.updateOne(setting.id, { value: 123 as any }),
+          settingController.updateOne(setting.id, { schema: invalidSchema }),
         ).rejects.toThrow('Setting value must be a string.');
 
         expect(assertValidValueSpy).toHaveBeenCalled();
@@ -143,10 +143,14 @@ describe('SettingController', () => {
         company_name: 'Acme',
       });
       expect(
-        result.find((setting) => setting.label === 'company_name')?.value,
+        getSettingDefault(
+          result.find((setting) => setting.label === 'company_name')?.schema,
+        ),
       ).toBe('Acme');
       expect(
-        result.find((setting) => setting.label === 'company_country')?.value,
+        getSettingDefault(
+          result.find((setting) => setting.label === 'company_country')?.schema,
+        ),
       ).toBe('US');
     });
   });

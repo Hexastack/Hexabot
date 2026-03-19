@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Paper, Tab, Tabs, Typography, styled } from "@mui/material";
+import { Paper, styled, Tab, Tabs, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import debounce from "@mui/utils/debounce";
 import type { RJSFSchema } from "@rjsf/utils";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,17 +14,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Progress } from "@/app-components/displays/Progress";
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
-import {
-  useTanstackMutation,
-  useTanstackQuery,
-  useTanstackQueryClient,
-} from "@/hooks/crud/useTanstack";
+import { useFind } from "@/hooks/crud/useFind";
+import { useTanstackMutation } from "@/hooks/crud/useTanstack";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, QueryType, RouterType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { ISetting } from "@/types/setting.types";
 import { isRecord } from "@/utils/object";
 
@@ -34,11 +32,6 @@ const StyledPanel = styled("div")({
   padding: "16px 24px",
 });
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
-const SETTINGS_QUERY_KEY = [
-  QueryType.collection,
-  EntityType.SETTING,
-  "settings-page",
-] as const;
 
 type SettingFormGroup = {
   group: string;
@@ -148,7 +141,10 @@ const buildSettingsGroupSchema = (
 };
 const buildSettingsGroupValues = (settings: readonly ISetting[]) => {
   return Object.fromEntries(
-    sortSettings(settings).map((setting) => [setting.label, setting.value]),
+    sortSettings(settings).map((setting) => [
+      setting.label,
+      isRecord(setting.schema) ? setting.schema.default : undefined,
+    ]),
   );
 };
 const buildSettingFormGroups = (
@@ -175,26 +171,10 @@ const buildSettingFormGroups = (
     .filter((group) => hasSchemaProperties(group.schema))
     .sort((left, right) => left.group.localeCompare(right.group));
 };
-const replaceSettingsGroup = (
-  current: ISetting[] | undefined,
-  next: ISetting[],
-) => {
-  if (next.length === 0) {
-    return current ?? [];
-  }
-
-  const group = next[0].group;
-
-  return sortSettings([
-    ...(current ?? []).filter((setting) => setting.group !== group),
-    ...next,
-  ]);
-};
 
 export const Settings = () => {
   const { t } = useTranslate();
   const { apiClient } = useApiClient();
-  const queryClient = useTanstackQueryClient();
   const router = useAppRouter();
   const rawGroup = router.query.group;
   const routeGroup = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
@@ -208,14 +188,17 @@ export const Settings = () => {
   const [visibleErrorsByGroup, setVisibleErrorsByGroup] = useState<
     Record<string, boolean>
   >({});
-  const { data: settings = [], isLoading } = useTanstackQuery({
-    queryKey: SETTINGS_QUERY_KEY,
-    queryFn: () =>
-      apiClient.buildEntityClient(EntityType.SETTING).find({}, undefined),
+  const [pendingSave, setPendingSave] = useState<{
+    group: string;
+    values: Record<string, unknown>;
+  } | null>(null);
+  const { data: settings = [], isLoading } = useFind({
+    entity: EntityType.SETTING,
   });
   const groups = useMemo(() => {
     return buildSettingFormGroups(settings);
-  }, [settings]);
+    // eslint-disable-next-line react-hooks/use-memo
+  }, [JSON.stringify(settings)]);
   const localizedGroups = useMemo(
     () =>
       groups.map((group) => ({
@@ -246,23 +229,67 @@ export const Settings = () => {
             ...current,
             [updatedGroup]: buildSettingsGroupValues(updatedSettings),
           }));
-          queryClient.setQueryData<ISetting[]>(SETTINGS_QUERY_KEY, (current) =>
-            replaceSettingsGroup(current, updatedSettings),
-          );
         }
-
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.collection, EntityType.SETTING],
-        });
       },
     });
+  const debouncedSaveSettingsGroup = useMemo(
+    () =>
+      debounce((next: { group: string; values: Record<string, unknown> }) => {
+        saveSettingsGroup(next);
+      }, 300),
+    [saveSettingsGroup],
+  );
 
   useEffect(() => {
-    setFormDataByGroup(
-      Object.fromEntries(groups.map((group) => [group.group, group.values])),
+    if (groups.length === 0) return;
+
+    const nextFormData = Object.fromEntries(
+      groups.map((group) => [group.group, group.values]),
     );
-    setVisibleErrorsByGroup({});
+
+    setFormDataByGroup((current) => {
+      const isSame =
+        Object.keys(nextFormData).length === Object.keys(current).length &&
+        Object.keys(nextFormData).every(
+          (key) => current[key] === nextFormData[key],
+        );
+
+      return isSame ? current : nextFormData;
+    });
+
+    setVisibleErrorsByGroup((current) => {
+      if (Object.keys(current).length === 0) return current;
+
+      return {};
+    });
+    setPendingSave(null);
   }, [groups]);
+
+  useEffect(() => {
+    if (!pendingSave) return;
+    if (isSaving || visibleErrorsByGroup[pendingSave.group]) {
+      return;
+    }
+
+    const syncedValues = groups.find(
+      (group) => group.group === pendingSave.group,
+    )?.values;
+
+    if (syncedValues === pendingSave.values) {
+      setPendingSave(null);
+
+      return;
+    }
+
+    debouncedSaveSettingsGroup(pendingSave);
+    setPendingSave(null);
+  }, [
+    pendingSave,
+    isSaving,
+    visibleErrorsByGroup,
+    groups,
+    debouncedSaveSettingsGroup,
+  ]);
 
   useEffect(() => {
     const fallbackGroup = groups[0]?.group ?? DEFAULT_SETTINGS_GROUP;
@@ -276,16 +303,17 @@ export const Settings = () => {
 
   const handleGroupFormDataChange = useCallback(
     (group: string, nextFormData: Record<string, unknown>) => {
-      setFormDataByGroup((current) =>
-        current[group] === nextFormData
-          ? current
-          : {
-              ...current,
-              [group]: nextFormData,
-            },
-      );
+      if (formDataByGroup[group] === nextFormData) {
+        return;
+      }
+
+      setFormDataByGroup((current) => ({
+        ...current,
+        [group]: nextFormData,
+      }));
+      setPendingSave({ group, values: nextFormData });
     },
-    [],
+    [formDataByGroup],
   );
   const handleGroupVisibleErrorsChange = useCallback(
     (group: string, hasVisibleErrors: boolean) => {
@@ -364,25 +392,6 @@ export const Settings = () => {
                         enableJsonataTextWidget={false}
                         idPrefix={`settings-${group.group}`}
                       />
-                      <Grid
-                        sx={{ display: "flex", justifyContent: "flex-end" }}
-                      >
-                        <Button
-                          variant="contained"
-                          onClick={() =>
-                            saveSettingsGroup({
-                              group: group.group,
-                              values: formData,
-                            })
-                          }
-                          disabled={
-                            isSaving ||
-                            Boolean(visibleErrorsByGroup[group.group])
-                          }
-                        >
-                          {t("button.save")}
-                        </Button>
-                      </Grid>
                     </TabPanel>
                   );
                 })}

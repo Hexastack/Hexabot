@@ -21,16 +21,12 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { Setting, SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingSchema, SettingType } from '../types';
-import {
-  getSettingConfig,
-  getSettingDefault,
-} from '../utils/setting-schema-definition.utils';
+import { getSettingConfig } from '../utils/setting-schema-definition.utils';
 
 import { SettingRepository } from './setting.repository';
 
 const toExpectedSetting = (fixture: SettingCreateDto) => ({
   ...fixture,
-  value: getSettingDefault(fixture.schema),
   translatable: fixture.translatable ?? false,
 });
 const buildSchema = (type: SettingType, value: unknown): SettingSchema => {
@@ -219,7 +215,6 @@ describe('SettingRepository (TypeORM)', () => {
         group: base.group,
         label: base.label,
         schema: base.schema,
-        value: 'initial value',
         weight: base.weight,
       });
       const persistedAfterCreate = await repository.findOneByOrFail({
@@ -232,14 +227,20 @@ describe('SettingRepository (TypeORM)', () => {
       });
 
       const updated = await settingRepository.updateOne(created.id, {
-        value: 'updated value',
+        schema: {
+          ...base.schema,
+          default: 'updated value',
+        },
         weight: 100,
       });
 
       expect(updated).not.toBeNull();
       expect(updated).toMatchObject({
         id: created.id,
-        value: 'updated value',
+        schema: {
+          ...base.schema,
+          default: 'updated value',
+        },
         weight: 100,
       });
       const persistedAfterUpdate = await repository.findOneByOrFail({
@@ -284,7 +285,7 @@ describe('SettingRepository (TypeORM)', () => {
         createdIds.push(created.id);
 
         expect(created).toMatchObject({
-          value: getSettingDefault(payload.schema),
+          schema: payload.schema,
         });
       },
     );
@@ -336,7 +337,9 @@ describe('SettingRepository (TypeORM)', () => {
       createdIds.push(created.id);
 
       await expect(
-        settingRepository.updateOne(created.id, { value: 123 }),
+        settingRepository.updateOne(created.id, {
+          schema: { ...base.schema, default: 123 },
+        }),
       ).rejects.toThrow('Setting value must be a string.');
     });
   });
@@ -396,7 +399,6 @@ describe('SettingRepository (TypeORM)', () => {
           group: 'chatbot_settings',
           label: 'locale',
           schema,
-          value: 'en',
           options: ['en'],
           config: getSettingConfig(schema),
           weight: 10,

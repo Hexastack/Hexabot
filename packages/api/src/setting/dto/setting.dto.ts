@@ -21,7 +21,7 @@ import {
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
-import { SettingSchema, SettingValue } from '../types';
+import { SettingSchema } from '../types';
 
 @Exclude()
 export class SettingStub extends BaseStub {
@@ -37,9 +37,6 @@ export class SettingStub extends BaseStub {
 
   @Expose()
   schema!: SettingSchema;
-
-  @Expose()
-  value!: SettingValue;
 
   @Expose()
   @Transform(({ obj }) => obj.options || undefined)
@@ -102,9 +99,14 @@ export class SettingCreateDto {
 }
 
 export class SettingUpdateDto {
-  @ApiProperty({ description: 'value of the setting' })
-  @IsDefined()
-  value: SettingValue;
+  @ApiPropertyOptional({
+    description: 'JSON Schema describing the setting value',
+    type: Object,
+    additionalProperties: true,
+  })
+  @IsOptional()
+  @IsObject()
+  schema?: SettingSchema;
 
   @ApiPropertyOptional({
     description:

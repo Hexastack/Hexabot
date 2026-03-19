@@ -12,7 +12,7 @@ export const useSetting = (type: string, label: string) => {
   const { settings } = useContext(SettingsContext);
   const value = settings?.[type]?.find(
     (setting) => setting.label === label,
-  )?.value;
+  )?.schema?.default;
 
   return value;
 };

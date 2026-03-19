@@ -16,6 +16,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
+import { SettingValue } from '../types';
 import {
   cloneSettingSchema,
   getSettingConfig,
@@ -30,12 +31,14 @@ describe('SettingService', () => {
   let settingService: SettingService;
   let settingRepository: SettingRepository;
   let module: TestingModule;
-  const makeSetting = (overrides: Partial<Setting>): Setting => {
+  const makeSetting = (
+    overrides: Partial<Setting> & { value?: SettingValue },
+  ): Setting => {
     const baseSchema = cloneSettingSchema(
       overrides.schema ?? { type: 'string', default: '' },
     );
     const schema = Object.prototype.hasOwnProperty.call(overrides, 'value')
-      ? withSettingDefault(baseSchema, overrides.value as Setting['value'])
+      ? withSettingDefault(baseSchema, overrides.value)
       : baseSchema;
     const setting = new Setting();
 
@@ -51,9 +54,6 @@ describe('SettingService', () => {
     Object.assign(setting, overrides);
     Object.assign(setting, {
       schema,
-      value: Object.prototype.hasOwnProperty.call(overrides, 'value')
-        ? overrides.value
-        : getSettingDefault(schema),
       options: getSettingOptions(schema),
       config: getSettingConfig(schema),
       translatable: overrides.translatable ?? false,
@@ -246,9 +246,14 @@ describe('SettingService', () => {
         },
       });
 
-      expect(storedSetting?.value).toBe('custom-nlu-helper');
+      expect(getSettingDefault(storedSetting?.schema)).toBe(
+        'custom-nlu-helper',
+      );
       expect(
-        result.find((setting) => setting.label === 'default_nlu_helper')?.value,
+        getSettingDefault(
+          result.find((setting) => setting.label === 'default_nlu_helper')
+            ?.schema,
+        ),
       ).toBe('custom-nlu-helper');
     });
 

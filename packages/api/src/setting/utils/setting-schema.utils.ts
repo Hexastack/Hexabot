@@ -88,9 +88,7 @@ export const mergeSettingGroupSources = (
       label: existing.label || setting.label,
       schema: withSettingDefault(
         setting.schema,
-        existing.value !== undefined
-          ? existing.value
-          : getSettingDefault(setting.schema),
+        getSettingDefault(existing.schema) ?? getSettingDefault(setting.schema),
       ),
       weight: existing.weight ?? setting.weight,
       translatable: existing.translatable ?? setting.translatable,

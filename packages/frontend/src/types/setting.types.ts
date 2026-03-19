@@ -15,7 +15,6 @@ export interface ISettingAttributes {
   subgroup?: string;
   label: string;
   schema: RJSFSchema;
-  value: unknown;
   options?: string[];
   config?: Record<string, unknown>;
   weight?: number;
