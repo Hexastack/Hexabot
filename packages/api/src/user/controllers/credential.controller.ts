@@ -11,7 +11,6 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
@@ -21,7 +20,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
-import { PopulatePipe } from '@/utils';
+import { PopulatePipe, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -95,7 +94,7 @@ export class CredentialController extends BaseOrmController<
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Credential | CredentialFull> {
@@ -114,7 +113,7 @@ export class CredentialController extends BaseOrmController<
 
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() credentialUpdate: CredentialUpdateDto,
   ): Promise<Credential> {
     const record = await this.credentialService.findOne(id);
@@ -128,7 +127,7 @@ export class CredentialController extends BaseOrmController<
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.credentialService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Credential by id ${id}`);

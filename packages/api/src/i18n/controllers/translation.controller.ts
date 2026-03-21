@@ -12,13 +12,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions, In, Not } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -72,7 +72,7 @@ export class TranslationController extends BaseOrmController<
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@UuidParam('id') id: string) {
     const translation = await this.translationService.findOne(id);
     if (!translation) {
       this.logger.warn(`Unable to find Translation by id ${id}`);
@@ -84,7 +84,7 @@ export class TranslationController extends BaseOrmController<
 
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() translationUpdate: TranslationUpdateDto,
   ) {
     return await this.translationService.updateOne(id, translationUpdate);
@@ -140,7 +140,7 @@ export class TranslationController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.translationService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Translation by id ${id}`);

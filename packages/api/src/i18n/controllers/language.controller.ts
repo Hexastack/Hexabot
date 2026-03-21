@@ -12,13 +12,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -81,7 +81,7 @@ export class LanguageController extends BaseOrmController<
    * @returns A Promise that resolves to the found language.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Language> {
+  async findOne(@UuidParam('id') id: string): Promise<Language> {
     const language = await this.languageService.findOne(id);
     if (!language) {
       this.logger.warn(`Unable to find Language by id ${id}`);
@@ -109,7 +109,7 @@ export class LanguageController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() languageUpdate: LanguageUpdateDto,
   ): Promise<Language> {
     if ('isDefault' in languageUpdate && !languageUpdate.isDefault) {
@@ -126,7 +126,7 @@ export class LanguageController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.languageService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Language by id ${id}`);

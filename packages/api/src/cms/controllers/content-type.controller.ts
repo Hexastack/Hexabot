@@ -11,13 +11,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
@@ -100,7 +100,7 @@ export class ContentTypeController extends BaseOrmController<
    * @returns The content type matching the provided ID.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ContentType> {
+  async findOne(@UuidParam('id') id: string): Promise<ContentType> {
     const foundContentType = await this.contentTypeService.findOne(id);
     if (!foundContentType) {
       this.logger.warn(
@@ -121,7 +121,7 @@ export class ContentTypeController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@UuidParam('id') id: string) {
     const removedType = await this.contentTypeService.deleteOne(id);
 
     if (removedType.deletedCount === 0) {
@@ -145,7 +145,7 @@ export class ContentTypeController extends BaseOrmController<
   @Patch(':id')
   async updateOne(
     @Body() contentTypeDto: ContentTypeUpdateDto,
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
   ): Promise<ContentType> {
     return await this.contentTypeService.updateOne(id, contentTypeDto);
   }

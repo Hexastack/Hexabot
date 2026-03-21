@@ -12,13 +12,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -88,7 +88,7 @@ export class LabelGroupController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<LabelGroup | LabelGroupFull> {
@@ -118,7 +118,7 @@ export class LabelGroupController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() labelGroupUpdate: LabelGroupUpdateDto,
   ): Promise<LabelGroup> {
     return await this.labelGroupService.updateOne(id, labelGroupUpdate);
@@ -130,7 +130,7 @@ export class LabelGroupController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.labelGroupService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Label Group by id ${id}`);

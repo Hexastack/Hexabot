@@ -12,13 +12,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -80,7 +80,7 @@ export class LabelController extends BaseOrmController<
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Label | LabelFull> {
@@ -102,7 +102,7 @@ export class LabelController extends BaseOrmController<
 
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() labelUpdate: LabelUpdateDto,
   ): Promise<Label> {
     return await this.labelService.updateOne(id, labelUpdate);
@@ -110,7 +110,7 @@ export class LabelController extends BaseOrmController<
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.labelService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Label by id ${id}`);

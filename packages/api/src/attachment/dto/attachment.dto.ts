@@ -172,10 +172,6 @@ export class AttachmentCreateDto extends AttachmentMetadataDto {
 }
 
 export class AttachmentDownloadDto {
-  @ApiPropertyOptional({ description: 'Identifier', type: String })
-  @IsUUIDv4({ each: true, message: 'Assign label must be a valid UUID' })
-  id: string;
-
   /**
    * Attachment file name
    */

@@ -225,7 +225,7 @@ describe('AttachmentController', () => {
   describe('Download', () => {
     it(`should throw NotFoundException the id or/and file don't exist`, async () => {
       jest.spyOn(attachmentService, 'findOne');
-      const result = attachmentController.download({ id: NOT_FOUND_ID });
+      const result = attachmentController.download(NOT_FOUND_ID, {});
       expect(attachmentService.findOne).toHaveBeenCalledWith(NOT_FOUND_ID);
       expect(result).rejects.toThrow(
         new NotFoundException('Attachment not found'),
@@ -239,8 +239,8 @@ describe('AttachmentController', () => {
           name: 'store1.jpg',
         },
       }))!;
-      const result = await attachmentController.download({
-        id: storedAttachment.id,
+      const result = await attachmentController.download(storedAttachment.id, {
+        filename: storedAttachment.name,
       });
 
       expect(attachmentService.findOne).toHaveBeenCalledWith(

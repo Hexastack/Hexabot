@@ -11,12 +11,12 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -104,7 +104,7 @@ export class PermissionController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@UuidParam('id') id: string) {
     const result = await this.permissionService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Permission by id ${id}`);

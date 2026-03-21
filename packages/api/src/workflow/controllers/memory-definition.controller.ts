@@ -12,13 +12,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions, In } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -104,7 +104,7 @@ export class MemoryDefinitionController extends BaseOrmController<
    * @returns The memory definition matching the provided ID.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<MemoryDefinition> {
+  async findOne(@UuidParam('id') id: string): Promise<MemoryDefinition> {
     const record = await this.memoryDefinitionService.findOne(id);
     if (!record) {
       this.logger.warn(`Unable to find Memory Definition by id ${id}`);
@@ -124,7 +124,7 @@ export class MemoryDefinitionController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() memoryDefinitionUpdate: MemoryDefinitionUpdateDto,
   ): Promise<MemoryDefinition> {
     const record = await this.memoryDefinitionService.findOne(id);
@@ -148,7 +148,7 @@ export class MemoryDefinitionController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.memoryDefinitionService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Memory Definition by id ${id}`);

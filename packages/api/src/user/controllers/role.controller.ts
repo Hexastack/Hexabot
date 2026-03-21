@@ -12,7 +12,6 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
@@ -21,6 +20,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -92,7 +92,7 @@ export class RoleController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
@@ -130,7 +130,10 @@ export class RoleController extends BaseOrmController<
    * @returns A promise that resolves to the updated role.
    */
   @Patch(':id')
-  async updateOne(@Param('id') id: string, @Body() roleUpdate: RoleUpdateDto) {
+  async updateOne(
+    @UuidParam('id') id: string,
+    @Body() roleUpdate: RoleUpdateDto,
+  ) {
     return await this.roleService.updateOne(id, roleUpdate);
   }
 
@@ -143,7 +146,7 @@ export class RoleController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string, @Req() req: Request) {
+  async deleteOne(@UuidParam('id') id: string, @Req() req: Request) {
     const requester = req.user as User | undefined;
     const requesterRoleIds = Array.isArray(requester?.roles)
       ? requester.roles

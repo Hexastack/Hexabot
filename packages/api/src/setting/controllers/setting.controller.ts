@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
@@ -57,7 +58,7 @@ export class SettingController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() settingUpdateDto: SettingUpdateDto,
   ): Promise<Setting> {
     return await this.settingService.updateOne(id, settingUpdateDto);

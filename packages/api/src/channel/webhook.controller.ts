@@ -5,12 +5,10 @@
  */
 
 import {
-  HttpStatus,
   Controller,
   Get,
   NotFoundException,
   Param,
-  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -19,15 +17,11 @@ import {
 import { Request, Response } from 'express'; // Import the Express request and response types
 
 import { LoggerService } from '@/logger/logger.service';
+import { UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
-
-const WORKFLOW_ID_PARAM_PIPE = new ParseUUIDPipe({
-  version: '4',
-  errorHttpStatusCode: HttpStatus.NOT_FOUND,
-});
 
 @Controller('webhook')
 export class WebhookController {
@@ -92,7 +86,7 @@ export class WebhookController {
   @Get(':channel/:workflowId')
   async handleGetWithWorkflow(
     @Param('channel') channel: string,
-    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
+    @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<any> {
@@ -125,7 +119,7 @@ export class WebhookController {
   @Post(':channel/:workflowId')
   async handlePostWithWorkflow(
     @Param('channel') channel: string,
-    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
+    @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
