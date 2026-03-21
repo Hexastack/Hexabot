@@ -24,6 +24,7 @@ import { FindManyOptions } from 'typeorm';
 
 import { ActionService } from '@/actions/actions.service';
 import { UserService } from '@/user';
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -153,7 +154,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<Workflow | WorkflowFull> {
@@ -178,7 +179,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() workflowUpdateDto: WorkflowUpdateDto,
   ): Promise<Workflow> {
     const workflow = await this.workflowService.findOne(id);
@@ -199,7 +200,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.workflowService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Workflow by id ${id}`);
@@ -219,7 +220,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Post(':id/publish')
   async publish(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Req() req: Request,
   ): Promise<Workflow> {
     const userId = req.session?.passport?.user?.id;
@@ -256,7 +257,7 @@ export class WorkflowController extends BaseOrmController<
    */
   @Post(':id/unpublish')
   async unpublish(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Req() req: Request,
   ): Promise<Workflow> {
     const userId = req.session?.passport?.user?.id;
@@ -287,7 +288,7 @@ export class WorkflowController extends BaseOrmController<
   @Post(':id/run')
   @HttpCode(202)
   async runManually(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body('input') input: unknown = {},
     @Req() req: Request,
   ): Promise<{ accepted: true }> {

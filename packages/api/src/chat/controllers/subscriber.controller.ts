@@ -9,7 +9,6 @@ import {
   Controller,
   Get,
   NotFoundException,
-  Param,
   Patch,
   Query,
   StreamableFile,
@@ -17,6 +16,7 @@ import {
 import { FindManyOptions } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -111,7 +111,7 @@ export class SubscriberController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Subscriber | SubscriberFull> {
@@ -135,7 +135,7 @@ export class SubscriberController extends BaseOrmController<
    */
   @Get(':id/profile_pic')
   async getAvatar(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
   ): Promise<StreamableFile | undefined> {
     const subscriber = await this.subscriberService.findOneAndPopulate(id);
 
@@ -161,7 +161,7 @@ export class SubscriberController extends BaseOrmController<
 
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() subscriberUpdate: SubscriberUpdateDto,
   ) {
     return await this.subscriberService.updateOne(id, subscriberUpdate);

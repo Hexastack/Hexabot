@@ -19,7 +19,6 @@ import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
-import { UuidPipe } from './utils/pipes/uuid.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 moduleAlias.addAliases({
@@ -96,7 +95,6 @@ export async function createHexabotApplication<
       transform: true,
       // forbidNonWhitelisted: true,
     }),
-    new UuidPipe(),
   );
   app.use(getSessionMiddleware());
   app.use(passport.initialize());

@@ -20,6 +20,8 @@ export * from './decorators/relation-ref.decorator';
 
 export * from './decorators/roles.decorator';
 
+export * from './decorators/uuid-param.decorator';
+
 export * from './decorators/validate.decorator';
 
 export * from './generics/base-orm.controller';

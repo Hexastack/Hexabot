@@ -4,15 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -112,7 +107,7 @@ export class WorkflowRunController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<WorkflowRun | WorkflowRunFull> {

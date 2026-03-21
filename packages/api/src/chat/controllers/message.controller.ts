@@ -10,7 +10,6 @@ import {
   Controller,
   Get,
   NotFoundException,
-  Param,
   Post,
   Query,
   Req,
@@ -21,6 +20,7 @@ import { FindManyOptions } from 'typeorm';
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/ConversationalEventWrapper';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -109,7 +109,7 @@ export class MessageController extends BaseOrmController<
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Message | MessageFull> {

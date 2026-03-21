@@ -33,6 +33,7 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
@@ -124,7 +125,7 @@ export class ReadOnlyUserController extends BaseOrmController<
    * @returns A promise that resolves to the user's avatar or an avatar generated from initials if not found.
    */
   @Get(':id/profile_pic')
-  async getAvatar(@Param('id') id: string) {
+  async getAvatar(@UuidParam('id') id: string) {
     const user = await this.userService.findOneAndPopulate(id);
 
     if (!user) {
@@ -240,7 +241,7 @@ export class ReadOnlyUserController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
@@ -323,7 +324,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
   @Patch('edit/:id')
   async updateOne(
     @Req() req: Request,
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() userUpdate: UserEditProfileDto,
     @UploadedFile() avatarFile?: Express.Multer.File,
   ) {
@@ -369,7 +370,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    */
   @Patch(':id')
   async updateStateAndRoles(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() body: UserUpdateStateAndRolesDto,
     @Req() req: Request,
   ) {
@@ -415,7 +416,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@UuidParam('id') id: string) {
     const result = await this.userService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete User by id ${id}`);

@@ -9,7 +9,6 @@ import {
   Controller,
   Get,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
@@ -19,7 +18,7 @@ import {
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
-import { TypeOrmSearchFilterPipe } from '@/utils';
+import { TypeOrmSearchFilterPipe, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 
@@ -52,7 +51,7 @@ export class WorkflowVersionController extends BaseOrmController<
    * @returns A promise that resolves to an object representing the total number of versions.
    */
   @Get(':id/versions/count')
-  async countAll(@Param('id') id: string) {
+  async countAll(@UuidParam('id') id: string) {
     const workflow = await this.workflowService.findOne(id);
     if (!workflow) {
       this.logger.warn(`Unable to find Workflow by id ${id}`);
@@ -71,7 +70,7 @@ export class WorkflowVersionController extends BaseOrmController<
    */
   @Post(':id/versions')
   async commit(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() dto: WorkflowNewVersionDto,
     @Req() req: Request,
   ): Promise<WorkflowVersion> {
@@ -118,7 +117,7 @@ export class WorkflowVersionController extends BaseOrmController<
    */
   @Get(':id/versions')
   async findMany(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowVersionOrmEntity>({
         allowedFields: ['message', 'action'],
@@ -160,8 +159,8 @@ export class WorkflowVersionController extends BaseOrmController<
    */
   @Get(':id/versions/:versionId')
   async findOne(
-    @Param('id') id: string,
-    @Param('versionId') versionId: string,
+    @UuidParam('id') id: string,
+    @UuidParam('versionId') versionId: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ) {
@@ -193,8 +192,8 @@ export class WorkflowVersionController extends BaseOrmController<
    */
   @Patch(':id/versions/:versionId')
   async updateOne(
-    @Param('id') id: string,
-    @Param('versionId') versionId: string,
+    @UuidParam('id') id: string,
+    @UuidParam('versionId') versionId: string,
     @Body() dto: WorkflowVersionUpdateDto,
   ): Promise<WorkflowVersion> {
     const workflow = await this.workflowService.findOne(id);

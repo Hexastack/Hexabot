@@ -11,7 +11,6 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
@@ -21,6 +20,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -198,7 +198,7 @@ export class ContentController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
     const content = this.canPopulate(populate)
@@ -224,7 +224,7 @@ export class ContentController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
+  async deleteOne(@UuidParam('id') id: string) {
     const removedContent = await this.contentService.deleteOne(id);
     if (removedContent.deletedCount === 0) {
       this.logger.warn(
@@ -246,7 +246,7 @@ export class ContentController extends BaseOrmController<
    */
   @Get('/type/:id')
   async findByType(
-    @Param('id') contentTypeId: string,
+    @UuidParam('id') contentTypeId: string,
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
         allowedFields: [],
@@ -285,7 +285,7 @@ export class ContentController extends BaseOrmController<
   @Patch(':id')
   async updateOne(
     @Body() contentDto: ContentUpdateDto,
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
   ): Promise<Content> {
     return await this.contentService.updateOne(id, contentDto);
   }

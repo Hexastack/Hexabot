@@ -11,14 +11,13 @@ import {
   Get,
   HttpCode,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
-import { PopulatePipe } from '@/utils';
+import { PopulatePipe, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -123,7 +122,7 @@ export class McpServerController extends BaseOrmController<
    */
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<McpServer | McpServerFull> {
@@ -148,7 +147,7 @@ export class McpServerController extends BaseOrmController<
    */
   @Patch(':id')
   async updateOne(
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() payload: McpServerUpdateDto,
   ): Promise<McpServer> {
     await this.ensureServerExists(id, 'update');
@@ -164,7 +163,7 @@ export class McpServerController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
     const result = await this.mcpServerService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete MCP server by id ${id}`);
@@ -181,7 +180,7 @@ export class McpServerController extends BaseOrmController<
    * @returns Diagnostics status payload.
    */
   @Post(':id/test')
-  async test(@Param('id') id: string): Promise<McpServerDiagnostics> {
+  async test(@UuidParam('id') id: string): Promise<McpServerDiagnostics> {
     await this.ensureServerExists(id, 'test');
 
     return await this.mcpServerService.testConnection(id);
@@ -194,7 +193,7 @@ export class McpServerController extends BaseOrmController<
    * @returns MCP server tools list.
    */
   @Get(':id/tools')
-  async tools(@Param('id') id: string): Promise<McpToolSummary[]> {
+  async tools(@UuidParam('id') id: string): Promise<McpToolSummary[]> {
     await this.ensureServerExists(id, 'discover');
 
     return await this.mcpServerService.discoverTools(id);

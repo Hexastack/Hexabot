@@ -11,13 +11,13 @@ import {
   Get,
   InternalServerErrorException,
   NotFoundException,
-  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
+import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { FindAllOptions } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -136,7 +136,7 @@ export class MenuController extends BaseOrmController<
    * @returns A promise that resolves to the menu item if found, or throws a `NotFoundException`.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Menu> {
+  async findOne(@UuidParam('id') id: string): Promise<Menu> {
     try {
       const result = await this.menuService.findOne(id);
       if (!result) {
@@ -164,7 +164,7 @@ export class MenuController extends BaseOrmController<
   @Patch(':id')
   async updateOne(
     @Body() body: MenuUpdateDto,
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
   ): Promise<Menu> {
     if (!id) {
       return await this.create(body as MenuCreateDto);
@@ -183,7 +183,7 @@ export class MenuController extends BaseOrmController<
    * @returns A promise that resolves to an empty string upon successful deletion.
    */
   @Delete(':id')
-  async delete(@Param('id') id: string) {
+  async delete(@UuidParam('id') id: string) {
     try {
       const result = await this.menuService.deleteOne(id);
       if (!result.deletedCount) {

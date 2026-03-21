@@ -28,7 +28,7 @@ import { diskStorage, memoryStorage } from 'multer';
 import { FindManyOptions } from 'typeorm';
 
 import { config } from '@/config';
-import { PopulatePipe } from '@/utils';
+import { PopulatePipe, UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
@@ -76,7 +76,7 @@ export class AttachmentController extends BaseOrmController<
   async findOne(
     @Query(PopulatePipe)
     populate: string[],
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
   ): Promise<Attachment | AttachmentFull> {
     const shouldPopulate = populate.includes('createdBy');
     const attachment = shouldPopulate
@@ -180,15 +180,17 @@ export class AttachmentController extends BaseOrmController<
   /**
    * Downloads an attachment identified by the provided parameters.
    *
-   * @param params - The parameters identifying the attachment to download.
+   * @param id - Identifier of the attachment to download.
+   * @param _params - Optional params containing filename constraints.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
   @Roles('public')
   @Get('download/:id{/:filename}')
   async download(
-    @Param() params: AttachmentDownloadDto,
+    @UuidParam('id') id: string,
+    @Param() _params: AttachmentDownloadDto,
   ): Promise<StreamableFile> {
-    const attachment = await this.attachmentService.findOne(params.id);
+    const attachment = await this.attachmentService.findOne(id);
 
     if (!attachment) {
       throw new NotFoundException('Attachment not found');
@@ -207,7 +209,7 @@ export class AttachmentController extends BaseOrmController<
    */
   @Delete(':id')
   @HttpCode(405)
-  async deleteOne(@Param('id') id: string): Promise<void> {
+  async deleteOne(@UuidParam('id') id: string): Promise<void> {
     // Deletion is explicitly disallowed due to potential reference issues.
     this.logger.warn(`Attempted deletion of attachment ${id} is not allowed.`);
     throw new MethodNotAllowedException(

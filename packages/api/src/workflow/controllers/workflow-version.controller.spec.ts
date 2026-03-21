@@ -7,8 +7,9 @@
 import { randomUUID } from 'crypto';
 
 import { Workflow as WorkflowHelper } from '@hexabot-ai/agentic';
-import { NotFoundException } from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 
 import { LoggerService } from '@/logger/logger.service';
 import { userFixtureIds } from '@/utils/test/fixtures/user';
@@ -236,5 +237,72 @@ describe('WorkflowVersionController (TypeORM)', () => {
         ),
       );
     });
+  });
+});
+
+describe('WorkflowVersionController (HTTP pipes)', () => {
+  let app: INestApplication;
+  let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
+  let workflowVersionService: jest.Mocked<
+    Pick<
+      WorkflowVersionService,
+      'count' | 'findOne' | 'findOneAndPopulate' | 'find' | 'updateOne'
+    >
+  >;
+
+  beforeAll(async () => {
+    workflowService = {
+      findOne: jest.fn(),
+    };
+    workflowVersionService = {
+      count: jest.fn(),
+      findOne: jest.fn(),
+      findOneAndPopulate: jest.fn(),
+      find: jest.fn(),
+      updateOne: jest.fn(),
+    };
+
+    const { module } = await buildTestingMocks({
+      controllers: [WorkflowVersionController],
+      providers: [
+        { provide: WorkflowService, useValue: workflowService },
+        { provide: WorkflowVersionService, useValue: workflowVersionService },
+      ],
+    });
+
+    app = module.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('rejects malformed workflow id before controller logic', async () => {
+    const versionId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+    await request(app.getHttpServer())
+      .get(`/workflow/not-a-uuid/versions/${versionId}`)
+      .expect(404);
+
+    expect(workflowService.findOne).not.toHaveBeenCalled();
+    expect(workflowVersionService.findOne).not.toHaveBeenCalled();
+    expect(workflowVersionService.findOneAndPopulate).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed version id before controller logic', async () => {
+    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+    await request(app.getHttpServer())
+      .get(`/workflow/${workflowId}/versions/not-a-uuid`)
+      .expect(404);
+
+    expect(workflowService.findOne).not.toHaveBeenCalled();
+    expect(workflowVersionService.findOne).not.toHaveBeenCalled();
+    expect(workflowVersionService.findOneAndPopulate).not.toHaveBeenCalled();
   });
 });
