@@ -22,9 +22,13 @@ type ChatWidgetVariant = "launcher" | "embedded";
 
 interface ChatWidgetProps {
   variant?: ChatWidgetVariant;
+  workflowId?: string;
 }
 
-const ChatWidgetComponent = ({ variant = "launcher" }: ChatWidgetProps) => {
+const ChatWidgetComponent = ({
+  variant = "launcher",
+  workflowId,
+}: ChatWidgetProps) => {
   const { mode } = useColorScheme();
   const theme = useTheme();
   const { pathname, reload } = useAppRouter();
@@ -62,8 +66,9 @@ const ChatWidgetComponent = ({ variant = "launcher" }: ChatWidgetProps) => {
       language: i18n.language,
       primaryColor,
       mode: resolvedMode,
+      workflowId,
     }),
-    [apiUrl, i18n.language, primaryColor, resolvedMode],
+    [apiUrl, i18n.language, primaryColor, resolvedMode, workflowId],
   );
   const avatarSrc = useMemo(
     () =>

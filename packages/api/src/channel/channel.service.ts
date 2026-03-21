@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
@@ -19,6 +23,7 @@ import { SocketReq } from '@/websocket/decorators/socket-req.decorator';
 import { SocketRes } from '@/websocket/decorators/socket-res.decorator';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import ChannelHandler from './lib/Handler';
 import { ChannelName } from './types';
@@ -30,6 +35,7 @@ export class ChannelService {
   constructor(
     private readonly logger: LoggerService,
     private readonly subscriberService: SubscriberService,
+    private readonly workflowService: WorkflowService,
   ) {}
 
   /**
@@ -131,8 +137,9 @@ export class ChannelService {
   ) {
     this.logger.log('Channel notification (Web Socket) : ', req.method);
     const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
+    const workflowId = await this.getValidatedWorkflowId(req);
 
-    return await handler.handle(req, res);
+    return await handler.handle(req, res, workflowId);
   }
 
   /**
@@ -186,7 +193,41 @@ export class ChannelService {
     }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
+    const workflowId = await this.getValidatedWorkflowId(req);
 
-    return await handler.handle(req, res);
+    return await handler.handle(req, res, workflowId);
+  }
+
+  private getWorkflowIdFromSocketQuery(req: SocketRequest): string | undefined {
+    const rawWorkflowId = req.query.workflow_id;
+    const workflowId = Array.isArray(rawWorkflowId)
+      ? rawWorkflowId[0]
+      : rawWorkflowId;
+
+    if (typeof workflowId !== 'string') {
+      return undefined;
+    }
+
+    const normalizedWorkflowId = workflowId.trim();
+
+    return normalizedWorkflowId.length > 0 ? normalizedWorkflowId : undefined;
+  }
+
+  private async getValidatedWorkflowId(
+    req: SocketRequest,
+  ): Promise<string | undefined> {
+    const workflowId = this.getWorkflowIdFromSocketQuery(req);
+
+    if (!workflowId) {
+      return undefined;
+    }
+
+    const workflow = await this.workflowService.findOne(workflowId);
+
+    if (!workflow) {
+      throw new NotFoundException(`Workflow with ID ${workflowId} not found`);
+    }
+
+    return workflowId;
   }
 }

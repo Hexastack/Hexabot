@@ -37,6 +37,7 @@ import {
   OutgoingMessageState,
 } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
+import { buildWebhookUrl } from "../utils/webhook-url";
 
 import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
@@ -293,6 +294,15 @@ const ChatProvider: React.FC<{
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
   const [profile, setProfile] = useState<undefined | ISubscriber>();
+  const getWebhookUrl = useCallback(
+    (query?: URLSearchParams | Record<string, string>) =>
+      buildWebhookUrl({
+        channel: config.channel,
+        workflowId: config.workflowId,
+        query,
+      }),
+    [config.channel, config.workflowId],
+  );
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -358,7 +368,7 @@ const ChatProvider: React.FC<{
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      await socket.post<TMessage>(`/webhook/${config.channel}/`, {
+      await socket.post<TMessage>(getWebhookUrl(), {
         data: {
           ...data,
           author: data.author ?? participants[1].id,
@@ -388,11 +398,7 @@ const ChatProvider: React.FC<{
         const { body } = await socket.get<{
           messages: TMessage[];
           profile: ISubscriber;
-        }>(
-          `/webhook/${config.channel}/?${new URLSearchParams(
-            queryParams,
-          ).toString()}`,
-        );
+        }>(getWebhookUrl(queryParams));
         const { quickReplies, arrangedMessages, participantsList } =
           preprocessMessages(body.messages, participants, body.profile);
 
@@ -414,11 +420,18 @@ const ChatProvider: React.FC<{
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [participants, setConnectionState, setMessages, setParticipants, socket],
+    [
+      getWebhookUrl,
+      participants,
+      setConnectionState,
+      setMessages,
+      setParticipants,
+      socket,
+    ],
   );
   const subscribe = async (first_name: string = "", last_name: string = "") => {
     const { body } = await socket.get<SubscribeResponse>(
-      `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
+      getWebhookUrl({ first_name, last_name }),
     );
 
     return body;
