@@ -18,10 +18,7 @@ import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
-import {
-  Workflow as WorkflowDto,
-  WorkflowFull,
-} from '@/workflow/dto/workflow.dto';
+import { WorkflowFull } from '@/workflow/dto/workflow.dto';
 
 import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
 import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
@@ -48,11 +45,9 @@ export class AgenticService {
    * Process an event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleEvent(
-    event: TriggerEventWrapper,
-    workflow?: WorkflowDto,
-  ): Promise<void> {
+  async handleEvent(event: TriggerEventWrapper): Promise<void> {
     const initiator = event.getInitiator();
+    const requestedWorkflowId = event.getWorkflowId();
     this.logger.debug('Handling incoming workflow event');
     if (!initiator) {
       this.logger.warn(
@@ -64,7 +59,10 @@ export class AgenticService {
 
     try {
       const suspendedRun =
-        await this.workflowRunService.findSuspendedRunByInitiator(initiator.id);
+        await this.workflowRunService.findSuspendedRunByInitiator(
+          initiator.id,
+          requestedWorkflowId,
+        );
       if (suspendedRun) {
         this.logger.log('Resuming suspended workflow run', {
           triggeredById: initiator.id,
@@ -78,11 +76,13 @@ export class AgenticService {
         return;
       }
 
-      const workflowToRun = workflow
-        ? await this.workflowService.findOneAndPopulate(workflow.id)
+      const workflowToRun = requestedWorkflowId
+        ? await this.workflowService.findOneAndPopulate(requestedWorkflowId)
         : await this.workflowService.pickWorkflow();
       if (!workflowToRun) {
-        this.logger.warn('No workflow available to handle incoming event');
+        this.logger.warn('No workflow available to handle incoming event', {
+          requestedWorkflowId: requestedWorkflowId ?? null,
+        });
 
         return;
       }

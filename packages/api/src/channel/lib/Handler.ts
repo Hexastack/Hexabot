@@ -133,6 +133,7 @@ export default abstract class ChannelHandler<
   abstract handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    workflowId?: string,
   ): any;
 
   /**

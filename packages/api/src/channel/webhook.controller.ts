@@ -4,18 +4,36 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  HttpStatus,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { Request, Response } from 'express'; // Import the Express request and response types
 
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
+
+const WORKFLOW_ID_PARAM_PIPE = new ParseUUIDPipe({
+  version: '4',
+  errorHttpStatusCode: HttpStatus.NOT_FOUND,
+});
 
 @Controller('webhook')
 export class WebhookController {
   constructor(
     private readonly channelService: ChannelService,
+    private readonly workflowService: WorkflowService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -61,9 +79,24 @@ export class WebhookController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<any> {
-    this.logger.log('Channel notification : ', req.method, channel);
+    return await this.handleChannelRequest(channel, req, res);
+  }
 
-    return await this.channelService.handle(channel, req, res);
+  @Roles('public')
+  @Get(':channel/not-found')
+  async handleNotFound(@Res() res: Response) {
+    return res.status(404).send({ error: 'Resource not found!' });
+  }
+
+  @Roles('public')
+  @Get(':channel/:workflowId')
+  async handleGetWithWorkflow(
+    @Param('channel') channel: string,
+    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<any> {
+    return await this.handleChannelRequest(channel, req, res, workflowId);
   }
 
   /**
@@ -85,14 +118,34 @@ export class WebhookController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    this.logger.log('Channel notification : ', req.method, channel);
-
-    return await this.channelService.handle(channel, req, res);
+    return await this.handleChannelRequest(channel, req, res);
   }
 
   @Roles('public')
-  @Get(':channel/not-found')
-  async handleNotFound(@Res() res: Response) {
-    return res.status(404).send({ error: 'Resource not found!' });
+  @Post(':channel/:workflowId')
+  async handlePostWithWorkflow(
+    @Param('channel') channel: string,
+    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    return await this.handleChannelRequest(channel, req, res, workflowId);
+  }
+
+  private async handleChannelRequest(
+    channel: string,
+    req: Request,
+    res: Response,
+    workflowId?: string,
+  ): Promise<void> {
+    this.logger.log('Channel notification : ', req.method, channel, workflowId);
+    if (workflowId) {
+      const workflow = await this.workflowService.findOne(workflowId);
+      if (!workflow) {
+        throw new NotFoundException(`Workflow with ID ${workflowId} not found`);
+      }
+    }
+
+    return await this.channelService.handle(channel, req, res, workflowId);
   }
 }

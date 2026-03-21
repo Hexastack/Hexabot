@@ -17,6 +17,8 @@ export abstract class TriggerEventWrapper<
 
   protected initiator: U;
 
+  private workflowId?: string;
+
   /**
    * Returns the user/profile that initiated this event (subscriber or admin).
    */
@@ -29,6 +31,21 @@ export abstract class TriggerEventWrapper<
    */
   setInitiator(profile: U) {
     this.initiator = profile;
+  }
+
+  /**
+   * Sets an optional workflow id used to target execution.
+   * This value is transient and not automatically persisted in context/input.
+   */
+  setWorkflowId(workflowId?: string) {
+    this.workflowId = workflowId;
+  }
+
+  /**
+   * Returns the optional targeted workflow id for this event.
+   */
+  getWorkflowId(): string | undefined {
+    return this.workflowId;
   }
 
   abstract getMetadata(): Record<string, unknown>;

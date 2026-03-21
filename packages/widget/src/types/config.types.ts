@@ -11,6 +11,7 @@ export type Config = {
   channel: string;
   language: string;
   maxUploadSize: number;
+  workflowId?: string;
   instanceId?: string;
   mode?: ThemeMode;
   theme?: ThemeOverrides;

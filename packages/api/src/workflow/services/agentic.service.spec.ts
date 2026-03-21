@@ -282,6 +282,54 @@ describe('AgenticService (TypeORM)', () => {
       );
     });
 
+    it('targets an explicit workflow id and scopes suspended lookup', async () => {
+      const event = createEvent({ text: 'targeted' });
+      const runtimeContext = {
+        state: { locale: initiator.language, targeted: true },
+        event,
+      } as any;
+      workflowContextFactoryMock.create.mockResolvedValue(runtimeContext);
+      const runnerState: ExecutionState = {
+        input: { text: 'targeted' },
+        output: { targeted: true },
+        iterationStack: [0],
+      };
+      const runnerSnapshot: WorkflowSnapshot = {
+        status: 'finished',
+        actions: {},
+      };
+      const runner = buildRunnerMock({
+        startResult: {
+          status: 'finished',
+          output: { targeted: true },
+          snapshot: runnerSnapshot,
+        },
+        state: runnerState,
+        snapshot: runnerSnapshot,
+      });
+      const workflowInstance = buildWorkflowInstance(runner);
+      jest
+        .spyOn(AgenticWorkflow, 'fromDefinition')
+        .mockReturnValue(workflowInstance);
+      const findSuspendedSpy = jest.spyOn(
+        workflowRunService,
+        'findSuspendedRunByInitiator',
+      );
+      const pickWorkflowSpy = jest.spyOn(workflowService, 'pickWorkflow');
+      const findOneAndPopulateSpy = jest.spyOn(
+        workflowService,
+        'findOneAndPopulate',
+      );
+
+      event.setWorkflowId(workflow.id);
+      await agenticService.handleEvent(event);
+
+      expect(findSuspendedSpy).toHaveBeenCalledWith(initiator.id, workflow.id);
+      expect(pickWorkflowSpy).not.toHaveBeenCalled();
+      expect(findOneAndPopulateSpy.mock.calls[0]?.[0]).toBe(workflow.id);
+      expect(workflowInstance.buildAsyncRunner).toHaveBeenCalled();
+    });
+
     it('resumes a suspended run and records suspension details', async () => {
       const baseRun = await workflowRunService.create({
         workflow: workflow.id,

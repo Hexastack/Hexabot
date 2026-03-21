@@ -412,7 +412,7 @@ export const WorkflowBottomDrawer = () => {
               event.stopPropagation();
             }}
           >
-            <ChatWidget variant="embedded" />
+            <ChatWidget variant="embedded" workflowId={workflow?.id} />
           </ChatWidgetColumn>
         ) : (
           <DrawerColumn
