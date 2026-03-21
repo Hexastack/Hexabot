@@ -622,11 +622,11 @@ describe('WorkflowController (TypeORM)', () => {
       } as any);
 
       expect(spyAgenticService).toHaveBeenCalledTimes(1);
-      const [eventArg, workflowArg] = spyAgenticService.mock.calls[0];
-      expect(workflowArg?.id).toEqual(manual.id);
+      const [eventArg] = spyAgenticService.mock.calls[0];
       expect(eventArg).toBeInstanceOf(ManualEventWrapper);
       expect(eventArg.buildInput()).toEqual(input);
       expect(eventArg.getInitiator()?.id).toEqual(userId);
+      expect(eventArg.getWorkflowId()).toEqual(manual.id);
       expect(result).toEqual({ accepted: true });
     });
 
@@ -686,8 +686,7 @@ describe('WorkflowController (TypeORM)', () => {
         session: { passport: { user: { id: userId } } },
       } as any);
       expect(spyAgenticService).toHaveBeenCalledTimes(1);
-      const [eventArg, workflowArg] = spyAgenticService.mock.calls[0];
-      expect(workflowArg?.id).toEqual(scheduled.id);
+      const [eventArg] = spyAgenticService.mock.calls[0];
       expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
       expect(eventArg.buildInput()).toEqual(
         expect.objectContaining({
@@ -696,6 +695,7 @@ describe('WorkflowController (TypeORM)', () => {
         }),
       );
       expect(eventArg.getInitiator()?.id).toEqual(userId);
+      expect(eventArg.getWorkflowId()).toEqual(scheduled.id);
       expect(eventArg.getMetadata()).toEqual(
         expect.objectContaining({
           trigger: WorkflowType.scheduled,

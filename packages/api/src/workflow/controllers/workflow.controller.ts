@@ -329,8 +329,9 @@ export class WorkflowController extends BaseOrmController<
         : new ManualEventWrapper(manualInput, userId);
     const initiator = await this.userService.findOne(userId);
     event.setInitiator(initiator!);
+    event.setWorkflowId(workflow.id);
 
-    await this.agenticService.handleEvent(event, workflow);
+    await this.agenticService.handleEvent(event);
 
     return { accepted: true };
   }

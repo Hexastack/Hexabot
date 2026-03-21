@@ -138,4 +138,22 @@ describe(`Web event wrapper`, () => {
     expect(event.getContextData()).not.toHaveProperty('eventType');
     expect(event.getContextData()).not.toHaveProperty('messageType');
   });
+
+  it('keeps workflow id as transient event state', () => {
+    const [_testCase, e, expected] = webEvents[0];
+    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const event = new WebEventWrapper(
+      handler as unknown as WebChannelHandler,
+      e,
+      expected.channelData,
+    );
+
+    expect(event.getWorkflowId()).toBeUndefined();
+
+    event.setWorkflowId(workflowId);
+
+    expect(event.getWorkflowId()).toBe(workflowId);
+    expect(event.buildInput()).not.toHaveProperty('workflowId');
+    expect(event.getContextData()).not.toHaveProperty('workflowId');
+  });
 });

@@ -6,6 +6,7 @@
 
 import { HttpModule } from '@nestjs/axios';
 import {
+  forwardRef,
   Global,
   MiddlewareConsumer,
   Module,
@@ -17,6 +18,7 @@ import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms/cms.module';
+import { WorkflowModule } from '@/workflow/workflow.module';
 
 import { ChannelController } from './channel.controller';
 import { ChannelMiddleware } from './channel.middleware';
@@ -37,7 +39,14 @@ export interface ChannelModuleOptions {
   'dist/extensions/channels/**/*.channel.js',
 )
 @Module({
-  imports: [ChatModule, AttachmentModule, CmsModule, HttpModule, JwtModule],
+  imports: [
+    ChatModule,
+    AttachmentModule,
+    CmsModule,
+    HttpModule,
+    JwtModule,
+    forwardRef(() => WorkflowModule),
+  ],
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],
   exports: [ChannelService],

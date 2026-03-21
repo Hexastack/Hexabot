@@ -134,7 +134,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     await flushCronCallbacks();
 
     expect(handleEventSpy).toHaveBeenCalledTimes(1);
-    const [eventArg, workflowArg] = handleEventSpy.mock.calls[0];
+    const [eventArg] = handleEventSpy.mock.calls[0];
     expect(eventArg).toBeInstanceOf(ScheduledEventWrapper);
     expect(eventArg.getContextData()).toEqual(
       expect.objectContaining({
@@ -151,7 +151,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     expect(eventArg.getInitiator()).toEqual(
       expect.objectContaining({ id: workflow.createdBy }),
     );
-    expect(workflowArg?.id).toBe(workflow.id);
+    expect(eventArg.getWorkflowId()).toBe(workflow.id);
   });
 
   it('skips registration when there are no scheduled workflows', async () => {

@@ -15,7 +15,6 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
 
-import { Workflow as WorkflowDto } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 import { WorkflowType } from '../types';
@@ -177,7 +176,8 @@ export class WorkflowSchedulerService implements OnModuleInit {
           triggeredAt,
         });
         event.setInitiator(initiator);
-        await this.agenticService.handleEvent(event, workflow as WorkflowDto);
+        event.setWorkflowId(workflow.id);
+        await this.agenticService.handleEvent(event);
       });
 
       this.schedulerRegistry.addCronJob(jobName, job);

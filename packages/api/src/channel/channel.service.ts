@@ -90,11 +90,17 @@ export class ChannelService {
    * @param channel - The channel for which the request is being handled.
    * @param req - The HTTP request object.
    * @param res - The HTTP response object.
+   * @param workflowId - Optional workflow identifier to target execution.
    * @returns A promise that resolves when the handler has processed the request.
    */
-  async handle(channel: string, req: Request, res: Response): Promise<void> {
+  async handle(
+    channel: string,
+    req: Request,
+    res: Response,
+    workflowId?: string,
+  ): Promise<void> {
     const handler = this.getChannelHandler(`${channel}-channel`);
-    handler.handle(req, res);
+    handler.handle(req, res, workflowId);
   }
 
   /**

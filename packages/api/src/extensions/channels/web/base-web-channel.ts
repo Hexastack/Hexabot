@@ -796,6 +796,7 @@ export default abstract class BaseWebChannelHandler<
   _handleEvent(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    workflowId?: string,
   ): void {
     // @TODO: perform payload validation
     if (!req.body) {
@@ -858,6 +859,7 @@ export default abstract class BaseWebChannelHandler<
       }
 
       event.setInitiator(profile);
+      event.setWorkflowId(workflowId);
 
       const type = event.getEventType();
       if (type) {
@@ -886,7 +888,11 @@ export default abstract class BaseWebChannelHandler<
    * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
-  async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
+  async handle(
+    req: Request | SocketRequest,
+    res: Response | SocketResponse,
+    workflowId?: string,
+  ) {
     // Web Channel messaging can be done through websockets or long-polling
     try {
       await this.checkRequest(req, res);
@@ -929,7 +935,7 @@ export default abstract class BaseWebChannelHandler<
         }
       } else {
         // Handle incoming messages (through POST)
-        return this._handleEvent(req, res);
+        return this._handleEvent(req, res, workflowId);
       }
     } catch (err) {
       this.logger.warn('Request check failed', err);

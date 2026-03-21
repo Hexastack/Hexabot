@@ -326,5 +326,32 @@ describe('WorkflowRunService (TypeORM)', () => {
       });
       expect(result).toBe(expectedRun);
     });
+
+    it('adds workflow filter when a workflow id is provided', async () => {
+      const mockedRepo = {
+        findOneAndPopulate: jest.fn(),
+      } as unknown as WorkflowRunRepository;
+      const service = new WorkflowRunService(mockedRepo);
+      const expectedRun = { id: 'run-456' } as WorkflowRun;
+
+      (mockedRepo.findOneAndPopulate as jest.Mock).mockResolvedValue(
+        expectedRun,
+      );
+
+      const result = await service.findSuspendedRunByInitiator(
+        'sub-1',
+        'workflow-1',
+      );
+
+      expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
+        where: {
+          triggeredBy: { id: 'sub-1' },
+          status: 'suspended',
+          workflow: { id: 'workflow-1' },
+        },
+        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
+      });
+      expect(result).toBe(expectedRun);
+    });
   });
 });
