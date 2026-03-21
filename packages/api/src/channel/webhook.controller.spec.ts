@@ -4,10 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import { Request, Response } from 'express';
+import request from 'supertest';
 
 import { LoggerService } from '@/logger/logger.service';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
@@ -85,6 +87,69 @@ describe('WebhookController', () => {
     ).rejects.toThrow(
       new NotFoundException(`Workflow with ID ${workflowId} not found`),
     );
+    expect(channelService.handle).not.toHaveBeenCalled();
+  });
+});
+
+describe('WebhookController (HTTP pipes)', () => {
+  let app: INestApplication;
+  let channelService: jest.Mocked<Pick<ChannelService, 'handle' | 'download'>>;
+  let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
+  let logger: jest.Mocked<Pick<LoggerService, 'log'>>;
+
+  beforeAll(async () => {
+    channelService = {
+      handle: jest.fn(async (_channel, _req, res: Response) => {
+        res.status(204).send();
+      }),
+      download: jest.fn(),
+    };
+    workflowService = {
+      findOne: jest.fn().mockResolvedValue({
+        id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      } as any),
+    };
+    logger = {
+      log: jest.fn(),
+    };
+
+    const { module } = await buildTestingMocks({
+      controllers: [WebhookController],
+      providers: [
+        { provide: ChannelService, useValue: channelService },
+        { provide: WorkflowService, useValue: workflowService },
+        { provide: LoggerService, useValue: logger },
+      ],
+    });
+
+    app = module.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('rejects malformed workflow id on GET before controller logic', async () => {
+    await request(app.getHttpServer())
+      .get('/webhook/web/not-a-uuid')
+      .expect(404);
+
+    expect(workflowService.findOne).not.toHaveBeenCalled();
+    expect(channelService.handle).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed workflow id on POST before controller logic', async () => {
+    await request(app.getHttpServer())
+      .post('/webhook/web/not-a-uuid')
+      .send({ text: 'hello' })
+      .expect(404);
+
+    expect(workflowService.findOne).not.toHaveBeenCalled();
     expect(channelService.handle).not.toHaveBeenCalled();
   });
 });

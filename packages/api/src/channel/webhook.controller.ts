@@ -5,10 +5,12 @@
  */
 
 import {
+  HttpStatus,
   Controller,
   Get,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -22,8 +24,10 @@ import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
 
-const UUID_PATH_PATTERN =
-  '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}';
+const WORKFLOW_ID_PARAM_PIPE = new ParseUUIDPipe({
+  version: '4',
+  errorHttpStatusCode: HttpStatus.NOT_FOUND,
+});
 
 @Controller('webhook')
 export class WebhookController {
@@ -79,10 +83,16 @@ export class WebhookController {
   }
 
   @Roles('public')
-  @Get(`:channel/:workflowId(${UUID_PATH_PATTERN})`)
+  @Get(':channel/not-found')
+  async handleNotFound(@Res() res: Response) {
+    return res.status(404).send({ error: 'Resource not found!' });
+  }
+
+  @Roles('public')
+  @Get(':channel/:workflowId')
   async handleGetWithWorkflow(
     @Param('channel') channel: string,
-    @Param('workflowId') workflowId: string,
+    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<any> {
@@ -112,20 +122,14 @@ export class WebhookController {
   }
 
   @Roles('public')
-  @Post(`:channel/:workflowId(${UUID_PATH_PATTERN})`)
+  @Post(':channel/:workflowId')
   async handlePostWithWorkflow(
     @Param('channel') channel: string,
-    @Param('workflowId') workflowId: string,
+    @Param('workflowId', WORKFLOW_ID_PARAM_PIPE) workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
     return await this.handleChannelRequest(channel, req, res, workflowId);
-  }
-
-  @Roles('public')
-  @Get(':channel/not-found')
-  async handleNotFound(@Res() res: Response) {
-    return res.status(404).send({ error: 'Resource not found!' });
   }
 
   private async handleChannelRequest(
