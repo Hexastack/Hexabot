@@ -17,4 +17,11 @@ export class UserService extends BaseOrmService<UserOrmEntity, UserDtoConfig> {
   constructor(readonly repository: UserRepository) {
     super(repository);
   }
+
+  /**
+   * Returns active user IDs from a given set of user IDs.
+   */
+  async findActiveUserIds(userIds: string[]): Promise<string[]> {
+    return await this.repository.findActiveUserIds(userIds);
+  }
 }

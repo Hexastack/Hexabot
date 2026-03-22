@@ -10,21 +10,18 @@ import z from 'zod';
 import { createBindingKind } from '@/bindings/create-binding-kind';
 
 export const aiMemoryBindingSchema = z.strictObject({
-  definition_id: z
-    .string()
-    .uuid()
-    .meta({
-      title: 'Memory definition',
-      description:
-        'Select a memory definition that can be mounted into AI action memory bindings.',
-      'ui:widget': 'AutoCompleteWidget',
-      'ui:options': {
-        entity: 'MemoryDefinition',
-        valueKey: 'id',
-        labelKey: 'name',
-        enableEntityAddButton: true,
-      },
-    }),
+  definition_id: z.uuid().meta({
+    title: 'Memory definition',
+    description:
+      'Select a memory definition that can be mounted into AI action memory bindings.',
+    'ui:widget': 'AutoCompleteWidget',
+    'ui:options': {
+      entity: 'MemoryDefinition',
+      valueKey: 'id',
+      labelKey: 'name',
+      enableEntityAddButton: true,
+    },
+  }),
 });
 
 declare global {

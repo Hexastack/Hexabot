@@ -267,6 +267,9 @@ describe('WebChannelHandler', () => {
   it('subscribes and returns the message history', async () => {
     const subscriber =
       await subscriberService.findOneByForeignIdAndPopulate('foreign-id-web-1');
+    if (!subscriber) {
+      throw new Error('Expected fixture subscriber "foreign-id-web-1"');
+    }
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const req = {

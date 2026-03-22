@@ -82,6 +82,27 @@ export class WebsocketGateway
     this.io.to(subscriber.foreignId).except(excludedRooms).emit(type, content);
   }
 
+  /**
+   * Returns currently connected authenticated user IDs (deduplicated).
+   */
+  getConnectedAuthenticatedUserIds(): string[] {
+    if (!this.io?.sockets?.sockets) {
+      return [];
+    }
+
+    const connectedUserIds = new Set<string>();
+
+    for (const [, socket] of this.io.sockets.sockets) {
+      const userId = socket.request?.session?.passport?.user?.id;
+
+      if (typeof userId === 'string' && userId.trim()) {
+        connectedUserIds.add(userId);
+      }
+    }
+
+    return Array.from(connectedUserIds);
+  }
+
   async createAndStoreSession(client: Socket): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const sid = uid(24); // Sign the session ID before sending

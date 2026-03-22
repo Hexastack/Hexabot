@@ -18,11 +18,13 @@ import {
 } from '@/attachment/types';
 import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
+import { UserService } from '@/user/services/user.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
 import { sortRowsBy } from '@/utils/test/sort';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { Subscriber } from '../dto/subscriber.dto';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
@@ -40,12 +42,16 @@ describe('SubscriberService (TypeORM)', () => {
   let subscriberRepository: SubscriberRepository;
   let labelRepository: LabelRepository;
   let labelGroupRepository: LabelGroupRepository;
+  let userService: UserService;
   let userRepository: UserRepository;
   const STORED_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
   const EXISTING_ATTACHMENT_ID = '88888888-8888-4888-8888-888888888888';
   const attachmentServiceMock = {
     store: jest.fn(),
   } as jest.Mocked<Pick<AttachmentService, 'store'>>;
+  const websocketGatewayMock = {
+    getConnectedAuthenticatedUserIds: jest.fn(),
+  } as jest.Mocked<Pick<WebsocketGateway, 'getConnectedAuthenticatedUserIds'>>;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -54,8 +60,10 @@ describe('SubscriberService (TypeORM)', () => {
         SubscriberService,
         LabelService,
         LabelGroupRepository,
+        UserService,
         UserRepository,
         { provide: AttachmentService, useValue: attachmentServiceMock },
+        { provide: WebsocketGateway, useValue: websocketGatewayMock },
       ],
       typeorm: {
         fixtures: [
@@ -72,12 +80,14 @@ describe('SubscriberService (TypeORM)', () => {
       subscriberRepository,
       labelRepository,
       labelGroupRepository,
+      userService,
       userRepository,
     ] = await testing.getMocks([
       SubscriberService,
       SubscriberRepository,
       LabelRepository,
       LabelGroupRepository,
+      UserService,
       UserRepository,
     ]);
   });
@@ -394,8 +404,121 @@ describe('SubscriberService (TypeORM)', () => {
 
       expect(updateSpy).toHaveBeenCalledWith(profile.id, {
         assignedTo: assignee.id,
+        assignedAt: expect.any(Date),
       });
       expect(result).toEqualPayload(expected);
+    });
+  });
+
+  describe('handOverByPolicy', () => {
+    it('assigns in specific mode when assignee is active', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-2' },
+      }))!;
+      const assigneeId = '11111111-1111-4111-8111-111111111111';
+      const updated = { ...profile, assignedTo: assigneeId } as Subscriber;
+
+      jest
+        .spyOn(userService, 'findActiveUserIds')
+        .mockResolvedValue([assigneeId]);
+      const handOverSpy = jest
+        .spyOn(subscriberService, 'handOver')
+        .mockResolvedValue(updated);
+      const result = await subscriberService.handOverByPolicy(profile, {
+        mode: 'specific',
+        userId: assigneeId,
+      });
+
+      expect(handOverSpy).toHaveBeenCalledWith(profile, assigneeId);
+      expect(result).toEqualPayload({
+        success: true,
+        mode: 'specific',
+        subscriber: updated,
+        assignedTo: assigneeId,
+      });
+    });
+
+    it('throws in specific mode when assignee is inactive or missing', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-2' },
+      }))!;
+      const assigneeId = '22222222-2222-4222-8222-222222222222';
+
+      jest.spyOn(userService, 'findActiveUserIds').mockResolvedValue([]);
+
+      await expect(
+        subscriberService.handOverByPolicy(profile, {
+          mode: 'specific',
+          userId: assigneeId,
+        }),
+      ).rejects.toThrow(
+        `Unable to handover to user "${assigneeId}": user is inactive or does not exist`,
+      );
+    });
+
+    it('chooses the least-loaded active online assignee in auto mode', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-1' },
+      }))!;
+      const updated = {
+        ...profile,
+        assignedTo: '33333333-3333-4333-8333-333333333333',
+      } as Subscriber;
+
+      websocketGatewayMock.getConnectedAuthenticatedUserIds.mockReturnValue([
+        '33333333-3333-4333-8333-333333333333',
+        '11111111-1111-4111-8111-111111111111',
+      ]);
+      jest
+        .spyOn(userService, 'findActiveUserIds')
+        .mockResolvedValue([
+          '11111111-1111-4111-8111-111111111111',
+          '33333333-3333-4333-8333-333333333333',
+        ]);
+      jest
+        .spyOn(subscriberRepository, 'countAssignedSubscribersByUserIds')
+        .mockResolvedValue({
+          '11111111-1111-4111-8111-111111111111': 5,
+          '33333333-3333-4333-8333-333333333333': 1,
+        });
+      const handOverSpy = jest
+        .spyOn(subscriberService, 'handOver')
+        .mockResolvedValue(updated);
+      const result = await subscriberService.handOverByPolicy(profile, {
+        mode: 'auto',
+      });
+
+      expect(handOverSpy).toHaveBeenCalledWith(
+        profile,
+        '33333333-3333-4333-8333-333333333333',
+      );
+      expect(result).toEqualPayload({
+        success: true,
+        mode: 'auto',
+        subscriber: updated,
+        assignedTo: '33333333-3333-4333-8333-333333333333',
+      });
+    });
+
+    it('returns no-op output in auto mode when no active online user exists', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-messenger' },
+      }))!;
+
+      websocketGatewayMock.getConnectedAuthenticatedUserIds.mockReturnValue([]);
+      const handOverSpy = jest.spyOn(subscriberService, 'handOver');
+      const result = await subscriberService.handOverByPolicy(profile, {
+        mode: 'auto',
+      });
+
+      expect(handOverSpy).not.toHaveBeenCalled();
+      expect(result).toEqualPayload({
+        success: false,
+        mode: 'auto',
+        subscriber: profile,
+        assignedTo: profile.assignedTo ?? null,
+        reason: 'no_available_user',
+      });
     });
   });
 });
