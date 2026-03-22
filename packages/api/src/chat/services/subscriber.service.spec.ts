@@ -388,6 +388,92 @@ describe('SubscriberService (TypeORM)', () => {
     });
   });
 
+  describe('updateLabels', () => {
+    it('should remove labels when only labelsToRemove is provided', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-messenger' },
+      }))!;
+      const labelToRemove = profile.labels[0];
+      expect(labelToRemove).toBeDefined();
+
+      const result = await subscriberService.updateLabels(
+        profile,
+        [],
+        [labelToRemove, labelToRemove],
+      );
+
+      expect(result.labels).not.toContain(labelToRemove);
+    });
+
+    it('should apply assign-wins behavior for overlapping labels', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-2' },
+      }))!;
+      const labelToRemove = profile.labels[0];
+      const [labelToAssign] = await labelRepository.createMany([
+        {
+          title: 'Update Labels Assign Wins',
+          name: `UPDATE_LABELS_ASSIGN_WINS_${Date.now()}`,
+        },
+      ]);
+      expect(labelToRemove).toBeDefined();
+
+      const result = await subscriberService.updateLabels(
+        profile,
+        [labelToAssign.id],
+        [labelToRemove, labelToAssign.id, labelToAssign.id],
+      );
+
+      expect(result.labels).toContain(labelToAssign.id);
+      expect(result.labels).not.toContain(labelToRemove);
+    });
+
+    it('should preserve mutex replacement behavior through assign path', async () => {
+      const mutexGroup = await labelGroupRepository.create({
+        name: 'MUTEX_UPDATE_LABELS_GROUP',
+      });
+      const timestamp = Date.now();
+      const [oldLabel, newLabel] = await labelRepository.createMany([
+        {
+          title: 'Update Labels Mutex Old',
+          name: `UPDATE_LABELS_MUTEX_OLD_${timestamp}`,
+          group: mutexGroup.id,
+        },
+        {
+          title: 'Update Labels Mutex New',
+          name: `UPDATE_LABELS_MUTEX_NEW_${timestamp}`,
+          group: mutexGroup.id,
+        },
+      ]);
+      const baseSubscriber = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-1' },
+      }))!;
+      const withOldLabel = await subscriberService.updateLabels(
+        baseSubscriber,
+        [oldLabel.id],
+        [],
+      );
+      const result = await subscriberService.updateLabels(
+        withOldLabel,
+        [newLabel.id],
+        [],
+      );
+
+      expect(result.labels).toContain(newLabel.id);
+      expect(result.labels).not.toContain(oldLabel.id);
+    });
+
+    it('should throw when there are no effective label operations', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-web-1' },
+      }))!;
+
+      await expect(subscriberService.updateLabels(profile)).rejects.toThrow(
+        'At least one label operation is required',
+      );
+    });
+  });
+
   describe('handOver', () => {
     it('should set assignedTo when provided without labels', async () => {
       const profile = (await subscriberService.findOne({

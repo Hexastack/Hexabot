@@ -226,6 +226,46 @@ export class SubscriberService extends BaseOrmService<
   }
 
   /**
+   * Updates subscriber labels by applying assign/remove operations.
+   * Assign operations are applied first to preserve mutex semantics,
+   * and overlapping label ids always keep the assignment (assign wins).
+   */
+  async updateLabels(
+    subscriber: Subscriber,
+    labelsToAssign: string[] = [],
+    labelsToRemove: string[] = [],
+  ): Promise<Subscriber> {
+    const uniqueLabelsToAssign = Array.from(new Set(labelsToAssign));
+    const labelsToAssignSet = new Set(uniqueLabelsToAssign);
+    const uniqueLabelsToRemove = Array.from(new Set(labelsToRemove)).filter(
+      (labelId) => !labelsToAssignSet.has(labelId),
+    );
+
+    if (
+      uniqueLabelsToAssign.length === 0 &&
+      uniqueLabelsToRemove.length === 0
+    ) {
+      throw new Error('At least one label operation is required');
+    }
+
+    let current = subscriber;
+
+    if (uniqueLabelsToAssign.length > 0) {
+      current = await this.assignLabels(current, uniqueLabelsToAssign);
+    }
+
+    if (uniqueLabelsToRemove.length > 0) {
+      current = await this.repository.updateLabels(
+        current.id,
+        [],
+        uniqueLabelsToRemove,
+      );
+    }
+
+    return current;
+  }
+
+  /**
    * Handover (assign) the subscriber to a specific user.
    * No-op if `assignTo` is falsy.
    *
