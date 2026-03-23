@@ -124,12 +124,6 @@ const installWorkflowFixtures = async (
   await installUserFixturesTypeOrm(dataSource);
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
   const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
-  WorkflowOrmEntity.registerEntityManagerProvider(
-    () => workflowRepository.manager,
-  );
-  WorkflowVersionOrmEntity.registerEntityManagerProvider(
-    () => versionRepository.manager,
-  );
 
   if (await workflowRepository.count()) {
     return await workflowRepository.find({

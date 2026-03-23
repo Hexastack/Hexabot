@@ -14,13 +14,13 @@ import {
 import { CronJob } from 'cron';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import {
-  AfterInsert,
   BeforeInsert,
   BeforeRemove,
   BeforeUpdate,
   Column,
   Entity,
   Index,
+  InsertEvent,
   JoinColumn,
   ManyToOne,
   RelationId,
@@ -28,6 +28,7 @@ import {
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import { OnAfterInsert } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
@@ -53,18 +54,17 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
 
   fullCls = WorkflowFull;
 
-  private static readonly BLANK_DEFINITION_YML =
-    AgenticWorkflow.stringifyDefinition({
-      defaults: {
-        settings: {
-          timeout_ms: DEFAULT_TIMEOUT_MS,
-          retries: { ...DEFAULT_RETRY_SETTINGS },
-        },
+  static readonly BLANK_DEFINITION_YML = AgenticWorkflow.stringifyDefinition({
+    defaults: {
+      settings: {
+        timeout_ms: DEFAULT_TIMEOUT_MS,
+        retries: { ...DEFAULT_RETRY_SETTINGS },
       },
-      defs: {},
-      flow: [],
-      outputs: {},
-    });
+    },
+    defs: {},
+    flow: [],
+    outputs: {},
+  });
 
   /** Human-readable workflow name, unique per version. */
   @Column({ type: 'varchar', length: 255 })
@@ -153,16 +153,21 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
   @EnumColumn({ enum: DirectionType, default: DirectionType.HORIZONTAL })
   direction!: DirectionType;
 
-  @AfterInsert()
-  protected async createBlankDefinitionVersion(): Promise<void> {
-    if (this.currentVersion || this.currentVersionId) {
+  @OnAfterInsert()
+  protected async createBlankDefinitionVersion(
+    event: InsertEvent<WorkflowOrmEntity>,
+  ): Promise<void> {
+    const currentVersionId =
+      typeof this.currentVersion === 'string'
+        ? this.currentVersion
+        : this.currentVersion?.id;
+    if (currentVersionId || this.currentVersionId) {
       return;
     }
 
-    const manager = WorkflowOrmEntity.getEntityManager();
     const createdById =
       typeof this.createdBy === 'string' ? this.createdBy : this.createdBy?.id;
-    const version = manager.create(WorkflowVersionOrmEntity, {
+    const version = event.manager.create(WorkflowVersionOrmEntity, {
       workflow: { id: this.id },
       version: 0,
       definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
@@ -172,7 +177,7 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
       message: null,
     });
 
-    await manager.save(WorkflowVersionOrmEntity, version);
+    await event.manager.save(WorkflowVersionOrmEntity, version);
   }
 
   @BeforeRemove()

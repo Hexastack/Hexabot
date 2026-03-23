@@ -7,17 +7,18 @@
 import { createHash } from 'crypto';
 
 import {
-  AfterInsert,
   BeforeInsert,
   Column,
   Entity,
   Index,
+  InsertEvent,
   JoinColumn,
   ManyToOne,
   RelationId,
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import { OnAfterInsert } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
@@ -113,8 +114,10 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
     );
   }
 
-  @AfterInsert()
-  protected async updateWorkflowVersions(): Promise<void> {
+  @OnAfterInsert()
+  protected async updateWorkflowVersions(
+    event: InsertEvent<WorkflowVersionOrmEntity>,
+  ): Promise<void> {
     if (!this.action) {
       return;
     }
@@ -125,8 +128,7 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
       return;
     }
 
-    const manager = WorkflowVersionOrmEntity.getEntityManager();
-    const workflowRepository = manager.getRepository(WorkflowOrmEntity);
+    const workflowRepository = event.manager.getRepository(WorkflowOrmEntity);
     const workflow = await workflowRepository.findOne({
       where: { id: workflowId },
     });
@@ -135,7 +137,7 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
       return;
     }
 
-    workflow.currentVersion = manager.create(WorkflowVersionOrmEntity, {
+    workflow.currentVersion = event.manager.create(WorkflowVersionOrmEntity, {
       id: this.id,
     });
     await workflowRepository.save(workflow);

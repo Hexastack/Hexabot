@@ -80,6 +80,41 @@ describe('MenuRepository (TypeORM)', () => {
         }),
       ).rejects.toThrow();
     });
+
+    it('requires parent to be of type nested', async () => {
+      const parent = await repository.create({
+        title: 'Parent web url',
+        type: MenuType.web_url,
+        url: 'https://example.com',
+      });
+      createdMenuIds.add(parent.id);
+
+      await expect(
+        repository.create({
+          title: 'Child with non-nested parent',
+          type: MenuType.nested,
+          parent: { id: parent.id } as any,
+        }),
+      ).rejects.toThrow(
+        'Menu Validation Error: parent should be of type \"nested\"',
+      );
+    });
+
+    it('rejects updating a menu that references itself as parent', async () => {
+      const createdMenu = await repository.create({
+        title: 'Self parent create',
+        type: MenuType.nested,
+      });
+      await expect(
+        repository.updateOne(createdMenu.id, {
+          title: 'Self parent create',
+          type: MenuType.nested,
+          parent: { id: createdMenu.id } as any,
+        }),
+      ).rejects.toThrow(
+        'Menu Validation Error: parent should not reference itself',
+      );
+    });
   });
 
   describe('preUpdate validation', () => {
@@ -112,6 +147,20 @@ describe('MenuRepository (TypeORM)', () => {
         throw new Error('Expected menu update to succeed');
       }
       expect(updated.payload).toBe('updatedPayload');
+    });
+
+    it('rejects updating a menu to reference itself as parent', async () => {
+      const created = await repository.create({
+        title: 'Self parent update',
+        type: MenuType.nested,
+      });
+      createdMenuIds.add(created.id);
+
+      await expect(
+        repository.updateOne(created.id, { parent: { id: created.id } as any }),
+      ).rejects.toThrow(
+        'Menu Validation Error: parent should not reference itself',
+      );
     });
   });
 });
