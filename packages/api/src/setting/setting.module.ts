@@ -6,18 +6,36 @@
 
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { SettingController } from './controllers/setting.controller';
 import { MetadataOrmEntity } from './entities/metadata.entity';
 import { SettingOrmEntity } from './entities/setting.entity';
 import { MetadataRepository } from './repositories/metadata.repository';
 import { SettingRepository } from './repositories/setting.repository';
+import { RuntimeSettingsService } from './runtime-settings.service';
 import { MetadataSeeder } from './seeds/metadata.seed';
 import { SettingSeeder } from './seeds/setting.seed';
 import { MetadataService } from './services/metadata.service';
 import { SettingService } from './services/setting.service';
 
+const runtimeSettingProviderPatterns = [
+  // Built-in core settings groups
+  'dist/setting/**/*.settings.js',
+  // Built-in core extension settings groups
+  'dist/extensions/**/*.settings.js',
+  ...(process.env.NODE_ENV === 'test'
+    ? []
+    : [
+        // API package settings groups installed via npm
+        'node_modules/@hexabot-ai/api/dist/**/*.settings.js',
+        // Community settings groups installed via npm
+        'node_modules/hexabot-*/**/*.settings.js',
+      ]),
+] as const;
+
 @Global()
+@InjectDynamicProviders(...runtimeSettingProviderPatterns)
 @Module({
   imports: [TypeOrmModule.forFeature([SettingOrmEntity, MetadataOrmEntity])],
   providers: [
@@ -26,9 +44,10 @@ import { SettingService } from './services/setting.service';
     SettingSeeder,
     MetadataSeeder,
     SettingService,
+    RuntimeSettingsService,
     MetadataService,
   ],
   controllers: [SettingController],
-  exports: [SettingService, MetadataService],
+  exports: [SettingService, MetadataService, RuntimeSettingsService],
 })
 export class SettingModule {}

@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import CONSOLE_CHANNEL_SETTINGS, {
-  CONSOLE_CHANNEL_NAMESPACE,
-} from './settings';
+import { CONSOLE_CHANNEL_SETTINGS_SCHEMA } from './console-channel.settings';
+import { CONSOLE_CHANNEL_NAME, CONSOLE_CHANNEL_NAMESPACE } from './settings';
 
 declare global {
-  interface Settings extends SettingTree<typeof CONSOLE_CHANNEL_SETTINGS> {}
   interface SubscriberChannelDict {
     [CONSOLE_CHANNEL_NAME]: {
       isSocket: boolean;
@@ -23,7 +21,7 @@ declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
     [CONSOLE_CHANNEL_NAMESPACE]: TDefinition<
       object,
-      SettingMapByType<typeof CONSOLE_CHANNEL_SETTINGS>
+      SettingMapByType<typeof CONSOLE_CHANNEL_SETTINGS_SCHEMA>
     >;
   }
 }

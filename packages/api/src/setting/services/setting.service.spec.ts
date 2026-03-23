@@ -5,6 +5,7 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
+import { z } from 'zod';
 
 import {
   installSettingFixturesTypeOrm,
@@ -14,16 +15,22 @@ import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provide
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import {
+  CONTACT_SETTINGS_GROUP,
+  contactSettingsSchema,
+} from '../default.settings';
 import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
-import { SettingType } from '../types';
+import { RuntimeSettingsService } from '../runtime-settings.service';
 
 import { SettingService } from './setting.service';
 
 describe('SettingService', () => {
   let settingService: SettingService;
   let settingRepository: SettingRepository;
+  let runtimeSettingsService: RuntimeSettingsService;
   let module: TestingModule;
+  const createdIds: string[] = [];
   const makeSetting = (overrides: Partial<Setting>): Setting => {
     const setting = new Setting();
     Object.assign(setting, {
@@ -31,14 +38,9 @@ describe('SettingService', () => {
       group: 'group',
       label: 'label',
       value: '',
-      type: SettingType.text,
       createdAt: new Date(),
       updatedAt: new Date(),
-      subgroup: undefined,
-      options: undefined,
-      config: undefined,
-      weight: undefined,
-      translatable: false,
+      subgroup: null,
       ...overrides,
     });
 
@@ -54,10 +56,12 @@ describe('SettingService', () => {
       },
     });
     module = testingModule;
-    [settingService, settingRepository] = await getMocks([
-      SettingService,
-      SettingRepository,
-    ]);
+    [settingService, settingRepository, runtimeSettingsService] =
+      await getMocks([
+        SettingService,
+        SettingRepository,
+        RuntimeSettingsService,
+      ]);
   });
 
   afterAll(async () => {
@@ -67,8 +71,22 @@ describe('SettingService', () => {
     await closeTypeOrmConnections();
   });
 
+  beforeEach(() => {
+    runtimeSettingsService.reset();
+    runtimeSettingsService.register({
+      group: CONTACT_SETTINGS_GROUP,
+      schema: contactSettingsSchema,
+      scope: 'global',
+    });
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
+    for (const id of createdIds) {
+      await settingRepository.deleteOne(id);
+    }
+    createdIds.length = 0;
+    runtimeSettingsService.reset();
     await settingService.clearCache();
   });
 
@@ -130,13 +148,11 @@ describe('SettingService', () => {
           makeSetting({
             group: 'group1',
             label: 'setting1',
-            type: SettingType.text,
             value: 'value1',
           }),
           makeSetting({
             group: 'group1',
             label: 'setting2',
-            type: SettingType.text,
             value: 'value2',
           }),
         ],
@@ -144,7 +160,6 @@ describe('SettingService', () => {
           makeSetting({
             group: 'group2',
             label: 'setting1',
-            type: SettingType.text,
             value: 'value3',
           }),
         ],
@@ -208,6 +223,93 @@ describe('SettingService', () => {
         where: { label: 'allowed_domains' },
       });
       expect(result).toEqual(['*', 'https://example.com']);
+    });
+  });
+
+  describe('updateOne', () => {
+    it('accepts valid values for registered settings schema', async () => {
+      const setting = (await settingService.findOne({
+        where: { label: 'contact_email_recipient' },
+      })) as Setting;
+      const result = await settingService.updateOne(setting.id, {
+        value: 'security@example.com',
+      });
+
+      expect(result.value).toBe('security@example.com');
+    });
+
+    it('coerces numeric string values before persisting', async () => {
+      const group = 'coercion_settings';
+      const schema = z.strictObject({
+        threshold: z.number().int().default(3).meta({
+          title: 'Threshold',
+        }),
+      });
+      runtimeSettingsService.register({
+        group,
+        schema,
+        scope: 'extension',
+      });
+      const setting = await settingRepository.create({
+        group,
+        label: 'threshold',
+        value: 3,
+      });
+      createdIds.push(setting.id);
+
+      const updated = await settingService.updateOne(setting.id, {
+        value: '42' as unknown as number,
+      });
+
+      expect(updated.value).toBe(42);
+    });
+
+    it('coerces boolean string values before persisting', async () => {
+      const group = 'feature_flags';
+      const schema = z.strictObject({
+        enabled: z.boolean().default(false).meta({ title: 'Enabled' }),
+      });
+      runtimeSettingsService.register({
+        group,
+        schema,
+        scope: 'extension',
+      });
+      const setting = await settingRepository.create({
+        group,
+        label: 'enabled',
+        value: false,
+      });
+      createdIds.push(setting.id);
+
+      const updated = await settingService.updateOne(setting.id, {
+        value: 'true' as unknown as boolean,
+      });
+
+      expect(updated.value).toBe(true);
+    });
+
+    it('rejects invalid values against runtime schema', async () => {
+      const group = 'limits';
+      const schema = z.strictObject({
+        retries: z.number().int().min(0).default(1).meta({ title: 'Retries' }),
+      });
+      runtimeSettingsService.register({
+        group,
+        schema,
+        scope: 'extension',
+      });
+      const setting = await settingRepository.create({
+        group,
+        label: 'retries',
+        value: 1,
+      });
+      createdIds.push(setting.id);
+
+      await expect(
+        settingService.updateOne(setting.id, {
+          value: 'invalid' as unknown as number,
+        }),
+      ).rejects.toThrow('Invalid value provided for setting "limits.retries".');
     });
   });
 });

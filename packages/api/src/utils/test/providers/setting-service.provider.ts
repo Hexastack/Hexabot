@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingService, SettingType } from '@/setting';
+import { SettingService } from '@/setting';
 
 export const SettingServiceProvider = {
   provide: SettingService,
@@ -24,7 +24,6 @@ export const SettingServiceProvider = {
           group: 'default',
           value: 'Global fallback message',
           label: 'fallback_message',
-          type: SettingType.text,
         },
       ].filter((s) =>
         criteria && 'translatable' in criteria

@@ -13,20 +13,25 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import {
+  CONTACT_SETTINGS_GROUP,
+  contactSettingsSchema,
+} from '../default.settings';
 import { Setting } from '../dto/setting.dto';
-import { SettingOrmEntity } from '../entities/setting.entity';
+import { RuntimeSettingsService } from '../runtime-settings.service';
 import { SettingService } from '../services/setting.service';
 
 import { SettingController } from './setting.controller';
 
-const expectedSettings = settingFixtures.map((s) => ({
-  translatable: false,
-  ...s,
+const expectedSettings = settingFixtures.map((setting) => ({
+  ...setting,
+  subgroup: null,
 }));
 
 describe('SettingController', () => {
   let settingController: SettingController;
   let settingService: SettingService;
+  let runtimeSettingsService: RuntimeSettingsService;
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -38,10 +43,12 @@ describe('SettingController', () => {
       },
     });
     module = testingModule;
-    [settingController, settingService] = await getMocks([
-      SettingController,
-      SettingService,
-    ]);
+    [settingController, settingService, runtimeSettingsService] =
+      await getMocks([
+        SettingController,
+        SettingService,
+        RuntimeSettingsService,
+      ]);
   });
 
   afterAll(async () => {
@@ -51,14 +58,39 @@ describe('SettingController', () => {
     await closeTypeOrmConnections();
   });
 
+  beforeEach(() => {
+    runtimeSettingsService.reset();
+    runtimeSettingsService.register({
+      group: CONTACT_SETTINGS_GROUP,
+      schema: contactSettingsSchema,
+      scope: 'global',
+    });
+  });
+
   afterEach(jest.clearAllMocks);
+
+  describe('findSchemas', () => {
+    it('returns runtime settings schema definitions', () => {
+      const getAllSchemaDefinitionsSpy = jest.spyOn(
+        settingService,
+        'getAllSchemaDefinitions',
+      );
+      const result = settingController.findSchemas();
+
+      expect(getAllSchemaDefinitionsSpy).toHaveBeenCalled();
+      expect(result.contact).toBeDefined();
+      expect(result.contact.scope).toBe('global');
+      expect(result.contact.schema.$schema).toBe(
+        'http://json-schema.org/draft-07/schema#',
+      );
+    });
+  });
 
   describe('find', () => {
     it('Should return an array of ordered Settings by group ', async () => {
       jest.spyOn(settingService, 'find');
       const options = {
         where: {},
-        order: { weight: 'ASC' as any },
       };
       const result = await settingController.find(options);
 
@@ -95,24 +127,16 @@ describe('SettingController', () => {
       );
     });
 
-    it('Should validate value type before update', async () => {
+    it('Should validate value against runtime schema before update', async () => {
       const setting = (await settingService.findOne({
         where: { label: 'contact_email_recipient' },
       })) as Setting;
-      const assertValidValueSpy = jest.spyOn(
-        SettingOrmEntity.prototype as any,
-        'assertValidValue',
+
+      await expect(
+        settingController.updateOne(setting.id, { value: 123 as any }),
+      ).rejects.toThrow(
+        'Invalid value provided for setting "contact.contact_email_recipient".',
       );
-
-      try {
-        await expect(
-          settingController.updateOne(setting.id, { value: 123 as any }),
-        ).rejects.toThrow('Setting value must be a string.');
-
-        expect(assertValidValueSpy).toHaveBeenCalled();
-      } finally {
-        assertValidValueSpy.mockRestore();
-      }
     });
   });
 });

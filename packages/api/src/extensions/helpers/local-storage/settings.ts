@@ -1,15 +1,14 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { HelperSetting } from '@/helper/types';
+export {
+  LOCAL_STORAGE_HELPER_NAME,
+  LOCAL_STORAGE_HELPER_NAMESPACE,
+  LOCAL_STORAGE_HELPER_SETTINGS,
+  LOCAL_STORAGE_HELPER_SETTINGS_SCHEMA,
+} from './local-storage-helper.settings';
 
-export const LOCAL_STORAGE_HELPER_NAME = 'local-storage-helper';
-
-export const LOCAL_STORAGE_HELPER_NAMESPACE = 'local-storage-helper';
-
-export default [] as const satisfies HelperSetting<
-  typeof LOCAL_STORAGE_HELPER_NAME
->[];
+export { LOCAL_STORAGE_HELPER_SETTINGS as default } from './local-storage-helper.settings';

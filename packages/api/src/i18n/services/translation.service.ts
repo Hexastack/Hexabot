@@ -16,7 +16,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import jsonata from 'jsonata';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -32,7 +31,6 @@ export class TranslationService extends BaseOrmService<
   constructor(
     repository: TranslationRepository,
     private readonly workflowService: WorkflowService,
-    private readonly settingService: SettingService,
     private readonly i18n: I18nService,
   ) {
     super(repository);
@@ -73,27 +71,6 @@ export class TranslationService extends BaseOrmService<
     }
 
     return allStrings;
-  }
-
-  /**
-   * Return any available strings in settings
-   *
-   * @returns A promise of all strings available in a array
-   */
-  async getSettingStrings(): Promise<string[]> {
-    const translatableSettings = await this.settingService.find({
-      where: { translatable: true },
-    });
-    const settings = await this.settingService.getSettings();
-
-    return Object.values(settings)
-      .map((group: Record<string, string | string[]>) => Object.entries(group))
-      .flat()
-      .filter(([l]) => {
-        return translatableSettings.find(({ label }) => label === l);
-      })
-      .map(([, v]) => v)
-      .flat();
   }
 
   /**

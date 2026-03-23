@@ -29,6 +29,16 @@ export class SettingController extends BaseOrmController<
   }
 
   /**
+   * Retrieves runtime settings with Draft-07 JSON schemas.
+   *
+   * @returns Runtime settings metadata with JSON schemas.
+   */
+  @Get('schemas')
+  findSchemas() {
+    return this.settingService.getAllSchemaDefinitions();
+  }
+
+  /**
    * Finds settings that match the provided filters and sorting options.
    *
    * @param options - Combined filters, pagination, and sorting for the query.
