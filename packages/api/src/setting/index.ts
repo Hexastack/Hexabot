@@ -40,7 +40,7 @@ export * from './runtime-settings';
 
 export * from './runtime-settings.seed';
 
-export * from './runtime-settings.service';
+export * from './services/runtime-settings.service';
 
 export * from './setting.module';
 

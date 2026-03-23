@@ -21,8 +21,8 @@ import {
 } from '../default.settings';
 import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
-import { RuntimeSettingsService } from '../runtime-settings.service';
 
+import { RuntimeSettingsService } from './runtime-settings.service';
 import { SettingService } from './setting.service';
 
 describe('SettingService', () => {

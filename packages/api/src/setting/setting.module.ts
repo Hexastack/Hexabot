@@ -13,10 +13,10 @@ import { MetadataOrmEntity } from './entities/metadata.entity';
 import { SettingOrmEntity } from './entities/setting.entity';
 import { MetadataRepository } from './repositories/metadata.repository';
 import { SettingRepository } from './repositories/setting.repository';
-import { RuntimeSettingsService } from './runtime-settings.service';
 import { MetadataSeeder } from './seeds/metadata.seed';
 import { SettingSeeder } from './seeds/setting.seed';
 import { MetadataService } from './services/metadata.service';
+import { RuntimeSettingsService } from './services/runtime-settings.service';
 import { SettingService } from './services/setting.service';
 
 const runtimeSettingProviderPatterns = [

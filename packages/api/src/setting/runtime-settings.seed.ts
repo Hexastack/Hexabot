@@ -9,7 +9,7 @@ import { RuntimeSettingGroupSchema } from '@/setting/runtime-settings';
 import {
   RuntimeSettingRegistryMap,
   RuntimeSettingsService,
-} from '@/setting/runtime-settings.service';
+} from '@/setting/services/runtime-settings.service';
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

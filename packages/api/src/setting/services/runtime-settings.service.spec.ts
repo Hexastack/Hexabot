@@ -8,7 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { z } from 'zod';
 
 import { createSettingGroup } from '@/setting/create-setting-group';
-import { RuntimeSettingsService } from '@/setting/runtime-settings.service';
+import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
 
 describe('RuntimeSettingsService', () => {
   let moduleRef: TestingModule | undefined;

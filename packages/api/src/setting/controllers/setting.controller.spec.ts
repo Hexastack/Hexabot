@@ -18,7 +18,7 @@ import {
   contactSettingsSchema,
 } from '../default.settings';
 import { Setting } from '../dto/setting.dto';
-import { RuntimeSettingsService } from '../runtime-settings.service';
+import { RuntimeSettingsService } from '../services/runtime-settings.service';
 import { SettingService } from '../services/setting.service';
 
 import { SettingController } from './setting.controller';

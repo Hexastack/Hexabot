@@ -35,8 +35,9 @@ import {
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { buildSettingSeedsFromRegistry } from '../runtime-settings.seed';
-import { RuntimeSettingsService } from '../runtime-settings.service';
 import { SettingSeeder } from '../seeds/setting.seed';
+
+import { RuntimeSettingsService } from './runtime-settings.service';
 
 @Injectable()
 export class SettingService

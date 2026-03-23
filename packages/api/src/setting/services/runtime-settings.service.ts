@@ -15,7 +15,7 @@ import {
   SettingExtensionType,
   SettingScope,
   getRuntimeSettingShape,
-} from './runtime-settings';
+} from '../runtime-settings';
 
 export type RuntimeSettingGroupDefinition = {
   schema: z.ZodTypeAny;

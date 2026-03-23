@@ -12,7 +12,7 @@ import {
   SettingExtensionType,
   SettingScope,
 } from '@/setting/runtime-settings';
-import { RuntimeSettingsService } from '@/setting/runtime-settings.service';
+import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
 
 @Injectable()
 export abstract class BaseSettingGroupProvider<

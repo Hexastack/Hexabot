@@ -11,7 +11,7 @@ import {
   RuntimeSettingGroupDescriptor,
   RuntimeSettingGroupSchema,
 } from '@/setting/runtime-settings';
-import { RuntimeSettingsService } from '@/setting/runtime-settings.service';
+import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
 
 export function createSettingGroup<
   G extends string,
