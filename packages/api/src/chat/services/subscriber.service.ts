@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { In, IsNull, Not } from 'typeorm';
@@ -18,7 +18,9 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { UserService } from '@/user/services/user.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import {
   Subscriber,
@@ -30,6 +32,25 @@ import { SubscriberRepository } from '../repositories/subscriber.repository';
 
 import { LabelService } from './label.service';
 
+export const SUBSCRIBER_HANDOVER_MODES = ['specific', 'auto'] as const;
+
+export type SubscriberHandoverMode = (typeof SUBSCRIBER_HANDOVER_MODES)[number];
+
+export type SubscriberHandoverFailureReason = 'no_available_user';
+
+export type SubscriberHandoverPolicyInput = {
+  mode: SubscriberHandoverMode;
+  userId?: string;
+};
+
+export type SubscriberHandoverPolicyResult = {
+  success: boolean;
+  mode: SubscriberHandoverMode;
+  subscriber: Subscriber;
+  assignedTo: string | null;
+  reason?: SubscriberHandoverFailureReason;
+};
+
 @Injectable()
 export class SubscriberService extends BaseOrmService<
   SubscriberOrmEntity,
@@ -39,6 +60,10 @@ export class SubscriberService extends BaseOrmService<
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
     protected readonly labelService: LabelService,
+    protected readonly userService: UserService,
+    @Optional()
+    @Inject(forwardRef(() => WebsocketGateway))
+    protected readonly websocketGateway?: WebsocketGateway,
   ) {
     super(repository);
   }
@@ -201,6 +226,46 @@ export class SubscriberService extends BaseOrmService<
   }
 
   /**
+   * Updates subscriber labels by applying assign/remove operations.
+   * Assign operations are applied first to preserve mutex semantics,
+   * and overlapping label ids always keep the assignment (assign wins).
+   */
+  async updateLabels(
+    subscriber: Subscriber,
+    labelsToAssign: string[] = [],
+    labelsToRemove: string[] = [],
+  ): Promise<Subscriber> {
+    const uniqueLabelsToAssign = Array.from(new Set(labelsToAssign));
+    const labelsToAssignSet = new Set(uniqueLabelsToAssign);
+    const uniqueLabelsToRemove = Array.from(new Set(labelsToRemove)).filter(
+      (labelId) => !labelsToAssignSet.has(labelId),
+    );
+
+    if (
+      uniqueLabelsToAssign.length === 0 &&
+      uniqueLabelsToRemove.length === 0
+    ) {
+      throw new Error('At least one label operation is required');
+    }
+
+    let current = subscriber;
+
+    if (uniqueLabelsToAssign.length > 0) {
+      current = await this.assignLabels(current, uniqueLabelsToAssign);
+    }
+
+    if (uniqueLabelsToRemove.length > 0) {
+      current = await this.repository.updateLabels(
+        current.id,
+        [],
+        uniqueLabelsToRemove,
+      );
+    }
+
+    return current;
+  }
+
+  /**
    * Handover (assign) the subscriber to a specific user.
    * No-op if `assignTo` is falsy.
    *
@@ -213,12 +278,101 @@ export class SubscriberService extends BaseOrmService<
       throw new Error('Cannot handover to undefined user!');
     }
 
-    const updated = await this.updateOne(profile.id, { assignedTo: assignTo });
+    const updated = await this.updateOne(profile.id, {
+      assignedTo: assignTo,
+      assignedAt: new Date(),
+    });
     this.logger.debug(
       `Subscriber "${profile.id}" handed over to "${assignTo}"`,
     );
 
     return updated;
+  }
+
+  /**
+   * Resolves the least-loaded online active assignee.
+   */
+  private async resolveAutoAssigneeId(): Promise<string | null> {
+    const onlineUserIds =
+      this.websocketGateway?.getConnectedAuthenticatedUserIds() ?? [];
+
+    if (!onlineUserIds.length) {
+      return null;
+    }
+
+    const activeUserIds =
+      await this.userService.findActiveUserIds(onlineUserIds);
+    if (!activeUserIds.length) {
+      return null;
+    }
+
+    const workloadByUser =
+      await this.repository.countAssignedSubscribersByUserIds(activeUserIds);
+    const sortedCandidates = [...activeUserIds].sort((a, b) => {
+      const aCount = workloadByUser[a] ?? 0;
+      const bCount = workloadByUser[b] ?? 0;
+
+      if (aCount !== bCount) {
+        return aCount - bCount;
+      }
+
+      return a.localeCompare(b);
+    });
+
+    return sortedCandidates[0] ?? null;
+  }
+
+  /**
+   * Performs policy-based subscriber handover for conversational workflows.
+   */
+  async handOverByPolicy(
+    profile: Subscriber,
+    input: SubscriberHandoverPolicyInput,
+  ): Promise<SubscriberHandoverPolicyResult> {
+    if (input.mode === 'specific') {
+      if (!input.userId) {
+        throw new Error('`userId` is required when handover mode is specific');
+      }
+
+      const [activeUserId] = await this.userService.findActiveUserIds([
+        input.userId,
+      ]);
+      const isActive = activeUserId === input.userId;
+      if (!isActive) {
+        throw new Error(
+          `Unable to handover to user "${input.userId}": user is inactive or does not exist`,
+        );
+      }
+
+      const updated = await this.handOver(profile, input.userId);
+
+      return {
+        success: true,
+        mode: 'specific',
+        subscriber: updated,
+        assignedTo: updated.assignedTo,
+      };
+    }
+
+    const assigneeId = await this.resolveAutoAssigneeId();
+    if (!assigneeId) {
+      return {
+        success: false,
+        mode: 'auto',
+        subscriber: profile,
+        assignedTo: profile.assignedTo ?? null,
+        reason: 'no_available_user',
+      };
+    }
+
+    const updated = await this.handOver(profile, assigneeId);
+
+    return {
+      success: true,
+      mode: 'auto',
+      subscriber: updated,
+      assignedTo: updated.assignedTo,
+    };
   }
 
   /**

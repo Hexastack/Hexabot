@@ -35,6 +35,39 @@ export class SubscriberRepository extends BaseOrmRepository<
   }
 
   /**
+   * Extracts an assignee ID from a subscriber entity relation payload.
+   */
+  private resolveAssignedToId(subscriber?: SubscriberOrmEntity): string | null {
+    if (!subscriber) {
+      return null;
+    }
+
+    const relation = (subscriber as any).assignedTo;
+    if (!relation) {
+      const relationId = (subscriber as any).assignedToId;
+      const joinColumnId = (subscriber as any).assigned_to_id;
+
+      if (typeof relationId === 'string') {
+        return relationId;
+      }
+
+      return typeof joinColumnId === 'string' ? joinColumnId : null;
+    }
+
+    if (typeof relation === 'string') {
+      return relation;
+    }
+
+    if (typeof relation === 'object' && 'id' in relation) {
+      const id = (relation as { id?: unknown }).id;
+
+      return typeof id === 'string' ? id : null;
+    }
+
+    return null;
+  }
+
+  /**
    * Runs before a subscriber update to detect assignment changes and emit the appropriate events.
    *
    * @param event - The TypeORM update event describing the current and previous entity state.
@@ -44,60 +77,40 @@ export class SubscriberRepository extends BaseOrmRepository<
     const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
 
     if (entity && previous) {
-      const updatedColumns = event.updatedColumns ?? [];
-      const updatedRelations = event.updatedRelations ?? [];
-      const assignmentUpdated =
-        updatedColumns.some(
-          ({ propertyName }) => propertyName === 'assignedTo',
-        ) ||
-        updatedRelations.some(
-          ({ propertyName }) => propertyName === 'assignedTo',
+      let newAssignedTo = this.resolveAssignedToId(entity);
+      let previousAssignedTo = this.resolveAssignedToId(previous);
+
+      if (previousAssignedTo === null && previous.id) {
+        const previousFromStorage = await this.findOne(previous.id);
+        previousAssignedTo = previousFromStorage?.assignedTo ?? null;
+      }
+
+      const entityWithAny = entity as any;
+      const hasEntityAssigneeSignal =
+        entityWithAny.assignedTo !== undefined ||
+        entityWithAny.assignedToId !== undefined ||
+        entityWithAny.assigned_to_id !== undefined;
+      if (!hasEntityAssigneeSignal && entity.id) {
+        const updatedFromStorage = await this.findOne(entity.id);
+        newAssignedTo = updatedFromStorage?.assignedTo ?? null;
+      }
+
+      if (newAssignedTo !== previousAssignedTo) {
+        const previousSubscriber = previous.toPlainCls();
+        const assignedAt = newAssignedTo ? new Date() : null;
+        const subscriberUpdates: SubscriberUpdateDto = {
+          assignedTo: newAssignedTo,
+          assignedAt,
+        };
+        entity.assignedAt = assignedAt;
+
+        this.eventEmitter?.emit(
+          'hook:subscriber:assign',
+          subscriberUpdates,
+          previousSubscriber,
         );
-
-      if (assignmentUpdated) {
-        const newAssignedTo = entity?.id;
-        const previousAssignedTo = previous?.id;
-
-        if (newAssignedTo !== previousAssignedTo) {
-          const previousSubscriber = previous.toPlainCls();
-          const subscriberUpdates: SubscriberUpdateDto = {
-            assignedTo: newAssignedTo ?? null,
-          };
-
-          this.eventEmitter?.emit(
-            'hook:subscriber:assign',
-            subscriberUpdates,
-            previousSubscriber,
-          );
-
-          const newAssignmentExists = Boolean(newAssignedTo);
-          const previousAssignmentExists = Boolean(previousAssignedTo);
-
-          if (!(newAssignmentExists && previousAssignmentExists)) {
-            const assignedAt = new Date();
-            subscriberUpdates.assignedAt = assignedAt;
-            entity.assignedAt = assignedAt;
-          }
-        }
       }
     }
-  }
-
-  /**
-   * Constructs a query to find a subscriber by their foreign ID.
-   *
-   * @param id - The foreign ID of the subscriber.
-   *
-   * @returns The constructed query object.
-   */
-  private createForeignIdOptions(
-    id: string,
-  ): FindManyOptions<SubscriberOrmEntity> {
-    return {
-      where: { foreignId: id },
-      order: { lastvisit: 'DESC' },
-      take: 1,
-    };
   }
 
   /**
@@ -108,10 +121,10 @@ export class SubscriberRepository extends BaseOrmRepository<
    * @returns The found subscriber entity, or `null` if no subscriber is found.
    */
   async findOneByForeignId(id: string): Promise<Subscriber | null> {
-    const results = await this.find(this.createForeignIdOptions(id));
-    const [result] = results;
-
-    return result || null;
+    return await this.findOne({
+      where: { foreignId: id },
+      order: { lastvisit: 'DESC' },
+    });
   }
 
   /**
@@ -121,9 +134,13 @@ export class SubscriberRepository extends BaseOrmRepository<
    *
    * @returns The found subscriber entity with populated fields.
    */
-  async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
-    const results = await this.findAndPopulate(this.createForeignIdOptions(id));
-    const [result] = results;
+  async findOneByForeignIdAndPopulate(
+    id: string,
+  ): Promise<SubscriberFull | null> {
+    const result = await this.findOneAndPopulate({
+      where: { foreignId: id },
+      order: { lastvisit: 'DESC' },
+    });
 
     return result;
   }
@@ -156,7 +173,8 @@ export class SubscriberRepository extends BaseOrmRepository<
    * @returns The updated subscriber entity.
    */
   async handBackByForeignIdQuery(foreignId: string): Promise<Subscriber> {
-    return await this.updateOne(
+    const previous = await this.findOneByForeignId(foreignId);
+    const updated = await this.updateOne(
       {
         where: {
           foreignId,
@@ -164,8 +182,22 @@ export class SubscriberRepository extends BaseOrmRepository<
       },
       {
         assignedTo: null,
+        assignedAt: null,
       },
     );
+
+    if (previous && previous.assignedTo !== updated.assignedTo) {
+      this.eventEmitter?.emit(
+        'hook:subscriber:assign',
+        {
+          assignedTo: updated.assignedTo,
+          assignedAt: updated.assignedAt,
+        },
+        previous,
+      );
+    }
+
+    return updated;
   }
 
   /**
@@ -188,8 +220,37 @@ export class SubscriberRepository extends BaseOrmRepository<
       },
       {
         assignedTo: userId,
+        assignedAt: new Date(),
       },
     );
+  }
+
+  /**
+   * Counts currently assigned subscribers by assignee user ID.
+   */
+  async countAssignedSubscribersByUserIds(
+    userIds: string[],
+  ): Promise<Record<string, number>> {
+    if (!userIds.length) {
+      return {};
+    }
+
+    const rows = await this.repository
+      .createQueryBuilder('subscriber')
+      .select('subscriber.assigned_to_id', 'assigneeId')
+      .addSelect('COUNT(*)', 'assignedCount')
+      .where('subscriber.type = :subscriberType', {
+        subscriberType: EUserProfileType.SubscriberOrmEntity,
+      })
+      .andWhere('subscriber.assigned_to_id IN (:...userIds)', { userIds })
+      .groupBy('subscriber.assigned_to_id')
+      .getRawMany<{ assigneeId: string; assignedCount: string }>();
+
+    return rows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.assigneeId] = Number(row.assignedCount || 0);
+
+      return acc;
+    }, {});
   }
 
   /**

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import { TestingModule } from '@nestjs/testing';
 
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -104,6 +106,32 @@ describe('UserRepository (TypeORM)', () => {
           (plain!.roles ?? []).sort(),
         );
       });
+    });
+  });
+
+  describe('assignment helpers', () => {
+    it('returns only active user IDs from a candidate list', async () => {
+      const missingId = randomUUID();
+      const activeIds = await userRepository.findActiveUserIds([
+        user!.id,
+        missingId,
+      ]);
+
+      expect(activeIds).toContain(user!.id);
+      expect(activeIds).not.toContain(missingId);
+    });
+
+    it('checks activity based on user state', async () => {
+      const missingId = randomUUID();
+
+      expect(await userRepository.isActiveUser(user!.id)).toBe(true);
+      expect(await userRepository.isActiveUser(missingId)).toBe(false);
+
+      await userRepository.updateOne(user!.id, { state: false });
+      expect(await userRepository.isActiveUser(user!.id)).toBe(false);
+
+      await userRepository.updateOne(user!.id, { state: true });
+      expect(await userRepository.isActiveUser(user!.id)).toBe(true);
     });
   });
 });
