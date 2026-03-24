@@ -9,7 +9,7 @@ import { DynamicModule, ModuleMetadata, Provider } from '@nestjs/common';
 import { SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import {
   DataSource,
   DataSourceOptions,
@@ -18,6 +18,12 @@ import {
   getMetadataArgsStorage,
 } from 'typeorm';
 
+import {
+  invokeOrmHooks,
+  ORM_HOOK_NAMES,
+  OrmHookName,
+} from '@/database/decorators/orm-event-hooks.decorator';
+import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LoggerModule } from '@/logger/logger.module';
 import { LoggerService } from '@/logger/logger.service';
@@ -204,6 +210,39 @@ const buildEntityLookup = () => {
   });
 
   return lookup;
+};
+const registeredSubscribers = new Set<unknown>();
+const registerAllRepositorySubscribers = (
+  dataSource: DataSource,
+  entityClasses: (new (...args: any[]) => BaseOrmEntity<any>)[],
+): void => {
+  for (const EntityClass of entityClasses) {
+    if (registeredSubscribers.has(EntityClass)) continue;
+
+    const subscriber = {
+      listenTo: () => EntityClass,
+      ...Object.fromEntries(
+        ORM_HOOK_NAMES.map((name) => [
+          name,
+          async (event: any) => {
+            await invokeOrmHooks(
+              event.entity,
+              name as OrmHookName,
+              event,
+              EntityClass,
+            );
+          },
+        ]),
+      ),
+    };
+    const exists = dataSource.subscribers.some(
+      (s) => typeof s.listenTo === 'function' && s.listenTo() === EntityClass,
+    );
+    if (!exists) {
+      dataSource.subscribers.push(subscriber as any);
+      registeredSubscribers.add(EntityClass);
+    }
+  }
 };
 const normalizeRepositoryToken = (token: string): string | undefined => {
   if (!token.endsWith(TYPEORM_REPOSITORY_SUFFIX)) {
@@ -434,6 +473,7 @@ export const buildTestingMocks = async ({
   } as DataSourceOptions;
   const dataSource = new DataSource(baseOptions);
   await dataSource.initialize();
+  registerAllRepositorySubscribers(dataSource, entitiesArray as any[]);
   await runTypeOrmFixtures(dataSource);
   registerTypeOrmDataSource(dataSource);
 

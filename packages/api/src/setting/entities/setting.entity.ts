@@ -5,10 +5,14 @@
  */
 
 import { BadRequestException } from '@nestjs/common';
-import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Setting, SettingTransformerDto } from '../dto/setting.dto';
@@ -50,8 +54,8 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
   @Column({ default: false })
   translatable?: boolean;
 
-  @BeforeInsert()
-  @BeforeUpdate()
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
   protected validateValueBeforePersist(): void {
     this.assertValidValue();
   }

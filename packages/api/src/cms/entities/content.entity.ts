@@ -5,8 +5,6 @@
  */
 
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -18,6 +16,10 @@ import {
 import { ContentElement } from '@/chat/types/message';
 import { config } from '@/config';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -97,8 +99,8 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
     };
   }
 
-  @BeforeInsert()
-  @BeforeUpdate()
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
   async applySearchTextTransformation(): Promise<void> {
     this.searchText = await this.buildSearchText();
   }

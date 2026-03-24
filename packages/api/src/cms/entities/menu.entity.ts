@@ -5,19 +5,23 @@
  */
 
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Check,
   Column,
   Entity,
   Index,
+  InsertEvent,
   JoinColumn,
   ManyToOne,
   OneToMany,
   RelationId,
+  UpdateEvent,
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -84,17 +88,11 @@ export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
   @OneToMany(() => MenuOrmEntity, (menu) => menu.parent)
   children?: MenuOrmEntity[];
 
-  @BeforeInsert()
-  async handleBeforeInsert(): Promise<void> {
-    await this.ensureValidParent();
-  }
-
-  @BeforeUpdate()
-  async handleBeforeUpdate(): Promise<void> {
-    await this.ensureValidParent();
-  }
-
-  private async ensureValidParent(): Promise<void> {
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
+  protected async ensureValidParent(
+    event: InsertEvent<MenuOrmEntity> | UpdateEvent<MenuOrmEntity>,
+  ): Promise<void> {
     const parentId = this.parent?.id;
     if (parentId) {
       if (this.id && parentId === this.id) {
@@ -103,9 +101,7 @@ export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
         );
       }
 
-      // Ensure parent is nested
-      const manager = MenuOrmEntity.getEntityManager();
-      const parent = await manager.findOne(MenuOrmEntity, {
+      const parent = await event.manager.findOne(MenuOrmEntity, {
         where: { id: parentId },
       });
 

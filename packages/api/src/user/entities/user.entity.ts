@@ -5,8 +5,6 @@
  */
 
 import {
-  BeforeInsert,
-  BeforeUpdate,
   ChildEntity,
   Column,
   Index,
@@ -17,6 +15,10 @@ import {
 
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { User, UserFull, UserTransformerDto } from '../dto/user.dto';
@@ -71,14 +73,14 @@ export class UserOrmEntity extends SubscriberOrmEntity<UserTransformerDto> {
   @JsonColumn({ nullable: true })
   provider?: UserProvider;
 
-  @BeforeInsert()
+  @OnBeforeInsert()
   ensureProvider(): void {
     if (!this.provider) {
       this.provider = { strategy: 'local' };
     }
   }
 
-  @BeforeInsert()
+  @OnBeforeInsert()
   ensurePassword(): void {
     if (!this.password) {
       throw new Error('No password provided');
@@ -90,7 +92,7 @@ export class UserOrmEntity extends SubscriberOrmEntity<UserTransformerDto> {
     }
   }
 
-  @BeforeUpdate()
+  @OnBeforeUpdate()
   hashSensitiveFields(): void {
     if (this.password) {
       this.password = this.hashIfNeeded(this.password);

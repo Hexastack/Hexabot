@@ -122,12 +122,6 @@ const findRunsWithRelations = async (dataSource: DataSource) =>
 const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
   const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
-  WorkflowOrmEntity.registerEntityManagerProvider(
-    () => workflowRepository.manager,
-  );
-  WorkflowVersionOrmEntity.registerEntityManagerProvider(
-    () => versionRepository.manager,
-  );
   const existing = await workflowRepository.findOne({
     where: { id: workflowRunWorkflowFixtureId },
     relations: ['currentVersion'],

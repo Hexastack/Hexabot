@@ -7,12 +7,7 @@
 import { randomUUID } from 'crypto';
 
 import { plainToInstance } from 'class-transformer';
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  EntityManager,
-  PrimaryColumn,
-} from 'typeorm';
+import { BeforeInsert, BeforeUpdate, PrimaryColumn } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { InferTransformDto } from '@/utils';
@@ -26,8 +21,6 @@ export abstract class BaseOrmEntity<
     PlainCls: unknown;
   },
 > {
-  private static entityManagerProvider?: () => EntityManager;
-
   abstract plainCls: TransformerDto['PlainCls'];
 
   abstract fullCls: TransformerDto['FullCls'];
@@ -54,32 +47,6 @@ export abstract class BaseOrmEntity<
   @BeforeUpdate()
   protected touchUpdatedAt(): void {
     this.updatedAt = new Date();
-  }
-
-  static registerEntityManagerProvider(provider: () => EntityManager): void {
-    this.entityManagerProvider = provider;
-  }
-
-  protected static getEntityManager(): EntityManager {
-    if (!this.entityManagerProvider) {
-      throw new Error(
-        `Entity manager provider not registered for ${this.name}`,
-      );
-    }
-
-    try {
-      const manager = this.entityManagerProvider();
-      if (!manager) {
-        throw new Error('Entity manager provider returned no manager');
-      }
-
-      return manager;
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Unable to resolve entity manager for ${this.name}: ${reason}`,
-      );
-    }
   }
 
   public toPlainCls(): InferTransformDto<TransformerDto['PlainCls']> {

@@ -16,7 +16,6 @@ import set from 'lodash/set';
 import {
   DataSource,
   DeepPartial,
-  EntityManager,
   EntityMetadata,
   EntitySubscriberInterface,
   FindManyOptions,
@@ -28,6 +27,10 @@ import {
   UpdateEvent,
 } from 'typeorm';
 
+import {
+  invokeOrmHooks,
+  OrmHookName,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { flatten } from '@/utils/helpers/flatten';
@@ -86,8 +89,14 @@ export abstract class BaseOrmRepository<
     protected readonly populateRelations: string[] = [],
   ) {
     this.dataSource = repository.manager.connection;
-    this.registerEntityManagerProvider();
     this.registerAsSubscriber();
+  }
+
+  private async invokeEntityHooks(
+    hook: OrmHookName,
+    event: OrmLifecycleEvent<Entity>,
+  ): Promise<void> {
+    await invokeOrmHooks(event.entity, hook, event);
   }
 
   getPopulateRelations(): readonly string[] {
@@ -106,10 +115,6 @@ export abstract class BaseOrmRepository<
 
   getEventEmitter(): EventEmitter2 {
     return this.eventEmitter;
-  }
-
-  getManager(): EntityManager {
-    return this.repository.manager;
   }
 
   @Inject(EventEmitter2)
@@ -414,22 +419,6 @@ export abstract class BaseOrmRepository<
     }
   }
 
-  private registerEntityManagerProvider(): void {
-    const target = this.repository.target;
-    if (typeof target !== 'function') {
-      return;
-    }
-
-    const entityConstructor = target as unknown as typeof BaseOrmEntity;
-    if (typeof entityConstructor.registerEntityManagerProvider !== 'function') {
-      return;
-    }
-
-    entityConstructor.registerEntityManagerProvider(
-      () => this.repository.manager,
-    );
-  }
-
   protected getEventName(
     metadata: EntityMetadata,
     suffix: EHook,
@@ -511,31 +500,37 @@ export abstract class BaseOrmRepository<
   async beforeInsert(event: InsertEvent<Entity>): Promise<void> {
     await this.onBeforeInsert(event);
     await this.emitHook(EHook.preCreate, event);
+    await this.invokeEntityHooks('beforeInsert', event);
   }
 
   async afterInsert(event: InsertEvent<Entity>): Promise<void> {
     await this.onAfterInsert(event);
     await this.emitHook(EHook.postCreate, event);
+    await this.invokeEntityHooks('afterInsert', event);
   }
 
   async beforeUpdate(event: UpdateEvent<Entity>): Promise<void> {
     await this.onBeforeUpdate(event);
     await this.emitHook(EHook.preUpdate, event);
+    await this.invokeEntityHooks('beforeUpdate', event);
   }
 
   async afterUpdate(event: UpdateEvent<Entity>): Promise<void> {
     await this.onAfterUpdate(event);
     await this.emitHook(EHook.postUpdate, event);
+    await this.invokeEntityHooks('afterUpdate', event);
   }
 
   async beforeRemove(event: RemoveEvent<Entity>): Promise<void> {
     await this.onBeforeRemove(event);
     await this.emitHook(EHook.preDelete, event);
+    await this.invokeEntityHooks('beforeRemove', event);
   }
 
   async afterRemove(event: RemoveEvent<Entity>): Promise<void> {
     await this.onAfterRemove(event);
     await this.emitHook(EHook.postDelete, event);
+    await this.invokeEntityHooks('afterRemove', event);
   }
 }
 

@@ -4,16 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  RelationId,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, RelationId } from 'typeorm';
 
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -50,8 +46,8 @@ export class InvitationOrmEntity extends BaseOrmEntity<InvitationTransformerDto>
   @RelationId((invitation: InvitationOrmEntity) => invitation.roles)
   private readonly roleIds!: string[];
 
-  @BeforeInsert()
-  @BeforeUpdate()
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
   private hashToken(): void {
     if (!this.token) {
       return;
