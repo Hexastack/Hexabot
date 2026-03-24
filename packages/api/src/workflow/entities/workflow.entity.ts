@@ -14,9 +14,6 @@ import {
 import { CronJob } from 'cron';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import {
-  BeforeInsert,
-  BeforeRemove,
-  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -28,7 +25,12 @@ import {
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { OnAfterInsert } from '@/database/decorators/orm-event-hooks.decorator';
+import {
+  OnAfterInsert,
+  OnBeforeInsert,
+  OnBeforeRemove,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
@@ -167,20 +169,26 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
 
     const createdById =
       typeof this.createdBy === 'string' ? this.createdBy : this.createdBy?.id;
-    const version = event.manager.create(WorkflowVersionOrmEntity, {
-      workflow: { id: this.id },
-      version: 0,
-      definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
-      action: WorkflowVersionAction.create,
-      createdBy: createdById ? { id: createdById } : null,
-      parentVersion: null,
-      message: null,
-    });
 
-    await event.manager.save(WorkflowVersionOrmEntity, version);
+    try {
+      const version = event.manager.create(WorkflowVersionOrmEntity, {
+        workflow: { id: this.id },
+        version: 0,
+        definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
+        action: WorkflowVersionAction.create,
+        createdBy: createdById ? { id: createdById } : null,
+        parentVersion: null,
+        message: null,
+      });
+      await event.manager.save(WorkflowVersionOrmEntity, version);
+    } catch (error: any) {
+      if (error.code !== 'SQLITE_CONSTRAINT') {
+        throw error;
+      }
+    }
   }
 
-  @BeforeRemove()
+  @OnBeforeRemove()
   protected preventBuiltinRemoval(): void {
     if (this.builtin) {
       throw new Error('Cannot delete builtin workflow');
@@ -195,8 +203,8 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
    * When a workflow switches from a fixed-schema type to manual without an explicit
    * custom schema, the previous fixed schema is replaced with the manual default.
    */
-  @BeforeInsert()
-  @BeforeUpdate()
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
   protected syncInputSchema(): void {
     if (!this.type) {
       return;

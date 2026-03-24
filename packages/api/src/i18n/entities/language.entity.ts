@@ -4,17 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  BeforeRemove,
-  Column,
-  Entity,
-  Index,
-  InsertEvent,
-  UpdateEvent,
-} from 'typeorm';
+import { Column, Entity, Index, InsertEvent, UpdateEvent } from 'typeorm';
 
 import {
   OnBeforeInsert,
+  OnBeforeRemove,
   OnBeforeUpdate,
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -63,7 +57,7 @@ export class LanguageOrmEntity extends BaseOrmEntity<LanguageTransformerDto> {
     await queryBuilder.execute();
   }
 
-  @BeforeRemove()
+  @OnBeforeRemove()
   protected preventDefaultRemoval(): void {
     if (this.isDefault) {
       throw new Error('Should not be able to delete default');

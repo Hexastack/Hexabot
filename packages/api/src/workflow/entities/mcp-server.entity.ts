@@ -7,8 +7,6 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   AfterLoad,
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   Index,
@@ -19,6 +17,10 @@ import {
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
+import {
+  OnBeforeInsert,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { CredentialOrmEntity } from '@/user';
 import { AsRelation } from '@/utils';
@@ -88,8 +90,8 @@ export class McpServerOrmEntity extends BaseOrmEntity<McpServerTransformerDto> {
     this.originalCredentialId = this.resolveCredentialId();
   }
 
-  @BeforeInsert()
-  @BeforeUpdate()
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
   protected normalizeTransportConfiguration(): void {
     this.url = this.normalizeNullableString(this.url);
     this.command = this.normalizeNullableString(this.command);

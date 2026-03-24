@@ -6,13 +6,16 @@
 
 import 'reflect-metadata';
 
-export type OrmHookName =
-  | 'beforeInsert'
-  | 'afterInsert'
-  | 'beforeUpdate'
-  | 'afterUpdate'
-  | 'beforeRemove'
-  | 'afterRemove';
+export const ORM_HOOK_NAMES = [
+  'beforeInsert',
+  'afterInsert',
+  'beforeUpdate',
+  'afterUpdate',
+  'beforeRemove',
+  'afterRemove',
+] as const;
+
+export type OrmHookName = (typeof ORM_HOOK_NAMES)[number];
 
 const HOOKS_KEY = Symbol('hooks');
 const hook =
@@ -43,4 +46,23 @@ export const getOrmHookMethods = (
     typeof target === 'function' ? target : target.constructor;
 
   return Reflect.getMetadata(HOOKS_KEY, constructor)?.[name] ?? [];
+};
+
+export const invokeOrmHooks = async (
+  entity: any,
+  hook: OrmHookName,
+  event: any,
+  targetClass?: any,
+): Promise<void> => {
+  if (!entity) return;
+
+  const constructor = targetClass ?? entity.constructor;
+  const methods = getOrmHookMethods(constructor, hook);
+
+  for (const key of methods) {
+    const handler = entity[key];
+    if (typeof handler === 'function') {
+      await handler.call(entity, event);
+    }
+  }
 };

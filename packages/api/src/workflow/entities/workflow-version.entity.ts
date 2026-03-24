@@ -7,7 +7,6 @@
 import { createHash } from 'crypto';
 
 import {
-  BeforeInsert,
   Column,
   Entity,
   Index,
@@ -18,7 +17,10 @@ import {
 } from 'typeorm';
 
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
-import { OnAfterInsert } from '@/database/decorators/orm-event-hooks.decorator';
+import {
+  OnAfterInsert,
+  OnBeforeInsert,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
@@ -107,7 +109,7 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTrans
     return createHash('sha256').update(definitionYml).digest('hex');
   }
 
-  @BeforeInsert()
+  @OnBeforeInsert()
   protected setChecksum(): void {
     this.checksum = WorkflowVersionOrmEntity.computeChecksum(
       this.definitionYml,

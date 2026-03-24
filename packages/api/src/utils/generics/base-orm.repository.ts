@@ -28,7 +28,7 @@ import {
 } from 'typeorm';
 
 import {
-  getOrmHookMethods,
+  invokeOrmHooks,
   OrmHookName,
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -96,15 +96,7 @@ export abstract class BaseOrmRepository<
     hook: OrmHookName,
     event: OrmLifecycleEvent<Entity>,
   ): Promise<void> {
-    const entity = event.entity as Record<string | symbol, any>;
-    if (!entity) return;
-
-    for (const key of getOrmHookMethods(entity.constructor, hook)) {
-      const handler = entity[key];
-      if (typeof handler === 'function') {
-        await handler.call(entity, event);
-      }
-    }
+    await invokeOrmHooks(event.entity, hook, event);
   }
 
   getPopulateRelations(): readonly string[] {
