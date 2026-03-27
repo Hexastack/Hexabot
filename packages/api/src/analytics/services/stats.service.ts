@@ -7,7 +7,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
-import { Between, InsertEvent, UpdateEvent } from 'typeorm';
+import { Between, UpdateEvent } from 'typeorm';
 
 import {
   Subscriber,
@@ -16,6 +16,7 @@ import {
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
+import { TEvent } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
@@ -39,7 +40,7 @@ export class StatsService extends BaseOrmService<
   }
 
   @OnEvent('hook:subscriber:preCreate')
-  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
+  handleSubscriberPreCreate(event: TEvent<SubscriberOrmEntity>) {
     const entity = event.entity;
     if (!entity) {
       return;

@@ -8,12 +8,13 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import { RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
+import { TEvent } from '@/utils';
 
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
@@ -57,9 +58,7 @@ export class WorkflowSchedulerService implements OnModuleInit {
    * @param event - Insert event containing the created workflow entity.
    */
   @OnEvent('hook:workflow:postCreate')
-  async handleWorkflowCreated(
-    event: InsertEvent<WorkflowOrmEntity>,
-  ): Promise<void> {
+  async handleWorkflowCreated(event: TEvent<WorkflowOrmEntity>): Promise<void> {
     if (event.entity.id) {
       await this.registerScheduledWorkflow(event.entity.id);
     }
@@ -74,8 +73,8 @@ export class WorkflowSchedulerService implements OnModuleInit {
   async handleWorkflowUpdated(
     event: UpdateEvent<WorkflowOrmEntity>,
   ): Promise<void> {
-    if (event.databaseEntity.id) {
-      await this.registerScheduledWorkflow(event.databaseEntity.id);
+    if (event.entity?.id) {
+      await this.registerScheduledWorkflow(event.entity.id);
     }
   }
 
@@ -88,8 +87,8 @@ export class WorkflowSchedulerService implements OnModuleInit {
   async handleWorkflowDeleted(
     event: RemoveEvent<WorkflowOrmEntity>,
   ): Promise<void> {
-    if (event.databaseEntity.id) {
-      this.unregisterScheduledWorkflow(event.databaseEntity.id);
+    if (event.entity?.id) {
+      this.unregisterScheduledWorkflow(event.entity.id);
     }
   }
 

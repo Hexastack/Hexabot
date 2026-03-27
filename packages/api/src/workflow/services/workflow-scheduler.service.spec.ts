@@ -189,8 +189,8 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
 
   it('ignores update events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postUpdate', {
-      databaseEntity: {} as WorkflowOrmEntity,
-    } as UpdateEvent<WorkflowOrmEntity>);
+      entity: {} as WorkflowOrmEntity,
+    } as unknown as UpdateEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -233,7 +233,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
 
   it('ignores delete events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postDelete', {
-      databaseEntity: {} as WorkflowOrmEntity,
+      entity: {} as WorkflowOrmEntity,
     } as RemoveEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);

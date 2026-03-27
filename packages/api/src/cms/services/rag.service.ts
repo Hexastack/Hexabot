@@ -95,7 +95,8 @@ export class RagService {
    * @returns Resolves when follow-up reindex handling completes.
    */
   @OnEvent('hook:rag_settings:enabled')
-  async handleRagEnabledSettingChanged(): Promise<void> {
+  async handleRagEnabledSettingChanged(event): Promise<void> {
+    console.log({ event });
     await this.reindexAfterRagSettingChange('enabled');
   }
 
@@ -210,6 +211,8 @@ export class RagService {
    */
   private async performRagSettingsReindex(): Promise<void> {
     const settings = await this.settingService.getSettings();
+
+    console.log(settings.rag_settings.enabled);
     if (!settings.rag_settings.enabled) {
       return;
     }

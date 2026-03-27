@@ -84,11 +84,15 @@ export abstract class BaseOrmRepository<
 {
   private readonly dataSource: DataSource;
 
+  private readonly entityName: string;
+
   protected constructor(
     protected readonly repository: Repository<Entity>,
     protected readonly populateRelations: string[] = [],
   ) {
     this.dataSource = repository.manager.connection;
+    this.entityName = this.getEntityName(repository.metadata);
+
     this.registerAsSubscriber();
   }
 
@@ -254,9 +258,24 @@ export abstract class BaseOrmRepository<
     payload: InferActionDto<DtoAction.Create, ActionDto>,
   ): Promise<InferTransformDto<Entity['plainCls']>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
-    const created = await this.repository.save(entity);
 
-    return created.toPlainCls();
+    await this.emitEvent(EHook.preCreate, {
+      action: EHook.preCreate,
+      payload,
+      entityName: this.entityName,
+    });
+
+    const createdEntity = await this.repository.save(entity);
+
+    await this.emitEvent(EHook.postCreate, {
+      action: EHook.postCreate,
+      //TODO
+      payload: payload as any,
+      entityName: this.entityName,
+      databaseEntity: createdEntity,
+    });
+
+    return createdEntity.toPlainCls();
   }
 
   async createMany(
@@ -307,9 +326,25 @@ export abstract class BaseOrmRepository<
         entity.updatedAt = new Date();
       }
 
-      const updated = await this.repository.save(entity);
-      if (updated) {
-        return updated.toPlainCls();
+      await this.emitEvent(EHook.preUpdate, {
+        action: EHook.preUpdate,
+        payload,
+        entityName: this.entityName,
+        databaseEntity: entity,
+      });
+
+      const updatedEntity = await this.repository.save(entity);
+
+      if (updatedEntity) {
+        await this.emitEvent(EHook.postUpdate, {
+          action: EHook.postUpdate,
+          //TODO
+          payload: payload as any,
+          entityName: this.entityName,
+          databaseEntity: updatedEntity,
+        });
+
+        return updatedEntity.toPlainCls();
       } else {
         throw new NotFoundException(
           'Unable to execute updateOne() - No updates',
@@ -392,7 +427,28 @@ export abstract class BaseOrmRepository<
       return { acknowledged: true, deletedCount: 0 };
     }
 
-    await this.repository.remove(entity);
+    const { id: entityId } = entity;
+
+    await this.emitEvent(EHook.preDelete, {
+      action: EHook.preDelete,
+      //TODO
+      payload: idOrOptions as any,
+      entityName: this.entityName,
+      databaseEntity: entity,
+    });
+
+    const removedEntity = await this.repository.remove(entity);
+
+    removedEntity.id = entityId;
+
+    await this.emitEvent(EHook.postDelete, {
+      action: EHook.postDelete,
+      //TODO
+      payload: idOrOptions as any,
+      entityName: this.entityName,
+      databaseEntity: removedEntity,
+    });
+
     const result: DeleteResult = {
       acknowledged: true,
       deletedCount: 1,
@@ -419,70 +475,34 @@ export abstract class BaseOrmRepository<
     }
   }
 
+  protected getEntityName(metadata: EntityMetadata) {
+    return (
+      camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
+      'entity'
+    );
+  }
+
   protected getEventName(
     metadata: EntityMetadata,
     suffix: EHook,
   ): `hook:${IHookEntities}:${TNormalizedEvents}` {
-    const entityName =
-      camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
-      'entity';
+    const entityName = this.getEntityName(metadata);
 
     return `hook:${entityName}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
-  protected async emitHook(
-    suffix: EHook,
-    event: OrmLifecycleEvent<Entity>,
-  ): Promise<void> {
-    this.ensureEntityIdOnEventEntity(event);
+  protected async emitEvent<
+    Entity extends BaseOrmEntity,
+    H extends EHook,
+    ActionDto extends DtoActionConfig,
+  >(hook: H, data: GenericEventHook<Entity, H, ActionDto>) {
+    const entityName = this.getEntityName(this.repository.metadata);
     if (!this.eventEmitter) return;
-    const eventName = this.getEventName(event.metadata, suffix);
-    await this.eventEmitter.emitAsync(eventName, event);
-  }
 
-  private ensureEntityIdOnEventEntity(event: OrmLifecycleEvent<Entity>): void {
-    const eventEntity = event.entity as Record<string, unknown> | undefined;
-    if (!eventEntity || typeof eventEntity !== 'object') {
-      return;
-    }
-
-    if (typeof eventEntity.id === 'string' && eventEntity.id) {
-      return;
-    }
-
-    const resolvedId = this.resolveEventEntityId(event);
-    if (resolvedId) {
-      eventEntity.id = resolvedId;
-    }
-  }
-
-  private resolveEventEntityId(
-    event: OrmLifecycleEvent<Entity>,
-  ): string | null {
-    const candidates: unknown[] = [];
-
-    if ('entityId' in event) {
-      candidates.push(event.entityId);
-    }
-
-    if ('databaseEntity' in event && event.databaseEntity) {
-      candidates.push((event.databaseEntity as Record<string, unknown>).id);
-    }
-
-    for (const candidate of candidates) {
-      if (typeof candidate === 'string' && candidate) {
-        return candidate;
-      }
-
-      if (candidate && typeof candidate === 'object') {
-        const nestedId = (candidate as Record<string, unknown>).id;
-        if (typeof nestedId === 'string' && nestedId) {
-          return nestedId;
-        }
-      }
-    }
-
-    return null;
+    await this.eventEmitter.emitAsync(`hook:${entityName}:${hook}`, {
+      ...data,
+      action: hook,
+    });
   }
 
   protected async onBeforeInsert(_event: InsertEvent<Entity>): Promise<void> {}
@@ -499,37 +519,31 @@ export abstract class BaseOrmRepository<
 
   async beforeInsert(event: InsertEvent<Entity>): Promise<void> {
     await this.onBeforeInsert(event);
-    await this.emitHook(EHook.preCreate, event);
     await this.invokeEntityHooks('beforeInsert', event);
   }
 
   async afterInsert(event: InsertEvent<Entity>): Promise<void> {
     await this.onAfterInsert(event);
-    await this.emitHook(EHook.postCreate, event);
     await this.invokeEntityHooks('afterInsert', event);
   }
 
   async beforeUpdate(event: UpdateEvent<Entity>): Promise<void> {
     await this.onBeforeUpdate(event);
-    await this.emitHook(EHook.preUpdate, event);
     await this.invokeEntityHooks('beforeUpdate', event);
   }
 
   async afterUpdate(event: UpdateEvent<Entity>): Promise<void> {
     await this.onAfterUpdate(event);
-    await this.emitHook(EHook.postUpdate, event);
     await this.invokeEntityHooks('afterUpdate', event);
   }
 
   async beforeRemove(event: RemoveEvent<Entity>): Promise<void> {
     await this.onBeforeRemove(event);
-    await this.emitHook(EHook.preDelete, event);
     await this.invokeEntityHooks('beforeRemove', event);
   }
 
   async afterRemove(event: RemoveEvent<Entity>): Promise<void> {
     await this.onAfterRemove(event);
-    await this.emitHook(EHook.postDelete, event);
     await this.invokeEntityHooks('afterRemove', event);
   }
 }
@@ -538,3 +552,56 @@ type OrmLifecycleEvent<Entity extends BaseOrmEntity> =
   | InsertEvent<Entity>
   | UpdateEvent<Entity>
   | RemoveEvent<Entity>;
+
+export type TEvent<Entity extends BaseOrmEntity> = {
+  entity: Entity;
+  databaseEntity?: Entity;
+};
+
+type BaseHookEvent<
+  Entity extends BaseOrmEntity<{
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  }>,
+> = {
+  action: EHook;
+  entityName: string;
+};
+
+export type GenericPostHookEvent<
+  Entity extends BaseOrmEntity,
+  H extends EHook,
+> = BaseHookEvent<Entity> &
+  (H extends EHook.preDelete
+    ? { payload: string | Partial<Entity>; databaseEntity: Entity }
+    : {
+        payload: Entity;
+        databaseEntity: Entity;
+      });
+
+export type GenericEventHook<
+  Entity extends BaseOrmEntity,
+  H extends EHook,
+  ActionDto extends DtoActionConfig,
+> = BaseHookEvent<Entity> &
+  (H extends EHook.preCreate
+    ? {
+        payload: InferActionDto<DtoAction.Create, ActionDto>;
+      }
+    : H extends EHook.postCreate
+      ? GenericPostHookEvent<Entity, EHook.postCreate>
+      : H extends EHook.preUpdate
+        ? {
+            payload: InferActionDto<DtoAction.Update, ActionDto>;
+            databaseEntity: Entity;
+          }
+        : H extends EHook.postUpdate
+          ? GenericPostHookEvent<Entity, EHook.postUpdate>
+          : H extends EHook.preDelete
+            ? {
+                payload: string | Partial<Entity>;
+                databaseEntity: Entity;
+              }
+            : H extends EHook.postDelete
+              ? GenericPostHookEvent<Entity, EHook.postDelete>
+              : {});
