@@ -18,26 +18,33 @@ export type EmitEventProps<
   ActionDto extends DtoActionConfig,
 > = { action: EHook } & (H extends EHook.preCreate
   ? {
-      payload: InferActionDto<DtoAction.Create, ActionDto>;
       entity: Entity;
+      payload: InferActionDto<DtoAction.Create, ActionDto>;
     }
   : H extends EHook.postCreate
-    ? { entity: Entity; payload: Entity }
+    ? { entity: Entity; payload: InferActionDto<DtoAction.Create, ActionDto> }
     : H extends EHook.preUpdate
       ? {
-          payload: InferActionDto<DtoAction.Update, ActionDto>;
           entity: Entity;
+          payload: InferActionDto<DtoAction.Update, ActionDto>;
           databaseEntity: Entity;
         }
       : H extends EHook.postUpdate
-        ? { entity: Entity; payload: Entity } & {
+        ? {
+            entity: Entity;
+            payload: InferActionDto<DtoAction.Update, ActionDto>;
             databaseEntity: Entity;
           }
         : H extends EHook.preDelete
           ? {
+              entity?: Entity;
               payload: string | FindOneOptions<Entity>;
               databaseEntity: Entity;
             }
           : H extends EHook.postDelete
-            ? { entity: Entity; payload: Entity }
+            ? {
+                entity?: Entity;
+                payload: string | FindOneOptions<Entity>;
+                databaseEntity: Entity;
+              }
             : {});

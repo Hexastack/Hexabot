@@ -82,14 +82,11 @@ export abstract class BaseOrmRepository<
 {
   private readonly dataSource: DataSource;
 
-  private readonly entityName: string;
-
   protected constructor(
     protected readonly repository: Repository<Entity>,
     protected readonly populateRelations: string[] = [],
   ) {
     this.dataSource = repository.manager.connection;
-    this.entityName = this.getEntityName(repository.metadata);
     this.registerAsSubscriber();
   }
 
@@ -266,8 +263,8 @@ export abstract class BaseOrmRepository<
 
     await this.emitEvent<EHook.postCreate>({
       action: EHook.postCreate,
-      payload: entity,
       entity: createdEntity,
+      payload,
     });
 
     return createdEntity.toPlainCls();
@@ -292,9 +289,9 @@ export abstract class BaseOrmRepository<
 
     for (let index = 0; index < created.length; index++) {
       await this.emitEvent<EHook.postCreate>({
-        action: EHook.postCreate,
-        payload: entities[index],
         entity: created[index],
+        action: EHook.postCreate,
+        payload: payloads[index],
       });
     }
 
@@ -343,8 +340,8 @@ export abstract class BaseOrmRepository<
 
       await this.emitEvent<EHook.preUpdate>({
         action: EHook.preUpdate,
-        payload,
         entity,
+        payload,
         databaseEntity,
       });
 
@@ -353,8 +350,8 @@ export abstract class BaseOrmRepository<
       if (updatedEntity) {
         await this.emitEvent<EHook.postUpdate>({
           action: EHook.postUpdate,
-          payload: entity,
           entity: updatedEntity,
+          payload,
           databaseEntity,
         });
 
@@ -396,8 +393,8 @@ export abstract class BaseOrmRepository<
 
       await this.emitEvent<EHook.preUpdate>({
         action: EHook.preUpdate,
-        payload,
         entity: entities[index],
+        payload,
         databaseEntity: databaseEntities[index],
       });
     }
@@ -407,8 +404,8 @@ export abstract class BaseOrmRepository<
     for (let index = 0; index < updatedEntities.length; index++) {
       await this.emitEvent<EHook.postUpdate>({
         action: EHook.postUpdate,
-        payload: entities[index],
         entity: updatedEntities[index],
+        payload: payload[index],
         databaseEntity: databaseEntities[index],
       });
     }
@@ -450,7 +447,7 @@ export abstract class BaseOrmRepository<
     for (let index = 0; index < deletable.length; index++) {
       await this.emitEvent<EHook.preDelete>({
         action: EHook.preDelete,
-        payload: deletableSnapshots[index].id,
+        payload: options,
         databaseEntity: deletableSnapshots[index],
       });
     }
@@ -464,14 +461,15 @@ export abstract class BaseOrmRepository<
 
       await this.emitEvent<EHook.postDelete>({
         action: EHook.postDelete,
-        payload: deletableSnapshots[index],
         entity: deletedEntities[index],
+        payload: options,
+        databaseEntity: deletedEntities[index],
       });
     }
 
     const result: DeleteResult = {
       acknowledged: true,
-      deletedCount: deletable.length,
+      deletedCount: deletedEntities.length,
     };
 
     return result;
@@ -503,8 +501,9 @@ export abstract class BaseOrmRepository<
 
     await this.emitEvent<EHook.postDelete>({
       action: EHook.postDelete,
-      payload: databaseEntity,
-      entity: deletedEntity,
+      entity,
+      payload: idOrOptions,
+      databaseEntity: deletedEntity,
     });
 
     const result: DeleteResult = {
@@ -543,14 +542,12 @@ export abstract class BaseOrmRepository<
     Dto extends DtoActionConfig = ActionDto,
   >(data: EmitEventProps<E, H, Dto>) {
     if (!this.eventEmitter) return;
+    const entityName = this.getEntityName(this.repository.metadata);
 
-    await this.eventEmitter.emitAsync(
-      `hook:${this.entityName}:${data.action}`,
-      {
-        ...data,
-        entityName: this.entityName,
-      },
-    );
+    await this.eventEmitter.emitAsync(`hook:${entityName}:${data.action}`, {
+      ...data,
+      entityName,
+    });
   }
 
   protected async onBeforeInsert(_event: InsertEvent<Entity>): Promise<void> {}

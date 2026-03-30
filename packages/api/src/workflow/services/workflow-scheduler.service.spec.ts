@@ -9,6 +9,7 @@ import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TestingModule } from '@nestjs/testing';
+import { FindOneOptions } from 'typeorm';
 
 import { UserService } from '@/user';
 import { EHook } from '@/utils';
@@ -184,7 +185,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   it('ignores create events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postCreate', {
       action: EHook.postCreate,
-      payload: {} as WorkflowOrmEntity,
+      payload: {} as WorkflowDtoConfig['create'],
       entity: {} as WorkflowOrmEntity,
     } as EmitEventProps<
       WorkflowOrmEntity,
@@ -198,7 +199,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   it('ignores update events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postUpdate', {
       action: EHook.postUpdate,
-      payload: {} as WorkflowOrmEntity,
+      payload: {} as WorkflowDtoConfig['update'],
       entity: {} as WorkflowOrmEntity,
     } as EmitEventProps<
       WorkflowOrmEntity,
@@ -248,7 +249,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   it('ignores delete events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postDelete', {
       action: EHook.postDelete,
-      payload: {} as WorkflowOrmEntity,
+      payload: {} as string | FindOneOptions<WorkflowOrmEntity>,
       entity: {} as WorkflowOrmEntity,
     } as EmitEventProps<
       WorkflowOrmEntity,
