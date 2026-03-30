@@ -159,7 +159,13 @@ export const Settings = () => {
   }, [groups, selectedTab]);
 
   useEffect(() => {
-    setFormDataByGroup(toGroupFormData(groupedSettings));
+    const nextFormDataByGroup = toGroupFormData(groupedSettings);
+
+    setFormDataByGroup((prev) =>
+      areSettingValuesEqual(prev, nextFormDataByGroup)
+        ? prev
+        : nextFormDataByGroup,
+    );
   }, [groupedSettings]);
 
   const handleUpdate = useCallback(
@@ -190,11 +196,6 @@ export const Settings = () => {
     groupName: string,
     nextFormData: Record<string, unknown>,
   ) => {
-    setFormDataByGroup((prev) => ({
-      ...prev,
-      [groupName]: nextFormData,
-    }));
-
     const settingsByLabel = settingsByGroupAndLabel[groupName] || {};
 
     Object.entries(nextFormData).forEach(([label, nextValue]) => {
