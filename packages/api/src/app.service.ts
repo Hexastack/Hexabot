@@ -13,7 +13,7 @@ import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
 import { Action } from './user/types/action.type';
 import { DtoActionConfig, EHook } from './utils';
-import { EmitEventProps } from './utils/types/event.types';
+import { EmitEventProps } from './utils/types/entity-event.types';
 import {
   SocketGet,
   SocketPost,

@@ -14,7 +14,7 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
 import { EHook } from '@/utils';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 
 import { WorkflowDtoConfig } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';

@@ -10,7 +10,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { EHook } from '@/utils';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 
 import { ContentDtoConfig } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';

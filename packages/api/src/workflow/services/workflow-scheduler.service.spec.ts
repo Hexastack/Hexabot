@@ -20,7 +20,7 @@ import {
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
