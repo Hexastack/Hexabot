@@ -47,6 +47,7 @@ import {
   ManualEventWrapper,
   ScheduledEventWrapper,
 } from '../lib/trigger-event-wrapper';
+import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
 import { AgenticService } from '../services/agentic.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
@@ -123,6 +124,7 @@ describe('WorkflowController (TypeORM)', () => {
           },
         },
         I18nServiceProvider,
+        WorkflowVersionRepository,
       ],
       typeorm: {
         fixtures: [

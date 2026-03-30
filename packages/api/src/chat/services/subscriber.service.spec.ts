@@ -474,6 +474,37 @@ describe('SubscriberService (TypeORM)', () => {
     });
   });
 
+  describe('resolveLabelNames', () => {
+    it('preserves input order, removes duplicates, and ignores unknown ids', async () => {
+      const timestamp = Date.now();
+      const [labelA, labelB] = await labelRepository.createMany([
+        {
+          title: 'Resolve Label Name A',
+          name: `RESOLVE_LABEL_NAME_A_${timestamp}`,
+        },
+        {
+          title: 'Resolve Label Name B',
+          name: `RESOLVE_LABEL_NAME_B_${timestamp}`,
+        },
+      ]);
+      const unknownId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+      const result = await subscriberService.resolveLabelNames([
+        labelB.id,
+        labelA.id,
+        labelB.id,
+        unknownId,
+      ]);
+
+      expect(result).toEqual([labelB.name, labelA.name]);
+    });
+
+    it('returns an empty array when there are no label ids to resolve', async () => {
+      await expect(subscriberService.resolveLabelNames([])).resolves.toEqual(
+        [],
+      );
+    });
+  });
+
   describe('handOver', () => {
     it('should set assignedTo when provided without labels', async () => {
       const profile = (await subscriberService.findOne({

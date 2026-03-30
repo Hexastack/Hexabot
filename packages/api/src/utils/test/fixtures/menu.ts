@@ -101,8 +101,6 @@ export const installMenuFixturesTypeOrm = async (
   dataSource: DataSource,
 ): Promise<void> => {
   const repository = dataSource.getRepository(MenuOrmEntity);
-  MenuOrmEntity.registerEntityManagerProvider(() => repository.manager);
-
   const count = await repository.count();
   if (count > 0) {
     return;

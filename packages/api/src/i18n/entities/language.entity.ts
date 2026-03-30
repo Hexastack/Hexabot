@@ -4,15 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  BeforeInsert,
-  BeforeRemove,
-  BeforeUpdate,
-  Column,
-  Entity,
-  Index,
-} from 'typeorm';
+import { Column, Entity, Index, InsertEvent, UpdateEvent } from 'typeorm';
 
+import {
+  OnBeforeInsert,
+  OnBeforeRemove,
+  OnBeforeUpdate,
+} from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Language, LanguageTransformerDto } from '../dto/language.dto';
@@ -37,15 +35,16 @@ export class LanguageOrmEntity extends BaseOrmEntity<LanguageTransformerDto> {
   @Column({ default: false })
   isRTL!: boolean;
 
-  @BeforeInsert()
-  @BeforeUpdate()
-  protected async ensureSingleDefault(): Promise<void> {
+  @OnBeforeInsert()
+  @OnBeforeUpdate()
+  protected async ensureSingleDefault(
+    event: InsertEvent<LanguageOrmEntity> | UpdateEvent<LanguageOrmEntity>,
+  ): Promise<void> {
     if (!this.isDefault) {
       return;
     }
 
-    const manager = LanguageOrmEntity.getEntityManager();
-    const queryBuilder = manager
+    const queryBuilder = event.manager
       .createQueryBuilder()
       .update(LanguageOrmEntity)
       .set({ isDefault: false })
@@ -58,7 +57,7 @@ export class LanguageOrmEntity extends BaseOrmEntity<LanguageTransformerDto> {
     await queryBuilder.execute();
   }
 
-  @BeforeRemove()
+  @OnBeforeRemove()
   protected preventDefaultRemoval(): void {
     if (this.isDefault) {
       throw new Error('Should not be able to delete default');

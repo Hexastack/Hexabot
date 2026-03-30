@@ -96,10 +96,6 @@ export const memoryRecordOrmFixtures: MemoryRecordOrmFixture[] = [
 const installMemoryWorkflowFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(WorkflowOrmEntity);
   const versionRepository = dataSource.getRepository(WorkflowVersionOrmEntity);
-  WorkflowOrmEntity.registerEntityManagerProvider(() => repository.manager);
-  WorkflowVersionOrmEntity.registerEntityManagerProvider(
-    () => versionRepository.manager,
-  );
   const existing = await repository.findOne({
     where: { id: memoryWorkflowFixtureId },
     relations: ['currentVersion'],

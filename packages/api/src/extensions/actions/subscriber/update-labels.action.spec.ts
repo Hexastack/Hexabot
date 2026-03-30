@@ -13,6 +13,8 @@ describe('SubscriberUpdateLabelsAction', () => {
   let actionService: ActionService;
   let action: InstanceType<typeof SubscriberUpdateLabelsAction>;
   let updateLabels: jest.Mock;
+  let syncInitiatorState: jest.Mock;
+  let setInitiator: jest.Mock;
   let context: ConversationalWorkflowContext;
 
   const SUBSCRIBER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -22,6 +24,8 @@ describe('SubscriberUpdateLabelsAction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     updateLabels = jest.fn();
+    syncInitiatorState = jest.fn().mockResolvedValue(undefined);
+    setInitiator = jest.fn();
     actionService = { register: jest.fn() } as unknown as ActionService;
     action = new SubscriberUpdateLabelsAction(actionService);
     context = {
@@ -30,7 +34,9 @@ describe('SubscriberUpdateLabelsAction', () => {
           id: SUBSCRIBER_ID,
           labels: [EXISTING_LABEL_ID],
         })),
+        setInitiator,
       },
+      syncInitiatorState,
       services: {
         subscriber: {
           updateLabels,
@@ -63,6 +69,11 @@ describe('SubscriberUpdateLabelsAction', () => {
       [NEW_LABEL_ID],
       undefined,
     );
+    expect(setInitiator).toHaveBeenCalledWith({
+      id: SUBSCRIBER_ID,
+      labels: [EXISTING_LABEL_ID, NEW_LABEL_ID],
+    });
+    expect(syncInitiatorState).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       success: true,
       subscriber_id: SUBSCRIBER_ID,
@@ -88,6 +99,11 @@ describe('SubscriberUpdateLabelsAction', () => {
       undefined,
       [EXISTING_LABEL_ID],
     );
+    expect(setInitiator).toHaveBeenCalledWith({
+      id: SUBSCRIBER_ID,
+      labels: [],
+    });
+    expect(syncInitiatorState).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       success: true,
       subscriber_id: SUBSCRIBER_ID,
@@ -116,6 +132,11 @@ describe('SubscriberUpdateLabelsAction', () => {
       [NEW_LABEL_ID],
       [EXISTING_LABEL_ID, NEW_LABEL_ID],
     );
+    expect(setInitiator).toHaveBeenCalledWith({
+      id: SUBSCRIBER_ID,
+      labels: [NEW_LABEL_ID],
+    });
+    expect(syncInitiatorState).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       success: true,
       subscriber_id: SUBSCRIBER_ID,

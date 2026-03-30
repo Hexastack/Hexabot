@@ -266,6 +266,42 @@ export class SubscriberService extends BaseOrmService<
   }
 
   /**
+   * Resolves label ids into canonical label names while preserving input order.
+   * Unknown label ids are ignored.
+   */
+  async resolveLabelNames(labelIds: string[] = []): Promise<string[]> {
+    const uniqueLabelIds = Array.from(new Set(labelIds)).filter(
+      (labelId): labelId is string =>
+        typeof labelId === 'string' && labelId.length > 0,
+    );
+    if (!uniqueLabelIds.length) {
+      return [];
+    }
+
+    const labels = await this.labelService.find({
+      where: {
+        id: In(uniqueLabelIds),
+      },
+    });
+    if (!labels.length) {
+      return [];
+    }
+
+    const labelNameById = new Map(
+      labels.map((label) => [label.id, label.name] as const),
+    );
+
+    return uniqueLabelIds.reduce<string[]>((acc, labelId) => {
+      const labelName = labelNameById.get(labelId);
+      if (labelName) {
+        acc.push(labelName);
+      }
+
+      return acc;
+    }, []);
+  }
+
+  /**
    * Handover (assign) the subscriber to a specific user.
    * No-op if `assignTo` is falsy.
    *

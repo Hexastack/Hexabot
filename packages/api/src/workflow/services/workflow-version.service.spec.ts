@@ -62,12 +62,6 @@ describe('WorkflowVersionService (TypeORM)', () => {
     [workflowVersionService] = await testing.getMocks([WorkflowVersionService]);
     const dataSource = getLastTypeOrmDataSource();
     workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
-    WorkflowOrmEntity.registerEntityManagerProvider(
-      () => workflowRepository.manager,
-    );
-    WorkflowVersionOrmEntity.registerEntityManagerProvider(
-      () => dataSource.getRepository(WorkflowVersionOrmEntity).manager,
-    );
   });
 
   afterEach(() => {
@@ -111,6 +105,32 @@ describe('WorkflowVersionService (TypeORM)', () => {
         defs: {},
         flow: [],
         outputs: {},
+      });
+    });
+
+    it('creates the blank version when workflow is created inside a transaction', async () => {
+      const dataSource = getLastTypeOrmDataSource();
+      await dataSource.transaction(async (manager) => {
+        const workflowRepository = manager.getRepository(WorkflowOrmEntity);
+        const workflow = await workflowRepository.save(
+          workflowRepository.create({
+            name: `workflow_${randomUUID()}`,
+            description: 'Workflow transactional insert test.',
+            type: WorkflowType.conversational,
+            schedule: null,
+            createdBy: { id: userFixtureIds.admin },
+          }),
+        );
+        const versionRepository = manager.getRepository(
+          WorkflowVersionOrmEntity,
+        );
+        const blank = await versionRepository.findOne({
+          where: { workflow: { id: workflow.id }, version: 0 },
+        });
+
+        expect(blank).toBeDefined();
+        expect(blank?.version).toBe(0);
+        expect(blank?.action).toBe(WorkflowVersionAction.create);
       });
     });
 
