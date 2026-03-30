@@ -49,7 +49,9 @@ import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
+import type { EmitEventProps, EHook } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
+import type { DtoActionConfig } from '@/utils/types/dto.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
@@ -92,15 +94,32 @@ type UpdateHook =
 
 type DeleteHook = 'preDelete' | 'postDelete';
 
+type HookEmitEventPayload<
+  Entity,
+  Hook extends Exclude<TNormalizedEvents, '*'>,
+> = Hook extends 'preCreate'
+  ? EmitEventProps<Entity, EHook.preCreate, DtoActionConfig>
+  : Hook extends 'postCreate'
+    ? EmitEventProps<Entity, EHook.postCreate, DtoActionConfig>
+    : Hook extends 'preUpdate'
+      ? EmitEventProps<Entity, EHook.preUpdate, DtoActionConfig>
+      : Hook extends 'postUpdate'
+        ? EmitEventProps<Entity, EHook.postUpdate, DtoActionConfig>
+        : Hook extends 'preDelete'
+          ? EmitEventProps<Entity, EHook.preDelete, DtoActionConfig>
+          : Hook extends 'postDelete'
+            ? EmitEventProps<Entity, EHook.postDelete, DtoActionConfig>
+            : never;
+
 type HookEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
 > = Hook extends InsertHook
-  ? [InsertEvent<Entity>]
+  ? [InsertEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
   : Hook extends UpdateHook
-    ? [UpdateEvent<Entity>]
+    ? [UpdateEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
     : Hook extends DeleteHook
-      ? [RemoveEvent<Entity>]
+      ? [RemoveEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
       : never;
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];

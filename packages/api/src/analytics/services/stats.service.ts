@@ -7,17 +7,19 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
-import { Between, UpdateEvent } from 'typeorm';
+import { Between } from 'typeorm';
 
 import {
   Subscriber,
   Subscriber as SubscriberDto,
+  SubscriberDtoConfig,
 } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
-import { TEvent } from '@/utils';
+import { EHook } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { EmitEventProps } from '@/utils/types/event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -40,7 +42,13 @@ export class StatsService extends BaseOrmService<
   }
 
   @OnEvent('hook:subscriber:preCreate')
-  handleSubscriberPreCreate(event: TEvent<SubscriberOrmEntity>) {
+  handleSubscriberPreCreate(
+    event: EmitEventProps<
+      SubscriberOrmEntity,
+      EHook.preCreate,
+      SubscriberDtoConfig
+    >,
+  ) {
     const entity = event.entity;
     if (!entity) {
       return;
@@ -59,7 +67,13 @@ export class StatsService extends BaseOrmService<
   }
 
   @OnEvent('hook:subscriber:preUpdate')
-  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
+  handleSubscriberPreUpdate(
+    event: EmitEventProps<
+      SubscriberOrmEntity,
+      EHook.preUpdate,
+      SubscriberDtoConfig
+    >,
+  ): void {
     const entity = event.entity as Partial<SubscriberOrmEntity> | undefined;
     const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
 

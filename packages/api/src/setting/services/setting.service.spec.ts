@@ -210,4 +210,42 @@ describe('SettingService', () => {
       expect(result).toEqual(['*', 'https://example.com']);
     });
   });
+
+  describe('emitSettingEvents', () => {
+    it('should emit hook:${group}:${label} event with setting payload when entity exists', async () => {
+      const eventEmitter = settingRepository.getEventEmitter();
+      expect(eventEmitter).toBeDefined();
+
+      const emitSpy = jest.spyOn(eventEmitter!, 'emit');
+      const setting = makeSetting({
+        group: 'chatbot_settings',
+        label: 'locale',
+        value: 'en',
+      });
+      const event = {
+        entity: {
+          toPlainCls: () => setting,
+        },
+      } as any;
+
+      await settingService.emitSettingEvents(event);
+
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:chatbot_settings:locale',
+        setting,
+      );
+    });
+
+    it('should not emit any event when entity is missing', async () => {
+      const eventEmitter = settingRepository.getEventEmitter();
+      expect(eventEmitter).toBeDefined();
+
+      const emitSpy = jest.spyOn(eventEmitter!, 'emit');
+
+      await settingService.emitSettingEvents({} as any);
+
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+  });
 });

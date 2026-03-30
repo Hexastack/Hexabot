@@ -6,16 +6,18 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
-import { UpdateEvent } from 'typeorm';
 
+import { SubscriberDtoConfig } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
+import { EHook } from '@/utils';
 import {
   installStatsFixturesTypeOrm,
   statsFixtures,
 } from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { EmitEventProps } from '@/utils/types/event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -175,9 +177,15 @@ describe('StatsService', () => {
       entity: Partial<SubscriberOrmEntity>;
       databaseEntity: Partial<SubscriberOrmEntity>;
       updatedColumns?: string[];
-    }): UpdateEvent<SubscriberOrmEntity> =>
+    }): EmitEventProps<
+      SubscriberOrmEntity,
+      EHook.preUpdate,
+      SubscriberDtoConfig
+    > =>
       ({
         entity: buildSubscriber(entity),
+        action: EHook.preUpdate,
+        payload: entity,
         databaseEntity: buildSubscriber(databaseEntity),
         updatedColumns: updatedColumns.map(
           (propertyName) =>
@@ -186,7 +194,7 @@ describe('StatsService', () => {
             }) as any,
         ),
         updatedRelations: [],
-      }) as unknown as UpdateEvent<SubscriberOrmEntity>;
+      }) as any;
 
     it('should emit passation analytics when subscriber gets newly assigned', () => {
       const emitSpy = jest.spyOn(eventEmitter, 'emit');

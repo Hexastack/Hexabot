@@ -11,16 +11,17 @@ import {
   OnEvent,
 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
-import { UpdateEvent } from 'typeorm';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
+import { EHook } from '@/utils';
 import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { EmitEventProps } from '@/utils/types/event.types';
 
 import {
   Setting,
@@ -187,8 +188,9 @@ export class SettingService extends BaseOrmService<
    * based on the `group` and `label` of the `Setting`.
    */
   @OnEvent('hook:setting:postUpdate')
-  async emitSettingEvents(event: UpdateEvent<SettingOrmEntity>): Promise<void> {
-    console.log(0, { event });
+  async emitSettingEvents(
+    event: EmitEventProps<SettingOrmEntity, EHook.postUpdate, SettingDtoConfig>,
+  ): Promise<void> {
     if (event.entity) {
       const setting = event.entity.toPlainCls();
       const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;

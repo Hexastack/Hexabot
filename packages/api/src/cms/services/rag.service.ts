@@ -6,11 +6,13 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { EHook } from '@/utils';
+import { EmitEventProps } from '@/utils/types/event.types';
 
+import { ContentDtoConfig } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { RagHit, RagQueryOptions } from '../types/rag';
 
@@ -95,8 +97,7 @@ export class RagService {
    * @returns Resolves when follow-up reindex handling completes.
    */
   @OnEvent('hook:rag_settings:enabled')
-  async handleRagEnabledSettingChanged(event): Promise<void> {
-    console.log({ event });
+  async handleRagEnabledSettingChanged(): Promise<void> {
     await this.reindexAfterRagSettingChange('enabled');
   }
 
@@ -121,7 +122,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postCreate')
   async handleContentCreated(
-    event: InsertEvent<ContentOrmEntity>,
+    event: EmitEventProps<ContentOrmEntity, EHook.postCreate, ContentDtoConfig>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -144,7 +145,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postUpdate')
   async handleContentUpdated(
-    event: UpdateEvent<ContentOrmEntity>,
+    event: EmitEventProps<ContentOrmEntity, EHook.postUpdate, ContentDtoConfig>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -167,7 +168,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postDelete')
   async handleContentDeleted(
-    event: RemoveEvent<ContentOrmEntity>,
+    event: EmitEventProps<ContentOrmEntity, EHook.postDelete, ContentDtoConfig>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -212,7 +213,6 @@ export class RagService {
   private async performRagSettingsReindex(): Promise<void> {
     const settings = await this.settingService.getSettings();
 
-    console.log(settings.rag_settings.enabled);
     if (!settings.rag_settings.enabled) {
       return;
     }

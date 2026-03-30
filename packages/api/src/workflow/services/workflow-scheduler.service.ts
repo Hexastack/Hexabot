@@ -8,14 +8,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
-import { TEvent } from '@/utils';
+import { EHook } from '@/utils';
+import { EmitEventProps } from '@/utils/types/event.types';
 
+import { WorkflowDtoConfig } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 import { WorkflowType } from '../types';
@@ -58,7 +59,13 @@ export class WorkflowSchedulerService implements OnModuleInit {
    * @param event - Insert event containing the created workflow entity.
    */
   @OnEvent('hook:workflow:postCreate')
-  async handleWorkflowCreated(event: TEvent<WorkflowOrmEntity>): Promise<void> {
+  async handleWorkflowCreated(
+    event: EmitEventProps<
+      WorkflowOrmEntity,
+      EHook.postCreate,
+      WorkflowDtoConfig
+    >,
+  ): Promise<void> {
     if (event.entity.id) {
       await this.registerScheduledWorkflow(event.entity.id);
     }
@@ -71,7 +78,11 @@ export class WorkflowSchedulerService implements OnModuleInit {
    */
   @OnEvent('hook:workflow:postUpdate')
   async handleWorkflowUpdated(
-    event: UpdateEvent<WorkflowOrmEntity>,
+    event: EmitEventProps<
+      WorkflowOrmEntity,
+      EHook.postUpdate,
+      WorkflowDtoConfig
+    >,
   ): Promise<void> {
     if (event.entity?.id) {
       await this.registerScheduledWorkflow(event.entity.id);
@@ -85,7 +96,11 @@ export class WorkflowSchedulerService implements OnModuleInit {
    */
   @OnEvent('hook:workflow:postDelete')
   async handleWorkflowDeleted(
-    event: RemoveEvent<WorkflowOrmEntity>,
+    event: EmitEventProps<
+      WorkflowOrmEntity,
+      EHook.postDelete,
+      WorkflowDtoConfig
+    >,
   ): Promise<void> {
     if (event.entity?.id) {
       this.unregisterScheduledWorkflow(event.entity.id);

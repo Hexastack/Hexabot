@@ -12,7 +12,8 @@ import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
 import { Action } from './user/types/action.type';
-import { EHook, GenericPostHookEvent } from './utils';
+import { DtoActionConfig, EHook } from './utils';
+import { EmitEventProps } from './utils/types/event.types';
 import {
   SocketGet,
   SocketPost,
@@ -23,7 +24,11 @@ import {
   WebsocketGateway,
 } from './websocket';
 
-type EntityMutationOperation = 'create' | 'update' | 'delete';
+type EntityPostHookEvent = EmitEventProps<
+  BaseOrmEntity,
+  EHook.postCreate | EHook.postUpdate | EHook.postDelete,
+  DtoActionConfig
+> & { entityName: string };
 
 @Injectable()
 export class AppService {
@@ -85,27 +90,21 @@ export class AppService {
   @OnEvent('hook:*:postCreate')
   @OnEvent('hook:*:postUpdate')
   @OnEvent('hook:*:postDelete')
-  handleEntityPostEvents(
-    event: GenericPostHookEvent<
-      BaseOrmEntity,
-      EHook.postCreate | EHook.postUpdate | EHook.postDelete
-    >,
-  ) {
+  handleEntityPostEvents(event: EntityPostHookEvent) {
     this.broadcastEntityMutationEvent(event);
   }
 
-  private broadcastEntityMutationEvent(
-    event: GenericPostHookEvent<
-      BaseOrmEntity,
-      EHook.postCreate | EHook.postUpdate | EHook.postDelete
-    >,
-  ): void {
-    const { action, entityName: entity, databaseEntity } = event;
+  private broadcastEntityMutationEvent(event: EntityPostHookEvent): void {
+    const { action, entityName, entity } = event;
 
-    this.gateway.io.to(entity).emit('entity', {
-      entity,
+    if (!entity || typeof entity.toPlainCls !== 'function') {
+      throw new Error('Unable to extract entity event data');
+    }
+
+    this.gateway.io.to(entityName).emit('entity', {
+      entity: entityName,
       op: this.postActionToOp(action),
-      data: databaseEntity.toPlainCls(),
+      data: entity.toPlainCls(),
     });
   }
 }
