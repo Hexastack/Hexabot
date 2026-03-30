@@ -19,7 +19,7 @@ import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
 import { EHook } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 

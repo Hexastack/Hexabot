@@ -38,7 +38,7 @@ import {
   InferActionDto,
   InferTransformDto,
 } from '../types/dto.types';
-import { EmitEventProps } from '../types/event.types';
+import { EmitEventProps } from '../types/entity-event.types';
 
 export type DeleteResult = {
   acknowledged: boolean;

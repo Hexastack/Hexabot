@@ -17,7 +17,7 @@ import {
 } from '@/utils/test/fixtures/stats';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 

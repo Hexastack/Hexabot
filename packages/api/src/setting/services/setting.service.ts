@@ -21,7 +21,7 @@ import {
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { EmitEventProps } from '@/utils/types/event.types';
+import { EmitEventProps } from '@/utils/types/entity-event.types';
 
 import {
   Setting,

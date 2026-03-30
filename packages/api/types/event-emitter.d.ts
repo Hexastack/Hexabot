@@ -49,7 +49,7 @@ import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
-import type { EmitEventProps, EHook } from '@/utils';
+import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { DtoActionConfig } from '@/utils/types/dto.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
@@ -94,22 +94,24 @@ type UpdateHook =
 
 type DeleteHook = 'preDelete' | 'postDelete';
 
+type HookAction = Extract<
+  Exclude<TNormalizedEvents, '*'>,
+  EventProps<any, DtoActionConfig>['action']
+>;
+
+type HookEventProps<
+  Entity,
+  Hook extends Exclude<TNormalizedEvents, '*'>,
+> = Hook extends HookAction
+  ? Extract<EventProps<Entity, DtoActionConfig>, { action: Hook }>
+  : never;
+
 type HookEmitEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
-> = Hook extends 'preCreate'
-  ? EmitEventProps<Entity, EHook.preCreate, DtoActionConfig>
-  : Hook extends 'postCreate'
-    ? EmitEventProps<Entity, EHook.postCreate, DtoActionConfig>
-    : Hook extends 'preUpdate'
-      ? EmitEventProps<Entity, EHook.preUpdate, DtoActionConfig>
-      : Hook extends 'postUpdate'
-        ? EmitEventProps<Entity, EHook.postUpdate, DtoActionConfig>
-        : Hook extends 'preDelete'
-          ? EmitEventProps<Entity, EHook.preDelete, DtoActionConfig>
-          : Hook extends 'postDelete'
-            ? EmitEventProps<Entity, EHook.postDelete, DtoActionConfig>
-            : never;
+> = Hook extends HookAction
+  ? EmitEventProps<Entity, Hook, DtoActionConfig> & HookEventProps<Entity, Hook>
+  : never;
 
 type HookEventPayload<
   Entity,
