@@ -304,7 +304,7 @@ export class RagBackendService implements OnModuleInit {
    * @returns Configured embedding model.
    */
   private createEmbeddingModel(ragSettings: RagSettings): OpenAIEmbedding {
-    return new OpenAIEmbedding({
+    const embedModel = new OpenAIEmbedding({
       model: ragSettings.embedding_model,
       apiKey: ragSettings.embedding_api_key,
       ...(ragSettings.embedding_base_url
@@ -314,6 +314,89 @@ export class RagBackendService implements OnModuleInit {
         ? { dimensions: ragSettings.embedding_dimensions }
         : {}),
     });
+
+    return this.wrapEmbeddingModelWithFloatEncoding(
+      embedModel,
+      ragSettings.embedding_dimensions,
+    );
+  }
+
+  /**
+   * Forces float embedding output for OpenAI-compatible providers and validates
+   * returned vector dimensions.
+   */
+  private wrapEmbeddingModelWithFloatEncoding(
+    embedModel: OpenAIEmbedding,
+    expectedDimensions: number,
+  ): OpenAIEmbedding {
+    if (typeof embedModel.getTextEmbeddings !== 'function') {
+      return embedModel;
+    }
+
+    const originalGetTextEmbeddings =
+      embedModel.getTextEmbeddings.bind(embedModel);
+
+    embedModel.getTextEmbeddings = async (
+      texts: string[],
+    ): Promise<number[][]> => {
+      try {
+        const session = await embedModel.session;
+        const input =
+          typeof embedModel.truncateMaxTokens === 'function'
+            ? embedModel.truncateMaxTokens(texts)
+            : texts;
+        const response = await session.embeddings.create({
+          model: embedModel.model,
+          input,
+          encoding_format: 'float',
+          ...(embedModel.dimensions && { dimensions: embedModel.dimensions }),
+        });
+        const embeddings = response.data.map((item) => item.embedding);
+        this.assertEmbeddingDimensions(embeddings, expectedDimensions);
+
+        return embeddings;
+      } catch {
+        const embeddings = await originalGetTextEmbeddings(texts);
+        this.assertEmbeddingDimensions(embeddings, expectedDimensions);
+
+        return embeddings;
+      }
+    };
+
+    embedModel.getTextEmbedding = async (text: string) => {
+      const [result] = await embedModel.getTextEmbeddings([text]);
+
+      return result;
+    };
+
+    return embedModel;
+  }
+
+  /**
+   * Ensures provider output dimensions match configured dimensions.
+   * Optimized for early exit and detailed error reporting.
+   */
+  private assertEmbeddingDimensions(
+    embeddings: number[][],
+    expectedDimensions: number,
+  ): void {
+    if (expectedDimensions <= 0 || embeddings.length === 0) {
+      return;
+    }
+
+    const invalid = embeddings.find(
+      (vec) => !vec || vec.length !== expectedDimensions,
+    );
+
+    if (invalid) {
+      const actualLength = invalid ? invalid.length : 'undefined/null';
+
+      throw new Error(
+        `Dimension mismatch: Provider returned ${actualLength} dimensions, ` +
+          `but the system is configured for ${expectedDimensions}. ` +
+          `Check your model settings or provider-specific overrides.`,
+      );
+    }
   }
 
   /**
