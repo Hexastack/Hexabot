@@ -405,7 +405,7 @@ export abstract class BaseOrmRepository<
       await this.emitEvent<EHook.postUpdate>({
         action: EHook.postUpdate,
         entity: updatedEntities[index],
-        payload: payload[index],
+        payload,
         databaseEntity: databaseEntities[index],
       });
     }
