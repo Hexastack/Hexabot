@@ -101,7 +101,9 @@ export class AppService {
       throw new Error('Unable to extract entity event data');
     }
 
-    this.gateway.io.to(entityName).emit('entity', {
+    const room = entityName.toLowerCase();
+
+    this.gateway.io.to(room).emit('entity', {
       entity: entityName,
       op: this.postActionToOp(action),
       data: entity.toPlainCls(),

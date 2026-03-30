@@ -534,10 +534,7 @@ export abstract class BaseOrmRepository<
   }
 
   protected getEntityName(metadata: EntityMetadata) {
-    return (
-      camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, '')) ||
-      'entity'
-    );
+    return camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, ''));
   }
 
   protected async emitEvent<
@@ -545,13 +542,15 @@ export abstract class BaseOrmRepository<
     E extends BaseOrmEntity = Entity,
     Dto extends DtoActionConfig = ActionDto,
   >(data: EmitEventProps<E, H, Dto>) {
-    const entityName = this.getEntityName(this.repository.metadata);
     if (!this.eventEmitter) return;
 
-    await this.eventEmitter.emitAsync(`hook:${entityName}:${data.action}`, {
-      ...data,
-      entityName: this.entityName,
-    });
+    await this.eventEmitter.emitAsync(
+      `hook:${this.entityName}:${data.action}`,
+      {
+        ...data,
+        entityName: this.entityName,
+      },
+    );
   }
 
   protected async onBeforeInsert(_event: InsertEvent<Entity>): Promise<void> {}
