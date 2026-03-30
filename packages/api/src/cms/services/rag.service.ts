@@ -148,7 +148,7 @@ export class RagService {
     event: EmitEventProps<ContentOrmEntity, EHook.postUpdate, ContentDtoConfig>,
   ): Promise<void> {
     const contentId = event.entity?.id;
-    if (!contentId) {
+    if (!contentId || !event.entity.status) {
       return;
     }
 
