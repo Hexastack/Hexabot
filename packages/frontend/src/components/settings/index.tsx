@@ -260,9 +260,11 @@ export const Settings = () => {
                         <JsonSchemaForm
                           schema={schema}
                           formData={formDataByGroup[groupName] || {}}
-                          onFormDataChange={(data) =>
-                            handleFormDataChange(groupName, data)
-                          }
+                          onFormDataChange={(data, errors) => {
+                            if (!errors?.length) {
+                              handleFormDataChange(groupName, data);
+                            }
+                          }}
                           uiSchema={buildSettingsUiSchema(schema)}
                           enableJsonataTextWidget={false}
                           idPrefix={`settings-${groupName}`}
