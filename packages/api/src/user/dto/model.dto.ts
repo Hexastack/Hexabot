@@ -10,6 +10,7 @@ import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -81,3 +82,5 @@ export type ModelTransformerDto = DtoTransformerConfig<{
 export type ModelDtoConfig = DtoActionConfig<{
   create: ModelCreateDto;
 }>;
+
+export type ModelDto = BuildDto<ModelDtoConfig, ModelTransformerDto>;

@@ -10,20 +10,28 @@ import { plainToInstance } from 'class-transformer';
 import { BeforeInsert, BeforeUpdate, PrimaryColumn } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import { InferTransformDto } from '@/utils';
+import { DtoActionConfig, InferTransformDto } from '@/utils';
 
 export abstract class BaseOrmEntity<
-  TransformerDto extends {
-    FullCls: unknown;
-    PlainCls: unknown;
+  Dto extends {
+    transformers: {
+      FullCls: unknown;
+      PlainCls: unknown;
+    };
+    actions: DtoActionConfig;
   } = {
-    FullCls: unknown;
-    PlainCls: unknown;
+    transformers: {
+      FullCls: unknown;
+      PlainCls: unknown;
+    };
+    actions: DtoActionConfig;
   },
 > {
-  abstract plainCls: TransformerDto['PlainCls'];
+  abstract plainCls: Dto['transformers']['PlainCls'];
 
-  abstract fullCls: TransformerDto['FullCls'];
+  abstract fullCls: Dto['transformers']['FullCls'];
+
+  declare readonly __dtoType: Dto;
 
   @PrimaryColumn()
   id!: string;
@@ -49,13 +57,13 @@ export abstract class BaseOrmEntity<
     this.updatedAt = new Date();
   }
 
-  public toPlainCls(): InferTransformDto<TransformerDto['PlainCls']> {
+  public toPlainCls(): InferTransformDto<Dto['transformers']['PlainCls']> {
     return plainToInstance(this.plainCls as any, this, {
       exposeUnsetFields: false,
     });
   }
 
-  public toFullCls(): InferTransformDto<TransformerDto['FullCls']> {
+  public toFullCls(): InferTransformDto<Dto['transformers']['FullCls']> {
     return plainToInstance(this.fullCls as any, this, {
       exposeUnsetFields: false,
     });

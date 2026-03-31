@@ -10,14 +10,10 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { MemoryRecordDtoConfig } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 
 @Injectable()
-export class MemoryRecordRepository extends BaseOrmRepository<
-  MemoryRecordOrmEntity,
-  MemoryRecordDtoConfig
-> {
+export class MemoryRecordRepository extends BaseOrmRepository<MemoryRecordOrmEntity> {
   constructor(
     @InjectRepository(MemoryRecordOrmEntity)
     repository: Repository<MemoryRecordOrmEntity>,

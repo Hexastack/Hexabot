@@ -9,7 +9,6 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 
 import {
-  StatsActionDto,
   StatsFindDatumDto,
   StatsFindDto,
   StatsSummaryDto,
@@ -23,10 +22,7 @@ import { StatsService } from '../services/stats.service';
 import { aMonthAgo } from '../utilities/a-month-ago';
 
 @Controller('stats')
-export class StatsController extends BaseOrmController<
-  StatsOrmEntity,
-  StatsActionDto
-> {
+export class StatsController extends BaseOrmController<StatsOrmEntity> {
   constructor(protected readonly statsService: StatsService) {
     super(statsService);
   }

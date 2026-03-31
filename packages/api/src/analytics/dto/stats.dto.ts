@@ -18,6 +18,7 @@ import {
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -75,15 +76,17 @@ export class StatsCreateDto {
 
 export class StatsUpdateDto extends PartialType(StatsCreateDto) {}
 
-export type StatsTransformerDto = DtoTransformerConfig<{
+type StatsTransformerDto = DtoTransformerConfig<{
   PlainCls: typeof Stats;
   FullCls: typeof Stats;
 }>;
 
-export type StatsActionDto = DtoActionConfig<{
+type StatsActionDto = DtoActionConfig<{
   create: StatsCreateDto;
   update: StatsUpdateDto;
 }>;
+
+export type StatsDto = BuildDto<StatsActionDto, StatsTransformerDto>;
 
 export class StatsFindDto {
   /**

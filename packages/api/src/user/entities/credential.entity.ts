@@ -18,15 +18,15 @@ import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
   Credential,
+  CredentialDto,
   CredentialFull,
-  CredentialTransformerDto,
 } from '../dto/credential.dto';
 
 import { UserOrmEntity } from './user.entity';
 
 @Entity({ name: 'credentials' })
 @Index(['name'], { unique: true })
-export class CredentialOrmEntity extends BaseOrmEntity<CredentialTransformerDto> {
+export class CredentialOrmEntity extends BaseOrmEntity<CredentialDto> {
   plainCls = Credential;
 
   fullCls = CredentialFull;

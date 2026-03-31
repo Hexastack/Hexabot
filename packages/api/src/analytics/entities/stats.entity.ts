@@ -10,7 +10,7 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Stats, StatsTransformerDto } from '../dto/stats.dto';
+import { Stats, StatsDto } from '../dto/stats.dto';
 import { StatsType } from '../enums/stats-type.enum';
 
 export { StatsType };
@@ -23,7 +23,7 @@ export type ToLinesType = {
 
 @Entity({ name: 'stats' })
 @Index(['day', 'type', 'name'], { unique: true })
-export class StatsOrmEntity extends BaseOrmEntity<StatsTransformerDto> {
+export class StatsOrmEntity extends BaseOrmEntity<StatsDto> {
   plainCls = Stats;
 
   fullCls = Stats;

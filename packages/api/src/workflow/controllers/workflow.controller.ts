@@ -34,7 +34,6 @@ import { RuntimeBindingsService } from '../../bindings/runtime-bindings.service'
 import {
   Workflow,
   WorkflowCreateDto,
-  WorkflowDtoConfig,
   WorkflowFull,
   WorkflowUpdateDto,
 } from '../dto/workflow.dto';
@@ -48,10 +47,7 @@ import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 
 @Controller('workflow')
-export class WorkflowController extends BaseOrmController<
-  WorkflowOrmEntity,
-  WorkflowDtoConfig
-> {
+export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
   constructor(
     private readonly workflowService: WorkflowService,
     private readonly agenticService: AgenticService,

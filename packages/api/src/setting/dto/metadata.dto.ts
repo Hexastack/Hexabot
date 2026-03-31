@@ -10,6 +10,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -48,3 +49,5 @@ export type MetadataDtoConfig = DtoActionConfig<{
   create: MetadataCreateDto;
   update: MetadataUpdateDto;
 }>;
+
+export type MetadataDto = BuildDto<MetadataDtoConfig, MetadataTransformerDto>;

@@ -21,6 +21,7 @@ import { z } from 'zod';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -109,4 +110,7 @@ export type MemoryDefinitionDtoConfig = DtoActionConfig<{
   update: MemoryDefinitionUpdateDto;
 }>;
 
-export type MemoryDefinitionDto = MemoryDefinitionDtoConfig;
+export type MemoryDefinitionDto = BuildDto<
+  MemoryDefinitionDtoConfig,
+  MemoryDefinitionTransformerDto
+>;

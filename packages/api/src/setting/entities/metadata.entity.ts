@@ -9,11 +9,11 @@ import { Column, Entity, Index } from 'typeorm';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Metadata, MetadataTransformerDto } from '../dto/metadata.dto';
+import { Metadata, MetadataDto } from '../dto/metadata.dto';
 
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })
-export class MetadataOrmEntity extends BaseOrmEntity<MetadataTransformerDto> {
+export class MetadataOrmEntity extends BaseOrmEntity<MetadataDto> {
   plainCls = Metadata;
 
   fullCls = Metadata;

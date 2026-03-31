@@ -15,17 +15,13 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import {
   Attachment,
-  AttachmentDtoConfig,
   AttachmentMetadataDto,
   AttachmentStub,
 } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 
 @Injectable()
-export class AttachmentService extends BaseOrmService<
-  AttachmentOrmEntity,
-  AttachmentDtoConfig
-> {
+export class AttachmentService extends BaseOrmService<AttachmentOrmEntity> {
   constructor(
     readonly repository: AttachmentRepository,
     private readonly helperService: HelperService,

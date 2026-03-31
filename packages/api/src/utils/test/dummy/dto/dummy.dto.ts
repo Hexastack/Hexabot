@@ -9,6 +9,7 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoAction,
   DtoActionConfig,
   DtoTransformer,
@@ -55,3 +56,5 @@ export type DummyDtoConfig = DtoActionConfig<{
   [DtoAction.Create]: DummyCreateDto;
   [DtoAction.Update]: DummyUpdateDto;
 }>;
+
+export type DummyDto = BuildDto<DummyDtoConfig, DummyTransformerDto>;

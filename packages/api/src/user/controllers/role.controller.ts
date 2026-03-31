@@ -25,17 +25,14 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { RoleCreateDto, RoleDtoConfig, RoleUpdateDto } from '../dto/role.dto';
+import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { User } from '../dto/user.dto';
 import { RoleOrmEntity } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
 @Controller('role')
-export class RoleController extends BaseOrmController<
-  RoleOrmEntity,
-  RoleDtoConfig
-> {
+export class RoleController extends BaseOrmController<RoleOrmEntity> {
   constructor(
     protected readonly roleService: RoleService,
     private readonly userService: UserService,

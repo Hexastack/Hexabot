@@ -13,7 +13,9 @@ import { LoggerService } from '@/logger/logger.service';
 import {
   DtoAction,
   DtoActionConfig,
+  EntityDto,
   InferActionDto,
+  InferDto,
   InferTransformDto,
 } from '../types/dto.types';
 
@@ -25,11 +27,8 @@ import {
 } from './base-orm.repository';
 
 export abstract class BaseOrmService<
-  Entity extends BaseOrmEntity<{
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
-  }>,
-  ActionDto extends DtoActionConfig,
+  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
   OrmRepository extends BaseOrmRepository<
     Entity,
     ActionDto

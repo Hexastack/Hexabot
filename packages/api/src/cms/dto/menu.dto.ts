@@ -18,6 +18,7 @@ import {
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -106,3 +107,5 @@ export type MenuDtoConfig = DtoActionConfig<{
   create: MenuCreateDto;
   update: MenuUpdateDto;
 }>;
+
+export type MenuDto = BuildDto<MenuDtoConfig, MenuTransformerDto>;

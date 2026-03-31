@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { McpServerDtoConfig } from '../dto/mcp-server.dto';
 import { McpServerOrmEntity } from '../entities/mcp-server.entity';
 import { McpServerRepository } from '../repositories/mcp-server.repository';
 
@@ -19,10 +18,7 @@ import {
 } from './mcp-client-pool.service';
 
 @Injectable()
-export class McpServerService extends BaseOrmService<
-  McpServerOrmEntity,
-  McpServerDtoConfig
-> {
+export class McpServerService extends BaseOrmService<McpServerOrmEntity> {
   /**
    * Creates the MCP server service.
    *

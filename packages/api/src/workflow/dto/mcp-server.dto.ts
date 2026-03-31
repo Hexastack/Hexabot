@@ -21,6 +21,7 @@ import { Credential } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -175,4 +176,7 @@ export type McpServerDtoConfig = DtoActionConfig<{
   update: McpServerUpdateDto;
 }>;
 
-export type McpServerDto = McpServerDtoConfig;
+export type McpServerDto = BuildDto<
+  McpServerDtoConfig,
+  McpServerTransformerDto
+>;

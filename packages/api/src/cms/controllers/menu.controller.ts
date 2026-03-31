@@ -22,20 +22,12 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { FindAllOptions } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Menu,
-  MenuCreateDto,
-  MenuDtoConfig,
-  MenuUpdateDto,
-} from '../dto/menu.dto';
+import { Menu, MenuCreateDto, MenuUpdateDto } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 
 @Controller('menu')
-export class MenuController extends BaseOrmController<
-  MenuOrmEntity,
-  MenuDtoConfig
-> {
+export class MenuController extends BaseOrmController<MenuOrmEntity> {
   constructor(protected readonly menuService: MenuService) {
     super(menuService);
   }

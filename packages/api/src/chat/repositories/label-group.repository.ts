@@ -10,14 +10,10 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { LabelGroupDtoConfig } from '../dto/label-group.dto';
 import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 
 @Injectable()
-export class LabelGroupRepository extends BaseOrmRepository<
-  LabelGroupOrmEntity,
-  LabelGroupDtoConfig
-> {
+export class LabelGroupRepository extends BaseOrmRepository<LabelGroupOrmEntity> {
   constructor(
     @InjectRepository(LabelGroupOrmEntity)
     repository: Repository<LabelGroupOrmEntity>,

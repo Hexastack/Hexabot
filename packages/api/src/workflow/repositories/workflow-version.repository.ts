@@ -10,14 +10,10 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { WorkflowVersionDtoConfig } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 
 @Injectable()
-export class WorkflowVersionRepository extends BaseOrmRepository<
-  WorkflowVersionOrmEntity,
-  WorkflowVersionDtoConfig
-> {
+export class WorkflowVersionRepository extends BaseOrmRepository<WorkflowVersionOrmEntity> {
   constructor(
     @InjectRepository(WorkflowVersionOrmEntity)
     repository: Repository<WorkflowVersionOrmEntity>,
