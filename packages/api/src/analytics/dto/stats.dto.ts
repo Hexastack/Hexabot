@@ -76,12 +76,12 @@ export class StatsCreateDto {
 
 export class StatsUpdateDto extends PartialType(StatsCreateDto) {}
 
-type StatsTransformerDto = DtoTransformerConfig<{
+export type StatsTransformerDto = DtoTransformerConfig<{
   PlainCls: typeof Stats;
   FullCls: typeof Stats;
 }>;
 
-type StatsActionDto = DtoActionConfig<{
+export type StatsActionDto = DtoActionConfig<{
   create: StatsCreateDto;
   update: StatsUpdateDto;
 }>;
