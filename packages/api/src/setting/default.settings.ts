@@ -120,7 +120,7 @@ export const ragSettingsSchema = z.strictObject({
     description: 'API key used by the configured embedding provider.',
     'ui:widget': 'password',
   }),
-  embedding_base_url: z.string().default('').meta({
+  embedding_base_url: z.url().default('').meta({
     title: 'Embedding base URL',
     description: 'Custom base URL used for embedding API requests.',
   }),
