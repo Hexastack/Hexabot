@@ -162,7 +162,7 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
     payload: SettingUpdateDto,
     options?: UpdateOneOptions,
   ): Promise<Setting> {
-    const current = (await this.findOne(idOrOptions)) as Setting | null;
+    const current = await this.findOne(idOrOptions);
 
     if (!current) {
       throw new NotFoundException('Unable to execute updateOne() - No updates');
@@ -174,11 +174,7 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
       payload.value,
     );
 
-    return (await super.updateOne(
-      idOrOptions,
-      { ...payload, value },
-      options,
-    )) as Setting;
+    return await super.updateOne(idOrOptions, { ...payload, value }, options);
   }
 
   /**
