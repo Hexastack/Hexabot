@@ -50,7 +50,7 @@ export const WEB_CHANNEL_SETTINGS_SCHEMA = z.strictObject({
     title: 'Window title',
     description: 'Title displayed in the web widget header.',
   }),
-  avatar_url: z.string().default('').meta({
+  avatar_url: z.url().default('').meta({
     title: 'Avatar URL',
     description: 'URL of the chatbot avatar image.',
   }),
