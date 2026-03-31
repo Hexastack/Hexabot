@@ -10,16 +10,13 @@ import { FindManyOptions } from 'typeorm';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
-import { DtoActionConfig } from '../types/dto.types';
+import { DtoActionConfig, EntityDto, InferDto } from '../types/dto.types';
 
 import { BaseOrmService } from './base-orm.service';
 
 export abstract class BaseOrmController<
-  Entity extends BaseOrmEntity<{
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
-  }>,
-  ActionDto extends DtoActionConfig,
+  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
 > {
   eventEmitter: typeof this.service.eventEmitter;
 

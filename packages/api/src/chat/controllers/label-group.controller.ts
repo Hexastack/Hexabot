@@ -27,7 +27,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   LabelGroup,
   LabelGroupCreateDto,
-  LabelGroupDtoConfig,
   LabelGroupFull,
   LabelGroupUpdateDto,
 } from '../dto/label-group.dto';
@@ -35,10 +34,7 @@ import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 import { LabelGroupService } from '../services/label-group.service';
 
 @Controller('labelgroup')
-export class LabelGroupController extends BaseOrmController<
-  LabelGroupOrmEntity,
-  LabelGroupDtoConfig
-> {
+export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity> {
   constructor(private readonly labelGroupService: LabelGroupService) {
     super(labelGroupService);
   }

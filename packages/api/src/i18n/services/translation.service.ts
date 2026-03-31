@@ -19,15 +19,11 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { TranslationDtoConfig } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
 
 @Injectable()
-export class TranslationService extends BaseOrmService<
-  TranslationOrmEntity,
-  TranslationDtoConfig
-> {
+export class TranslationService extends BaseOrmService<TranslationOrmEntity> {
   constructor(
     repository: TranslationRepository,
     private readonly workflowService: WorkflowService,

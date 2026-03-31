@@ -11,6 +11,7 @@ import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -50,3 +51,8 @@ export type TranslationDtoConfig = DtoActionConfig<{
   create: TranslationCreateDto;
   update: TranslationUpdateDto;
 }>;
+
+export type TranslationDto = BuildDto<
+  TranslationDtoConfig,
+  TranslationTransformerDto
+>;

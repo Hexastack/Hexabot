@@ -11,7 +11,6 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   WorkflowNewVersionDto,
   WorkflowVersion,
-  WorkflowVersionDtoConfig,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
@@ -20,10 +19,7 @@ import { WorkflowVersionAction } from '../types';
 import { WorkflowService } from './workflow.service';
 
 @Injectable()
-export class WorkflowVersionService extends BaseOrmService<
-  WorkflowVersionOrmEntity,
-  WorkflowVersionDtoConfig
-> {
+export class WorkflowVersionService extends BaseOrmService<WorkflowVersionOrmEntity> {
   /**
    * Create the service with a workflow version repository.
    * @param repository Repository for workflow version entities.

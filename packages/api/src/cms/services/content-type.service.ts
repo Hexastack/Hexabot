@@ -22,10 +22,7 @@ export const DEFAULT_CONTENT_TYPE_SCHEMA = {
 } satisfies JSONSchema7;
 
 @Injectable()
-export class ContentTypeService extends BaseOrmService<
-  ContentTypeOrmEntity,
-  ContentTypeDtoConfig
-> {
+export class ContentTypeService extends BaseOrmService<ContentTypeOrmEntity> {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
   }

@@ -25,12 +25,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Message,
-  MessageCreateDto,
-  MessageDtoConfig,
-  MessageFull,
-} from '../dto/message.dto';
+import { Message, MessageCreateDto, MessageFull } from '../dto/message.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
@@ -43,10 +38,7 @@ import {
 } from '../types/message';
 
 @Controller('message')
-export class MessageController extends BaseOrmController<
-  MessageOrmEntity,
-  MessageDtoConfig
-> {
+export class MessageController extends BaseOrmController<MessageOrmEntity> {
   constructor(
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,

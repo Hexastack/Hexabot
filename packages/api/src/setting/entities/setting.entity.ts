@@ -9,11 +9,11 @@ import { Column, Entity, Index } from 'typeorm';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Setting, SettingTransformerDto } from '../dto/setting.dto';
+import { Setting, SettingDto } from '../dto/setting.dto';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
-export class SettingOrmEntity extends BaseOrmEntity<SettingTransformerDto> {
+export class SettingOrmEntity extends BaseOrmEntity<SettingDto> {
   plainCls = Setting;
 
   fullCls = Setting;

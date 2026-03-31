@@ -25,7 +25,6 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import {
   WorkflowNewVersionDto,
   WorkflowVersion,
-  WorkflowVersionDtoConfig,
   WorkflowVersionUpdateDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
@@ -34,10 +33,7 @@ import { WorkflowService } from '../services/workflow.service';
 import { WorkflowVersionAction } from '../types';
 
 @Controller('workflow')
-export class WorkflowVersionController extends BaseOrmController<
-  WorkflowVersionOrmEntity,
-  WorkflowVersionDtoConfig
-> {
+export class WorkflowVersionController extends BaseOrmController<WorkflowVersionOrmEntity> {
   constructor(
     private readonly workflowService: WorkflowService,
     private readonly workflowVersionService: WorkflowVersionService,

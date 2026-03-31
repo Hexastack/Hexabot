@@ -11,6 +11,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -78,3 +79,5 @@ export type ContentDtoConfig = DtoActionConfig<{
   create: ContentCreateDto;
   update: ContentUpdateDto;
 }>;
+
+export type ContentDto = BuildDto<ContentDtoConfig, ContentTransformerDto>;

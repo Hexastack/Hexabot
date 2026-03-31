@@ -29,6 +29,7 @@ import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -243,4 +244,4 @@ export type WorkflowDtoConfig = DtoActionConfig<{
   update: WorkflowUpdateDto;
 }>;
 
-export type WorkflowDto = WorkflowDtoConfig;
+export type WorkflowDto = BuildDto<WorkflowDtoConfig, WorkflowTransformerDto>;

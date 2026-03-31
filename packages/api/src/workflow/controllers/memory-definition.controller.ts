@@ -26,17 +26,13 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   MemoryDefinition,
   MemoryDefinitionCreateDto,
-  MemoryDefinitionDtoConfig,
   MemoryDefinitionUpdateDto,
 } from '../dto/memory-definition.dto';
 import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity';
 import { MemoryDefinitionService } from '../services/memory-definition.service';
 
 @Controller('memorydefinition')
-export class MemoryDefinitionController extends BaseOrmController<
-  MemoryDefinitionOrmEntity,
-  MemoryDefinitionDtoConfig
-> {
+export class MemoryDefinitionController extends BaseOrmController<MemoryDefinitionOrmEntity> {
   constructor(
     private readonly memoryDefinitionService: MemoryDefinitionService,
   ) {

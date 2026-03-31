@@ -10,7 +10,6 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
@@ -29,7 +28,6 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import {
   Setting,
   SettingCreateDto,
-  SettingDtoConfig,
   SettingUpdateDto,
 } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
@@ -40,10 +38,7 @@ import { SettingSeeder } from '../seeds/setting.seed';
 import { RuntimeSettingsService } from './runtime-settings.service';
 
 @Injectable()
-export class SettingService
-  extends BaseOrmService<SettingOrmEntity, SettingDtoConfig>
-  implements OnApplicationBootstrap
-{
+export class SettingService extends BaseOrmService<SettingOrmEntity> {
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,

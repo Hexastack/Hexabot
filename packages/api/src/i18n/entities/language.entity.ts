@@ -13,10 +13,10 @@ import {
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Language, LanguageTransformerDto } from '../dto/language.dto';
+import { Language, LanguageDto } from '../dto/language.dto';
 
 @Entity({ name: 'languages' })
-export class LanguageOrmEntity extends BaseOrmEntity<LanguageTransformerDto> {
+export class LanguageOrmEntity extends BaseOrmEntity<LanguageDto> {
   plainCls = Language;
 
   fullCls = Language;

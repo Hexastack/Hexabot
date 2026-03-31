@@ -10,6 +10,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -76,3 +77,5 @@ export type RoleDtoConfig = DtoActionConfig<{
   create: RoleCreateDto;
   update: RoleUpdateDto;
 }>;
+
+export type RoleDto = BuildDto<RoleDtoConfig, RoleTransformerDto>;

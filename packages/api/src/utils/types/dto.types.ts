@@ -6,6 +6,8 @@
 
 import { Exclude, Expose } from 'class-transformer';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
 export type Ctor<T = unknown> = abstract new (...args: any[]) => T;
 
 @Exclude()
@@ -59,3 +61,18 @@ export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
   : T extends { prototype: infer P }
     ? P
     : unknown;
+
+export type InferDto<Entity extends BaseOrmEntity<any>> = Entity['__dtoType'];
+
+export type BuildDto<
+  actions extends DtoActionConfig,
+  transformers extends DtoTransformerConfig,
+> = { actions: actions; transformers: transformers };
+
+export type EntityDto<Entity extends BaseOrmEntity> = BuildDto<
+  DtoActionConfig,
+  {
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  }
+>;

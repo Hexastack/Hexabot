@@ -8,15 +8,11 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { MemoryDefinitionDtoConfig } from '../dto/memory-definition.dto';
 import { MemoryDefinitionOrmEntity } from '../entities/memory-definition.entity';
 import { MemoryDefinitionRepository } from '../repositories/memory-definition.repository';
 
 @Injectable()
-export class MemoryDefinitionSeeder extends BaseOrmSeeder<
-  MemoryDefinitionOrmEntity,
-  MemoryDefinitionDtoConfig
-> {
+export class MemoryDefinitionSeeder extends BaseOrmSeeder<MemoryDefinitionOrmEntity> {
   constructor(memoryDefinitionRepository: MemoryDefinitionRepository) {
     super(memoryDefinitionRepository);
   }

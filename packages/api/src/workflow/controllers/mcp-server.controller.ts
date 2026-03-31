@@ -25,7 +25,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   McpServer,
   McpServerCreateDto,
-  McpServerDtoConfig,
   McpServerFull,
   McpServerUpdateDto,
 } from '../dto/mcp-server.dto';
@@ -37,10 +36,7 @@ import {
 import { McpServerService } from '../services/mcp-server.service';
 
 @Controller('mcpserver')
-export class McpServerController extends BaseOrmController<
-  McpServerOrmEntity,
-  McpServerDtoConfig
-> {
+export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
   /**
    * Creates the MCP server controller.
    *

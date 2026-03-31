@@ -27,8 +27,8 @@ import { AsRelation } from '@/utils';
 
 import {
   WorkflowVersion,
+  WorkflowVersionDto,
   WorkflowVersionFull,
-  WorkflowVersionTransformerDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionAction } from '../types';
 
@@ -36,7 +36,7 @@ import { WorkflowOrmEntity } from './workflow.entity';
 
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
-export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionTransformerDto> {
+export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionDto> {
   plainCls = WorkflowVersion;
 
   fullCls = WorkflowVersionFull;

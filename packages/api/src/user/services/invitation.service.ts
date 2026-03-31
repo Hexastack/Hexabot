@@ -17,19 +17,12 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  Invitation,
-  InvitationCreateDto,
-  InvitationDtoConfig,
-} from '../dto/invitation.dto';
+import { Invitation, InvitationCreateDto } from '../dto/invitation.dto';
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 import { InvitationRepository } from '../repositories/invitation.repository';
 
 @Injectable()
-export class InvitationService extends BaseOrmService<
-  InvitationOrmEntity,
-  InvitationDtoConfig
-> {
+export class InvitationService extends BaseOrmService<InvitationOrmEntity> {
   constructor(
     @Inject(InvitationRepository)
     readonly repository: InvitationRepository,

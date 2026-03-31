@@ -11,6 +11,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -74,3 +75,8 @@ export type CredentialDtoConfig = DtoActionConfig<{
   create: CredentialCreateDto;
   update: CredentialUpdateDto;
 }>;
+
+export type CredentialDto = BuildDto<
+  CredentialDtoConfig,
+  CredentialTransformerDto
+>;

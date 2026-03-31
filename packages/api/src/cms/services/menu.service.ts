@@ -13,13 +13,12 @@ import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { MenuDtoConfig } from '../dto/menu.dto';
 import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
 import { AnyMenu, MenuTree } from '../types/menu';
 
 @Injectable()
-export class MenuService extends BaseOrmService<MenuOrmEntity, MenuDtoConfig> {
+export class MenuService extends BaseOrmService<MenuOrmEntity> {
   private readonly RootSymbol: symbol = Symbol('RootMenu');
 
   constructor(

@@ -11,19 +11,12 @@ import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Setting,
-  SettingDtoConfig,
-  SettingUpdateDto,
-} from '../dto/setting.dto';
+import { Setting, SettingUpdateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
 @Controller('setting')
-export class SettingController extends BaseOrmController<
-  SettingOrmEntity,
-  SettingDtoConfig
-> {
+export class SettingController extends BaseOrmController<SettingOrmEntity> {
   constructor(protected readonly settingService: SettingService) {
     super(settingService);
   }

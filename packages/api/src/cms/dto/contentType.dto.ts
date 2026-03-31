@@ -14,6 +14,7 @@ import { FieldType } from '@/setting/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -76,3 +77,8 @@ export type ContentTypeDtoConfig = DtoActionConfig<{
   create: ContentTypeCreateDto;
   update: ContentTypeUpdateDto;
 }>;
+
+export type ContentTypeDto = BuildDto<
+  ContentTypeDtoConfig,
+  ContentTypeTransformerDto
+>;

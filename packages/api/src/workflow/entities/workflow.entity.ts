@@ -35,11 +35,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import {
-  Workflow,
-  WorkflowFull,
-  WorkflowTransformerDto,
-} from '../dto/workflow.dto';
+import { Workflow, WorkflowDto, WorkflowFull } from '../dto/workflow.dto';
 import {
   conversationalWorkflowInputJsonSchema,
   manualWorkflowDefaultInputJsonSchema,
@@ -51,7 +47,7 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
-export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowTransformerDto> {
+export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowDto> {
   plainCls = Workflow;
 
   fullCls = WorkflowFull;

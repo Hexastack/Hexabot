@@ -11,15 +11,12 @@ import { Cache } from 'cache-manager';
 import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { SettingCreateDto, SettingDtoConfig } from '../dto/setting.dto';
+import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 
 @Injectable()
-export class SettingSeeder extends BaseOrmSeeder<
-  SettingOrmEntity,
-  SettingDtoConfig
-> {
+export class SettingSeeder extends BaseOrmSeeder<SettingOrmEntity> {
   constructor(
     settingRepository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,

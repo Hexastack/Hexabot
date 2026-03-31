@@ -99,9 +99,7 @@ export const subscriberFixtures = getFixturesWithDefaultValues<
   defaultValues: subscriberDefaultValues,
 });
 
-const findSubscriberRelations = async (
-  dataSource: DataSource,
-): Promise<SubscriberOrmEntity[]> => {
+const findSubscriberRelations = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(SubscriberOrmEntity);
 
   return await repository.find({

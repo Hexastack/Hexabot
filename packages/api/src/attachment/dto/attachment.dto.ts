@@ -22,6 +22,7 @@ import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -213,3 +214,8 @@ export type AttachmentTransformerDto = DtoTransformerConfig<{
 export type AttachmentDtoConfig = DtoActionConfig<{
   create: AttachmentCreateDto;
 }>;
+
+export type AttachmentDto = BuildDto<
+  AttachmentDtoConfig,
+  AttachmentTransformerDto
+>;

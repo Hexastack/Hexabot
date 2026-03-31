@@ -15,15 +15,15 @@ import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
   Invitation,
+  InvitationDto,
   InvitationFull,
-  InvitationTransformerDto,
 } from '../dto/invitation.dto';
 import { sha256Hash } from '../utilities/hash';
 
 import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'invitations' })
-export class InvitationOrmEntity extends BaseOrmEntity<InvitationTransformerDto> {
+export class InvitationOrmEntity extends BaseOrmEntity<InvitationDto> {
   plainCls = Invitation;
 
   fullCls = InvitationFull;
