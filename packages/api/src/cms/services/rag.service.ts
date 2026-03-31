@@ -9,10 +9,13 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { EHook } from '@/utils';
-import { EmitEventProps } from '@/utils/types/entity-event.types';
+import { UserOrmEntity } from '@/user';
+import {
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from '@/utils/types/entity-event.types';
 
-import { ContentDtoConfig } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { RagHit, RagQueryOptions } from '../types/rag';
 
@@ -121,9 +124,7 @@ export class RagService {
    * @returns Resolves when event handling completes.
    */
   @OnEvent('hook:content:postCreate')
-  async handleContentCreated(
-    event: EmitEventProps<ContentOrmEntity, EHook.postCreate, ContentDtoConfig>,
-  ): Promise<void> {
+  async handleContentCreated(event: InsertEvent<UserOrmEntity>): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
       return;
@@ -145,7 +146,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postUpdate')
   async handleContentUpdated(
-    event: EmitEventProps<ContentOrmEntity, EHook.postUpdate, ContentDtoConfig>,
+    event: UpdateEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -168,7 +169,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postDelete')
   async handleContentDeleted(
-    event: EmitEventProps<ContentOrmEntity, EHook.postDelete, ContentDtoConfig>,
+    event: RemoveEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {

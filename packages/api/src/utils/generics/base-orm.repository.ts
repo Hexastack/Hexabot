@@ -22,7 +22,6 @@ import {
   Repository,
   UpdateEvent,
 } from 'typeorm';
-import { OrmLifecycleEvent } from 'types/event-emitter';
 
 import {
   invokeOrmHooks,
@@ -91,7 +90,7 @@ export abstract class BaseOrmRepository<
 
   private async invokeEntityHooks(
     hook: OrmHookName,
-    event: OrmLifecycleEvent<Entity>,
+    event: InsertEvent<Entity> | UpdateEvent<Entity> | RemoveEvent<Entity>,
   ): Promise<void> {
     await invokeOrmHooks(event.entity, hook, event);
   }

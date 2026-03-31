@@ -14,14 +14,13 @@ import { Cache } from 'cache-manager';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
-import { EHook } from '@/utils';
 import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { EmitEventProps } from '@/utils/types/entity-event.types';
+import { UpdateEvent } from '@/utils/types/entity-event.types';
 
 import { Setting, SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
@@ -181,9 +180,7 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
    * based on the `group` and `label` of the `Setting`.
    */
   @OnEvent('hook:setting:postUpdate')
-  async emitSettingEvents(
-    event: EmitEventProps<SettingOrmEntity, EHook.postUpdate, SettingDtoConfig>,
-  ): Promise<void> {
+  async emitSettingEvents(event: UpdateEvent<SettingOrmEntity>): Promise<void> {
     if (event.entity) {
       const setting = event.entity.toPlainCls();
       const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;

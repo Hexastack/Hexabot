@@ -12,14 +12,12 @@ import { Between } from 'typeorm';
 import {
   Subscriber,
   Subscriber as SubscriberDto,
-  SubscriberDtoConfig,
 } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
-import { EHook } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { EmitEventProps } from '@/utils/types/entity-event.types';
+import { InsertEvent, UpdateEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -39,13 +37,7 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
   }
 
   @OnEvent('hook:subscriber:preCreate')
-  handleSubscriberPreCreate(
-    event: EmitEventProps<
-      SubscriberOrmEntity,
-      EHook.preCreate,
-      SubscriberDtoConfig
-    >,
-  ) {
+  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
     const entity = event.entity;
     if (!entity) {
       return;
@@ -64,15 +56,9 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
   }
 
   @OnEvent('hook:subscriber:preUpdate')
-  handleSubscriberPreUpdate(
-    event: EmitEventProps<
-      SubscriberOrmEntity,
-      EHook.preUpdate,
-      SubscriberDtoConfig
-    >,
-  ): void {
-    const entity = event.entity as Partial<SubscriberOrmEntity> | undefined;
-    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
+  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
+    const entity = event.entity;
+    const previous = event.databaseEntity;
 
     if (!entity || !previous) {
       return;

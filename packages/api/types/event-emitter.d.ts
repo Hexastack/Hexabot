@@ -18,7 +18,6 @@ import type {
 } from 'eventemitter2';
 import type { Session as ExpressSession } from 'express-session';
 import type { Socket } from 'socket.io';
-import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import type {
   StatsOrmEntity,
@@ -52,6 +51,11 @@ import type { UserOrmEntity } from '@/user/entities/user.entity';
 import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { DtoActionConfig } from '@/utils/types/dto.types';
+import type {
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from '@/utils/types/entity-event.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
