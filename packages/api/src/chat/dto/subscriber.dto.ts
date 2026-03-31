@@ -24,7 +24,11 @@ import {
 } from '@/user/dto/user-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
+import {
+  BuildDto,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 
@@ -186,4 +190,7 @@ export type SubscriberDtoConfig = DtoActionConfig<{
   update: SubscriberUpdateDto;
 }>;
 
-export type SubscriberDto = SubscriberDtoConfig;
+export type SubscriberDto = BuildDto<
+  SubscriberDtoConfig,
+  SubscriberTransformerDto
+>;

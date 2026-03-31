@@ -8,16 +8,13 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { WorkflowCreateDto, WorkflowDtoConfig } from '../dto/workflow.dto';
+import { WorkflowCreateDto } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowService } from '../services/workflow.service';
 
 @Injectable()
-export class WorkflowSeeder extends BaseOrmSeeder<
-  WorkflowOrmEntity,
-  WorkflowDtoConfig
-> {
+export class WorkflowSeeder extends BaseOrmSeeder<WorkflowOrmEntity> {
   constructor(
     workflowRepository: WorkflowRepository,
     private readonly workflowService: WorkflowService,

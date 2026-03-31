@@ -17,8 +17,9 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { CredentialService } from '@/user';
+import { cloneObject } from '@/utils/helpers/clone';
 import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
-import { WorkflowContextState } from '@/workflow/types';
+import { WorkflowContextState, WorkflowType } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { McpClientPoolService } from '../services/mcp-client-pool.service';
@@ -129,8 +130,37 @@ export abstract class WorkflowRuntimeContext<
     this.initiatorId = run.triggeredBy.id;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
+    await this.syncInitiatorState();
     this.memoryStore = memory;
     this.memoryStore.syncToContext();
+
+    return this;
+  }
+
+  async syncInitiatorState(): Promise<this> {
+    if (!this.event?.getInitiator) {
+      return this;
+    }
+
+    const initiator = this.event.getInitiator();
+    if (!initiator || typeof initiator !== 'object') {
+      return this;
+    }
+
+    const initiatorState = cloneObject(
+      initiator as unknown as Record<string, unknown>,
+    );
+
+    if (this.event.triggerType === WorkflowType.conversational) {
+      const labels = (initiator as unknown as { labels?: unknown }).labels;
+      const labelIds = Array.isArray(labels)
+        ? labels.filter((label): label is string => typeof label === 'string')
+        : [];
+
+      initiatorState.labels = await this.subscriber.resolveLabelNames(labelIds);
+    }
+
+    this.state.initiator = initiatorState;
 
     return this;
   }

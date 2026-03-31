@@ -11,6 +11,7 @@ import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -85,3 +86,8 @@ export type PermissionTransformerDto = DtoTransformerConfig<{
 export type PermissionDtoConfig = DtoActionConfig<{
   create: PermissionCreateDto;
 }>;
+
+export type PermissionDto = BuildDto<
+  PermissionDtoConfig,
+  PermissionTransformerDto
+>;

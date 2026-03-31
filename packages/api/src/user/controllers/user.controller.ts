@@ -43,7 +43,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import {
   UserCreateDto,
-  UserDtoConfig,
   UserEditProfileDto,
   UserRequestResetDto,
   UserResetPasswordDto,
@@ -58,10 +57,7 @@ import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
 
 @Controller('user')
-export class ReadOnlyUserController extends BaseOrmController<
-  UserOrmEntity,
-  UserDtoConfig
-> {
+export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
   constructor(
     protected readonly userService: UserService,
     protected readonly roleService: RoleService,

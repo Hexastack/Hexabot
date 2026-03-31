@@ -31,7 +31,11 @@ import {
   SubscriberStub,
 } from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
+import {
+  BuildDto,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { UserProvider } from '../types/user-provider.type';
 
@@ -250,3 +254,5 @@ export type UserDtoConfig = DtoActionConfig<{
   create: UserCreateDto;
   update: UserUpdateDto | Partial<SubscriberCreateDto>;
 }>;
+
+export type UserDto = BuildDto<UserDtoConfig, UserTransformerDto>;

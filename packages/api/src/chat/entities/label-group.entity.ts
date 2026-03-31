@@ -10,15 +10,15 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
   LabelGroup,
+  LabelGroupDto,
   LabelGroupFull,
-  LabelGroupTransformerDto,
 } from '../dto/label-group.dto';
 
 import { LabelOrmEntity } from './label.entity';
 
 @Entity({ name: 'label_groups' })
 @Index(['name'], { unique: true })
-export class LabelGroupOrmEntity extends BaseOrmEntity<LabelGroupTransformerDto> {
+export class LabelGroupOrmEntity extends BaseOrmEntity<LabelGroupDto> {
   plainCls = LabelGroup;
 
   fullCls = LabelGroupFull;

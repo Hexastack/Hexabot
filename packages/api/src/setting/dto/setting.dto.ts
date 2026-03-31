@@ -18,6 +18,7 @@ import {
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -148,3 +149,5 @@ export type SettingDtoConfig = DtoActionConfig<{
   create: SettingCreateDto;
   update: SettingUpdateDto;
 }>;
+
+export type SettingDto = BuildDto<SettingDtoConfig, SettingTransformerDto>;

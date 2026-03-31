@@ -35,7 +35,9 @@ import { flatten } from '@/utils/helpers/flatten';
 import {
   DtoAction,
   DtoActionConfig,
+  EntityDto,
   InferActionDto,
+  InferDto,
   InferTransformDto,
 } from '../types/dto.types';
 import { EmitEventProps } from '../types/entity-event.types';
@@ -73,11 +75,8 @@ export type FindAllOptions<EntityType> = Omit<
 };
 
 export abstract class BaseOrmRepository<
-  Entity extends BaseOrmEntity<{
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
-  }>,
-  ActionDto extends DtoActionConfig,
+  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
 > implements EntitySubscriberInterface<Entity>
 {
   private readonly dataSource: DataSource;

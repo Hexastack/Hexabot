@@ -26,6 +26,7 @@ import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -287,4 +288,7 @@ export type WorkflowRunDtoConfig = DtoActionConfig<{
   update: WorkflowRunUpdateDto;
 }>;
 
-export type WorkflowRunDto = WorkflowRunDtoConfig;
+export type WorkflowRunDto = BuildDto<
+  WorkflowRunDtoConfig,
+  WorkflowRunTransformerDto
+>;

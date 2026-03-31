@@ -10,15 +10,11 @@ import { In, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { UserDtoConfig } from '../dto/user.dto';
 import { EUserProfileType } from '../entities/user-profile.entity';
 import { UserOrmEntity } from '../entities/user.entity';
 
 @Injectable()
-export class UserRepository extends BaseOrmRepository<
-  UserOrmEntity,
-  UserDtoConfig
-> {
+export class UserRepository extends BaseOrmRepository<UserOrmEntity> {
   constructor(
     @InjectRepository(UserOrmEntity)
     repository: Repository<UserOrmEntity>,

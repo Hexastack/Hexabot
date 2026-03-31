@@ -27,12 +27,7 @@ import {
   WebsocketGateway,
 } from '@/websocket';
 
-import {
-  Workflow,
-  WorkflowDtoConfig,
-  WorkflowFull,
-  WorkflowUpdateDto,
-} from '../dto/workflow.dto';
+import { Workflow, WorkflowFull, WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';
@@ -40,10 +35,7 @@ import { WorkflowType } from '../types';
 import { WorkflowRunService } from './workflow-run.service';
 
 @Injectable()
-export class WorkflowService extends BaseOrmService<
-  WorkflowOrmEntity,
-  WorkflowDtoConfig
-> {
+export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
   private readonly MANUAL_INPUT_VALIDATION_ERROR = {
     statusCode: 400,
     error: 'Bad Request',

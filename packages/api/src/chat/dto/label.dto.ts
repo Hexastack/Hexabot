@@ -17,6 +17,7 @@ import {
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -109,4 +110,4 @@ export type LabelDtoConfig = DtoActionConfig<{
   update: LabelUpdateDto;
 }>;
 
-export type LabelDto = LabelDtoConfig;
+export type LabelDto = BuildDto<LabelDtoConfig, LabelTransformerDto>;

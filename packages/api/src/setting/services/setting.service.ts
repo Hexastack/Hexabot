@@ -23,21 +23,14 @@ import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { EmitEventProps } from '@/utils/types/entity-event.types';
 
-import {
-  Setting,
-  SettingCreateDto,
-  SettingDtoConfig,
-} from '../dto/setting.dto';
+import { Setting, SettingCreateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeeder } from '../seeds/setting.seed';
 import { TextSetting } from '../types';
 
 @Injectable()
-export class SettingService extends BaseOrmService<
-  SettingOrmEntity,
-  SettingDtoConfig
-> {
+export class SettingService extends BaseOrmService<SettingOrmEntity> {
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,

@@ -20,15 +20,11 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { TranslationDtoConfig } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
 
 @Injectable()
-export class TranslationService extends BaseOrmService<
-  TranslationOrmEntity,
-  TranslationDtoConfig
-> {
+export class TranslationService extends BaseOrmService<TranslationOrmEntity> {
   constructor(
     repository: TranslationRepository,
     private readonly workflowService: WorkflowService,

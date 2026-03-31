@@ -17,6 +17,7 @@ import {
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -69,3 +70,8 @@ export type InvitationTransformerDto = DtoTransformerConfig<{
 export type InvitationDtoConfig = DtoActionConfig<{
   create: InvitationCreateDto;
 }>;
+
+export type InvitationDto = BuildDto<
+  InvitationDtoConfig,
+  InvitationTransformerDto
+>;

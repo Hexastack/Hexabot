@@ -23,18 +23,14 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  Content,
-  ContentFull,
-  ContentTransformerDto,
-} from '../dto/content.dto';
+import { Content, ContentDto, ContentFull } from '../dto/content.dto';
 
 import { ContentTypeOrmEntity } from './content-type.entity';
 
 @Entity({ name: 'contents' })
 @Index(['title'])
 @Index(['searchText'])
-export class ContentOrmEntity extends BaseOrmEntity<ContentTransformerDto> {
+export class ContentOrmEntity extends BaseOrmEntity<ContentDto> {
   plainCls = Content;
 
   fullCls = ContentFull;

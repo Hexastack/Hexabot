@@ -12,6 +12,7 @@ import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -148,3 +149,8 @@ export class WorkflowVersionRestoreDto {
   @IsString()
   message?: string;
 }
+
+export type WorkflowVersionDto = BuildDto<
+  WorkflowVersionDtoConfig,
+  WorkflowVersionTransformerDto
+>;

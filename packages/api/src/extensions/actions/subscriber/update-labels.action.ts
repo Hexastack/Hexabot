@@ -91,6 +91,8 @@ export const SubscriberUpdateLabelsAction = createAction<
       input.labels_to_assign,
       input.labels_to_remove,
     );
+    context.event.setInitiator(updatedSubscriber);
+    await context.syncInitiatorState();
 
     return {
       success: true,

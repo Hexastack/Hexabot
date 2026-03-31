@@ -13,15 +13,15 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
   MemoryDefinition,
+  MemoryDefinitionDto,
   MemoryDefinitionFull,
-  MemoryDefinitionTransformerDto,
 } from '../dto/memory-definition.dto';
 import { MemoryScope } from '../types';
 
 @Entity({ name: 'memory_definitions' })
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
-export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionTransformerDto> {
+export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionDto> {
   plainCls = MemoryDefinition;
 
   fullCls = MemoryDefinitionFull;

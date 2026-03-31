@@ -10,14 +10,10 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { InvitationDtoConfig } from '../dto/invitation.dto';
 import { InvitationOrmEntity } from '../entities/invitation.entity';
 
 @Injectable()
-export class InvitationRepository extends BaseOrmRepository<
-  InvitationOrmEntity,
-  InvitationDtoConfig
-> {
+export class InvitationRepository extends BaseOrmRepository<InvitationOrmEntity> {
   constructor(
     @InjectRepository(InvitationOrmEntity)
     repository: Repository<InvitationOrmEntity>,

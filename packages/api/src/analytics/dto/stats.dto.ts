@@ -18,6 +18,7 @@ import {
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -84,6 +85,8 @@ export type StatsActionDto = DtoActionConfig<{
   create: StatsCreateDto;
   update: StatsUpdateDto;
 }>;
+
+export type StatsDto = BuildDto<StatsActionDto, StatsTransformerDto>;
 
 export class StatsFindDto {
   /**

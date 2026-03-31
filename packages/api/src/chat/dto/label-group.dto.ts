@@ -10,6 +10,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 import {
   BaseStub,
+  BuildDto,
   DtoActionConfig,
   DtoTransformerConfig,
 } from '@/utils/types/dto.types';
@@ -54,4 +55,7 @@ export type LabelGroupDtoConfig = DtoActionConfig<{
   update: LabelGroupUpdateDto;
 }>;
 
-export type LabelGroupDto = LabelGroupDtoConfig;
+export type LabelGroupDto = BuildDto<
+  LabelGroupDtoConfig,
+  LabelGroupTransformerDto
+>;
