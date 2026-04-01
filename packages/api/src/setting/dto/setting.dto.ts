@@ -16,12 +16,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { SettingType } from '../types';
 
@@ -140,14 +135,13 @@ export class SettingUpdateDto {
   weight?: number;
 }
 
-export type SettingTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Setting;
-  FullCls: typeof Setting;
-}>;
-
-export type SettingDtoConfig = DtoActionConfig<{
-  create: SettingCreateDto;
-  update: SettingUpdateDto;
-}>;
-
-export type SettingDto = BuildDto<SettingDtoConfig, SettingTransformerDto>;
+export type SettingDto = BuildDtoType<
+  {
+    PlainCls: typeof Setting;
+    FullCls: typeof Setting;
+  },
+  {
+    create: SettingCreateDto;
+    update: SettingUpdateDto;
+  }
+>;

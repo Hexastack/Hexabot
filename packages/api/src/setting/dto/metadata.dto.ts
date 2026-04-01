@@ -8,12 +8,7 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 @Exclude()
 export class MetadataStub extends BaseStub {
@@ -40,14 +35,13 @@ export class MetadataCreateDto {
 
 export class MetadataUpdateDto extends PartialType(MetadataCreateDto) {}
 
-export type MetadataTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Metadata;
-  FullCls: typeof Metadata;
-}>;
-
-export type MetadataDtoConfig = DtoActionConfig<{
-  create: MetadataCreateDto;
-  update: MetadataUpdateDto;
-}>;
-
-export type MetadataDto = BuildDto<MetadataDtoConfig, MetadataTransformerDto>;
+export type MetadataDto = BuildDtoType<
+  {
+    PlainCls: typeof Metadata;
+    FullCls: typeof Metadata;
+  },
+  {
+    create: MetadataCreateDto;
+    update: MetadataUpdateDto;
+  }
+>;

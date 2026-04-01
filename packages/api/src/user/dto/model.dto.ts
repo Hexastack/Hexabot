@@ -8,12 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
@@ -74,13 +69,12 @@ export class ModelCreateDto {
   relation?: TRelation;
 }
 
-export type ModelTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Model;
-  FullCls: typeof ModelFull;
-}>;
-
-export type ModelDtoConfig = DtoActionConfig<{
-  create: ModelCreateDto;
-}>;
-
-export type ModelDto = BuildDto<ModelDtoConfig, ModelTransformerDto>;
+export type ModelDto = BuildDtoType<
+  {
+    PlainCls: typeof Model;
+    FullCls: typeof ModelFull;
+  },
+  {
+    create: ModelCreateDto;
+  }
+>;

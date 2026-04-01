@@ -8,29 +8,20 @@ import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  DtoAction,
-  DtoActionConfig,
-  EntityDto,
-  InferActionDto,
-  InferDto,
-} from '../types/dto.types';
+import { EntityDto, InferCreateDto, InferPlain } from '../types/dto.types';
 
 import { BaseOrmRepository, FindAllOptions } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
   Entity extends BaseOrmEntity<EntityDto<Entity>>,
-  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
-  OrmRepository extends BaseOrmRepository<
-    Entity,
-    ActionDto
-  > = BaseOrmRepository<Entity, ActionDto>,
 > {
-  protected constructor(protected readonly repository: OrmRepository) {}
+  protected constructor(
+    protected readonly repository: BaseOrmRepository<Entity>,
+  ) {}
 
   async findAll(
     options: FindAllOptions<Entity> = {} as FindAllOptions<Entity>,
-  ) {
+  ): Promise<InferPlain<Entity>[]> {
     return await this.repository.findAll(options);
   }
 
@@ -40,9 +31,7 @@ export abstract class BaseOrmSeeder<
     return count === 0;
   }
 
-  async seed(
-    models: InferActionDto<DtoAction.Create, ActionDto>[],
-  ): Promise<boolean> {
+  async seed(models: InferCreateDto<Entity>[]): Promise<boolean> {
     if (await this.isEmpty()) {
       await this.repository.createMany(models);
 
