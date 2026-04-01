@@ -6,6 +6,8 @@
 
 import { Exclude, Expose } from 'class-transformer';
 
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
 export type Ctor<T = unknown> = abstract new (...args: any[]) => T;
 
 @Exclude()
@@ -48,14 +50,43 @@ export type DtoTransformerConfig<
   T extends Record<DtoTransformer, any> = Record<DtoTransformer, any>,
 > = T;
 
-export type InferActionDto<
+export type BuildDtoType<
+  transformers extends DtoTransformerConfig,
+  actions extends DtoActionConfig,
+> = { transformers: transformers; actions: actions };
+
+export type EntityDto<Entity extends BaseOrmEntity> = BuildDtoType<
+  {
+    FullCls: Entity['fullCls'];
+    PlainCls: Entity['plainCls'];
+  },
+  DtoActionConfig
+>;
+
+export type InferEntityDto<
   K extends DtoAction,
-  Dto extends DtoActionConfig,
+  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Dto extends DtoActionConfig = InferActionsDto<Entity>,
   Fallback = unknown,
 > = K extends keyof Dto ? Dto[K] : Fallback;
+
+export type InferCreateDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  InferEntityDto<DtoAction.Create, Entity>;
+
+export type InferUpdateDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  InferEntityDto<DtoAction.Update, Entity>;
+
+export type InferActionsDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  Entity['__dtoType']['actions'];
 
 export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
   ? R
   : T extends { prototype: infer P }
     ? P
     : unknown;
+
+export type InferPlain<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  InferTransformDto<Entity['plainCls']>;
+
+export type InferFull<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  InferTransformDto<Entity['fullCls']>;

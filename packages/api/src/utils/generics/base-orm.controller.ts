@@ -10,25 +10,19 @@ import { FindManyOptions } from 'typeorm';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
-import { DtoActionConfig } from '../types/dto.types';
+import { EntityDto } from '../types/dto.types';
 
 import { BaseOrmService } from './base-orm.service';
 
 export abstract class BaseOrmController<
-  Entity extends BaseOrmEntity<{
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
-  }>,
-  ActionDto extends DtoActionConfig,
+  Entity extends BaseOrmEntity<EntityDto<Entity>>,
 > {
   eventEmitter: typeof this.service.eventEmitter;
 
   @Inject(LoggerService)
   readonly logger: LoggerService;
 
-  protected constructor(
-    protected readonly service: BaseOrmService<Entity, ActionDto>,
-  ) {
+  protected constructor(protected readonly service: BaseOrmService<Entity>) {
     this.eventEmitter = service.eventEmitter;
   }
 

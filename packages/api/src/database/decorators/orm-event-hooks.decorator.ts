@@ -58,8 +58,11 @@ export const getOrmHookMethods = (
 
 export const invokeOrmHooks = async <
   Entity extends BaseOrmEntity<{
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
+    actions: {};
+    transformers: {
+      FullCls: Entity['fullCls'];
+      PlainCls: Entity['plainCls'];
+    };
   }>,
 >(
   entity: any,

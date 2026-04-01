@@ -9,11 +9,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  WorkflowRun,
-  WorkflowRunDtoConfig,
-  WorkflowRunFull,
-} from '../dto/workflow-run.dto';
+import { WorkflowRun, WorkflowRunFull } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 
@@ -23,10 +19,7 @@ type StateUpdate = {
 };
 
 @Injectable()
-export class WorkflowRunService extends BaseOrmService<
-  WorkflowRunOrmEntity,
-  WorkflowRunDtoConfig
-> {
+export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
   /**
    * Creates the service with the underlying repository injected.
    *

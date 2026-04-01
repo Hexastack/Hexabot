@@ -24,7 +24,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 
 import {
   Subscriber,
-  SubscriberDtoConfig,
   SubscriberFull,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
@@ -32,10 +31,7 @@ import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberService } from '../services/subscriber.service';
 
 @Controller('subscriber')
-export class SubscriberController extends BaseOrmController<
-  SubscriberOrmEntity,
-  SubscriberDtoConfig
-> {
+export class SubscriberController extends BaseOrmController<SubscriberOrmEntity> {
   constructor(
     private readonly subscriberService: SubscriberService,
     private readonly attachmentService: AttachmentService,

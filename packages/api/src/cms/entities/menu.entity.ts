@@ -25,7 +25,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Menu, MenuFull, MenuTransformerDto } from '../dto/menu.dto';
+import { Menu, MenuDto, MenuFull } from '../dto/menu.dto';
 import { MenuType } from '../enums/menu-type.enum';
 
 export { MenuType };
@@ -42,7 +42,7 @@ export { MenuType };
   )
 `,
 )
-export class MenuOrmEntity extends BaseOrmEntity<MenuTransformerDto> {
+export class MenuOrmEntity extends BaseOrmEntity<MenuDto> {
   plainCls = Menu;
 
   fullCls = MenuFull;

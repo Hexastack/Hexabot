@@ -10,14 +10,11 @@ import { Between, In, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Stats, StatsActionDto } from '../dto/stats.dto';
+import { Stats } from '../dto/stats.dto';
 import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 
 @Injectable()
-export class StatsRepository extends BaseOrmRepository<
-  StatsOrmEntity,
-  StatsActionDto
-> {
+export class StatsRepository extends BaseOrmRepository<StatsOrmEntity> {
   constructor(
     @InjectRepository(StatsOrmEntity)
     repository: Repository<StatsOrmEntity>,

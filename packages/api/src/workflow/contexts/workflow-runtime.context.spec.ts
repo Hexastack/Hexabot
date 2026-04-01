@@ -17,7 +17,7 @@ import { MemoryStore } from '../utils/memory-store';
 import { WorkflowRuntimeContext } from './workflow-runtime.context';
 
 class TestEventWrapper extends TriggerEventWrapper {
-  readonly triggerType = WorkflowType.manual;
+  readonly triggerType = WorkflowType.conversational;
 
   buildInput(): Record<string, unknown> {
     return {};
@@ -30,7 +30,7 @@ class TestEventWrapper extends TriggerEventWrapper {
   getContextData(): Record<string, unknown> {
     return {
       channel: { name: 'web-channel' },
-      initiator: { id: 'owner-1' },
+      initiator: this.getInitiator(),
     };
   }
 }
@@ -72,10 +72,20 @@ const run = {
   triggeredBy: { id: 'owner-1' },
   workflow: { id: 'workflow-1' },
 } as unknown as WorkflowRunFull;
+const LABEL_ID_A = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const LABEL_ID_B = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const LABEL_NAME_A = 'VIP_CUSTOMER';
+const LABEL_NAME_B = 'RETURNING_VISITOR';
 
 describe('WorkflowRuntimeContext', () => {
-  it('keeps memory in state after buildFromRun hydrates the run context', async () => {
+  it('keeps memory in state and syncs conversational initiator labels as names', async () => {
     const context = new TestWorkflowRuntimeContext();
+    const resolveLabelNames = jest
+      .fn()
+      .mockResolvedValue([LABEL_NAME_A, LABEL_NAME_B]);
+    (context as any).subscriber = {
+      resolveLabelNames,
+    };
     const store = MemoryStore.createStore(
       {
         identifiers: {
@@ -90,9 +100,14 @@ describe('WorkflowRuntimeContext', () => {
       context,
     );
     const event = new TestEventWrapper();
+    event.setInitiator({
+      id: 'owner-1',
+      labels: [LABEL_ID_A, LABEL_ID_B],
+    } as any);
 
     await context.buildFromRun(run, event, store);
 
+    expect(resolveLabelNames).toHaveBeenCalledWith([LABEL_ID_A, LABEL_ID_B]);
     expect(context.memoryStore).toBe(store);
     expect(context.state).toMatchObject({
       locale: 'en',
@@ -101,6 +116,7 @@ describe('WorkflowRuntimeContext', () => {
       },
       initiator: {
         id: 'owner-1',
+        labels: [LABEL_NAME_A, LABEL_NAME_B],
       },
       initiatorId: 'owner-1',
       workflowId: 'workflow-1',
@@ -109,5 +125,10 @@ describe('WorkflowRuntimeContext', () => {
         profile: { name: 'Ada' },
       },
     });
+    expect((event.getInitiator() as any).labels).toEqual([
+      LABEL_ID_A,
+      LABEL_ID_B,
+    ]);
+    expect(context.state.initiator).not.toBe(event.getInitiator());
   });
 });

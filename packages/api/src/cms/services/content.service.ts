@@ -12,11 +12,7 @@ import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  ContentCreateDto,
-  ContentDtoConfig,
-  ContentFull,
-} from '../dto/content.dto';
+import { ContentCreateDto, ContentFull } from '../dto/content.dto';
 import { ContentType } from '../dto/contentType.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
@@ -25,10 +21,7 @@ import { RagHit, RagQueryOptions } from '../types/rag';
 import { RagRetrieverService } from './rag-retriever.service';
 
 @Injectable()
-export class ContentService extends BaseOrmService<
-  ContentOrmEntity,
-  ContentDtoConfig
-> {
+export class ContentService extends BaseOrmService<ContentOrmEntity> {
   constructor(
     readonly repository: ContentRepository,
     private readonly ragRetrieverService: RagRetrieverService,

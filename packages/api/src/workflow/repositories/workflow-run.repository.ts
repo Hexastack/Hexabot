@@ -10,14 +10,10 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { WorkflowRunDtoConfig } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 
 @Injectable()
-export class WorkflowRunRepository extends BaseOrmRepository<
-  WorkflowRunOrmEntity,
-  WorkflowRunDtoConfig
-> {
+export class WorkflowRunRepository extends BaseOrmRepository<WorkflowRunOrmEntity> {
   /**
    * Creates the repository with the TypeORM backing repository.
    *

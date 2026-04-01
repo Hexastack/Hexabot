@@ -7,9 +7,10 @@
 import { Injectable } from '@nestjs/common';
 import { JSONSchema7 } from 'json-schema';
 
+import { InferCreateDto } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentType, ContentTypeDtoConfig } from '../dto/contentType.dto';
+import { ContentType } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 
@@ -22,15 +23,14 @@ export const DEFAULT_CONTENT_TYPE_SCHEMA = {
 } satisfies JSONSchema7;
 
 @Injectable()
-export class ContentTypeService extends BaseOrmService<
-  ContentTypeOrmEntity,
-  ContentTypeDtoConfig
-> {
+export class ContentTypeService extends BaseOrmService<ContentTypeOrmEntity> {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
   }
 
-  async create(payload: ContentTypeDtoConfig['create']): Promise<ContentType> {
+  async create(
+    payload: InferCreateDto<ContentTypeOrmEntity>,
+  ): Promise<ContentType> {
     const schema = Object.keys(payload.schema.properties || {}).length
       ? payload.schema
       : DEFAULT_CONTENT_TYPE_SCHEMA;

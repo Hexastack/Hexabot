@@ -17,11 +17,7 @@ import {
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import {
   StdIncomingMessage,
@@ -132,14 +128,13 @@ export class MessageCreateDto {
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
 
-export type MessageTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Message;
-  FullCls: typeof MessageFull;
-}>;
-
-export type MessageDtoConfig = DtoActionConfig<{
-  create: MessageCreateDto;
-  update: MessageUpdateDto;
-}>;
-
-export type MessageDto = MessageDtoConfig;
+export type MessageDto = BuildDtoType<
+  {
+    PlainCls: typeof Message;
+    FullCls: typeof MessageFull;
+  },
+  {
+    create: MessageCreateDto;
+    update: MessageUpdateDto;
+  }
+>;

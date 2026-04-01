@@ -13,18 +13,17 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { SubscriberTransformerDto } from '@/chat';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { UserTransformerDto } from '@/user';
+import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
   MemoryRecord,
+  MemoryRecordDto,
   MemoryRecordFull,
-  MemoryRecordTransformerDto,
 } from '../dto/memory-record.dto';
 import type { MemoryValue } from '../types';
 
@@ -35,7 +34,7 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Entity({ name: 'memory_records' })
 @Index(['definition', 'owner', 'workflow', 'run'])
 @Index(['expiresAt'])
-export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordTransformerDto> {
+export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordDto> {
   plainCls = MemoryRecord;
 
   fullCls = MemoryRecordFull;
@@ -60,7 +59,7 @@ export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordTransformer
   })
   @JoinColumn({ name: 'owner_id' })
   @AsRelation()
-  owner: UserProfileOrmEntity<UserTransformerDto | SubscriberTransformerDto>;
+  owner: UserProfileOrmEntity<UserProfileDto>;
 
   /** Identifier of the owner profile. */
   @RelationId((record: MemoryRecordOrmEntity) => record.owner)

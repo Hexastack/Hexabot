@@ -28,7 +28,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   Credential,
   CredentialCreateDto,
-  CredentialDtoConfig,
   CredentialFull,
   CredentialUpdateDto,
 } from '../dto/credential.dto';
@@ -36,10 +35,7 @@ import { CredentialOrmEntity } from '../entities/credential.entity';
 import { CredentialService } from '../services/credential.service';
 
 @Controller('credential')
-export class CredentialController extends BaseOrmController<
-  CredentialOrmEntity,
-  CredentialDtoConfig
-> {
+export class CredentialController extends BaseOrmController<CredentialOrmEntity> {
   constructor(private readonly credentialService: CredentialService) {
     super(credentialService);
   }

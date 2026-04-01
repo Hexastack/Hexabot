@@ -24,7 +24,7 @@ import {
 } from '@/user/dto/user-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { DtoActionConfig, DtoTransformerConfig } from '@/utils/types/dto.types';
+import { BuildDtoType } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 
@@ -176,14 +176,13 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
-export type SubscriberTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Subscriber;
-  FullCls: typeof SubscriberFull;
-}>;
-
-export type SubscriberDtoConfig = DtoActionConfig<{
-  create: SubscriberCreateDto;
-  update: SubscriberUpdateDto;
-}>;
-
-export type SubscriberDto = SubscriberDtoConfig;
+export type SubscriberDto = BuildDtoType<
+  {
+    PlainCls: typeof Subscriber;
+    FullCls: typeof SubscriberFull;
+  },
+  {
+    create: SubscriberCreateDto;
+    update: SubscriberUpdateDto;
+  }
+>;

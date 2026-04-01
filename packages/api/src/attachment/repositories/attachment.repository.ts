@@ -11,13 +11,8 @@ import { Repository } from 'typeorm';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { AttachmentDtoConfig } from '../dto/attachment.dto';
-
 @Injectable()
-export class AttachmentRepository extends BaseOrmRepository<
-  AttachmentOrmEntity,
-  AttachmentDtoConfig
-> {
+export class AttachmentRepository extends BaseOrmRepository<AttachmentOrmEntity> {
   constructor(
     @InjectRepository(AttachmentOrmEntity)
     repository: Repository<AttachmentOrmEntity>,

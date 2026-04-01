@@ -8,7 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { BaseStub } from '@/utils';
+import { BaseStub, BuildDtoType } from '@/utils';
 
 @Exclude()
 export class UserProfileStub extends BaseStub {
@@ -36,3 +36,11 @@ export class UserProfileCreateDto {
   @IsString()
   lastName: string;
 }
+
+export type UserProfileDto = BuildDtoType<
+  {
+    PlainCls: typeof UserProfileStub;
+    FullCls: typeof UserProfileStub;
+  },
+  {}
+>;

@@ -12,15 +12,15 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
   ContentType,
+  ContentTypeDto,
   ContentTypeFull,
-  ContentTypeTransformerDto,
 } from '../dto/contentType.dto';
 
 import { ContentOrmEntity } from './content.entity';
 
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
-export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeTransformerDto> {
+export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeDto> {
   plainCls = ContentType;
 
   fullCls = ContentTypeFull;

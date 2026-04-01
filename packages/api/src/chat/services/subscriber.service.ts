@@ -22,11 +22,7 @@ import { UserService } from '@/user/services/user.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import {
-  Subscriber,
-  SubscriberDtoConfig,
-  SubscriberUpdateDto,
-} from '../dto/subscriber.dto';
+import { Subscriber, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 
@@ -52,10 +48,7 @@ export type SubscriberHandoverPolicyResult = {
 };
 
 @Injectable()
-export class SubscriberService extends BaseOrmService<
-  SubscriberOrmEntity,
-  SubscriberDtoConfig
-> {
+export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
@@ -263,6 +256,42 @@ export class SubscriberService extends BaseOrmService<
     }
 
     return current;
+  }
+
+  /**
+   * Resolves label ids into canonical label names while preserving input order.
+   * Unknown label ids are ignored.
+   */
+  async resolveLabelNames(labelIds: string[] = []): Promise<string[]> {
+    const uniqueLabelIds = Array.from(new Set(labelIds)).filter(
+      (labelId): labelId is string =>
+        typeof labelId === 'string' && labelId.length > 0,
+    );
+    if (!uniqueLabelIds.length) {
+      return [];
+    }
+
+    const labels = await this.labelService.find({
+      where: {
+        id: In(uniqueLabelIds),
+      },
+    });
+    if (!labels.length) {
+      return [];
+    }
+
+    const labelNameById = new Map(
+      labels.map((label) => [label.id, label.name] as const),
+    );
+
+    return uniqueLabelIds.reduce<string[]>((acc, labelId) => {
+      const labelName = labelNameById.get(labelId);
+      if (labelName) {
+        acc.push(labelName);
+      }
+
+      return acc;
+    }, []);
   }
 
   /**

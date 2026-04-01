@@ -19,8 +19,8 @@ import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
   Permission,
+  PermissionDto,
   PermissionFull,
-  PermissionTransformerDto,
 } from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
@@ -30,7 +30,7 @@ import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
-export class PermissionOrmEntity extends BaseOrmEntity<PermissionTransformerDto> {
+export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
   plainCls = Permission;
 
   fullCls = PermissionFull;
