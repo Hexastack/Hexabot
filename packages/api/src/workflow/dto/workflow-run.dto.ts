@@ -24,12 +24,7 @@ import {
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
 import { WorkflowContextState } from '../types';
@@ -276,19 +271,15 @@ export class WorkflowRunCreateDto {
   metadata?: Record<string, unknown> | null;
 }
 
-export type WorkflowRunTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof WorkflowRun;
-  FullCls: typeof WorkflowRunFull;
-}>;
-
 export class WorkflowRunUpdateDto extends PartialType(WorkflowRunCreateDto) {}
 
-export type WorkflowRunDtoConfig = DtoActionConfig<{
-  create: WorkflowRunCreateDto;
-  update: WorkflowRunUpdateDto;
-}>;
-
-export type WorkflowRunDto = BuildDto<
-  WorkflowRunDtoConfig,
-  WorkflowRunTransformerDto
+export type WorkflowRunDto = BuildDtoType<
+  {
+    PlainCls: typeof WorkflowRun;
+    FullCls: typeof WorkflowRunFull;
+  },
+  {
+    create: WorkflowRunCreateDto;
+    update: WorkflowRunUpdateDto;
+  }
 >;

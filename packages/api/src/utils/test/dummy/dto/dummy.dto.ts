@@ -9,11 +9,9 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 
 import {
   BaseStub,
-  BuildDto,
+  BuildDtoType,
   DtoAction,
-  DtoActionConfig,
   DtoTransformer,
-  DtoTransformerConfig,
 } from '@/utils/types/dto.types';
 
 @Exclude()
@@ -47,14 +45,13 @@ export class DummyUpdateDto {
   dynamicField?: Record<string, unknown>;
 }
 
-export type DummyTransformerDto = DtoTransformerConfig<{
-  [DtoTransformer.PlainCls]: typeof Dummy;
-  [DtoTransformer.FullCls]: typeof Dummy;
-}>;
-
-export type DummyDtoConfig = DtoActionConfig<{
-  [DtoAction.Create]: DummyCreateDto;
-  [DtoAction.Update]: DummyUpdateDto;
-}>;
-
-export type DummyDto = BuildDto<DummyDtoConfig, DummyTransformerDto>;
+export type DummyDto = BuildDtoType<
+  {
+    [DtoTransformer.PlainCls]: typeof Dummy;
+    [DtoTransformer.FullCls]: typeof Dummy;
+  },
+  {
+    [DtoAction.Create]: DummyCreateDto;
+    [DtoAction.Update]: DummyUpdateDto;
+  }
+>;

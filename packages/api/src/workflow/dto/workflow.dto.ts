@@ -27,12 +27,7 @@ import { z } from 'zod';
 import { User } from '@/user/dto/user.dto';
 import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
@@ -216,11 +211,6 @@ export class WorkflowCreateDto {
   createdBy!: string;
 }
 
-export type WorkflowTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Workflow;
-  FullCls: typeof WorkflowFull;
-}>;
-
 export class WorkflowUpdateDto extends PartialType(
   OmitType(WorkflowCreateDto, ['type'] as const),
 ) {
@@ -239,9 +229,13 @@ export class WorkflowUpdateDto extends PartialType(
   publishedVersion?: string | null;
 }
 
-export type WorkflowDtoConfig = DtoActionConfig<{
-  create: WorkflowCreateDto;
-  update: WorkflowUpdateDto;
-}>;
-
-export type WorkflowDto = BuildDto<WorkflowDtoConfig, WorkflowTransformerDto>;
+export type WorkflowDto = BuildDtoType<
+  {
+    PlainCls: typeof Workflow;
+    FullCls: typeof WorkflowFull;
+  },
+  {
+    create: WorkflowCreateDto;
+    update: WorkflowUpdateDto;
+  }
+>;
