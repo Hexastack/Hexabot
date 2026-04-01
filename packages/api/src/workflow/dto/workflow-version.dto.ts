@@ -10,12 +10,7 @@ import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { WorkflowVersionAction } from '../types';
@@ -120,16 +115,6 @@ export class WorkflowVersionCreateDto extends WorkflowNewVersionDto {
   version: number;
 }
 
-export type WorkflowVersionTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof WorkflowVersion;
-  FullCls: typeof WorkflowVersionFull;
-}>;
-
-export type WorkflowVersionDtoConfig = DtoActionConfig<{
-  create: WorkflowVersionCreateDto;
-  update: WorkflowVersionUpdateDto;
-}>;
-
 export class WorkflowVersionUpdateDto {
   @ApiPropertyOptional({
     description: 'Workflow version message',
@@ -150,7 +135,13 @@ export class WorkflowVersionRestoreDto {
   message?: string;
 }
 
-export type WorkflowVersionDto = BuildDto<
-  WorkflowVersionDtoConfig,
-  WorkflowVersionTransformerDto
+export type WorkflowVersionDto = BuildDtoType<
+  {
+    PlainCls: typeof WorkflowVersion;
+    FullCls: typeof WorkflowVersionFull;
+  },
+  {
+    create: WorkflowVersionCreateDto;
+    update: WorkflowVersionUpdateDto;
+  }
 >;

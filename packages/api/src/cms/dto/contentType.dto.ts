@@ -12,12 +12,7 @@ import { z } from 'zod';
 
 import { FieldType } from '@/setting/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 @Exclude()
 export class ContentTypeStub extends BaseStub {
@@ -68,17 +63,13 @@ export class ContentTypeCreateDto {
 
 export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}
 
-export type ContentTypeTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof ContentType;
-  FullCls: typeof ContentTypeFull;
-}>;
-
-export type ContentTypeDtoConfig = DtoActionConfig<{
-  create: ContentTypeCreateDto;
-  update: ContentTypeUpdateDto;
-}>;
-
-export type ContentTypeDto = BuildDto<
-  ContentTypeDtoConfig,
-  ContentTypeTransformerDto
+export type ContentTypeDto = BuildDtoType<
+  {
+    PlainCls: typeof ContentType;
+    FullCls: typeof ContentTypeFull;
+  },
+  {
+    create: ContentTypeCreateDto;
+    update: ContentTypeUpdateDto;
+  }
 >;

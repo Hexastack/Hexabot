@@ -9,12 +9,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  BuildDto,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { ContentType } from './contentType.dto';
 
@@ -70,14 +65,13 @@ export class ContentCreateDto {
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}
 
-export type ContentTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Content;
-  FullCls: typeof ContentFull;
-}>;
-
-export type ContentDtoConfig = DtoActionConfig<{
-  create: ContentCreateDto;
-  update: ContentUpdateDto;
-}>;
-
-export type ContentDto = BuildDto<ContentDtoConfig, ContentTransformerDto>;
+export type ContentDto = BuildDtoType<
+  {
+    PlainCls: typeof Content;
+    FullCls: typeof ContentFull;
+  },
+  {
+    create: ContentCreateDto;
+    update: ContentUpdateDto;
+  }
+>;
