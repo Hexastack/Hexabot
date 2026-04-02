@@ -64,6 +64,4 @@ export * from './types/message';
 
 export * from './types/options';
 
-export * from './types/position';
-
 export * from './types/quick-reply';
