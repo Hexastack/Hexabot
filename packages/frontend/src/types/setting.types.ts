@@ -73,15 +73,6 @@ export interface MultipleAttachmentSetting extends IBaseSchema {
   config: never;
 }
 
-export type AnySetting =
-  | TextSetting
-  | MultiTextSetting
-  | CheckboxSetting
-  | SelectSetting
-  | NumberSetting
-  | AttachmentSetting
-  | MultipleAttachmentSetting;
-
 export interface ISettingAttributes {
   group: string;
   label: string;
