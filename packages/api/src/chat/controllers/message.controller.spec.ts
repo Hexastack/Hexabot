@@ -25,7 +25,6 @@ describe('MessageController (TypeORM)', () => {
   let messageController: MessageController;
   let messageService: MessageService;
 
-  let totalMessages: number;
   let plainMessages: Message[];
   let populatedMessages: MessageFull[];
   let referencePlain: Message;
@@ -67,7 +66,6 @@ describe('MessageController (TypeORM)', () => {
       MessageService,
     ]);
 
-    totalMessages = await messageService.count();
     plainMessages = await messageService.find(defaultOrder);
     populatedMessages = await messageService.findAndPopulate(defaultOrder);
 
@@ -100,10 +98,11 @@ describe('MessageController (TypeORM)', () => {
   describe('count', () => {
     it('should count messages', async () => {
       const countSpy = jest.spyOn(messageService, 'count');
+      const expectedCount = await messageService.count({});
       const result = await messageController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: totalMessages });
+      expect(result).toEqual({ count: expectedCount });
     });
   });
 

@@ -61,7 +61,7 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
    * @returns Memory definitions matching the provided options.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(
       new TypeOrmSearchFilterPipe<MemoryDefinitionOrmEntity>({
         allowedFields: ['name', 'slug', 'scope', 'ttlSeconds'],
@@ -89,7 +89,7 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
     )
     options?: FindManyOptions<MemoryDefinitionOrmEntity>,
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**

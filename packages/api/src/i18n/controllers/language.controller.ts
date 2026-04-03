@@ -68,7 +68,7 @@ export class LanguageController extends BaseOrmController<LanguageOrmEntity> {
     )
     options?: FindManyOptions<LanguageOrmEntity>,
   ) {
-    return await super.count(options);
+    return await this.count(options);
   }
 
   /**

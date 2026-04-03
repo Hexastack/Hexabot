@@ -68,11 +68,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     )
     options: FindManyOptions<MessageOrmEntity>,
   ): Promise<Message[] | MessageFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.messageService.findAndPopulate(queryOptions)
-      : await this.messageService.find(queryOptions);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -96,7 +92,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     )
     options?: FindManyOptions<MessageOrmEntity>,
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   @Get(':id')
@@ -105,15 +101,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Message | MessageFull> {
-    const record = this.canPopulate(populate)
-      ? await this.messageService.findOneAndPopulate(id)
-      : await this.messageService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Message by id ${id}`);
-      throw new NotFoundException(`Message with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 
   @Post()

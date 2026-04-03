@@ -69,7 +69,7 @@ describe('MenuController (TypeORM)', () => {
 
   describe('find', () => {
     it('returns paginated menus when pagination provided', async () => {
-      const result = await controller.find({ take: 5, skip: 0 });
+      const result = await controller.findPage({ take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
@@ -81,7 +81,7 @@ describe('MenuController (TypeORM)', () => {
       });
       expect(parent).toBeDefined();
 
-      const result = await controller.find({
+      const result = await controller.findPage({
         where: { parent: { id: parent!.id } },
       });
 
@@ -90,7 +90,7 @@ describe('MenuController (TypeORM)', () => {
     });
 
     it('returns all menus when no pagination or filters', async () => {
-      const result = await controller.find({});
+      const result = await controller.findPage({});
 
       expect(result.length).toBeGreaterThan(rootMenuFixtures.length);
     });

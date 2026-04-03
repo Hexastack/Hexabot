@@ -55,11 +55,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
     )
     options: FindManyOptions<LabelGroupOrmEntity>,
   ): Promise<LabelGroup[] | LabelGroupFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.labelGroupService.findAndPopulate(queryOptions)
-      : await this.labelGroupService.find(queryOptions);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -75,7 +71,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
     )
     options?: FindManyOptions<LabelGroupOrmEntity>,
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -88,15 +84,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<LabelGroup | LabelGroupFull> {
-    const record = this.canPopulate(populate)
-      ? await this.labelGroupService.findOneAndPopulate(id)
-      : await this.labelGroupService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Label Group by id ${id}`);
-      throw new NotFoundException(`Label Group with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 
   /**

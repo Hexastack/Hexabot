@@ -54,7 +54,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await super.count({ where: { workflow: { id } } });
+    return await this.count({ where: { workflow: { id } } });
   }
 
   /**
@@ -130,21 +130,16 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return this.canPopulate(populate)
-      ? await this.workflowVersionService.findAndPopulate({
-          ...(options ?? {}),
-          where: {
-            ...(options.where ?? {}),
-            workflow: { id },
-          },
-        })
-      : await this.workflowVersionService.find({
-          ...(options ?? {}),
-          where: {
-            ...(options.where ?? {}),
-            workflow: { id },
-          },
-        });
+    return await this.findRecords(
+      {
+        ...(options ?? {}),
+        where: {
+          ...(options.where ?? {}),
+          workflow: { id },
+        },
+      },
+      populate,
+    );
   }
 
   /**
@@ -166,17 +161,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    const version = this.canPopulate(populate)
-      ? await this.workflowVersionService.findOneAndPopulate(versionId)
-      : await this.workflowVersionService.findOne(versionId);
-
-    if (!version) {
-      throw new NotFoundException(
-        `Workflow version with ID ${versionId} not found`,
-      );
-    }
-
-    return version;
+    return await this.findOneRecord(versionId, populate);
   }
 
   /**

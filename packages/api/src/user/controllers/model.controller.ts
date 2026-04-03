@@ -32,7 +32,7 @@ export class ModelController extends BaseOrmController<ModelOrmEntity> {
    * @returns The found `Model` entities, optionally populated with related data.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -42,8 +42,6 @@ export class ModelController extends BaseOrmController<ModelOrmEntity> {
     )
     options?: FindManyOptions<ModelOrmEntity>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.modelService.findAndPopulate(options)
-      : await this.modelService.find(options);
+    return await this.findRecords(options, populate);
   }
 }

@@ -101,7 +101,7 @@ describe('MemoryDefinitionController (TypeORM)', () => {
       const [fixture] = memoryDefinitionOrmFixtures;
       const options = { where: { slug: fixture.slug } };
       const findSpy = jest.spyOn(service, 'find');
-      const result = await controller.find(options);
+      const result = await controller.findPage(options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload([fixture], [...IGNORED_TEST_FIELDS]);

@@ -141,7 +141,7 @@ describe('McpServerController (TypeORM)', () => {
       const [fixture] = mcpServerOrmFixtures;
       const options = { where: { name: fixture.name } };
       const findSpy = jest.spyOn(service, 'findAndPopulate');
-      const result = await controller.find(['credential'], options);
+      const result = await controller.findPage(['credential'], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload([fixture], [...IGNORED_TEST_FIELDS]);
@@ -175,10 +175,10 @@ describe('McpServerController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(controller.findOne(id, [])).rejects.toThrow(
-        new NotFoundException(`MCP server with ID ${id} not found`),
+        new NotFoundException(`McpServer with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
-        `Unable to find MCP server by id ${id}`,
+        `Unable to find McpServer by id ${id}`,
       );
     });
   });

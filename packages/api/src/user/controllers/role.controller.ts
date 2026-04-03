@@ -56,11 +56,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
     )
     options?: FindManyOptions<RoleOrmEntity>,
   ) {
-    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.roleService.findAndPopulate(options)
-      : await this.roleService.find(options);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -77,7 +73,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
     )
     options?: FindManyOptions<RoleOrmEntity>,
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -93,17 +89,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.roleService.findOneAndPopulate(id)
-      : await this.roleService.findOne(id);
-
-    if (!record) {
-      this.logger.warn(`Unable to find Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 
   /**

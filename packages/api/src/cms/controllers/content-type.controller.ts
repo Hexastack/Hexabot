@@ -57,7 +57,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
    * @returns Content types matching the provided query options.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(
       new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
         allowedFields: ['name'],
@@ -66,7 +66,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
     )
     options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return await this.contentTypeService.find(options);
+    return await this.findRecords(options);
   }
 
   /**
@@ -85,7 +85,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
     )
     options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**

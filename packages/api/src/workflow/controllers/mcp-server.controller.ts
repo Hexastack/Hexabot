@@ -66,7 +66,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    * @returns Matching MCP servers.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(PopulatePipe)
     populate: string[] = [],
     @Query(
@@ -77,11 +77,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
     )
     options: FindManyOptions<McpServerOrmEntity> = {},
   ): Promise<McpServer[] | McpServerFull[]> {
-    const shouldPopulate = this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.mcpServerService.findAndPopulate(options)
-      : await this.mcpServerService.find(options);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -106,7 +102,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
     )
     options?: FindManyOptions<McpServerOrmEntity>,
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -122,16 +118,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<McpServer | McpServerFull> {
-    const shouldPopulate = this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.mcpServerService.findOneAndPopulate(id)
-      : await this.mcpServerService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find MCP server by id ${id}`);
-      throw new NotFoundException(`MCP server with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 
   /**

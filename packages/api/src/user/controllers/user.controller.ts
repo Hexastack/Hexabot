@@ -203,11 +203,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
     )
     options?: FindManyOptions<UserOrmEntity>,
   ) {
-    const shouldPopulate = this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.userService.findAndPopulate(options)
-      : await this.userService.find(options);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -224,7 +220,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
     )
     options?: FindManyOptions<UserOrmEntity>,
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -241,17 +237,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const shouldPopulate = this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.userService.findOneAndPopulate(id)
-      : await this.userService.findOne(id);
-
-    if (!record) {
-      this.logger.warn(`Unable to find User by id ${id}`);
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 }
 

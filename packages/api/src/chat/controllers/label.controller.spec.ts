@@ -63,8 +63,8 @@ describe('LabelController (TypeORM)', () => {
 
   describe('filterCount', () => {
     it('should count labels', async () => {
-      const expectedCount = await labelService.count({});
       const countSpy = jest.spyOn(labelService, 'count');
+      const expectedCount = await labelService.count({});
       const result = await labelController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});

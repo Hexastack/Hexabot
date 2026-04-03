@@ -178,9 +178,7 @@ describe('WorkflowVersionController (TypeORM)', () => {
       const versionId = randomUUID();
 
       await expect(controller.findOne(created.id, versionId)).rejects.toThrow(
-        new NotFoundException(
-          `Workflow version with ID ${versionId} not found`,
-        ),
+        new NotFoundException(`WorkflowVersion with ID ${versionId} not found`),
       );
     });
   });

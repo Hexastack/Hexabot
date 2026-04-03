@@ -62,7 +62,7 @@ export class TranslationController extends BaseOrmController<TranslationOrmEntit
     )
     options?: FindManyOptions<TranslationOrmEntity>,
   ) {
-    return await super.count(options);
+    return await this.count(options);
   }
 
   @Get(':id')

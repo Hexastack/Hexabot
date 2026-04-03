@@ -65,7 +65,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
     )
     options?: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   @Get(':id')
@@ -74,17 +74,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
     populate: string[],
     @UuidParam('id') id: string,
   ): Promise<Attachment | AttachmentFull> {
-    const shouldPopulate = populate.includes('createdBy');
-    const attachment = shouldPopulate
-      ? await this.attachmentService.findOneAndPopulate(id)
-      : await this.attachmentService.findOne(id);
-
-    if (!attachment) {
-      this.logger.warn(`Unable to find Attachment by id ${id}`);
-      throw new NotFoundException(`Attachment with ID ${id} not found`);
-    }
-
-    return attachment;
+    return await this.findOneRecord(id, populate);
   }
 
   /**
@@ -105,11 +95,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
     )
     options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    const shouldPopulate = populate.includes('createdBy');
-
-    return shouldPopulate
-      ? await this.attachmentService.findAndPopulate(options)
-      : await this.attachmentService.find(options);
+    return await this.findRecords(options, populate);
   }
 
   /**

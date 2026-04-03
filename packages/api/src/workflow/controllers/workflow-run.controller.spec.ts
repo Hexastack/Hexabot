@@ -87,10 +87,10 @@ describe('WorkflowRunController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(controller.findOne(id, [])).rejects.toThrow(
-        new NotFoundException(`Workflow Run with ID ${id} not found`),
+        new NotFoundException(`WorkflowRun with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
-        `Unable to find Workflow Run by id ${id}`,
+        `Unable to find WorkflowRun by id ${id}`,
       );
     });
   });

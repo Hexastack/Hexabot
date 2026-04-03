@@ -29,7 +29,7 @@ export class SettingController extends BaseOrmController<SettingOrmEntity> {
    * @returns A list of settings that match the criteria.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(
       new TypeOrmSearchFilterPipe<SettingOrmEntity>({
         allowedFields: ['group'],

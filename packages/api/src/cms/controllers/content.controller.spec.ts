@@ -110,14 +110,14 @@ describe('ContentController (TypeORM)', () => {
 
   describe('find', () => {
     it('retrieves content without populate', async () => {
-      const result = await controller.find([], { take: 5, skip: 0 });
+      const result = await controller.findPage([], { take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
 
     it('retrieves populated content when requested', async () => {
       const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
-      const result = await controller.find(['contentType'], {
+      const result = await controller.findPage(['contentType'], {
         take: 5,
         skip: 0,
       });

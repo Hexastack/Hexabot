@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
 import { UuidParam } from '@/utils';
@@ -53,11 +53,7 @@ export class WorkflowRunController extends BaseOrmController<WorkflowRunOrmEntit
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<WorkflowRun[] | WorkflowRunFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.workflowRunService.findAndPopulate(queryOptions)
-      : await this.workflowRunService.find(queryOptions);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -87,7 +83,7 @@ export class WorkflowRunController extends BaseOrmController<WorkflowRunOrmEntit
     )
     options?: FindManyOptions<WorkflowRunOrmEntity>,
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -104,14 +100,6 @@ export class WorkflowRunController extends BaseOrmController<WorkflowRunOrmEntit
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<WorkflowRun | WorkflowRunFull> {
-    const record = this.canPopulate(populate)
-      ? await this.workflowRunService.findOneAndPopulate(id)
-      : await this.workflowRunService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Workflow Run by id ${id}`);
-      throw new NotFoundException(`Workflow Run with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOneRecord(id, populate);
   }
 }

@@ -109,9 +109,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     @Query(PopulatePipe)
     populate: string[] = [],
   ) {
-    return this.canPopulate(populate)
-      ? await this.workflowService.findAndPopulate(options ?? {})
-      : await this.workflowService.find(options ?? {});
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -154,15 +152,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<Workflow | WorkflowFull> {
-    const workflow = this.canPopulate(populate)
-      ? await this.workflowService.findOneAndPopulate(id)
-      : await this.workflowService.findOne(id);
-    if (!workflow) {
-      this.logger.warn(`Unable to find Workflow by id ${id}`);
-      throw new NotFoundException(`Workflow with ID ${id} not found`);
-    }
-
-    return workflow;
+    return await this.findOneRecord(id, populate);
   }
 
   /**

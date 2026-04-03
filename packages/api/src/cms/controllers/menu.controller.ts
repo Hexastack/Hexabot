@@ -48,7 +48,7 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
     )
     options?: FindManyOptions<MenuOrmEntity>,
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -58,7 +58,7 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
    * Otherwise, applies filters when present or returns the whole collection.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(
       new TypeOrmSearchFilterPipe<MenuOrmEntity>({
         allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],

@@ -51,11 +51,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
     )
     options: FindManyOptions<LabelOrmEntity>,
   ): Promise<Label[] | LabelFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.labelService.findAndPopulate(queryOptions)
-      : await this.labelService.find(queryOptions);
+    return await this.findRecords(options, populate);
   }
 
   /**
@@ -71,7 +67,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
     )
     options?: FindManyOptions<LabelOrmEntity>,
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   @Get(':id')
@@ -80,15 +76,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Label | LabelFull> {
-    const record = this.canPopulate(populate)
-      ? await this.labelService.findOneAndPopulate(id)
-      : await this.labelService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Label by id ${id}`);
-      throw new NotFoundException(`Label with ID ${id} not found`);
-    }
-
-    return record;
+    return this.findOneRecord(id, populate);
   }
 
   @Post()
