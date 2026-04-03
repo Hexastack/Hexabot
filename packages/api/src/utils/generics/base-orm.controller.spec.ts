@@ -8,7 +8,10 @@ import { TestingModule } from '@nestjs/testing';
 
 import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
-import { installDummyFixturesTypeOrm } from '@/utils/test/fixtures/dummy';
+import {
+  dummyFixtures,
+  installDummyFixturesTypeOrm,
+} from '@/utils/test/fixtures/dummy';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -18,7 +21,6 @@ describe('BaseOrmController', () => {
   let module: TestingModule;
   let controller: TestableBaseOrmController;
   let dummyService: DummyService;
-  let totalDummies: number;
 
   class TestableBaseOrmController extends BaseOrmController<DummyOrmEntity> {
     constructor(public testService: DummyService) {
@@ -38,7 +40,6 @@ describe('BaseOrmController', () => {
     module = testing.module;
     [dummyService] = await testing.getMocks([DummyService]);
 
-    totalDummies = await dummyService.count();
     controller = new TestableBaseOrmController(dummyService);
   });
 
@@ -59,7 +60,7 @@ describe('BaseOrmController', () => {
       const result = await controller.count({});
 
       expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: totalDummies });
+      expect(result).toEqual({ count: dummyFixtures.length });
     });
 
     it('should count records with filter options', async () => {

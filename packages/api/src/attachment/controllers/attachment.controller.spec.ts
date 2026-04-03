@@ -115,23 +115,6 @@ describe('AttachmentController', () => {
     });
   });
 
-  describe('count', () => {
-    it('should count attachments', async () => {
-      const countSpy = jest.spyOn(attachmentService, 'count');
-      const name = attachmentFixtures[0].name;
-      const result = await attachmentController.filterCount({
-        where: { name },
-      });
-
-      expect(countSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { name },
-        }),
-      );
-      expect(result.count).toBe(1);
-    });
-  });
-
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
       const promiseResult = attachmentController.uploadFile(

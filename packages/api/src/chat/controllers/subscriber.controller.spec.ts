@@ -91,16 +91,6 @@ describe('SubscriberController (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('count', () => {
-    it('should count subscribers', async () => {
-      const countSpy = jest.spyOn(subscriberService, 'count');
-      const result = await subscriberController.filterCount();
-
-      expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: plainSubscribers.length });
-    });
-  });
-
   describe('findOne', () => {
     it('should find subscriber by id with populated relations', async () => {
       const populateSpy = jest.spyOn(subscriberService, 'findOneAndPopulate');

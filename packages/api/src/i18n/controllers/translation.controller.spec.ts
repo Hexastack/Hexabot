@@ -61,16 +61,6 @@ describe('TranslationController', () => {
   afterEach(jest.clearAllMocks);
   afterAll(closeTypeOrmConnections);
 
-  describe('count', () => {
-    it('should count translations', async () => {
-      jest.spyOn(translationService, 'count');
-      const result = await translationController.filterCount();
-
-      expect(translationService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: translationFixtures.length });
-    });
-  });
-
   describe('findOne', () => {
     it('should find one translation by id', async () => {
       jest.spyOn(translationService, 'findOne');

@@ -55,16 +55,6 @@ describe('LabelGroupController', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('count', () => {
-    it('should count label groups', async () => {
-      jest.spyOn(labelGroupService, 'count');
-      const result = await labelGroupController.filterCount();
-
-      expect(labelGroupService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: labelGroupFixtures.length });
-    });
-  });
-
   describe('findPage', () => {
     it('should find label groups', async () => {
       const expected = await labelGroupService.find({});

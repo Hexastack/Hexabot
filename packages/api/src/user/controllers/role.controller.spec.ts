@@ -158,14 +158,6 @@ describe('RoleController (TypeORM)', () => {
     });
   });
 
-  describe('count', () => {
-    it('should count the roles', async () => {
-      const result = await roleController.filterCount();
-      const total = await roleService.count();
-      expect(result).toEqual({ count: total });
-    });
-  });
-
   describe('create', () => {
     it('should return created role', async () => {
       jest.spyOn(roleService, 'create');
