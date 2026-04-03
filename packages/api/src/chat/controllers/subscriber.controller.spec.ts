@@ -58,7 +58,6 @@ describe('SubscriberController (TypeORM)', () => {
       SubscriberController,
       SubscriberService,
     ]);
-
     plainSubscribers = await subscriberService.find(defaultOrder);
     populatedSubscribers =
       await subscriberService.findAndPopulate(defaultOrder);
@@ -95,11 +94,10 @@ describe('SubscriberController (TypeORM)', () => {
   describe('count', () => {
     it('should count subscribers', async () => {
       const countSpy = jest.spyOn(subscriberService, 'count');
-      const expectedCount = await subscriberService.count({});
       const result = await subscriberController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: expectedCount });
+      expect(result).toEqual({ count: plainSubscribers.length });
     });
   });
 

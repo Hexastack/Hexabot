@@ -10,7 +10,10 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
-import { installLabelFixturesTypeOrm } from '@/utils/test/fixtures/label';
+import {
+  installLabelFixturesTypeOrm,
+  labelFixtures,
+} from '@/utils/test/fixtures/label';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -64,11 +67,10 @@ describe('LabelController (TypeORM)', () => {
   describe('filterCount', () => {
     it('should count labels', async () => {
       const countSpy = jest.spyOn(labelService, 'count');
-      const expectedCount = await labelService.count({});
       const result = await labelController.filterCount();
 
       expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: expectedCount });
+      expect(result).toEqual({ count: labelFixtures.length });
     });
   });
 
