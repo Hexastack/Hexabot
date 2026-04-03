@@ -79,7 +79,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
         allowedFields: ['name', 'value', 'owner.id'],
       }),
     )
-    options?: FindManyOptions<CredentialOrmEntity>,
+    options: FindManyOptions<CredentialOrmEntity> = {},
   ) {
     return await this.count(options);
   }

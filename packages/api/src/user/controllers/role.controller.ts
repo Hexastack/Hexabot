@@ -54,7 +54,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<RoleOrmEntity>,
+    options: FindManyOptions<RoleOrmEntity> = {},
   ) {
     return await this.findRecords(options, populate);
   }
@@ -71,7 +71,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<RoleOrmEntity>,
+    options: FindManyOptions<RoleOrmEntity> = {},
   ) {
     return this.count(options);
   }

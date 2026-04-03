@@ -100,7 +100,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
         ],
       }),
     )
-    options?: FindManyOptions<McpServerOrmEntity>,
+    options: FindManyOptions<McpServerOrmEntity> = {},
   ) {
     return await this.count(options);
   }

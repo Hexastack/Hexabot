@@ -177,7 +177,7 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
         allowedFields: ['contentType.id', 'title'],
       }),
     )
-    options?: FindManyOptions<ContentOrmEntity>,
+    options: FindManyOptions<ContentOrmEntity> = {},
   ) {
     return this.count(options);
   }

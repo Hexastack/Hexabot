@@ -87,7 +87,7 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
         allowedFields: ['name', 'slug', 'scope', 'ttlSeconds'],
       }),
     )
-    options?: FindManyOptions<MemoryDefinitionOrmEntity>,
+    options: FindManyOptions<MemoryDefinitionOrmEntity> = {},
   ) {
     return await this.count(options);
   }

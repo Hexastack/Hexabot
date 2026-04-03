@@ -66,7 +66,7 @@ export class LanguageController extends BaseOrmController<LanguageOrmEntity> {
         allowedFields: ['title', 'code'],
       }),
     )
-    options?: FindManyOptions<LanguageOrmEntity>,
+    options: FindManyOptions<LanguageOrmEntity> = {},
   ) {
     return await this.count(options);
   }

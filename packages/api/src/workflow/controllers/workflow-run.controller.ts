@@ -81,7 +81,7 @@ export class WorkflowRunController extends BaseOrmController<WorkflowRunOrmEntit
         ],
       }),
     )
-    options?: FindManyOptions<WorkflowRunOrmEntity>,
+    options: FindManyOptions<WorkflowRunOrmEntity> = {},
   ) {
     return await this.count(options);
   }

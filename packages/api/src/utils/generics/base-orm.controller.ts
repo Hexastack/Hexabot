@@ -31,7 +31,9 @@ export abstract class BaseOrmController<
     return repository['repository']['target']['name'].replace(/OrmEntity$/, '');
   }
 
-  async count(options?: FindManyOptions<Entity>): Promise<{ count: number }> {
+  async count(
+    options: FindManyOptions<Entity> = {},
+  ): Promise<{ count: number }> {
     return { count: await this.service.count(options) };
   }
 

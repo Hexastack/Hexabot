@@ -69,7 +69,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<LabelGroupOrmEntity>,
+    options: FindManyOptions<LabelGroupOrmEntity> = {},
   ): Promise<{ count: number }> {
     return await this.count(options);
   }

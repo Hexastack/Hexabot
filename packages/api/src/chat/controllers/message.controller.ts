@@ -90,7 +90,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
         ],
       }),
     )
-    options?: FindManyOptions<MessageOrmEntity>,
+    options: FindManyOptions<MessageOrmEntity> = {},
   ): Promise<{ count: number }> {
     return await this.count(options);
   }

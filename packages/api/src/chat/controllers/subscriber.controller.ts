@@ -88,7 +88,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
         ],
       }),
     )
-    options?: FindManyOptions<SubscriberOrmEntity>,
+    options: FindManyOptions<SubscriberOrmEntity> = {},
   ): Promise<{ count: number }> {
     return await this.count(options);
   }

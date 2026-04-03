@@ -40,7 +40,7 @@ export class ModelController extends BaseOrmController<ModelOrmEntity> {
         allowedFields: ['name', 'identity'],
       }),
     )
-    options?: FindManyOptions<ModelOrmEntity>,
+    options: FindManyOptions<ModelOrmEntity> = {},
   ) {
     return await this.findRecords(options, populate);
   }

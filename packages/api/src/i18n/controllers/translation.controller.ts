@@ -60,7 +60,7 @@ export class TranslationController extends BaseOrmController<TranslationOrmEntit
         allowedFields: ['str'],
       }),
     )
-    options?: FindManyOptions<TranslationOrmEntity>,
+    options: FindManyOptions<TranslationOrmEntity> = {},
   ) {
     return await this.count(options);
   }

@@ -65,7 +65,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
         allowedFields: ['name', 'title', 'builtin', 'group.id'],
       }),
     )
-    options?: FindManyOptions<LabelOrmEntity>,
+    options: FindManyOptions<LabelOrmEntity> = {},
   ): Promise<{ count: number }> {
     return await this.count(options);
   }

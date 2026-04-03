@@ -63,7 +63,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    options?: FindManyOptions<AttachmentOrmEntity>,
+    options: FindManyOptions<AttachmentOrmEntity> = {},
   ) {
     return this.count(options);
   }

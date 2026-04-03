@@ -46,7 +46,7 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
         allowedFields: ['parent.id', 'type', 'title', 'payload', 'url'],
       }),
     )
-    options?: FindManyOptions<MenuOrmEntity>,
+    options: FindManyOptions<MenuOrmEntity> = {},
   ) {
     return this.count(options);
   }

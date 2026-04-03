@@ -201,7 +201,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
         allowedFields: ['firstName', 'lastName'],
       }),
     )
-    options?: FindManyOptions<UserOrmEntity>,
+    options: FindManyOptions<UserOrmEntity> = {},
   ) {
     return await this.findRecords(options, populate);
   }
@@ -218,7 +218,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
         allowedFields: ['firstName', 'lastName'],
       }),
     )
-    options?: FindManyOptions<UserOrmEntity>,
+    options: FindManyOptions<UserOrmEntity> = {},
   ) {
     return this.count(options);
   }

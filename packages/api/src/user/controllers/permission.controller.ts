@@ -54,7 +54,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
         allowedFields: ['model.id', 'role.id', 'relation'],
       }),
     )
-    options?: FindManyOptions<PermissionOrmEntity>,
+    options: FindManyOptions<PermissionOrmEntity> = {},
   ) {
     return await this.findRecords(options, populate);
   }
