@@ -252,6 +252,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
                         onChange={(_event, selected) =>
                           onChange(selected?.id || null)
                         }
+                        enableEntityAddButton
                         {...restField}
                       />
                     );
