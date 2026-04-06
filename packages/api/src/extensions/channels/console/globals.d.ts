@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { CONSOLE_CHANNEL_SETTINGS_SCHEMA } from './console-channel.settings';
-import { CONSOLE_CHANNEL_NAME, CONSOLE_CHANNEL_NAMESPACE } from './settings';
+import {
+  CONSOLE_CHANNEL_NAME,
+  CONSOLE_CHANNEL_NAMESPACE,
+  CONSOLE_CHANNEL_SETTINGS_SCHEMA,
+} from './console-channel.settings';
 
 declare global {
   interface SubscriberChannelDict {

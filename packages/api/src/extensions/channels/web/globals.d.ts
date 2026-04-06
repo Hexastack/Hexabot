@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
-import { WEB_CHANNEL_SETTINGS_SCHEMA } from './web-channel.settings';
+import {
+  WEB_CHANNEL_NAME,
+  WEB_CHANNEL_NAMESPACE,
+  WEB_CHANNEL_SETTINGS_SCHEMA,
+} from './web-channel.settings';
 
 declare global {
   interface SubscriberChannelDict {

@@ -6,21 +6,19 @@
 
 export * from './channels/console/index.channel';
 
-export * from './channels/console/settings';
+export * from './channels/console/console-channel.settings';
 
 export * from './channels/web/base-web-channel';
 
 export * from './channels/web/index.channel';
 
-export * from './channels/web/settings';
+export * from './channels/web/web-channel.settings';
 
 export * from './channels/web/types';
 
 export * from './channels/web/wrapper';
 
 export * from './helpers/local-storage/index.helper';
-
-export * from './helpers/local-storage/settings';
 
 export * from './actions/ai/model.binding';
 

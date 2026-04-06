@@ -17,8 +17,8 @@ import {
 import { Payload } from '@/chat/types/quick-reply';
 
 import BaseWebChannelHandler from './base-web-channel';
-import { WEB_CHANNEL_NAME } from './settings';
 import { Web } from './types';
+import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
 type WebEventAdapter =
   | {
