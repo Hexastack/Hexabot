@@ -44,8 +44,6 @@ export enum EntityType {
   STATS = "Stats",
 }
 
-export type NormalizedEntities = Record<string, Record<string, any>>;
-
 export enum Format {
   NONE = 0,
   STUB = 1,
@@ -108,15 +106,6 @@ export enum QueryType {
   count = "count",
   infinite = "infinite",
 }
-
-export type TGetQueryKey = {
-  id: string;
-  entity: EntityType;
-  format?: Format;
-  queryType?: QueryType;
-};
-
-export type Flatten<T> = T extends any[] ? T[number] : T;
 
 export const normalizeEntity = (entity: string): keyof IEntityMapTypes => {
   const entityTypeKey = Object.keys(EntityType).find(

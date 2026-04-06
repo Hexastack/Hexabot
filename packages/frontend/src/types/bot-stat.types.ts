@@ -30,18 +30,6 @@ export interface IBotStatAttributes {
 
 export interface IBotStat extends IBotStatAttributes, Pick<IBaseSchema, "id"> {}
 
-export type LineChartStats = {
-  id: number;
-  name: BotStatsType;
-  values: IBotStat[];
-};
-
-export type ColumnChartStats = {
-  id: number;
-  name: BotStatsType;
-  value: number;
-};
-
 export type StatsSummary = {
   totalWorkflows: number;
   totalRunsLast24h: number;

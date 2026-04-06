@@ -25,31 +25,6 @@ export function defaultSerializer<T = string>(): QueryParamSerializer<T> {
   };
 }
 
-export function booleanSerializer(): QueryParamSerializer<boolean> {
-  return {
-    parse: (raw) => raw === "true",
-    stringify: (val) => (val ? "true" : "false"),
-  };
-}
-
-export function numberSerializer(): QueryParamSerializer<number> {
-  return {
-    parse: (raw) => {
-      const value = Number(Array.isArray(raw) ? raw[0] : raw);
-
-      return isNaN(value) ? 0 : value;
-    },
-    stringify: (val) => val.toString(),
-  };
-}
-
-export function arraySerializer(): QueryParamSerializer<string[]> {
-  return {
-    parse: (raw) => (Array.isArray(raw) ? raw : raw ? [raw] : []),
-    stringify: (val) => val,
-  };
-}
-
 export const useUrlQueryParam = <T>(
   key: string,
   defaultValue: T,

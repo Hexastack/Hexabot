@@ -65,12 +65,6 @@ export const SocketProvider = (props: PropsWithChildren) => {
   );
 };
 
-export const useSocketConnected = () => {
-  const { connected } = useSocket();
-
-  return connected;
-};
-
 export const useSubscribe = <T,>(event: string, callback: (arg: T) => void) => {
   const { socket } = useSocket();
 
