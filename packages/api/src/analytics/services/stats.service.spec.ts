@@ -7,7 +7,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 
-import { SubscriberDtoConfig } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { EHook } from '@/utils';
@@ -177,11 +176,7 @@ describe('StatsService', () => {
       entity: Partial<SubscriberOrmEntity>;
       databaseEntity: Partial<SubscriberOrmEntity>;
       updatedColumns?: string[];
-    }): EmitEventProps<
-      SubscriberOrmEntity,
-      EHook.preUpdate,
-      SubscriberDtoConfig
-    > =>
+    }): EmitEventProps<SubscriberOrmEntity, EHook.preUpdate> =>
       ({
         entity: buildSubscriber(entity),
         action: EHook.preUpdate,

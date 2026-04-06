@@ -12,7 +12,7 @@ import { TestingModule } from '@nestjs/testing';
 import { FindOneOptions } from 'typeorm';
 
 import { UserService } from '@/user';
-import { EHook } from '@/utils';
+import { EHook, InferActionsDto } from '@/utils';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import {
@@ -20,12 +20,15 @@ import {
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { EmitEventProps } from '@/utils/types/entity-event.types';
+import {
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from '@/utils/types/entity-event.types';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
 import { ScheduledWorkflowContext } from '../contexts/scheduled-workflow.context';
-import { WorkflowDtoConfig } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 
@@ -185,13 +188,9 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   it('ignores create events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postCreate', {
       action: EHook.postCreate,
-      payload: {} as WorkflowDtoConfig['create'],
+      payload: {} as InferActionsDto<WorkflowOrmEntity>['create'],
       entity: {} as WorkflowOrmEntity,
-    } as EmitEventProps<
-      WorkflowOrmEntity,
-      EHook.postCreate,
-      WorkflowDtoConfig
-    >);
+    } as InsertEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -199,13 +198,9 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   it('ignores update events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postUpdate', {
       action: EHook.postUpdate,
-      payload: {} as WorkflowDtoConfig['update'],
+      payload: {} as InferActionsDto<WorkflowOrmEntity>['update'],
       entity: {} as WorkflowOrmEntity,
-    } as EmitEventProps<
-      WorkflowOrmEntity,
-      EHook.postUpdate,
-      WorkflowDtoConfig
-    >);
+    } as UpdateEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -251,11 +246,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       action: EHook.postDelete,
       payload: {} as string | FindOneOptions<WorkflowOrmEntity>,
       entity: {} as WorkflowOrmEntity,
-    } as EmitEventProps<
-      WorkflowOrmEntity,
-      EHook.postDelete,
-      WorkflowDtoConfig
-    >);
+    } as RemoveEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });

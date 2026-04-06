@@ -120,6 +120,7 @@ export const Login = () => {
               },
             }}
             helperText={errors.password ? errors.password.message : null}
+            autoComplete="password"
             {...register("password", validationRules.password)}
           />
           <Grid container direction="column" gap={1} mt={2}>

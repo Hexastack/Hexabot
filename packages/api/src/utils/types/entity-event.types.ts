@@ -10,38 +10,29 @@ import { BaseOrmEntity } from '@/database';
 
 import { EHook } from '../generics/base-orm.repository';
 
-import {
-  DtoAction,
-  DtoActionConfig,
-  EntityDto,
-  InferActionDto,
-  InferDto,
-} from './dto.types';
+import { EntityDto, InferCreateDto, InferUpdateDto } from './dto.types';
 
-type EventProps<
-  Entity extends BaseOrmEntity,
-  ActionDto extends DtoActionConfig,
-> =
+type EventProps<Entity extends BaseOrmEntity> =
   | {
       action: EHook.preCreate;
       entity: Entity;
-      payload: InferActionDto<DtoAction.Create, ActionDto>;
+      payload: InferCreateDto<Entity>;
     }
   | {
       action: EHook.postCreate;
       entity: Entity;
-      payload: InferActionDto<DtoAction.Create, ActionDto>;
+      payload: InferCreateDto<Entity>;
     }
   | {
       action: EHook.preUpdate;
       entity: Entity;
-      payload: InferActionDto<DtoAction.Update, ActionDto>;
+      payload: InferUpdateDto<Entity>;
       databaseEntity: Entity;
     }
   | {
       action: EHook.postUpdate;
       entity: Entity;
-      payload: InferActionDto<DtoAction.Update, ActionDto>;
+      payload: InferUpdateDto<Entity>;
       databaseEntity: Entity;
     }
   | {
@@ -59,57 +50,43 @@ type EventProps<
 
 export type EntityPostHookEvent = EmitEventProps<
   BaseOrmEntity,
-  EHook.postCreate | EHook.postUpdate | EHook.postDelete,
-  DtoActionConfig
+  EHook.postCreate | EHook.postUpdate | EHook.postDelete
 > & { entityName: string };
 
 export type EmitEventProps<
   Entity extends BaseOrmEntity,
   H extends EHook,
-  ActionDto extends DtoActionConfig,
-> = Extract<EventProps<Entity, ActionDto>, { action: H }>;
+> = Extract<EventProps<Entity>, { action: H }>;
 
-export type InsertEvent<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
-  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
-> = Extract<
-  EventProps<Entity, ActionDto>,
-  | {
-      action: EHook.preCreate;
-      payload: InferActionDto<DtoAction.Create, ActionDto>;
-    }
-  | {
-      action: EHook.postCreate;
-      payload: InferActionDto<DtoAction.Create, ActionDto>;
-    }
->;
+export type InsertEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  Extract<
+    EventProps<Entity>,
+    | {
+        action: EHook.preCreate;
+      }
+    | {
+        action: EHook.postCreate;
+      }
+  >;
 
-export type UpdateEvent<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
-  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
-> = Extract<
-  EventProps<Entity, ActionDto>,
-  | {
-      action: EHook.preUpdate;
-      payload: InferActionDto<DtoAction.Update, ActionDto>;
-    }
-  | {
-      action: EHook.postUpdate;
-      payload: InferActionDto<DtoAction.Update, ActionDto>;
-    }
->;
+export type UpdateEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  Extract<
+    EventProps<Entity>,
+    | {
+        action: EHook.preUpdate;
+      }
+    | {
+        action: EHook.postUpdate;
+      }
+  >;
 
-export type RemoveEvent<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
-  ActionDto extends DtoActionConfig = InferDto<Entity>['actions'],
-> = Extract<
-  EventProps<Entity, ActionDto>,
-  | {
-      action: EHook.preDelete;
-      payload: InferActionDto<DtoAction.Delete, ActionDto>;
-    }
-  | {
-      action: EHook.postDelete;
-      payload: InferActionDto<DtoAction.Delete, ActionDto>;
-    }
->;
+export type RemoveEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+  Extract<
+    EventProps<Entity>,
+    | {
+        action: EHook.preDelete;
+      }
+    | {
+        action: EHook.postDelete;
+      }
+  >;

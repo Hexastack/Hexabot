@@ -15,6 +15,7 @@ import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
 import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
+import { ISettingSchemasMap } from "@/types/setting.types";
 import {
   IProfileAttributes,
   IUser,
@@ -273,6 +274,14 @@ export class ApiClient {
 
   async getWorkflowBindings<T = Record<string, unknown>>() {
     const { data } = await this.request.get<T>(ROUTES.WORKFLOW_BINDINGS);
+
+    return data;
+  }
+
+  async getSettingSchemas() {
+    const { data } = await this.request.get<ISettingSchemasMap>(
+      `${ROUTES[EntityType.SETTING]}/schemas`,
+    );
 
     return data;
   }

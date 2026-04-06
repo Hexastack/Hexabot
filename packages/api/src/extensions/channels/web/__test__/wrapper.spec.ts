@@ -20,7 +20,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
-import { WEB_CHANNEL_NAME } from '../settings';
+import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 import WebEventWrapper from '../wrapper';
 
 import { webEvents } from './events.mock';

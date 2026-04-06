@@ -113,8 +113,7 @@ export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
 export type HelperSetting<N extends HelperName = HelperName> = ExtensionSetting<
   {
     group: HyphenToUnderscore<N>;
-    weight?: number;
   },
   AnySetting,
-  'id' | 'createdAt' | 'updatedAt' | 'group' | 'weight'
+  'id' | 'createdAt' | 'updatedAt' | 'group'
 >;

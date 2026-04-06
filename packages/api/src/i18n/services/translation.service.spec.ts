@@ -5,7 +5,6 @@
  */
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowService } from '@/workflow/services/workflow.service';
@@ -99,7 +98,6 @@ describe('TranslationService', () => {
           },
         },
         { provide: WorkflowService, useValue: workflowService },
-        SettingServiceProvider,
       ],
     });
     [service, i18nService] = await getMocks([TranslationService, I18nService]);
@@ -137,10 +135,5 @@ describe('TranslationService', () => {
     expect(strings).not.toContain('Workflow description');
     expect(strings).not.toContain('Internal workflow description');
     expect(strings).not.toContain('Task description to ignore');
-  });
-
-  it('should return the settings translation strings', async () => {
-    const strings = await service.getSettingStrings();
-    expect(strings).toEqual(['Global fallback message']);
   });
 });
