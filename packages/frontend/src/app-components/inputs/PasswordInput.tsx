@@ -13,6 +13,8 @@ import {
 import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState } from "react";
 
+import { createReadOnlyInputProps } from "./readOnlyInput.util";
+
 type PasswordInputProps = Omit<
   TextFieldProps,
   "FormHelperTextProps" | "InputLabelProps" | "InputProps" | "inputProps"
@@ -54,6 +56,9 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
         slotProps={{
           ...slotProps,
           input: resolveInputSlotProps,
+          htmlInput: rest.autoComplete
+            ? undefined
+            : createReadOnlyInputProps(slotProps?.htmlInput),
         }}
       />
     );
