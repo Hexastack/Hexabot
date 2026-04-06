@@ -13,7 +13,6 @@ import {
   translationFixtures,
 } from '@/utils/test/fixtures/translation';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
-import { SettingServiceProvider } from '@/utils/test/providers/setting-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowService } from '@/workflow/services/workflow.service';
@@ -41,7 +40,6 @@ describe('TranslationController', () => {
           } as Partial<WorkflowService>,
         },
         I18nServiceProvider,
-        SettingServiceProvider,
       ],
       typeorm: [
         {

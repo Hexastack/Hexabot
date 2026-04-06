@@ -7,8 +7,8 @@
 import { NotFoundException } from '@nestjs/common';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/web-channel.settings';
 import { LoggerService } from '@/logger/logger.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';

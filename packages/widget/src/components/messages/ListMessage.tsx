@@ -7,6 +7,7 @@
 import React from "react";
 
 import { TMessage } from "../../types/message.types";
+import { processContent } from "../../utils/text";
 
 import ButtonsMessage from "./ButtonMessage";
 
@@ -17,20 +18,6 @@ interface ListMessageProps {
 }
 
 const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
-  const processContent = (string: string) => {
-    let result = truncate(string, 50);
-
-    result = linebreak(string);
-
-    return result;
-  };
-  const truncate = (string: string, length: number = 100) => {
-    return string.length > length ? string.substr(0, length) + "..." : string;
-  };
-  const linebreak = (string: string) => {
-    return string.replace(/\n/g, "<br />");
-  };
-
   if (!("elements" in messageList.data)) {
     throw new Error("Unable to find elements");
   }

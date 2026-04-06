@@ -6,6 +6,12 @@
 
 export * from './controllers/setting.controller';
 
+export * from './create-setting-group';
+
+export * from './base-setting-group';
+
+export * from './default.settings';
+
 export * from './dto/metadata.dto';
 
 export * from './dto/setting.dto';
@@ -29,6 +35,12 @@ export * from './seeds/setting.seed';
 export * from './services/metadata.service';
 
 export * from './services/setting.service';
+
+export * from './runtime-settings';
+
+export * from './runtime-settings.seed';
+
+export * from './services/runtime-settings.service';
 
 export * from './setting.module';
 

@@ -6,7 +6,11 @@
 
 import type RJSFForm from "@rjsf/core";
 import { Form } from "@rjsf/mui";
-import { getDefaultFormState, type RJSFSchema, type UiSchema } from "@rjsf/utils";
+import {
+  getDefaultFormState,
+  type RJSFSchema,
+  type UiSchema,
+} from "@rjsf/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { isRecord } from "@/utils/object";
@@ -46,7 +50,7 @@ const withSchemaDefaults = (
 type JsonSchemaFormProps = {
   schema: RJSFSchema;
   formData: Record<string, unknown>;
-  onFormDataChange: (data: Record<string, unknown>) => void;
+  onFormDataChange: (data: Record<string, unknown>, errors?: unknown[]) => void;
   idPrefix?: string;
   uiSchema?: UiSchema;
   liveValidate?: "onChange" | "onBlur" | boolean;
@@ -139,7 +143,7 @@ export const JsonSchemaForm = ({
         const nextFormData = (event.formData ?? {}) as Record<string, unknown>;
 
         setLiveFormData(nextFormData);
-        onFormDataChange(nextFormData);
+        onFormDataChange(nextFormData, event.errors);
       }}
       showErrorList={false}
       noHtml5Validate

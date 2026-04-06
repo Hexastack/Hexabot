@@ -4,20 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FileType } from "../types/message.types";
-
-export function getFileType(mimeType: string): FileType {
-  if (mimeType.startsWith("image/")) {
-    return FileType.image;
-  } else if (mimeType.startsWith("video/")) {
-    return FileType.video;
-  } else if (mimeType.startsWith("audio/")) {
-    return FileType.audio;
-  } else {
-    return FileType.file;
-  }
-}
-
 export const MIME_TYPES = {
   images: ["image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"],
   videos: [

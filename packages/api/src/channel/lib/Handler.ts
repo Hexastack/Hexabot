@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import path from 'path';
-
 import {
   ForbiddenException,
   Inject,
@@ -46,7 +44,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import { ChannelService } from '../channel.service';
-import { ChannelName, ChannelSetting } from '../types';
+import { ChannelName } from '../types';
 
 import ConversationalEventWrapper from './ConversationalEventWrapper';
 
@@ -57,8 +55,6 @@ export default abstract class ChannelHandler<
   extends Extension
   implements OnModuleInit
 {
-  private readonly settings: ChannelSetting<N>[];
-
   @Inject(I18nService)
   protected readonly i18n: I18nService;
 
@@ -86,8 +82,6 @@ export default abstract class ChannelHandler<
 
   constructor(name: N) {
     super(name);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
   getName() {
@@ -100,11 +94,6 @@ export default abstract class ChannelHandler<
       this.getName(),
       this as unknown as ChannelHandler<N>,
     );
-    this.setup();
-  }
-
-  async setup() {
-    await this.settingService.seedIfNotExist(this.getName(), this.settings);
     this.init();
   }
 
