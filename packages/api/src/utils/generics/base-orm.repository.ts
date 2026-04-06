@@ -530,11 +530,9 @@ export abstract class BaseOrmRepository<
     return camelCase((metadata.name ?? 'entity').replace(/OrmEntity$/, ''));
   }
 
-  protected async emitEvent<
-    H extends EHook,
-    E extends BaseOrmEntity = Entity,
-    Dto extends DtoActionConfig = ActionDto,
-  >(data: EmitEventProps<E, H, Dto>) {
+  protected async emitEvent<H extends EHook, E extends BaseOrmEntity = Entity>(
+    data: EmitEventProps<E, H>,
+  ) {
     if (!this.eventEmitter) return;
     const entityName = this.getEntityName(this.repository.metadata);
 

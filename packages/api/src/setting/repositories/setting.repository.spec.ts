@@ -19,7 +19,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SettingOrmEntity } from '../entities/setting.entity';
-import { SettingType } from '../types';
 
 import { SettingRepository } from './setting.repository';
 
@@ -61,15 +60,10 @@ describe('SettingRepository (TypeORM)', () => {
   });
 
   describe('findAll', () => {
-    it('returns all settings ordered by weight asc', async () => {
-      const result = await settingRepository.findAll({
-        order: { weight: 'asc' },
-      });
+    it('returns all settings', async () => {
+      const result = await settingRepository.findAll();
 
       expect(result).toHaveLength(settingFixtures.length);
-      const weights = result.map((setting) => setting.weight ?? 0);
-      const sortedWeights = [...weights].sort((a, b) => a - b);
-      expect(weights).toEqual(sortedWeights);
     });
   });
 
@@ -77,19 +71,18 @@ describe('SettingRepository (TypeORM)', () => {
     it('filters settings by group', async () => {
       const result = await settingRepository.find({
         where: { group: 'contact' },
-        order: { weight: 'asc' },
       });
-      const expected = settingFixtures.filter(
-        (fixture) => fixture.group === 'contact',
+      const expected = settingFixtures
+        .filter((fixture) => fixture.group === 'contact')
+        .sort((left, right) => left.label.localeCompare(right.label));
+      const sortedResult = [...result].sort((left, right) =>
+        left.label.localeCompare(right.label),
       );
 
-      expect(result).toEqualPayload(expected, [
+      expect(sortedResult).toEqualPayload(expected, [
         'id',
         'createdAt',
         'updatedAt',
-        'options',
-        'config',
-        'translatable',
         'subgroup',
       ]);
     });
@@ -125,9 +118,6 @@ describe('SettingRepository (TypeORM)', () => {
         'id',
         'createdAt',
         'updatedAt',
-        'options',
-        'config',
-        'translatable',
         'subgroup',
       ]);
     });
@@ -138,9 +128,7 @@ describe('SettingRepository (TypeORM)', () => {
       const base = {
         group: `group_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        type: SettingType.text,
         value: 'initial value',
-        weight: 99,
       };
       const created = await settingRepository.create(base);
       createdIds.push(created.id);
@@ -148,112 +136,42 @@ describe('SettingRepository (TypeORM)', () => {
       expect(created).toMatchObject({
         group: base.group,
         label: base.label,
-        type: base.type,
         value: base.value,
-        weight: base.weight,
       });
 
       const updated = await settingRepository.updateOne(created.id, {
         value: 'updated value',
-        weight: 100,
       });
 
       expect(updated).not.toBeNull();
       expect(updated).toMatchObject({
         id: created.id,
         value: 'updated value',
-        weight: 100,
       });
     });
   });
 
-  describe('value validation', () => {
-    const buildPayload = (
-      type: SettingType,
-      value: any,
-    ): Parameters<typeof settingRepository.create>[0] => ({
-      group: `group_${getRandom()}`,
-      label: `label_${randomUUID()}`,
-      type,
-      value,
-      ...(type === SettingType.select ? { options: ['option'] } : {}),
-    });
-    const passingCases: ReadonlyArray<
-      [SettingType, () => Parameters<typeof buildPayload>[1]]
-    > = [
-      [SettingType.text, () => 'text value'],
-      [SettingType.textarea, () => 'textarea value'],
-      [SettingType.secret, () => 'secret value'],
-      [SettingType.multiple_text, () => ['first', 'second']],
-      [SettingType.checkbox, () => true],
-      [SettingType.select, () => 'option'],
-      [SettingType.number, () => 42],
-      [SettingType.attachment, () => null],
-      [SettingType.multiple_attachment, () => [randomUUID()]],
-    ];
-
-    it.each(passingCases)(
-      'accepts valid values for %s',
-      async (type, valueFactory) => {
-        const payload = buildPayload(type, valueFactory());
-        const created = await settingRepository.create(payload);
+  describe('value persistence', () => {
+    it.each([
+      'text value',
+      42,
+      true,
+      null,
+      ['first', 'second'],
+      { nested: { value: 'object' } },
+    ])(
+      'stores setting values without type-based validation: %p',
+      async (value) => {
+        const created = await settingRepository.create({
+          group: `group_${getRandom()}`,
+          label: `label_${randomUUID()}`,
+          value,
+        });
         createdIds.push(created.id);
 
-        expect(created).toMatchObject({
-          type,
-          value: payload.value,
-        });
+        expect(created.value).toEqual(value);
       },
     );
-
-    const failingCases: ReadonlyArray<
-      [SettingType, () => Parameters<typeof buildPayload>[1], string]
-    > = [
-      [SettingType.text, () => 123, 'Setting value must be a string.'],
-      [
-        SettingType.multiple_text,
-        () => ['valid', 123],
-        'Setting value must be an array of strings.',
-      ],
-      [SettingType.checkbox, () => 'true', 'Setting value must be a boolean.'],
-      [SettingType.number, () => '123', 'Setting value must be a number.'],
-      [
-        SettingType.multiple_attachment,
-        () => [123],
-        'Setting value must be an array of attachment ids.',
-      ],
-      [
-        SettingType.attachment,
-        () => 123,
-        'Setting value must be a string or null.',
-      ],
-      [SettingType.secret, () => 123, 'Setting value must be a string.'],
-      [SettingType.select, () => 123, 'Setting value must be a string.'],
-    ];
-
-    it.each(failingCases)(
-      'rejects invalid values for %s',
-      async (type, valueFactory, error) => {
-        await expect(
-          settingRepository.create(buildPayload(type, valueFactory())),
-        ).rejects.toThrow(error);
-      },
-    );
-
-    it('rejects invalid values on update', async () => {
-      const base = {
-        group: `group_${getRandom()}`,
-        label: `label_${randomUUID()}`,
-        type: SettingType.text,
-        value: 'valid',
-      };
-      const created = await settingRepository.create(base);
-      createdIds.push(created.id);
-
-      await expect(
-        settingRepository.updateOne(created.id, { value: 123 }),
-      ).rejects.toThrow('Setting value must be a string.');
-    });
   });
 
   describe('deleteMany', () => {
@@ -261,9 +179,7 @@ describe('SettingRepository (TypeORM)', () => {
       const payloads = Array.from({ length: 2 }, () => ({
         group: `cleanup_${getRandom()}`,
         label: `label_${randomUUID()}`,
-        type: SettingType.text,
         value: 'to delete',
-        weight: 5,
       }));
       const inserted = await settingRepository.createMany(payloads);
       const labels = inserted.map((setting) => setting.label);

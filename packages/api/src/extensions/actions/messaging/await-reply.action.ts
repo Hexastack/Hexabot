@@ -37,7 +37,7 @@ export class AwaitReplyAction extends BaseAction<
         workflowTypes: [WorkflowType.conversational],
         outputSchema: awaitReplyResumeSchema,
         icon: 'Hourglass',
-        color: '#040606',
+        color: '#5C6B6B',
         group: 'messaging',
       },
       actionService,

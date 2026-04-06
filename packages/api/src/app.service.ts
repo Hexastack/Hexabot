@@ -12,7 +12,7 @@ import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
 import { Action } from './user/types/action.type';
-import { DtoActionConfig, EHook } from './utils';
+import { EHook } from './utils';
 import { EmitEventProps } from './utils/types/entity-event.types';
 import {
   SocketGet,
@@ -26,8 +26,7 @@ import {
 
 type EntityPostHookEvent = EmitEventProps<
   BaseOrmEntity,
-  EHook.postCreate | EHook.postUpdate | EHook.postDelete,
-  DtoActionConfig
+  EHook.postCreate | EHook.postUpdate | EHook.postDelete
 > & { entityName: string };
 
 @Injectable()

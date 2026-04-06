@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import path from 'path';
-
 import { Inject, OnModuleInit } from '@nestjs/common';
 
 import { SettingService } from '@/setting/services/setting.service';
@@ -13,14 +11,12 @@ import { Extension } from '@/utils/generics/extension';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import { HelperService } from '../helper.service';
-import { HelperName, HelperSetting, HelperType } from '../types';
+import { HelperName, HelperType } from '../types';
 
 export default abstract class BaseHelper<N extends HelperName = HelperName>
   extends Extension
   implements OnModuleInit
 {
-  protected readonly settings: HelperSetting<N>[] = [];
-
   protected abstract type: HelperType;
 
   @Inject(SettingService)
@@ -31,18 +27,11 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
 
   constructor(name: N) {
     super(name);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
   async onModuleInit() {
     await super.onModuleInit();
     this.helperService.register(this);
-    this.setup();
-  }
-
-  async setup() {
-    await this.settingService.seedIfNotExist(this.getName(), this.settings);
   }
 
   /**

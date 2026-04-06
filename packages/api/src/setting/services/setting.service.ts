@@ -5,12 +5,18 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   IHookSettingsGroupLabelOperationMap,
   OnEvent,
 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { FindOneOptions } from 'typeorm';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
@@ -19,14 +25,21 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
+import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { UpdateEvent } from '@/utils/types/entity-event.types';
 
-import { Setting, SettingCreateDto } from '../dto/setting.dto';
+import {
+  Setting,
+  SettingCreateDto,
+  SettingUpdateDto,
+} from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
+import { buildSettingSeedsFromRegistry } from '../runtime-settings.seed';
 import { SettingSeeder } from '../seeds/setting.seed';
-import { TextSetting } from '../types';
+
+import { RuntimeSettingsService } from './runtime-settings.service';
 
 @Injectable()
 export class SettingService extends BaseOrmService<SettingOrmEntity> {
@@ -34,8 +47,28 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly seeder: SettingSeeder,
+    private readonly runtimeSettingsService: RuntimeSettingsService,
   ) {
     super(repository);
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.seedRegisteredSettings();
+  }
+
+  private async seedRegisteredSettings(): Promise<void> {
+    const runtimeRegistry = this.runtimeSettingsService.getRegistry();
+
+    if (Object.keys(runtimeRegistry).length === 0) {
+      return;
+    }
+
+    const models = buildSettingSeedsFromRegistry(runtimeRegistry);
+    if (models.length === 0) {
+      return;
+    }
+
+    await this.seeder.seed(models);
   }
 
   /**
@@ -51,15 +84,110 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
     }
   }
 
+  private getCoercionCandidates(value: unknown): unknown[] {
+    if (typeof value !== 'string') {
+      return [value];
+    }
+
+    const candidates: unknown[] = [value];
+    const normalized = value.trim().toLowerCase();
+    const asNumber = Number(value);
+
+    if (normalized === 'true') {
+      candidates.push(true);
+    } else if (normalized === 'false') {
+      candidates.push(false);
+    }
+
+    if (Number.isFinite(asNumber) && value.trim() !== '') {
+      candidates.push(asNumber);
+    }
+
+    return candidates;
+  }
+
+  private isPersistedSettingValue(
+    value: unknown,
+  ): value is SettingUpdateDto['value'] {
+    if (value === null) {
+      return true;
+    }
+
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      return true;
+    }
+
+    if (Array.isArray(value)) {
+      return value.every((entry) => typeof entry === 'string');
+    }
+
+    return typeof value === 'object';
+  }
+
+  private validateAndNormalizeSettingValue(
+    group: string,
+    label: string,
+    value: unknown,
+  ): SettingUpdateDto['value'] {
+    let schema: ReturnType<RuntimeSettingsService['getSchemaFor']>;
+
+    try {
+      schema = this.runtimeSettingsService.getSchemaFor(group, label);
+    } catch (_error) {
+      throw new BadRequestException(
+        `Setting "${group}.${label}" is not registered in runtime settings schemas.`,
+      );
+    }
+
+    for (const candidate of this.getCoercionCandidates(value)) {
+      const result = schema.safeParse(candidate);
+      if (result.success) {
+        if (this.isPersistedSettingValue(result.data)) {
+          return result.data;
+        }
+
+        throw new BadRequestException(
+          `Setting "${group}.${label}" resolved to an unsupported value type.`,
+        );
+      }
+    }
+
+    throw new BadRequestException(
+      `Invalid value provided for setting "${group}.${label}".`,
+    );
+  }
+
+  override async updateOne(
+    idOrOptions: string | FindOneOptions<SettingOrmEntity>,
+    payload: SettingUpdateDto,
+    options?: UpdateOneOptions,
+  ): Promise<Setting> {
+    const current = await this.findOne(idOrOptions);
+
+    if (!current) {
+      throw new NotFoundException('Unable to execute updateOne() - No updates');
+    }
+
+    const value = this.validateAndNormalizeSettingValue(
+      current.group,
+      current.label,
+      payload.value,
+    );
+
+    return await super.updateOne(idOrOptions, { ...payload, value }, options);
+  }
+
   /**
-   * Loads all settings and returns them grouped in ascending order by weight.
+   * Loads all settings and returns them grouped by group key.
    *
    * @returns A grouped object of settings.
    */
   async load(): Promise<Record<string, Setting[]>> {
-    const settings = await this.findAll({
-      order: { weight: 'ASC' },
-    });
+    const settings = await this.findAll();
 
     return this.group(settings);
   }
@@ -145,7 +273,7 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
   async getAllowedOrigins(): Promise<string[]> {
     const settings = (await this.find({
       where: { label: 'allowed_domains' },
-    })) as TextSetting[];
+    })) as Setting[];
     const allowedDomains = settings.flatMap((setting) =>
       (typeof setting.value === 'string' ? setting.value : '')
         .split(',')
@@ -171,6 +299,10 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
     const settings = await this.findAll();
 
     return this.buildTree(settings);
+  }
+
+  getAllSchemaDefinitions() {
+    return this.runtimeSettingsService.getAllSchemaDefinitions();
   }
 
   /**
