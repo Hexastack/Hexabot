@@ -39,16 +39,6 @@ export enum FileType {
   unknown = "unknown",
 }
 
-// Attachments
-export interface IAttachmentAttrs {
-  name: string;
-  type: string;
-  size: number;
-  location: string;
-  channel?: Record<string, any>;
-  url?: string;
-}
-
 export type TAttachmentForeignKey = {
   id: string | null;
   /** @deprecated use id instead */
@@ -82,19 +72,6 @@ export enum ButtonType {
   postback = "postback",
   web_url = "web_url",
 }
-
-export type Payload =
-  | {
-      type: PayloadType.location;
-      coordinates: {
-        lat: number;
-        lon: number;
-      };
-    }
-  | {
-      type: PayloadType.attachments;
-      attachments: IAttachmentPayload;
-    };
 
 export enum QuickReplyType {
   text = "text",
@@ -186,11 +163,6 @@ export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
   attachment: IAttachmentPayload | IAttachmentPayload[];
-};
-
-export type StdPluginMessage = {
-  plugin: string;
-  args: { [key: string]: any };
 };
 
 export type StdIncomingMessage =
