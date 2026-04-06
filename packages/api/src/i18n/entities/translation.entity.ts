@@ -9,10 +9,10 @@ import { Column, Entity, Index } from 'typeorm';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Translation, TranslationTransformerDto } from '../dto/translation.dto';
+import { Translation, TranslationDto } from '../dto/translation.dto';
 
 @Entity({ name: 'translations' })
-export class TranslationOrmEntity extends BaseOrmEntity<TranslationTransformerDto> {
+export class TranslationOrmEntity extends BaseOrmEntity<TranslationDto> {
   plainCls = Translation;
 
   fullCls = Translation;

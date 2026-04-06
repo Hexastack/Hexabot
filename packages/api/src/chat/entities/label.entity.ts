@@ -18,7 +18,7 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Label, LabelFull, LabelTransformerDto } from '../dto/label.dto';
+import { Label, LabelDto, LabelFull } from '../dto/label.dto';
 
 import { LabelGroupOrmEntity } from './label-group.entity';
 import { SubscriberOrmEntity } from './subscriber.entity';
@@ -26,7 +26,7 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 @Entity({ name: 'labels' })
 @Index(['title'], { unique: true })
 @Index(['name'], { unique: true })
-export class LabelOrmEntity extends BaseOrmEntity<LabelTransformerDto> {
+export class LabelOrmEntity extends BaseOrmEntity<LabelDto> {
   plainCls = Label;
 
   fullCls = LabelFull;

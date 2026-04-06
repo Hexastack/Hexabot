@@ -15,11 +15,7 @@ import {
 } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 import { Role } from './role.dto';
 
@@ -61,11 +57,12 @@ export class InvitationCreateDto {
   token?: string;
 }
 
-export type InvitationTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Invitation;
-  FullCls: typeof InvitationFull;
-}>;
-
-export type InvitationDtoConfig = DtoActionConfig<{
-  create: InvitationCreateDto;
-}>;
+export type InvitationDto = BuildDtoType<
+  {
+    PlainCls: typeof Invitation;
+    FullCls: typeof InvitationFull;
+  },
+  {
+    create: InvitationCreateDto;
+  }
+>;

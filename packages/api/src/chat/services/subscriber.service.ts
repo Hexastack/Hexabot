@@ -22,11 +22,7 @@ import { UserService } from '@/user/services/user.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import {
-  Subscriber,
-  SubscriberDtoConfig,
-  SubscriberUpdateDto,
-} from '../dto/subscriber.dto';
+import { Subscriber, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 
@@ -52,10 +48,7 @@ export type SubscriberHandoverPolicyResult = {
 };
 
 @Injectable()
-export class SubscriberService extends BaseOrmService<
-  SubscriberOrmEntity,
-  SubscriberDtoConfig
-> {
+export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,

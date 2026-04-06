@@ -9,19 +9,12 @@ import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  Metadata,
-  MetadataDtoConfig,
-  MetadataUpdateDto,
-} from '../dto/metadata.dto';
+import { Metadata, MetadataUpdateDto } from '../dto/metadata.dto';
 import { MetadataOrmEntity } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 
 @Injectable()
-export class MetadataService extends BaseOrmService<
-  MetadataOrmEntity,
-  MetadataDtoConfig
-> {
+export class MetadataService extends BaseOrmService<MetadataOrmEntity> {
   constructor(repository: MetadataRepository) {
     super(repository);
   }

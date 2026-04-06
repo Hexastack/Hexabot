@@ -16,15 +16,15 @@ import {
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { UserTransformerDto } from '@/user';
+import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { DtoTransformerConfig } from '@/utils';
+import { DtoActionConfig } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
   Subscriber,
+  SubscriberDto,
   SubscriberFull,
-  SubscriberTransformerDto,
 } from '../dto/subscriber.dto';
 
 import { LabelOrmEntity } from './label.entity';
@@ -39,8 +39,14 @@ export class SubscriberChannel {
 
 @ChildEntity()
 export class SubscriberOrmEntity<
-  TransformerDto extends DtoTransformerConfig = SubscriberTransformerDto,
-> extends UserProfileOrmEntity<TransformerDto> {
+  Dto extends {
+    transformers: {
+      FullCls: unknown;
+      PlainCls: unknown;
+    };
+    actions: DtoActionConfig;
+  } = SubscriberDto,
+> extends UserProfileOrmEntity<Dto> {
   plainCls = Subscriber;
 
   fullCls = SubscriberFull;
@@ -85,7 +91,7 @@ export class SubscriberOrmEntity<
   })
   @JoinColumn({ name: 'assigned_to_id' })
   @AsRelation()
-  assignedTo: UserProfileOrmEntity<UserTransformerDto> | null;
+  assignedTo: UserProfileOrmEntity<UserProfileDto> | null;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.assignedTo)
   private readonly assignedToId: string | null;

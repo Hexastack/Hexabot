@@ -9,11 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 
-import {
-  BaseStub,
-  DtoActionConfig,
-  DtoTransformerConfig,
-} from '@/utils/types/dto.types';
+import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
 
 @Exclude()
 export class TranslationStub extends BaseStub {
@@ -41,12 +37,13 @@ export class TranslationCreateDto {
 
 export class TranslationUpdateDto extends PartialType(TranslationCreateDto) {}
 
-export type TranslationTransformerDto = DtoTransformerConfig<{
-  PlainCls: typeof Translation;
-  FullCls: typeof Translation;
-}>;
-
-export type TranslationDtoConfig = DtoActionConfig<{
-  create: TranslationCreateDto;
-  update: TranslationUpdateDto;
-}>;
+export type TranslationDto = BuildDtoType<
+  {
+    PlainCls: typeof Translation;
+    FullCls: typeof Translation;
+  },
+  {
+    create: TranslationCreateDto;
+    update: TranslationUpdateDto;
+  }
+>;

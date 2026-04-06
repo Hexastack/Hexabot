@@ -21,20 +21,14 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  PermissionCreateDto,
-  PermissionDtoConfig,
-} from '../dto/permission.dto';
+import { PermissionCreateDto } from '../dto/permission.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 
 @Controller('permission')
-export class PermissionController extends BaseOrmController<
-  PermissionOrmEntity,
-  PermissionDtoConfig
-> {
+export class PermissionController extends BaseOrmController<PermissionOrmEntity> {
   constructor(
     protected readonly permissionService: PermissionService,
     private readonly roleService: RoleService,

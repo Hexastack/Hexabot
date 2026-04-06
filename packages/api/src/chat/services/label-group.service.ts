@@ -8,15 +8,11 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LabelGroupDtoConfig } from '../dto/label-group.dto';
 import { LabelGroupOrmEntity } from '../entities/label-group.entity';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
 
 @Injectable()
-export class LabelGroupService extends BaseOrmService<
-  LabelGroupOrmEntity,
-  LabelGroupDtoConfig
-> {
+export class LabelGroupService extends BaseOrmService<LabelGroupOrmEntity> {
   constructor(readonly repository: LabelGroupRepository) {
     super(repository);
   }

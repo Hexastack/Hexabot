@@ -16,17 +16,13 @@ import {
 
 import {
   Subscriber,
-  SubscriberDtoConfig,
   SubscriberFull,
   SubscriberUpdateDto,
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 
 @Injectable()
-export class SubscriberRepository extends BaseOrmRepository<
-  SubscriberOrmEntity,
-  SubscriberDtoConfig
-> {
+export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity> {
   constructor(
     @InjectRepository(SubscriberOrmEntity)
     repository: Repository<SubscriberOrmEntity>,

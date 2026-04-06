@@ -23,19 +23,13 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  TranslationDtoConfig,
-  TranslationUpdateDto,
-} from '../dto/translation.dto';
+import { TranslationUpdateDto } from '../dto/translation.dto';
 import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 @Controller('translation')
-export class TranslationController extends BaseOrmController<
-  TranslationOrmEntity,
-  TranslationDtoConfig
-> {
+export class TranslationController extends BaseOrmController<TranslationOrmEntity> {
   constructor(
     private readonly languageService: LanguageService,
     protected readonly translationService: TranslationService,

@@ -28,7 +28,6 @@ import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pip
 import {
   Content,
   ContentCreateDto,
-  ContentDtoConfig,
   ContentUpdateDto,
 } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
@@ -39,10 +38,7 @@ import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
 @Controller('content')
-export class ContentController extends BaseOrmController<
-  ContentOrmEntity,
-  ContentDtoConfig
-> {
+export class ContentController extends BaseOrmController<ContentOrmEntity> {
   constructor(
     protected readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,

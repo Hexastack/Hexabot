@@ -13,7 +13,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentTypeDtoConfig } from '../dto/contentType.dto';
+import { ContentTypeDto } from '../dto/contentType.dto';
 
 import { ContentTypeService } from './content-type.service';
 
@@ -58,7 +58,7 @@ describe('ContentTypeService (TypeORM)', () => {
       const payload = {
         name: 'Blog posts',
         schema: {},
-      } as ContentTypeDtoConfig['create'];
+      } as ContentTypeDto['actions']['create'];
       const created = await service.create(payload);
       createdIds.push(created.id);
 

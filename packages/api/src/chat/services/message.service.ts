@@ -9,16 +9,13 @@ import { Injectable } from '@nestjs/common';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Message, MessageDtoConfig } from '../dto/message.dto';
+import { Message } from '../dto/message.dto';
 import { Subscriber, SubscriberStub } from '../dto/subscriber.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageRepository } from '../repositories/message.repository';
 
 @Injectable()
-export class MessageService extends BaseOrmService<
-  MessageOrmEntity,
-  MessageDtoConfig
-> {
+export class MessageService extends BaseOrmService<MessageOrmEntity> {
   constructor(
     readonly repository: MessageRepository,
     private readonly gateway: WebsocketGateway,

@@ -12,19 +12,12 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  WorkflowRun,
-  WorkflowRunDtoConfig,
-  WorkflowRunFull,
-} from '../dto/workflow-run.dto';
+import { WorkflowRun, WorkflowRunFull } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowRunService } from '../services/workflow-run.service';
 
 @Controller('workflowrun')
-export class WorkflowRunController extends BaseOrmController<
-  WorkflowRunOrmEntity,
-  WorkflowRunDtoConfig
-> {
+export class WorkflowRunController extends BaseOrmController<WorkflowRunOrmEntity> {
   constructor(private readonly workflowRunService: WorkflowRunService) {
     super(workflowRunService);
   }

@@ -20,15 +20,12 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { Stats, StatsActionDto, StatsSummaryDto } from '../dto/stats.dto';
+import { Stats, StatsSummaryDto } from '../dto/stats.dto';
 import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 import { StatsRepository } from '../repositories/stats.repository';
 
 @Injectable()
-export class StatsService extends BaseOrmService<
-  StatsOrmEntity,
-  StatsActionDto
-> {
+export class StatsService extends BaseOrmService<StatsOrmEntity> {
   constructor(
     readonly repository: StatsRepository,
     private readonly workflowService: WorkflowService,
