@@ -43,7 +43,6 @@ import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { Setting } from '@/setting/dto/setting.dto';
 import type { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import type { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import type { DEFAULT_SETTINGS } from '@/setting/seeds/setting.seed-model';
 import type { InvitationOrmEntity } from '@/user/entities/invitation.entity';
 import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
@@ -56,11 +55,9 @@ import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 type AnyEventWrapper = ConversationalEventWrapper<any, any>;
 
-type DefaultSettingSeed = (typeof DEFAULT_SETTINGS)[number];
-
 type DefaultHookSettingsMap = {
-  [Group in DefaultSettingSeed['group']]: Record<
-    Extract<DefaultSettingSeed, { group: Group }>['label'],
+  [Group in keyof Settings & string]: Record<
+    keyof Settings[Group] & string,
     Setting
   >;
 };

@@ -5,7 +5,6 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { resolveDynamicProviders } from 'nestjs-dynamic-providers';
 import { z } from 'zod';
 
 import { BindingsModule } from '@/bindings/bindings.module';
@@ -25,10 +24,6 @@ const weatherBindingSchema = z.strictObject({
 describe('RuntimeBindingsService', () => {
   let moduleRef: TestingModule | undefined;
   const runtimeBindingsService = new RuntimeBindingsService();
-
-  beforeAll(async () => {
-    await resolveDynamicProviders();
-  });
 
   beforeEach(() => {
     runtimeBindingsService.reset();

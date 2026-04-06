@@ -5,7 +5,6 @@
  */
 
 import { HelperSetting } from '@/helper/types';
-import { SettingType } from '@/setting/types';
 
 export const TEST_HELPER_NAME = 'test-helper';
 
@@ -16,6 +15,5 @@ export default [
     group: TEST_HELPER_NAMESPACE,
     label: 'test',
     value: 'test',
-    type: SettingType.text,
   },
 ] as const satisfies HelperSetting<typeof TEST_HELPER_NAME>[];

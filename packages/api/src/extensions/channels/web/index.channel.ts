@@ -7,7 +7,7 @@
 import { Injectable } from '@nestjs/common';
 
 import BaseWebChannelHandler from './base-web-channel';
-import { WEB_CHANNEL_NAME } from './settings';
+import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
 @Injectable()
 export default class WebChannelHandler extends BaseWebChannelHandler<

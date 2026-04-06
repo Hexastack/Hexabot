@@ -58,8 +58,11 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
+import {
+  WEB_CHANNEL_NAME,
+  WEB_CHANNEL_NAMESPACE,
+} from './web-channel.settings';
 import WebEventWrapper from './wrapper';
 
 // Handle multipart uploads (Long Pooling only)
