@@ -1,0 +1,16 @@
+{
+  "subscriber_handover": {
+    "Handover mode: assign to a specific user or auto-pick the least-loaded online active user.": "Handover mode: assign to a specific user or auto-pick the least-loaded online active user.",
+    "Hands over a subscriber conversation to a human user (specific or auto least-loaded online active assignee).": "Hands over a subscriber conversation to a human user (specific or auto least-loaded online active assignee).",
+    "Mode": "Mode",
+    "Required when mode is set to \"specific\".": "Required when mode is set to \"specific\".",
+    "User ID": "User ID"
+  },
+  "subscriber_update_labels": {
+    "Assigns and/or removes labels from the current subscriber in a single operation.": "Assigns and/or removes labels from the current subscriber in a single operation.",
+    "Label IDs to assign to the current subscriber.": "Label IDs to assign to the current subscriber.",
+    "Label IDs to remove from the current subscriber.": "Label IDs to remove from the current subscriber.",
+    "Labels to assign": "Labels to assign",
+    "Labels to remove": "Labels to remove"
+  }
+}

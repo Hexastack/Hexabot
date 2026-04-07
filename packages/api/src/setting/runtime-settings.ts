@@ -12,7 +12,6 @@ export type SettingExtensionType =
   | 'action'
   | 'channel'
   | 'helper'
-  | 'plugin'
   | (string & {});
 
 export type RuntimeSettingGroupSchema = z.ZodObject<z.ZodRawShape>;

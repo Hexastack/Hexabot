@@ -1,0 +1,29 @@
+{
+  "http_request": {
+    "Body": "Body",
+    "Content Type": "Content Type",
+    "Destination URL for the HTTP request.": "Destination URL for the HTTP request.",
+    "Error": "Error",
+    "Error message when the request fails.": "Error message when the request fails.",
+    "Final URL": "Final URL",
+    "Final URL after redirects, when available.": "Final URL after redirects, when available.",
+    "Headers": "Headers",
+    "HTTP method used for the request.": "HTTP method used for the request.",
+    "HTTP response status code.": "HTTP response status code.",
+    "HTTP response status text.": "HTTP response status text.",
+    "Method": "Method",
+    "OK": "OK",
+    "Optional request body string sent for POST requests, defaults to an empty JSON object.": "Optional request body string sent for POST requests, defaults to an empty JSON object.",
+    "Optional request headers as key/value pairs that override defaults.": "Optional request headers as key/value pairs that override defaults.",
+    "Original request URL.": "Original request URL.",
+    "Parsed or raw response body.": "Parsed or raw response body.",
+    "Performs an HTTP request (GET/POST) and returns status, headers, and body with a safe User-Agent.": "Performs an HTTP request (GET/POST) and returns status, headers, and body with a safe User-Agent.",
+    "Response Content-Type header value, when present.": "Response Content-Type header value, when present.",
+    "Status": "Status",
+    "Status Text": "Status Text",
+    "Truncated": "Truncated",
+    "URL": "URL",
+    "Whether the HTTP response status indicates success.": "Whether the HTTP response status indicates success.",
+    "Whether the response body was truncated.": "Whether the response body was truncated."
+  }
+}

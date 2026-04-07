@@ -15,6 +15,11 @@ import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
 import { config } from '@/config';
 import { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
+import type { JsonSchemaLocalizationOptions } from '@/utils/helpers/zod';
+
+type NamespacedTranslateOptions = TranslateOptions & {
+  ns?: string;
+};
 
 @Injectable()
 export class I18nService<
@@ -22,10 +27,24 @@ export class I18nService<
 > extends NativeI18nService<K> {
   private dynamicTranslations: Record<string, Record<string, string>> = {};
 
+  getJsonSchemaLocalizationOptions(
+    ns: string,
+    lang?: string,
+  ): { localize: JsonSchemaLocalizationOptions } {
+    return {
+      localize: {
+        i18n: this as unknown as Pick<I18nService, 't'>,
+        ns,
+        ...(lang ? { lang } : {}),
+      },
+    };
+  }
+
   t<P extends Path<K> = any, R = PathValue<K, P>>(
     key: P,
-    options?: TranslateOptions,
+    options?: NamespacedTranslateOptions,
   ): IfAnyOrNever<R, string, R> {
+    const namespace = options?.ns?.trim();
     options = {
       ...options,
       lang: options?.lang || this.i18nOptions.fallbackLanguage,
@@ -51,7 +70,9 @@ export class I18nService<
     }
 
     // Otherwise, call the original `t` method from I18nService
-    key = `${config.i18n.translationFilename}.${key}` as P;
+    key = namespace
+      ? (`${namespace}.${key}` as P)
+      : (`${config.i18n.translationFilename}.${key}` as P);
 
     return super.t<P, R>(key, options);
   }

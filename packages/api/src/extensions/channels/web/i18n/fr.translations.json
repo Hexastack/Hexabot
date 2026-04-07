@@ -1,0 +1,28 @@
+{
+  "web_channel": {
+    "Web Channel": "Canal Web",
+    "Allowed domains": "Domaines autorisés",
+    "Comma-separated list of allowed CORS origins.": "Liste séparée par des virgules des origines CORS autorisées.",
+    "Show start button": "Afficher le bouton de démarrage",
+    "Display the start button before chat begins.": "Afficher le bouton de démarrage avant le début de la discussion.",
+    "Disable input": "Désactiver la saisie",
+    "Disable the user input field in the chat widget.": "Désactiver le champ de saisie utilisateur dans le widget de chat.",
+    "Persistent menu": "Menu persistant",
+    "Keep the menu visible in the chat interface.": "Garder le menu visible dans l'interface de chat.",
+    "Greeting message": "Message de bienvenue",
+    "Greeting shown to users when the conversation starts.": "Message affiché aux utilisateurs au début de la conversation.",
+    "Window title": "Titre de la fenêtre",
+    "Title displayed in the web widget header.": "Titre affiché dans l'en-tête du widget web.",
+    "Avatar URL": "URL de l'avatar",
+    "URL of the chatbot avatar image.": "URL de l'image d'avatar du chatbot.",
+    "Show emoji": "Afficher les emojis",
+    "Enable emoji picker in the chat interface.": "Activer le sélecteur d'emojis dans l'interface de chat.",
+    "Show file upload": "Afficher l'envoi de fichier",
+    "Enable file upload action in the chat interface.": "Activer l'envoi de fichiers dans l'interface de chat.",
+    "Show location": "Afficher la localisation",
+    "Enable location sharing action in the chat interface.": "Activer le partage de localisation dans l'interface de chat.",
+    "Allowed upload types": "Types de téléversement autorisés",
+    "Comma-separated MIME types accepted by the upload input.": "Types MIME acceptés par le champ d'envoi, séparés par des virgules.",
+    "Welcome! Ready to start chatting with our chatbot?": "Bienvenue ! Prêt à commencer à discuter avec notre chatbot ?"
+  }
+}
