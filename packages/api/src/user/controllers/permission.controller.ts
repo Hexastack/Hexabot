@@ -94,13 +94,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const result = await this.permissionService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Permission by id ${id}`);
-      throw new NotFoundException(`Permission with ID ${id} not found`);
-    }
-
-    return result;
+  async deletePermission(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 }

@@ -5,18 +5,16 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { FindManyOptions, In } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 
 import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -94,14 +92,8 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.labelService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Label by id ${id}`);
-      throw new NotFoundException(`Label with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteLabel(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**
@@ -111,21 +103,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
    */
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
-    if (!ids?.length) {
-      throw new BadRequestException('No IDs provided for deletion.');
-    }
-    const deleteResult = await this.labelService.deleteMany({
-      where: { id: In(ids) },
-    });
-
-    if (deleteResult.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Labels with provided IDs: ${ids}`);
-      throw new NotFoundException('Labels with provided IDs not found');
-    }
-
-    this.logger.log(`Successfully deleted Labels with IDs: ${ids}`);
-
-    return deleteResult;
+  async deleteLabels(@Body('ids') ids?: string[]): Promise<DeleteResult> {
+    return this.deleteMany(ids);
   }
 }

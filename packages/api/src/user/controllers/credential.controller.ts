@@ -109,13 +109,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.credentialService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Credential by id ${id}`);
-      throw new NotFoundException(`Credential with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteCredential(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 }

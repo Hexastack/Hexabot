@@ -398,14 +398,8 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const result = await this.userService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete User by id ${id}`);
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteUser(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 
   /**

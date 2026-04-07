@@ -117,17 +117,8 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const removedType = await this.contentTypeService.deleteOne(id);
-
-    if (removedType.deletedCount === 0) {
-      this.logger.warn(
-        `Failed to delete content type with id ${id}. Content type not found.`,
-      );
-      throw new NotFoundException(`Content type with id ${id} not found`);
-    }
-
-    return removedType;
+  async deleteContentType(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 
   /**

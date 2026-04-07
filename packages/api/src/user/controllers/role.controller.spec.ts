@@ -181,7 +181,7 @@ describe('RoleController (TypeORM)', () => {
 
       userService.findOneAndPopulate = jest.fn().mockResolvedValue(null);
 
-      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
+      await expect(roleController.deleteRole(roleId, req)).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -194,7 +194,7 @@ describe('RoleController (TypeORM)', () => {
         .fn()
         .mockResolvedValue({ id: 'user2' } as any);
 
-      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
+      await expect(roleController.deleteRole(roleId, req)).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -206,7 +206,7 @@ describe('RoleController (TypeORM)', () => {
       userService.findOneAndPopulate = jest.fn().mockResolvedValue(null);
       roleService.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
 
-      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
+      await expect(roleController.deleteRole(roleId, req)).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -219,7 +219,7 @@ describe('RoleController (TypeORM)', () => {
       const deleteResult = { deletedCount: 1 };
       roleService.deleteOne = jest.fn().mockResolvedValue(deleteResult);
 
-      const result = await roleController.deleteOne(roleId, req);
+      const result = await roleController.deleteRole(roleId, req);
       expect(result).toEqual(deleteResult);
     });
   });

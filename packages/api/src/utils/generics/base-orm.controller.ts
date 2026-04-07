@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Inject, NotFoundException } from '@nestjs/common';
-import { FindManyOptions } from 'typeorm';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { FindManyOptions, In } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
@@ -18,13 +18,13 @@ import { BaseOrmService } from './base-orm.service';
 export abstract class BaseOrmController<
   Entity extends BaseOrmEntity<EntityDto<Entity>>,
 > {
-  eventEmitter: typeof this.service.eventEmitter;
-
   @Inject(LoggerService)
   readonly logger: LoggerService;
 
-  protected constructor(protected readonly service: BaseOrmService<Entity>) {
-    this.eventEmitter = service.eventEmitter;
+  protected constructor(protected readonly service: BaseOrmService<Entity>) {}
+
+  get eventEmitter(): typeof this.service.eventEmitter {
+    return this.service.eventEmitter;
   }
 
   protected getEntityName(repository: BaseOrmRepository<Entity>) {
@@ -55,5 +55,39 @@ export abstract class BaseOrmController<
     }
 
     return record;
+  }
+
+  async deleteOne(id: string) {
+    const result = await this.service.deleteOne(id);
+    if (result.deletedCount === 0) {
+      const repository = this.service.getRepository();
+      const entityName = this.getEntityName(repository);
+      this.logger.warn(`Unable to delete ${entityName} by id ${id}`);
+      throw new NotFoundException(`${entityName} with ID ${id} not found`);
+    }
+
+    return result;
+  }
+
+  async deleteMany(ids?: string[]) {
+    if (!ids?.length) {
+      throw new BadRequestException('No IDs provided for deletion.');
+    }
+
+    const deleteResult = await this.service.deleteMany({
+      where: { id: In(ids) },
+    } as FindManyOptions<Entity>);
+    const repository = this.service.getRepository();
+    const entityName = this.getEntityName(repository);
+    if (deleteResult.deletedCount === 0) {
+      this.logger.warn(
+        `Unable to delete ${entityName} with provided IDs: ${ids}`,
+      );
+      throw new NotFoundException(`${entityName}s with provided IDs not found`);
+    }
+
+    this.logger.log(`Successfully deleted ${entityName}s with IDs: ${ids}`);
+
+    return deleteResult;
   }
 }

@@ -241,7 +241,7 @@ describe('AttachmentController', () => {
   describe('deleteOne', () => {
     it('should throw a MethodNotAllowedException when attempting to delete an attachment by id', async () => {
       await expect(
-        attachmentController.deleteOne(attachmentToDelete.id),
+        attachmentController.deleteAttachment(attachmentToDelete.id),
       ).rejects.toThrow(MethodNotAllowedException);
     });
   });

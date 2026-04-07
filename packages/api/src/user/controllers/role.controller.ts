@@ -129,7 +129,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string, @Req() req: Request) {
+  async deleteRole(@UuidParam('id') id: string, @Req() req: Request) {
     const requester = req.user as User | undefined;
     const requesterRoleIds = Array.isArray(requester?.roles)
       ? requester.roles

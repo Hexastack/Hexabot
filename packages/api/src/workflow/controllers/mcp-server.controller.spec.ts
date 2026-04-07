@@ -294,10 +294,10 @@ describe('McpServerController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(controller.deleteOne(id)).rejects.toThrow(
-        new NotFoundException(`MCP server with ID ${id} not found`),
+        new NotFoundException(`McpServer with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
-        `Unable to delete MCP server by id ${id}`,
+        `Unable to delete McpServer by id ${id}`,
       );
     });
 

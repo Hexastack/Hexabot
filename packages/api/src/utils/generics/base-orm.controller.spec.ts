@@ -23,7 +23,7 @@ describe('BaseOrmController', () => {
   let dummyService: DummyService;
 
   class TestableBaseOrmController extends BaseOrmController<DummyOrmEntity> {
-    constructor(public testService: DummyService) {
+    constructor(readonly testService: DummyService) {
       super(testService);
     }
   }
@@ -39,7 +39,6 @@ describe('BaseOrmController', () => {
 
     module = testing.module;
     [dummyService] = await testing.getMocks([DummyService]);
-
     controller = new TestableBaseOrmController(dummyService);
   });
 

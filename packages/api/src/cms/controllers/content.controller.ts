@@ -216,16 +216,8 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const removedContent = await this.contentService.deleteOne(id);
-    if (removedContent.deletedCount === 0) {
-      this.logger.warn(
-        `Failed to delete content with id ${id}. Content not found.`,
-      );
-      throw new NotFoundException(`Content of id ${id} not found`);
-    }
-
-    return removedContent;
+  async deleteContent(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 
   /**

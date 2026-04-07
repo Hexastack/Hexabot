@@ -186,14 +186,8 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.workflowService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Workflow by id ${id}`);
-      throw new NotFoundException(`Workflow with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteWorkflow(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**

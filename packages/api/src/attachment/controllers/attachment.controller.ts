@@ -191,7 +191,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
    */
   @Delete(':id')
   @HttpCode(405)
-  async deleteOne(@UuidParam('id') id: string): Promise<void> {
+  async deleteAttachment(@UuidParam('id') id: string): Promise<void> {
     // Deletion is explicitly disallowed due to potential reference issues.
     this.logger.warn(`Attempted deletion of attachment ${id} is not allowed.`);
     throw new MethodNotAllowedException(

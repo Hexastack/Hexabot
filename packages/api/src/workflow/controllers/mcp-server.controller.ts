@@ -146,14 +146,8 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.mcpServerService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete MCP server by id ${id}`);
-      throw new NotFoundException(`MCP server with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteMcp(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**

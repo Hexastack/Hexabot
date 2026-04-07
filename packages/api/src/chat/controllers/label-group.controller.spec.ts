@@ -183,7 +183,7 @@ describe('LabelGroupController', () => {
           { name: 'Group 2' },
         ])
       ).map(({ id }) => id);
-      const result = await labelGroupController.deleteMany(labelGroups);
+      const result = await labelGroupController.deleteLabelGroups(labelGroups);
 
       expect(result.deletedCount).toEqual(labelGroups.length);
       const remainingValues = await labelGroupService.find({
