@@ -72,7 +72,7 @@ describe('RoleController (TypeORM)', () => {
   describe('findPage', () => {
     it('should find roles', async () => {
       jest.spyOn(roleService, 'find');
-      const result = await roleController.findPage([], {
+      const result = await roleController.findRoles([], {
         order: { createdAt: 'ASC' },
       });
       expect(roleService.find).toHaveBeenCalledWith({
@@ -86,7 +86,7 @@ describe('RoleController (TypeORM)', () => {
       jest.spyOn(roleService, 'findAndPopulate');
       const allPermissions = await permissionService.findAll();
       const allUsers = await userService.findAll();
-      const result = (await roleController.findPage(['users', 'permissions'], {
+      const result = (await roleController.findRoles(['users', 'permissions'], {
         order: { createdAt: 'ASC' },
       })) as RoleFull[];
 
@@ -117,7 +117,7 @@ describe('RoleController (TypeORM)', () => {
   describe('findOne', () => {
     it('should find one role', async () => {
       jest.spyOn(roleService, 'findOne');
-      const result = await roleController.findOne(roleAdmin.id, []);
+      const result = await roleController.findRole(roleAdmin.id, []);
       expect(roleService.findOne).toHaveBeenCalledWith(roleAdmin.id);
       expect(result).toEqualPayload(
         {
@@ -139,7 +139,7 @@ describe('RoleController (TypeORM)', () => {
       const permissions = await permissionService.find({
         where: { role: { id: roleAdmin.id } },
       });
-      const result = (await roleController.findOne(roleAdmin.id, [
+      const result = (await roleController.findRole(roleAdmin.id, [
         'users',
         'permissions',
       ])) as RoleFull;

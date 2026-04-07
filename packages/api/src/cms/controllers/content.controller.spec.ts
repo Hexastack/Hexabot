@@ -110,14 +110,14 @@ describe('ContentController (TypeORM)', () => {
 
   describe('find', () => {
     it('retrieves content without populate', async () => {
-      const result = await controller.findPage([], { take: 5, skip: 0 });
+      const result = await controller.findContents([], { take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
 
     it('retrieves populated content when requested', async () => {
       const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
-      const result = await controller.findPage(['contentType'], {
+      const result = await controller.findContents(['contentType'], {
         take: 5,
         skip: 0,
       });
@@ -148,7 +148,7 @@ describe('ContentController (TypeORM)', () => {
       const [existing] = await contentService.find({ take: 1 });
       expect(existing).toBeDefined();
 
-      const found = await controller.findOne(existing.id, []);
+      const found = await controller.findContent(existing.id, []);
 
       expect(found).toMatchObject({ id: existing.id });
     });
@@ -161,7 +161,7 @@ describe('ContentController (TypeORM)', () => {
         contentService,
         'findOneAndPopulate',
       );
-      const found = await controller.findOne(existing.id, ['contentType']);
+      const found = await controller.findContent(existing.id, ['contentType']);
 
       expect(found).toMatchObject({ id: existing.id });
       expect(findOneAndPopulateSpy).toHaveBeenCalledWith(existing.id);
@@ -171,7 +171,7 @@ describe('ContentController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
-        controller.findOne('00000000-0000-4000-8000-000000000000', []),
+        controller.findContent('00000000-0000-4000-8000-000000000000', []),
       ).rejects.toThrow(NotFoundException);
 
       expect(warnSpy).toHaveBeenCalled();

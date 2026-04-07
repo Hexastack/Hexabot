@@ -60,7 +60,7 @@ describe('LabelGroupController', () => {
       const expected = await labelGroupService.find({});
       jest.spyOn(labelGroupService, 'find').mockResolvedValue(expected);
 
-      const result = await labelGroupController.findPage([], {});
+      const result = await labelGroupController.findLabelGroups([], {});
 
       expect(labelGroupService.find).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -72,7 +72,7 @@ describe('LabelGroupController', () => {
         .spyOn(labelGroupService, 'findAndPopulate')
         .mockResolvedValue(expected);
 
-      const result = await labelGroupController.findPage(['labels'], {});
+      const result = await labelGroupController.findLabelGroups(['labels'], {});
 
       expect(labelGroupService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -87,7 +87,7 @@ describe('LabelGroupController', () => {
       expect(target).toBeDefined();
 
       jest.spyOn(labelGroupService, 'findOne');
-      const result = await labelGroupController.findOne(target!.id, []);
+      const result = await labelGroupController.findLabelGroup(target!.id, []);
 
       expect(labelGroupService.findOne).toHaveBeenCalledWith(target!.id);
       expect(result).toEqualPayload(labelGroupFixtures[0]);
@@ -100,7 +100,9 @@ describe('LabelGroupController', () => {
       expect(target).toBeDefined();
 
       jest.spyOn(labelGroupService, 'findOneAndPopulate');
-      const result = await labelGroupController.findOne(target!.id, ['labels']);
+      const result = await labelGroupController.findLabelGroup(target!.id, [
+        'labels',
+      ]);
 
       expect(labelGroupService.findOneAndPopulate).toHaveBeenCalledWith(
         target!.id,

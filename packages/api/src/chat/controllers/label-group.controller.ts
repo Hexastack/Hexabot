@@ -44,7 +44,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    * @returns A promise that resolves to an array of label groups.
    */
   @Get()
-  async findPage(
+  async findLabelGroups(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -55,7 +55,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
     )
     options: FindManyOptions<LabelGroupOrmEntity>,
   ): Promise<LabelGroup[] | LabelGroupFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -79,12 +79,12 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    * @returns A promise that resolves to a label group.
    */
   @Get(':id')
-  async findOne(
+  async findLabelGroup(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<LabelGroup | LabelGroupFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**

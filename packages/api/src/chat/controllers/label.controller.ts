@@ -40,7 +40,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
   }
 
   @Get()
-  async findPage(
+  async findLabels(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -51,7 +51,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
     )
     options: FindManyOptions<LabelOrmEntity>,
   ): Promise<Label[] | LabelFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -71,12 +71,12 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
   }
 
   @Get(':id')
-  async findOne(
+  async findLabel(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Label | LabelFull> {
-    return this.findOneRecord(id, populate);
+    return this.findOne(id, populate);
   }
 
   @Post()

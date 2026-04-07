@@ -150,7 +150,7 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    * @returns Content list.
    */
   @Get()
-  async findPage(
+  async findContents(
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
@@ -160,7 +160,7 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
     )
     options: FindManyOptions<ContentOrmEntity>,
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -191,11 +191,11 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    * @returns The requested content record.
    */
   @Get(':id')
-  async findOne(
+  async findContent(
     @UuidParam('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const content = await this.findOneRecord(id, populate);
+    const content = await this.findOne(id, populate);
 
     if (!content) {
       this.logger.warn(

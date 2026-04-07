@@ -92,7 +92,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    * @returns Workflows that satisfy the provided options.
    */
   @Get()
-  async findMany(
+  async findWorkflows(
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
         allowedFields: [
@@ -109,7 +109,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     @Query(PopulatePipe)
     populate: string[] = [],
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -147,12 +147,12 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    * @returns The workflow matching the provided ID.
    */
   @Get(':id')
-  async findOne(
+  async findWorkflow(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<Workflow | WorkflowFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**

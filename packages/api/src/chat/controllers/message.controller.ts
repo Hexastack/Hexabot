@@ -49,7 +49,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
 
   /** Retrieves messages using TypeORM filters and optional relation population. */
   @Get()
-  async findPage(
+  async findMessages(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -68,7 +68,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     )
     options: FindManyOptions<MessageOrmEntity>,
   ): Promise<Message[] | MessageFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -96,12 +96,12 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
   }
 
   @Get(':id')
-  async findOne(
+  async findMessage(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Message | MessageFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   @Post()

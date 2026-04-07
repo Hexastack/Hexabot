@@ -46,7 +46,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    * @returns A promise that resolves to the paginated result of roles.
    */
   @Get()
-  async findPage(
+  async findRoles(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -56,7 +56,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
     )
     options: FindManyOptions<RoleOrmEntity> = {},
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -84,12 +84,12 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    * @returns A promise that resolves to the role object.
    */
   @Get(':id')
-  async findOne(
+  async findRole(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**

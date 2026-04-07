@@ -66,7 +66,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    * @returns Matching MCP servers.
    */
   @Get()
-  async findPage(
+  async findMcps(
     @Query(PopulatePipe)
     populate: string[] = [],
     @Query(
@@ -77,7 +77,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
     )
     options: FindManyOptions<McpServerOrmEntity> = {},
   ): Promise<McpServer[] | McpServerFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -113,12 +113,12 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    * @returns The matching MCP server.
    */
   @Get(':id')
-  async findOne(
+  async findMcp(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<McpServer | McpServerFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**

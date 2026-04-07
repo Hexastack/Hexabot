@@ -57,7 +57,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
    * @returns Content types matching the provided query options.
    */
   @Get()
-  async findPage(
+  async findContentTypes(
     @Query(
       new TypeOrmSearchFilterPipe<ContentTypeOrmEntity>({
         allowedFields: ['name'],
@@ -66,7 +66,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
     )
     options: FindManyOptions<ContentTypeOrmEntity>,
   ) {
-    return await this.findRecords(options);
+    return await this.find(options);
   }
 
   /**
@@ -96,7 +96,7 @@ export class ContentTypeController extends BaseOrmController<ContentTypeOrmEntit
    * @returns The content type matching the provided ID.
    */
   @Get(':id')
-  async findOne(@UuidParam('id') id: string): Promise<ContentType> {
+  async findContentType(@UuidParam('id') id: string): Promise<ContentType> {
     const foundContentType = await this.contentTypeService.findOne(id);
     if (!foundContentType) {
       this.logger.warn(

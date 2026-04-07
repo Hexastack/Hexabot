@@ -67,7 +67,7 @@ describe('LabelController (TypeORM)', () => {
       const findSpy = jest
         .spyOn(labelService, 'find')
         .mockResolvedValue(expected);
-      const result = await labelController.findPage([], {});
+      const result = await labelController.findLabels([], {});
 
       expect(findSpy).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -78,7 +78,7 @@ describe('LabelController (TypeORM)', () => {
       const findAndPopulateSpy = jest
         .spyOn(labelService, 'findAndPopulate')
         .mockResolvedValue(expected);
-      const result = await labelController.findPage(['users'], {});
+      const result = await labelController.findLabels(['users'], {});
 
       expect(findAndPopulateSpy).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -102,7 +102,7 @@ describe('LabelController (TypeORM)', () => {
 
     it('should find one label by id', async () => {
       const findSpy = jest.spyOn(labelService, 'findOne');
-      const result = await labelController.findOne(existingLabel.id, []);
+      const result = await labelController.findLabel(existingLabel.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(existingLabel.id);
       expect(result).toEqualPayload(existingLabel);
@@ -110,7 +110,9 @@ describe('LabelController (TypeORM)', () => {
 
     it('should find one label and populate users', async () => {
       const findSpy = jest.spyOn(labelService, 'findOneAndPopulate');
-      const result = await labelController.findOne(existingLabel.id, ['users']);
+      const result = await labelController.findLabel(existingLabel.id, [
+        'users',
+      ]);
 
       expect(findSpy).toHaveBeenCalledWith(existingLabel.id);
       expect(result.users).toBeDefined();
@@ -123,7 +125,7 @@ describe('LabelController (TypeORM)', () => {
         .spyOn(labelService, 'findOne')
         .mockResolvedValueOnce(null);
 
-      await expect(labelController.findOne(id, [])).rejects.toThrow(
+      await expect(labelController.findLabel(id, [])).rejects.toThrow(
         new NotFoundException(`Label with ID ${id} not found`),
       );
       expect(findSpy).toHaveBeenCalledWith(id);

@@ -118,7 +118,7 @@ describe('UserController (TypeORM)', () => {
   describe('findOne', () => {
     it('should find one user and populate its roles', async () => {
       jest.spyOn(userService, 'findOneAndPopulate');
-      const result = await userController.findOne(user!.id, ['roles']);
+      const result = await userController.findUser(user!.id, ['roles']);
       expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user!.id);
       expect(result).toMatchObject({
         id: user!.id,
@@ -135,7 +135,7 @@ describe('UserController (TypeORM)', () => {
       const options = { order: { createdAt: 'ASC' as const } };
       const findSpy = jest.spyOn(userService, 'find');
       const findAndPopulateSpy = jest.spyOn(userService, 'findAndPopulate');
-      const result = await userController.findPage([], options);
+      const result = await userController.findUsers([], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(findAndPopulateSpy).not.toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe('UserController (TypeORM)', () => {
       const options = { order: { createdAt: 'ASC' as const } };
       jest.spyOn(userService, 'findAndPopulate');
       const findSpy = jest.spyOn(userService, 'find');
-      const result = await userController.findPage(['roles'], options);
+      const result = await userController.findUsers(['roles'], options);
 
       expect(userService.findAndPopulate).toHaveBeenCalledWith(options);
       expect(findSpy).not.toHaveBeenCalled();

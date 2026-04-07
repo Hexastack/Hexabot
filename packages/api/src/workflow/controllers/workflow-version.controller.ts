@@ -112,7 +112,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
    * @param id - The workflow ID.
    */
   @Get(':id/versions')
-  async findMany(
+  async findWorkflowVersions(
     @UuidParam('id') id: string,
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowVersionOrmEntity>({
@@ -130,7 +130,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await this.findRecords(
+    return await this.find(
       {
         ...(options ?? {}),
         where: {
@@ -149,7 +149,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
    * @param versionId - The version identifier.
    */
   @Get(':id/versions/:versionId')
-  async findOne(
+  async findWorkflowVersion(
     @UuidParam('id') id: string,
     @UuidParam('versionId') versionId: string,
     @Query(PopulatePipe)
@@ -161,7 +161,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await this.findOneRecord(versionId, populate);
+    return await this.findOne(versionId, populate);
   }
 
   /**

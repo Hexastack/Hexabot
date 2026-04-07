@@ -78,14 +78,14 @@ describe('PermissionController (TypeORM)', () => {
   describe('find', () => {
     it('should find permissions', async () => {
       jest.spyOn(permissionService, 'find');
-      const result = await permissionController.findPage([], {});
+      const result = await permissionController.findPermissions([], {});
       expect(permissionService.find).toHaveBeenCalled();
       expect(result.length).toBe(allPermissions.length);
     });
 
     it('should populate model and role when requested', async () => {
       jest.spyOn(permissionService, 'findAndPopulate');
-      const result = (await permissionController.findPage(
+      const result = (await permissionController.findPermissions(
         ['model', 'role'],
         {},
       )) as PermissionFull[];

@@ -102,7 +102,7 @@ describe('AttachmentController', () => {
         take: 5,
         skip: 0,
       };
-      const result = await attachmentController.findPage([], options);
+      const result = await attachmentController.findAttachments([], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toHaveLength(1);

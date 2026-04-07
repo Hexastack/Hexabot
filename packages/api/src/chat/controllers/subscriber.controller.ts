@@ -48,7 +48,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
    * @returns A promise containing the paginated and optionally populated list of subscribers.
    */
   @Get()
-  async findPage(
+  async findSubscribers(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -67,7 +67,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
     )
     options: FindManyOptions<SubscriberOrmEntity>,
   ): Promise<Subscriber[] | SubscriberFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -102,12 +102,12 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
    * @returns The subscriber object, populated if requested.
    */
   @Get(':id')
-  async findOne(
+  async findSubscriber(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Subscriber | SubscriberFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**

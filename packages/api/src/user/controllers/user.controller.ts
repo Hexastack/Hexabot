@@ -193,7 +193,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    * @returns A promise that resolves to a paginated list of users.
    */
   @Get()
-  async findPage(
+  async findUsers(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -203,7 +203,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
     )
     options: FindManyOptions<UserOrmEntity> = {},
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
@@ -232,12 +232,12 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    * @returns A promise that resolves to the user document.
    */
   @Get(':id')
-  async findOne(
+  async findUser(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 }
 

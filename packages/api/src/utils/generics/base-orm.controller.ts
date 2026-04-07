@@ -37,21 +37,19 @@ export abstract class BaseOrmController<
     return { count: await this.service.count(options) };
   }
 
-  async findRecords(
-    options: FindManyOptions<Entity> = {},
-    populate: string[] = [],
-  ) {
+  async find(options: FindManyOptions<Entity> = {}, populate: string[] = []) {
     return this.service.canPopulate(populate)
       ? await this.service.findAndPopulate(options)
       : await this.service.find(options);
   }
 
-  async findOneRecord(id: string, populate: string[] = []) {
+  async findOne(id: string, populate: string[] = []) {
     const record = this.service.canPopulate(populate)
       ? await this.service.findOneAndPopulate(id)
       : await this.service.findOne(id);
-    const entityName = this.getEntityName(this.service.getRepository());
     if (!record) {
+      const repository = this.service.getRepository();
+      const entityName = this.getEntityName(repository);
       this.logger.warn(`Unable to find ${entityName} by id ${id}`);
       throw new NotFoundException(`${entityName} with ID ${id} not found`);
     }

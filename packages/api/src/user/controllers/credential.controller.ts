@@ -58,7 +58,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
   }
 
   @Get()
-  async findPage(
+  async findCredentials(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -69,7 +69,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
     )
     options: FindManyOptions<CredentialOrmEntity> = {},
   ): Promise<Credential[] | CredentialFull[]> {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   @Get('count')
@@ -85,12 +85,12 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
   }
 
   @Get(':id')
-  async findOnePage(
+  async findCredential(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Credential | CredentialFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   @Patch(':id')

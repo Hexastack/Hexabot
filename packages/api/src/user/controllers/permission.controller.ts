@@ -46,7 +46,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
    * @returns A list of permissions, potentially populated with related entities.
    */
   @Get()
-  async findPage(
+  async findPermissions(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -56,7 +56,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
     )
     options: FindManyOptions<PermissionOrmEntity> = {},
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**

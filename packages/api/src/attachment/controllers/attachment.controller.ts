@@ -69,12 +69,12 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
   }
 
   @Get(':id')
-  async findOne(
+  async findAttachment(
     @Query(PopulatePipe)
     populate: string[],
     @UuidParam('id') id: string,
   ): Promise<Attachment | AttachmentFull> {
-    return await this.findOneRecord(id, populate);
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -84,7 +84,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
    * @returns A promise that resolves to an array of attachments matching the filters.
    */
   @Get()
-  async findPage(
+  async findAttachments(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -95,7 +95,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
     )
     options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    return await this.findRecords(options, populate);
+    return await this.find(options, populate);
   }
 
   /**
