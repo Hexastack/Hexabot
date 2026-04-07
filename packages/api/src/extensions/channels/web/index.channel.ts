@@ -16,8 +16,4 @@ export default class WebChannelHandler extends BaseWebChannelHandler<
   constructor() {
     super(WEB_CHANNEL_NAME);
   }
-
-  getPath(): string {
-    return __dirname;
-  }
 }

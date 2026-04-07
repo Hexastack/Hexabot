@@ -1,0 +1,23 @@
+{
+  "Contact": "Contact",
+  "Contact recipient email": "E-mail destinataire de contact",
+  "Email address that receives contact form submissions.": "Adresse e-mail qui reçoit les soumissions du formulaire de contact.",
+  "Company name": "Nom de l'entreprise",
+  "Company name displayed to end users.": "Nom de l'entreprise affiché aux utilisateurs finaux.",
+  "Company phone": "Téléphone de l'entreprise",
+  "Primary phone number displayed in contact information.": "Numéro de téléphone principal affiché dans les informations de contact.",
+  "Company email": "E-mail de l'entreprise",
+  "Public contact email address shown to users.": "Adresse e-mail publique de contact affichée aux utilisateurs.",
+  "Address line 1": "Adresse ligne 1",
+  "First line of the company postal address.": "Première ligne de l'adresse postale de l'entreprise.",
+  "Address line 2": "Adresse ligne 2",
+  "Second line of the company postal address.": "Deuxième ligne de l'adresse postale de l'entreprise.",
+  "City": "Ville",
+  "City for the company postal address.": "Ville de l'adresse postale de l'entreprise.",
+  "Postal code": "Code postal",
+  "Postal or ZIP code for the company address.": "Code postal pour l'adresse de l'entreprise.",
+  "State or region": "État ou région",
+  "State, region, or province for the company address.": "État, région ou province pour l'adresse de l'entreprise.",
+  "Country": "Pays",
+  "Country code for the company address.": "Code pays pour l'adresse de l'entreprise."
+}
