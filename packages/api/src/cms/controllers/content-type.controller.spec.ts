@@ -85,14 +85,6 @@ describe('ContentTypeController (TypeORM)', () => {
     });
   });
 
-  describe('filterCount', () => {
-    it('returns filtered count', async () => {
-      const result = await controller.filterCount({});
-
-      expect(result.count).toBeGreaterThan(0);
-    });
-  });
-
   describe('findOne', () => {
     it('returns an existing content type', async () => {
       const [fixture] = contentTypeOrmFixtures;

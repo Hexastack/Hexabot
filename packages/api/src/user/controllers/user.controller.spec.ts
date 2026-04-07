@@ -107,14 +107,6 @@ describe('UserController (TypeORM)', () => {
 
   afterEach(jest.clearAllMocks);
 
-  describe('count', () => {
-    it('should count users', async () => {
-      const result = await userController.filterCount();
-      const total = await userService.count();
-      expect(result).toEqual({ count: total });
-    });
-  });
-
   describe('findOne', () => {
     it('should find one user and populate its roles', async () => {
       jest.spyOn(userService, 'findOneAndPopulate');

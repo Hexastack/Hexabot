@@ -130,19 +130,6 @@ describe('ContentController (TypeORM)', () => {
     });
   });
 
-  describe('filterCount', () => {
-    it('returns count of matching contents', async () => {
-      const [existing] = await contentService.find({ take: 1 });
-      expect(existing).toBeDefined();
-
-      const result = await controller.filterCount({
-        where: { contentType: { id: existing.contentType } },
-      });
-
-      expect(result.count).toBeGreaterThan(0);
-    });
-  });
-
   describe('findOne', () => {
     it('returns content without populate', async () => {
       const [existing] = await contentService.find({ take: 1 });

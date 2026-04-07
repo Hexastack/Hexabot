@@ -9,8 +9,6 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
-  NotFoundException,
   Patch,
   Post,
   Query,
@@ -128,19 +126,8 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
    * @returns A promise that resolves to the menu item if found, or throws a `NotFoundException`.
    */
   @Get(':id')
-  async findOne(@UuidParam('id') id: string): Promise<Menu> {
-    try {
-      const result = await this.menuService.findOne(id);
-      if (!result) {
-        this.logger.warn(`Unable to find menu with id: ${id}`);
-        throw new NotFoundException(`Menu with id: ${id} not found`);
-      }
-
-      return result;
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
+  async findMenuItem(@UuidParam('id') id: string): Promise<Menu> {
+    return this.findOne(id) as Promise<Menu>;
   }
 
   /**
@@ -175,18 +162,7 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
    * @returns A promise that resolves to an empty string upon successful deletion.
    */
   @Delete(':id')
-  async delete(@UuidParam('id') id: string) {
-    try {
-      const result = await this.menuService.deleteOne(id);
-      if (!result.deletedCount) {
-        this.logger.warn(`Unable to delete menu with id: ${id}`);
-        throw new NotFoundException();
-      }
-
-      return '';
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
+  async deleteMenuItem(@UuidParam('id') id: string) {
+    return this.deleteOne(id);
   }
 }
