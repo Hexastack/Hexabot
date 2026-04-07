@@ -9,6 +9,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Patch,
   Post,
   Query,
@@ -162,6 +163,7 @@ export class MenuController extends BaseOrmController<MenuOrmEntity> {
    * @returns A promise that resolves to an empty string upon successful deletion.
    */
   @Delete(':id')
+  @HttpCode(204)
   async deleteMenuItem(@UuidParam('id') id: string) {
     return this.deleteOne(id);
   }
