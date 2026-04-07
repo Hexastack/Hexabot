@@ -59,12 +59,14 @@ export abstract class BaseOrmController<
 
   async deleteOne(id: string) {
     const result = await this.service.deleteOne(id);
+    const repository = this.service.getRepository();
+    const entityName = this.getEntityName(repository);
+
     if (result.deletedCount === 0) {
-      const repository = this.service.getRepository();
-      const entityName = this.getEntityName(repository);
       this.logger.warn(`Unable to delete ${entityName} by id ${id}`);
       throw new NotFoundException(`${entityName} with ID ${id} not found`);
     }
+    this.logger.log(`Successfully deleted ${entityName} with ID ${id}`);
 
     return result;
   }
@@ -79,13 +81,13 @@ export abstract class BaseOrmController<
     } as FindManyOptions<Entity>);
     const repository = this.service.getRepository();
     const entityName = this.getEntityName(repository);
+
     if (deleteResult.deletedCount === 0) {
       this.logger.warn(
         `Unable to delete ${entityName} with provided IDs: ${ids}`,
       );
       throw new NotFoundException(`${entityName}s with provided IDs not found`);
     }
-
     this.logger.log(`Successfully deleted ${entityName}s with IDs: ${ids}`);
 
     return deleteResult;
