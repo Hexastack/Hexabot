@@ -6,8 +6,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
+import { I18nContext } from 'nestjs-i18n';
 import { z } from 'zod';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 import {
@@ -45,6 +47,8 @@ export class RuntimeSettingsService {
     string,
     RuntimeSettingGroupDefinition
   >();
+
+  constructor(private readonly i18nService: I18nService) {}
 
   register({
     group,
@@ -121,12 +125,16 @@ export class RuntimeSettingsService {
     const groups = RuntimeSettingsService.getRegistryOrThrow(
       'setting schema definitions',
     );
+    const lang = I18nContext.current()?.lang;
 
     return Object.fromEntries(
       Object.entries(groups).map(([group, definition]) => [
         group,
         {
-          schema: toDraft07JsonSchema(definition.schema),
+          schema: toDraft07JsonSchema(
+            definition.schema,
+            this.i18nService.getJsonSchemaLocalizationOptions(group, lang),
+          ),
           scope: definition.scope,
           ...(definition.extensionType
             ? { extensionType: definition.extensionType }

@@ -31,6 +31,7 @@ import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModule } from '@/setting/setting.module';
 
+import { I18nTestingModule } from './modules/i18n-testing.module';
 import { I18nServiceProvider } from './providers/i18n-service.provider';
 import { registerTypeOrmDataSource } from './test';
 
@@ -167,6 +168,7 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
   return [...nestedDependencies];
 };
 const defaultProviders: Provider[] = [LoggerService];
+const builtinOverrideProviders: Provider[] = [I18nServiceProvider];
 const TYPEORM_REPOSITORY_SUFFIX = 'Repository';
 
 type ProviderLike = Provider | undefined;
@@ -401,8 +403,9 @@ export const buildTestingMocks = async ({
 
   providers.forEach((provider) => injectedProviders.add(provider));
   const providersList = [...injectedProviders];
+  const overrideProviders = [...builtinOverrideProviders, ...providersList];
   const overrideTokens = new Set<Provider>(
-    providersList
+    overrideProviders
       .filter(
         (provider) =>
           typeof provider === 'object' &&
@@ -491,10 +494,15 @@ export const buildTestingMocks = async ({
       EventEmitterModule.forRoot({ global: true }),
       CacheModule.register({ isGlobal: true }),
       typeOrmRootModule,
+      I18nTestingModule,
       SettingModule,
       ...imports,
     ],
-    providers: [I18nServiceProvider, ...resolvedProviders, ...typeOrmProviders],
+    providers: [
+      ...builtinOverrideProviders,
+      ...resolvedProviders,
+      ...typeOrmProviders,
+    ],
     controllers,
     ...rest,
   });

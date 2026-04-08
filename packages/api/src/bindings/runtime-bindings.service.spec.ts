@@ -13,7 +13,10 @@ import { aiMcpToolBindingSchema } from '@/extensions/actions/ai/mcp.binding';
 import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
 import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerModule } from '@/logger/logger.module';
+import { I18nTestingModule } from '@/utils/test/modules/i18n-testing.module';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 
 import { RuntimeBindingsService } from './runtime-bindings.service';
 
@@ -23,7 +26,9 @@ const weatherBindingSchema = z.strictObject({
 
 describe('RuntimeBindingsService', () => {
   let moduleRef: TestingModule | undefined;
-  const runtimeBindingsService = new RuntimeBindingsService();
+  const runtimeBindingsService = new RuntimeBindingsService(
+    I18nServiceProvider.useValue as unknown as I18nService,
+  );
 
   beforeEach(() => {
     runtimeBindingsService.reset();
@@ -42,8 +47,8 @@ describe('RuntimeBindingsService', () => {
 
   it('should expose JSON schema definitions for runtime bindings', async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [LoggerModule, BindingsModule],
-      providers: [RuntimeBindingsService],
+      imports: [I18nTestingModule, LoggerModule, BindingsModule],
+      providers: [RuntimeBindingsService, I18nServiceProvider],
     }).compile();
     await moduleRef.init();
 
@@ -208,8 +213,12 @@ describe('RuntimeBindingsService', () => {
     });
 
     moduleRef = await Test.createTestingModule({
-      imports: [LoggerModule, BindingsModule],
-      providers: [RuntimeBindingsService, CustomWeatherBindingProvider],
+      imports: [I18nTestingModule, LoggerModule, BindingsModule],
+      providers: [
+        RuntimeBindingsService,
+        CustomWeatherBindingProvider,
+        I18nServiceProvider,
+      ],
     }).compile();
     await moduleRef.init();
 

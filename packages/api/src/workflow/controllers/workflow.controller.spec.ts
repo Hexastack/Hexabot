@@ -15,6 +15,7 @@ import {
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
+import { I18nContext } from 'nestjs-i18n';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -24,6 +25,7 @@ import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { aiModelBindingSchema } from '@/extensions/actions/ai/model.binding';
 import { aiToolBindingSchema } from '@/extensions/actions/ai/tools.binding';
 import { SendTextMessageAction } from '@/extensions/actions/messaging/text-message.action';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { userFixtureIds } from '@/utils/test/fixtures/user';
@@ -92,6 +94,7 @@ describe('WorkflowController (TypeORM)', () => {
   let logger: LoggerService;
   let actionService: ActionService;
   let runtimeBindingsService: RuntimeBindingsService;
+  let i18nService: I18nService<unknown>;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
 
@@ -140,12 +143,14 @@ describe('WorkflowController (TypeORM)', () => {
       workflowService,
       actionService,
       runtimeBindingsService,
+      i18nService,
     ] = await getMocks([
       AgenticService,
       WorkflowController,
       WorkflowService,
       ActionService,
       RuntimeBindingsService,
+      I18nService,
     ]);
     runtimeBindingsService.reset();
     runtimeBindingsService.register({
@@ -238,6 +243,14 @@ describe('WorkflowController (TypeORM)', () => {
   });
 
   describe('findActions', () => {
+    beforeEach(() => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (key: string, options?: { defaultValue?: string }) => {
+          return options?.defaultValue ?? key;
+        },
+      );
+    });
+
     it('returns action schema definitions', () => {
       const actions = workflowController.findActions();
       const action = actions.find(({ name }) => name === 'send_text_message');
@@ -247,6 +260,51 @@ describe('WorkflowController (TypeORM)', () => {
         'http://json-schema.org/draft-07/schema#',
       );
       expect(action?.supportedBindings).toEqual([]);
+    });
+
+    it('localizes action description and schema metadata using request language', () => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (
+          key: string,
+          options?: { ns?: string; lang?: string; defaultValue?: string },
+        ) => {
+          if (options?.lang === 'fr' && options?.ns === 'send_text_message') {
+            if (key === 'Sends a text message to the subscriber.') {
+              return 'FR Sends text';
+            }
+            if (key === 'Text') {
+              return 'FR Text';
+            }
+            if (key === 'The text message to be sent.') {
+              return 'FR Text help';
+            }
+          }
+
+          return options?.defaultValue ?? key;
+        },
+      );
+      const currentSpy = jest
+        .spyOn(I18nContext, 'current')
+        .mockReturnValue({ lang: 'fr' } as unknown as I18nContext<unknown>);
+      const actions = workflowController.findActions();
+      const action = actions.find(({ name }) => name === 'send_text_message');
+      const inputDefinition = action?.inputSchema as
+        | {
+            properties?: Record<
+              string,
+              { title?: string; description?: string; default?: string }
+            >;
+          }
+        | undefined;
+
+      expect(action?.description).toBe('FR Sends text');
+      expect(inputDefinition?.properties?.text?.title).toBe('FR Text');
+      expect(inputDefinition?.properties?.text?.description).toBe(
+        'FR Text help',
+      );
+      expect(inputDefinition?.properties?.text?.default).toBe('Hello World!');
+
+      currentSpy.mockRestore();
     });
 
     it('filters actions by workflow type when provided', () => {
@@ -270,6 +328,14 @@ describe('WorkflowController (TypeORM)', () => {
   });
 
   describe('findBindings', () => {
+    beforeEach(() => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (key: string, options?: { defaultValue?: string }) => {
+          return options?.defaultValue ?? key;
+        },
+      );
+    });
+
     it('returns runtime binding schema definitions', () => {
       const bindings = workflowController.findBindings();
 
@@ -332,6 +398,53 @@ describe('WorkflowController (TypeORM)', () => {
       expect(modelDefinition?.properties?.model_id?.type).toBe('string');
       expect(memoryDefinition?.properties?.definition_id?.type).toBe('string');
       expect(weatherDefinition?.properties?.city?.type).toBe('string');
+    });
+
+    it('localizes binding schema metadata and keeps non-localized fields intact', () => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (
+          key: string,
+          options?: { ns?: string; lang?: string; defaultValue?: string },
+        ) => {
+          if (options?.lang === 'fr' && options?.ns === 'memory') {
+            if (key === 'Memory definition') {
+              return 'FR Memory definition';
+            }
+            if (
+              key ===
+              'Select a memory definition that can be mounted into AI action memory bindings.'
+            ) {
+              return 'FR Memory description';
+            }
+          }
+
+          return options?.defaultValue ?? key;
+        },
+      );
+      const currentSpy = jest
+        .spyOn(I18nContext, 'current')
+        .mockReturnValue({ lang: 'fr' } as unknown as I18nContext<unknown>);
+      const bindings = workflowController.findBindings();
+      const memoryDefinition = bindings.memory.schema as
+        | {
+            properties?: Record<
+              string,
+              { title?: string; description?: string; 'ui:widget'?: string }
+            >;
+          }
+        | undefined;
+
+      expect(memoryDefinition?.properties?.definition_id?.title).toBe(
+        'FR Memory definition',
+      );
+      expect(memoryDefinition?.properties?.definition_id?.description).toBe(
+        'FR Memory description',
+      );
+      expect(memoryDefinition?.properties?.definition_id?.['ui:widget']).toBe(
+        'AutoCompleteWidget',
+      );
+
+      currentSpy.mockRestore();
     });
   });
 

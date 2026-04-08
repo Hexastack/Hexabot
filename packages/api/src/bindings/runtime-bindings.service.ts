@@ -5,12 +5,14 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { I18nContext } from 'nestjs-i18n';
 
 import {
   RegisterRuntimeBindingKindParams,
   RuntimeBindingKindDescriptor,
   RuntimeBindingKindSchemas,
 } from '@/bindings/runtime-bindings';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 @Injectable()
@@ -19,6 +21,8 @@ export class RuntimeBindingsService {
     string,
     RuntimeBindingKindDescriptor
   >();
+
+  constructor(private readonly i18nService: I18nService) {}
 
   register({
     kind,
@@ -87,12 +91,19 @@ export class RuntimeBindingsService {
     const kinds = RuntimeBindingsService.getRegistryOrThrow(
       'workflow runtime binding schema definitions',
     );
+    const lang = I18nContext.current()?.lang;
 
     return Object.fromEntries(
       Object.entries(kinds).map(([bindingKind, bindingDefinition]) => [
         bindingKind,
         {
-          schema: toDraft07JsonSchema(bindingDefinition.schema),
+          schema: toDraft07JsonSchema(
+            bindingDefinition.schema,
+            this.i18nService.getJsonSchemaLocalizationOptions(
+              bindingKind,
+              lang,
+            ),
+          ),
           multiple: bindingDefinition.multiple,
           color: bindingDefinition.color,
           icon: bindingDefinition.icon,

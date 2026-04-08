@@ -17,8 +17,4 @@ export default class ConsoleChannelHandler extends BaseWebChannelHandler<
   constructor() {
     super(CONSOLE_CHANNEL_NAME);
   }
-
-  getPath(): string {
-    return __dirname;
-  }
 }
