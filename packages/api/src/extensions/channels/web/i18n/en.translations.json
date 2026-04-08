@@ -1,0 +1,28 @@
+{
+  "web_channel": {
+    "Web Channel": "Web Channel",
+    "Allowed domains": "Allowed domains",
+    "Comma-separated list of allowed CORS origins.": "Comma-separated list of allowed CORS origins.",
+    "Show start button": "Show start button",
+    "Display the start button before chat begins.": "Display the start button before chat begins.",
+    "Disable input": "Disable input",
+    "Disable the user input field in the chat widget.": "Disable the user input field in the chat widget.",
+    "Persistent menu": "Persistent menu",
+    "Keep the menu visible in the chat interface.": "Keep the menu visible in the chat interface.",
+    "Greeting message": "Greeting message",
+    "Greeting shown to users when the conversation starts.": "Greeting shown to users when the conversation starts.",
+    "Window title": "Window title",
+    "Title displayed in the web widget header.": "Title displayed in the web widget header.",
+    "Avatar URL": "Avatar URL",
+    "URL of the chatbot avatar image.": "URL of the chatbot avatar image.",
+    "Show emoji": "Show emoji",
+    "Enable emoji picker in the chat interface.": "Enable emoji picker in the chat interface.",
+    "Show file upload": "Show file upload",
+    "Enable file upload action in the chat interface.": "Enable file upload action in the chat interface.",
+    "Show location": "Show location",
+    "Enable location sharing action in the chat interface.": "Enable location sharing action in the chat interface.",
+    "Allowed upload types": "Allowed upload types",
+    "Comma-separated MIME types accepted by the upload input.": "Comma-separated MIME types accepted by the upload input.",
+    "Welcome! Ready to start chatting with our chatbot?": "Welcome! Ready to start chatting with our chatbot?"
+  }
+}

@@ -6,7 +6,9 @@
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { I18nContext } from 'nestjs-i18n';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 import { WorkflowType } from '@/workflow/types';
@@ -20,7 +22,10 @@ export class ActionService {
     BaseAction<any, any, BaseWorkflowContext, any>
   > = new Map();
 
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly i18nService: I18nService,
+  ) {}
 
   register<C extends BaseWorkflowContext>(
     action: BaseAction<any, any, C, any>,
@@ -55,9 +60,12 @@ export class ActionService {
           action.workflowTypes.includes(workflowType),
         )
       : this.getAll();
+    const lang = I18nContext.current()?.lang;
 
     return actions.map((action) => {
       const name = action.getName();
+      const localizationOptions =
+        this.i18nService.getJsonSchemaLocalizationOptions(name, lang);
 
       return {
         name,
@@ -67,9 +75,18 @@ export class ActionService {
         group: action.group,
         workflowTypes: action.workflowTypes,
         supportedBindings: action.supportedBindings ?? [],
-        inputSchema: toDraft07JsonSchema(action.inputSchema),
-        outputSchema: toDraft07JsonSchema(action.outputSchema),
-        settingSchema: toDraft07JsonSchema(action.settingSchema),
+        inputSchema: toDraft07JsonSchema(
+          action.inputSchema,
+          localizationOptions,
+        ),
+        outputSchema: toDraft07JsonSchema(
+          action.outputSchema,
+          localizationOptions,
+        ),
+        settingSchema: toDraft07JsonSchema(
+          action.settingSchema,
+          localizationOptions,
+        ),
       };
     });
   }

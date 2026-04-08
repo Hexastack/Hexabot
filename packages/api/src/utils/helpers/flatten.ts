@@ -4,9 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-const isPlainObject = (val: unknown): val is Record<string, unknown> => {
-  return val?.constructor === Object;
-};
+import { isPlainObject } from './object';
 
 /**
  * Flattens a nested object into a single-level object with dot-separated keys.

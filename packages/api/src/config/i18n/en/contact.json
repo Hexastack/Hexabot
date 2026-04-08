@@ -1,0 +1,23 @@
+{
+  "Contact": "Contact",
+  "Contact recipient email": "Contact recipient email",
+  "Email address that receives contact form submissions.": "Email address that receives contact form submissions.",
+  "Company name": "Company name",
+  "Company name displayed to end users.": "Company name displayed to end users.",
+  "Company phone": "Company phone",
+  "Primary phone number displayed in contact information.": "Primary phone number displayed in contact information.",
+  "Company email": "Company email",
+  "Public contact email address shown to users.": "Public contact email address shown to users.",
+  "Address line 1": "Address line 1",
+  "First line of the company postal address.": "First line of the company postal address.",
+  "Address line 2": "Address line 2",
+  "Second line of the company postal address.": "Second line of the company postal address.",
+  "City": "City",
+  "City for the company postal address.": "City for the company postal address.",
+  "Postal code": "Postal code",
+  "Postal or ZIP code for the company address.": "Postal or ZIP code for the company address.",
+  "State or region": "State or region",
+  "State, region, or province for the company address.": "State, region, or province for the company address.",
+  "Country": "Country",
+  "Country code for the company address.": "Country code for the company address."
+}

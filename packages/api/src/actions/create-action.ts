@@ -18,11 +18,6 @@ type CreateActionParams<
   C extends WorkflowRuntimeContext = WorkflowRuntimeContext,
   S = unknown,
 > = ActionMetadata<I, O, S> & {
-  /**
-   * Optional path to the action folder. If omitted, it is resolved automatically
-   * from the caller's file location.
-   */
-  path?: string;
   execute: (args: ExecArgs<I, C, S>) => Promise<O> | O;
 };
 

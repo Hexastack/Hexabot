@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-export * from './controllers/i18n.controller';
-
 export * from './controllers/language.controller';
 
 export * from './controllers/translation.controller';

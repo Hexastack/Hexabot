@@ -20,9 +20,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { I18nContext } from 'nestjs-i18n';
 import { FindManyOptions } from 'typeorm';
 
 import { ActionService } from '@/actions/actions.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { UserService } from '@/user';
 import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -54,6 +56,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     private readonly userService: UserService,
     private readonly actionService: ActionService,
     private readonly runtimeBindingsService: RuntimeBindingsService,
+    private readonly i18nService: I18nService,
   ) {
     super(workflowService);
   }
@@ -128,7 +131,21 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
       throw new BadRequestException(`Invalid workflow type "${type}"`);
     }
 
-    return this.actionService.getAllSchemaDefinitions(type);
+    const lang = I18nContext.current()?.lang;
+    const actions = this.actionService.getAllSchemaDefinitions(type);
+
+    return actions.map((action) => {
+      const namespace = action.name;
+
+      return {
+        ...action,
+        description: this.i18nService.t(action.description, {
+          ns: namespace,
+          ...(lang ? { lang } : {}),
+          defaultValue: action.description,
+        }),
+      };
+    });
   }
 
   /**
