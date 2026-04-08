@@ -104,10 +104,9 @@ export class RagIndexerService {
       return;
     }
 
-    const [embeddingIndex, lexicalIndex] = await Promise.all([
-      this.getEmbeddingIndexOrNull(),
-      this.embeddingBackendService.getLexicalIndex(),
-    ]);
+    const embeddingIndex =
+      await this.embeddingBackendService.getEmbeddingIndex();
+    const lexicalIndex = await this.embeddingBackendService.getLexicalIndex();
     const contents = await this.contentService.findAndPopulate({
       ...(settings.index_only_active_content
         ? { where: { status: true } }
