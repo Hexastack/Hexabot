@@ -1,0 +1,29 @@
+{
+  "http_request": {
+    "Body": "Corps",
+    "Content Type": "Type de contenu",
+    "Destination URL for the HTTP request.": "URL de destination pour la requête HTTP.",
+    "Error": "Erreur",
+    "Error message when the request fails.": "Message d'erreur lorsque la requête échoue.",
+    "Final URL": "URL finale",
+    "Final URL after redirects, when available.": "URL finale après redirections, lorsqu'elle est disponible.",
+    "Headers": "En-têtes",
+    "HTTP method used for the request.": "Méthode HTTP utilisée pour la requête.",
+    "HTTP response status code.": "Code de statut de la réponse HTTP.",
+    "HTTP response status text.": "Texte du statut de la réponse HTTP.",
+    "Method": "Méthode",
+    "OK": "Succès",
+    "Optional request body string sent for POST requests, defaults to an empty JSON object.": "Chaîne de corps de requête optionnelle envoyée pour les requêtes POST ; par défaut, un objet JSON vide.",
+    "Optional request headers as key/value pairs that override defaults.": "En-têtes de requête optionnels au format clé/valeur qui remplacent les valeurs par défaut.",
+    "Original request URL.": "URL d'origine de la requête.",
+    "Parsed or raw response body.": "Corps de réponse parsé ou brut.",
+    "Performs an HTTP request (GET/POST) and returns status, headers, and body with a safe User-Agent.": "Exécute une requête HTTP (GET/POST) et renvoie le statut, les en-têtes et le corps avec un User-Agent sûr.",
+    "Response Content-Type header value, when present.": "Valeur de l'en-tête Content-Type de la réponse, si présente.",
+    "Status": "Statut",
+    "Status Text": "Texte du statut",
+    "Truncated": "Tronqué",
+    "URL": "URL",
+    "Whether the HTTP response status indicates success.": "Indique si le statut de la réponse HTTP signale un succès.",
+    "Whether the response body was truncated.": "Indique si le corps de la réponse a été tronqué."
+  }
+}

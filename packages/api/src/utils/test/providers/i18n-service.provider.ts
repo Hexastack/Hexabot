@@ -10,6 +10,15 @@ export const I18nServiceProvider = {
   provide: I18nService,
   useValue: {
     t: jest.fn().mockImplementation((t) => t),
+    getJsonSchemaLocalizationOptions: jest
+      .fn()
+      .mockImplementation((ns: string, lang?: string) => ({
+        localize: {
+          i18n: I18nServiceProvider.useValue,
+          ns,
+          ...(lang ? { lang } : {}),
+        },
+      })),
     refreshDynamicTranslations: jest.fn(),
   },
 };

@@ -6,8 +6,6 @@
 
 import { AbstractAction, BaseWorkflowContext } from '@hexabot-ai/agentic';
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { I18nTranslation } from 'nestjs-i18n';
-import { Observable } from 'rxjs';
 import { z, type ZodType } from 'zod';
 
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
@@ -40,8 +38,6 @@ export abstract class BaseAction<
   extends AbstractAction<I, O, C, S, RuntimeBindings>
   implements OnModuleInit
 {
-  private translations?: I18nTranslation | Observable<I18nTranslation>;
-
   public readonly icon: string;
 
   public readonly color: string;
@@ -76,10 +72,6 @@ export abstract class BaseAction<
 
   getNamespace<N extends ActionName = ActionName>() {
     return this.getName().replaceAll('-', '_') as HyphenToUnderscore<N>;
-  }
-
-  getTranslations() {
-    return this.translations;
   }
 
   async onModuleInit() {

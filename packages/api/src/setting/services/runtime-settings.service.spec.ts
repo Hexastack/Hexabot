@@ -5,17 +5,27 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { I18nContext } from 'nestjs-i18n';
 import { z } from 'zod';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import { createSettingGroup } from '@/setting/create-setting-group';
 import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 
 describe('RuntimeSettingsService', () => {
   let moduleRef: TestingModule | undefined;
-  const runtimeSettingsService = new RuntimeSettingsService();
+  const runtimeSettingsService = new RuntimeSettingsService(
+    I18nServiceProvider.useValue as unknown as I18nService,
+  );
 
   beforeEach(() => {
     runtimeSettingsService.reset();
+    (I18nServiceProvider.useValue.t as jest.Mock).mockImplementation(
+      (key: string, options?: { defaultValue?: string }) => {
+        return options?.defaultValue ?? key;
+      },
+    );
   });
 
   afterEach(async () => {
@@ -32,9 +42,13 @@ describe('RuntimeSettingsService', () => {
 
   it('returns Draft-07 definitions and resolves field schemas', () => {
     const group = `feature_flags_${Date.now()}`;
-    const schema = z.strictObject({
-      enabled: z.boolean().default(true).meta({ title: 'Enabled' }),
-    });
+    const schema = z
+      .strictObject({
+        enabled: z.boolean().default(true).meta({ title: 'Enabled' }),
+      })
+      .meta({
+        title: 'Feature flags',
+      });
 
     runtimeSettingsService.register({
       group,
@@ -56,6 +70,54 @@ describe('RuntimeSettingsService', () => {
     expect(definitions[group]?.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
+    expect((definitions[group]?.schema as { title?: string })?.title).toBe(
+      'Feature flags',
+    );
+  });
+
+  it('localizes root schema title using the request language', () => {
+    const group = `localized_settings_${Date.now()}`;
+    const schema = z
+      .strictObject({
+        enabled: z.boolean().default(true).meta({ title: 'Enabled' }),
+      })
+      .meta({
+        title: 'Feature flags',
+      });
+    const currentSpy = jest
+      .spyOn(I18nContext, 'current')
+      .mockReturnValue({ lang: 'fr' } as unknown as I18nContext<unknown>);
+
+    (I18nServiceProvider.useValue.t as jest.Mock).mockImplementation(
+      (
+        key: string,
+        options?: { ns?: string; lang?: string; defaultValue?: string },
+      ) => {
+        if (
+          key === 'Feature flags' &&
+          options?.ns === group &&
+          options?.lang === 'fr'
+        ) {
+          return 'FR Feature flags';
+        }
+
+        return options?.defaultValue ?? key;
+      },
+    );
+
+    runtimeSettingsService.register({
+      group,
+      schema,
+      scope: 'extension',
+    });
+
+    const definitions = runtimeSettingsService.getAllSchemaDefinitions();
+
+    expect((definitions[group]?.schema as { title?: string })?.title).toBe(
+      'FR Feature flags',
+    );
+
+    currentSpy.mockRestore();
   });
 
   it('fails fast when registering duplicate groups', () => {
@@ -106,7 +168,11 @@ describe('RuntimeSettingsService', () => {
     });
 
     moduleRef = await Test.createTestingModule({
-      providers: [RuntimeSettingsService, CustomSettingsGroupProvider],
+      providers: [
+        RuntimeSettingsService,
+        CustomSettingsGroupProvider,
+        I18nServiceProvider,
+      ],
     }).compile();
     await moduleRef.init();
 

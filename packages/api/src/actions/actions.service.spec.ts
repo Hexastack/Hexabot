@@ -6,6 +6,7 @@
 
 import { LoggerModule } from '@/logger/logger.module';
 import { DummyAction } from '@/utils/test/dummy/dummy.action';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ActionService } from './actions.service';
@@ -17,7 +18,7 @@ describe('ActionService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      providers: [ActionService, DummyAction],
+      providers: [ActionService, DummyAction, I18nServiceProvider],
       imports: [LoggerModule],
     });
     [actionService, dummyAction] = await getMocks([ActionService, DummyAction]);

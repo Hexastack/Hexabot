@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
-import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import type { RJSFSchema } from "@rjsf/utils";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -31,7 +31,10 @@ import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, QueryType, RouterType } from "@/services/types";
 import { ISetting, ISettingSchemasMap } from "@/types/setting.types";
 
-import { extractUiSchema } from "../visual-editor/v4/utils/schema-defaults.utils";
+import {
+  buildSettingsUiSchema,
+  resolveSettingsGroupTitle,
+} from "./settings.utils";
 
 const StyledForm = styled("form")();
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
@@ -77,19 +80,6 @@ const toSettingsByGroupAndLabel = (settings: ISetting[]) => {
 };
 const areSettingValuesEqual = (left: unknown, right: unknown): boolean => {
   return JSON.stringify(left) === JSON.stringify(right);
-};
-const buildSettingsUiSchema = (schema: RJSFSchema): UiSchema => {
-  const extracted = extractUiSchema(schema);
-  const order = Object.keys(schema.properties || {});
-
-  if (!order.length) {
-    return extracted;
-  }
-
-  return {
-    ...extracted,
-    "ui:order": order,
-  };
 };
 
 export const Settings = () => {
@@ -228,10 +218,7 @@ export const Settings = () => {
                 <Tab
                   value={group}
                   key={group}
-                  label={t(`title.${group}`, {
-                    ns: group,
-                    defaultValue: group,
-                  })}
+                  label={resolveSettingsGroupTitle(group, schemas, t)}
                   {...a11yProps(index)}
                 />
               ))}

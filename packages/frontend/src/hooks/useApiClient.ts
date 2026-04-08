@@ -21,12 +21,17 @@ export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
-  const { t } = useTranslate();
+  const { i18n, t } = useTranslate();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
       baseURL: apiUrl,
       withCredentials: true,
     });
+    const currentLanguage = i18n.resolvedLanguage || i18n.language;
+
+    if (currentLanguage) {
+      instance.defaults.headers.common["Accept-Language"] = currentLanguage;
+    }
     // Added the same Query String (de)Serializer as NestJS,
 
     instance.defaults.paramsSerializer = function (params) {
@@ -38,6 +43,17 @@ export const useAxiosInstance = () => {
         charset: "utf-8",
       });
     };
+
+    instance.interceptors.request.use((requestConfig) => {
+      const activeLanguage = i18n.resolvedLanguage || i18n.language;
+
+      if (activeLanguage) {
+        requestConfig.headers = requestConfig.headers || {};
+        requestConfig.headers["Accept-Language"] = activeLanguage;
+      }
+
+      return requestConfig;
+    });
 
     // Response Interceptor
     instance.interceptors.response.use(
@@ -60,7 +76,7 @@ export const useAxiosInstance = () => {
 
     return instance;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logoutRedirection, toast]);
+  }, [apiUrl, i18n, logoutRedirection, t, toast]);
 
   return axiosInstance;
 };

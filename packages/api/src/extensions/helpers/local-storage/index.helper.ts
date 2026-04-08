@@ -44,10 +44,6 @@ export default class LocalStorageHelper
     super(LOCAL_STORAGE_HELPER_NAME);
   }
 
-  getPath() {
-    return __dirname;
-  }
-
   /**
    * Get the attachment root directory given the resource reference
    *
