@@ -10,6 +10,21 @@ import { IAttachment } from "./attachment.types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IRole } from "./role.types";
 
+export interface ILicense {
+  activationLimit: number | null;
+  activationUsage: number | null;
+  plan: "unknown" | "starter" | "pro" | "unlimited";
+  status:
+    | "inactive"
+    | "active"
+    | "expired"
+    | "disabled"
+    | "invalid"
+    | "undefined"
+    | "error";
+  lastError: string | null;
+}
+
 export interface IUserAttributes {
   firstName: string;
   lastName: string;
@@ -19,6 +34,7 @@ export interface IUserAttributes {
   state: boolean;
   roles: string[];
   avatar: string | null;
+  license?: ILicense;
 }
 
 export interface IUserStub

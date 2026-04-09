@@ -33,6 +33,8 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { RequiresLicenseFeature } from '@/license/decorators/requires-license-feature.decorator';
+import { LicenseFeature } from '@/license/types/license-feature.enum';
 import { UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -193,6 +195,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    * @returns A promise that resolves to a paginated list of users.
    */
   @Get()
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   async findPage(
     @Query(PopulatePipe)
     populate: string[],
@@ -364,6 +367,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The updated user data.
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Patch(':id')
   async updateStateAndRoles(
     @UuidParam('id') id: string,
@@ -410,6 +414,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns Nothing (HTTP 204 on success).
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@UuidParam('id') id: string) {
@@ -432,6 +437,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The created invitation record.
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Post('invite')
   async invite(@Body() invitationCreateDto: InvitationCreateDto) {
     return await this.invitationService.create(invitationCreateDto);

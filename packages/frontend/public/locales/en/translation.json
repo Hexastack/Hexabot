@@ -158,7 +158,30 @@
     "conditional_operator": "Condition",
     "parallel_indicator": "Parallel",
     "loop_indicator": "Loop",
-    "conditional_indicator": "Conditional"
+    "conditional_indicator": "Conditional",
+    "license_activated_modal_title": "License activated successfully",
+    "license_activated_modal_description": "Your license key has been validated and paid features are now available.",
+    "license_activated_modal_cta_hint": "Click Continue to refresh your session and unlock eligible features.",
+    "license_gate_title": "{{0}} plan required",
+    "license_gate_default_reason": "This feature requires the {{0}} plan.",
+    "license_gate_tagline": "Unlock premium capabilities",
+    "license_gate_benefits_starter_1": "Activate entry-level premium features.",
+    "license_gate_benefits_starter_2": "Get more control and customization options.",
+    "license_gate_benefits_starter_3": "Scale confidently with a paid subscription.",
+    "license_gate_benefits_pro_1": "Enable advanced team and user management.",
+    "license_gate_benefits_pro_2": "Access more powerful workflow capabilities.",
+    "license_gate_benefits_pro_3": "Reduce limits and unlock productivity features.",
+    "license_gate_benefits_pro_4": "Get priority-ready tooling for production use.",
+    "license_gate_benefits_unlimited_1": "Remove limits for large-scale use cases.",
+    "license_gate_benefits_unlimited_2": "Unlock complete premium capabilities.",
+    "license_gate_benefits_unlimited_3": "Support your growth without constraints.",
+    "license_gate_footnote": "You can also enter an existing license key from Settings.",
+    "purchase_license": "Purchase a license to unlock premium features.",
+    "license_badge_status": "Status: {{0}}",
+    "license_badge_activations": "Activations: {{0}}",
+    "user_management_locked_title": "User management is locked",
+    "user_management_locked_description": "Your current license does not include access to user management.",
+    "user_management_locked_hint": "Upgrade to Pro or enter a valid license key to continue."
   },
   "menu": {
     "terms": "Terms of Use",
@@ -574,7 +597,18 @@
       "logs_errors": "Logs / Errors"
     },
     "inspector": "Inspector",
-    "no_scheduled_workflows": "No scheduled workflows yet"
+    "no_scheduled_workflows": "No scheduled workflows yet",
+    "upgrade_required": "Upgrade required",
+    "plan_badge_starter": "STARTER",
+    "plan_badge_pro": "PRO",
+    "plan_badge_unlimited": "UNLIMITED",
+    "plan_display_starter": "Starter",
+    "plan_display_pro": "Pro",
+    "plan_display_unlimited": "Unlimited",
+    "license_badge_unknown": "FREE Community Edition",
+    "license_badge_starter": "Starter Membership",
+    "license_badge_pro": "PRO Membership",
+    "license_badge_unlimited": "UNLIMITED Edition"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -693,7 +727,12 @@
     "location": "Location",
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle",
-    "annotate": "Annotate Dataset"
+    "annotate": "Annotate Dataset",
+    "continue": "Continue",
+    "not_now": "Not now",
+    "view_plans": "View plans",
+    "enter_license_key": "Enter license key",
+    "manage_users": "Manage users"
   },
   "tooltip": {
     "follow_live": "Follow live",

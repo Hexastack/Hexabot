@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import ColorModeIconDropdown from "@/layout/ColorModeIconDropdown";
+import LicenseBadge from "@/layout/LicenseBadge";
 import { EntityType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
@@ -65,6 +66,7 @@ export const DashboardHeader = ({
           </Tooltip>
 
           {logo && <LogoContainer>{logo}</LogoContainer>}
+          {user?.license ? <LicenseBadge license={user.license} /> : null}
 
           <Box
             sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}

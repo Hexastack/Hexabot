@@ -24,6 +24,7 @@ import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
 import { config } from '@/config';
+import { LicenseService } from '@/license/services/license.service';
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 
@@ -38,6 +39,9 @@ export class BaseAuthController {
   @Inject(EventEmitter2)
   private readonly eventEmitter: EventEmitter2;
 
+  @Inject(LicenseService)
+  protected readonly license: LicenseService;
+
   constructor(protected readonly logger: LoggerService) {}
 
   /**
@@ -48,8 +52,11 @@ export class BaseAuthController {
    * @returns The user object from the request.
    */
   @Get('me')
-  me(@Req() req: Request) {
-    return req.user;
+  async me(@Req() req: Request) {
+    return {
+      ...req.user,
+      license: await this.license.getSnapshot(),
+    };
   }
 
   /**
@@ -100,8 +107,11 @@ export class LocalAuthController extends BaseAuthController {
   @UseGuards(LocalAuthGuard)
   @Roles('public')
   @Post('local')
-  login(@Req() req: Request) {
-    return req.user;
+  async login(@Req() req: Request) {
+    return {
+      ...req.user,
+      license: await this.license.getSnapshot(),
+    };
   }
 
   /**

@@ -26,6 +26,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
+import LicenseBadge from "./LicenseBadge";
 import { theme } from "./theme";
 
 interface AppBarProps extends MuiAppBarProps {
@@ -101,8 +102,15 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
           </Toolbar>
         </Grid>
         {isSideBarOpen ? null : (
-          <Grid ml={3} alignContent="center">
+          <Grid
+            ml={2}
+            alignItems="center"
+            gap={1}
+            direction="row"
+            display="flex"
+          >
             <HexabotLogo />
+            {user?.license ? <LicenseBadge license={user.license} /> : null}
           </Grid>
         )}
         {isAuthenticated ? (
