@@ -16,8 +16,6 @@ export * from './controllers/credential.controller';
 
 export * from './controllers/user.controller';
 
-export * from './dto/invitation.dto';
-
 export * from './dto/model.dto';
 
 export * from './dto/permission.dto';
@@ -27,8 +25,6 @@ export * from './dto/role.dto';
 export * from './dto/credential.dto';
 
 export * from './dto/user.dto';
-
-export * from './entities/invitation.entity';
 
 export * from './entities/model.entity';
 
@@ -49,8 +45,6 @@ export * from './guards/local-auth.guard';
 export * from './passport/auth-strategy/local.strategy';
 
 export * from './passport/session.serializer';
-
-export * from './repositories/invitation.repository';
 
 export * from './repositories/model.repository';
 
@@ -79,8 +73,6 @@ export * from './seeds/user.seed-model';
 export * from './seeds/user.seed';
 
 export * from './services/auth.service';
-
-export * from './services/invitation.service';
 
 export * from './services/model.service';
 

@@ -24,7 +24,12 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
   ({ slotProps, ...rest }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const handleTogglePasswordVisibility = () => {
-      setShowPassword(!showPassword);
+      setShowPassword((value) => !value);
+    };
+    const handleMouseDownPassword: React.MouseEventHandler<
+      HTMLButtonElement
+    > = (event) => {
+      event.preventDefault();
     };
     const resolveInputSlotProps = (ownerState: any) => {
       const resolved = (
@@ -38,9 +43,18 @@ export const PasswordInput = forwardRef<any, PasswordInputProps>(
         endAdornment: (
           <>
             {resolved?.endAdornment}
-            <InputAdornment position="end">
-              <IconButton onClick={handleTogglePasswordVisibility}>
-                {showPassword ? <EyeOff /> : <Eye />}
+            <InputAdornment
+              position="end"
+              sx={{ "& .MuiIconButton-root:last-child": { marginRight: 0 } }}
+            >
+              <IconButton
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                edge="end"
+                size="small"
+                onClick={handleTogglePasswordVisibility}
+                onMouseDown={handleMouseDownPassword}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </IconButton>
             </InputAdornment>
           </>

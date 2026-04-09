@@ -14,6 +14,7 @@ import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
+import { PasswordStrengthInput } from "@/app-components/inputs/PasswordStrengthInput";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
@@ -187,7 +188,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
               />
             </ContentItem>
             <ContentItem>
-              <PasswordInput
+              <PasswordStrengthInput
                 label={t("label.password")}
                 {...register("password", validationRules.password)}
                 required

@@ -89,13 +89,12 @@ export class ValidateAccountService {
         subject: this.i18n.t('account_confirmation_subject'),
       });
     } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
+      this.logger.warn(
+        `Could not send account confirmation email to "${dto.email}". User remains inactive until confirmed or enabled manually.`,
+        e?.message,
+        e?.stack,
         'ValidateAccount',
       );
-      throw new InternalServerErrorException('Could not send email');
     }
   }
 

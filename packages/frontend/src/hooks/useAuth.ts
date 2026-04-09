@@ -15,7 +15,6 @@ export const CURRENT_USER_KEY = "current-user";
 export const PUBLIC_PATHS = [
   "/login",
   "/login/:token",
-  "/register/:token",
   "/reset",
   "/reset/:token",
 ];

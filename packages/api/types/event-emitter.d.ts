@@ -43,7 +43,6 @@ import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { Setting } from '@/setting/dto/setting.dto';
 import type { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import type { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import type { InvitationOrmEntity } from '@/user/entities/invitation.entity';
 import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
@@ -124,7 +123,6 @@ declare module '@nestjs/event-emitter' {
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
     dummy: DummyOrmEntity;
-    invitation: InvitationOrmEntity;
     label: LabelOrmEntity;
     labelGroup: LabelGroupOrmEntity;
     language: LanguageOrmEntity;

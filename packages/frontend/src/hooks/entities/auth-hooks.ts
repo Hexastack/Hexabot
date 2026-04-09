@@ -7,12 +7,7 @@
 import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
-import {
-  IProfileAttributes,
-  IUser,
-  IUserAttributes,
-  IUserStub,
-} from "@/types/user.types";
+import { IProfileAttributes, IUser, IUserStub } from "@/types/user.types";
 import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
@@ -87,25 +82,6 @@ export const useUserPermissions = () => {
     queryKey: ["readonly-user-permissions"],
     queryFn: () => apiClient.getUserPermissions(user?.id!),
     enabled: isAuthenticated,
-  });
-};
-
-export const useAcceptInvite = (
-  options?: TMutationOptions<
-    {
-      success: boolean;
-    },
-    Error,
-    Partial<IUserAttributes> & { token: string }
-  >,
-) => {
-  const { apiClient } = useApiClient();
-
-  return useTanstackMutation({
-    ...options,
-    async mutationFn(payload) {
-      return await apiClient.acceptInvite(payload);
-    },
   });
 };
 
