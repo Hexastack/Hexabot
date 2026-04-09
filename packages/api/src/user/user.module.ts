@@ -19,7 +19,6 @@ import { PermissionController } from './controllers/permission.controller';
 import { RoleController } from './controllers/role.controller';
 import { ReadWriteUserController } from './controllers/user.controller';
 import { CredentialOrmEntity } from './entities/credential.entity';
-import { InvitationOrmEntity } from './entities/invitation.entity';
 import { ModelOrmEntity } from './entities/model.entity';
 import { PermissionOrmEntity } from './entities/permission.entity';
 import { RoleOrmEntity } from './entities/role.entity';
@@ -28,7 +27,6 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LocalStrategy } from './passport/auth-strategy/local.strategy';
 import { AuthSerializer } from './passport/session.serializer';
 import { CredentialRepository } from './repositories/credential.repository';
-import { InvitationRepository } from './repositories/invitation.repository';
 import { ModelRepository } from './repositories/model.repository';
 import { PermissionRepository } from './repositories/permission.repository';
 import { RoleRepository } from './repositories/role.repository';
@@ -39,7 +37,6 @@ import { RoleSeeder } from './seeds/role.seed';
 import { UserSeeder } from './seeds/user.seed';
 import { AuthService } from './services/auth.service';
 import { CredentialService } from './services/credential.service';
-import { InvitationService } from './services/invitation.service';
 import { ModelService } from './services/model.service';
 import { PasswordResetService } from './services/passwordReset.service';
 import { PermissionService } from './services/permission.service';
@@ -53,7 +50,6 @@ import { ValidateAccountService } from './services/validate-account.service';
     TypeOrmModule.forFeature([
       UserOrmEntity,
       ModelOrmEntity,
-      InvitationOrmEntity,
       RoleOrmEntity,
       PermissionOrmEntity,
       CredentialOrmEntity,
@@ -82,8 +78,6 @@ import { ValidateAccountService } from './services/validate-account.service';
     AuthService,
     LocalAuthGuard,
     AuthSerializer,
-    InvitationRepository,
-    InvitationService,
     PasswordResetService,
     ValidateAccountService,
     CredentialService,

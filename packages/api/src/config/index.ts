@@ -223,13 +223,6 @@ export const config: Config = {
       expiresIn: (process.env.JWT_EXPIRES_IN || '24h') as any,
     },
   },
-  invitation: {
-    jwtOptions: {
-      salt: parseInt(process.env.SALT_LENGTH || '12'),
-      secret: process.env.INVITATION_JWT_SECRET || 'DEFAULT_INVITATION_SECRET',
-      expiresIn: (process.env.INVITATION_EXPIRES_IN || '24h') as any,
-    },
-  },
   password_reset: {
     jwtOptions: {
       salt: parseInt(process.env.SALT_LENGTH || '12'),

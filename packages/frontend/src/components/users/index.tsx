@@ -35,8 +35,8 @@ import { PermissionAction } from "@/types/permission.types";
 import { IUser } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
+import { CreateUserFormDialog } from "./CreateUserFormDialog";
 import { EditUserFormDialog } from "./EditUserFormDialog";
-import { InviteUserFormDialog } from "./InviteUserFormDialog";
 
 const REQUIRED_PLAN: PaidPlan = "pro";
 const openPricing = () => {
@@ -219,10 +219,10 @@ const UsersDataGrid = () => {
       buttons={[
         {
           permissionAction: PermissionAction.CREATE,
-          children: t("button.invite"),
+          children: t("button.add"),
           startIcon: <UserPlus />,
           onClick: () => {
-            dialogs.open(InviteUserFormDialog, {
+            dialogs.open(CreateUserFormDialog, {
               defaultValues: null,
             });
           },
