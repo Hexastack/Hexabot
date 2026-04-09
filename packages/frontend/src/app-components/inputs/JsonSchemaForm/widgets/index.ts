@@ -11,6 +11,7 @@ import { ActionRangeWidget } from "./ActionRangeWidget";
 import { ActionSelectWidget } from "./ActionSelectWidget";
 import { AutoCompleteWidget } from "./AutoCompleteWidget";
 import { JsonataTextWidget } from "./JsonataTextWidget";
+import { PasswordWidget } from "./PasswordWidget";
 import { TextWidget } from "./TextWidget";
 
 export const FORM_WIDGETS_BASE = {
@@ -21,6 +22,7 @@ export const FORM_WIDGETS_BASE = {
   RangeWidget: ActionRangeWidget,
   AutoCompleteWidget,
   TextWidget,
+  PasswordWidget,
 } as const;
 
 export const FORM_WIDGETS = {

@@ -34,7 +34,21 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess: (data) => {
-      queryClient.setQueryData([CURRENT_USER_KEY], data);
+      queryClient.setQueryData<IUser>(
+        [CURRENT_USER_KEY],
+        (previousSessionUser) => {
+          if (!previousSessionUser) {
+            return data as IUser;
+          }
+
+          return {
+            ...previousSessionUser,
+            ...data,
+            // `updateProfile` payload may omit license fields.
+            license: data.license ?? previousSessionUser.license,
+          };
+        },
+      );
       toast.success(t("message.account_update_success"));
     },
   });

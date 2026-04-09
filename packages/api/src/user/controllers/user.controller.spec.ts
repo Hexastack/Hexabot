@@ -10,6 +10,7 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LicenseService } from '@/license/services/license.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -59,6 +60,13 @@ describe('UserController (TypeORM)', () => {
         {
           provide: AttachmentService,
           useValue: attachmentServiceMock,
+        },
+        {
+          provide: LicenseService,
+          useValue: {
+            hasFeature: jest.fn().mockReturnValue(true),
+            getLastError: jest.fn().mockReturnValue(null),
+          },
         },
         MailerServiceProvider,
         I18nServiceProvider,

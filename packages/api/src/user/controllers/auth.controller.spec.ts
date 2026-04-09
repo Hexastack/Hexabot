@@ -10,6 +10,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
 import { SubscriberCreateDto } from '@/chat';
+import { LicenseService } from '@/license/services/license.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -35,15 +36,33 @@ describe('AuthController (TypeORM)', () => {
   let invitationService: InvitationService;
   let roleService: RoleService;
   let jwtService: JwtService;
+  let licenseService: Pick<LicenseService, 'getSnapshot'>;
   let role: Role;
   let baseUser: UserCreateDto & SubscriberCreateDto;
+  const licenseSnapshot = {
+    status: 'active',
+    plan: 'pro',
+    activationLimit: 10,
+    activationUsage: 1,
+    lastError: null,
+  } as const;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],
       imports: [JwtModule.register({})],
-      providers: [RoleService, MailerServiceProvider, I18nServiceProvider],
+      providers: [
+        RoleService,
+        MailerServiceProvider,
+        I18nServiceProvider,
+        {
+          provide: LicenseService,
+          useValue: {
+            getSnapshot: jest.fn().mockResolvedValue(licenseSnapshot),
+          },
+        },
+      ],
       typeorm: {
         fixtures: [
           installLanguageFixturesTypeOrm,
@@ -54,14 +73,21 @@ describe('AuthController (TypeORM)', () => {
 
     module = testing.module;
 
-    [authController, userService, invitationService, roleService, jwtService] =
-      await testing.getMocks([
-        LocalAuthController,
-        UserService,
-        InvitationService,
-        RoleService,
-        JwtService,
-      ]);
+    [
+      authController,
+      userService,
+      invitationService,
+      roleService,
+      jwtService,
+      licenseService,
+    ] = await testing.getMocks([
+      LocalAuthController,
+      UserService,
+      InvitationService,
+      RoleService,
+      JwtService,
+      LicenseService,
+    ]);
 
     const foundRole = await roleService.findOne(roleFixtureIds.admin);
     if (!foundRole) {
@@ -149,6 +175,40 @@ describe('AuthController (TypeORM)', () => {
         new BadRequestException('invitation roles do not match user roles'),
       );
       expect(userService.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('session payload', () => {
+    it('should include license snapshot in /auth/me payload', async () => {
+      const req = {
+        user: {
+          id: 'user-id',
+          email: 'admin@example.com',
+        },
+      } as any;
+      const result = await authController.me(req);
+
+      expect(result).toEqual({
+        ...req.user,
+        license: licenseSnapshot,
+      });
+      expect(licenseService.getSnapshot).toHaveBeenCalledTimes(1);
+    });
+
+    it('should include license snapshot in /auth/local payload', async () => {
+      const req = {
+        user: {
+          id: 'user-id',
+          email: 'admin@example.com',
+        },
+      } as any;
+      const result = await authController.login(req);
+
+      expect(result).toEqual({
+        ...req.user,
+        license: licenseSnapshot,
+      });
+      expect(licenseService.getSnapshot).toHaveBeenCalledTimes(1);
     });
   });
 });
