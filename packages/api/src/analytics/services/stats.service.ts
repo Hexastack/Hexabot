@@ -6,13 +6,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { plainToInstance } from 'class-transformer';
 import { Between } from 'typeorm';
 
-import {
-  Subscriber,
-  Subscriber as SubscriberDto,
-} from '@/chat/dto/subscriber.dto';
+import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
@@ -38,14 +34,7 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
 
   @OnEvent('hook:subscriber:preCreate')
   handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
-    const entity = event.entity;
-    if (!entity) {
-      return;
-    }
-
-    const subscriber = plainToInstance(SubscriberDto, entity, {
-      exposeUnsetFields: false,
-    });
+    const subscriber = event.entity.toPlainCls();
 
     this.eventEmitter.emit(
       'hook:stats:entry',
@@ -57,38 +46,25 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
 
   @OnEvent('hook:subscriber:preUpdate')
   handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
-    const entity = event.entity;
-    const previous = event.databaseEntity;
+    const entity = event.entity.toPlainCls();
+    const previous = event.databaseEntity.toPlainCls();
 
-    if (!entity || !previous) {
+    if (entity.assignedTo === previous.assignedTo) {
       return;
     }
 
-    const newAssignedTo = entity.assignedTo?.id;
-    const previousAssignedTo = previous.assignedTo?.id;
-
-    if (newAssignedTo === previousAssignedTo) {
-      return;
-    }
-
-    const newAssignmentExists = Boolean(newAssignedTo);
-    const previousAssignmentExists = Boolean(previousAssignedTo);
+    const newAssignmentExists = Boolean(entity.assignedTo);
+    const previousAssignmentExists = Boolean(previous.assignedTo);
 
     if (newAssignmentExists && previousAssignmentExists) {
       return;
     }
 
-    const previousSubscriber = plainToInstance(SubscriberDto, previous, {
-      exposeUnsetFields: false,
-    });
-
-    if (previousSubscriber) {
-      this.eventEmitter.emit(
-        'hook:analytics:passation',
-        previousSubscriber,
-        newAssignmentExists,
-      );
-    }
+    this.eventEmitter.emit(
+      'hook:analytics:passation',
+      previous,
+      newAssignmentExists,
+    );
   }
 
   /**

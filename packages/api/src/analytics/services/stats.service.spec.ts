@@ -25,6 +25,45 @@ import { StatsRepository } from '../repositories/stats.repository';
 
 import { StatsService } from './stats.service';
 
+const buildSubscriber = (
+  partial: Partial<SubscriberOrmEntity>,
+): SubscriberOrmEntity => {
+  const subscriber = new SubscriberOrmEntity();
+
+  Object.assign(subscriber, {
+    id: 'subscriber-id',
+    first_name: 'John',
+    last_name: 'Doe',
+    channel: {},
+    assignedToId: partial.assignedTo,
+    ...partial,
+  });
+
+  return subscriber;
+};
+const buildEvent = ({
+  entity,
+  databaseEntity,
+  updatedColumns = ['assignedTo'],
+}: {
+  entity: Partial<SubscriberOrmEntity>;
+  databaseEntity: Partial<SubscriberOrmEntity>;
+  updatedColumns?: string[];
+}): EmitEventProps<SubscriberOrmEntity, EHook.preUpdate> =>
+  ({
+    entity: buildSubscriber(entity),
+    action: EHook.preUpdate,
+    payload: entity,
+    databaseEntity: buildSubscriber(databaseEntity),
+    updatedColumns: updatedColumns.map(
+      (propertyName) =>
+        ({
+          propertyName,
+        }) as any,
+    ),
+    updatedRelations: [],
+  }) as any;
+
 describe('StatsService', () => {
   let statsService: StatsService;
   let statsRepository: StatsRepository;
@@ -156,41 +195,6 @@ describe('StatsService', () => {
   });
 
   describe('handleSubscriberPreUpdate', () => {
-    const buildSubscriber = (
-      partial: Partial<SubscriberOrmEntity>,
-    ): SubscriberOrmEntity =>
-      ({
-        id: 'subscriber-id',
-        first_name: 'John',
-        last_name: 'Doe',
-        channel: {} as any,
-        assignedTo: null,
-        assignedToId: null,
-        ...partial,
-      }) as unknown as SubscriberOrmEntity;
-    const buildEvent = ({
-      entity,
-      databaseEntity,
-      updatedColumns = ['assignedTo'],
-    }: {
-      entity: Partial<SubscriberOrmEntity>;
-      databaseEntity: Partial<SubscriberOrmEntity>;
-      updatedColumns?: string[];
-    }): EmitEventProps<SubscriberOrmEntity, EHook.preUpdate> =>
-      ({
-        entity: buildSubscriber(entity),
-        action: EHook.preUpdate,
-        payload: entity,
-        databaseEntity: buildSubscriber(databaseEntity),
-        updatedColumns: updatedColumns.map(
-          (propertyName) =>
-            ({
-              propertyName,
-            }) as any,
-        ),
-        updatedRelations: [],
-      }) as any;
-
     it('should emit passation analytics when subscriber gets newly assigned', () => {
       const emitSpy = jest.spyOn(eventEmitter, 'emit');
       const event = buildEvent({
@@ -208,6 +212,60 @@ describe('StatsService', () => {
         expect.objectContaining({ id: 'subscriber-id' }),
         true,
       );
+    });
+
+    it('should emit passation analytics when subscriber is unassigned', () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emit');
+      const event = buildEvent({
+        entity: { assignedTo: null },
+        databaseEntity: {
+          assignedTo: { id: 'user-id' } as any,
+        },
+      });
+
+      statsService.handleSubscriberPreUpdate(event);
+
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:analytics:passation',
+        expect.objectContaining({ id: 'subscriber-id' }),
+        false,
+      );
+    });
+
+    it('should not emit passation analytics when assignment changes between users', () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emit');
+      const event = buildEvent({
+        entity: {
+          assignedTo: { id: 'new-user' } as any,
+        },
+        databaseEntity: {
+          assignedTo: { id: 'old-user' } as any,
+        },
+      });
+
+      statsService.handleSubscriberPreUpdate(event);
+
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should ignore updates that do not touch assignment', () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emit');
+      const event = buildEvent({
+        entity: {
+          firstName: 'Jane',
+          assignedTo: { id: 'user-id' } as any,
+        },
+        databaseEntity: {
+          firstName: 'John',
+          assignedTo: { id: 'user-id' } as any,
+        },
+        updatedColumns: ['first_name'],
+      });
+
+      statsService.handleSubscriberPreUpdate(event);
+
+      expect(emitSpy).not.toHaveBeenCalled();
     });
   });
 

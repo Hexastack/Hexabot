@@ -80,12 +80,20 @@ export abstract class BaseOrmRepository<
 {
   private readonly dataSource: DataSource;
 
+  private readonly joinRelationMap: Record<string, string>;
+
   protected constructor(
     protected readonly repository: Repository<Entity>,
     protected readonly populateRelations: string[] = [],
   ) {
     this.dataSource = repository.manager.connection;
     this.registerAsSubscriber();
+    this.joinRelationMap = Object.fromEntries(
+      this.repository.metadata.relationIds.map((rid) => [
+        rid.relation.propertyName,
+        rid.propertyName,
+      ]),
+    );
   }
 
   private async invokeEntityHooks(
@@ -119,12 +127,30 @@ export abstract class BaseOrmRepository<
   @Inject(LoggerService)
   protected readonly logger: LoggerService;
 
+  private attachJoinColumnsToDto<Action extends DtoAction>(
+    data: InferEntityDto<Action, Entity>,
+  ): InferEntityDto<Action, Entity> {
+    if (!data) return {} as InferEntityDto<Action, Entity>;
+
+    const result = { ...data };
+
+    for (const [key, value] of Object.entries(data)) {
+      const joinColumn = this.joinRelationMap[key];
+      if (joinColumn) {
+        result[joinColumn] = value;
+      }
+    }
+
+    return result;
+  }
+
   public actionDtoToEntity<Action extends DtoAction>(
     data: InferEntityDto<Action, Entity>,
   ): DeepPartial<Entity> {
+    const entityDto = this.attachJoinColumnsToDto(data);
     const e = plainToInstance(
       this.repository.target as new (...args: any[]) => Entity,
-      instanceToPlain(data),
+      instanceToPlain(entityDto),
     );
 
     return Object.assign(e) as DeepPartial<Entity>;
@@ -300,10 +326,8 @@ export abstract class BaseOrmRepository<
     options?: UpdateOneOptions,
   ): Promise<InferPlain<Entity>> {
     const entity = await this.findOneEntity(idOrOptions);
-    if (entity) {
-      const databaseEntity = this.repository.create(
-        entity as DeepPartial<Entity>,
-      );
+    const databaseEntity = await this.findOneEntity(idOrOptions);
+    if (entity && databaseEntity) {
       const updates = this.actionDtoToEntity(payload);
       if (options?.shouldFlatten && updates && typeof updates === 'object') {
         const flattenedUpdates = flatten(
@@ -343,20 +367,14 @@ export abstract class BaseOrmRepository<
 
       const updatedEntity = await this.repository.save(entity);
 
-      if (updatedEntity) {
-        await this.emitEvent<EHook.postUpdate>({
-          action: EHook.postUpdate,
-          entity: updatedEntity,
-          payload,
-          databaseEntity,
-        });
+      await this.emitEvent<EHook.postUpdate>({
+        action: EHook.postUpdate,
+        entity: updatedEntity,
+        payload,
+        databaseEntity,
+      });
 
-        return updatedEntity.toPlainCls();
-      } else {
-        throw new NotFoundException(
-          'Unable to execute updateOne() - No updates',
-        );
-      }
+      return updatedEntity.toPlainCls();
     }
 
     if (options?.upsert) {
