@@ -75,6 +75,8 @@ export const LicenseBadge = ({ license, className, sx }: LicenseBadgeProps) => {
             sx={{
               backgroundImage: gradients[license.plan],
               color: "#fff",
+              border: 0,
+              px: 1,
             }}
           />
         </Badge>
