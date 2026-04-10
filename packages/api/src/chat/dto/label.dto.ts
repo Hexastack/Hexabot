@@ -15,7 +15,7 @@ import {
 } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { LabelGroup } from './label-group.dto';
 import { Subscriber } from './subscriber.dto';
@@ -95,10 +95,10 @@ export class LabelCreateDto {
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
 
-export type LabelDto = BuildDtoType<
+export type LabelDto = TDto<
   {
-    PlainCls: typeof Label;
-    FullCls: typeof LabelFull;
+    plain: typeof Label;
+    full: typeof LabelFull;
   },
   {
     create: LabelCreateDto;

@@ -17,6 +17,7 @@ import {
   UpdateEvent,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import {
   OnBeforeInsert,
@@ -42,11 +43,8 @@ export { MenuType };
   )
 `,
 )
+@EntityDto<MenuDto>({ plain: Menu, full: MenuFull })
 export class MenuOrmEntity extends BaseOrmEntity<MenuDto> {
-  plainCls = Menu;
-
-  fullCls = MenuFull;
-
   /**
    * The displayed title of the menu.
    */

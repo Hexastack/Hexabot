@@ -6,17 +6,15 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Translation, TranslationDto } from '../dto/translation.dto';
 
 @Entity({ name: 'translations' })
+@EntityDto<TranslationDto>({ plain: Translation, full: Translation })
 export class TranslationOrmEntity extends BaseOrmEntity<TranslationDto> {
-  plainCls = Translation;
-
-  fullCls = Translation;
-
   @Column({ unique: true })
   @Index()
   str!: string;

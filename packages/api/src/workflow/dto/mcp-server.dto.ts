@@ -19,7 +19,7 @@ import {
 
 import { Credential } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { McpServerTransport } from '../types';
 
@@ -161,10 +161,10 @@ export class McpServerCreateDto {
 
 export class McpServerUpdateDto extends PartialType(McpServerCreateDto) {}
 
-export type McpServerDto = BuildDtoType<
+export type McpServerDto = TDto<
   {
-    PlainCls: typeof McpServer;
-    FullCls: typeof McpServerFull;
+    plain: typeof McpServer;
+    full: typeof McpServerFull;
   },
   {
     create: McpServerCreateDto;

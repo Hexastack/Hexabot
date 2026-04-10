@@ -87,6 +87,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     data: user,
     error,
     isLoading,
+    refetch,
   } = useTanstackQuery<IUser, Error>({
     queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
@@ -108,6 +109,11 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     void updateLanguage(user.language);
     setUser(user);
   };
+  const refetchUser = useCallback(async () => {
+    const result = await refetch();
+
+    return result.data;
+  }, [refetch]);
   const isAuthenticated = !!user;
 
   useSubscribeBroadcastChannel("login", () => {
@@ -130,6 +136,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
         error,
         setUser,
         authenticate,
+        refetchUser,
         logout,
       }}
     >

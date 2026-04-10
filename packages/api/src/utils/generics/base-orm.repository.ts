@@ -33,12 +33,12 @@ import { flatten } from '@/utils/helpers/flatten';
 
 import {
   DtoAction,
-  EntityDto,
   InferCreateDto,
   InferEntityDto,
   InferFull,
   InferPlain,
   InferUpdateDto,
+  TEntityDto,
 } from '../types/dto.types';
 import { EmitEventProps } from '../types/entity-event.types';
 
@@ -75,7 +75,7 @@ export type FindAllOptions<EntityType> = Omit<
 };
 
 export abstract class BaseOrmRepository<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > implements EntitySubscriberInterface<Entity>
 {
   private readonly dataSource: DataSource;

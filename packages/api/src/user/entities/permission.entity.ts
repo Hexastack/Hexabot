@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -30,11 +31,8 @@ import { RoleOrmEntity } from './role.entity';
 
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
+@EntityDto<PermissionDto>({ plain: Permission, full: PermissionFull })
 export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
-  plainCls = Permission;
-
-  fullCls = PermissionFull;
-
   @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
     onDelete: 'CASCADE',
   })

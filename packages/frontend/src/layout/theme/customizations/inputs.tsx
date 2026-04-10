@@ -428,6 +428,15 @@ export const inputsCustomizations: Components<Theme> = {
               height: "2.25rem",
             },
           },
+          {
+            props: {
+              type: "password",
+              multiline: false,
+            },
+            style: {
+              height: "2.25rem",
+            },
+          },
         ],
       }),
       notchedOutline: {},

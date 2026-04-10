@@ -10,12 +10,12 @@ import { FindManyOptions } from 'typeorm';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
-import { EntityDto } from '../types/dto.types';
+import { TEntityDto } from '../types/dto.types';
 
 import { BaseOrmService } from './base-orm.service';
 
 export abstract class BaseOrmController<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > {
   eventEmitter: typeof this.service.eventEmitter;
 

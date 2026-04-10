@@ -10,7 +10,7 @@ import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { WorkflowVersionAction } from '../types';
@@ -135,10 +135,10 @@ export class WorkflowVersionRestoreDto {
   message?: string;
 }
 
-export type WorkflowVersionDto = BuildDtoType<
+export type WorkflowVersionDto = TDto<
   {
-    PlainCls: typeof WorkflowVersion;
-    FullCls: typeof WorkflowVersionFull;
+    plain: typeof WorkflowVersion;
+    full: typeof WorkflowVersionFull;
   },
   {
     create: WorkflowVersionCreateDto;

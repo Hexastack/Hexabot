@@ -9,7 +9,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
@@ -73,10 +73,10 @@ export class PermissionCreateDto {
   relation?: TRelation;
 }
 
-export type PermissionDto = BuildDtoType<
+export type PermissionDto = TDto<
   {
-    PlainCls: typeof Permission;
-    FullCls: typeof PermissionFull;
+    plain: typeof Permission;
+    full: typeof PermissionFull;
   },
   {
     create: PermissionCreateDto;

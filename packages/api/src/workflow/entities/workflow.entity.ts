@@ -23,6 +23,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
@@ -47,11 +48,8 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
+@EntityDto<WorkflowDto>({ plain: Workflow, full: WorkflowFull })
 export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowDto> {
-  plainCls = Workflow;
-
-  fullCls = WorkflowFull;
-
   static readonly BLANK_DEFINITION_YML = AgenticWorkflow.stringifyDefinition({
     defaults: {
       settings: {

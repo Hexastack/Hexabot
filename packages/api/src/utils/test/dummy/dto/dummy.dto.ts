@@ -7,12 +7,7 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
-import {
-  BaseStub,
-  BuildDtoType,
-  DtoAction,
-  DtoTransformer,
-} from '@/utils/types/dto.types';
+import { BaseStub, DtoAction, DtoType, TDto } from '@/utils/types/dto.types';
 
 @Exclude()
 export class DummyStub extends BaseStub {
@@ -45,13 +40,13 @@ export class DummyUpdateDto {
   dynamicField?: Record<string, unknown>;
 }
 
-export type DummyDto = BuildDtoType<
+export type DummyDto = TDto<
   {
-    [DtoTransformer.PlainCls]: typeof Dummy;
-    [DtoTransformer.FullCls]: typeof Dummy;
+    [DtoType.PLAIN]: typeof Dummy;
+    [DtoType.FULL]: typeof Dummy;
   },
   {
-    [DtoAction.Create]: DummyCreateDto;
-    [DtoAction.Update]: DummyUpdateDto;
+    [DtoAction.CREATE]: DummyCreateDto;
+    [DtoAction.UPDATE]: DummyUpdateDto;
   }
 >;

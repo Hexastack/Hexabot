@@ -16,7 +16,7 @@ import {
 } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { MenuType } from '../enums/menu-type.enum';
 
@@ -93,10 +93,10 @@ export class MenuUpdateDto extends PartialType(MenuCreateDto) {}
 
 export class MenuQueryDto extends PartialType(MenuCreateDto) {}
 
-export type MenuDto = BuildDtoType<
+export type MenuDto = TDto<
   {
-    PlainCls: typeof Menu;
-    FullCls: typeof MenuFull;
+    plain: typeof Menu;
+    full: typeof MenuFull;
   },
   {
     create: MenuCreateDto;

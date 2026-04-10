@@ -31,7 +31,7 @@ import {
   SubscriberStub,
 } from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BuildDtoType } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { UserProvider } from '../types/user-provider.type';
 
@@ -241,10 +241,10 @@ export class UserResetPasswordDto extends PickType(UserCreateDto, [
 
 export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
 
-export type UserDto = BuildDtoType<
+export type UserDto = TDto<
   {
-    PlainCls: typeof User;
-    FullCls: typeof UserFull;
+    plain: typeof User;
+    full: typeof UserFull;
   },
   {
     create: UserCreateDto;
