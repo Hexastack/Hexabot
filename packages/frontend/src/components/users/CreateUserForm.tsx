@@ -14,6 +14,7 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { PasswordStrengthInput } from "@/app-components/inputs/PasswordStrengthInput";
 import { useCreate } from "@/hooks/crud/useCreate";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
@@ -48,13 +49,18 @@ export const CreateUserForm: FC<ComponentFormProps<undefined>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const { refetchUser } = useAuth();
   const rules = useValidationRules();
   const { mutate: createUser, isPending } = useCreate(EntityType.USER, {
-    onError: () => {
+    onError: (error: Error & { statusCode?: number }) => {
+      if (error.statusCode === 403) {
+        void refetchUser();
+      }
       rest.onError?.();
-      toast.error(t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
+      void refetchUser();
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
     },

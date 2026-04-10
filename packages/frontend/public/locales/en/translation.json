@@ -185,7 +185,9 @@
     "license_badge_activations": "Activations: {{0}}",
     "user_management_locked_title": "User management is locked",
     "user_management_locked_description": "Your current license does not include access to user management.",
-    "user_management_locked_hint": "Upgrade to Pro or enter a valid license key to continue."
+    "user_management_locked_hint": "Upgrade to Pro or enter a valid license key to continue.",
+    "users_quota_reached": "User limit reached for your current plan.",
+    "workflows_quota_reached": "Workflow limit reached for your current plan."
   },
   "menu": {
     "terms": "Terms of Use",
@@ -608,6 +610,9 @@
     "plan_display_starter": "Starter",
     "plan_display_pro": "Pro",
     "plan_display_unlimited": "Unlimited",
+    "unlimited": "Unlimited",
+    "users_quota_usage": "Users: {{0}}",
+    "workflows_quota_usage": "Workflows: {{0}}",
     "license_badge_unknown": "FREE Community Edition",
     "license_badge_starter": "Starter Membership",
     "license_badge_pro": "PRO Membership",

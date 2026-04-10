@@ -5,15 +5,18 @@
  */
 
 import { BadRequestException } from '@nestjs/common';
-import { UpdateEvent } from 'typeorm';
+import { DataSource, UpdateEvent } from 'typeorm';
 
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 import {
   LemonSqueezyActivationResponse,
   LemonSqueezyValidationResponse,
 } from '../types/lemon-squeezy.types';
 import { LicenseFeature } from '../types/license-feature.enum';
+import { LicenseQuotaTier } from '../types/license-quota';
 
 import { LicenseService } from './license.service';
 
@@ -48,8 +51,67 @@ type ServiceEnv = {
   settingService: MockSettingService;
   metadataService: MockMetadataService;
   logger: MockLoggerService;
+  dataSource: DataSource;
 };
 
+type CreateEnvOptions = {
+  apiService?: Partial<MockLemonSqueezyService>;
+  settingService?: Partial<MockSettingService>;
+  metadataService?: Partial<MockMetadataService>;
+  logger?: Partial<MockLoggerService>;
+  userCount?: number;
+  workflowCount?: number;
+};
+
+const buildExpectedQuotas = (
+  tier: LicenseQuotaTier,
+  counts: { users?: number; workflows?: number } = {},
+) => {
+  const usersUsed = counts.users ?? 0;
+  const workflowsUsed = counts.workflows ?? 0;
+  const usersLimitByTier: Record<LicenseQuotaTier, number | null> = {
+    community: 1,
+    starter: 1,
+    pro: 10,
+    unlimited: 25,
+  };
+  const workflowsLimitByTier: Record<LicenseQuotaTier, number | null> = {
+    community: 3,
+    starter: 25,
+    pro: 150,
+    unlimited: null,
+  };
+  const usersLimit = usersLimitByTier[tier];
+  const workflowsLimit = workflowsLimitByTier[tier];
+
+  return {
+    tier,
+    resources: {
+      users: {
+        limit: usersLimit,
+        used: usersUsed,
+        remaining:
+          typeof usersLimit === 'number'
+            ? Math.max(usersLimit - usersUsed, 0)
+            : null,
+        reached:
+          typeof usersLimit === 'number' ? usersUsed >= usersLimit : false,
+      },
+      workflows: {
+        limit: workflowsLimit,
+        used: workflowsUsed,
+        remaining:
+          typeof workflowsLimit === 'number'
+            ? Math.max(workflowsLimit - workflowsUsed, 0)
+            : null,
+        reached:
+          typeof workflowsLimit === 'number'
+            ? workflowsUsed >= workflowsLimit
+            : false,
+      },
+    },
+  };
+};
 const defaultLicenseKey = {
   id: 123,
   status: 'active' as const,
@@ -129,14 +191,7 @@ const createSettingUpdateEvent = ({
     entity,
   } as unknown as UpdateEvent<SettingOrmEntity>;
 };
-const createEnv = (
-  overrides: {
-    apiService?: Partial<MockLemonSqueezyService>;
-    settingService?: Partial<MockSettingService>;
-    metadataService?: Partial<MockMetadataService>;
-    logger?: Partial<MockLoggerService>;
-  } = {},
-): ServiceEnv => {
+const createEnv = (overrides: CreateEnvOptions = {}): ServiceEnv => {
   const apiService: MockLemonSqueezyService = {
     validate: jest.fn(),
     activate: jest.fn(),
@@ -166,11 +221,35 @@ const createEnv = (
     verbose: jest.fn(),
     ...overrides.logger,
   };
+  const userCount = overrides.userCount ?? 0;
+  const workflowCount = overrides.workflowCount ?? 0;
+  const userRepository = {
+    count: jest.fn().mockResolvedValue(userCount),
+  };
+  const workflowRepository = {
+    count: jest.fn().mockResolvedValue(workflowCount),
+  };
+  const dataSource = {
+    getRepository: jest.fn((target: unknown) => {
+      if (target === UserOrmEntity) {
+        return userRepository;
+      }
+
+      if (target === WorkflowOrmEntity) {
+        return workflowRepository;
+      }
+
+      return {
+        count: jest.fn().mockResolvedValue(0),
+      };
+    }),
+  } as unknown as DataSource;
   const service = new LicenseService(
     apiService as unknown as any,
     settingService as unknown as any,
     metadataService as unknown as any,
     logger as unknown as any,
+    dataSource,
   );
 
   return {
@@ -179,6 +258,7 @@ const createEnv = (
     settingService,
     metadataService,
     logger,
+    dataSource,
   };
 };
 
@@ -206,6 +286,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'No license key set (bootstrap).',
+        quotas: buildExpectedQuotas('community'),
       });
       expect(service.hasFeature(LicenseFeature.UserManagement)).toBe(false);
     });
@@ -227,6 +308,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'Invalid license key (bootstrap).',
+        quotas: buildExpectedQuotas('community'),
       });
     });
 
@@ -261,6 +343,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'License key expired (bootstrap).',
+        quotas: buildExpectedQuotas('community'),
       });
       expect(service.hasFeature(LicenseFeature.UserManagement)).toBe(false);
     });
@@ -292,6 +375,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'License key disabled (bootstrap).',
+        quotas: buildExpectedQuotas('community'),
       });
       expect(service.hasFeature(LicenseFeature.UserManagement)).toBe(false);
     });
@@ -341,6 +425,99 @@ describe('LicenseService', () => {
       expect(service.getStatus()).toBe('active');
       expect(service.getPlan()).toBe('starter');
       expect(service.hasFeature(LicenseFeature.UserManagement)).toBe(false);
+    });
+
+    it('includes pro quotas in snapshot when license is active', async () => {
+      const { service, settingService, apiService } = createEnv({
+        userCount: 9,
+        workflowCount: 150,
+      });
+      settingService.getSettings.mockResolvedValueOnce({
+        chatbot_settings: { license_key: 'active-pro' },
+      });
+      apiService.validate.mockResolvedValue(
+        createValidationResponse({
+          meta: {
+            ...defaultMeta,
+            product_name: 'Pro Monthly',
+          },
+        }),
+      );
+
+      await service.refresh('bootstrap');
+
+      await expect(service.getSnapshot()).resolves.toEqual({
+        status: 'active',
+        plan: 'pro',
+        activationLimit: 10,
+        activationUsage: 1,
+        lastError: null,
+        quotas: buildExpectedQuotas('pro', { users: 9, workflows: 150 }),
+      });
+    });
+
+    it('resolves active unknown plan to community quota tier', async () => {
+      const { service, settingService, apiService } = createEnv({
+        userCount: 1,
+        workflowCount: 2,
+      });
+      settingService.getSettings.mockResolvedValueOnce({
+        chatbot_settings: { license_key: 'active-unknown' },
+      });
+      apiService.validate.mockResolvedValue(
+        createValidationResponse({
+          meta: {
+            ...defaultMeta,
+            product_name: 'Enterprise Plan',
+          },
+        }),
+      );
+
+      await service.refresh('bootstrap');
+
+      await expect(service.getSnapshot()).resolves.toEqual({
+        status: 'active',
+        plan: 'unknown',
+        activationLimit: 10,
+        activationUsage: 1,
+        lastError: null,
+        quotas: buildExpectedQuotas('community', {
+          users: 1,
+          workflows: 2,
+        }),
+      });
+    });
+
+    it('keeps unlimited workflow quota uncapped in snapshot', async () => {
+      const { service, settingService, apiService } = createEnv({
+        userCount: 24,
+        workflowCount: 600,
+      });
+      settingService.getSettings.mockResolvedValueOnce({
+        chatbot_settings: { license_key: 'active-unlimited' },
+      });
+      apiService.validate.mockResolvedValue(
+        createValidationResponse({
+          meta: {
+            ...defaultMeta,
+            product_name: 'Unlimited Plan',
+          },
+        }),
+      );
+
+      await service.refresh('bootstrap');
+
+      await expect(service.getSnapshot()).resolves.toEqual({
+        status: 'active',
+        plan: 'unlimited',
+        activationLimit: 10,
+        activationUsage: 1,
+        lastError: null,
+        quotas: buildExpectedQuotas('unlimited', {
+          users: 24,
+          workflows: 600,
+        }),
+      });
     });
 
     it('activates through API when status is inactive and slots are available', async () => {
@@ -425,6 +602,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'Activation limit reached during bootstrap (usage=1/1).',
+        quotas: buildExpectedQuotas('community'),
       });
       expect(service.hasFeature(LicenseFeature.UserManagement)).toBe(false);
     });
@@ -445,6 +623,7 @@ describe('LicenseService', () => {
         activationLimit: null,
         activationUsage: null,
         lastError: 'Bootstrap failed: Detailed',
+        quotas: buildExpectedQuotas('community'),
       });
     });
   });

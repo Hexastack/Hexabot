@@ -10,13 +10,16 @@ import {
   OnApplicationBootstrap,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { UpdateEvent } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, UpdateEvent } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 import { CHATBOT_SETTINGS_GROUP } from '@/setting/default.settings';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { MetadataService } from '@/setting/services/metadata.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 import {
   LemonSqueezyActivationResponse,
@@ -34,6 +37,12 @@ import {
   LicenseStatus,
   PaidPlan,
 } from '../types/license-feature.enum';
+import {
+  LICENSE_QUOTA_LIMITS,
+  LicenseQuotaResource,
+  LicenseQuotaSnapshot,
+  resolveLicenseQuotaTier,
+} from '../types/license-quota';
 
 import { LemonSqueezyService } from './lemon-squeezy.service';
 
@@ -60,6 +69,7 @@ export class LicenseService implements OnApplicationBootstrap {
     private readonly settingService: SettingService,
     private readonly metadataService: MetadataService,
     private readonly logger: LoggerService,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {
     this.disableAllFeatures();
   }
@@ -93,12 +103,51 @@ export class LicenseService implements OnApplicationBootstrap {
   }
 
   async getSnapshot(): Promise<LicenseSnapshot> {
+    const quotas = await this.buildQuotaSnapshot();
+
     return {
       status: this.status,
       plan: this.plan,
       activationLimit: this.activationLimit,
       activationUsage: this.activationUsage,
       lastError: this.lastError,
+      quotas,
+    };
+  }
+
+  private async buildQuotaSnapshot(): Promise<LicenseQuotaSnapshot> {
+    const tier = resolveLicenseQuotaTier(this.status, this.plan);
+    const [usersCount, workflowsCount] = await Promise.all([
+      this.dataSource.getRepository(UserOrmEntity).count(),
+      this.dataSource.getRepository(WorkflowOrmEntity).count(),
+    ]);
+    const counts: Record<LicenseQuotaResource, number> = {
+      users: usersCount,
+      workflows: workflowsCount,
+    };
+    const resources = Object.entries(LICENSE_QUOTA_LIMITS).reduce(
+      (acc, [resource, limits]) => {
+        const typedResource = resource as LicenseQuotaResource;
+        const used = counts[typedResource];
+        const limit = limits[tier];
+        const remaining =
+          typeof limit === 'number' ? Math.max(limit - used, 0) : null;
+
+        acc[typedResource] = {
+          limit,
+          used,
+          remaining,
+          reached: typeof limit === 'number' ? used >= limit : false,
+        };
+
+        return acc;
+      },
+      {} as LicenseQuotaSnapshot['resources'],
+    );
+
+    return {
+      tier,
+      resources,
     };
   }
 
