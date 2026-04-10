@@ -5,6 +5,7 @@
  */
 
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -12,6 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { CircleCheck } from "lucide-react";
 import type { ComponentProps } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -51,8 +53,43 @@ export const LicenseActivatedModal = ({
         },
       }}
     >
-      <DialogContent sx={{ pt: 3 }}>
-        <Stack spacing={1.5}>
+      <DialogContent
+        sx={{
+          pt: 3,
+          background:
+            "radial-gradient(circle at top right, rgba(255,183,77,0.2), transparent 44%), radial-gradient(circle at top left, rgba(129,199,132,0.16), transparent 40%)",
+        }}
+      >
+        <Stack spacing={1.75}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Box
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                display: "grid",
+                placeItems: "center",
+                color: "success.main",
+                backgroundColor: "rgba(46, 125, 50, 0.12)",
+                border: "1px solid rgba(46, 125, 50, 0.35)",
+              }}
+            >
+              <CircleCheck size={24} />
+            </Box>
+
+            <Typography
+              component="span"
+              aria-hidden
+              sx={{ fontSize: 24, lineHeight: 1 }}
+            >
+              🎉
+            </Typography>
+          </Stack>
+
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {t("message.license_activated_modal_title")}
           </Typography>

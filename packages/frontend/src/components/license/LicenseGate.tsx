@@ -104,8 +104,6 @@ export const LockedFeatureLabel = ({
         py: 1.5,
         background:
           "linear-gradient(135deg, rgba(78,70,229,0.9) 0%, rgba(0,163,255,0.85) 50%, rgba(0,212,255,0.8) 100%)",
-        border: "1px solid",
-        borderColor: "divider",
         color: "#FFF",
         "& .MuiChip-label": { px: 0.5, ml: 0.5 },
       }}
