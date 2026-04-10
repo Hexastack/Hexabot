@@ -9,7 +9,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { User } from './user.dto';
 
@@ -61,10 +61,10 @@ export class CredentialCreateDto {
 
 export class CredentialUpdateDto extends PartialType(CredentialCreateDto) {}
 
-export type CredentialDto = BuildDtoType<
+export type CredentialDto = TDto<
   {
-    PlainCls: typeof Credential;
-    FullCls: typeof CredentialFull;
+    plain: typeof Credential;
+    full: typeof CredentialFull;
   },
   {
     create: CredentialCreateDto;

@@ -8,12 +8,12 @@ import { FindManyOptions } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { EntityDto, InferCreateDto, InferPlain } from '../types/dto.types';
+import { InferCreateDto, InferPlain, TEntityDto } from '../types/dto.types';
 
 import { BaseOrmRepository, FindAllOptions } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > {
   protected constructor(
     protected readonly repository: BaseOrmRepository<Entity>,

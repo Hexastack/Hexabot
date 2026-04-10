@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -17,11 +18,8 @@ import { PermissionOrmEntity } from './permission.entity';
 @Entity({ name: 'models' })
 @Index(['name'], { unique: true })
 @Index(['identity'], { unique: true })
+@EntityDto<ModelDto>({ plain: Model, full: ModelFull })
 export class ModelOrmEntity extends BaseOrmEntity<ModelDto> {
-  plainCls = Model;
-
-  fullCls = ModelFull;
-
   @Column()
   name!: string;
 

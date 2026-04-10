@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
@@ -34,11 +35,8 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Entity({ name: 'memory_records' })
 @Index(['definition', 'owner', 'workflow', 'run'])
 @Index(['expiresAt'])
+@EntityDto<MemoryRecordDto>({ plain: MemoryRecord, full: MemoryRecordFull })
 export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordDto> {
-  plainCls = MemoryRecord;
-
-  fullCls = MemoryRecordFull;
-
   /** Memory definition that governs the structure and scope of this record. */
   @ManyToOne(() => MemoryDefinitionOrmEntity, {
     nullable: false,

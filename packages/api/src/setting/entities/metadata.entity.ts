@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -13,11 +14,8 @@ import { Metadata, MetadataDto } from '../dto/metadata.dto';
 
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })
+@EntityDto<MetadataDto>({ plain: Metadata, full: Metadata })
 export class MetadataOrmEntity extends BaseOrmEntity<MetadataDto> {
-  plainCls = Metadata;
-
-  fullCls = Metadata;
-
   @Column()
   name!: string;
 

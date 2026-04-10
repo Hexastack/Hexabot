@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -26,11 +27,8 @@ import { UserOrmEntity } from './user.entity';
 
 @Entity({ name: 'credentials' })
 @Index(['name'], { unique: true })
+@EntityDto<CredentialDto>({ plain: Credential, full: CredentialFull })
 export class CredentialOrmEntity extends BaseOrmEntity<CredentialDto> {
-  plainCls = Credential;
-
-  fullCls = CredentialFull;
-
   @Column()
   name!: string;
 
