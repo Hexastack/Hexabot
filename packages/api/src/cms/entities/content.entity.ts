@@ -15,6 +15,7 @@ import {
 
 import { ContentElement } from '@/chat/types/message';
 import { config } from '@/config';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
   OnBeforeInsert,
@@ -30,11 +31,8 @@ import { ContentTypeOrmEntity } from './content-type.entity';
 @Entity({ name: 'contents' })
 @Index(['title'])
 @Index(['searchText'])
+@EntityDto<ContentDto>({ plain: Content, full: ContentFull })
 export class ContentOrmEntity extends BaseOrmEntity<ContentDto> {
-  plainCls = Content;
-
-  fullCls = ContentFull;
-
   /**
    * The content type of this content.
    */

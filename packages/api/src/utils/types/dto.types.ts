@@ -28,55 +28,56 @@ export class BaseStub extends BaseIdStub {
   updatedAt!: Date;
 }
 
-export enum DtoTransformer {
-  PlainCls = 'PlainCls',
-  FullCls = 'FullCls',
+export enum DtoType {
+  PLAIN = 'plain',
+  FULL = 'full',
 }
 
 export enum DtoAction {
-  Create = 'create',
-  Read = 'read',
-  Update = 'update',
-  Delete = 'delete',
+  CREATE = 'create',
+  READ = 'read',
+  UPDATE = 'update',
+  DELETE = 'delete',
 }
 
-export type DtoActionConfig<
+export type TDtoAction<
   A extends Partial<Record<DtoAction, object>> = Partial<
     Record<DtoAction, object>
   >,
 > = A;
 
-export type DtoTransformerConfig<
-  T extends Record<DtoTransformer, any> = Record<DtoTransformer, any>,
-> = T;
-
-export type BuildDtoType<
-  transformers extends DtoTransformerConfig,
-  actions extends DtoActionConfig,
+export type TDto<
+  transformers extends {
+    [K in DtoType]: unknown;
+  } = {
+    plain: unknown;
+    full: unknown;
+  },
+  actions extends TDtoAction = TDtoAction,
 > = { transformers: transformers; actions: actions };
 
-export type EntityDto<Entity extends BaseOrmEntity> = BuildDtoType<
+export type TEntityDto<Entity extends BaseOrmEntity> = TDto<
   {
-    FullCls: Entity['fullCls'];
-    PlainCls: Entity['plainCls'];
+    plain: Entity['plainCls'];
+    full: Entity['fullCls'];
   },
-  DtoActionConfig
+  TDtoAction
 >;
 
 export type InferEntityDto<
   K extends DtoAction,
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
-  Dto extends DtoActionConfig = InferActionsDto<Entity>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
+  Dto extends TDtoAction = InferActionsDto<Entity>,
   Fallback = unknown,
 > = K extends keyof Dto ? Dto[K] : Fallback;
 
-export type InferCreateDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
-  InferEntityDto<DtoAction.Create, Entity>;
+export type InferCreateDto<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
+  InferEntityDto<DtoAction.CREATE, Entity>;
 
-export type InferUpdateDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
-  InferEntityDto<DtoAction.Update, Entity>;
+export type InferUpdateDto<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
+  InferEntityDto<DtoAction.UPDATE, Entity>;
 
-export type InferActionsDto<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+export type InferActionsDto<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
   Entity['__dtoType']['actions'];
 
 export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
@@ -85,8 +86,8 @@ export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
     ? P
     : unknown;
 
-export type InferPlain<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+export type InferPlain<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
   InferTransformDto<Entity['plainCls']>;
 
-export type InferFull<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
+export type InferFull<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
   InferTransformDto<Entity['fullCls']>;

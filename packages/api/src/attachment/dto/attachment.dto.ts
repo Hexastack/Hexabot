@@ -20,7 +20,7 @@ import {
 import { ChannelName } from '@/channel/types';
 import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import {
   AttachmentAccess,
@@ -201,10 +201,10 @@ export class AttachmentContextParamDto {
   access?: AttachmentAccess;
 }
 
-export type AttachmentDto = BuildDtoType<
+export type AttachmentDto = TDto<
   {
-    PlainCls: typeof Attachment;
-    FullCls: typeof AttachmentFull;
+    plain: typeof Attachment;
+    full: typeof AttachmentFull;
   },
   {
     create: AttachmentCreateDto;

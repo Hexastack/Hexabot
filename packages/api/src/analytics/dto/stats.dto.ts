@@ -16,7 +16,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { StatsType } from '../enums/stats-type.enum';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
@@ -71,10 +71,10 @@ export class StatsCreateDto {
 
 export class StatsUpdateDto extends PartialType(StatsCreateDto) {}
 
-export type StatsDto = BuildDtoType<
+export type StatsDto = TDto<
   {
-    PlainCls: typeof Stats;
-    FullCls: typeof Stats;
+    plain: typeof Stats;
+    full: typeof Stats;
   },
   {
     create: StatsCreateDto;

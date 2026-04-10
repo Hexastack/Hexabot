@@ -12,7 +12,7 @@ import { z } from 'zod';
 
 import { FieldType } from '@/setting/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 @Exclude()
 export class ContentTypeStub extends BaseStub {
@@ -63,10 +63,10 @@ export class ContentTypeCreateDto {
 
 export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}
 
-export type ContentTypeDto = BuildDtoType<
+export type ContentTypeDto = TDto<
   {
-    PlainCls: typeof ContentType;
-    FullCls: typeof ContentTypeFull;
+    plain: typeof ContentType;
+    full: typeof ContentTypeFull;
   },
   {
     create: ContentTypeCreateDto;

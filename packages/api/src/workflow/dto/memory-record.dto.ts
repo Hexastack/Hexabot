@@ -18,7 +18,7 @@ import {
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import type { MemoryValue } from '../types';
 
@@ -139,10 +139,10 @@ export class MemoryRecordCreateDto {
 
 export class MemoryRecordUpdateDto extends PartialType(MemoryRecordCreateDto) {}
 
-export type MemoryRecordDto = BuildDtoType<
+export type MemoryRecordDto = TDto<
   {
-    PlainCls: typeof MemoryRecord;
-    FullCls: typeof MemoryRecordFull;
+    plain: typeof MemoryRecord;
+    full: typeof MemoryRecordFull;
   },
   {
     create: MemoryRecordCreateDto;

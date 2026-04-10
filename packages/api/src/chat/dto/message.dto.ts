@@ -17,7 +17,7 @@ import {
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import {
   StdIncomingMessage,
@@ -128,10 +128,10 @@ export class MessageCreateDto {
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
 
-export type MessageDto = BuildDtoType<
+export type MessageDto = TDto<
   {
-    PlainCls: typeof Message;
-    FullCls: typeof MessageFull;
+    plain: typeof Message;
+    full: typeof MessageFull;
   },
   {
     create: MessageCreateDto;
