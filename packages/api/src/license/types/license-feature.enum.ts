@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { LicenseQuotaSnapshot } from './license-quota';
+
 export enum LicenseFeature {
   UserManagement = 'user_management',
 }
@@ -46,4 +48,5 @@ export type LicenseSnapshot = {
   activationLimit: number | null;
   activationUsage: number | null;
   lastError: string | null;
+  quotas: LicenseQuotaSnapshot;
 };

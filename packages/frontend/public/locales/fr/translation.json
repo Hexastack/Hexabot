@@ -185,7 +185,9 @@
     "license_badge_activations": "Activations : {{0}}",
     "user_management_locked_title": "La gestion des utilisateurs est verrouillée",
     "user_management_locked_description": "Votre licence actuelle ne donne pas accès à la gestion des utilisateurs.",
-    "user_management_locked_hint": "Passez à l'offre Pro ou saisissez une clé de licence valide pour continuer."
+    "user_management_locked_hint": "Passez à l'offre Pro ou saisissez une clé de licence valide pour continuer.",
+    "users_quota_reached": "Limite d'utilisateurs atteinte pour votre offre actuelle.",
+    "workflows_quota_reached": "Limite de workflows atteinte pour votre offre actuelle."
   },
   "menu": {
     "terms": "Conditions d'utilisation",
@@ -611,6 +613,9 @@
     "plan_display_starter": "Starter",
     "plan_display_pro": "Pro",
     "plan_display_unlimited": "Illimité",
+    "unlimited": "Illimité",
+    "users_quota_usage": "Utilisateurs : {{0}}",
+    "workflows_quota_usage": "Workflows : {{0}}",
     "license_badge_unknown": "Édition communautaire GRATUITE",
     "license_badge_starter": "Abonnement Starter",
     "license_badge_pro": "Abonnement PRO",

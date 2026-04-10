@@ -15,6 +15,12 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
+import {
+  formatLicenseQuotaUsage,
+  getQuotaUpgradeTargetPlan,
+  getLicenseQuotaResource,
+  isLicenseQuotaReached,
+} from "@/components/license/license-quotas";
 import LicenseGate, {
   hasLicensePlanAccess,
   LockedFeatureLabel,
@@ -89,6 +95,37 @@ const UsersDataGrid = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const { user } = useAuth();
+  const usersQuota = getLicenseQuotaResource(user?.license, "users");
+  const usersQuotaReached = isLicenseQuotaReached(user?.license, "users");
+  const usersUpgradeTargetPlan = usersQuotaReached
+    ? getQuotaUpgradeTargetPlan(user?.license, "users")
+    : null;
+  const usersQuotaUsage = t("label.users_quota_usage", {
+    0: formatLicenseQuotaUsage(usersQuota, t("label.unlimited")),
+  });
+  const openCreateUserDialog = () => {
+    dialogs.open(CreateUserFormDialog, {
+      defaultValues: null,
+    });
+  };
+  const addUserButton =
+    usersQuotaReached && usersUpgradeTargetPlan ? (
+      <LicenseGate
+        requiredPlan={usersUpgradeTargetPlan}
+        reasonText={t("message.users_quota_reached")}
+        onUpgrade={openPricing}
+        disableChildWhenBlocked={false}
+      >
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<UserPlus />}
+          onClick={openCreateUserDialog}
+        >
+          {t("button.add")}
+        </Button>
+      </LicenseGate>
+    ) : undefined;
   const { mutate: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
       toast.error(error);
@@ -219,13 +256,19 @@ const UsersDataGrid = () => {
       buttons={[
         {
           permissionAction: PermissionAction.CREATE,
-          children: t("button.add"),
-          startIcon: <UserPlus />,
-          onClick: () => {
-            dialogs.open(CreateUserFormDialog, {
-              defaultValues: null,
-            });
-          },
+          ...(addUserButton
+            ? {
+                children: addUserButton,
+              }
+            : {
+                children: t("button.add"),
+                startIcon: <UserPlus />,
+                disabled: usersQuotaReached,
+                title: usersQuotaReached
+                  ? t("message.users_quota_reached")
+                  : undefined,
+                onClick: openCreateUserDialog,
+              }),
         },
       ]}
       columns={columns}
@@ -235,6 +278,7 @@ const UsersDataGrid = () => {
         syncUrl: true,
       }}
       headerI18nTitle="title.users"
+      headerTitleChip={usersQuotaUsage}
     />
   );
 };

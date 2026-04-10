@@ -11,12 +11,18 @@ import { SettingModule } from '@/setting/setting.module';
 
 import { LicenseFeatureGuard } from './guards/license-feature.guard';
 import { LemonSqueezyService } from './services/lemon-squeezy.service';
+import { LicenseOrmListener } from './services/license-orm-listener.service';
 import { LicenseService } from './services/license.service';
 
 @Global()
 @Module({
   imports: [HttpModule, SettingModule],
-  providers: [LicenseService, LicenseFeatureGuard, LemonSqueezyService],
+  providers: [
+    LicenseService,
+    LicenseFeatureGuard,
+    LemonSqueezyService,
+    LicenseOrmListener,
+  ],
   exports: [LicenseService, LicenseFeatureGuard],
 })
 export class LicenseModule {}

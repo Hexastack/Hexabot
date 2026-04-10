@@ -6,10 +6,14 @@
 
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Code, Plus, Search } from "lucide-react";
+import type { ReactElement } from "react";
 
 type FlowsDrawerCollapsedActionsProps = {
   searchLabel: string;
   newWorkflowLabel: string;
+  newWorkflowDisabled?: boolean;
+  newWorkflowDisabledReason?: string;
+  newWorkflowAction?: ReactElement;
   yamlLabel: string;
   onOpen: () => void;
   onNew?: () => void;
@@ -20,6 +24,9 @@ type FlowsDrawerCollapsedActionsProps = {
 export const FlowsDrawerCollapsedActions = ({
   searchLabel,
   newWorkflowLabel,
+  newWorkflowDisabled = false,
+  newWorkflowDisabledReason,
+  newWorkflowAction,
   yamlLabel,
   onOpen,
   onNew,
@@ -49,10 +56,23 @@ export const FlowsDrawerCollapsedActions = ({
         <Code size={16} />
       </IconButton>
     </Tooltip>
-    <Tooltip title={newWorkflowLabel}>
-      <IconButton size="small" onClick={onNew} disabled={!onNew}>
-        <Plus size={16} />
-      </IconButton>
-    </Tooltip>
+    {newWorkflowAction ?? (
+      <Tooltip
+        title={
+          newWorkflowDisabled ? (newWorkflowDisabledReason ?? "") : newWorkflowLabel
+        }
+        disableHoverListener={!newWorkflowDisabled && !newWorkflowLabel}
+      >
+        <span>
+          <IconButton
+            size="small"
+            onClick={onNew}
+            disabled={!onNew || newWorkflowDisabled}
+          >
+            <Plus size={16} />
+          </IconButton>
+        </span>
+      </Tooltip>
+    )}
   </Box>
 );
