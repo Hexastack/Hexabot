@@ -119,7 +119,18 @@ export interface LicenseGateProps {
   reasonText?: string;
   onUpgrade?: () => void;
   showInlineLabel?: boolean;
+  disableChildWhenBlocked?: boolean;
 }
+
+export const shouldDisableBlockedChild = ({
+  allowed,
+  supportsDisabled,
+  disableChildWhenBlocked,
+}: {
+  allowed: boolean;
+  supportsDisabled: boolean;
+  disableChildWhenBlocked: boolean;
+}): boolean => !allowed && supportsDisabled && disableChildWhenBlocked;
 
 export const LicenseGate = ({
   requiredPlan,
@@ -127,6 +138,7 @@ export const LicenseGate = ({
   reasonText,
   onUpgrade,
   showInlineLabel = false,
+  disableChildWhenBlocked = true,
 }: LicenseGateProps) => {
   const router = useAppRouter();
   const { user } = useAuth();
@@ -142,6 +154,11 @@ export const LicenseGate = ({
     typeof childProps.disabled !== "undefined" ||
     (children.type as any)?.muiName === "Button" ||
     (children.type as any)?.muiName === "IconButton";
+  const disableBlockedChild = shouldDisableBlockedChild({
+    allowed,
+    supportsDisabled,
+    disableChildWhenBlocked,
+  });
   const childWithInlineLabel =
     showInlineLabel && !allowed ? (
       <Box
@@ -171,9 +188,13 @@ export const LicenseGate = ({
         childProps.onClick(e);
       }
     },
-    "aria-disabled": allowed ? childProps["aria-disabled"] : true,
-    tabIndex: allowed ? childProps.tabIndex : -1,
-    ...(supportsDisabled ? { disabled: !allowed } : {}),
+    "aria-disabled": disableBlockedChild ? true : childProps["aria-disabled"],
+    tabIndex: disableBlockedChild ? -1 : childProps.tabIndex,
+    ...(supportsDisabled
+      ? {
+          disabled: disableBlockedChild ? true : childProps.disabled,
+        }
+      : {}),
     children: childWithInlineLabel,
   } as any);
 

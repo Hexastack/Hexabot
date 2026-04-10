@@ -10,19 +10,42 @@ import { IAttachment } from "./attachment.types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IRole } from "./role.types";
 
+export type LicensePlan = "unknown" | "starter" | "pro" | "unlimited";
+
+export type PaidLicensePlan = Exclude<LicensePlan, "unknown">;
+
+export type LicenseStatus =
+  | "inactive"
+  | "active"
+  | "expired"
+  | "disabled"
+  | "invalid"
+  | "undefined"
+  | "error";
+
+export type LicenseQuotaTier = "community" | PaidLicensePlan;
+
+export type LicenseQuotaResource = "users" | "workflows";
+
+export interface ILicenseQuotaResourceState {
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+  reached: boolean;
+}
+
+export interface ILicenseQuotas {
+  tier: LicenseQuotaTier;
+  resources: Record<LicenseQuotaResource, ILicenseQuotaResourceState>;
+}
+
 export interface ILicense {
   activationLimit: number | null;
   activationUsage: number | null;
-  plan: "unknown" | "starter" | "pro" | "unlimited";
-  status:
-    | "inactive"
-    | "active"
-    | "expired"
-    | "disabled"
-    | "invalid"
-    | "undefined"
-    | "error";
+  plan: LicensePlan;
+  status: LicenseStatus;
   lastError: string | null;
+  quotas: ILicenseQuotas;
 }
 
 export interface IUserAttributes {

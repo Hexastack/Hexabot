@@ -27,6 +27,23 @@ describe('AuthController (TypeORM)', () => {
     activationLimit: 10,
     activationUsage: 1,
     lastError: null,
+    quotas: {
+      tier: 'pro',
+      resources: {
+        users: {
+          limit: 10,
+          used: 1,
+          remaining: 9,
+          reached: false,
+        },
+        workflows: {
+          limit: 150,
+          used: 3,
+          remaining: 147,
+          reached: false,
+        },
+      },
+    },
   } as const;
 
   beforeAll(async () => {

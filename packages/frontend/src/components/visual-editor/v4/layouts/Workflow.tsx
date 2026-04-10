@@ -39,6 +39,7 @@ import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useWorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useAuth } from "@/hooks/useAuth";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -153,6 +154,7 @@ export const Workflow = () => {
   const { actions, actionsByName } = useWorkflowActionsCatalog();
   const { bindingsByName } = useWorkflowBindingsCatalog();
   const dialogs = useDialogs();
+  const { refetchUser } = useAuth();
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const isEmptyWorkflow = !definition?.flow?.length;
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
@@ -396,6 +398,7 @@ export const Workflow = () => {
           definitionYaml: baseYaml,
           onCreated: (createdWorkflow) => {
             updateWorkflowURL(createdWorkflow.id);
+            void refetchUser();
           },
         },
       },
@@ -446,6 +449,7 @@ export const Workflow = () => {
 
     deleteWorkflow(flowId, {
       onSuccess: () => {
+        void refetchUser();
         if (selectedFlowId === flowId && fallbackFlowId) {
           updateWorkflowURL(fallbackFlowId);
         }
