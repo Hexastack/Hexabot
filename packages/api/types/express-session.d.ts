@@ -21,6 +21,7 @@ declare module 'express-session' {
     };
     web?: {
       profile?: Subscriber;
+      threadId?: string;
       isSocket: boolean;
       messageQueue: any[];
       polling: boolean;

@@ -9,6 +9,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
+import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { CmsModule } from '@/cms';
 import { UserModule } from '@/user';
 
@@ -55,6 +56,7 @@ import { WorkflowService } from './services/workflow.service';
       MemoryDefinitionOrmEntity,
       MemoryRecordOrmEntity,
       McpServerOrmEntity,
+      ThreadOrmEntity,
     ]),
     forwardRef(() => CmsModule),
     forwardRef(() => ChatModule),

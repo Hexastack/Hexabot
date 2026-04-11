@@ -11,6 +11,7 @@ import {
 } from '@hexabot-ai/agentic';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
+import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
@@ -78,6 +79,19 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
   /** Identifier of the triggering subscriber (for internal relations). */
   @RelationId((run: WorkflowRunOrmEntity) => run.triggeredBy)
   private readonly triggeredById?: string | null;
+
+  /** Conversation thread linked to this run (for conversational workflows). */
+  @ManyToOne(() => ThreadOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'thread_id' })
+  @AsRelation()
+  thread?: ThreadOrmEntity | null;
+
+  /** Identifier of the linked thread (for internal relations). */
+  @RelationId((run: WorkflowRunOrmEntity) => run.thread)
+  private readonly threadId?: string | null;
 
   /** Lifecycle status of the run (idle, running, suspended, finished, failed). */
   @EnumColumn({ enum: WORKFLOW_RUN_STATUSES, default: 'idle' })

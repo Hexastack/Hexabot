@@ -26,6 +26,7 @@ import {
 } from '../types/message';
 
 import { Subscriber } from './subscriber.dto';
+import { Thread } from './thread.dto';
 
 @Exclude()
 export class MessageStub extends BaseStub {
@@ -56,6 +57,9 @@ export class Message extends MessageStub {
 
   @Expose({ name: 'sentById' })
   sentBy?: string | null;
+
+  @Expose({ name: 'threadId' })
+  thread!: string;
 }
 
 @Exclude()
@@ -71,6 +75,10 @@ export class MessageFull extends MessageStub {
   @Expose()
   @Type(() => User)
   sentBy?: User | null;
+
+  @Expose()
+  @Type(() => Thread)
+  thread!: Thread;
 }
 
 export class MessageCreateDto {
@@ -101,6 +109,11 @@ export class MessageCreateDto {
   @IsOptional()
   @IsUUIDv4({ message: 'SentBy must be a valid UUID' })
   sentBy?: string;
+
+  @ApiProperty({ description: 'Message thread', type: String })
+  @IsString()
+  @IsUUIDv4({ message: 'Thread must be a valid UUID' })
+  thread!: string;
 
   @ApiProperty({ description: 'Message', type: Object })
   @IsObject()

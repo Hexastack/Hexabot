@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 
 import { Message, MessageCreateDto } from '@/chat/dto/message.dto';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder, TFixturesDefaultValues } from '../types';
@@ -21,6 +22,7 @@ const messages: TMessageFixtures['values'][] = [
     mid: 'mid-1',
     sender: '1',
     recipient: '1',
+    thread: '1',
     sentBy: '0',
     message: { text: 'Hello from the past' },
     read: true,
@@ -30,6 +32,7 @@ const messages: TMessageFixtures['values'][] = [
     mid: 'mid-2',
     sender: '1',
     recipient: '1',
+    thread: '1',
     sentBy: '0',
     message: { text: 'Hello' },
     delivery: true,
@@ -38,6 +41,7 @@ const messages: TMessageFixtures['values'][] = [
     mid: 'mid-3',
     sender: '1',
     recipient: '1',
+    thread: '1',
     sentBy: '0',
     message: { text: 'Hello back' },
   },
@@ -73,6 +77,7 @@ const parseIndex = (value?: string | null) => {
 
 export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(MessageOrmEntity);
+  const threadRepository = dataSource.getRepository(ThreadOrmEntity);
   const { subscribers, users } =
     await installSubscriberFixturesTypeOrm(dataSource);
 
@@ -80,6 +85,24 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
     return await findMessages(dataSource);
   }
 
+  const threads = await Promise.all(
+    subscribers.map(async (subscriber) => {
+      const existing = await threadRepository.findOne({
+        where: { subscriber: { id: subscriber.id } },
+      });
+      if (existing) {
+        return existing;
+      }
+
+      return await threadRepository.save(
+        threadRepository.create({
+          subscriber: { id: subscriber.id },
+          status: 'open',
+          lastMessageAt: new Date(),
+        }),
+      );
+    }),
+  );
   const entities = messageFixtures.map((fixture) => {
     const senderIndex = parseIndex(fixture.sender);
     const recipientIndex = parseIndex(fixture.recipient);
@@ -96,6 +119,16 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
       sentByIndex != null && users[sentByIndex]
         ? { id: users[sentByIndex].id }
         : null;
+    const threadIndex = parseIndex(fixture.thread);
+    const thread =
+      threadIndex != null && threads[threadIndex]
+        ? { id: threads[threadIndex].id }
+        : senderIndex != null && threads[senderIndex]
+          ? { id: threads[senderIndex].id }
+          : null;
+    if (!thread) {
+      throw new Error('Unable to resolve thread fixture for message');
+    }
 
     return repository.create({
       mid: fixture.mid ?? null,
@@ -106,6 +139,7 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
       sender,
       recipient,
       sentBy,
+      thread,
       createdAt: fixture.createdAt,
     });
   });

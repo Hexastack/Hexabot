@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Thread } from '@/chat/dto/thread.dto';
 import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
@@ -53,6 +54,10 @@ export class MemoryRecord extends MemoryRecordStub {
   @Expose({ name: 'runId' })
   @Transform(({ value }) => (value == null ? undefined : value))
   run?: string | null;
+
+  @Expose({ name: 'threadId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  thread?: string | null;
 }
 
 @Exclude()
@@ -74,6 +79,10 @@ export class MemoryRecordFull extends MemoryRecordStub {
   @Expose()
   @Type(() => WorkflowRun)
   run?: WorkflowRun | null;
+
+  @Expose()
+  @Type(() => Thread)
+  thread?: Thread | null;
 }
 
 export class MemoryRecordCreateDto {
@@ -110,6 +119,15 @@ export class MemoryRecordCreateDto {
   @IsString()
   @IsUUIDv4({ message: 'workflowRun must be a valid UUID' })
   run?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Thread id when scope is thread',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  @IsUUIDv4({ message: 'thread must be a valid UUID' })
+  thread?: string | null;
 
   @ApiProperty({
     description: 'Memory payload respecting the definition schema',
