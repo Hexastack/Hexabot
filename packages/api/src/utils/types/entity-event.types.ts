@@ -10,7 +10,7 @@ import { BaseOrmEntity } from '@/database';
 
 import { EHook } from '../generics/base-orm.repository';
 
-import { EntityDto, InferCreateDto, InferUpdateDto } from './dto.types';
+import { InferCreateDto, InferUpdateDto, TEntityDto } from './dto.types';
 
 type EventProps<Entity extends BaseOrmEntity> =
   | {
@@ -58,35 +58,38 @@ export type EmitEventProps<
   H extends EHook,
 > = Extract<EventProps<Entity>, { action: H }>;
 
-export type InsertEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
-  Extract<
-    EventProps<Entity>,
-    | {
-        action: EHook.preCreate;
-      }
-    | {
-        action: EHook.postCreate;
-      }
-  >;
+export type InsertRepositoryEvent<
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
+> = Extract<
+  EventProps<Entity>,
+  | {
+      action: EHook.preCreate;
+    }
+  | {
+      action: EHook.postCreate;
+    }
+>;
 
-export type UpdateEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
-  Extract<
-    EventProps<Entity>,
-    | {
-        action: EHook.preUpdate;
-      }
-    | {
-        action: EHook.postUpdate;
-      }
-  >;
+export type UpdateRepositoryEvent<
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
+> = Extract<
+  EventProps<Entity>,
+  | {
+      action: EHook.preUpdate;
+    }
+  | {
+      action: EHook.postUpdate;
+    }
+>;
 
-export type RemoveEvent<Entity extends BaseOrmEntity<EntityDto<Entity>>> =
-  Extract<
-    EventProps<Entity>,
-    | {
-        action: EHook.preDelete;
-      }
-    | {
-        action: EHook.postDelete;
-      }
-  >;
+export type RemoveRepositoryEvent<
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
+> = Extract<
+  EventProps<Entity>,
+  | {
+      action: EHook.preDelete;
+    }
+  | {
+      action: EHook.postDelete;
+    }
+>;

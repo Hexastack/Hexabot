@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, UpdateEvent } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 import { CHATBOT_SETTINGS_GROUP } from '@/setting/default.settings';
@@ -19,6 +19,7 @@ import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { MetadataService } from '@/setting/services/metadata.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { UserOrmEntity } from '@/user/entities/user.entity';
+import { UpdateRepositoryEvent } from '@/utils/types/entity-event.types';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 import {
@@ -249,7 +250,7 @@ export class LicenseService implements OnApplicationBootstrap {
   }
 
   @OnEvent('hook:setting:preUpdate')
-  async handleLicenseKeyUpdate(event: UpdateEvent<SettingOrmEntity>) {
+  async handleLicenseKeyUpdate(event: UpdateRepositoryEvent<SettingOrmEntity>) {
     const previous = event.databaseEntity;
     const next = event.entity as SettingOrmEntity | undefined;
     const group = next?.group ?? previous?.group;

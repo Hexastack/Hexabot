@@ -12,6 +12,7 @@ import {
   ManyToMany,
   ManyToOne,
   RelationId,
+  UpdateEvent,
 } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
@@ -19,6 +20,7 @@ import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { TDto } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -104,5 +106,7 @@ export class SubscriberOrmEntity<
 
   ensurePassword(): void {}
 
-  hashSensitiveFields(): void {}
+  hashSensitiveFields(_event: UpdateEvent<UserOrmEntity>) {}
+
+  updateUserAssignedAt(_event: UpdateEvent<SubscriberOrmEntity>) {}
 }

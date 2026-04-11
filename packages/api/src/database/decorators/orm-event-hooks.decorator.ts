@@ -60,8 +60,8 @@ export const invokeOrmHooks = async <
   Entity extends BaseOrmEntity<{
     actions: {};
     transformers: {
-      FullCls: Entity['fullCls'];
-      PlainCls: Entity['plainCls'];
+      full: Entity['fullCls'];
+      plain: Entity['plainCls'];
     };
   }>,
 >(

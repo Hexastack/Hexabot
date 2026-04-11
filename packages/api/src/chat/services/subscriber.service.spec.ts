@@ -527,6 +527,78 @@ describe('SubscriberService (TypeORM)', () => {
     });
   });
 
+  describe('assignment lifecycle hooks', () => {
+    it('updates assignedAt and emits assign hook on handover', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-dimelo' },
+      }))!;
+      const assignee = (await userRepository.findOne({
+        where: { username: 'admin' },
+      })) as User;
+      const initialAssignedAt = new Date('2024-01-01T00:00:00.000Z');
+      await subscriberService.updateOne(profile.id, {
+        assignedTo: assignee.id,
+        assignedAt: initialAssignedAt,
+      });
+      const emitSpy = jest.spyOn(
+        subscriberRepository.getEventEmitter(),
+        'emitAsync',
+      );
+      const updated = await subscriberService.handOver(profile, assignee.id);
+
+      expect(updated.assignedTo).toBe(assignee.id);
+      expect(updated.assignedAt).toBeInstanceOf(Date);
+      expect(updated.assignedAt).not.toEqual(initialAssignedAt);
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:subscriber:assign',
+        expect.objectContaining({
+          assignedTo: assignee.id,
+          assignedAt: expect.any(Date),
+        }),
+        expect.objectContaining({
+          id: profile.id,
+        }),
+      );
+    });
+
+    it('clears assignedAt and emits assign hook on handback', async () => {
+      const profile = (await subscriberService.findOne({
+        where: { foreignId: 'foreign-id-dimelo' },
+      }))!;
+      const assignee = (await userRepository.findOne({
+        where: { username: 'admin' },
+      })) as User;
+      const updatedSubscriber = await subscriberService.updateOne(profile.id, {
+        assignedTo: assignee.id,
+        assignedAt: new Date('2024-01-01T00:00:00.000Z'),
+      });
+      const emitSpy = jest.spyOn(
+        subscriberRepository.getEventEmitter(),
+        'emit',
+      );
+
+      expect(updatedSubscriber.assignedTo).not.toBeNull();
+      expect(updatedSubscriber.assignedAt).not.toBeNull();
+
+      const updated = await subscriberService.handBackByForeignId(
+        profile.foreignId,
+      );
+
+      expect(updated.assignedTo).toBeNull();
+      expect(updated.assignedAt).toBeNull();
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:subscriber:assign',
+        expect.objectContaining({
+          assignedTo: null,
+          assignedAt: null,
+        }),
+        expect.objectContaining({
+          id: profile.id,
+        }),
+      );
+    });
+  });
+
   describe('handOverByPolicy', () => {
     it('assigns in specific mode when assignee is active', async () => {
       const profile = (await subscriberService.findOne({

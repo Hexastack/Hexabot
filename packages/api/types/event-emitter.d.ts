@@ -50,9 +50,9 @@ import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { DtoActionConfig } from '@/utils/types/dto.types';
 import type {
-  InsertEvent,
-  RemoveEvent,
-  UpdateEvent,
+  InsertRepositoryEvent,
+  RemoveRepositoryEvent,
+  UpdateRepositoryEvent,
 } from '@/utils/types/entity-event.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
@@ -74,9 +74,9 @@ type UnionToIntersection<U> = (
   : never;
 
 type OrmLifecycleEvent<Entity> =
-  | InsertEvent<Entity>
-  | UpdateEvent<Entity>
-  | RemoveEvent<Entity>;
+  | InsertRepositoryEvent<Entity>
+  | UpdateRepositoryEvent<Entity>
+  | RemoveRepositoryEvent<Entity>;
 
 type InsertHook =
   | 'preCreateValidate'
@@ -117,11 +117,11 @@ type HookEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
 > = Hook extends InsertHook
-  ? [InsertEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+  ? [InsertRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
   : Hook extends UpdateHook
-    ? [UpdateEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+    ? [UpdateRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
     : Hook extends DeleteHook
-      ? [RemoveEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+      ? [RemoveRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
       : never;
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];
@@ -208,7 +208,6 @@ declare module '@nestjs/event-emitter' {
   >;
 
   interface CustomEventMap {
-    'hook:analytics:passation': [Subscriber, boolean];
     'hook:chatbot:echo': [AnyEventWrapper];
     'hook:chatbot:delivery': [AnyEventWrapper];
     'hook:chatbot:message': [AnyEventWrapper];

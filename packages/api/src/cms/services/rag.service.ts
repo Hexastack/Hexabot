@@ -11,9 +11,9 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { UserOrmEntity } from '@/user';
 import {
-  InsertEvent,
-  RemoveEvent,
-  UpdateEvent,
+  InsertRepositoryEvent,
+  RemoveRepositoryEvent,
+  UpdateRepositoryEvent,
 } from '@/utils/types/entity-event.types';
 
 import { ContentOrmEntity } from '../entities/content.entity';
@@ -124,7 +124,9 @@ export class RagService {
    * @returns Resolves when event handling completes.
    */
   @OnEvent('hook:content:postCreate')
-  async handleContentCreated(event: InsertEvent<UserOrmEntity>): Promise<void> {
+  async handleContentCreated(
+    event: InsertRepositoryEvent<UserOrmEntity>,
+  ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
       return;
@@ -146,7 +148,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postUpdate')
   async handleContentUpdated(
-    event: UpdateEvent<ContentOrmEntity>,
+    event: UpdateRepositoryEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -169,7 +171,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postDelete')
   async handleContentDeleted(
-    event: RemoveEvent<ContentOrmEntity>,
+    event: RemoveRepositoryEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {

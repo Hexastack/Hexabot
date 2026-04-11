@@ -13,7 +13,7 @@ import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { InsertEvent, UpdateEvent } from '@/utils/types/entity-event.types';
+import { InsertRepositoryEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -33,37 +33,16 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
   }
 
   @OnEvent('hook:subscriber:preCreate')
-  handleSubscriberPreCreate(event: InsertEvent<SubscriberOrmEntity>) {
+  async handleSubscriberPreCreate(
+    event: InsertRepositoryEvent<SubscriberOrmEntity>,
+  ) {
     const subscriber = event.entity.toPlainCls();
 
-    this.eventEmitter.emit(
+    await this.eventEmitter.emitAsync(
       'hook:stats:entry',
       StatsType.new_users,
       'New users',
       subscriber,
-    );
-  }
-
-  @OnEvent('hook:subscriber:preUpdate')
-  handleSubscriberPreUpdate(event: UpdateEvent<SubscriberOrmEntity>): void {
-    const entity = event.entity.toPlainCls();
-    const previous = event.databaseEntity.toPlainCls();
-
-    if (entity.assignedTo === previous.assignedTo) {
-      return;
-    }
-
-    const newAssignmentExists = Boolean(entity.assignedTo);
-    const previousAssignmentExists = Boolean(previous.assignedTo);
-
-    if (newAssignmentExists && previousAssignmentExists) {
-      return;
-    }
-
-    this.eventEmitter.emit(
-      'hook:analytics:passation',
-      previous,
-      newAssignmentExists,
     );
   }
 

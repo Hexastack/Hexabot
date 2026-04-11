@@ -22,6 +22,7 @@ import {
   Repository,
   UpdateEvent,
 } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import {
   invokeOrmHooks,
@@ -41,11 +42,6 @@ import {
   TEntityDto,
 } from '../types/dto.types';
 import { EmitEventProps } from '../types/entity-event.types';
-
-export type DeleteResult = {
-  acknowledged: boolean;
-  deletedCount: number;
-};
 
 export enum EHook {
   preCreateValidate = 'preCreateValidate',
@@ -274,7 +270,6 @@ export abstract class BaseOrmRepository<
 
   async create(payload: InferCreateDto<Entity>): Promise<InferPlain<Entity>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
-
     await this.emitEvent<EHook.preCreate>({
       action: EHook.preCreate,
       entity,
@@ -518,12 +513,10 @@ export abstract class BaseOrmRepository<
       databaseEntity: deletedEntity,
     });
 
-    const result: DeleteResult = {
+    return {
       acknowledged: true,
       deletedCount: 1,
-    };
-
-    return result;
+    } satisfies DeleteResult;
   }
 
   private isBuiltin(entity: Entity): boolean {
