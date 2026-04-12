@@ -22,6 +22,7 @@ import {
 } from 'class-validator';
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Thread } from '@/chat/dto/thread.dto';
 import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
@@ -109,6 +110,10 @@ export class WorkflowRun extends WorkflowRunStub {
   @Expose({ name: 'triggeredById' })
   @Transform(({ value }) => (value == null ? undefined : value))
   triggeredBy: string;
+
+  @Expose({ name: 'threadId' })
+  @Transform(({ value }) => (value == null ? undefined : value))
+  thread?: string | null;
 }
 
 @Exclude()
@@ -126,6 +131,10 @@ export class WorkflowRunFull extends WorkflowRunStub {
     options?.object.triggeredBy instanceof UserOrmEntity ? User : Subscriber,
   )
   triggeredBy: Subscriber | User;
+
+  @Expose()
+  @Type(() => Thread)
+  thread?: Thread | null;
 }
 
 export class WorkflowRunCreateDto {
@@ -145,6 +154,16 @@ export class WorkflowRunCreateDto {
     message: 'Triggering user must be a valid UUID',
   })
   triggeredBy?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Conversation thread associated with the run',
+    type: String,
+  })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'Thread must be a valid UUID',
+  })
+  thread?: string | null;
 
   @ApiPropertyOptional({
     description: 'Workflow version executed by the run',

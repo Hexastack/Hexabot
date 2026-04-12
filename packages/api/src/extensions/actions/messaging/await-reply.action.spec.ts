@@ -44,6 +44,7 @@ describe('AwaitReplyAction', () => {
     const resume = {
       message: { text: 'user reply' },
       text: 'user reply',
+      thread_id: 'thread-1',
     };
     workflow.suspend.mockResolvedValue(resume);
 
@@ -83,6 +84,7 @@ describe('AwaitReplyAction', () => {
       message_type: 'message',
       payload: 'quick-reply',
       mid: 'mid-1',
+      thread_id: 'thread-1',
     };
     workflow.suspend.mockResolvedValue(resumeWithOptionalFields);
 

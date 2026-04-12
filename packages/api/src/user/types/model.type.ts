@@ -19,6 +19,7 @@ export type TModel =
   | 'label'
   | 'labelgroup'
   | 'message'
+  | 'thread'
   | 'subscriber'
   | 'language'
   | 'translation'

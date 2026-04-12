@@ -34,6 +34,7 @@ export class MemoryRecordService extends BaseOrmService<MemoryRecordOrmEntity> {
   async findActiveByScope({
     ownerId,
     workflowId,
+    threadId,
     runId,
   }: MemoryStoreIdentifier): Promise<MemoryRecordFull[]> {
     if (!ownerId) {
@@ -52,6 +53,14 @@ export class MemoryRecordService extends BaseOrmService<MemoryRecordOrmEntity> {
         owner: { id: ownerId },
         workflow: { id: workflowId },
         definition: { scope: MemoryScope.workflow },
+      });
+    }
+
+    if (threadId) {
+      where.push({
+        owner: { id: ownerId },
+        thread: { id: threadId },
+        definition: { scope: MemoryScope.thread },
       });
     }
 
@@ -91,12 +100,14 @@ export class MemoryRecordService extends BaseOrmService<MemoryRecordOrmEntity> {
     definition,
     ownerId,
     workflowId,
+    threadId,
     runId,
     value,
   }: {
     definition: Pick<MemoryDefinition, 'id' | 'scope' | 'ttlSeconds'>;
     ownerId: string;
     workflowId?: string | null;
+    threadId?: string | null;
     runId?: string | null;
     value: MemoryValue;
   }): Promise<void> {
@@ -112,6 +123,10 @@ export class MemoryRecordService extends BaseOrmService<MemoryRecordOrmEntity> {
 
     if (definition.scope === MemoryScope.workflow) {
       where.workflow = { id: workflowId! };
+    }
+
+    if (definition.scope === MemoryScope.thread) {
+      where.thread = { id: threadId! };
     }
 
     if (definition.scope === MemoryScope.run) {
@@ -140,7 +155,18 @@ export class MemoryRecordService extends BaseOrmService<MemoryRecordOrmEntity> {
       definition: definition.id,
       owner: ownerId,
       workflow:
-        definition.scope === MemoryScope.global ? null : (workflowId ?? null),
+        definition.scope === MemoryScope.global
+          ? null
+          : definition.scope === MemoryScope.workflow ||
+              definition.scope === MemoryScope.run
+            ? (workflowId ?? null)
+            : null,
+      thread:
+        definition.scope === MemoryScope.thread
+          ? (threadId ?? null)
+          : definition.scope === MemoryScope.run
+            ? (threadId ?? null)
+            : null,
       run: definition.scope === MemoryScope.run ? (runId ?? null) : null,
       value,
       ttlSeconds,

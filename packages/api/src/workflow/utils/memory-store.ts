@@ -319,7 +319,7 @@ export class MemoryStore {
     value: MemoryValue,
     persistRecord: MemoryStorePersistRecordFn,
   ): Promise<MemoryValue> {
-    const { ownerId, workflowId, runId } = this.identifiers;
+    const { ownerId, workflowId, threadId, runId } = this.identifiers;
     if (!ownerId) {
       throw new Error('An owner id is required to update memory.');
     }
@@ -337,6 +337,9 @@ export class MemoryStore {
     if (definition.scope === MemoryScope.run && !runId) {
       throw new Error('Run id is required to update run-scoped memory.');
     }
+    if (definition.scope === MemoryScope.thread && !threadId) {
+      throw new Error('Thread id is required to update thread-scoped memory.');
+    }
 
     const parsedValue = this.parseValue(slug, value);
 
@@ -344,6 +347,7 @@ export class MemoryStore {
       definition,
       ownerId,
       workflowId,
+      threadId,
       runId,
       value: parsedValue,
     });

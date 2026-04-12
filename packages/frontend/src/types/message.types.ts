@@ -10,6 +10,7 @@ import { IAttachment } from "./attachment.types";
 import { IBaseSchema, OmitPopulate } from "./base.types";
 import { IContent } from "./content.types";
 import { ISubscriber } from "./subscriber.types";
+import { IThread } from "./thread.types";
 import { IUser } from "./user.types";
 
 export enum OutgoingMessageFormat {
@@ -181,6 +182,7 @@ export type StdOutgoingMessage =
 export interface IMessageAttributes {
   mid?: string;
   inReplyTo?: string;
+  thread: string;
   sender?: string;
   recipient?: string;
   sentBy?: string;
@@ -197,12 +199,14 @@ export interface IMessageStub
     OmitPopulate<IMessageAttributes, EntityType.MESSAGE> {}
 
 export interface IMessage extends IMessageStub {
+  thread: string;
   sender?: string;
   recipient?: string;
   sentBy?: string;
 }
 
 export interface IMessageFull extends IMessageStub {
+  thread: IThread;
   sender?: ISubscriber;
   recipient?: ISubscriber;
   sentBy?: IUser;

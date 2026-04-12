@@ -41,6 +41,7 @@ export enum EntityType {
   MCP_SERVER = "McpServer",
   MCP_SERVER_TOOL = "McpServerTool",
   MEMORY_DEFINITION = "MemoryDefinition",
+  THREAD = "Thread",
   STATS = "Stats",
 }
 

@@ -72,6 +72,11 @@ export const WEB_CHANNEL_SETTINGS_SCHEMA = z
       description: 'Comma-separated MIME types accepted by the upload input.',
       'ui:widget': 'textarea',
     }),
+    thread_inactivity_hours: z.int().nonnegative().default(24).meta({
+      title: 'Thread inactivity (hours)',
+      description:
+        'Automatically start a new thread when the last message is older than this threshold.',
+    }),
   })
   .meta({
     title: 'Web Channel',
