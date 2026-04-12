@@ -29,6 +29,7 @@ describe('ThreadService', () => {
     findOneForSubscriber: jest.Mock;
     findLatestOpenThreadForSubscriber: jest.Mock;
     findLatestThreadForSubscriber: jest.Mock;
+    setTitleIfMissing: jest.Mock;
     create: jest.Mock;
     updateOne: jest.Mock;
   };
@@ -39,6 +40,7 @@ describe('ThreadService', () => {
       findOneForSubscriber: jest.fn(),
       findLatestOpenThreadForSubscriber: jest.fn(),
       findLatestThreadForSubscriber: jest.fn(),
+      setTitleIfMissing: jest.fn(),
       create: jest.fn(),
       updateOne: jest.fn(),
     };
@@ -199,6 +201,136 @@ describe('ThreadService', () => {
       );
       expect(repository.create).toHaveBeenCalledTimes(1);
       expect(resolved).toEqual(fresh);
+    });
+  });
+
+  describe('resolveThreadForReadWithoutCreate', () => {
+    it('uses an explicit thread when it belongs to subscriber', async () => {
+      const explicit = createThread({ id: 'thread-explicit' });
+      repository.findOneForSubscriber.mockResolvedValue(explicit);
+
+      const resolved = await service.resolveThread({
+        subscriberId: 'sub-1',
+        explicitThreadId: explicit.id,
+      });
+
+      expect(repository.findOneForSubscriber).toHaveBeenCalledWith(
+        explicit.id,
+        'sub-1',
+      );
+      expect(resolved).toEqual(explicit);
+    });
+
+    it('throws when explicit thread does not belong to subscriber', async () => {
+      repository.findOneForSubscriber.mockResolvedValue(null);
+
+      await expect(
+        service.resolveThread({
+          subscriberId: 'sub-1',
+          explicitThreadId: 'thread-foreign',
+        }),
+      ).rejects.toThrow(
+        'Thread thread-foreign was not found for subscriber sub-1',
+      );
+    });
+
+    it('returns null when subscriber has no thread', async () => {
+      repository.findLatestOpenThreadForSubscriber.mockResolvedValue(null);
+      repository.findLatestThreadForSubscriber.mockResolvedValue(null);
+
+      const resolved = await service.resolveThread({
+        subscriberId: 'sub-1',
+      });
+
+      expect(resolved).toBeNull();
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('returns latest open thread when available', async () => {
+      const latestOpen = createThread({ id: 'thread-open' });
+      repository.findLatestOpenThreadForSubscriber.mockResolvedValue(
+        latestOpen,
+      );
+
+      const resolved = await service.resolveThread({
+        subscriberId: 'sub-1',
+      });
+
+      expect(resolved).toEqual(latestOpen);
+      expect(repository.findLatestThreadForSubscriber).not.toHaveBeenCalled();
+    });
+
+    it('falls back to latest thread when no open thread exists', async () => {
+      const latest = createThread({ id: 'thread-latest', status: 'closed' });
+      repository.findLatestOpenThreadForSubscriber.mockResolvedValue(null);
+      repository.findLatestThreadForSubscriber.mockResolvedValue(latest);
+
+      const resolved = await service.resolveThread({
+        subscriberId: 'sub-1',
+      });
+
+      expect(resolved).toEqual(latest);
+    });
+  });
+
+  describe('resolveThreadForRead', () => {
+    it('creates a thread when none exists', async () => {
+      const created = createThread({ id: 'thread-created' });
+      repository.findLatestOpenThreadForSubscriber.mockResolvedValue(null);
+      repository.findLatestThreadForSubscriber.mockResolvedValue(null);
+      repository.create.mockResolvedValue(created);
+
+      const resolved = await service.resolveOrCreateThread({
+        subscriberId: 'sub-1',
+      });
+
+      expect(repository.create).toHaveBeenCalledTimes(1);
+      expect(resolved).toEqual(created);
+    });
+  });
+
+  describe('buildThreadTitleFromIncomingText', () => {
+    it('returns null when text is empty', () => {
+      expect(service.buildThreadTitleFromIncomingText('   ')).toBeNull();
+    });
+
+    it('normalizes whitespace', () => {
+      expect(
+        service.buildThreadTitleFromIncomingText(
+          'Hello   world\nfrom\tHexabot',
+        ),
+      ).toBe('Hello world from Hexabot');
+    });
+
+    it('truncates long messages and adds ellipsis', () => {
+      const max = ThreadService.THREAD_TITLE_MAX_LENGTH;
+      const source = 'x'.repeat(max + 20);
+      const title = service.buildThreadTitleFromIncomingText(source);
+
+      expect(title).toBe(`${'x'.repeat(max - 3)}...`);
+      expect(title).toHaveLength(max);
+    });
+  });
+
+  describe('setThreadTitleIfMissing', () => {
+    it('delegates to repository conditional title setter', async () => {
+      repository.setTitleIfMissing.mockResolvedValue(
+        createThread({
+          id: 'thread-title',
+          title: 'Need help with billing...',
+        }),
+      );
+
+      const updated = await service.setThreadTitleIfMissing(
+        'thread-title',
+        'Need help with billing...',
+      );
+
+      expect(repository.setTitleIfMissing).toHaveBeenCalledWith(
+        'thread-title',
+        'Need help with billing...',
+      );
+      expect(updated?.title).toBe('Need help with billing...');
     });
   });
 });

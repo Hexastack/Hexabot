@@ -134,11 +134,11 @@ export default abstract class BaseWebChannelHandler<
 
       if (profile?.foreignId) {
         await client.join(profile.foreignId);
-        const thread = await this.threadService.resolveThreadForRead({
+        const thread = await this.threadService.resolveThread({
           subscriberId: profile.id,
           explicitThreadId: client.request.session.web?.threadId,
         });
-        threadId = thread.id;
+        threadId = thread?.id;
         const currentWebSession = client.request.session.web;
         client.request.session.web = {
           profile: currentWebSession?.profile,
@@ -147,11 +147,15 @@ export default abstract class BaseWebChannelHandler<
           messageQueue: currentWebSession?.messageQueue ?? [],
           polling: currentWebSession?.polling ?? false,
         };
-        const messagesHistory =
-          await this.messageService.findHistoryUntilDate(thread);
-        messages = await this.formatMessages(
-          messagesHistory.reverse() as AnyMessage[],
-        );
+        if (thread) {
+          const messagesHistory =
+            await this.messageService.findHistoryUntilDate(thread);
+          messages = await this.formatMessages(
+            messagesHistory.reverse() as AnyMessage[],
+          );
+        } else {
+          messages = [];
+        }
       }
 
       this.logger.debug('WS connected .. sending settings');
@@ -362,13 +366,13 @@ export default abstract class BaseWebChannelHandler<
 
     const explicitThreadId =
       this.getThreadIdFromQuery(req) ?? this.getThreadIdFromBody(req);
-    const thread = await this.threadService.resolveThreadForRead({
+    const thread = await this.threadService.resolveThread({
       subscriberId: profile.id,
       explicitThreadId,
     });
 
     if (req.session.web) {
-      req.session.web.threadId = thread.id;
+      req.session.web.threadId = thread?.id;
     }
 
     return thread;
@@ -566,12 +570,12 @@ export default abstract class BaseWebChannelHandler<
       if (!subscriber || !req.session.web) {
         throw new Error('Subscriber session was not persisted in DB');
       }
-      const thread = await this.threadService.resolveThreadForRead({
+      const thread = await this.threadService.resolveThread({
         subscriberId: subscriber.id,
         explicitThreadId: req.session.web.threadId,
       });
       req.session.web.profile = subscriber;
-      req.session.web.threadId = thread.id;
+      req.session.web.threadId = thread?.id;
 
       return subscriber;
     }
@@ -597,11 +601,9 @@ export default abstract class BaseWebChannelHandler<
       labels: [],
     };
     const profile = await this.subscriberService.create(newProfile);
-    const thread = await this.threadService.createThread(profile.id);
 
     req.session.web = {
       profile,
-      threadId: thread.id,
       isSocket: this.isSocketRequest(req),
       messageQueue: [],
       polling: false,
@@ -934,10 +936,16 @@ export default abstract class BaseWebChannelHandler<
 
         // Handler sync message sent by chatbot
         if (body.sync && body.author === 'chatbot') {
-          const thread = await this.threadService.resolveThreadForRead({
+          const thread = await this.threadService.resolveThread({
             subscriberId: profile.id,
             explicitThreadId,
           });
+          if (!thread) {
+            return res.status(409).json({
+              err: 'Web Channel Handler : No thread available before first user message',
+            });
+          }
+
           event.setThreadId(thread.id);
           if (req.session.web) {
             req.session.web.threadId = thread.id;
@@ -958,20 +966,34 @@ export default abstract class BaseWebChannelHandler<
           event._adapter.raw.mid = this.generateId();
           // Force author id from session
           event._adapter.raw.author = profile.foreignId;
+          // Use a server-side timestamp so realtime clients can sort deterministically.
+          event._adapter.raw.createdAt = new Date();
         }
       }
 
       event.setInitiator(profile);
       event.setWorkflowId(workflowId);
-      const threadId = event.getThreadId();
-      if (threadId) {
-        (event._adapter.raw as { thread_id?: string }).thread_id = threadId;
-      }
-
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile, type, event._adapter.raw);
-        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+        if (type === StdEventType.message) {
+          this.broadcast(profile, type, event._adapter.raw);
+          await this.eventEmitter.emitAsync(`hook:chatbot:${type}`, event);
+          const resolvedThreadId = event.getThreadId();
+          if (resolvedThreadId) {
+            (event._adapter.raw as { thread_id?: string }).thread_id =
+              resolvedThreadId;
+            if (req.session.web) {
+              req.session.web.threadId = resolvedThreadId;
+            }
+          }
+        } else {
+          const threadId = event.getThreadId();
+          if (threadId) {
+            (event._adapter.raw as { thread_id?: string }).thread_id = threadId;
+          }
+          this.broadcast(profile, type, event._adapter.raw);
+          this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+        }
       } else {
         this.logger.error('Webhook received unknown event ', event);
       }

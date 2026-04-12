@@ -62,4 +62,23 @@ export class ThreadRepository extends BaseOrmRepository<ThreadOrmEntity> {
       },
     });
   }
+
+  async setTitleIfMissing(
+    threadId: string,
+    title: string,
+  ): Promise<Thread | null> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(ThreadOrmEntity)
+      .set({ title })
+      .where('id = :threadId', { threadId })
+      .andWhere("(title IS NULL OR title = '')")
+      .execute();
+
+    if (!result.affected) {
+      return null;
+    }
+
+    return await this.findOne(threadId);
+  }
 }

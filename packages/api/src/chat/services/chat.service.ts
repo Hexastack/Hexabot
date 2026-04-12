@@ -32,6 +32,37 @@ export class ChatService {
     private readonly agenticService: AgenticService,
   ) {}
 
+  private async ensureThreadTitle(
+    thread: { id: string; title?: string | null },
+    event: ConversationalEventWrapper<any, any>,
+  ) {
+    if (!!thread.title?.trim()) {
+      return;
+    }
+
+    const candidateTitle = this.threadService.buildThreadTitleFromIncomingText(
+      event.getText(),
+    );
+    if (!candidateTitle) {
+      return;
+    }
+
+    try {
+      const updated = await this.threadService.setThreadTitleIfMissing(
+        thread.id,
+        candidateTitle,
+      );
+      if (updated?.title) {
+        thread.title = updated.title;
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Unable to set title for thread ${thread.id} from first incoming message`,
+        err,
+      );
+    }
+  }
+
   /**
    * Finds or creates a message and broadcast it to the websocket "Message" room
    *
@@ -76,7 +107,7 @@ export class ChatService {
     const threadId =
       event.getThreadId() ??
       (
-        await this.threadService.resolveThreadForRead({
+        await this.threadService.resolveOrCreateThread({
           subscriberId: subscriber.id,
         })
       ).id;
@@ -187,7 +218,7 @@ export class ChatService {
           mid: event.getId(),
           recipient: recipient.id,
           thread: (
-            await this.threadService.resolveThreadForRead({
+            await this.threadService.resolveOrCreateThread({
               subscriberId: recipient.id,
               explicitThreadId: event.getThreadId(),
             })
@@ -210,7 +241,7 @@ export class ChatService {
    *
    * @param event - The received event
    */
-  @OnEvent('hook:chatbot:message')
+  @OnEvent('hook:chatbot:message', { promisify: true })
   async handleNewMessage(event: ConversationalEventWrapper<any, any>) {
     this.logger.debug('New message received', event._adapter.raw);
 
@@ -271,6 +302,8 @@ export class ChatService {
       if (event.preprocess) {
         await event.preprocess();
       }
+
+      await this.ensureThreadTitle(thread, event);
 
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);

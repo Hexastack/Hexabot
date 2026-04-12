@@ -14,6 +14,10 @@ import { ThreadRepository } from '../repositories/thread.repository';
 
 @Injectable()
 export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
+  public static readonly THREAD_TITLE_MAX_LENGTH = 96;
+
+  public static readonly THREAD_TITLE_ELLIPSIS = '...';
+
   constructor(readonly repository: ThreadRepository) {
     super(repository);
   }
@@ -46,6 +50,33 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
       closeReason: null,
       closedAt: null,
     });
+  }
+
+  buildThreadTitleFromIncomingText(input?: string | null): string | null {
+    if (typeof input !== 'string') {
+      return null;
+    }
+
+    const normalized = input.replace(/\s+/g, ' ').trim();
+    if (!normalized) {
+      return null;
+    }
+
+    if (normalized.length <= ThreadService.THREAD_TITLE_MAX_LENGTH) {
+      return normalized;
+    }
+
+    const trimmedMax = Math.max(
+      1,
+      ThreadService.THREAD_TITLE_MAX_LENGTH -
+        ThreadService.THREAD_TITLE_ELLIPSIS.length,
+    );
+
+    return `${normalized.slice(0, trimmedMax).trimEnd()}${ThreadService.THREAD_TITLE_ELLIPSIS}`;
+  }
+
+  async setThreadTitleIfMissing(threadId: string, title: string) {
+    return await this.repository.setTitleIfMissing(threadId, title);
   }
 
   async touchThread(threadId: string, at: Date = new Date()) {
@@ -131,13 +162,31 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
     return latestOpen;
   }
 
-  async resolveThreadForRead({
+  async resolveOrCreateThread({
     subscriberId,
     explicitThreadId,
   }: {
     subscriberId: string;
     explicitThreadId?: string;
   }): Promise<Thread> {
+    const resolved = await this.resolveThread({
+      subscriberId,
+      explicitThreadId,
+    });
+    if (resolved) {
+      return resolved;
+    }
+
+    return await this.createThread(subscriberId);
+  }
+
+  async resolveThread({
+    subscriberId,
+    explicitThreadId,
+  }: {
+    subscriberId: string;
+    explicitThreadId?: string;
+  }): Promise<Thread | null> {
     if (explicitThreadId) {
       const explicit = await this.findThreadForSubscriber(
         explicitThreadId,
@@ -161,11 +210,8 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
 
     const latest =
       await this.repository.findLatestThreadForSubscriber(subscriberId);
-    if (latest) {
-      return latest;
-    }
 
-    return await this.createThread(subscriberId);
+    return latest ?? null;
   }
 
   /**

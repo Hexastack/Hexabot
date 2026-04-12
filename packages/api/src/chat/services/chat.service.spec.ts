@@ -27,7 +27,9 @@ describe('ChatService', () => {
       ThreadService,
       | 'resolveInactivityHours'
       | 'resolveThreadForIncoming'
-      | 'resolveThreadForRead'
+      | 'resolveOrCreateThread'
+      | 'buildThreadTitleFromIncomingText'
+      | 'setThreadTitleIfMissing'
     >
   >;
   let agenticService: jest.Mocked<Pick<AgenticService, 'handleEvent'>>;
@@ -51,8 +53,16 @@ describe('ChatService', () => {
     };
     threadService = {
       resolveInactivityHours: jest.fn().mockReturnValue(24),
-      resolveThreadForIncoming: jest.fn().mockResolvedValue({ id: 'thread-1' }),
-      resolveThreadForRead: jest.fn().mockResolvedValue({ id: 'thread-1' }),
+      resolveThreadForIncoming: jest
+        .fn()
+        .mockResolvedValue({ id: 'thread-1', title: null }),
+      resolveOrCreateThread: jest.fn().mockResolvedValue({ id: 'thread-1' }),
+      buildThreadTitleFromIncomingText: jest
+        .fn()
+        .mockReturnValue('first inbound message'),
+      setThreadTitleIfMissing: jest
+        .fn()
+        .mockResolvedValue({ id: 'thread-1', title: 'first inbound message' }),
     };
     agenticService = {
       handleEvent: jest.fn().mockResolvedValue(undefined),
@@ -83,6 +93,7 @@ describe('ChatService', () => {
       getHandler: jest.fn().mockReturnValue(handler),
       getWorkflowId: jest.fn().mockReturnValue(workflowId),
       getThreadId: jest.fn().mockReturnValue(undefined),
+      getText: jest.fn().mockReturnValue('first inbound message'),
       setThreadId: jest.fn(),
       setInitiator: jest.fn(),
       preprocess: jest.fn().mockResolvedValue(undefined),
@@ -97,6 +108,13 @@ describe('ChatService', () => {
       inactivityHours: 24,
     });
     expect(event.setThreadId).toHaveBeenCalledWith('thread-1');
+    expect(threadService.buildThreadTitleFromIncomingText).toHaveBeenCalledWith(
+      'first inbound message',
+    );
+    expect(threadService.setThreadTitleIfMissing).toHaveBeenCalledWith(
+      'thread-1',
+      'first inbound message',
+    );
     expect(agenticService.handleEvent).toHaveBeenCalledWith(event);
   });
 
@@ -125,5 +143,33 @@ describe('ChatService', () => {
         read: true,
       }),
     );
+  });
+
+  it('does not override existing thread title', async () => {
+    const subscriber = { id: 'sub-1', assignedTo: null };
+    const handler = { getSettings: jest.fn().mockResolvedValue({}) };
+    threadService.resolveThreadForIncoming.mockResolvedValue({
+      id: 'thread-1',
+      title: 'already set',
+    } as any);
+
+    const event = {
+      _adapter: { raw: { type: 'text' } },
+      getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
+      getHandler: jest.fn().mockReturnValue(handler),
+      getThreadId: jest.fn().mockReturnValue(undefined),
+      getText: jest.fn().mockReturnValue('first inbound message'),
+      setThreadId: jest.fn(),
+      setInitiator: jest.fn(),
+      preprocess: jest.fn().mockResolvedValue(undefined),
+    };
+    subscriberService.findOne.mockResolvedValue(subscriber as any);
+
+    await service.handleNewMessage(event as any);
+
+    expect(
+      threadService.buildThreadTitleFromIncomingText,
+    ).not.toHaveBeenCalled();
+    expect(threadService.setThreadTitleIfMissing).not.toHaveBeenCalled();
   });
 });

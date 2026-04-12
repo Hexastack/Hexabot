@@ -110,6 +110,7 @@ describe('MessageAction base', () => {
       getInitiator: jest.fn(() => recipient),
       getSenderForeignId: jest.fn(() => 'foreign-123'),
       getHandler: jest.fn(() => handler as any),
+      getThreadId: jest.fn(() => 'thread-1'),
       getMessage: jest.fn(() => ({ text: 'incoming-message' })),
     } as unknown as MockEvent;
     workflow = {
@@ -189,6 +190,7 @@ describe('MessageAction base', () => {
         mid: 'server-mid',
         message: envelope.message,
         recipient: recipient.id,
+        thread: 'thread-1',
         handover: false,
         read: false,
         delivery: false,
