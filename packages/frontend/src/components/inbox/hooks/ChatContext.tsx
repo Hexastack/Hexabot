@@ -9,41 +9,80 @@ import {
   PropsWithChildren,
   createContext,
   useContext,
+  useMemo,
   useState,
 } from "react";
 
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 import { ISubscriber } from "@/types/subscriber.types";
+import { IThreadFull } from "@/types/thread.types";
 
 import { noop } from "../helpers/noop";
 
 interface IChatContext {
+  thread: IThreadFull | null;
   subscriber: ISubscriber | null;
-  setSubscriberId: Dispatch<string | null>;
+  setThreadId: Dispatch<string | null>;
 }
 
 const ChatContext = createContext<IChatContext>({
+  thread: null,
   subscriber: null,
-  setSubscriberId: noop,
+  setThreadId: noop,
 });
 
 export const ChatProvider = ({ children }: PropsWithChildren) => {
-  const [subscriberId, setSubscriberId] = useState<string | null>(null);
-  const { data } = useGet(
-    subscriberId === null ? "" : subscriberId,
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const { data: threadData } = useGet(
+    threadId === null ? "" : threadId,
+    {
+      entity: EntityType.THREAD,
+      format: Format.FULL,
+    },
+    {
+      enabled: threadId !== null,
+    },
+  );
+  const thread = (threadId && threadData ? threadData : null) as IThreadFull | null;
+  const subscriberId = useMemo(() => {
+    if (!thread?.subscriber) {
+      return null;
+    }
+
+    if (typeof thread.subscriber === "string") {
+      return thread.subscriber;
+    }
+
+    if (
+      typeof thread.subscriber === "object" &&
+      "id" in thread.subscriber &&
+      typeof thread.subscriber.id === "string"
+    ) {
+      return thread.subscriber.id;
+    }
+
+    return null;
+  }, [thread?.subscriber]);
+  const { data: subscriberData } = useGet(
+    subscriberId ?? "",
     {
       entity: EntityType.SUBSCRIBER,
       format: Format.FULL,
     },
     {
-      enabled: subscriberId !== null,
+      enabled: Boolean(subscriberId),
     },
   );
-  const subscriber = data ? data : null;
+  const subscriber =
+    subscriberData ||
+    (thread?.subscriber && typeof thread.subscriber !== "string"
+      ? thread.subscriber
+      : null);
   const context = {
-    subscriber: subscriberId ? subscriber : null,
-    setSubscriberId,
+    thread,
+    subscriber,
+    setThreadId,
   };
 
   return (

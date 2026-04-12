@@ -11,6 +11,7 @@ import { IBaseSchema, IFormat } from "./base.types";
 export enum MemoryScope {
   global = "global",
   workflow = "workflow",
+  thread = "thread",
   run = "run",
 }
 

@@ -15,6 +15,7 @@ import debounce from "@mui/utils/debounce";
 import { Inbox } from "lucide-react";
 import { UIEventHandler, useCallback, useEffect } from "react";
 
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
@@ -23,10 +24,31 @@ import { SearchPayload } from "@/types/search.types";
 import { normalizeDate } from "@/utils/date";
 
 import { useChat } from "../hooks/ChatContext";
-import { useInfiniteLiveSubscribers } from "../hooks/useInfiniteLiveSubscribers";
+import { useInfiniteLiveThreads } from "../hooks/useInfiniteLiveThreads";
 import { AssignedTo } from "../types";
 
 import { SubscriberAvatars } from "./SubscriberAvatars";
+
+export const getActiveThreadId = (
+  rawThread: string | string[] | undefined,
+): string | null => {
+  if (Array.isArray(rawThread)) {
+    return rawThread.at(-1) || null;
+  }
+
+  return rawThread || null;
+};
+
+export const getInboxThreadPath = (threadId: string) => {
+  return `/${RouterType.INBOX}/threads/${threadId}`;
+};
+
+export const getConversationSecondaryText = (
+  firstValue: string | null | undefined,
+  formattedDate?: string,
+) => {
+  return [firstValue, formattedDate].filter(Boolean).join(" • ");
+};
 
 export const ConversationsList = (props: {
   channels: string[];
@@ -34,23 +56,21 @@ export const ConversationsList = (props: {
   assignedTo: AssignedTo;
 }) => {
   const router = useAppRouter();
-  const rawSubscriber = router.query.subscriber;
-  const subscriber = Array.isArray(rawSubscriber)
-    ? rawSubscriber.at(-1) || null
-    : rawSubscriber || null;
+  const threadId = getActiveThreadId(router.query.thread);
   const { t, i18n } = useTranslate();
   const chat = useChat();
-  const { fetchNextPage, isFetching, subscribers, hasNextPage } =
-    useInfiniteLiveSubscribers(props);
+  const getSubscriberFromCache = useGetFromCache(EntityType.SUBSCRIBER);
+  const { fetchNextPage, isFetching, threads, hasNextPage } =
+    useInfiniteLiveThreads(props);
   const handleLoadMore = debounce(() => {
     !isFetching && hasNextPage && fetchNextPage();
   }, 400);
 
   useEffect(() => {
     if (chat) {
-      chat.setSubscriberId(subscriber);
+      chat.setThreadId(threadId);
     }
-  }, [subscriber]);
+  }, [threadId]);
   const handleScroll: UIEventHandler<HTMLUListElement> = useCallback(
     (event) => {
       const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
@@ -81,32 +101,59 @@ export const ConversationsList = (props: {
         </ListSubheader>
       }
     >
-      {subscribers?.map((sub) => (
-        <ListItem disablePadding key={sub.id} sx={{ mt: 0.5 }}>
-          <ListItemButton
-            selected={chat.subscriber?.id === sub.id}
-            onClick={() => {
-              chat.setSubscriberId(sub.id);
-              router.push(`/${RouterType.INBOX}/subscribers/${sub.id}`);
-            }}
-          >
-            <ListItemAvatar>
-              <SubscriberAvatars subscriber={sub} />
-            </ListItemAvatar>
-            <ListItemText
-              primary={sub.fullName}
-              secondary={normalizeDate(i18n.language, sub.lastvisit)}
-              primaryTypographyProps={{
-                variant: "body2",
+      {threads?.map((thread) => {
+        const subscriber =
+          typeof thread.subscriber === "string"
+            ? getSubscriberFromCache(thread.subscriber)
+            : thread.subscriber;
+        const subscriberName =
+          subscriber?.fullName ||
+          [subscriber?.firstName, subscriber?.lastName].filter(Boolean).join(" ");
+        const threadTitle = thread.title?.trim();
+        const primaryText = threadTitle || subscriberName || t("label.unknown");
+        const formattedDate = normalizeDate(
+          i18n.language,
+          thread.lastMessageAt || thread.createdAt,
+        );
+
+        if (!subscriber) {
+          return null;
+        }
+
+        return (
+          <ListItem disablePadding key={thread.id} sx={{ mt: 0.5 }}>
+            <ListItemButton
+              selected={chat.thread?.id === thread.id}
+              onClick={() => {
+                chat.setThreadId(thread.id);
+                router.push(getInboxThreadPath(thread.id));
               }}
-              secondaryTypographyProps={{
-                variant: "caption",
-              }}
-            />
-            <Chip size="small" label={sub.channel.name} />
-          </ListItemButton>
-        </ListItem>
-      ))}
+            >
+              <ListItemAvatar sx={{ minWidth: 32 }}>
+                <SubscriberAvatars subscriber={subscriber} />
+              </ListItemAvatar>
+              <ListItemText
+                primary={primaryText}
+                secondary={getConversationSecondaryText(
+                  threadTitle ? subscriberName : null,
+                  formattedDate,
+                )}
+                slotProps={{
+                  primary: {
+                    variant: "body2",
+                    noWrap: true,
+                  },
+                  secondary: {
+                    variant: "caption",
+                    noWrap: true,
+                  },
+                }}
+              />
+              <Chip size="small" label={subscriber.channel.name} />
+            </ListItemButton>
+          </ListItem>
+        );
+      })}
     </List>
   );
 };
