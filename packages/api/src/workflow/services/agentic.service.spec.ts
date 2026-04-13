@@ -324,10 +324,46 @@ describe('AgenticService (TypeORM)', () => {
       event.setWorkflowId(workflow.id);
       await agenticService.handleEvent(event);
 
-      expect(findSuspendedSpy).toHaveBeenCalledWith(initiator.id, workflow.id);
+      expect(findSuspendedSpy).toHaveBeenCalledWith(
+        initiator.id,
+        undefined,
+        workflow.id,
+      );
       expect(pickWorkflowSpy).not.toHaveBeenCalled();
       expect(findOneAndPopulateSpy.mock.calls[0]?.[0]).toBe(workflow.id);
       expect(workflowInstance.buildAsyncRunner).toHaveBeenCalled();
+    });
+
+    it('scopes suspended run lookup by thread id when provided', async () => {
+      const event = createEvent({ text: 'threaded resume' });
+      const runWorkflowSpy = jest
+        .spyOn(agenticService as any, 'runWorkflow')
+        .mockResolvedValue(undefined);
+      const findSuspendedSpy = jest
+        .spyOn(workflowRunService, 'findSuspendedRunByInitiator')
+        .mockResolvedValue({
+          id: 'run-threaded',
+          workflow: { id: workflow.id },
+          triggeredBy: { id: initiator.id },
+          status: 'suspended',
+        } as unknown as WorkflowRunFull);
+      const threadId = 'thread-42';
+
+      event.setThreadId(threadId);
+      await agenticService.handleEvent(event);
+
+      expect(findSuspendedSpy).toHaveBeenCalledWith(
+        initiator.id,
+        threadId,
+        undefined,
+      );
+      expect(runWorkflowSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mode: 'resume',
+        }),
+      );
+      runWorkflowSpy.mockRestore();
+      findSuspendedSpy.mockRestore();
     });
 
     it('resumes a suspended run and records suspension details', async () => {

@@ -17,6 +17,12 @@ export const CONTACT_SETTINGS_GROUP = 'contact' as const;
 
 export const chatbotSettingsSchema = z
   .strictObject({
+    license_key: z.string().default('').meta({
+      title: 'License key',
+      description:
+        'Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing.',
+      'ui:widget': 'password',
+    }),
     default_nlu_helper: z
       .string()
       .default('llm-nlu-helper')

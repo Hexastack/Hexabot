@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -13,11 +14,8 @@ import { Setting, SettingDto } from '../dto/setting.dto';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
+@EntityDto<SettingDto>({ plain: Setting, full: Setting })
 export class SettingOrmEntity extends BaseOrmEntity<SettingDto> {
-  plainCls = Setting;
-
-  fullCls = Setting;
-
   @Column()
   @Index()
   group!: string;

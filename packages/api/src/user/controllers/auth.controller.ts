@@ -6,17 +6,13 @@
 
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
   Inject,
-  InternalServerErrorException,
-  Param,
   Post,
   Req,
   Res,
   Session,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -24,19 +20,18 @@ import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
 import { config } from '@/config';
+import { LicenseService } from '@/license/services/license.service';
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 
-import { InvitationCreateDto } from '../dto/invitation.dto';
-import { UserCreateDto } from '../dto/user.dto';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
-import { InvitationService } from '../services/invitation.service';
-import { UserService } from '../services/user.service';
-import { ValidateAccountService } from '../services/validate-account.service';
 
 export class BaseAuthController {
   @Inject(EventEmitter2)
   private readonly eventEmitter: EventEmitter2;
+
+  @Inject(LicenseService)
+  protected readonly license: LicenseService;
 
   constructor(protected readonly logger: LoggerService) {}
 
@@ -48,8 +43,11 @@ export class BaseAuthController {
    * @returns The user object from the request.
    */
   @Get('me')
-  me(@Req() req: Request) {
-    return req.user;
+  async me(@Req() req: Request) {
+    return {
+      ...req.user,
+      license: await this.license.getSnapshot(),
+    };
   }
 
   /**
@@ -81,12 +79,7 @@ export class BaseAuthController {
 
 @Controller('auth')
 export class LocalAuthController extends BaseAuthController {
-  constructor(
-    logger: LoggerService,
-    private readonly userService: UserService,
-    private readonly validateAccountService: ValidateAccountService,
-    private readonly invitationService: InvitationService,
-  ) {
+  constructor(logger: LoggerService) {
     super(logger);
   }
 
@@ -100,62 +93,10 @@ export class LocalAuthController extends BaseAuthController {
   @UseGuards(LocalAuthGuard)
   @Roles('public')
   @Post('local')
-  login(@Req() req: Request) {
-    return req.user;
-  }
-
-  /**
-   * Accepts an invitation and creates a new user based on the invitation token.
-   * Verifies the token and ensures it matches the user details.
-   *
-   * @param userCreateDto - Data Transfer Object for the new user.
-   * @param token - The invitation token.
-   *
-   * @returns Void, upon successful creation of the user.
-   */
-  @Roles('public')
-  @Post('accept-invite/:token')
-  async acceptInvite(
-    @Body() userCreateDto: UserCreateDto,
-    @Param('token') token: string,
-  ) {
-    let decodedToken: InvitationCreateDto;
-
-    // Verify token
-    try {
-      decodedToken = await this.invitationService.verify(token);
-    } catch (error) {
-      if (error.name === 'TokenExpiredError')
-        throw new UnauthorizedException('Token expired');
-      else throw new BadRequestException(error.name, error.message);
-    }
-
-    // Verify token matches user
-    if (decodedToken.email !== userCreateDto.email)
-      throw new BadRequestException("Email doesn't match invitation email");
-    if (decodedToken.roles.some((item) => !userCreateDto.roles.includes(item)))
-      throw new BadRequestException('invitation roles do not match user roles');
-
-    try {
-      // Create user
-      await this.userService.create({ ...userCreateDto, state: false });
-
-      await this.validateAccountService.sendConfirmationEmail({
-        email: userCreateDto.email,
-        firstName: userCreateDto.firstName,
-      });
-
-      await this.invitationService.deleteOne({
-        where: { email: decodedToken.email },
-      });
-    } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
-        'AcceptInvite',
-      );
-      throw new InternalServerErrorException('Could not send email');
-    }
+  async login(@Req() req: Request) {
+    return {
+      ...req.user,
+      license: await this.license.getSnapshot(),
+    };
   }
 }

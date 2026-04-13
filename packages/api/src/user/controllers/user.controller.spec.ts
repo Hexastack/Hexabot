@@ -10,7 +10,7 @@ import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { LicenseService } from '@/license/services/license.service';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -18,7 +18,6 @@ import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.pro
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { InvitationCreateDto } from '../dto/invitation.dto';
 import { Role } from '../dto/role.dto';
 import {
   User,
@@ -29,8 +28,8 @@ import {
 import { PasswordResetService } from '../services/passwordReset.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
+import { ValidateAccountService } from '../services/validate-account.service';
 
-import { InvitationService } from './../services/invitation.service';
 import { ReadWriteUserController } from './user.controller';
 
 describe('UserController (TypeORM)', () => {
@@ -38,7 +37,7 @@ describe('UserController (TypeORM)', () => {
   let userController: ReadWriteUserController;
   let userService: UserService;
   let roleService: RoleService;
-  let invitationService: InvitationService;
+  let validateAccountService: ValidateAccountService;
   let notFoundId: string;
   let role: Role | null;
   let roles: Role[];
@@ -60,6 +59,13 @@ describe('UserController (TypeORM)', () => {
           provide: AttachmentService,
           useValue: attachmentServiceMock,
         },
+        {
+          provide: LicenseService,
+          useValue: {
+            hasFeature: jest.fn().mockReturnValue(true),
+            getLastError: jest.fn().mockReturnValue(null),
+          },
+        },
         MailerServiceProvider,
         I18nServiceProvider,
       ],
@@ -77,14 +83,14 @@ describe('UserController (TypeORM)', () => {
       userController,
       userService,
       roleService,
-      invitationService,
+      validateAccountService,
       jwtService,
       passwordResetService,
     ] = await testing.getMocks([
       ReadWriteUserController,
       UserService,
       RoleService,
-      InvitationService,
+      ValidateAccountService,
       JwtService,
       PasswordResetService,
     ]);
@@ -95,8 +101,6 @@ describe('UserController (TypeORM)', () => {
     roles = await roleService.findAll();
     user = await userService.findOne({ where: { username: 'admin' } });
   });
-
-  const IGNORED_FIELDS = [...IGNORED_TEST_FIELDS, 'resetToken'];
 
   afterAll(async () => {
     if (module) {
@@ -178,7 +182,11 @@ describe('UserController (TypeORM)', () => {
 
   describe('create', () => {
     it('should return created user', async () => {
-      jest.spyOn(userService, 'create');
+      const createSpy = jest.spyOn(userService, 'create');
+      const sendConfirmationEmailSpy = jest.spyOn(
+        validateAccountService,
+        'sendConfirmationEmail',
+      );
       const userDto: UserCreateDto = {
         username: 'testUser',
         firstName: 'testUser',
@@ -189,13 +197,44 @@ describe('UserController (TypeORM)', () => {
         avatar: null,
       };
       const result = await userController.create(userDto);
-      expect(userService.create).toHaveBeenCalledWith(userDto);
+      expect(createSpy).toHaveBeenCalledWith({ ...userDto, state: false });
+      expect(sendConfirmationEmailSpy).toHaveBeenCalledWith({
+        email: userDto.email,
+        firstName: userDto.firstName,
+      });
       expect(result).toMatchObject({
         email: userDto.email,
         username: userDto.username,
         firstName: userDto.firstName,
         lastName: userDto.lastName,
       });
+    });
+
+    it('should keep user creation successful when confirmation email fails', async () => {
+      const userDto: UserCreateDto = {
+        username: 'testUserRollback',
+        firstName: 'testUserRollback',
+        lastName: 'testUserRollback',
+        email: 'rollback@test.test',
+        password: 'test',
+        roles: [role!.id],
+        avatar: null,
+      };
+      const createdUser = {
+        ...userDto,
+        id: '11111111-1111-1111-1111-111111111111',
+        state: false,
+      } as any;
+      jest.spyOn(userService, 'create').mockResolvedValueOnce(createdUser);
+      const deleteOneSpy = jest.spyOn(userService, 'deleteOne');
+      jest
+        .spyOn(validateAccountService, 'sendConfirmationEmail')
+        .mockRejectedValueOnce(new Error('SMTP down'));
+
+      await expect(userController.create(userDto)).resolves.toEqual(
+        createdUser,
+      );
+      expect(deleteOneSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -335,20 +374,6 @@ describe('UserController (TypeORM)', () => {
       await expect(userController.deleteOne(notFoundId)).rejects.toThrow(
         NotFoundException,
       );
-    });
-  });
-
-  describe('invite', () => {
-    const keysToIgnore = ['token', ...IGNORED_FIELDS];
-    it('should create a valid user with a hashed token', async () => {
-      const invitation: InvitationCreateDto = {
-        email: 'email@email.com',
-        roles: [role!.id],
-      };
-      jest.spyOn(invitationService, 'create');
-      const result = await userController.invite(invitation);
-      expect(invitationService.create).toHaveBeenCalledWith(invitation);
-      expect(result).toEqualPayload(invitation, keysToIgnore);
     });
   });
 });

@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -26,11 +27,8 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 @Entity({ name: 'labels' })
 @Index(['title'], { unique: true })
 @Index(['name'], { unique: true })
+@EntityDto<LabelDto>({ plain: Label, full: LabelFull })
 export class LabelOrmEntity extends BaseOrmEntity<LabelDto> {
-  plainCls = Label;
-
-  fullCls = LabelFull;
-
   @Column()
   title!: string;
 

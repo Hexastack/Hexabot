@@ -46,6 +46,8 @@ export * from './helper';
 
 export * from './i18n';
 
+export * from './license';
+
 export * from './logger';
 
 export * from './mailer';

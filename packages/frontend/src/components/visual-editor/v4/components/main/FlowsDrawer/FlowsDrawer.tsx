@@ -4,7 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, Divider, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { Plus } from "lucide-react";
 import {
   useCallback,
@@ -17,11 +25,19 @@ import {
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
+  formatLicenseQuotaUsage,
+  getQuotaUpgradeTargetPlan,
+  getLicenseQuotaResource,
+  isLicenseQuotaReached,
+} from "@/components/license/license-quotas";
+import LicenseGate from "@/components/license/LicenseGate";
+import {
   WORKFLOW_TYPES,
   WORKFLOW_TYPE_ORDER,
 } from "@/constants/workflow.constants";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useAuth } from "@/hooks/useAuth";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -57,10 +73,14 @@ export const minDrawerWidth = 260;
 export const maxDrawerWidth = 920;
 export const drawerWidthStorageKey = "hexabot.visual_editor.drawer_width";
 export const drawerIsOpenStorage = "hexabot.visual_editor.drawer_is_open";
+const openPricing = () => {
+  window.open("https://hexabot.ai/pricing/#pricing", "_blank", "noopener,noreferrer");
+};
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
+  const { user, refetchUser } = useAuth();
   const { getLocalStorage, setLocalStorage } = useLocalStorage();
   const {
     workflows,
@@ -110,6 +130,24 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     { enabled: isSearching },
   );
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
+  const workflowQuota = getLicenseQuotaResource(user?.license, "workflows");
+  const workflowQuotaReached = isLicenseQuotaReached(user?.license, "workflows");
+  const workflowUpgradeTargetPlan = workflowQuotaReached
+    ? getQuotaUpgradeTargetPlan(user?.license, "workflows")
+    : null;
+  const shouldShowWorkflowUpgradeGate = Boolean(
+    onNew && workflowQuotaReached && workflowUpgradeTargetPlan,
+  );
+  const newWorkflowDisabledReason = workflowQuotaReached
+    ? t("message.workflows_quota_reached")
+    : undefined;
+  const newWorkflowLabel = t("visual_editor.flows_drawer.new_workflow");
+  const newWorkflowTooltip = workflowQuotaReached
+    ? t("message.workflows_quota_reached")
+    : t("label.workflows_quota_usage", {
+        0: formatLicenseQuotaUsage(workflowQuota, t("label.unlimited")),
+      });
+  const canCreateWorkflow = Boolean(onNew) && !workflowQuotaReached;
   const workflowsList = isSearching ? searchedWorkflows : workflows;
   const minAllowedWidth = isSmall ? 240 : minDrawerWidth;
   const maxAllowedWidth = isSmall ? 280 : maxDrawerWidth;
@@ -415,6 +453,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
 
     deleteWorkflow(flowId, {
       onSuccess: () => {
+        void refetchUser();
         if (selectedFlowId === flowId && fallbackFlowId) {
           updateWorkflowURL(fallbackFlowId);
         }
@@ -488,15 +527,40 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
               />
               <Divider />
               <Box px={2} pb={2} pt={1} display="flex" justifyContent="center">
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<Plus size={16} />}
-                  onClick={onNew}
-                  disabled={!onNew}
-                >
-                  {t("visual_editor.flows_drawer.new_workflow")}
-                </Button>
+                {shouldShowWorkflowUpgradeGate && workflowUpgradeTargetPlan ? (
+                  <LicenseGate
+                    requiredPlan={workflowUpgradeTargetPlan}
+                    reasonText={t("message.workflows_quota_reached")}
+                    onUpgrade={openPricing}
+                    disableChildWhenBlocked={false}
+                  >
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<Plus size={16} />}
+                      onClick={onNew}
+                    >
+                      {newWorkflowLabel}
+                    </Button>
+                  </LicenseGate>
+                ) : (
+                  <Tooltip
+                    title={newWorkflowTooltip}
+                    disableHoverListener={!newWorkflowTooltip}
+                  >
+                    <span>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<Plus size={16} />}
+                        onClick={onNew}
+                        disabled={!canCreateWorkflow}
+                      >
+                        {newWorkflowLabel}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                )}
               </Box>
             </>
           )}
@@ -504,7 +568,23 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       ) : (
         <FlowsDrawerCollapsedActions
           searchLabel={t("visual_editor.flows_drawer.search_workflows")}
-          newWorkflowLabel={t("visual_editor.flows_drawer.new_workflow")}
+          newWorkflowLabel={newWorkflowLabel}
+          newWorkflowDisabled={workflowQuotaReached && !workflowUpgradeTargetPlan}
+          newWorkflowDisabledReason={newWorkflowDisabledReason}
+          newWorkflowAction={
+            shouldShowWorkflowUpgradeGate && workflowUpgradeTargetPlan ? (
+              <LicenseGate
+                requiredPlan={workflowUpgradeTargetPlan}
+                reasonText={t("message.workflows_quota_reached")}
+                onUpgrade={openPricing}
+                disableChildWhenBlocked={false}
+              >
+                <IconButton size="small" onClick={onNew}>
+                  <Plus size={16} />
+                </IconButton>
+              </LicenseGate>
+            ) : undefined
+          }
           yamlLabel={yamlToggleLabel}
           onOpen={handleOpenDrawer}
           onNew={onNew}

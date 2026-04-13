@@ -17,19 +17,23 @@ import { LabelGroupController } from './controllers/label-group.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
+import { ThreadController } from './controllers/thread.controller';
 import { LabelGroupOrmEntity } from './entities/label-group.entity';
 import { LabelOrmEntity } from './entities/label.entity';
 import { MessageOrmEntity } from './entities/message.entity';
 import { SubscriberOrmEntity } from './entities/subscriber.entity';
+import { ThreadOrmEntity } from './entities/thread.entity';
 import { LabelGroupRepository } from './repositories/label-group.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
+import { ThreadRepository } from './repositories/thread.repository';
 import { ChatService } from './services/chat.service';
 import { LabelGroupService } from './services/label-group.service';
 import { LabelService } from './services/label.service';
 import { MessageService } from './services/message.service';
 import { SubscriberService } from './services/subscriber.service';
+import { ThreadService } from './services/thread.service';
 
 @Module({
   imports: [
@@ -39,6 +43,7 @@ import { SubscriberService } from './services/subscriber.service';
       LabelGroupOrmEntity,
       MessageOrmEntity,
       SubscriberOrmEntity,
+      ThreadOrmEntity,
     ]),
     CmsModule,
     AttachmentModule,
@@ -51,18 +56,27 @@ import { SubscriberService } from './services/subscriber.service';
     LabelGroupController,
     MessageController,
     SubscriberController,
+    ThreadController,
   ],
   providers: [
     LabelRepository,
     LabelGroupRepository,
     MessageRepository,
     SubscriberRepository,
+    ThreadRepository,
     LabelService,
     LabelGroupService,
     MessageService,
     SubscriberService,
+    ThreadService,
     ChatService,
   ],
-  exports: [SubscriberService, MessageService, LabelService, LabelGroupService],
+  exports: [
+    SubscriberService,
+    MessageService,
+    LabelService,
+    LabelGroupService,
+    ThreadService,
+  ],
 })
 export class ChatModule {}

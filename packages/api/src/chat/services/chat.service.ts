@@ -18,6 +18,7 @@ import { MessageCreateDto } from '../dto/message.dto';
 
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
+import { ThreadService } from './thread.service';
 
 @Injectable()
 export class ChatService {
@@ -26,9 +27,41 @@ export class ChatService {
     private readonly logger: LoggerService,
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
+    private readonly threadService: ThreadService,
     @Inject(forwardRef(() => AgenticService))
     private readonly agenticService: AgenticService,
   ) {}
+
+  private async ensureThreadTitle(
+    thread: { id: string; title?: string | null },
+    event: ConversationalEventWrapper<any, any>,
+  ) {
+    if (!!thread.title?.trim()) {
+      return;
+    }
+
+    const candidateTitle = this.threadService.buildThreadTitleFromIncomingText(
+      event.getText(),
+    );
+    if (!candidateTitle) {
+      return;
+    }
+
+    try {
+      const updated = await this.threadService.setThreadTitleIfMissing(
+        thread.id,
+        candidateTitle,
+      );
+      if (updated?.title) {
+        thread.title = updated.title;
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Unable to set title for thread ${thread.id} from first incoming message`,
+        err,
+      );
+    }
+  }
 
   /**
    * Finds or creates a message and broadcast it to the websocket "Message" room
@@ -37,6 +70,10 @@ export class ChatService {
    */
   @OnEvent('hook:chatbot:sent', { promisify: true })
   async handleSentMessage(sentMessage: MessageCreateDto) {
+    if (sentMessage.thread) {
+      await this.threadService.touchThread(sentMessage.thread);
+    }
+
     if (sentMessage.mid) {
       try {
         await this.messageService.findOneOrCreate(
@@ -67,9 +104,17 @@ export class ChatService {
       this.logger.warn('Failed to get the event id', messageId, err);
     }
     const subscriber = event.getInitiator();
+    const threadId =
+      event.getThreadId() ??
+      (
+        await this.threadService.resolveOrCreateThread({
+          subscriberId: subscriber.id,
+        })
+      ).id;
     const received: MessageCreateDto = {
       mid: messageId,
       sender: subscriber.id,
+      thread: threadId,
       message: event.getMessage(),
       delivery: true,
       read: true,
@@ -172,6 +217,12 @@ export class ChatService {
         const sentMessage: MessageCreateDto = {
           mid: event.getId(),
           recipient: recipient.id,
+          thread: (
+            await this.threadService.resolveOrCreateThread({
+              subscriberId: recipient.id,
+              explicitThreadId: event.getThreadId(),
+            })
+          ).id,
           message: event.getMessage(),
           delivery: true,
           read: false,
@@ -190,7 +241,7 @@ export class ChatService {
    *
    * @param event - The received event
    */
-  @OnEvent('hook:chatbot:message')
+  @OnEvent('hook:chatbot:message', { promisify: true })
   async handleNewMessage(event: ConversationalEventWrapper<any, any>) {
     this.logger.debug('New message received', event._adapter.raw);
 
@@ -237,10 +288,22 @@ export class ChatService {
       // Set the subscriber object
       event.setInitiator(subscriber!);
 
+      const channelSettings = await handler.getSettings();
+      const inactivityHours =
+        this.threadService.resolveInactivityHours(channelSettings);
+      const thread = await this.threadService.resolveThreadForIncoming({
+        subscriberId: subscriber.id,
+        explicitThreadId: event.getThreadId(),
+        inactivityHours,
+      });
+      event.setThreadId(thread.id);
+
       // Preprocess the event (persist attachments, ...)
       if (event.preprocess) {
         await event.preprocess();
       }
+
+      await this.ensureThreadTitle(thread, event);
 
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);

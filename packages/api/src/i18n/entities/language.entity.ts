@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index, InsertEvent, UpdateEvent } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import {
   OnBeforeInsert,
   OnBeforeRemove,
@@ -16,11 +17,8 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { Language, LanguageDto } from '../dto/language.dto';
 
 @Entity({ name: 'languages' })
+@EntityDto<LanguageDto>({ plain: Language, full: Language })
 export class LanguageOrmEntity extends BaseOrmEntity<LanguageDto> {
-  plainCls = Language;
-
-  fullCls = Language;
-
   @Column({ unique: true })
   @Index()
   title!: string;

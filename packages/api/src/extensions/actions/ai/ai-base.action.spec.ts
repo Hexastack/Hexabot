@@ -469,6 +469,7 @@ describe('AiBaseAction', () => {
 
     it('builds prompt payload from the latest messages using the provided limit', async () => {
       const initiatorId = 'subscriber-123';
+      const threadId = 'thread-123';
       const history = [
         createMessage({
           id: 'message-1',
@@ -489,6 +490,7 @@ describe('AiBaseAction', () => {
       };
       const context = {
         initiatorId,
+        threadId,
         services: { message: messageService },
       } as unknown as WorkflowRuntimeContext;
       const result = await action.buildPromptPublic(
@@ -502,7 +504,7 @@ describe('AiBaseAction', () => {
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
-        { id: initiatorId },
+        { id: threadId },
         2,
       );
       expect(result).toEqual({
@@ -549,11 +551,13 @@ describe('AiBaseAction', () => {
 
     it('defaults history mode message limit to 4 when missing', async () => {
       const initiatorId = 'subscriber-123';
+      const threadId = 'thread-123';
       const messageService = {
         findLastMessages: jest.fn().mockResolvedValue([]),
       };
       const context = {
         initiatorId,
+        threadId,
         services: { message: messageService },
       } as unknown as WorkflowRuntimeContext;
 
@@ -567,7 +571,7 @@ describe('AiBaseAction', () => {
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
-        { id: initiatorId },
+        { id: threadId },
         4,
       );
     });
@@ -617,11 +621,13 @@ describe('AiBaseAction', () => {
 
     it('ignores prompt field when input mode is history', async () => {
       const initiatorId = 'subscriber-123';
+      const threadId = 'thread-123';
       const messageService = {
         findLastMessages: jest.fn().mockResolvedValue([]),
       };
       const context = {
         initiatorId,
+        threadId,
         services: { message: messageService },
       } as unknown as WorkflowRuntimeContext;
       const result = await action.buildPromptPublic(
@@ -635,7 +641,7 @@ describe('AiBaseAction', () => {
       );
 
       expect(messageService.findLastMessages).toHaveBeenCalledWith(
-        { id: initiatorId },
+        { id: threadId },
         2,
       );
       expect(result).toEqual({

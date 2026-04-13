@@ -12,13 +12,16 @@ import {
   ManyToMany,
   ManyToOne,
   RelationId,
+  UpdateEvent,
 } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
-import { DtoActionConfig } from '@/utils';
+import { UserOrmEntity } from '@/user/entities/user.entity';
+import { TDto } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
@@ -38,19 +41,10 @@ export class SubscriberChannel {
 }
 
 @ChildEntity()
+@EntityDto<SubscriberDto>({ plain: Subscriber, full: SubscriberFull })
 export class SubscriberOrmEntity<
-  Dto extends {
-    transformers: {
-      FullCls: unknown;
-      PlainCls: unknown;
-    };
-    actions: DtoActionConfig;
-  } = SubscriberDto,
+  Dto extends TDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
-  plainCls = Subscriber;
-
-  fullCls = SubscriberFull;
-
   @Column({ type: 'varchar', length: 5, nullable: true })
   locale: string | null;
 
@@ -112,5 +106,7 @@ export class SubscriberOrmEntity<
 
   ensurePassword(): void {}
 
-  hashSensitiveFields(): void {}
+  hashSensitiveFields(_event: UpdateEvent<UserOrmEntity>) {}
+
+  updateUserAssignedAt(_event: UpdateEvent<SubscriberOrmEntity>) {}
 }

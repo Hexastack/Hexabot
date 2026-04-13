@@ -38,6 +38,7 @@ export class UserRepository extends BaseOrmRepository<UserOrmEntity> {
       return [];
     }
 
+    //*toto take 1
     const activeUsers = await this.find({
       where: {
         id: In(userIds),

@@ -13,7 +13,9 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
@@ -32,13 +34,10 @@ import { WorkflowRunOrmEntity } from './workflow-run.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
 
 @Entity({ name: 'memory_records' })
-@Index(['definition', 'owner', 'workflow', 'run'])
+@Index(['definition', 'owner', 'workflow', 'thread', 'run'])
 @Index(['expiresAt'])
+@EntityDto<MemoryRecordDto>({ plain: MemoryRecord, full: MemoryRecordFull })
 export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordDto> {
-  plainCls = MemoryRecord;
-
-  fullCls = MemoryRecordFull;
-
   /** Memory definition that governs the structure and scope of this record. */
   @ManyToOne(() => MemoryDefinitionOrmEntity, {
     nullable: false,
@@ -77,6 +76,19 @@ export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordDto> {
   /** Identifier of the related workflow. */
   @RelationId((record: MemoryRecordOrmEntity) => record.workflow)
   private readonly workflowId?: string | null;
+
+  /** Conversation thread for thread-scoped memory records. */
+  @ManyToOne(() => ThreadOrmEntity, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'thread_id' })
+  @AsRelation()
+  thread?: ThreadOrmEntity | null;
+
+  /** Identifier of the related conversation thread. */
+  @RelationId((record: MemoryRecordOrmEntity) => record.thread)
+  private readonly threadId?: string | null;
 
   /** Specific workflow run for run-scoped memory records. */
   @ManyToOne(() => WorkflowRunOrmEntity, {

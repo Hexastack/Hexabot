@@ -11,6 +11,7 @@ import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
 import { MessageService } from '@/chat/services/message.service';
+import { ThreadService } from '@/chat/services/thread.service';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
 import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
@@ -58,6 +59,7 @@ describe(`Web event wrapper`, () => {
       providers: [
         ChannelService,
         JwtService,
+        ThreadService,
         WebChannelHandler,
         I18nServiceProvider,
         {

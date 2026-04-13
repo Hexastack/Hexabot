@@ -15,21 +15,20 @@ import { useChat } from "./ChatContext";
 
 const PAGE_SIZE = 20;
 
+export const buildMessageSearchPayload = (activeThreadId: string | null) => {
+  return {
+    where: {
+      ...(activeThreadId ? { "thread.id": activeThreadId } : {}),
+    },
+  } satisfies SearchPayload<EntityType.MESSAGE>;
+};
+
 export const useInfinitedLiveMessages = () => {
-  const { subscriber: activeChat } = useChat();
+  const { thread } = useChat();
+  const activeThreadId = thread?.id ?? null;
   const params = useMemo(
-    () =>
-      ({
-        where: {
-          or: activeChat?.id
-            ? [
-                { "recipient.id": activeChat.id },
-                { "sender.id": activeChat.id },
-              ]
-            : [],
-        },
-      }) satisfies SearchPayload<EntityType.MESSAGE>,
-    [activeChat?.id],
+    () => buildMessageSearchPayload(activeThreadId),
+    [activeThreadId],
   );
   const {
     data,
@@ -61,7 +60,7 @@ export const useInfinitedLiveMessages = () => {
           skip: allPages.length * PAGE_SIZE,
         };
       },
-      enabled: !!activeChat?.id,
+      enabled: !!activeThreadId,
     },
   );
   const messages = useMemo(() => {
@@ -88,6 +87,7 @@ export const useInfinitedLiveMessages = () => {
   return {
     replyTo:
       data?.pages && data?.pages?.length > 0 ? data?.pages[0][0]?.mid : null,
+    activeThreadId,
     messages,
     hasNextPage,
     fetchNextPage,

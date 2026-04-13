@@ -95,6 +95,7 @@ export type TQuery = {
   token?: string[];
   redirect?: string;
   subscriber?: string;
+  thread?: string;
   flowId?: string;
   nodeIds?: string;
   name?: string;

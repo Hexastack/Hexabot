@@ -14,7 +14,10 @@ import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { UserService } from '@/user';
-import { InsertEvent, UpdateEvent } from '@/utils/types/entity-event.types';
+import {
+  InsertEntityEvent,
+  UpdateEntityEvent,
+} from '@/utils/types/entity-event.types';
 
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
@@ -59,7 +62,7 @@ export class WorkflowSchedulerService implements OnModuleInit {
    */
   @OnEvent('hook:workflow:postCreate')
   async handleWorkflowCreated(
-    event: InsertEvent<WorkflowOrmEntity>,
+    event: InsertEntityEvent<WorkflowOrmEntity>,
   ): Promise<void> {
     if (event.entity.id) {
       await this.registerScheduledWorkflow(event.entity.id);
@@ -73,7 +76,7 @@ export class WorkflowSchedulerService implements OnModuleInit {
    */
   @OnEvent('hook:workflow:postUpdate')
   async handleWorkflowUpdated(
-    event: UpdateEvent<WorkflowOrmEntity>,
+    event: UpdateEntityEvent<WorkflowOrmEntity>,
   ): Promise<void> {
     if (event.entity?.id) {
       await this.registerScheduledWorkflow(event.entity.id);

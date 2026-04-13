@@ -27,7 +27,7 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { UpdateEvent } from '@/utils/types/entity-event.types';
+import { UpdateEntityEvent } from '@/utils/types/entity-event.types';
 
 import {
   Setting,
@@ -312,7 +312,9 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
    * based on the `group` and `label` of the `Setting`.
    */
   @OnEvent('hook:setting:postUpdate')
-  async emitSettingEvents(event: UpdateEvent<SettingOrmEntity>): Promise<void> {
+  async emitSettingEvents(
+    event: UpdateEntityEvent<SettingOrmEntity>,
+  ): Promise<void> {
     if (event.entity) {
       const setting = event.entity.toPlainCls();
       const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;

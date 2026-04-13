@@ -22,6 +22,7 @@ import {
   Repository,
   UpdateEvent,
 } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import {
   invokeOrmHooks,
@@ -33,19 +34,14 @@ import { flatten } from '@/utils/helpers/flatten';
 
 import {
   DtoAction,
-  EntityDto,
   InferCreateDto,
   InferEntityDto,
   InferFull,
   InferPlain,
   InferUpdateDto,
+  TEntityDto,
 } from '../types/dto.types';
 import { EmitEventProps } from '../types/entity-event.types';
-
-export type DeleteResult = {
-  acknowledged: boolean;
-  deletedCount: number;
-};
 
 export enum EHook {
   preCreateValidate = 'preCreateValidate',
@@ -75,10 +71,12 @@ export type FindAllOptions<EntityType> = Omit<
 };
 
 export abstract class BaseOrmRepository<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > implements EntitySubscriberInterface<Entity>
 {
   private readonly dataSource: DataSource;
+
+  private readonly joinRelationMap: Record<string, string>;
 
   protected constructor(
     protected readonly repository: Repository<Entity>,
@@ -86,6 +84,12 @@ export abstract class BaseOrmRepository<
   ) {
     this.dataSource = repository.manager.connection;
     this.registerAsSubscriber();
+    this.joinRelationMap = Object.fromEntries(
+      this.repository.metadata.relationIds.map((rid) => [
+        rid.relation.propertyName,
+        rid.propertyName,
+      ]),
+    );
   }
 
   private async invokeEntityHooks(
@@ -119,12 +123,30 @@ export abstract class BaseOrmRepository<
   @Inject(LoggerService)
   protected readonly logger: LoggerService;
 
+  private attachJoinColumnsToDto<Action extends DtoAction>(
+    data: InferEntityDto<Action, Entity>,
+  ): InferEntityDto<Action, Entity> {
+    if (!data) return {} as InferEntityDto<Action, Entity>;
+
+    const result = { ...data };
+
+    for (const [key, value] of Object.entries(data)) {
+      const joinColumn = this.joinRelationMap[key];
+      if (joinColumn) {
+        result[joinColumn] = value;
+      }
+    }
+
+    return result;
+  }
+
   public actionDtoToEntity<Action extends DtoAction>(
     data: InferEntityDto<Action, Entity>,
   ): DeepPartial<Entity> {
+    const entityDto = this.attachJoinColumnsToDto(data);
     const e = plainToInstance(
       this.repository.target as new (...args: any[]) => Entity,
-      instanceToPlain(data),
+      instanceToPlain(entityDto),
     );
 
     return Object.assign(e) as DeepPartial<Entity>;
@@ -248,7 +270,6 @@ export abstract class BaseOrmRepository<
 
   async create(payload: InferCreateDto<Entity>): Promise<InferPlain<Entity>> {
     const entity = this.repository.create(this.actionDtoToEntity(payload));
-
     await this.emitEvent<EHook.preCreate>({
       action: EHook.preCreate,
       entity,
@@ -300,10 +321,8 @@ export abstract class BaseOrmRepository<
     options?: UpdateOneOptions,
   ): Promise<InferPlain<Entity>> {
     const entity = await this.findOneEntity(idOrOptions);
-    if (entity) {
-      const databaseEntity = this.repository.create(
-        entity as DeepPartial<Entity>,
-      );
+    const databaseEntity = await this.findOneEntity(idOrOptions);
+    if (entity && databaseEntity) {
       const updates = this.actionDtoToEntity(payload);
       if (options?.shouldFlatten && updates && typeof updates === 'object') {
         const flattenedUpdates = flatten(
@@ -343,20 +362,14 @@ export abstract class BaseOrmRepository<
 
       const updatedEntity = await this.repository.save(entity);
 
-      if (updatedEntity) {
-        await this.emitEvent<EHook.postUpdate>({
-          action: EHook.postUpdate,
-          entity: updatedEntity,
-          payload,
-          databaseEntity,
-        });
+      await this.emitEvent<EHook.postUpdate>({
+        action: EHook.postUpdate,
+        entity: updatedEntity,
+        payload,
+        databaseEntity,
+      });
 
-        return updatedEntity.toPlainCls();
-      } else {
-        throw new NotFoundException(
-          'Unable to execute updateOne() - No updates',
-        );
-      }
+      return updatedEntity.toPlainCls();
     }
 
     if (options?.upsert) {
@@ -500,12 +513,10 @@ export abstract class BaseOrmRepository<
       databaseEntity: deletedEntity,
     });
 
-    const result: DeleteResult = {
+    return {
       acknowledged: true,
       deletedCount: 1,
-    };
-
-    return result;
+    } satisfies DeleteResult;
   }
 
   private isBuiltin(entity: Entity): boolean {

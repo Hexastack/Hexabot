@@ -6,27 +6,27 @@
 
 import { Inject } from '@nestjs/common';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 
 import {
-  EntityDto,
   InferCreateDto,
   InferFull,
   InferPlain,
   InferUpdateDto,
+  TEntityDto,
 } from '../types/dto.types';
 
 import {
   BaseOrmRepository,
-  DeleteResult,
   FindAllOptions,
   UpdateOneOptions,
 } from './base-orm.repository';
 
 export abstract class BaseOrmService<
-  Entity extends BaseOrmEntity<EntityDto<Entity>>,
+  Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > {
   protected constructor(
     protected readonly repository: BaseOrmRepository<Entity>,

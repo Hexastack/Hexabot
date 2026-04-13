@@ -18,6 +18,7 @@ import { ChannelName } from '@/channel/types';
 import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
@@ -38,11 +39,8 @@ import {
 
 @Entity({ name: 'attachments' })
 @Index('idx_attachment_resource_ref', ['resourceRef'])
+@EntityDto<AttachmentDto>({ plain: Attachment, full: AttachmentFull })
 export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentDto> {
-  plainCls = Attachment;
-
-  fullCls = AttachmentFull;
-
   @Column()
   name!: string;
 

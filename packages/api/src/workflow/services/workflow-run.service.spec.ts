@@ -340,12 +340,42 @@ describe('WorkflowRunService (TypeORM)', () => {
 
       const result = await service.findSuspendedRunByInitiator(
         'sub-1',
+        undefined,
         'workflow-1',
       );
 
       expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
         where: {
           triggeredBy: { id: 'sub-1' },
+          status: 'suspended',
+          workflow: { id: 'workflow-1' },
+        },
+        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
+      });
+      expect(result).toBe(expectedRun);
+    });
+
+    it('adds thread and workflow filters when both are provided', async () => {
+      const mockedRepo = {
+        findOneAndPopulate: jest.fn(),
+      } as unknown as WorkflowRunRepository;
+      const service = new WorkflowRunService(mockedRepo);
+      const expectedRun = { id: 'run-789' } as WorkflowRun;
+
+      (mockedRepo.findOneAndPopulate as jest.Mock).mockResolvedValue(
+        expectedRun,
+      );
+
+      const result = await service.findSuspendedRunByInitiator(
+        'sub-1',
+        'thread-1',
+        'workflow-1',
+      );
+
+      expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
+        where: {
+          triggeredBy: { id: 'sub-1' },
+          thread: { id: 'thread-1' },
           status: 'suspended',
           workflow: { id: 'workflow-1' },
         },

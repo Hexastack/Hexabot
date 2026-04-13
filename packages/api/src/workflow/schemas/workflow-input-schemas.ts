@@ -36,6 +36,11 @@ export const conversationalWorkflowInputZodSchema = z
       title: 'Message ID',
       description: 'Unique identifier of the inbound message.',
     }),
+    thread_id: z.string().meta({
+      title: 'Thread ID',
+      description:
+        'Identifier of the conversation thread to which this event belongs.',
+    }),
   })
   .strict();
 

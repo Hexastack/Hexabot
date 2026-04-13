@@ -17,7 +17,7 @@ import {
 import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import {
   StdIncomingMessage,
@@ -26,6 +26,7 @@ import {
 } from '../types/message';
 
 import { Subscriber } from './subscriber.dto';
+import { Thread } from './thread.dto';
 
 @Exclude()
 export class MessageStub extends BaseStub {
@@ -56,6 +57,9 @@ export class Message extends MessageStub {
 
   @Expose({ name: 'sentById' })
   sentBy?: string | null;
+
+  @Expose({ name: 'threadId' })
+  thread!: string;
 }
 
 @Exclude()
@@ -71,6 +75,10 @@ export class MessageFull extends MessageStub {
   @Expose()
   @Type(() => User)
   sentBy?: User | null;
+
+  @Expose()
+  @Type(() => Thread)
+  thread!: Thread;
 }
 
 export class MessageCreateDto {
@@ -102,6 +110,11 @@ export class MessageCreateDto {
   @IsUUIDv4({ message: 'SentBy must be a valid UUID' })
   sentBy?: string;
 
+  @ApiProperty({ description: 'Message thread', type: String })
+  @IsString()
+  @IsUUIDv4({ message: 'Thread must be a valid UUID' })
+  thread!: string;
+
   @ApiProperty({ description: 'Message', type: Object })
   @IsObject()
   @IsNotEmpty()
@@ -128,10 +141,10 @@ export class MessageCreateDto {
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
 
-export type MessageDto = BuildDtoType<
+export type MessageDto = TDto<
   {
-    PlainCls: typeof Message;
-    FullCls: typeof MessageFull;
+    plain: typeof Message;
+    full: typeof MessageFull;
   },
   {
     create: MessageCreateDto;

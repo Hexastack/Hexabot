@@ -34,6 +34,7 @@ import type { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import type { LabelOrmEntity } from '@/chat/entities/label.entity';
 import type { MessageOrmEntity } from '@/chat/entities/message.entity';
 import type { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import type { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import type { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import type { ContentOrmEntity } from '@/cms/entities/content.entity';
 import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
@@ -42,7 +43,6 @@ import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { Setting } from '@/setting/dto/setting.dto';
 import type { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import type { SettingOrmEntity } from '@/setting/entities/setting.entity';
-import type { InvitationOrmEntity } from '@/user/entities/invitation.entity';
 import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
@@ -51,9 +51,9 @@ import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { DtoActionConfig } from '@/utils/types/dto.types';
 import type {
-  InsertEvent,
-  RemoveEvent,
-  UpdateEvent,
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
@@ -75,9 +75,9 @@ type UnionToIntersection<U> = (
   : never;
 
 type OrmLifecycleEvent<Entity> =
-  | InsertEvent<Entity>
-  | UpdateEvent<Entity>
-  | RemoveEvent<Entity>;
+  | InsertEntityEvent<Entity>
+  | UpdateEntityEvent<Entity>
+  | DeleteEntityEvent<Entity>;
 
 type InsertHook =
   | 'preCreateValidate'
@@ -118,11 +118,11 @@ type HookEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
 > = Hook extends InsertHook
-  ? [InsertEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+  ? [InsertEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
   : Hook extends UpdateHook
-    ? [UpdateEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+    ? [UpdateEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
     : Hook extends DeleteHook
-      ? [RemoveEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+      ? [DeleteEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
       : never;
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];
@@ -149,7 +149,6 @@ declare module '@nestjs/event-emitter' {
     content: ContentOrmEntity;
     contentType: ContentTypeOrmEntity;
     dummy: DummyOrmEntity;
-    invitation: InvitationOrmEntity;
     label: LabelOrmEntity;
     labelGroup: LabelGroupOrmEntity;
     language: LanguageOrmEntity;
@@ -161,6 +160,7 @@ declare module '@nestjs/event-emitter' {
     role: RoleOrmEntity;
     setting: SettingOrmEntity;
     subscriber: SubscriberOrmEntity;
+    thread: ThreadOrmEntity;
     translation: TranslationOrmEntity;
     user: UserOrmEntity;
     workflow: WorkflowOrmEntity;
@@ -210,7 +210,6 @@ declare module '@nestjs/event-emitter' {
   >;
 
   interface CustomEventMap {
-    'hook:analytics:passation': [Subscriber, boolean];
     'hook:chatbot:echo': [AnyEventWrapper];
     'hook:chatbot:delivery': [AnyEventWrapper];
     'hook:chatbot:message': [AnyEventWrapper];

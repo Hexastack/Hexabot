@@ -19,6 +19,8 @@ export abstract class TriggerEventWrapper<
 
   private workflowId?: string;
 
+  private threadId?: string;
+
   /**
    * Returns the user/profile that initiated this event (subscriber or admin).
    */
@@ -46,6 +48,20 @@ export abstract class TriggerEventWrapper<
    */
   getWorkflowId(): string | undefined {
     return this.workflowId;
+  }
+
+  /**
+   * Sets an optional thread id used to scope conversation continuity.
+   */
+  setThreadId(threadId?: string) {
+    this.threadId = threadId;
+  }
+
+  /**
+   * Returns the optional thread id attached to this event.
+   */
+  getThreadId(): string | undefined {
+    return this.threadId;
   }
 
   abstract getMetadata(): Record<string, unknown>;

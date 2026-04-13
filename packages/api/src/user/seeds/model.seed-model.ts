@@ -58,6 +58,11 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
+    name: 'Thread',
+    identity: 'thread',
+    attributes: {},
+  },
+  {
     name: 'Subscriber',
     identity: 'subscriber',
     attributes: {},

@@ -48,6 +48,7 @@ export class AgenticService {
   async handleEvent(event: TriggerEventWrapper): Promise<void> {
     const initiator = event.getInitiator();
     const requestedWorkflowId = event.getWorkflowId();
+    const threadId = event.getThreadId();
     this.logger.debug('Handling incoming workflow event');
     if (!initiator) {
       this.logger.warn(
@@ -61,6 +62,7 @@ export class AgenticService {
       const suspendedRun =
         await this.workflowRunService.findSuspendedRunByInitiator(
           initiator.id,
+          threadId,
           requestedWorkflowId,
         );
       if (suspendedRun) {
@@ -294,6 +296,7 @@ export class AgenticService {
       workflow: workflow.id,
       workflowVersion: workflow.currentVersion?.id ?? null,
       triggeredBy: initiator.id,
+      thread: event.getThreadId() ?? null,
       input: event.buildInput(),
       context: Object.keys(initialContext).length > 0 ? initialContext : null,
       metadata: event.getMetadata(),

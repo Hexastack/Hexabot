@@ -6,6 +6,7 @@
 
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
@@ -18,11 +19,8 @@ import { LabelOrmEntity } from './label.entity';
 
 @Entity({ name: 'label_groups' })
 @Index(['name'], { unique: true })
+@EntityDto<LabelGroupDto>({ plain: LabelGroup, full: LabelGroupFull })
 export class LabelGroupOrmEntity extends BaseOrmEntity<LabelGroupDto> {
-  plainCls = LabelGroup;
-
-  fullCls = LabelGroupFull;
-
   @Column()
   name!: string;
 

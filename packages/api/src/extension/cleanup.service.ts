@@ -6,12 +6,12 @@
 
 import { Injectable } from '@nestjs/common';
 import { In, Like } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
 
 import { TCriteria, TExtractExtension, TExtractNamespace } from './types';
 

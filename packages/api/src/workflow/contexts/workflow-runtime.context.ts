@@ -117,6 +117,16 @@ export abstract class WorkflowRuntimeContext<
     this.state.initiatorId = value;
   }
 
+  get threadId(): string | null | undefined {
+    const value = this.state.threadId;
+
+    return typeof value === 'string' ? value : (value ?? null);
+  }
+
+  set threadId(value: string | null | undefined) {
+    this.state.threadId = value ?? null;
+  }
+
   async buildFromRun(
     run: WorkflowRunFull,
     event: E,
@@ -130,6 +140,7 @@ export abstract class WorkflowRuntimeContext<
     this.initiatorId = run.triggeredBy.id;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
+    this.threadId = run.thread?.id ?? event.getThreadId() ?? null;
     await this.syncInitiatorState();
     this.memoryStore = memory;
     this.memoryStore.syncToContext();

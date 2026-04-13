@@ -38,6 +38,7 @@ import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { ExtensionJsonLoader } from './i18n/loaders/extension-json.loader';
+import { LicenseModule } from './license/license.module';
 import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
@@ -90,6 +91,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   CmsModule,
   UserModule,
   SettingModule,
+  LicenseModule,
   AttachmentModule,
   AnalyticsModule,
   ChatModule,

@@ -8,7 +8,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { Permission } from './permission.dto';
 import { User } from './user.dto';
@@ -63,10 +63,10 @@ export class RoleCreateDto {
 
 export class RoleUpdateDto extends PartialType(RoleCreateDto) {}
 
-export type RoleDto = BuildDtoType<
+export type RoleDto = TDto<
   {
-    PlainCls: typeof Role;
-    FullCls: typeof RoleFull;
+    plain: typeof Role;
+    full: typeof RoleFull;
   },
   {
     create: RoleCreateDto;

@@ -15,6 +15,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
@@ -30,11 +31,8 @@ import { McpServerTransport } from '../types';
 
 @Entity({ name: 'mcp_servers' })
 @Index(['name'], { unique: true })
+@EntityDto<McpServerDto>({ plain: McpServer, full: McpServerFull })
 export class McpServerOrmEntity extends BaseOrmEntity<McpServerDto> {
-  plainCls = McpServer;
-
-  fullCls = McpServerFull;
-
   private originalTransport?: McpServerTransport;
 
   private originalCredentialId?: string | null;

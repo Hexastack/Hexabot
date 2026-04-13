@@ -311,9 +311,45 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
       assignedTo: assignTo,
       assignedAt: new Date(),
     });
+
+    await this.eventEmitter.emitAsync(
+      'hook:subscriber:assign',
+      {
+        assignedTo: updated.assignedTo,
+        assignedAt: updated.assignedAt,
+      },
+      profile,
+    );
+
     this.logger.debug(
       `Subscriber "${profile.id}" handed over to "${assignTo}"`,
     );
+
+    return updated;
+  }
+
+  /**
+   * Hand back (unassign) the subscriber from the current assignee.
+   *
+   * @param profile - The end-user (subscriber) profile
+   * @returns The updated profile with assignee fields cleared
+   */
+  async handBack(profile: Subscriber): Promise<Subscriber> {
+    const updated = await this.updateOne(profile.id, {
+      assignedTo: null,
+      assignedAt: null,
+    });
+
+    await this.eventEmitter.emitAsync(
+      'hook:subscriber:assign',
+      {
+        assignedTo: null,
+        assignedAt: null,
+      },
+      profile,
+    );
+
+    this.logger.debug(`Subscriber "${profile.id}" handed back`);
 
     return updated;
   }
