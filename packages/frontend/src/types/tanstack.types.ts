@@ -46,4 +46,3 @@ export type {
   UseMutationOptions,
   UseQueryOptions,
 };
-

@@ -5,9 +5,8 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { IHookSettingsGroupLabelOperationMap } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateEvent } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
@@ -20,22 +19,5 @@ export class SettingRepository extends BaseOrmRepository<SettingOrmEntity> {
     repository: Repository<SettingOrmEntity>,
   ) {
     super(repository, []);
-  }
-
-  /**
-   * Emits an event after a `Setting` has been updated.
-   *
-   * This method is used to synchronize global settings by emitting an event
-   * based on the `group` and `label` of the `Setting`.
-   */
-  async afterUpdate(event: UpdateEvent<SettingOrmEntity>): Promise<void> {
-    if (event.databaseEntity) {
-      const setting = event.databaseEntity.toPlainCls();
-      const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-      const label = setting.label as '*';
-      this.eventEmitter?.emit(`hook:${group}:${label}`, setting);
-    }
-
-    await super.afterUpdate(event);
   }
 }

@@ -5,12 +5,7 @@
  */
 
 import { InputAdornment, Tooltip, useTheme } from "@mui/material";
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-} from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 
 type AlertType = "warning" | "error" | "info" | "success";
 

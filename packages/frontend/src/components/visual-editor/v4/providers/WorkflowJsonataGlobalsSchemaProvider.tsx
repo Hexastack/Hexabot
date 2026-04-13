@@ -34,10 +34,11 @@ export const WorkflowJsonataGlobalsSchemaProvider = ({
   const memoryDefinitions = useMemo(
     () =>
       memoryDefinitionIds
-        .map((memoryDefinitionId) => getMemoryDefinitionFromCache(memoryDefinitionId))
-        .filter(
-          (memoryDefinition): memoryDefinition is IMemoryDefinition =>
-            Boolean(memoryDefinition),
+        .map((memoryDefinitionId) =>
+          getMemoryDefinitionFromCache(memoryDefinitionId),
+        )
+        .filter((memoryDefinition): memoryDefinition is IMemoryDefinition =>
+          Boolean(memoryDefinition),
         ),
     [getMemoryDefinitionFromCache, memoryDefinitionIds],
   );

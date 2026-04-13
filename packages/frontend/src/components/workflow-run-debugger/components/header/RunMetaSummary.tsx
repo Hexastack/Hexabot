@@ -17,7 +17,10 @@ type RunMetaSummaryProps = {
   workflowVersion?: IWorkflowVersion | null;
 };
 
-export const RunMetaSummary = ({ workflow, workflowVersion }: RunMetaSummaryProps) => {
+export const RunMetaSummary = ({
+  workflow,
+  workflowVersion,
+}: RunMetaSummaryProps) => {
   const { t } = useTranslate();
 
   return (

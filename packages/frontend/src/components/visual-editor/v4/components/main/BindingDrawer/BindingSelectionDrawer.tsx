@@ -4,10 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  type JsonValue,
-  type WorkflowDefinition,
-} from "@hexabot-ai/agentic";
+import { type JsonValue, type WorkflowDefinition } from "@hexabot-ai/agentic";
 import {
   Box,
   Button,
@@ -92,12 +89,11 @@ type BindingSelectionDrawerContentProps = {
   onVisibleErrorsChange: (hasVisibleErrors: boolean) => void;
 };
 
-type BindingSelectionDrawerProps =
-  BindingSelectionDrawerBaseProps & {
-    drawerId?: string;
-    open: boolean;
-    onClose: () => void;
-  };
+type BindingSelectionDrawerProps = BindingSelectionDrawerBaseProps & {
+  drawerId?: string;
+  open: boolean;
+  onClose: () => void;
+};
 
 const asRecord = (value: unknown): Record<string, unknown> | undefined => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -178,10 +174,9 @@ const BindingSelectionDrawerContent = ({
             onClick={onSelectMode}
             sx={{ alignSelf: "flex-start" }}
           >
-            {t(
-              "visual_editor.single_binding_drawer.form.back",
-              { bindingLabelLower } as Parameters<typeof t>[1],
-            )}
+            {t("visual_editor.single_binding_drawer.form.back", {
+              bindingLabelLower,
+            } as Parameters<typeof t>[1])}
           </Button>
         ) : null}
         <Stack spacing={0.25} minWidth={0}>
@@ -213,7 +208,9 @@ const BindingSelectionDrawerContent = ({
               { bindingLabelLower } as Parameters<typeof t>[1],
             )}
             disabled={isSaving}
-            color={bindingDescription.trim() ? "text.primary" : "text.secondary"}
+            color={
+              bindingDescription.trim() ? "text.primary" : "text.secondary"
+            }
           />
         </Stack>
         {bindingSchema ? (
@@ -227,10 +224,9 @@ const BindingSelectionDrawerContent = ({
           />
         ) : (
           <Typography variant="body2" color="text.secondary" px={1}>
-            {t(
-              "visual_editor.single_binding_drawer.form.empty_schema",
-              { bindingLabel } as Parameters<typeof t>[1],
-            )}
+            {t("visual_editor.single_binding_drawer.form.empty_schema", {
+              bindingLabel,
+            } as Parameters<typeof t>[1])}
           </Typography>
         )}
       </Stack>
@@ -411,7 +407,8 @@ export const BindingSelectionDrawer = ({
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
   const isEditing = Boolean(editingBindingName);
   const isCreateMode = isEditing || mode === "create";
-  const normalizedBindingLabel = bindingLabel || humanizeBindingKind(bindingKind);
+  const normalizedBindingLabel =
+    bindingLabel || humanizeBindingKind(bindingKind);
   const bindingLabelLower = useMemo(
     () => normalizedBindingLabel.toLowerCase(),
     [normalizedBindingLabel],

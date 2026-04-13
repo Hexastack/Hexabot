@@ -33,10 +33,7 @@ export const useWorkflowExecutionState = (flowId?: string) => {
     (key: string, state: NodeExecutionState, t?: number) => {
       setExecutionStates((previousStates) => ({
         ...previousStates,
-        [key]: [
-          ...(previousStates[key] ?? []),
-          { state, t: t ?? Date.now() },
-        ],
+        [key]: [...(previousStates[key] ?? []), { state, t: t ?? Date.now() }],
       }));
     },
     [],

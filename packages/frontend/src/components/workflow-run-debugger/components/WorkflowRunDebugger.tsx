@@ -77,8 +77,7 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({
   }, [selectedRunId, workflowRuns]);
 
   const selectedRun = useMemo(
-    () =>
-      workflowRuns.find((run) => run.id === selectedRunId) ?? latestRun,
+    () => workflowRuns.find((run) => run.id === selectedRunId) ?? latestRun,
     [latestRun, selectedRunId, workflowRuns],
   );
   const selectedStep = useMemo(() => {

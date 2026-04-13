@@ -28,13 +28,11 @@ describe('SubscriberRepository (TypeORM)', () => {
   let subscriberRepository: SubscriberRepository;
   let repository: Repository<SubscriberOrmEntity>;
   let labelRepository: Repository<LabelOrmEntity>;
-  let userRepository: Repository<UserOrmEntity>;
   let existingLabels: LabelOrmEntity[] = [];
   let existingUsers: UserOrmEntity[] = [];
 
   const createdSubscriberIds: string[] = [];
   const createdLabelIds: string[] = [];
-  const createdUserIds: string[] = [];
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -55,10 +53,6 @@ describe('SubscriberRepository (TypeORM)', () => {
     labelRepository = module.get<Repository<LabelOrmEntity>>(
       getRepositoryToken(LabelOrmEntity),
     );
-    userRepository = module.get<Repository<UserOrmEntity>>(
-      getRepositoryToken(UserOrmEntity),
-    );
-
     const fixtures = await installSubscriberFixturesTypeOrm(dataSource);
     existingLabels = fixtures.labels;
     existingUsers = fixtures.users;
@@ -80,10 +74,6 @@ describe('SubscriberRepository (TypeORM)', () => {
     if (createdLabelIds.length > 0) {
       await labelRepository.delete(createdLabelIds);
       createdLabelIds.length = 0;
-    }
-    if (createdUserIds.length > 0) {
-      await userRepository.delete(createdUserIds);
-      createdUserIds.length = 0;
     }
   });
 
@@ -142,37 +132,6 @@ describe('SubscriberRepository (TypeORM)', () => {
     });
     const saved = await labelRepository.save(label);
     createdLabelIds.push(saved.id);
-
-    return saved;
-  };
-  const createPersistedUser = async (
-    overrides: Partial<UserOrmEntity> = {},
-  ): Promise<UserOrmEntity> => {
-    const unique = randomUUID();
-    const user = userRepository.create({
-      firstName: 'Support',
-      lastName: `Agent-${unique.slice(0, 6)}`,
-      username: `agent_${unique.slice(0, 8)}`,
-      email: `agent_${unique.slice(0, 8)}@example.com`,
-      password: '$2b$10$2tdM5v5Ku8h7xBo5CJQnEukT4V8wfJf7pKQ4R0fFh9htY8e7X0ByW',
-      state: true,
-      sendEmail: false,
-      resetCount: 0,
-      resetToken: null,
-      language: 'en',
-      timezone: 0,
-      channel: { name: 'web-channel' },
-      foreignId: `foreign-user-${unique}`,
-      roles: (existingUsers[0]?.roles ?? []).map(
-        ({ id }) =>
-          ({
-            id,
-          }) as UserOrmEntity['roles'][number],
-      ),
-      ...overrides,
-    });
-    const saved = await userRepository.save(user);
-    createdUserIds.push(saved.id);
 
     return saved;
   };
@@ -289,69 +248,6 @@ describe('SubscriberRepository (TypeORM)', () => {
 
       expect(counts[existingUsers[0].id]).toBeGreaterThan(0);
       expect(counts[missingUserId] ?? 0).toBe(0);
-    });
-  });
-
-  describe('assignment lifecycle hooks', () => {
-    it('updates assignedAt and emits assign hook on reassignment', async () => {
-      const assigneeA = existingUsers[0];
-      const assigneeB = await createPersistedUser();
-      const initialAssignedAt = new Date('2024-01-01T00:00:00.000Z');
-      const entity = await createPersistedSubscriber({
-        assignedAt: initialAssignedAt,
-        assignedTo: { id: assigneeA.id } as Pick<UserOrmEntity, 'id'> &
-          UserOrmEntity,
-      });
-      const emitSpy = jest.spyOn(
-        subscriberRepository.getEventEmitter(),
-        'emit',
-      );
-      const updated = await subscriberRepository.updateOne(entity.id, {
-        assignedTo: assigneeB.id,
-      });
-
-      expect(updated.assignedTo).toBe(assigneeB.id);
-      expect(updated.assignedAt).toBeInstanceOf(Date);
-      expect(updated.assignedAt).not.toEqual(initialAssignedAt);
-      expect(emitSpy).toHaveBeenCalledWith(
-        'hook:subscriber:assign',
-        expect.objectContaining({
-          assignedTo: assigneeB.id,
-          assignedAt: expect.any(Date),
-        }),
-        expect.objectContaining({
-          id: entity.id,
-        }),
-      );
-    });
-
-    it('clears assignedAt and emits assign hook on handback', async () => {
-      const assignee = existingUsers[0];
-      const entity = await createPersistedSubscriber({
-        assignedAt: new Date('2024-01-01T00:00:00.000Z'),
-        assignedTo: { id: assignee.id } as Pick<UserOrmEntity, 'id'> &
-          UserOrmEntity,
-      });
-      const emitSpy = jest.spyOn(
-        subscriberRepository.getEventEmitter(),
-        'emit',
-      );
-      const updated = await subscriberRepository.handBackByForeignIdQuery(
-        entity.foreignId ?? '',
-      );
-
-      expect(updated.assignedTo).toBeNull();
-      expect(updated.assignedAt).toBeNull();
-      expect(emitSpy).toHaveBeenCalledWith(
-        'hook:subscriber:assign',
-        expect.objectContaining({
-          assignedTo: null,
-          assignedAt: null,
-        }),
-        expect.objectContaining({
-          id: entity.id,
-        }),
-      );
     });
   });
 

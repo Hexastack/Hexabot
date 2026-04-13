@@ -4,12 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useMemo,
-} from "react";
+import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { EntityType } from "@/services/types";
@@ -47,9 +42,7 @@ export const WorkflowActionsProvider = ({
   );
   const actionsByName = useMemo(
     () =>
-      new Map<string, IAction>(
-        actions.map((action) => [action.name, action]),
-      ),
+      new Map<string, IAction>(actions.map((action) => [action.name, action])),
     [actions],
   );
   const value = useMemo(

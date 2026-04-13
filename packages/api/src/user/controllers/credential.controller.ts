@@ -19,10 +19,10 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { PopulatePipe, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {

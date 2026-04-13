@@ -17,7 +17,10 @@ describe("buildThreadSearchPayload", () => {
   it("maps subscriber search fields to thread subscriber filters", () => {
     const payload = {
       where: {
-        or: [{ firstName: { contains: "sam" } }, { lastName: { contains: "sam" } }],
+        or: [
+          { firstName: { contains: "sam" } },
+          { lastName: { contains: "sam" } },
+        ],
       },
     } satisfies SearchPayload<EntityType.SUBSCRIBER>;
     const result = buildThreadSearchPayload(

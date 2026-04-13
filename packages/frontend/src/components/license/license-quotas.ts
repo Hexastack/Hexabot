@@ -36,7 +36,8 @@ const QUOTA_UPGRADE_TARGET_BY_RESOURCE: Record<
 export const getLicenseQuotaResource = (
   license: ILicense | undefined,
   resource: LicenseQuotaResource,
-): LicenseQuotaResourceState | undefined => license?.quotas?.resources?.[resource];
+): LicenseQuotaResourceState | undefined =>
+  license?.quotas?.resources?.[resource];
 
 export const isLicenseQuotaReached = (
   license: ILicense | undefined,

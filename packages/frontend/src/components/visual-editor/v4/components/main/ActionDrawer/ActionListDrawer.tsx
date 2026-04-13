@@ -70,8 +70,7 @@ const ActionListDrawerContent = ({
       const description = action.description?.toLowerCase() ?? "";
 
       return (
-        name.includes(normalizedQuery) ||
-        description.includes(normalizedQuery)
+        name.includes(normalizedQuery) || description.includes(normalizedQuery)
       );
     });
   }, [actions, normalizedQuery]);

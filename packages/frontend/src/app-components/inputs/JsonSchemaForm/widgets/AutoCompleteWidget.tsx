@@ -27,7 +27,10 @@ import {
   mergeLabelSx,
 } from "./shared";
 
-type AutoCompleteWidgetOptions = Omit<Rjsf["uiSchema"]["ui:options"], "label"> & {
+type AutoCompleteWidgetOptions = Omit<
+  Rjsf["uiSchema"]["ui:options"],
+  "label"
+> & {
   labelKey?: string;
   routeParamKey?: string;
   multiple?: boolean;
@@ -60,8 +63,12 @@ const AutoCompleteWidgetWrapper = ({
   const normalizedValue = useMemo(
     () =>
       multiple
-        ? (Array.isArray(value) ? value : [])
-        : (typeof value === "string" ? value : ""),
+        ? Array.isArray(value)
+          ? value
+          : []
+        : typeof value === "string"
+          ? value
+          : "",
     [multiple, value],
   );
 

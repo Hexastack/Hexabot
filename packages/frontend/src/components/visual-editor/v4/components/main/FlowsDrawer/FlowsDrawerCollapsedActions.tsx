@@ -59,7 +59,9 @@ export const FlowsDrawerCollapsedActions = ({
     {newWorkflowAction ?? (
       <Tooltip
         title={
-          newWorkflowDisabled ? (newWorkflowDisabledReason ?? "") : newWorkflowLabel
+          newWorkflowDisabled
+            ? (newWorkflowDisabledReason ?? "")
+            : newWorkflowLabel
         }
         disableHoverListener={!newWorkflowDisabled && !newWorkflowLabel}
       >

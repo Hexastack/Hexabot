@@ -26,7 +26,9 @@ type ZodIssueLike = {
   path?: ErrorPath;
 };
 type ZodSchemaLike = {
-  safeParse: (data: unknown) =>
+  safeParse: (
+    data: unknown,
+  ) =>
     | { success: true; data: unknown }
     | { success: false; error: { issues: ZodIssueLike[] } };
 };
@@ -205,7 +207,11 @@ const zodValidator: ValidatorType = {
     return validationData;
   },
   isValid(schema, formData, rootSchema) {
-    const { errors, validationError } = runValidation(schema, formData, rootSchema);
+    const { errors, validationError } = runValidation(
+      schema,
+      formData,
+      rootSchema,
+    );
 
     return !validationError && errors.length === 0;
   },

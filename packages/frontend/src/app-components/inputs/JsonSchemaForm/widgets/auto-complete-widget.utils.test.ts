@@ -37,10 +37,7 @@ describe("auto complete widget utils", () => {
     it("maps multi selections to string arrays", () => {
       expect(
         toAutoCompleteWidgetValue({
-          selection: [
-            { name: "search" },
-            { name: "calculator" },
-          ],
+          selection: [{ name: "search" }, { name: "calculator" }],
           valueKey: "name",
           multiple: true,
         }),

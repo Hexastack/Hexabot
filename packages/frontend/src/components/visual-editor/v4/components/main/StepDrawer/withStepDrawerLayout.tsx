@@ -14,7 +14,10 @@ import {
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 
-type StepDrawerLayoutWrapperProps = Omit<DrawerLayoutWrapperProps, "onClose"> & {
+type StepDrawerLayoutWrapperProps = Omit<
+  DrawerLayoutWrapperProps,
+  "onClose"
+> & {
   onClose?: () => void;
 };
 

@@ -100,7 +100,11 @@ export const createToolBindingDefinitionMutation = (
     ...definition,
     defs: {
       ...currentDefs,
-      [bindingName]: createToolDefinition({ actionName, description, settings }),
+      [bindingName]: createToolDefinition({
+        actionName,
+        description,
+        settings,
+      }),
       [ownerDefName]: nextOwnerDefinition,
     },
   };

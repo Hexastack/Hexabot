@@ -26,8 +26,9 @@ interface ScrollMetrics {
 
 function collectMetrics(element: HTMLDivElement): ScrollMetrics {
   const atBottom =
-    Math.abs(element.scrollHeight - (element.scrollTop + element.clientHeight)) <=
-    1;
+    Math.abs(
+      element.scrollHeight - (element.scrollTop + element.clientHeight),
+    ) <= 1;
 
   return {
     scrollTop: element.scrollTop,
@@ -96,7 +97,9 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
       metricsRef.current = metrics;
 
       const isScrollable = element.scrollHeight > element.clientHeight + 1;
-      const canEmitReachEvents = !(disableOnYReachWhenNoScroll && !isScrollable);
+      const canEmitReachEvents = !(
+        disableOnYReachWhenNoScroll && !isScrollable
+      );
       const isAtTop = element.scrollTop <= 0;
       const isAtBottom = metrics.atBottom;
 
@@ -138,7 +141,8 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
 
       const previousMetrics = metricsRef.current || collectMetrics(element);
       const currentMetrics = collectMetrics(element);
-      const heightDelta = currentMetrics.scrollHeight - previousMetrics.scrollHeight;
+      const heightDelta =
+        currentMetrics.scrollHeight - previousMetrics.scrollHeight;
 
       if (heightDelta !== 0) {
         if (previousMetrics.atBottom && autoScrollToBottom) {
@@ -185,7 +189,9 @@ export const MessageList = forwardRef<MessageListRef, MessageListProps>(
               justifyContent: "center",
               py: 0.2,
               bgcolor: "background.paper",
-              ...(loadingMorePosition === "bottom" ? { bottom: 0 } : { top: 0 }),
+              ...(loadingMorePosition === "bottom"
+                ? { bottom: 0 }
+                : { top: 0 }),
             }}
           >
             <CircularProgress size={18} thickness={5} />

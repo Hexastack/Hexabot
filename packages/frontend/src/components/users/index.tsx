@@ -46,7 +46,11 @@ import { EditUserFormDialog } from "./EditUserFormDialog";
 
 const REQUIRED_PLAN: PaidPlan = "pro";
 const openPricing = () => {
-  window.open("https://hexabot.ai/pricing/#pricing", "_blank", "noopener,noreferrer");
+  window.open(
+    "https://hexabot.ai/pricing/#pricing",
+    "_blank",
+    "noopener,noreferrer",
+  );
 };
 const UsersLockedView = () => {
   const { t } = useTranslate();

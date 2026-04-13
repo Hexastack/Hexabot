@@ -48,9 +48,5 @@ export const applyYamlMarkers = ({
         })()
       : [];
 
-  monacoInstance.editor.setModelMarkers(
-    model,
-    YAML_VALIDATION_OWNER,
-    markers,
-  );
+  monacoInstance.editor.setModelMarkers(model, YAML_VALIDATION_OWNER, markers);
 };

@@ -26,7 +26,10 @@ type RunActionsProps = {
   workflowInput?: Record<string, unknown>;
 };
 
-export const RunActions = ({ workflow, workflowInput = {} }: RunActionsProps) => {
+export const RunActions = ({
+  workflow,
+  workflowInput = {},
+}: RunActionsProps) => {
   const queryClient = useTanstackQueryClient();
   const { apiClient } = useApiClient();
   const { toast } = useToast();
@@ -48,8 +51,7 @@ export const RunActions = ({ workflow, workflowInput = {} }: RunActionsProps) =>
 
     return validator.isValid(inputSchema, workflowInput, inputSchema);
   }, [inputSchema, isManualWorkflow, workflowInput]);
-  const isDisabled =
-    !workflow?.id || (isManualWorkflow && !isManualInputValid);
+  const isDisabled = !workflow?.id || (isManualWorkflow && !isManualInputValid);
   const { mutate: runWorkflow, isPending } = useTanstackMutation<
     { accepted: true },
     Error,
@@ -62,13 +64,12 @@ export const RunActions = ({ workflow, workflowInput = {} }: RunActionsProps) =>
 
       const payload = isManualWorkflow ? { input: workflowInput } : {};
       const { _csrf } = await apiClient.getCsrf();
-      const { data } = await apiClient.getRequest().post<{ accepted: true }>(
-        `/workflow/${workflow.id}/run`,
-        {
+      const { data } = await apiClient
+        .getRequest()
+        .post<{ accepted: true }>(`/workflow/${workflow.id}/run`, {
           ...payload,
           _csrf,
-        },
-      );
+        });
 
       return data;
     },

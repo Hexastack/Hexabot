@@ -20,12 +20,12 @@ import {
 
 import { useUrlQueryParam } from "./useUrlQueryParam";
 
-const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
+const buildOrParams = <T>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
     [field]: { contains: searchText },
   })) as IlikeParam<T>[],
 });
-const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
+const buildILikeParams = <T>({ params, searchText }: TBuildParamProps<T>) =>
   params?.reduce(
     (acc, field) => ({
       ...acc,
@@ -33,7 +33,7 @@ const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
     }),
     {} as IlikeParam<T>,
   );
-const buildEqInitialParams = <T,>({
+const buildEqInitialParams = <T>({
   initialParams,
 }: TBuildInitialParamProps<T>) =>
   initialParams?.reduce(
@@ -43,7 +43,7 @@ const buildEqInitialParams = <T,>({
     }),
     {} as EqParam<T>,
   );
-const buildNeqInitialParams = <T,>({
+const buildNeqInitialParams = <T>({
   initialParams,
 }: TBuildInitialParamProps<T>) =>
   initialParams?.reduce(

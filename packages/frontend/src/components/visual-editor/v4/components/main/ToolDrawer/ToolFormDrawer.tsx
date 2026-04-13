@@ -16,12 +16,8 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { normalizeBindingName } from "../../../utils/binding-name.utils";
-import {
-  getSchemaPropertyNames,
-} from "../../../utils/schema-defaults.utils";
-import {
-  buildSettingsUiSchema,
-} from "../../../utils/settings-ui-schema.utils";
+import { getSchemaPropertyNames } from "../../../utils/schema-defaults.utils";
+import { buildSettingsUiSchema } from "../../../utils/settings-ui-schema.utils";
 import {
   createToolBindingDefinitionMutation,
   TOOL_BINDING_KIND,
@@ -170,7 +166,9 @@ const resolveToolTarget = (
     actionName,
     bindingName: target.bindingName,
     description:
-      typeof toolAsRecord.description === "string" ? toolAsRecord.description : "",
+      typeof toolAsRecord.description === "string"
+        ? toolAsRecord.description
+        : "",
     settings: asRecord(toolAsRecord.settings) ?? {},
   };
 };
@@ -231,7 +229,10 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
 
     if (
       currentName !== normalizedToolName &&
-      Object.prototype.hasOwnProperty.call(definition?.defs ?? {}, normalizedToolName)
+      Object.prototype.hasOwnProperty.call(
+        definition?.defs ?? {},
+        normalizedToolName,
+      )
     ) {
       return t("visual_editor.tool_drawer.form.tool_id.errors.unique");
     }
@@ -240,8 +241,7 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
   }, [definition?.defs, normalizedToolName, t, target, toolNameValue]);
   const actionLabel = actionSchema
     ? actionSchema.name
-    : (actionName ??
-      t("visual_editor.actions_drawer.form.action_label.none"));
+    : (actionName ?? t("visual_editor.actions_drawer.form.action_label.none"));
   const handleClose = useStepDrawerClose(onClose);
 
   useEffect(() => {
@@ -334,7 +334,9 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
             value={toolNameValue}
             onCommit={handleToolNameCommit}
             onCancel={handleToolNameCancel}
-            placeholder={t("visual_editor.tool_drawer.form.tool_id.placeholder")}
+            placeholder={t(
+              "visual_editor.tool_drawer.form.tool_id.placeholder",
+            )}
             disabled={!target || isSaving}
             sx={{
               fontFamily: "monospace",
@@ -355,9 +357,13 @@ export const ToolFormDrawer = ({ target, onClose }: ToolFormDrawerProps) => {
             value={toolDescriptionValue}
             onCommit={handleDescriptionCommit}
             onCancel={handleDescriptionCancel}
-            placeholder={t("visual_editor.tool_drawer.form.description.placeholder")}
+            placeholder={t(
+              "visual_editor.tool_drawer.form.description.placeholder",
+            )}
             disabled={!target || isSaving}
-            color={toolDescriptionValue.trim() ? "text.primary" : "text.secondary"}
+            color={
+              toolDescriptionValue.trim() ? "text.primary" : "text.secondary"
+            }
           />
         </Stack>
       }

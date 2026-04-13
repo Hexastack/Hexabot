@@ -46,7 +46,10 @@ export function extractGlobals(globalsSchema: GlobalsSchema): {
   };
 }
 
-export function resolveRef(root: JsonSchemaLike, ref?: string): JsonSchemaLike | undefined {
+export function resolveRef(
+  root: JsonSchemaLike,
+  ref?: string,
+): JsonSchemaLike | undefined {
   if (!ref) return undefined;
   if (!ref.startsWith("#/")) return undefined;
 
@@ -58,7 +61,10 @@ export function resolveRef(root: JsonSchemaLike, ref?: string): JsonSchemaLike |
   return node as JsonSchemaLike | undefined;
 }
 
-export function deref(root: JsonSchemaLike, schema?: JsonSchemaLike): JsonSchemaLike | undefined {
+export function deref(
+  root: JsonSchemaLike,
+  schema?: JsonSchemaLike,
+): JsonSchemaLike | undefined {
   if (!schema) return undefined;
   if (!schema.$ref) return schema;
 
@@ -84,7 +90,7 @@ export function variantsOf(schema: JsonSchemaLike): JsonSchemaLike[] {
 
 export function getItemsSchema(
   root: JsonSchemaLike,
-  schema: JsonSchemaLike
+  schema: JsonSchemaLike,
 ): JsonSchemaLike | undefined {
   const items = schema.items;
 
@@ -97,7 +103,7 @@ export function getItemsSchema(
 export function getPropertySchema(
   root: JsonSchemaLike,
   schema: JsonSchemaLike,
-  key: string
+  key: string,
 ): JsonSchemaLike | undefined {
   const direct = schema.properties?.[key];
 
@@ -115,7 +121,10 @@ export function getPropertySchema(
   }
 
   // additionalProperties schema fallback
-  if (candidates.length === 0 && typeof schema.additionalProperties === "object") {
+  if (
+    candidates.length === 0 &&
+    typeof schema.additionalProperties === "object"
+  ) {
     return deref(root, schema.additionalProperties as JsonSchemaLike);
   }
 
@@ -125,7 +134,10 @@ export function getPropertySchema(
   return undefined;
 }
 
-export function getPropertyKeys(root: JsonSchemaLike, schema: JsonSchemaLike): string[] {
+export function getPropertyKeys(
+  root: JsonSchemaLike,
+  schema: JsonSchemaLike,
+): string[] {
   const keys = new Set<string>();
   const addFrom = (s?: JsonSchemaLike) => {
     if (!s) return;

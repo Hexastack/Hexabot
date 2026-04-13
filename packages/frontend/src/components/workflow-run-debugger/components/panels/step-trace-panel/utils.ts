@@ -14,7 +14,8 @@ export const getStepOrder = (id: string): number => {
 };
 
 export const getDurationLabel = (step: StepExecutionRecord): string => {
-  const candidate = (step as StepExecutionRecord & { duration?: number }).duration;
+  const candidate = (step as StepExecutionRecord & { duration?: number })
+    .duration;
 
   if (typeof candidate === "number" && Number.isFinite(candidate)) {
     return `${Math.round(candidate)}ms`;

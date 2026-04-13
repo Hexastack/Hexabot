@@ -39,10 +39,12 @@ export const StepOverview = ({
   hasError,
 }: StepOverviewProps) => (
   <Stack spacing={2}>
-    <SummaryGrid columns={{
-      xs: "1fr",
-      sm: "repeat(2, minmax(0, 1fr))",
-    }}>
+    <SummaryGrid
+      columns={{
+        xs: "1fr",
+        sm: "repeat(2, minmax(0, 1fr))",
+      }}
+    >
       <SummaryItem label={labels.name} value={step.name ?? labels.none} />
       <SummaryItem
         label={labels.status}

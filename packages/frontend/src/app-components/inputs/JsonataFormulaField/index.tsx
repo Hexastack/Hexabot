@@ -9,4 +9,8 @@ export {
   JsonataGlobalsSchemaProvider,
   useJsonataGlobalsSchema,
 } from "./globals-schema.context";
-export type { JsonataFormulaFieldProps, GlobalsSchema, JsonSchemaLike } from "./types";
+export type {
+  JsonataFormulaFieldProps,
+  GlobalsSchema,
+  JsonSchemaLike,
+} from "./types";

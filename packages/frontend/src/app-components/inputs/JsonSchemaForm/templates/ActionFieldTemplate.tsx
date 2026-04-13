@@ -5,7 +5,11 @@
  */
 
 import { FormControl } from "@mui/material";
-import { getTemplate, getUiOptions, type FieldTemplateProps } from "@rjsf/utils";
+import {
+  getTemplate,
+  getUiOptions,
+  type FieldTemplateProps,
+} from "@rjsf/utils";
 import { useEffect } from "react";
 
 import { isActionFieldHidden } from "./action-field-template.utils";

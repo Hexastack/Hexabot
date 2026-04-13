@@ -8,10 +8,7 @@ import { describe, expect, it } from "vitest";
 
 import type { WorkflowBindingDefinition } from "@/contexts/workflow-bindings.context";
 
-import {
-  humanizeBindingKind,
-  isSingleBindingKind,
-} from "./binding-kind.utils";
+import { humanizeBindingKind, isSingleBindingKind } from "./binding-kind.utils";
 
 describe("binding-kind.utils", () => {
   it("humanizes snake_case and kebab-case binding kinds", () => {

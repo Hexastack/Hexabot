@@ -5,6 +5,9 @@
  */
 
 import 'reflect-metadata';
+import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+
+import { BaseOrmEntity } from '..';
 
 export const ORM_HOOK_NAMES = [
   'beforeInsert',
@@ -16,6 +19,11 @@ export const ORM_HOOK_NAMES = [
 ] as const;
 
 export type OrmHookName = (typeof ORM_HOOK_NAMES)[number];
+
+export type OrmLifecycleEvent<Entity extends BaseOrmEntity> =
+  | InsertEvent<Entity>
+  | UpdateEvent<Entity>
+  | RemoveEvent<Entity>;
 
 const HOOKS_KEY = Symbol('hooks');
 const hook =
@@ -48,10 +56,18 @@ export const getOrmHookMethods = (
   return Reflect.getMetadata(HOOKS_KEY, constructor)?.[name] ?? [];
 };
 
-export const invokeOrmHooks = async (
+export const invokeOrmHooks = async <
+  Entity extends BaseOrmEntity<{
+    actions: {};
+    transformers: {
+      full: Entity['fullCls'];
+      plain: Entity['plainCls'];
+    };
+  }>,
+>(
   entity: any,
   hook: OrmHookName,
-  event: any,
+  event: OrmLifecycleEvent<Entity>,
   targetClass?: any,
 ): Promise<void> => {
   if (!entity) return;

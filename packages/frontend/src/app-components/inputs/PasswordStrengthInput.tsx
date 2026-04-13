@@ -87,53 +87,54 @@ const getPasswordStrength = (value: string): PasswordStrength => {
   };
 };
 
-export const PasswordStrengthInput = forwardRef<any, PasswordStrengthInputProps>(
-  ({ onChange, value, ...rest }, ref) => {
-    const { t } = useTranslate();
-    const [passwordValue, setPasswordValue] = useState("");
-    const resolvedValue = typeof value === "string" ? value : passwordValue;
-    const strength = useMemo(
-      () => getPasswordStrength(resolvedValue),
-      [resolvedValue],
-    );
-    const handleChange: TextFieldProps["onChange"] = (event) => {
-      setPasswordValue(event.target.value);
-      onChange?.(event);
-    };
-    const strengthLabel = strength.labelKey ? t(strength.labelKey) : "";
+export const PasswordStrengthInput = forwardRef<
+  any,
+  PasswordStrengthInputProps
+>(({ onChange, value, ...rest }, ref) => {
+  const { t } = useTranslate();
+  const [passwordValue, setPasswordValue] = useState("");
+  const resolvedValue = typeof value === "string" ? value : passwordValue;
+  const strength = useMemo(
+    () => getPasswordStrength(resolvedValue),
+    [resolvedValue],
+  );
+  const handleChange: TextFieldProps["onChange"] = (event) => {
+    setPasswordValue(event.target.value);
+    onChange?.(event);
+  };
+  const strengthLabel = strength.labelKey ? t(strength.labelKey) : "";
 
-    return (
-      <Box>
-        <PasswordInput
-          ref={ref}
-          {...rest}
-          value={value}
-          onChange={handleChange}
-        />
-        {resolvedValue ? (
-          <Box sx={{ mt: 0.75 }}>
-            <LinearProgress
-              variant="determinate"
-              value={(strength.score / 4) * 100}
-              sx={{
-                borderRadius: 999,
-                height: 6,
-                bgcolor: "action.hover",
-                "& .MuiLinearProgress-bar": {
-                  bgcolor: strength.color,
-                },
-              }}
-            />
-            <Typography
-              sx={{ color: "text.secondary", fontSize: "0.75rem", mt: 0.5 }}
-            >
-              {`${t("message.password_strength")}: ${strengthLabel}`}
-            </Typography>
-          </Box>
-        ) : null}
-      </Box>
-    );
-  },
-);
+  return (
+    <Box>
+      <PasswordInput
+        ref={ref}
+        {...rest}
+        value={value}
+        onChange={handleChange}
+      />
+      {resolvedValue ? (
+        <Box sx={{ mt: 0.75 }}>
+          <LinearProgress
+            variant="determinate"
+            value={(strength.score / 4) * 100}
+            sx={{
+              borderRadius: 999,
+              height: 6,
+              bgcolor: "action.hover",
+              "& .MuiLinearProgress-bar": {
+                bgcolor: strength.color,
+              },
+            }}
+          />
+          <Typography
+            sx={{ color: "text.secondary", fontSize: "0.75rem", mt: 0.5 }}
+          >
+            {`${t("message.password_strength")}: ${strengthLabel}`}
+          </Typography>
+        </Box>
+      ) : null}
+    </Box>
+  );
+});
 
 PasswordStrengthInput.displayName = "PasswordStrengthInput";

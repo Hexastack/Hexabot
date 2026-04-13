@@ -67,9 +67,7 @@ import { WorkflowTitleBar } from "../components/main/WorkflowTitleBar";
 import { WorkflowSettingsDialog } from "../components/main/WorkflowTitleBar/WorkflowSettingsDialog";
 import { useWorkflow } from "../hooks/useWorkflow";
 import { useWorkflowExecutionState } from "../hooks/useWorkflowExecutionState";
-import {
-  humanizeBindingKind,
-} from "../utils/binding-kind.utils";
+import { humanizeBindingKind } from "../utils/binding-kind.utils";
 import {
   createUniqueBindingName,
   normalizeBindingName,
@@ -81,9 +79,7 @@ import {
   toBindingRefs,
   unmountDefBindingRef,
 } from "../utils/task-bindings.utils";
-import {
-  TOOL_BINDING_KIND,
-} from "../utils/tool-bindings.utils";
+import { TOOL_BINDING_KIND } from "../utils/tool-bindings.utils";
 import {
   getDisabledBindingRefs,
   isNonToolBindingKind,
@@ -229,8 +225,7 @@ export const Workflow = () => {
     });
   }, [bindingsByName, definition, pendingBindingAdd]);
   const isBindingDrawerOpen = Boolean(
-    activeBindingKind &&
-      (pendingBindingAdd || editingBindingTarget),
+    activeBindingKind && (pendingBindingAdd || editingBindingTarget),
   );
   const handleInsert = useCallback(
     (insertType: EdgeInsertType = "step", insertPath?: FlowStepPath | null) => {
@@ -490,11 +485,7 @@ export const Workflow = () => {
     );
   }, [definition, dialogs, handleSaveWorkflowSettings, isDefinitionSaving]);
   const handleAddBinding = useCallback(
-    ({
-      ownerDefName,
-      bindingKind,
-      ...payload
-    }: WorkflowBindingAddPayload) => {
+    ({ ownerDefName, bindingKind, ...payload }: WorkflowBindingAddPayload) => {
       if (!definition || !definition.defs[ownerDefName]) {
         return;
       }
@@ -591,7 +582,9 @@ export const Workflow = () => {
         return;
       }
 
-      if (Object.prototype.hasOwnProperty.call(definition.defs ?? {}, bindingName)) {
+      if (
+        Object.prototype.hasOwnProperty.call(definition.defs ?? {}, bindingName)
+      ) {
         return;
       }
 
@@ -696,33 +689,31 @@ export const Workflow = () => {
       const nextDefsWithRenamedRefs =
         currentBindingName !== nextBindingName
           ? (Object.fromEntries(
-              Object.entries(nextDefs).map(
-                ([defName, defDefinition]) => {
-                  const refs = toBindingRefs(
-                    defDefinition.bindings?.[bindingKind],
+              Object.entries(nextDefs).map(([defName, defDefinition]) => {
+                const refs = toBindingRefs(
+                  defDefinition.bindings?.[bindingKind],
+                  multiple,
+                );
+
+                if (!refs.includes(currentBindingName)) {
+                  return [defName, defDefinition];
+                }
+
+                const replacedRefs = refs.map((refName) =>
+                  refName === currentBindingName ? nextBindingName : refName,
+                );
+                const dedupedRefs = Array.from(new Set(replacedRefs));
+
+                return [
+                  defName,
+                  setDefBindingRefs(
+                    defDefinition,
+                    bindingKind,
+                    dedupedRefs,
                     multiple,
-                  );
-
-                  if (!refs.includes(currentBindingName)) {
-                    return [defName, defDefinition];
-                  }
-
-                  const replacedRefs = refs.map((refName) =>
-                    refName === currentBindingName ? nextBindingName : refName,
-                  );
-                  const dedupedRefs = Array.from(new Set(replacedRefs));
-
-                  return [
-                    defName,
-                    setDefBindingRefs(
-                      defDefinition,
-                      bindingKind,
-                      dedupedRefs,
-                      multiple,
-                    ),
-                  ];
-                },
-              ),
+                  ),
+                ];
+              }),
             ) as typeof definition.defs)
           : nextDefs;
 
@@ -733,12 +724,7 @@ export const Workflow = () => {
       setEditingBindingTarget(null);
       setPendingBindingAdd(null);
     },
-    [
-      bindingsByName,
-      definition,
-      editingBindingTarget,
-      updateDefinitionState,
-    ],
+    [bindingsByName, definition, editingBindingTarget, updateDefinitionState],
   );
   const handleCloseBindingDrawer = useCallback(() => {
     setPendingBindingAdd(null);

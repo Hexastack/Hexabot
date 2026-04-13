@@ -6,7 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository, UpdateEvent } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 
 import { EUserProfileType } from '@/user/entities/user-profile.entity';
 import {
@@ -28,85 +28,6 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
     repository: Repository<SubscriberOrmEntity>,
   ) {
     super(repository, ['labels', 'assignedTo', 'avatar']);
-  }
-
-  /**
-   * Extracts an assignee ID from a subscriber entity relation payload.
-   */
-  private resolveAssignedToId(subscriber?: SubscriberOrmEntity): string | null {
-    if (!subscriber) {
-      return null;
-    }
-
-    const relation = (subscriber as any).assignedTo;
-    if (!relation) {
-      const relationId = (subscriber as any).assignedToId;
-      const joinColumnId = (subscriber as any).assigned_to_id;
-
-      if (typeof relationId === 'string') {
-        return relationId;
-      }
-
-      return typeof joinColumnId === 'string' ? joinColumnId : null;
-    }
-
-    if (typeof relation === 'string') {
-      return relation;
-    }
-
-    if (typeof relation === 'object' && 'id' in relation) {
-      const id = (relation as { id?: unknown }).id;
-
-      return typeof id === 'string' ? id : null;
-    }
-
-    return null;
-  }
-
-  /**
-   * Runs before a subscriber update to detect assignment changes and emit the appropriate events.
-   *
-   * @param event - The TypeORM update event describing the current and previous entity state.
-   */
-  async beforeUpdate(event: UpdateEvent<SubscriberOrmEntity>): Promise<void> {
-    const entity = event.entity as SubscriberOrmEntity | undefined;
-    const previous = event.databaseEntity as SubscriberOrmEntity | undefined;
-
-    if (entity && previous) {
-      let newAssignedTo = this.resolveAssignedToId(entity);
-      let previousAssignedTo = this.resolveAssignedToId(previous);
-
-      if (previousAssignedTo === null && previous.id) {
-        const previousFromStorage = await this.findOne(previous.id);
-        previousAssignedTo = previousFromStorage?.assignedTo ?? null;
-      }
-
-      const entityWithAny = entity as any;
-      const hasEntityAssigneeSignal =
-        entityWithAny.assignedTo !== undefined ||
-        entityWithAny.assignedToId !== undefined ||
-        entityWithAny.assigned_to_id !== undefined;
-      if (!hasEntityAssigneeSignal && entity.id) {
-        const updatedFromStorage = await this.findOne(entity.id);
-        newAssignedTo = updatedFromStorage?.assignedTo ?? null;
-      }
-
-      if (newAssignedTo !== previousAssignedTo) {
-        const previousSubscriber = previous.toPlainCls();
-        const assignedAt = newAssignedTo ? new Date() : null;
-        const subscriberUpdates: SubscriberUpdateDto = {
-          assignedTo: newAssignedTo,
-          assignedAt,
-        };
-        entity.assignedAt = assignedAt;
-
-        this.eventEmitter?.emit(
-          'hook:subscriber:assign',
-          subscriberUpdates,
-          previousSubscriber,
-        );
-      }
-    }
   }
 
   /**

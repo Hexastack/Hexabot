@@ -6,13 +6,14 @@
 
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { BaseOrmEntity } from './database';
 import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
 import { Action } from './user/types/action.type';
+import { EHook } from './utils';
+import { EmitEventProps } from './utils/types/entity-event.types';
 import {
   SocketGet,
   SocketPost,
@@ -23,9 +24,10 @@ import {
   WebsocketGateway,
 } from './websocket';
 
-type EntityMutationEvent<T> = UpdateEvent<T> | RemoveEvent<T> | InsertEvent<T>;
-
-type EntityMutationOperation = 'create' | 'update' | 'delete';
+type EntityPostHookEvent = EmitEventProps<
+  BaseOrmEntity,
+  EHook.postCreate | EHook.postUpdate | EHook.postDelete
+> & { entityName: string };
 
 @Injectable()
 export class AppService {
@@ -80,55 +82,30 @@ export class AppService {
     });
   }
 
+  private postActionToOp(action: EHook) {
+    return action.replace('post', '').toLowerCase();
+  }
+
   @OnEvent('hook:*:postCreate')
-  handleEntityCreated(event: EntityMutationEvent<BaseOrmEntity>) {
-    this.broadcastEntityMutationEvent('create', event);
-  }
-
   @OnEvent('hook:*:postUpdate')
-  handleEntityUpdated(event: EntityMutationEvent<BaseOrmEntity>) {
-    this.broadcastEntityMutationEvent('update', event);
-  }
-
   @OnEvent('hook:*:postDelete')
-  handleEntityDeleted(event: EntityMutationEvent<BaseOrmEntity>) {
-    this.broadcastEntityMutationEvent('delete', event);
+  handleEntityPostEvents(event: EntityPostHookEvent) {
+    this.broadcastEntityMutationEvent(event);
   }
 
-  private broadcastEntityMutationEvent(
-    op: EntityMutationOperation,
-    event: EntityMutationEvent<BaseOrmEntity>,
-  ): void {
-    const entity = this.getEntityRoom(event);
+  private broadcastEntityMutationEvent(event: EntityPostHookEvent): void {
+    const { action, entityName, entity } = event;
 
-    if (!entity) {
-      return;
-    }
-
-    const data = this.getEventData(event);
-
-    this.gateway.io.to(entity).emit('entity', {
-      entity,
-      op,
-      data,
-    });
-  }
-
-  private getEntityRoom(event: EntityMutationEvent<unknown>): string | null {
-    const metadataName = event.metadata?.name;
-
-    if (!metadataName) {
-      return null;
-    }
-
-    return metadataName.replace(/OrmEntity$/, '').toLowerCase();
-  }
-
-  private getEventData(event: EntityMutationEvent<BaseOrmEntity>): unknown {
-    if (!event.entity) {
+    if (!entity || typeof entity.toPlainCls !== 'function') {
       throw new Error('Unable to extract entity event data');
     }
 
-    return event.entity?.toPlainCls();
+    const room = entityName.toLowerCase();
+
+    this.gateway.io.to(room).emit('entity', {
+      entity: entityName,
+      op: this.postActionToOp(action),
+      data: entity.toPlainCls(),
+    });
   }
 }

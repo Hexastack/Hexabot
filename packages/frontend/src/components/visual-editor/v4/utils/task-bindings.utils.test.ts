@@ -35,7 +35,9 @@ describe("task-bindings.utils", () => {
   it("normalizes refs for both multi and single binding kinds", () => {
     expect(toBindingRefs(["a", "b"], true)).toEqual(["a", "b"]);
     expect(toBindingRefs("openai_chatgpt", false)).toEqual(["openai_chatgpt"]);
-    expect(toBindingRefs(["openai_chatgpt"], false)).toEqual(["openai_chatgpt"]);
+    expect(toBindingRefs(["openai_chatgpt"], false)).toEqual([
+      "openai_chatgpt",
+    ]);
     expect(toBindingRefs(undefined, true)).toEqual([]);
     expect(toBindingRefs(undefined, false)).toEqual([]);
   });
@@ -49,7 +51,12 @@ describe("task-bindings.utils", () => {
 
   it("mounts single refs as string values", () => {
     const task = createTaskDefinition();
-    const nextTask = mountTaskBindingRef(task, "model", "openai_chatgpt", false);
+    const nextTask = mountTaskBindingRef(
+      task,
+      "model",
+      "openai_chatgpt",
+      false,
+    );
 
     expect(nextTask.bindings?.model).toBe("openai_chatgpt");
   });
@@ -63,7 +70,12 @@ describe("task-bindings.utils", () => {
 
   it("unmounts single refs and removes binding key", () => {
     const task = createTaskDefinition({ model: "openai_chatgpt" });
-    const nextTask = unmountTaskBindingRef(task, "model", "openai_chatgpt", false);
+    const nextTask = unmountTaskBindingRef(
+      task,
+      "model",
+      "openai_chatgpt",
+      false,
+    );
 
     expect(nextTask.bindings?.model).toBeUndefined();
     expect(nextTask.bindings).toBeUndefined();
@@ -71,7 +83,12 @@ describe("task-bindings.utils", () => {
 
   it("mounts selected single-binding refs as a single string", () => {
     const task = createTaskDefinition();
-    const nextTask = mountTaskBindingRef(task, "model", "anthropic_claude", false);
+    const nextTask = mountTaskBindingRef(
+      task,
+      "model",
+      "anthropic_claude",
+      false,
+    );
 
     expect(nextTask.bindings?.model).toBe("anthropic_claude");
   });

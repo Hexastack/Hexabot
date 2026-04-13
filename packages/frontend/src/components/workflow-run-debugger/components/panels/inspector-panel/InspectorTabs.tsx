@@ -61,14 +61,18 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
     [t],
   );
   const isStepSelected = Boolean(step);
-  const inspectedInput = isStepSelected ? step?.input ?? null : run?.input ?? null;
+  const inspectedInput = isStepSelected
+    ? (step?.input ?? null)
+    : (run?.input ?? null);
   const inspectedContext = isStepSelected
-    ? step?.context ?? null
-    : run?.context ?? null;
+    ? (step?.context ?? null)
+    : (run?.context ?? null);
   const inspectedOutput = isStepSelected
-    ? step?.output ?? null
-    : run?.output ?? null;
-  const inspectedError = isStepSelected ? step?.error ?? null : run?.error ?? null;
+    ? (step?.output ?? null)
+    : (run?.output ?? null);
+  const inspectedError = isStepSelected
+    ? (step?.error ?? null)
+    : (run?.error ?? null);
   const panelData = useMemo(
     () => ({
       overview: {

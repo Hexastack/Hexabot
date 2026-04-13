@@ -83,8 +83,8 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       }
       channelRef.current = new BroadcastChannel(channelName);
     }
-    
-return channelRef.current;
+
+    return channelRef.current;
   };
   const subscribe: IBroadcastChannelContext["subscribe"] = (
     event,
@@ -137,8 +137,8 @@ export const useBroadcastChannel = () => {
       "useBroadcastChannel must be used within a BroadcastChannelProvider",
     );
   }
-  
-return ctx;
+
+  return ctx;
 };
 
 export default BroadcastChannelProvider;

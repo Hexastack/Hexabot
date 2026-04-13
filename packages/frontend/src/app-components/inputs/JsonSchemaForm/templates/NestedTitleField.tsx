@@ -5,7 +5,11 @@
  */
 
 import { Box, Divider, Typography } from "@mui/material";
-import { getUiOptions, type RJSFSchema, type TitleFieldProps } from "@rjsf/utils";
+import {
+  getUiOptions,
+  type RJSFSchema,
+  type TitleFieldProps,
+} from "@rjsf/utils";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";
 

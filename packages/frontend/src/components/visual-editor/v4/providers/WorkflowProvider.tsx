@@ -89,10 +89,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     () => extractTaskDefinitions(definition?.defs ?? {}),
     [definition?.defs],
   );
-  const taskIds = useMemo(
-    () => extractTaskIdsFromYaml(yaml),
-    [yaml],
-  );
+  const taskIds = useMemo(() => extractTaskIdsFromYaml(yaml), [yaml]);
   const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
     const baseDefinition = definition ?? createBaseDefinition();
     const nextTaskName = createTaskName(

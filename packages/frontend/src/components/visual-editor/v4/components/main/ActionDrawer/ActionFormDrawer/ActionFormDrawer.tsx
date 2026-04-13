@@ -24,7 +24,10 @@ type ActionFormDrawerProps = {
   onClose?: (reason: ActionFormDrawerCloseReason) => void;
 };
 
-export const ActionFormDrawer = ({ target, onClose }: ActionFormDrawerProps) => {
+export const ActionFormDrawer = ({
+  target,
+  onClose,
+}: ActionFormDrawerProps) => {
   const {
     open,
     actionSchema,
