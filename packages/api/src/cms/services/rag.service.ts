@@ -151,7 +151,7 @@ export class RagService {
     event: UpdateEntityEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
-    if (!contentId) {
+    if (!contentId || !event.entity.status) {
       return;
     }
 
