@@ -8,22 +8,14 @@ import { MapPin } from "lucide-react";
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import { useSettings } from "../../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../../types/message.types";
 
 const LocationButton: React.FC = () => {
-  const { setPayload, send } = useChat();
-  const settings = useSettings();
+  const { send } = useChat();
   const locateMe = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setPayload({
-            coordinates: {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
-          });
           send({
             event,
             source: "geo-location",
@@ -37,9 +29,6 @@ const LocationButton: React.FC = () => {
               },
             },
           });
-          if (settings.autoFlush) {
-            setPayload(null);
-          }
         },
         (error) => {
           // eslint-disable-next-line no-console

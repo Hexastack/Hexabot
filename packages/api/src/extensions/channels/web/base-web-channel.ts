@@ -989,28 +989,24 @@ export default abstract class BaseWebChannelHandler<
       event.setInitiator(profile);
       event.setWorkflowId(workflowId);
       const type = event.getEventType();
-      if (type) {
-        if (type === StdEventType.message) {
-          this.broadcast(profile, type, event._adapter.raw);
-          await this.eventEmitter.emitAsync(`hook:chatbot:${type}`, event);
-          const resolvedThreadId = event.getThreadId();
-          if (resolvedThreadId) {
-            (event._adapter.raw as { thread_id?: string }).thread_id =
-              resolvedThreadId;
-            if (req.session.web) {
-              req.session.web.threadId = resolvedThreadId;
-            }
+      if (type === StdEventType.message) {
+        this.broadcast(profile, type, event._adapter.raw);
+        await this.eventEmitter.emitAsync(`hook:chatbot:${type}`, event);
+        const resolvedThreadId = event.getThreadId();
+        if (resolvedThreadId) {
+          (event._adapter.raw as { thread_id?: string }).thread_id =
+            resolvedThreadId;
+          if (req.session.web) {
+            req.session.web.threadId = resolvedThreadId;
           }
-        } else {
-          const threadId = event.getThreadId();
-          if (threadId) {
-            (event._adapter.raw as { thread_id?: string }).thread_id = threadId;
-          }
-          this.broadcast(profile, type, event._adapter.raw);
-          this.eventEmitter.emit(`hook:chatbot:${type}`, event);
         }
       } else {
-        this.logger.error('Webhook received unknown event ', event);
+        const threadId = event.getThreadId();
+        if (threadId) {
+          (event._adapter.raw as { thread_id?: string }).thread_id = threadId;
+        }
+        this.broadcast(profile, type, event._adapter.raw);
+        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       }
       res.status(200).json(event._adapter.raw);
     });

@@ -131,10 +131,6 @@ export default class WebEventWrapper<
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.attachments;
         break;
-
-      default:
-        this._adapter.eventType = StdEventType.unknown;
-        break;
     }
     this._adapter.raw = event;
   }
