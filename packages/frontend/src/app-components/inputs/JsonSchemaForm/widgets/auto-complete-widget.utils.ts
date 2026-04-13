@@ -85,7 +85,10 @@ export const resolveDependencyQueryConfig = ({
     };
   }
 
-  const rawDependencyValue = get(formData as Record<string, unknown>, idFormPath);
+  const rawDependencyValue = get(
+    formData as Record<string, unknown>,
+    idFormPath,
+  );
   const dependencyValue = toStringValue(rawDependencyValue)?.trim();
 
   if (!dependencyValue) {

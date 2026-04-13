@@ -12,10 +12,7 @@ type HighlightedTextProps = {
   matches: number[];
 };
 
-export const HighlightedText = ({
-  text,
-  matches,
-}: HighlightedTextProps) => {
+export const HighlightedText = ({ text, matches }: HighlightedTextProps) => {
   const segments = buildHighlightSegments(text, matches);
 
   return (

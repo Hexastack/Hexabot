@@ -39,14 +39,12 @@ export const JsonataTextWidget = ({
 }: WidgetProps) => {
   const widgetOptions = options as JsonataWidgetOptions;
   const context = registry.formContext as JsonataFormContext | undefined;
-  const globalsSchema =
-    widgetOptions?.globalsSchema ?? context?.globalsSchema;
+  const globalsSchema = widgetOptions?.globalsSchema ?? context?.globalsSchema;
   const hasCustomEmptyValue =
     widgetOptions !== undefined &&
     Object.prototype.hasOwnProperty.call(widgetOptions, "emptyValue");
   const emptyValue = hasCustomEmptyValue ? widgetOptions?.emptyValue : "";
-  const normalizeValue = (next: string) =>
-    next === "" ? emptyValue : next;
+  const normalizeValue = (next: string) => (next === "" ? emptyValue : next);
   const safeValue =
     typeof value === "string" ? value : value == null ? "" : String(value);
   const fieldLabel = label || undefined;

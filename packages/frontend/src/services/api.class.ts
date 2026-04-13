@@ -15,11 +15,7 @@ import { ICsrf } from "@/types/csrf.types";
 import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
-import {
-  IProfileAttributes,
-  IUser,
-  IUserStub,
-} from "@/types/user.types";
+import { IProfileAttributes, IUser, IUserStub } from "@/types/user.types";
 import { IWorkflow } from "@/types/workfow.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 

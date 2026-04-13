@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StepType, Workflow as WorkflowHelper, type FlowStep } from "@hexabot-ai/agentic";
+import {
+  StepType,
+  Workflow as WorkflowHelper,
+  type FlowStep,
+} from "@hexabot-ai/agentic";
 import {
   Box,
   FormControl,
@@ -120,7 +124,9 @@ const ParallelFormDrawerContent = ({
     </FormControl>
   );
 };
-const ParallelFormDrawerLayout = withStepDrawerLayout(ParallelFormDrawerContent);
+const ParallelFormDrawerLayout = withStepDrawerLayout(
+  ParallelFormDrawerContent,
+);
 
 export const ParallelFormDrawer = () => {
   const { t } = useTranslate();
@@ -197,7 +203,11 @@ export const ParallelFormDrawer = () => {
   const strategyLabel = t("visual_editor.parallel_drawer.form.strategy.label");
   const saveLabel = t("button.save");
   const saveDisabled =
-    !definition || !stepPath || !selectedStep || isSaving || !isParallelStrategy(strategy);
+    !definition ||
+    !stepPath ||
+    !selectedStep ||
+    isSaving ||
+    !isParallelStrategy(strategy);
 
   return (
     <ParallelFormDrawerLayout

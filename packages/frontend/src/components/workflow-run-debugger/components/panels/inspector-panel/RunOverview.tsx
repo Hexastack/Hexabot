@@ -41,10 +41,12 @@ export const RunOverview = ({
   hasError,
 }: RunOverviewProps) => (
   <Stack spacing={2}>
-    <SummaryGrid columns={{
-      xs: "1fr",
-      sm: "repeat(2, minmax(0, 1fr))",
-    }}>
+    <SummaryGrid
+      columns={{
+        xs: "1fr",
+        sm: "repeat(2, minmax(0, 1fr))",
+      }}
+    >
       <SummaryItem
         label={labels.status}
         value={<WorkflowRunStatusBadge workflowRun={run} />}

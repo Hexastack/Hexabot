@@ -32,7 +32,7 @@ export type JsonSchemaLike = {
 };
 
 export type GlobalsSchema =
-  | {
+  | ({
       // Option A: schema.properties has $input/$output/$context
       type?: "object";
       properties?: {
@@ -45,7 +45,7 @@ export type GlobalsSchema =
         output?: JsonSchemaLike;
         context?: JsonSchemaLike;
       } & Record<string, JsonSchemaLike>;
-    } & JsonSchemaLike
+    } & JsonSchemaLike)
   | {
       // Option C: direct map
       input: JsonSchemaLike;

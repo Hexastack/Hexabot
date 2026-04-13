@@ -66,7 +66,12 @@ import {
   ISubscriberFilters,
   ISubscriberFull,
 } from "./subscriber.types";
-import { IThread, IThreadAttributes, IThreadFilters, IThreadFull } from "./thread.types";
+import {
+  IThread,
+  IThreadAttributes,
+  IThreadFilters,
+  IThreadFull,
+} from "./thread.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
 import { IUser, IUserAttributes, IUserFull } from "./user.types";
 import {

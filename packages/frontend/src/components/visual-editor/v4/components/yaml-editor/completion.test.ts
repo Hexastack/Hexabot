@@ -27,13 +27,15 @@ const createMonacoMock = () => {
       CompletionItemInsertTextRule: {
         InsertAsSnippet: 4,
       },
-      registerCompletionItemProvider: vi.fn((languageId, completionProvider) => {
-        if (languageId === YAML_LANGUAGE_ID) {
-          provider = completionProvider;
-        }
+      registerCompletionItemProvider: vi.fn(
+        (languageId, completionProvider) => {
+          if (languageId === YAML_LANGUAGE_ID) {
+            provider = completionProvider;
+          }
 
-        return { dispose: vi.fn() };
-      }),
+          return { dispose: vi.fn() };
+        },
+      ),
     },
   } as unknown as Monaco;
 

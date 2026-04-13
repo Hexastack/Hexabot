@@ -10,7 +10,14 @@ import {
   type ConditionalBranch,
   type FlowStep,
 } from "@hexabot-ai/agentic";
-import { Box, Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -42,7 +49,8 @@ const isConditionalStep = (step: unknown): step is ConditionalStep => {
     return false;
   }
 
-  const conditional = (step as { conditional?: { when?: unknown } }).conditional;
+  const conditional = (step as { conditional?: { when?: unknown } })
+    .conditional;
 
   return Boolean(conditional && Array.isArray(conditional.when));
 };
@@ -236,7 +244,11 @@ export const ConditionalFormDrawer = () => {
   const drawerTitle = t("visual_editor.conditional_drawer.title");
   const saveLabel = t("button.save");
   const saveDisabled =
-    !definition || !stepPath || !selectedStep || hasInvalidCondition || isSaving;
+    !definition ||
+    !stepPath ||
+    !selectedStep ||
+    hasInvalidCondition ||
+    isSaving;
 
   return (
     <ConditionalFormDrawerLayout
@@ -244,7 +256,9 @@ export const ConditionalFormDrawer = () => {
       conditions={conditions}
       conditionHelperText={t("visual_editor.conditional_drawer.form.helper")}
       removeConditionLabel={t("button.delete")}
-      addConditionLabel={t("visual_editor.conditional_drawer.form.add_condition")}
+      addConditionLabel={t(
+        "visual_editor.conditional_drawer.form.add_condition",
+      )}
       emptyStateLabel={t("visual_editor.conditional_drawer.form.empty_state")}
       onConditionChange={handleConditionChange}
       onConditionRemove={handleConditionRemove}

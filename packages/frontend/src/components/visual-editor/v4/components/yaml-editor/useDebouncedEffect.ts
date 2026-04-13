@@ -6,7 +6,11 @@
 
 import { useEffect, useRef } from "react";
 
-export function useDebouncedEffect(effect: () => void | (() => void), deps: unknown[], delay: number) {
+export function useDebouncedEffect(
+  effect: () => void | (() => void),
+  deps: unknown[],
+  delay: number,
+) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

@@ -6,12 +6,7 @@
 
 import { type BindingKindSchemas } from "@hexabot-ai/agentic";
 import type { JSONSchema } from "monaco-yaml";
-import {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useMemo,
-} from "react";
+import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 import { z } from "zod";
 
 import { useTanstackQuery } from "@/hooks/crud/useTanstack";

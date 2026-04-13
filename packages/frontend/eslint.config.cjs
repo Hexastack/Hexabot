@@ -1,16 +1,16 @@
-const { FlatCompat } = require('@eslint/eslintrc');
-const js = require('@eslint/js');
-const globals = require('globals');
-const tsParser = require('@typescript-eslint/parser');
-const tsPlugin = require('@typescript-eslint/eslint-plugin');
-const importPlugin = require('eslint-plugin-import');
-const headerPlugin = require('eslint-plugin-header');
-const reactPlugin = require('eslint-plugin-react');
-const reactHooksPlugin = require('eslint-plugin-react-hooks');
+const { FlatCompat } = require("@eslint/eslintrc");
+const js = require("@eslint/js");
+const globals = require("globals");
+const tsParser = require("@typescript-eslint/parser");
+const tsPlugin = require("@typescript-eslint/eslint-plugin");
+const importPlugin = require("eslint-plugin-import");
+const headerPlugin = require("eslint-plugin-header");
+const reactPlugin = require("eslint-plugin-react");
+const reactHooksPlugin = require("eslint-plugin-react-hooks");
 
 if (!headerPlugin.rules.header.meta.schema) {
   headerPlugin.rules.header.meta.schema = {
-    type: 'array',
+    type: "array",
   };
 }
 
@@ -19,16 +19,16 @@ const compat = new FlatCompat({
   resolvePluginsRelativeTo: __dirname,
 });
 
-const createConfig = ({ headerYear = '2025' } = {}) => {
+const createConfig = ({ headerYear = "2025" } = {}) => {
   const headerLines = [
-    '',
-    ' * Hexabot — Fair Core License (FCL-1.0-ALv2)',
+    "",
+    " * Hexabot — Fair Core License (FCL-1.0-ALv2)",
     {
-      pattern: '^ \\* Copyright \\(c\\) 20\\d{2} Hexastack\\.$',
+      pattern: "^ \\* Copyright \\(c\\) 20\\d{2} Hexastack\\.$",
       template: ` * Copyright (c) ${headerYear} Hexastack.`,
     },
-    ' * Full terms: see LICENSE.md.',
-    ' ',
+    " * Full terms: see LICENSE.md.",
+    " ",
   ];
 
   return [
@@ -45,6 +45,7 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
       "plugin:react/recommended",
       "plugin:react-hooks/recommended",
       "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended",
     ),
     {
       files: ["**/*.{js,jsx,ts,tsx}"],

@@ -24,7 +24,10 @@ import type { YamlEditorProps } from "./types";
 import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
-export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
+export function useYamlEditorController({
+  errorLine,
+  errorMessage,
+}: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
   const { yaml, updateDefinitionState, workflow, taskIds } = useWorkflow();
   const {
     data: actions = [],
@@ -115,7 +118,11 @@ export function useYamlEditorController({ errorLine, errorMessage }: Pick<YamlEd
 
       if (!model) return;
 
-      monacoRef.current.editor.setModelMarkers(model, YAML_WORKFLOW_VALIDATION_OWNER, []);
+      monacoRef.current.editor.setModelMarkers(
+        model,
+        YAML_WORKFLOW_VALIDATION_OWNER,
+        [],
+      );
     };
   }, []);
 

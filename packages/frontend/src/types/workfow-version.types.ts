@@ -11,10 +11,10 @@ import { IUser } from "./user.types";
 import { IWorkflow } from "./workfow.types";
 
 export enum WorkflowVersionAction {
-  create = 'create',
-  update = 'update',
-  restore = 'restore',
-  import = 'import',
+  create = "create",
+  update = "update",
+  restore = "restore",
+  import = "import",
 }
 
 export interface IWorkflowVersionAttributes {
@@ -36,7 +36,9 @@ export interface IWorkflowVersionStub
   action: WorkflowVersionAction;
 }
 
-export interface IWorkflowVersion extends IWorkflowVersionStub, IFormat<Format.BASIC> {
+export interface IWorkflowVersion
+  extends IWorkflowVersionStub,
+    IFormat<Format.BASIC> {
   workflow: string;
   parentVersion?: string | null;
   createdBy: string;

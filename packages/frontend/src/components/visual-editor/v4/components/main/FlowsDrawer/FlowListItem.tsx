@@ -34,7 +34,9 @@ export const FlowListItem = ({
   renameLabel,
   moreLabel,
 }: FlowListItemProps) => {
-  const hasTypeMeta = Boolean(match.typeMeta.secondaryText || match.typeMeta.badge);
+  const hasTypeMeta = Boolean(
+    match.typeMeta.secondaryText || match.typeMeta.badge,
+  );
 
   return (
     <FlowItem

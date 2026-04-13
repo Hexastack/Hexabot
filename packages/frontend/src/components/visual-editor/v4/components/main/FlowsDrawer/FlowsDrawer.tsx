@@ -74,7 +74,11 @@ export const maxDrawerWidth = 920;
 export const drawerWidthStorageKey = "hexabot.visual_editor.drawer_width";
 export const drawerIsOpenStorage = "hexabot.visual_editor.drawer_is_open";
 const openPricing = () => {
-  window.open("https://hexabot.ai/pricing/#pricing", "_blank", "noopener,noreferrer");
+  window.open(
+    "https://hexabot.ai/pricing/#pricing",
+    "_blank",
+    "noopener,noreferrer",
+  );
 };
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
@@ -131,7 +135,10 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   );
   const { mutate: deleteWorkflow } = useDelete(EntityType.WORKFLOW);
   const workflowQuota = getLicenseQuotaResource(user?.license, "workflows");
-  const workflowQuotaReached = isLicenseQuotaReached(user?.license, "workflows");
+  const workflowQuotaReached = isLicenseQuotaReached(
+    user?.license,
+    "workflows",
+  );
   const workflowUpgradeTargetPlan = workflowQuotaReached
     ? getQuotaUpgradeTargetPlan(user?.license, "workflows")
     : null;
@@ -569,7 +576,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         <FlowsDrawerCollapsedActions
           searchLabel={t("visual_editor.flows_drawer.search_workflows")}
           newWorkflowLabel={newWorkflowLabel}
-          newWorkflowDisabled={workflowQuotaReached && !workflowUpgradeTargetPlan}
+          newWorkflowDisabled={
+            workflowQuotaReached && !workflowUpgradeTargetPlan
+          }
           newWorkflowDisabledReason={newWorkflowDisabledReason}
           newWorkflowAction={
             shouldShowWorkflowUpgradeGate && workflowUpgradeTargetPlan ? (

@@ -56,9 +56,8 @@ export const McpServers = () => {
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
-  const [testDrawerState, setTestDrawerState] = useState<DrawerState>(
-    INITIAL_DRAWER_STATE,
-  );
+  const [testDrawerState, setTestDrawerState] =
+    useState<DrawerState>(INITIAL_DRAWER_STATE);
   const [selectedToolsServer, setSelectedToolsServer] = useState<IMcpServer>();
   const { mutate: updateMcpServer } = useUpdate(EntityType.MCP_SERVER, {
     onError: (error: Error) => {
@@ -127,24 +126,29 @@ export const McpServers = () => {
     setDrawerMode("tools");
     setSelectedToolsServer(row);
   };
-  const toolsDiscovery: IMcpServerToolsDiscovery | undefined = selectedToolsServer
-    ? {
-        server: {
-          id: selectedToolsServer.id,
-          name: selectedToolsServer.name,
-          enabled: selectedToolsServer.enabled,
-          transport: selectedToolsServer.transport,
-          url: selectedToolsServer.url,
-          ...(selectedToolsServer.command
-            ? { command: selectedToolsServer.command }
-            : {}),
-          ...(selectedToolsServer.args ? { args: selectedToolsServer.args } : {}),
-          ...(selectedToolsServer.cwd ? { cwd: selectedToolsServer.cwd } : {}),
-        },
-        toolCount: tools.length,
-        tools: tools as IMcpServerTool[],
-      }
-    : undefined;
+  const toolsDiscovery: IMcpServerToolsDiscovery | undefined =
+    selectedToolsServer
+      ? {
+          server: {
+            id: selectedToolsServer.id,
+            name: selectedToolsServer.name,
+            enabled: selectedToolsServer.enabled,
+            transport: selectedToolsServer.transport,
+            url: selectedToolsServer.url,
+            ...(selectedToolsServer.command
+              ? { command: selectedToolsServer.command }
+              : {}),
+            ...(selectedToolsServer.args
+              ? { args: selectedToolsServer.args }
+              : {}),
+            ...(selectedToolsServer.cwd
+              ? { cwd: selectedToolsServer.cwd }
+              : {}),
+          },
+          toolCount: tools.length,
+          tools: tools as IMcpServerTool[],
+        }
+      : undefined;
   let drawerTitle = "";
   let drawerStatus: "idle" | "loading" | "success" | "error" = "idle";
   let drawerData: IMcpServerDiagnostics | IMcpServerToolsDiscovery | undefined;

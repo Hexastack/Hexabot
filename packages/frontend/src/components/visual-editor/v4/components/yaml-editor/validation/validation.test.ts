@@ -45,7 +45,7 @@ describe("yaml validation markers", () => {
       "flow:",
       "  - do: task_alpha",
       "outputs:",
-      "  result: \"=$output.task_alpha\"",
+      '  result: "=$output.task_alpha"',
     ].join("\n");
 
     applyWorkflowValidationMarkers({

@@ -21,11 +21,7 @@ export const PasswordWidget = (props: WidgetProps) => {
       {...props}
       type="password"
       value={
-        typeof value === "string"
-          ? value
-          : value == null
-            ? ""
-            : String(value)
+        typeof value === "string" ? value : value == null ? "" : String(value)
       }
       onChange={(nextValue) => onChange(nextValue ?? "")}
       slotProps={{

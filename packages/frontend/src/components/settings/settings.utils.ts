@@ -10,10 +10,7 @@ import type { ISettingSchemasMap } from "@/types/setting.types";
 
 import { extractUiSchema } from "../visual-editor/v4/utils/schema-defaults.utils";
 
-type TranslateFn = (
-  key: string,
-  options?: Record<string, unknown>,
-) => string;
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
 const getSchemaTitle = (
   group: string,

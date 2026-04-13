@@ -4,12 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { cloneElement, FC, ReactNode } from "react";
 

@@ -152,18 +152,16 @@ const getDefaultManualInput = (schema?: unknown): Record<string, unknown> => {
   }
 
   try {
-    return (
-      getDefaultFormState(
-        validator,
-        schema as RJSFSchema,
-        undefined,
-        schema as RJSFSchema,
-        false,
-        {
-          emptyObjectFields: "skipEmptyDefaults",
-        },
-      ) ?? {}
-    ) as Record<string, unknown>;
+    return (getDefaultFormState(
+      validator,
+      schema as RJSFSchema,
+      undefined,
+      schema as RJSFSchema,
+      false,
+      {
+        emptyObjectFields: "skipEmptyDefaults",
+      },
+    ) ?? {}) as Record<string, unknown>;
   } catch {
     return {};
   }
@@ -174,7 +172,8 @@ export const WorkflowBottomDrawer = () => {
   const theme = useTheme();
   const { workflow } = useWorkflow();
   const { user } = useAuth();
-  const isConversationalWorkflow = workflow?.type === WorkflowType.conversational;
+  const isConversationalWorkflow =
+    workflow?.type === WorkflowType.conversational;
   const isStacked = useMediaQuery(theme.breakpoints.down("md"));
   const clampDrawerHeight = useCallback(
     (height: number) => Math.max(height, minDrawerHeight),

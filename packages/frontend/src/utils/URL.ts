@@ -36,7 +36,8 @@ export const isAbsoluteUrl = (
 
   try {
     const url = new URL(value);
-    const hasValidProtocol = url.protocol === "http:" || url.protocol === "https:";
+    const hasValidProtocol =
+      url.protocol === "http:" || url.protocol === "https:";
     const hasMatchingProtocolPrefix =
       (url.href.startsWith("http://") && value.startsWith("http://")) ||
       (url.href.startsWith("https://") && value.startsWith("https://"));
@@ -65,9 +66,10 @@ const normalizePath = (pathname: string) => {
     return "/";
   }
 
-  const normalized = pathname.endsWith("/") && pathname !== "/"
-    ? pathname.slice(0, -1)
-    : pathname;
+  const normalized =
+    pathname.endsWith("/") && pathname !== "/"
+      ? pathname.slice(0, -1)
+      : pathname;
 
   return normalized.startsWith("/") ? normalized : `/${normalized}`;
 };

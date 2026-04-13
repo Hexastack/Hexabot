@@ -6,7 +6,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { ILicense, LicenseQuotaTier, PaidLicensePlan } from "@/types/user.types";
+import type {
+  ILicense,
+  LicenseQuotaTier,
+  PaidLicensePlan,
+} from "@/types/user.types";
 
 import {
   getQuotaUpgradeTargetPlan,
@@ -44,7 +48,9 @@ describe("getQuotaUpgradeTargetPlan", () => {
     resource: LicenseQuotaResource,
     expected: PaidLicensePlan | null,
   ) => {
-    expect(getQuotaUpgradeTargetPlan(buildLicense(tier), resource)).toBe(expected);
+    expect(getQuotaUpgradeTargetPlan(buildLicense(tier), resource)).toBe(
+      expected,
+    );
   };
 
   it("maps users quotas to the expected upgrade targets", () => {

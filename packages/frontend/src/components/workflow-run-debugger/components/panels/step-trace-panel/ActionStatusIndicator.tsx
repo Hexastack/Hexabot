@@ -38,15 +38,27 @@ const getStatusIndicator = (
 ): StatusIndicator => {
   switch (status) {
     case "completed":
-      return { Icon: CheckCircle2, color: "success.main", label: labels.completed };
+      return {
+        Icon: CheckCircle2,
+        color: "success.main",
+        label: labels.completed,
+      };
     case "running":
       return { Icon: Loader2, color: "info.main", label: labels.running };
     case "failed":
       return { Icon: XCircle, color: "error.main", label: labels.failed };
     case "skipped":
-      return { Icon: SkipForward, color: "text.secondary", label: labels.skipped };
+      return {
+        Icon: SkipForward,
+        color: "text.secondary",
+        label: labels.skipped,
+      };
     case "suspended":
-      return { Icon: PauseCircle, color: "warning.main", label: labels.suspended };
+      return {
+        Icon: PauseCircle,
+        color: "warning.main",
+        label: labels.suspended,
+      };
     default:
       return { Icon: Circle, color: "text.secondary", label: labels.pending };
   }

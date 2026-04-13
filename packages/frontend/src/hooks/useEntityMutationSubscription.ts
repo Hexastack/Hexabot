@@ -166,7 +166,9 @@ const getMessageThreadId = (data: IBaseSchema) => {
 export const isThreadInfiniteQuery = (queryKey: readonly unknown[]) => {
   const [qType, qEntity] = queryKey;
 
-  return qType === QueryType.infinite && isSameEntity(qEntity, EntityType.THREAD);
+  return (
+    qType === QueryType.infinite && isSameEntity(qEntity, EntityType.THREAD)
+  );
 };
 
 export const useEntityMutationSubscription = () => {

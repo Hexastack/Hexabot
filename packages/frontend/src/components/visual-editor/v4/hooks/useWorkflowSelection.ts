@@ -60,9 +60,7 @@ export const getSelectedActionNode = (
   return selectedNode as SelectedActionNode;
 };
 
-export const getSelectedOperatorNode = <
-  TStepType extends OperatorStepType,
->(
+export const getSelectedOperatorNode = <TStepType extends OperatorStepType>(
   selection: WorkflowSelectionSnapshot,
   stepType: TStepType,
 ): SelectedOperatorNode<TStepType> | undefined => {
@@ -92,9 +90,7 @@ export const useSelectedActionNode = (): SelectedActionNode | undefined => {
   return useMemo(() => getSelectedActionNode(graphSelection), [graphSelection]);
 };
 
-export const useSelectedOperatorNode = <
-  TStepType extends OperatorStepType,
->(
+export const useSelectedOperatorNode = <TStepType extends OperatorStepType>(
   stepType: TStepType,
 ): SelectedOperatorNode<TStepType> | undefined => {
   const { graphSelection } = useWorkflow();
