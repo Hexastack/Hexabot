@@ -51,9 +51,9 @@ import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import type { DtoActionConfig } from '@/utils/types/dto.types';
 import type {
-  InsertRepositoryEvent,
-  RemoveRepositoryEvent,
-  UpdateRepositoryEvent,
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
@@ -75,9 +75,9 @@ type UnionToIntersection<U> = (
   : never;
 
 type OrmLifecycleEvent<Entity> =
-  | InsertRepositoryEvent<Entity>
-  | UpdateRepositoryEvent<Entity>
-  | RemoveRepositoryEvent<Entity>;
+  | InsertEntityEvent<Entity>
+  | UpdateEntityEvent<Entity>
+  | DeleteEntityEvent<Entity>;
 
 type InsertHook =
   | 'preCreateValidate'
@@ -118,11 +118,11 @@ type HookEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
 > = Hook extends InsertHook
-  ? [InsertRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+  ? [InsertEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
   : Hook extends UpdateHook
-    ? [UpdateRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+    ? [UpdateEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
     : Hook extends DeleteHook
-      ? [RemoveRepositoryEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
+      ? [DeleteEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
       : never;
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];

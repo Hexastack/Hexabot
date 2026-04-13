@@ -21,9 +21,9 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import {
-  InsertRepositoryEvent,
-  RemoveRepositoryEvent,
-  UpdateRepositoryEvent,
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
@@ -190,7 +190,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       action: EHook.postCreate,
       payload: {} as InferActionsDto<WorkflowOrmEntity>['create'],
       entity: {} as WorkflowOrmEntity,
-    } as InsertRepositoryEvent<WorkflowOrmEntity>);
+    } as InsertEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -200,7 +200,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       action: EHook.postUpdate,
       payload: {} as InferActionsDto<WorkflowOrmEntity>['update'],
       entity: {} as WorkflowOrmEntity,
-    } as UpdateRepositoryEvent<WorkflowOrmEntity>);
+    } as UpdateEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -246,7 +246,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       action: EHook.postDelete,
       payload: {} as string | FindOneOptions<WorkflowOrmEntity>,
       entity: {} as WorkflowOrmEntity,
-    } as RemoveRepositoryEvent<WorkflowOrmEntity>);
+    } as DeleteEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });

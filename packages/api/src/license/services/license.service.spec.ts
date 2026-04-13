@@ -9,7 +9,7 @@ import { DataSource } from 'typeorm';
 
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { UpdateRepositoryEvent } from '@/utils/types/entity-event.types';
+import { UpdateEntityEvent } from '@/utils/types/entity-event.types';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
 import {
@@ -190,7 +190,7 @@ const createSettingUpdateEvent = ({
   return {
     databaseEntity,
     entity,
-  } as unknown as UpdateRepositoryEvent<SettingOrmEntity>;
+  } as unknown as UpdateEntityEvent<SettingOrmEntity>;
 };
 const createEnv = (overrides: CreateEnvOptions = {}): ServiceEnv => {
   const apiService: MockLemonSqueezyService = {

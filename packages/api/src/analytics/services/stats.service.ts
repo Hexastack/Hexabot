@@ -13,7 +13,7 @@ import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
-import { InsertRepositoryEvent } from '@/utils/types/entity-event.types';
+import { InsertEntityEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
@@ -34,7 +34,7 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
 
   @OnEvent('hook:subscriber:preCreate')
   async handleSubscriberPreCreate(
-    event: InsertRepositoryEvent<SubscriberOrmEntity>,
+    event: InsertEntityEvent<SubscriberOrmEntity>,
   ) {
     const subscriber = event.entity.toPlainCls();
 

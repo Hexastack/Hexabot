@@ -58,7 +58,7 @@ export type EmitEventProps<
   H extends EHook,
 > = Extract<EventProps<Entity>, { action: H }>;
 
-export type InsertRepositoryEvent<
+export type InsertEntityEvent<
   Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > = Extract<
   EventProps<Entity>,
@@ -70,7 +70,7 @@ export type InsertRepositoryEvent<
     }
 >;
 
-export type UpdateRepositoryEvent<
+export type UpdateEntityEvent<
   Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > = Extract<
   EventProps<Entity>,
@@ -82,7 +82,7 @@ export type UpdateRepositoryEvent<
     }
 >;
 
-export type RemoveRepositoryEvent<
+export type DeleteEntityEvent<
   Entity extends BaseOrmEntity<TEntityDto<Entity>>,
 > = Extract<
   EventProps<Entity>,
