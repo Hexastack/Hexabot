@@ -9,7 +9,6 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
-import { QuickReplyType } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
@@ -48,9 +47,7 @@ describe('SendQuickRepliesAction', () => {
       .mockResolvedValue('result');
     const input = {
       text: 'Pick one',
-      quick_replies: [
-        { content_type: QuickReplyType.text, title: 'Yes', payload: 'yes' },
-      ],
+      quick_replies: [{ title: 'Yes', payload: 'yes' }],
     };
     const result = await action.execute({
       input,

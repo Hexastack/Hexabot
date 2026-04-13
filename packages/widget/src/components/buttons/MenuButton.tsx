@@ -17,7 +17,7 @@ import "./MenuButton.scss";
 
 const MenuButton: React.FC = () => {
   const settings = useSettings();
-  const { send, setPayload } = useChat();
+  const { send } = useChat();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [current, setCurrent] = useState<IMenuNode>({
     title: "Menu",
@@ -54,7 +54,6 @@ const MenuButton: React.FC = () => {
     setCurrent(item);
   };
   const handlePostback = (item: IPayload) => {
-    setPayload(item);
     send({
       // @ts-expect-error todo
       event: new Event("postback"),
@@ -67,9 +66,6 @@ const MenuButton: React.FC = () => {
         },
       },
     });
-    if (settings?.autoFlush) {
-      setPayload(null);
-    }
     menuRef.current?.blur();
   };
   const previous = (current: IMenuNode) => {
