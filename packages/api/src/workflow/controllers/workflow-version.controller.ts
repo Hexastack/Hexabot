@@ -54,7 +54,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await super.count({ where: { workflow: { id } } });
+    return await this.count({ where: { workflow: { id } } });
   }
 
   /**
@@ -112,7 +112,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
    * @param id - The workflow ID.
    */
   @Get(':id/versions')
-  async findMany(
+  async findWorkflowVersions(
     @UuidParam('id') id: string,
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowVersionOrmEntity>({
@@ -130,21 +130,16 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return this.canPopulate(populate)
-      ? await this.workflowVersionService.findAndPopulate({
-          ...(options ?? {}),
-          where: {
-            ...(options.where ?? {}),
-            workflow: { id },
-          },
-        })
-      : await this.workflowVersionService.find({
-          ...(options ?? {}),
-          where: {
-            ...(options.where ?? {}),
-            workflow: { id },
-          },
-        });
+    return await this.find(
+      {
+        ...(options ?? {}),
+        where: {
+          ...(options.where ?? {}),
+          workflow: { id },
+        },
+      },
+      populate,
+    );
   }
 
   /**
@@ -154,7 +149,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
    * @param versionId - The version identifier.
    */
   @Get(':id/versions/:versionId')
-  async findOne(
+  async findWorkflowVersion(
     @UuidParam('id') id: string,
     @UuidParam('versionId') versionId: string,
     @Query(PopulatePipe)
@@ -166,17 +161,7 @@ export class WorkflowVersionController extends BaseOrmController<WorkflowVersion
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    const version = this.canPopulate(populate)
-      ? await this.workflowVersionService.findOneAndPopulate(versionId)
-      : await this.workflowVersionService.findOne(versionId);
-
-    if (!version) {
-      throw new NotFoundException(
-        `Workflow version with ID ${versionId} not found`,
-      );
-    }
-
-    return version;
+    return await this.findOne(versionId, populate);
   }
 
   /**

@@ -95,7 +95,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    * @returns Workflows that satisfy the provided options.
    */
   @Get()
-  async findMany(
+  async findWorkflows(
     @Query(
       new TypeOrmSearchFilterPipe<WorkflowOrmEntity>({
         allowedFields: [
@@ -112,9 +112,7 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     @Query(PopulatePipe)
     populate: string[] = [],
   ) {
-    return this.canPopulate(populate)
-      ? await this.workflowService.findAndPopulate(options ?? {})
-      : await this.workflowService.find(options ?? {});
+    return await this.find(options, populate);
   }
 
   /**
@@ -166,20 +164,12 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    * @returns The workflow matching the provided ID.
    */
   @Get(':id')
-  async findOne(
+  async findWorkflow(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<Workflow | WorkflowFull> {
-    const workflow = this.canPopulate(populate)
-      ? await this.workflowService.findOneAndPopulate(id)
-      : await this.workflowService.findOne(id);
-    if (!workflow) {
-      this.logger.warn(`Unable to find Workflow by id ${id}`);
-      throw new NotFoundException(`Workflow with ID ${id} not found`);
-    }
-
-    return workflow;
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -213,14 +203,8 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.workflowService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Workflow by id ${id}`);
-      throw new NotFoundException(`Workflow with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteWorkflow(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**

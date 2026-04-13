@@ -5,18 +5,16 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { FindManyOptions, In } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { UuidParam } from '@/utils';
@@ -44,7 +42,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    * @returns A promise that resolves to an array of label groups.
    */
   @Get()
-  async findPage(
+  async findLabelGroups(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -55,11 +53,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
     )
     options: FindManyOptions<LabelGroupOrmEntity>,
   ): Promise<LabelGroup[] | LabelGroupFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.labelGroupService.findAndPopulate(queryOptions)
-      : await this.labelGroupService.find(queryOptions);
+    return await this.find(options, populate);
   }
 
   /**
@@ -73,9 +67,9 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<LabelGroupOrmEntity>,
+    options: FindManyOptions<LabelGroupOrmEntity> = {},
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -83,20 +77,12 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    * @returns A promise that resolves to a label group.
    */
   @Get(':id')
-  async findOne(
+  async findLabelGroup(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<LabelGroup | LabelGroupFull> {
-    const record = this.canPopulate(populate)
-      ? await this.labelGroupService.findOneAndPopulate(id)
-      : await this.labelGroupService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Label Group by id ${id}`);
-      throw new NotFoundException(`Label Group with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -126,14 +112,8 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.labelGroupService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Label Group by id ${id}`);
-      throw new NotFoundException(`Label Group with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteLabelGroup(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**
@@ -143,23 +123,7 @@ export class LabelGroupController extends BaseOrmController<LabelGroupOrmEntity>
    */
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
-    if (!ids?.length) {
-      throw new BadRequestException('No IDs provided for deletion.');
-    }
-    const deleteResult = await this.labelGroupService.deleteMany({
-      where: { id: In(ids) },
-    });
-
-    if (deleteResult.deletedCount === 0) {
-      this.logger.warn(
-        `Unable to delete Label Groups with provided IDs: ${ids}`,
-      );
-      throw new NotFoundException('Label Groups with provided IDs not found');
-    }
-
-    this.logger.log(`Successfully deleted Label Groups with IDs: ${ids}`);
-
-    return deleteResult;
+  async deleteLabelGroups(@Body('ids') ids?: string[]): Promise<DeleteResult> {
+    return this.deleteMany(ids);
   }
 }

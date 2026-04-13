@@ -101,7 +101,7 @@ describe('MemoryDefinitionController (TypeORM)', () => {
       const [fixture] = memoryDefinitionOrmFixtures;
       const options = { where: { slug: fixture.slug } };
       const findSpy = jest.spyOn(service, 'find');
-      const result = await controller.find(options);
+      const result = await controller.findPage(options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload([fixture], [...IGNORED_TEST_FIELDS]);
@@ -195,11 +195,11 @@ describe('MemoryDefinitionController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(controller.deleteOne(id)).rejects.toThrow(
-        new NotFoundException(`Memory Definition with ID ${id} not found`),
+        new NotFoundException(`MemoryDefinition with ID ${id} not found`),
       );
       expect(deleteSpy).toHaveBeenCalledWith(id);
       expect(warnSpy).toHaveBeenCalledWith(
-        `Unable to delete Memory Definition by id ${id}`,
+        `Unable to delete MemoryDefinition by id ${id}`,
       );
     });
   });
@@ -213,7 +213,7 @@ describe('MemoryDefinitionController (TypeORM)', () => {
       const ids = created.map(({ id }) => id);
       ids.forEach((id) => createdIds.add(id));
 
-      const result = await controller.deleteMany(ids);
+      const result = await controller.deleteMemoryDefinitions(ids);
 
       expect(result).toEqualPayload({
         acknowledged: true,
@@ -227,7 +227,7 @@ describe('MemoryDefinitionController (TypeORM)', () => {
       const ids = [randomUUID(), randomUUID()];
 
       await expect(controller.deleteMany(ids)).rejects.toThrow(
-        new NotFoundException('Memory Definitions with provided IDs not found'),
+        new NotFoundException('MemoryDefinitions with provided IDs not found'),
       );
     });
 

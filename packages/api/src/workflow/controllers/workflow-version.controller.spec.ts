@@ -124,7 +124,7 @@ describe('WorkflowVersionController (TypeORM)', () => {
         createdBy: created.createdBy,
       });
 
-      const versions = await controller.findMany(created.id, {
+      const versions = await controller.findWorkflowVersions(created.id, {
         order: { createdAt: 'DESC' },
       });
 
@@ -138,7 +138,7 @@ describe('WorkflowVersionController (TypeORM)', () => {
       const id = randomUUID();
       const warnSpy = jest.spyOn(logger, 'warn');
 
-      await expect(controller.findMany(id)).rejects.toThrow(
+      await expect(controller.findWorkflowVersions(id)).rejects.toThrow(
         new NotFoundException(`Workflow with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
@@ -161,7 +161,10 @@ describe('WorkflowVersionController (TypeORM)', () => {
       }))!;
       expect(latest).toBeDefined();
 
-      const result = (await controller.findOne(created.id, latest.id))!;
+      const result = (await controller.findWorkflowVersion(
+        created.id,
+        latest.id,
+      ))!;
 
       expect(result.id).toBe(latest.id);
       expect(result.version).toBe(latest.version);
@@ -177,10 +180,10 @@ describe('WorkflowVersionController (TypeORM)', () => {
       createdWorkflowIds.add(created.id);
       const versionId = randomUUID();
 
-      await expect(controller.findOne(created.id, versionId)).rejects.toThrow(
-        new NotFoundException(
-          `Workflow version with ID ${versionId} not found`,
-        ),
+      await expect(
+        controller.findWorkflowVersion(created.id, versionId),
+      ).rejects.toThrow(
+        new NotFoundException(`WorkflowVersion with ID ${versionId} not found`),
       );
     });
   });

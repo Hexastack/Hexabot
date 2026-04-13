@@ -46,7 +46,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
    * @returns A list of permissions, potentially populated with related entities.
    */
   @Get()
-  async find(
+  async findPermissions(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -54,13 +54,9 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
         allowedFields: ['model.id', 'role.id', 'relation'],
       }),
     )
-    options?: FindManyOptions<PermissionOrmEntity>,
+    options: FindManyOptions<PermissionOrmEntity> = {},
   ) {
-    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.permissionService.findAndPopulate(options)
-      : await this.permissionService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -98,13 +94,7 @@ export class PermissionController extends BaseOrmController<PermissionOrmEntity>
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const result = await this.permissionService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Permission by id ${id}`);
-      throw new NotFoundException(`Permission with ID ${id} not found`);
-    }
-
-    return result;
+  async deletePermission(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 }

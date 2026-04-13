@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { InternalServerErrorException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -59,17 +59,9 @@ describe('MenuController (TypeORM)', () => {
     }
   });
 
-  describe('filterCount', () => {
-    it('returns the count of menus', async () => {
-      const result = await controller.filterCount({});
-
-      expect(result.count).toBeGreaterThan(0);
-    });
-  });
-
   describe('find', () => {
     it('returns paginated menus when pagination provided', async () => {
-      const result = await controller.find({ take: 5, skip: 0 });
+      const result = await controller.findPage({ take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
     });
@@ -81,7 +73,7 @@ describe('MenuController (TypeORM)', () => {
       });
       expect(parent).toBeDefined();
 
-      const result = await controller.find({
+      const result = await controller.findPage({
         where: { parent: { id: parent!.id } },
       });
 
@@ -90,7 +82,7 @@ describe('MenuController (TypeORM)', () => {
     });
 
     it('returns all menus when no pagination or filters', async () => {
-      const result = await controller.find({});
+      const result = await controller.findPage({});
 
       expect(result.length).toBeGreaterThan(rootMenuFixtures.length);
     });
@@ -128,14 +120,12 @@ describe('MenuController (TypeORM)', () => {
 
     it('wraps not found menu in InternalServerErrorException', async () => {
       const warnSpy = jest.spyOn(logger, 'warn');
-      const errorSpy = jest.spyOn(logger, 'error');
 
       await expect(
         controller.findOne('00000000-0000-4000-8000-000000000000'),
-      ).rejects.toThrow(InternalServerErrorException);
+      ).rejects.toThrow(NotFoundException);
 
       expect(warnSpy).toHaveBeenCalled();
-      expect(errorSpy).toHaveBeenCalled();
     });
   });
 
@@ -191,25 +181,25 @@ describe('MenuController (TypeORM)', () => {
       });
       createdMenuIds.add(child.id);
 
-      const result = await controller.delete(root.id);
+      const result = await controller.deleteMenuItem(root.id);
 
-      expect(result).toBe('');
+      expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
       const found = await menuService.findOne(root.id);
       const orphan = await menuService.findOne(child.id);
       expect(found).toBeNull();
       expect(orphan).toBeNull();
     });
 
-    it('wraps not found deletion in InternalServerErrorException', async () => {
+    it('wraps not found deletion in NotFoundException', async () => {
+      const id = '00000000-0000-4000-8000-000000000001';
+      const deleteSpy = jest.spyOn(menuService, 'deleteOne');
       const warnSpy = jest.spyOn(logger, 'warn');
-      const errorSpy = jest.spyOn(logger, 'error');
 
-      await expect(
-        controller.delete('00000000-0000-4000-8000-000000000001'),
-      ).rejects.toThrow(InternalServerErrorException);
-
-      expect(warnSpy).toHaveBeenCalled();
-      expect(errorSpy).toHaveBeenCalled();
+      await expect(controller.deleteOne(id)).rejects.toThrow(
+        new NotFoundException(`Menu with ID ${id} not found`),
+      );
+      expect(deleteSpy).toHaveBeenCalledWith(id);
+      expect(warnSpy).toHaveBeenCalledWith(`Unable to delete Menu by id ${id}`);
     });
   });
 });

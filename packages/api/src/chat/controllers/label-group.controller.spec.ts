@@ -55,22 +55,12 @@ describe('LabelGroupController', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('count', () => {
-    it('should count label groups', async () => {
-      jest.spyOn(labelGroupService, 'count');
-      const result = await labelGroupController.filterCount();
-
-      expect(labelGroupService.count).toHaveBeenCalled();
-      expect(result).toEqual({ count: labelGroupFixtures.length });
-    });
-  });
-
   describe('findPage', () => {
     it('should find label groups', async () => {
       const expected = await labelGroupService.find({});
       jest.spyOn(labelGroupService, 'find').mockResolvedValue(expected);
 
-      const result = await labelGroupController.findPage([], {});
+      const result = await labelGroupController.findLabelGroups([], {});
 
       expect(labelGroupService.find).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -82,7 +72,7 @@ describe('LabelGroupController', () => {
         .spyOn(labelGroupService, 'findAndPopulate')
         .mockResolvedValue(expected);
 
-      const result = await labelGroupController.findPage(['labels'], {});
+      const result = await labelGroupController.findLabelGroups(['labels'], {});
 
       expect(labelGroupService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(expected);
@@ -97,7 +87,7 @@ describe('LabelGroupController', () => {
       expect(target).toBeDefined();
 
       jest.spyOn(labelGroupService, 'findOne');
-      const result = await labelGroupController.findOne(target!.id, []);
+      const result = await labelGroupController.findLabelGroup(target!.id, []);
 
       expect(labelGroupService.findOne).toHaveBeenCalledWith(target!.id);
       expect(result).toEqualPayload(labelGroupFixtures[0]);
@@ -110,7 +100,9 @@ describe('LabelGroupController', () => {
       expect(target).toBeDefined();
 
       jest.spyOn(labelGroupService, 'findOneAndPopulate');
-      const result = await labelGroupController.findOne(target!.id, ['labels']);
+      const result = await labelGroupController.findLabelGroup(target!.id, [
+        'labels',
+      ]);
 
       expect(labelGroupService.findOneAndPopulate).toHaveBeenCalledWith(
         target!.id,
@@ -191,7 +183,7 @@ describe('LabelGroupController', () => {
           { name: 'Group 2' },
         ])
       ).map(({ id }) => id);
-      const result = await labelGroupController.deleteMany(labelGroups);
+      const result = await labelGroupController.deleteLabelGroups(labelGroups);
 
       expect(result.deletedCount).toEqual(labelGroups.length);
       const remainingValues = await labelGroupService.find({

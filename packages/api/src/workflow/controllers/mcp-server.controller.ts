@@ -66,7 +66,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    * @returns Matching MCP servers.
    */
   @Get()
-  async find(
+  async findMcps(
     @Query(PopulatePipe)
     populate: string[] = [],
     @Query(
@@ -77,11 +77,7 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
     )
     options: FindManyOptions<McpServerOrmEntity> = {},
   ): Promise<McpServer[] | McpServerFull[]> {
-    const shouldPopulate = this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.mcpServerService.findAndPopulate(options)
-      : await this.mcpServerService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -104,9 +100,9 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
         ],
       }),
     )
-    options?: FindManyOptions<McpServerOrmEntity>,
+    options: FindManyOptions<McpServerOrmEntity> = {},
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -117,21 +113,12 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    * @returns The matching MCP server.
    */
   @Get(':id')
-  async findOne(
+  async findMcp(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[] = [],
   ): Promise<McpServer | McpServerFull> {
-    const shouldPopulate = this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.mcpServerService.findOneAndPopulate(id)
-      : await this.mcpServerService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find MCP server by id ${id}`);
-      throw new NotFoundException(`MCP server with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -159,14 +146,8 @@ export class McpServerController extends BaseOrmController<McpServerOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.mcpServerService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete MCP server by id ${id}`);
-      throw new NotFoundException(`MCP server with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteMcp(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**

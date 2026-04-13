@@ -5,7 +5,6 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -60,9 +59,9 @@ export class TranslationController extends BaseOrmController<TranslationOrmEntit
         allowedFields: ['str'],
       }),
     )
-    options?: FindManyOptions<TranslationOrmEntity>,
+    options: FindManyOptions<TranslationOrmEntity> = {},
   ) {
-    return await super.count(options);
+    return await this.count(options);
   }
 
   @Get(':id')
@@ -132,15 +131,7 @@ export class TranslationController extends BaseOrmController<TranslationOrmEntit
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.translationService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Translation by id ${id}`);
-      throw new BadRequestException(
-        `Unable to delete Translation with ID ${id}`,
-      );
-    }
-
-    return result;
+  async deleteTranslation(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 }

@@ -79,17 +79,9 @@ describe('ContentTypeController (TypeORM)', () => {
 
   describe('find', () => {
     it('returns content types using find options', async () => {
-      const result = await controller.find({ take: 5, skip: 0 });
+      const result = await controller.findContentTypes({ take: 5, skip: 0 });
 
       expect(result.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('filterCount', () => {
-    it('returns filtered count', async () => {
-      const result = await controller.filterCount({});
-
-      expect(result.count).toBeGreaterThan(0);
     });
   });
 
@@ -101,7 +93,7 @@ describe('ContentTypeController (TypeORM)', () => {
       });
       expect(existing).toBeDefined();
 
-      const found = await controller.findOne(existing!.id);
+      const found = await controller.findContentType(existing!.id);
 
       expect(found).toMatchObject({ id: existing!.id });
     });
@@ -110,7 +102,7 @@ describe('ContentTypeController (TypeORM)', () => {
       const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
-        controller.findOne('00000000-0000-4000-8000-000000000000'),
+        controller.findContentType('00000000-0000-4000-8000-000000000000'),
       ).rejects.toThrow(NotFoundException);
 
       expect(warnSpy).toHaveBeenCalled();

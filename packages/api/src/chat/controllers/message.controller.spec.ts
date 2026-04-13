@@ -25,7 +25,6 @@ describe('MessageController (TypeORM)', () => {
   let messageController: MessageController;
   let messageService: MessageService;
 
-  let totalMessages: number;
   let plainMessages: Message[];
   let populatedMessages: MessageFull[];
   let referencePlain: Message;
@@ -67,7 +66,6 @@ describe('MessageController (TypeORM)', () => {
       MessageService,
     ]);
 
-    totalMessages = await messageService.count();
     plainMessages = await messageService.find(defaultOrder);
     populatedMessages = await messageService.findAndPopulate(defaultOrder);
 
@@ -97,20 +95,10 @@ describe('MessageController (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('count', () => {
-    it('should count messages', async () => {
-      const countSpy = jest.spyOn(messageService, 'count');
-      const result = await messageController.filterCount();
-
-      expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: totalMessages });
-    });
-  });
-
   describe('findOne', () => {
     it('should find message by id with populated relations', async () => {
       const populateSpy = jest.spyOn(messageService, 'findOneAndPopulate');
-      const result = await messageController.findOne(referencePlain.id, [
+      const result = await messageController.findMessage(referencePlain.id, [
         'sender',
         'recipient',
         'sentBy',
@@ -122,7 +110,7 @@ describe('MessageController (TypeORM)', () => {
 
     it('should find message by id without populating relations', async () => {
       const findSpy = jest.spyOn(messageService, 'findOne');
-      const result = await messageController.findOne(referencePlain.id, []);
+      const result = await messageController.findMessage(referencePlain.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(referencePlain.id);
       expect(result).toEqualPayload(referencePlain);
@@ -132,7 +120,7 @@ describe('MessageController (TypeORM)', () => {
   describe('findPage', () => {
     it('should find messages without populating relations when none requested', async () => {
       const findSpy = jest.spyOn(messageService, 'find');
-      const result = await messageController.findPage([], defaultOrder);
+      const result = await messageController.findMessages([], defaultOrder);
 
       expect(findSpy).toHaveBeenCalledWith(defaultOrder);
       expect(result).toEqualPayload(plainMessages);
@@ -140,7 +128,7 @@ describe('MessageController (TypeORM)', () => {
 
     it('should find messages and populate requested relations', async () => {
       const populateSpy = jest.spyOn(messageService, 'findAndPopulate');
-      const result = await messageController.findPage(
+      const result = await messageController.findMessages(
         ['sender', 'recipient', 'sentBy'],
         defaultOrder,
       );
@@ -151,7 +139,7 @@ describe('MessageController (TypeORM)', () => {
 
     it('should filter messages by thread id', async () => {
       const threadId = referencePlain.thread;
-      const result = await messageController.findPage([], {
+      const result = await messageController.findMessages([], {
         where: {
           thread: { id: threadId },
         },

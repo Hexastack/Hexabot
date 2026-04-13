@@ -66,9 +66,9 @@ export class LanguageController extends BaseOrmController<LanguageOrmEntity> {
         allowedFields: ['title', 'code'],
       }),
     )
-    options?: FindManyOptions<LanguageOrmEntity>,
+    options: FindManyOptions<LanguageOrmEntity> = {},
   ) {
-    return await super.count(options);
+    return await this.count(options);
   }
 
   /**
@@ -122,13 +122,7 @@ export class LanguageController extends BaseOrmController<LanguageOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.languageService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Language by id ${id}`);
-      throw new BadRequestException(`Unable to delete Language with ID ${id}`);
-    }
-
-    return result;
+  async deleteLanguage(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 }

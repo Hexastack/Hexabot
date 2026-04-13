@@ -215,7 +215,7 @@ describe('WorkflowController (TypeORM)', () => {
         where: { name: 'messaging_workflow_fixture' },
       };
       const findSpy = jest.spyOn(workflowService, 'findAndPopulate');
-      const result = await workflowController.findMany(options, [
+      const result = await workflowController.findWorkflows(options, [
         'currentVersion',
         'createdBy',
       ]);
@@ -478,7 +478,7 @@ describe('WorkflowController (TypeORM)', () => {
       expect(existing).toBeDefined();
 
       const findSpy = jest.spyOn(workflowService, 'findOne');
-      const result = await workflowController.findOne(existing.id, []);
+      const result = await workflowController.findWorkflow(existing.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(existing.id);
       expect(result).toEqualPayload(existing);
@@ -488,7 +488,7 @@ describe('WorkflowController (TypeORM)', () => {
       const id = randomUUID();
       const warnSpy = jest.spyOn(logger, 'warn');
 
-      await expect(workflowController.findOne(id, [])).rejects.toThrow(
+      await expect(workflowController.findWorkflow(id, [])).rejects.toThrow(
         new NotFoundException(`Workflow with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(

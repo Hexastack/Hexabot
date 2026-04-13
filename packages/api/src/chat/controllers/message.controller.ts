@@ -54,7 +54,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
 
   /** Retrieves messages using TypeORM filters and optional relation population. */
   @Get()
-  async findPage(
+  async findMessages(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -72,11 +72,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     )
     options: FindManyOptions<MessageOrmEntity>,
   ): Promise<Message[] | MessageFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.messageService.findAndPopulate(queryOptions)
-      : await this.messageService.find(queryOptions);
+    return await this.find(options, populate);
   }
 
   /**
@@ -97,26 +93,18 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
         ],
       }),
     )
-    options?: FindManyOptions<MessageOrmEntity>,
+    options: FindManyOptions<MessageOrmEntity> = {},
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   @Get(':id')
-  async findOne(
+  async findMessage(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Message | MessageFull> {
-    const record = this.canPopulate(populate)
-      ? await this.messageService.findOneAndPopulate(id)
-      : await this.messageService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Message by id ${id}`);
-      throw new NotFoundException(`Message with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   @Post()

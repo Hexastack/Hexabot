@@ -85,7 +85,7 @@ describe('ThreadController (TypeORM)', () => {
   describe('findOne', () => {
     it('finds a thread by id with populated relations', async () => {
       const populateSpy = jest.spyOn(threadService, 'findOneAndPopulate');
-      const result = await threadController.findOne(referencePlain.id, [
+      const result = await threadController.findThread(referencePlain.id, [
         'subscriber',
       ]);
 
@@ -95,7 +95,7 @@ describe('ThreadController (TypeORM)', () => {
 
     it('finds a thread by id without populating relations', async () => {
       const findSpy = jest.spyOn(threadService, 'findOne');
-      const result = await threadController.findOne(referencePlain.id, []);
+      const result = await threadController.findThread(referencePlain.id, []);
 
       expect(findSpy).toHaveBeenCalledWith(referencePlain.id);
       expect(result).toEqualPayload(referencePlain);
@@ -105,7 +105,7 @@ describe('ThreadController (TypeORM)', () => {
   describe('findPage', () => {
     it('finds threads without populating relations when none requested', async () => {
       const findSpy = jest.spyOn(threadService, 'find');
-      const result = await threadController.findPage([], defaultOrder);
+      const result = await threadController.findThreads([], defaultOrder);
 
       expect(findSpy).toHaveBeenCalledWith(defaultOrder);
       expect(result).toEqualPayload(plainThreads);
@@ -113,7 +113,7 @@ describe('ThreadController (TypeORM)', () => {
 
     it('finds threads and populates requested relations', async () => {
       const populateSpy = jest.spyOn(threadService, 'findAndPopulate');
-      const result = await threadController.findPage(
+      const result = await threadController.findThreads(
         ['subscriber'],
         defaultOrder,
       );
@@ -139,7 +139,10 @@ describe('ThreadController (TypeORM)', () => {
         } as any,
         {} as ArgumentMetadata,
       );
-      const result = await threadController.findPage(['subscriber'], options);
+      const result = await threadController.findThreads(
+        ['subscriber'],
+        options,
+      );
 
       expect(result.length).toBeGreaterThan(0);
       expect(

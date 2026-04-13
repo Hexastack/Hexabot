@@ -63,28 +63,18 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
         allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
-    options?: FindManyOptions<AttachmentOrmEntity>,
+    options: FindManyOptions<AttachmentOrmEntity> = {},
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   @Get(':id')
-  async findOne(
+  async findAttachment(
     @Query(PopulatePipe)
     populate: string[],
     @UuidParam('id') id: string,
   ): Promise<Attachment | AttachmentFull> {
-    const shouldPopulate = populate.includes('createdBy');
-    const attachment = shouldPopulate
-      ? await this.attachmentService.findOneAndPopulate(id)
-      : await this.attachmentService.findOne(id);
-
-    if (!attachment) {
-      this.logger.warn(`Unable to find Attachment by id ${id}`);
-      throw new NotFoundException(`Attachment with ID ${id} not found`);
-    }
-
-    return attachment;
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -94,7 +84,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
    * @returns A promise that resolves to an array of attachments matching the filters.
    */
   @Get()
-  async findPage(
+  async findAttachments(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -105,11 +95,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
     )
     options: FindManyOptions<AttachmentOrmEntity>,
   ) {
-    const shouldPopulate = populate.includes('createdBy');
-
-    return shouldPopulate
-      ? await this.attachmentService.findAndPopulate(options)
-      : await this.attachmentService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -205,7 +191,7 @@ export class AttachmentController extends BaseOrmController<AttachmentOrmEntity>
    */
   @Delete(':id')
   @HttpCode(405)
-  async deleteOne(@UuidParam('id') id: string): Promise<void> {
+  async deleteAttachment(@UuidParam('id') id: string): Promise<void> {
     // Deletion is explicitly disallowed due to potential reference issues.
     this.logger.warn(`Attempted deletion of attachment ${id} is not allowed.`);
     throw new MethodNotAllowedException(

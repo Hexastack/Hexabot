@@ -51,7 +51,7 @@ describe('ModelController (TypeORM)', () => {
   describe('find', () => {
     it('should find models', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
-      const result = (await modelController.find(
+      const result = (await modelController.findModels(
         ['permissions'],
         {},
       )) as ModelFull[];
@@ -65,7 +65,7 @@ describe('ModelController (TypeORM)', () => {
     it('should populate permissions for each model', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
       const allPermissions = await permissionService.findAll();
-      const result = (await modelController.find(
+      const result = (await modelController.findModels(
         ['permissions'],
         {},
       )) as ModelFull[];

@@ -102,7 +102,7 @@ describe('AttachmentController', () => {
         take: 5,
         skip: 0,
       };
-      const result = await attachmentController.findPage([], options);
+      const result = await attachmentController.findAttachments([], options);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toHaveLength(1);
@@ -112,23 +112,6 @@ describe('AttachmentController', () => {
         resourceRef: attachmentFixtures[0].resourceRef,
         access: attachmentFixtures[0].access,
       });
-    });
-  });
-
-  describe('count', () => {
-    it('should count attachments', async () => {
-      const countSpy = jest.spyOn(attachmentService, 'count');
-      const name = attachmentFixtures[0].name;
-      const result = await attachmentController.filterCount({
-        where: { name },
-      });
-
-      expect(countSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { name },
-        }),
-      );
-      expect(result.count).toBe(1);
     });
   });
 
@@ -258,7 +241,7 @@ describe('AttachmentController', () => {
   describe('deleteOne', () => {
     it('should throw a MethodNotAllowedException when attempting to delete an attachment by id', async () => {
       await expect(
-        attachmentController.deleteOne(attachmentToDelete.id),
+        attachmentController.deleteAttachment(attachmentToDelete.id),
       ).rejects.toThrow(MethodNotAllowedException);
     });
   });

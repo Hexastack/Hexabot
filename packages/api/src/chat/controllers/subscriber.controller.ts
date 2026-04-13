@@ -50,7 +50,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
    * @returns A promise containing the paginated and optionally populated list of subscribers.
    */
   @Get()
-  async findPage(
+  async findSubscribers(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -69,11 +69,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
     )
     options: FindManyOptions<SubscriberOrmEntity>,
   ): Promise<Subscriber[] | SubscriberFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.subscriberService.findAndPopulate(queryOptions)
-      : await this.subscriberService.find(queryOptions);
+    return await this.find(options, populate);
   }
 
   /**
@@ -94,9 +90,9 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
         ],
       }),
     )
-    options?: FindManyOptions<SubscriberOrmEntity>,
+    options: FindManyOptions<SubscriberOrmEntity> = {},
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -108,20 +104,12 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
    * @returns The subscriber object, populated if requested.
    */
   @Get(':id')
-  async findOne(
+  async findSubscriber(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Subscriber | SubscriberFull> {
-    const record = this.canPopulate(populate)
-      ? await this.subscriberService.findOneAndPopulate(id)
-      : await this.subscriberService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Subscriber by id ${id}`);
-      throw new NotFoundException(`Subscriber with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   /**

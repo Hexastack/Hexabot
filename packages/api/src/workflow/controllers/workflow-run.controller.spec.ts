@@ -60,7 +60,7 @@ describe('WorkflowRunController (TypeORM)', () => {
     it('returns workflow runs matching the provided filters', async () => {
       const options = { where: { status: 'running' as const } };
       const findSpy = jest.spyOn(service, 'find');
-      const result = await controller.findMany(options, []);
+      const result = await controller.findWorkflowRuns(options, []);
 
       expect(findSpy).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(
@@ -74,7 +74,7 @@ describe('WorkflowRunController (TypeORM)', () => {
     it('returns a workflow run when it exists', async () => {
       const id = workflowRunFixtureIds.running;
       const findSpy = jest.spyOn(service, 'findOne');
-      const result = await controller.findOne(id, []);
+      const result = await controller.findWorkflowRun(id, []);
 
       expect(findSpy).toHaveBeenCalledWith(id);
       expect(result).toEqualPayload(workflowRunOrmFixtures[0], [
@@ -86,11 +86,11 @@ describe('WorkflowRunController (TypeORM)', () => {
       const id = randomUUID();
       const warnSpy = jest.spyOn(logger, 'warn');
 
-      await expect(controller.findOne(id, [])).rejects.toThrow(
-        new NotFoundException(`Workflow Run with ID ${id} not found`),
+      await expect(controller.findWorkflowRun(id, [])).rejects.toThrow(
+        new NotFoundException(`WorkflowRun with ID ${id} not found`),
       );
       expect(warnSpy).toHaveBeenCalledWith(
-        `Unable to find Workflow Run by id ${id}`,
+        `Unable to find WorkflowRun by id ${id}`,
       );
     });
   });

@@ -46,7 +46,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    * @returns A promise that resolves to the paginated result of roles.
    */
   @Get()
-  async findPage(
+  async findRoles(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -54,13 +54,9 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<RoleOrmEntity>,
+    options: FindManyOptions<RoleOrmEntity> = {},
   ) {
-    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.roleService.findAndPopulate(options)
-      : await this.roleService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -75,9 +71,9 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
         allowedFields: ['name'],
       }),
     )
-    options?: FindManyOptions<RoleOrmEntity>,
+    options: FindManyOptions<RoleOrmEntity> = {},
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -88,22 +84,12 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    * @returns A promise that resolves to the role object.
    */
   @Get(':id')
-  async findOne(
+  async findRole(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const shouldPopulate = populate.length > 0 && this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.roleService.findOneAndPopulate(id)
-      : await this.roleService.findOne(id);
-
-    if (!record) {
-      this.logger.warn(`Unable to find Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   /**
@@ -143,7 +129,7 @@ export class RoleController extends BaseOrmController<RoleOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string, @Req() req: Request) {
+  async deleteRole(@UuidParam('id') id: string, @Req() req: Request) {
     const requester = req.user as User | undefined;
     const requesterRoleIds = Array.isArray(requester?.roles)
       ? requester.roles

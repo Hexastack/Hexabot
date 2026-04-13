@@ -5,18 +5,16 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { FindManyOptions, In } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { UuidParam } from '@/utils';
@@ -40,7 +38,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
   }
 
   @Get()
-  async findPage(
+  async findLabels(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -51,11 +49,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
     )
     options: FindManyOptions<LabelOrmEntity>,
   ): Promise<Label[] | LabelFull[]> {
-    const queryOptions = options ?? {};
-
-    return this.canPopulate(populate)
-      ? await this.labelService.findAndPopulate(queryOptions)
-      : await this.labelService.find(queryOptions);
+    return await this.find(options, populate);
   }
 
   /**
@@ -69,26 +63,18 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
         allowedFields: ['name', 'title', 'builtin', 'group.id'],
       }),
     )
-    options?: FindManyOptions<LabelOrmEntity>,
+    options: FindManyOptions<LabelOrmEntity> = {},
   ): Promise<{ count: number }> {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   @Get(':id')
-  async findOne(
+  async findLabel(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Label | LabelFull> {
-    const record = this.canPopulate(populate)
-      ? await this.labelService.findOneAndPopulate(id)
-      : await this.labelService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Label by id ${id}`);
-      throw new NotFoundException(`Label with ID ${id} not found`);
-    }
-
-    return record;
+    return this.findOne(id, populate);
   }
 
   @Post()
@@ -106,14 +92,8 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.labelService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Label by id ${id}`);
-      throw new NotFoundException(`Label with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteLabel(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**
@@ -123,21 +103,7 @@ export class LabelController extends BaseOrmController<LabelOrmEntity> {
    */
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
-    if (!ids?.length) {
-      throw new BadRequestException('No IDs provided for deletion.');
-    }
-    const deleteResult = await this.labelService.deleteMany({
-      where: { id: In(ids) },
-    });
-
-    if (deleteResult.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Labels with provided IDs: ${ids}`);
-      throw new NotFoundException('Labels with provided IDs not found');
-    }
-
-    this.logger.log(`Successfully deleted Labels with IDs: ${ids}`);
-
-    return deleteResult;
+  async deleteLabels(@Body('ids') ids?: string[]): Promise<DeleteResult> {
+    return this.deleteMany(ids);
   }
 }

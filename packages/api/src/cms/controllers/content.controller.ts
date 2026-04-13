@@ -150,7 +150,7 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    * @returns Content list.
    */
   @Get()
-  async find(
+  async findContents(
     @Query(PopulatePipe) populate: string[],
     @Query(
       new TypeOrmSearchFilterPipe<ContentOrmEntity>({
@@ -160,9 +160,7 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
     )
     options: FindManyOptions<ContentOrmEntity>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.contentService.findAndPopulate(options)
-      : await this.contentService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -179,9 +177,9 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
         allowedFields: ['contentType.id', 'title'],
       }),
     )
-    options?: FindManyOptions<ContentOrmEntity>,
+    options: FindManyOptions<ContentOrmEntity> = {},
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -193,13 +191,11 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    * @returns The requested content record.
    */
   @Get(':id')
-  async findOne(
+  async findContent(
     @UuidParam('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const content = this.canPopulate(populate)
-      ? await this.contentService.findOneAndPopulate(id)
-      : await this.contentService.findOne(id);
+    const content = await this.findOne(id, populate);
 
     if (!content) {
       this.logger.warn(
@@ -220,16 +216,8 @@ export class ContentController extends BaseOrmController<ContentOrmEntity> {
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const removedContent = await this.contentService.deleteOne(id);
-    if (removedContent.deletedCount === 0) {
-      this.logger.warn(
-        `Failed to delete content with id ${id}. Content not found.`,
-      );
-      throw new NotFoundException(`Content of id ${id} not found`);
-    }
-
-    return removedContent;
+  async deleteContent(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 
   /**

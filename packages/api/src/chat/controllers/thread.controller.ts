@@ -4,15 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
 import { UuidParam } from '@/utils';
@@ -49,7 +41,7 @@ export class ThreadController extends BaseOrmController<ThreadOrmEntity> {
   }
 
   @Get()
-  async findPage(
+  async findThreads(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -62,9 +54,7 @@ export class ThreadController extends BaseOrmController<ThreadOrmEntity> {
   ): Promise<Thread[] | ThreadFull[]> {
     const queryOptions = options ?? {};
 
-    return this.canPopulate(populate)
-      ? await this.threadService.findAndPopulate(queryOptions)
-      : await this.threadService.find(queryOptions);
+    return await this.find(queryOptions, populate);
   }
 
   @Get('count')
@@ -80,20 +70,12 @@ export class ThreadController extends BaseOrmController<ThreadOrmEntity> {
   }
 
   @Get(':id')
-  async findOne(
+  async findThread(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Thread | ThreadFull> {
-    const record = this.canPopulate(populate)
-      ? await this.threadService.findOneAndPopulate(id)
-      : await this.threadService.findOne(id);
-    if (!record) {
-      this.logger.warn(`Unable to find Thread by id ${id}`);
-      throw new NotFoundException(`Thread with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   @Post()

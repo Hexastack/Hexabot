@@ -58,7 +58,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
   }
 
   @Get()
-  async find(
+  async findCredentials(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -69,11 +69,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
     )
     options: FindManyOptions<CredentialOrmEntity> = {},
   ): Promise<Credential[] | CredentialFull[]> {
-    const shouldPopulate = this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.credentialService.findAndPopulate(options)
-      : await this.credentialService.find(options);
+    return await this.find(options, populate);
   }
 
   @Get('count')
@@ -83,28 +79,18 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
         allowedFields: ['name', 'value', 'owner.id'],
       }),
     )
-    options?: FindManyOptions<CredentialOrmEntity>,
+    options: FindManyOptions<CredentialOrmEntity> = {},
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   @Get(':id')
-  async findOne(
+  async findCredential(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Credential | CredentialFull> {
-    const shouldPopulate = this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.credentialService.findOneAndPopulate(id)
-      : await this.credentialService.findOne(id);
-
-    if (!record) {
-      this.logger.warn(`Unable to find Credential by id ${id}`);
-      throw new NotFoundException(`Credential with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 
   @Patch(':id')
@@ -123,13 +109,7 @@ export class CredentialController extends BaseOrmController<CredentialOrmEntity>
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.credentialService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Credential by id ${id}`);
-      throw new NotFoundException(`Credential with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteCredential(@UuidParam('id') id: string): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 }

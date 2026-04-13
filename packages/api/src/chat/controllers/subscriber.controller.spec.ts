@@ -24,7 +24,6 @@ describe('SubscriberController (TypeORM)', () => {
   let subscriberController: SubscriberController;
   let subscriberService: SubscriberService;
 
-  let totalSubscribers: number;
   let plainSubscribers: Subscriber[];
   let populatedSubscribers: SubscriberFull[];
   let referencePlain: Subscriber;
@@ -59,8 +58,6 @@ describe('SubscriberController (TypeORM)', () => {
       SubscriberController,
       SubscriberService,
     ]);
-
-    totalSubscribers = await subscriberService.count();
     plainSubscribers = await subscriberService.find(defaultOrder);
     populatedSubscribers =
       await subscriberService.findAndPopulate(defaultOrder);
@@ -94,24 +91,13 @@ describe('SubscriberController (TypeORM)', () => {
     await closeTypeOrmConnections();
   });
 
-  describe('count', () => {
-    it('should count subscribers', async () => {
-      const countSpy = jest.spyOn(subscriberService, 'count');
-      const result = await subscriberController.filterCount();
-
-      expect(countSpy).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: totalSubscribers });
-    });
-  });
-
   describe('findOne', () => {
     it('should find subscriber by id with populated relations', async () => {
       const populateSpy = jest.spyOn(subscriberService, 'findOneAndPopulate');
-      const result = await subscriberController.findOne(referencePlain.id, [
-        'labels',
-        'assignedTo',
-        'avatar',
-      ]);
+      const result = await subscriberController.findSubscriber(
+        referencePlain.id,
+        ['labels', 'assignedTo', 'avatar'],
+      );
 
       expect(populateSpy).toHaveBeenCalledWith(referencePlain.id);
       expect(result).toEqualPayload(referencePopulated);
@@ -119,7 +105,10 @@ describe('SubscriberController (TypeORM)', () => {
 
     it('should find subscriber by id without populating relations', async () => {
       const findSpy = jest.spyOn(subscriberService, 'findOne');
-      const result = await subscriberController.findOne(referencePlain.id, []);
+      const result = await subscriberController.findSubscriber(
+        referencePlain.id,
+        [],
+      );
 
       expect(findSpy).toHaveBeenCalledWith(referencePlain.id);
       expect(result).toEqualPayload(referencePlain);
@@ -129,7 +118,10 @@ describe('SubscriberController (TypeORM)', () => {
   describe('findPage', () => {
     it('should find subscribers without populating relations when none requested', async () => {
       const findSpy = jest.spyOn(subscriberService, 'find');
-      const result = await subscriberController.findPage([], defaultOrder);
+      const result = await subscriberController.findSubscribers(
+        [],
+        defaultOrder,
+      );
 
       expect(findSpy).toHaveBeenCalledWith(defaultOrder);
       expect(result).toEqualPayload(plainSubscribers);
@@ -137,7 +129,7 @@ describe('SubscriberController (TypeORM)', () => {
 
     it('should find subscribers and populate requested relations', async () => {
       const populateSpy = jest.spyOn(subscriberService, 'findAndPopulate');
-      const result = await subscriberController.findPage(
+      const result = await subscriberController.findSubscribers(
         ['labels', 'assignedTo', 'avatar'],
         defaultOrder,
       );

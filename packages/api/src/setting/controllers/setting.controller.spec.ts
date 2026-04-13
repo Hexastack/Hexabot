@@ -186,7 +186,7 @@ describe('SettingController', () => {
       const options = {
         where: {},
       };
-      const result = await settingController.find(options);
+      const result = await settingController.findPage(options);
 
       expect(settingService.find).toHaveBeenCalledWith(options);
       expect(result).toEqualPayload(expectedSettings, [

@@ -5,7 +5,6 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,7 +15,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { FindManyOptions, In } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { UuidParam } from '@/utils';
@@ -61,7 +60,7 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
    * @returns Memory definitions matching the provided options.
    */
   @Get()
-  async find(
+  async findPage(
     @Query(
       new TypeOrmSearchFilterPipe<MemoryDefinitionOrmEntity>({
         allowedFields: ['name', 'slug', 'scope', 'ttlSeconds'],
@@ -87,9 +86,9 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
         allowedFields: ['name', 'slug', 'scope', 'ttlSeconds'],
       }),
     )
-    options?: FindManyOptions<MemoryDefinitionOrmEntity>,
+    options: FindManyOptions<MemoryDefinitionOrmEntity> = {},
   ) {
-    return await this.count(options ?? {});
+    return await this.count(options);
   }
 
   /**
@@ -144,14 +143,10 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
    */
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string): Promise<DeleteResult> {
-    const result = await this.memoryDefinitionService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Memory Definition by id ${id}`);
-      throw new NotFoundException(`Memory Definition with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteMemoryDefinition(
+    @UuidParam('id') id: string,
+  ): Promise<DeleteResult> {
+    return await this.deleteOne(id);
   }
 
   /**
@@ -163,26 +158,9 @@ export class MemoryDefinitionController extends BaseOrmController<MemoryDefiniti
    */
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
-    if (!ids?.length) {
-      throw new BadRequestException('No IDs provided for deletion.');
-    }
-
-    const deleteResult = await this.memoryDefinitionService.deleteMany({
-      where: { id: In(ids) },
-    });
-
-    if (deleteResult.deletedCount === 0) {
-      this.logger.warn(
-        `Unable to delete Memory Definitions with provided IDs: ${ids}`,
-      );
-      throw new NotFoundException(
-        'Memory Definitions with provided IDs not found',
-      );
-    }
-
-    this.logger.log(`Successfully deleted Memory Definitions with IDs: ${ids}`);
-
-    return deleteResult;
+  async deleteMemoryDefinitions(
+    @Body('ids') ids?: string[],
+  ): Promise<DeleteResult> {
+    return this.deleteMany(ids);
   }
 }

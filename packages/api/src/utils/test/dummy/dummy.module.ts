@@ -8,10 +8,12 @@ import { Module } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 
+import { DummyController } from './controllers/dummy.controller';
 import { DummyRepository } from './repositories/dummy.repository';
 import { DummyService } from './services/dummy.service';
 
 @Module({
+  controllers: [DummyController],
   providers: [DummyRepository, DummyService, LoggerService],
   exports: [DummyRepository, DummyService],
 })

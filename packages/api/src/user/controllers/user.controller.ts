@@ -193,7 +193,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    */
   @Get()
   @RequiresLicenseFeature(LicenseFeature.UserManagement)
-  async findPage(
+  async findUsers(
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -201,13 +201,9 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
         allowedFields: ['firstName', 'lastName'],
       }),
     )
-    options?: FindManyOptions<UserOrmEntity>,
+    options: FindManyOptions<UserOrmEntity> = {},
   ) {
-    const shouldPopulate = this.canPopulate(populate);
-
-    return shouldPopulate
-      ? await this.userService.findAndPopulate(options)
-      : await this.userService.find(options);
+    return await this.find(options, populate);
   }
 
   /**
@@ -222,9 +218,9 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
         allowedFields: ['firstName', 'lastName'],
       }),
     )
-    options?: FindManyOptions<UserOrmEntity>,
+    options: FindManyOptions<UserOrmEntity> = {},
   ) {
-    return super.count(options);
+    return this.count(options);
   }
 
   /**
@@ -236,22 +232,12 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    * @returns A promise that resolves to the user document.
    */
   @Get(':id')
-  async findOne(
+  async findUser(
     @UuidParam('id') id: string,
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const shouldPopulate = this.canPopulate(populate);
-    const record = shouldPopulate
-      ? await this.userService.findOneAndPopulate(id)
-      : await this.userService.findOne(id);
-
-    if (!record) {
-      this.logger.warn(`Unable to find User by id ${id}`);
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    return record;
+    return await this.findOne(id, populate);
   }
 }
 
@@ -435,14 +421,8 @@ export class ReadWriteUserController extends ReadOnlyUserController {
   @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@UuidParam('id') id: string) {
-    const result = await this.userService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete User by id ${id}`);
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    return result;
+  async deleteUser(@UuidParam('id') id: string) {
+    return await this.deleteOne(id);
   }
 
   /**
