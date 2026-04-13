@@ -27,7 +27,7 @@ import { z } from 'zod';
 import { User } from '@/user/dto/user.dto';
 import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
@@ -229,10 +229,10 @@ export class WorkflowUpdateDto extends PartialType(
   publishedVersion?: string | null;
 }
 
-export type WorkflowDto = BuildDtoType<
+export type WorkflowDto = TDto<
   {
-    PlainCls: typeof Workflow;
-    FullCls: typeof WorkflowFull;
+    plain: typeof Workflow;
+    full: typeof WorkflowFull;
   },
   {
     create: WorkflowCreateDto;

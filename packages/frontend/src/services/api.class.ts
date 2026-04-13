@@ -12,14 +12,12 @@ import { IUserPermissions } from "@/types/auth/permission.types";
 import { THook } from "@/types/base.types";
 import { StatsType } from "@/types/bot-stat.types";
 import { ICsrf } from "@/types/csrf.types";
-import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
 import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
 import {
   IProfileAttributes,
   IUser,
-  IUserAttributes,
   IUserStub,
 } from "@/types/user.types";
 import { IWorkflow } from "@/types/workfow.types";
@@ -50,18 +48,15 @@ const resolveRoute = (route: string, params?: RouteParams) => {
 
 export const ROUTES = {
   // Misc
-  ACCEPT_INVITE: "/auth/accept-invite",
   CONFIRM_ACCOUNT: "/user/confirm",
   LOGIN: "/auth/local",
   ME: "/auth/me",
   LOGOUT: "/auth/logout",
   PROFILE: "/user/edit",
-  INVITE: "/user/invite",
   USER_PERMISSIONS: "/user/permissions",
   CSRF: "/csrftoken",
   BOTSTATS: "/botstats",
   REFRESH_TRANSLATIONS: "/translation/refresh",
-  FETCH_REMOTE_I18N: "/i18n",
   RESET: "/user/reset",
   CONTENT_IMPORT: "/content/import",
   STATS_SUMMARY: "/stats/summary",
@@ -101,6 +96,7 @@ export const ROUTES = {
   [EntityType.MCP_SERVER]: "/mcpserver",
   [EntityType.MCP_SERVER_TOOL]: "/mcpserver/:id/tools",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
+  [EntityType.THREAD]: "/thread",
 } as const;
 
 export class ApiClient {
@@ -162,43 +158,10 @@ export class ApiClient {
     return applyFullNameDerivedFields(data);
   }
 
-  async invite(payload: IInvitationAttributes) {
-    const { _csrf } = await this.getCsrf();
-    const { data } = await this.request.post<
-      IInvitation,
-      AxiosResponse<IInvitation>,
-      IInvitationAttributes & ICsrf
-    >(ROUTES.INVITE, {
-      ...payload,
-      _csrf,
-    });
-
-    return data;
-  }
-
-  async acceptInvite({
-    token,
-    ...rest
-  }: Partial<IUserAttributes> & { token: string }) {
-    const { _csrf } = await this.getCsrf();
-    const { data } = await this.request.post<
-      IInvitation,
-      AxiosResponse<{
-        success: boolean;
-      }>,
-      ICsrf
-    >(`${ROUTES.ACCEPT_INVITE}/${token}`, {
-      ...rest,
-      _csrf,
-    });
-
-    return data;
-  }
-
   async confirmAccount(payload: { token: string }) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.post<
-      IInvitation,
+      never,
       AxiosResponse<never>,
       ICsrf
     >(`${ROUTES.CONFIRM_ACCOUNT}`, {
@@ -244,12 +207,6 @@ export class ApiClient {
       acknowledged: boolean;
       deletedCount: number;
     }>(ROUTES.REFRESH_TRANSLATIONS, { _csrf });
-
-    return data;
-  }
-
-  async fetchRemoteI18n() {
-    const { data } = await this.request.get(ROUTES.FETCH_REMOTE_I18N);
 
     return data;
   }

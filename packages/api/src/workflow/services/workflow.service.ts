@@ -187,7 +187,7 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
 
       return;
     }
-    const { initiatorId, workflowId } = workflowRun?.context;
+    const { initiatorId, workflowId, threadId } = workflowRun?.context;
     const workflow = await this.findOne(workflowId);
     const canBroadcastEvents =
       initiatorId &&
@@ -200,6 +200,7 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
         t,
         workflowId,
         initiatorId,
+        threadId: typeof threadId === 'string' ? threadId : undefined,
         workflowEvent: workflowEvent.replace('hook:', ''),
       });
     }

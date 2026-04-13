@@ -13,6 +13,7 @@ export namespace Web {
   export type RequestSession = {
     web?: {
       profile: SubscriberFull;
+      threadId?: string;
       isSocket: boolean;
       messageQueue: any[];
       polling: boolean;
@@ -131,6 +132,7 @@ export namespace Web {
   > = T & {
     mid?: string;
     author?: string;
+    thread_id?: string;
     read?: boolean;
     delivery?: boolean;
     // Whether it's a synchronization
@@ -211,6 +213,7 @@ export namespace Web {
   export type OutgoingMessage = OutgoingMessageBase & {
     mid: string;
     author: string;
+    thread_id?: string;
     read?: boolean;
     createdAt: Date;
     handover: boolean;

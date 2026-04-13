@@ -33,6 +33,8 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { RequiresLicenseFeature } from '@/license/decorators/requires-license-feature.decorator';
+import { LicenseFeature } from '@/license/types/license-feature.enum';
 import { UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -40,7 +42,6 @@ import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { InvitationCreateDto } from '../dto/invitation.dto';
 import {
   UserCreateDto,
   UserEditProfileDto,
@@ -49,7 +50,6 @@ import {
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
 import { UserOrmEntity } from '../entities/user.entity';
-import { InvitationService } from '../services/invitation.service';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -61,7 +61,6 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
   constructor(
     protected readonly userService: UserService,
     protected readonly roleService: RoleService,
-    protected readonly invitationService: InvitationService,
     protected readonly permissionService: PermissionService,
     protected readonly attachmentService: AttachmentService,
     protected readonly passwordResetService: PasswordResetService,
@@ -193,6 +192,7 @@ export class ReadOnlyUserController extends BaseOrmController<UserOrmEntity> {
    * @returns A promise that resolves to a paginated list of users.
    */
   @Get()
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   async findUsers(
     @Query(PopulatePipe)
     populate: string[],
@@ -246,7 +246,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
   constructor(
     userService: UserService,
     roleService: RoleService,
-    invitationService: InvitationService,
     permissionService: PermissionService,
     attachmentService: AttachmentService,
     passwordResetService: PasswordResetService,
@@ -255,7 +254,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     super(
       userService,
       roleService,
-      invitationService,
       permissionService,
       attachmentService,
       passwordResetService,
@@ -270,6 +268,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns A promise that resolves to the created user.
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Post()
   async create(@Body() user: UserCreateDto) {
     await this.validateRelations({
@@ -277,7 +276,29 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       avatar: user.avatar ?? null,
     });
 
-    return await this.userService.create(user);
+    const createdUser = await this.userService.create({
+      ...user,
+      state: false,
+    });
+
+    try {
+      await this.validateAccountService.sendConfirmationEmail({
+        email: createdUser.email,
+        firstName: createdUser.firstName,
+      });
+    } catch (error) {
+      const errorInfo =
+        error instanceof Error ? error : new Error(String(error));
+
+      this.logger.warn(
+        `User "${createdUser.id}" created, but account confirmation email could not be sent.`,
+        errorInfo.message,
+        errorInfo.stack,
+        'ReadWriteUserController',
+      );
+    }
+
+    return createdUser;
   }
 
   /**
@@ -350,6 +371,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The updated user data.
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Patch(':id')
   async updateStateAndRoles(
     @UuidParam('id') id: string,
@@ -396,25 +418,11 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns Nothing (HTTP 204 on success).
    */
+  @RequiresLicenseFeature(LicenseFeature.UserManagement)
   @Delete(':id')
   @HttpCode(204)
   async deleteUser(@UuidParam('id') id: string) {
     return await this.deleteOne(id);
-  }
-
-  /**
-   * Sends an invitation to a user.
-   *
-   * This method allows an administrator or authorized user to invite someone by
-   * creating an invitation entry in the system.
-   *
-   * @param invitationCreateDto - The invitation details, including recipient information.
-   *
-   * @returns The created invitation record.
-   */
-  @Post('invite')
-  async invite(@Body() invitationCreateDto: InvitationCreateDto) {
-    return await this.invitationService.create(invitationCreateDto);
   }
 
   /**

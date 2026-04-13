@@ -66,6 +66,7 @@ import {
   ISubscriberFilters,
   ISubscriberFull,
 } from "./subscriber.types";
+import { IThread, IThreadAttributes, IThreadFilters, IThreadFull } from "./thread.types";
 import { ITranslation, ITranslationAttributes } from "./translation.types";
 import { IUser, IUserAttributes, IUserFull } from "./user.types";
 import {
@@ -100,10 +101,16 @@ export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: ["currentVersion", "publishedVersion"],
   [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
   [EntityType.WORKFLOW_ACTIONS]: [],
-  [EntityType.WORKFLOW_RUN]: ["workflow", "workflowVersion", "triggeredBy"],
+  [EntityType.WORKFLOW_RUN]: [
+    "workflow",
+    "workflowVersion",
+    "triggeredBy",
+    "thread",
+  ],
   [EntityType.MCP_SERVER]: ["credential"],
   [EntityType.MCP_SERVER_TOOL]: [],
   [EntityType.MEMORY_DEFINITION]: [],
+  [EntityType.THREAD]: ["subscriber"],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
   [EntityType.LABEL]: ["users", "group"],
@@ -116,7 +123,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTENT]: ["entity"],
   [EntityType.SETTING]: [],
   [EntityType.BOTSTATS]: [],
-  [EntityType.MESSAGE]: ["sender", "recipient", "sentBy"],
+  [EntityType.MESSAGE]: ["sender", "recipient", "sentBy", "thread"],
   [EntityType.MENU]: ["parent"],
   [EntityType.MENUTREE]: [],
   [EntityType.LANGUAGE]: [],
@@ -186,6 +193,12 @@ export interface IEntityMapTypes {
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,
     IMemoryDefinitionAttributes
+  >;
+  [EntityType.THREAD]: IEntityTypes<
+    IThread,
+    IThreadAttributes,
+    IThreadFilters,
+    IThreadFull
   >;
   [EntityType.CONTENT]: IEntityTypes<
     IContent,

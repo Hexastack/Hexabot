@@ -33,6 +33,7 @@ export enum WorkflowVersionAction {
 export enum MemoryScope {
   global = 'global',
   workflow = 'workflow',
+  thread = 'thread',
   run = 'run',
 }
 
@@ -72,6 +73,7 @@ export type RunStrategy = {
 export type WorkflowContextState = Record<string, unknown> & {
   initiatorId: string;
   workflowId: string;
+  threadId?: string | null;
   runId: string;
 };
 
@@ -82,6 +84,7 @@ export type MemoryStoreInstances = Record<string, SchemaInstance>;
 export type MemoryStoreIdentifier = {
   ownerId: string;
   workflowId?: string | null;
+  threadId?: string | null;
   runId?: string | null;
   memoryDefinitionIds?: string[];
 };
@@ -99,6 +102,7 @@ export type MemoryStorePersistRecordFn = (params: {
   definition: MemoryDefinition;
   ownerId: string;
   workflowId?: string | null;
+  threadId?: string | null;
   runId?: string | null;
   value: MemoryValue;
 }) => Promise<void>;

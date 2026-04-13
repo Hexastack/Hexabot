@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import {
   BadRequestException,
   Body,
@@ -26,9 +28,11 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import { Message, MessageCreateDto, MessageFull } from '../dto/message.dto';
+import { Thread } from '../dto/thread.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
+import { ThreadService } from '../services/thread.service';
 import {
   OutgoingMessage,
   OutgoingMessageFormat,
@@ -42,6 +46,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
   constructor(
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
+    private readonly threadService: ThreadService,
     private readonly channelService: ChannelService,
   ) {
     super(messageService);
@@ -55,8 +60,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     @Query(
       new TypeOrmSearchFilterPipe<MessageOrmEntity>({
         allowedFields: [
-          'sender.id',
-          'recipient.id',
+          'thread.id',
           'sentBy.id',
           'mid',
           'read',
@@ -80,8 +84,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     @Query(
       new TypeOrmSearchFilterPipe<MessageOrmEntity>({
         allowedFields: [
-          'sender.id',
-          'recipient.id',
+          'thread.id',
           'sentBy.id',
           'mid',
           'read',
@@ -106,20 +109,31 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
 
   @Post()
   async create(@Body() messageDto: MessageCreateDto, @Req() req: Request) {
-    //TODO : Investigate if recipient and inReplyTo should be updated to required in dto
-    if (!messageDto.recipient || !messageDto.inReplyTo) {
-      throw new BadRequestException('MessageController send : invalid params');
+    if (!messageDto.thread) {
+      throw new BadRequestException(
+        'MessageController send : thread id is required',
+      );
+    }
+
+    const thread = await this.threadService.findOneAndPopulate(
+      messageDto.thread,
+    );
+    if (!thread?.subscriber) {
+      this.logger.warn(`Unable to find thread by id ${messageDto.thread}`);
+      throw new NotFoundException(
+        `Thread with ID ${messageDto.thread} not found`,
+      );
     }
 
     const subscriber = await this.subscriberService.findOne(
-      messageDto.recipient,
+      thread.subscriber.id,
     );
     if (!subscriber) {
       this.logger.warn(
-        `Unable to find subscriber by id ${messageDto.recipient}`,
+        `Unable to find subscriber by id ${thread.subscriber.id}`,
       );
       throw new NotFoundException(
-        `Subscriber with ID ${messageDto.recipient} not found`,
+        `Subscriber with ID ${thread.subscriber.id} not found`,
       );
     }
 
@@ -133,28 +147,38 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
       format: OutgoingMessageFormat.text,
       message: messageDto.message as StdOutgoingTextMessage,
     };
+    const latestMessageId = messageDto.inReplyTo
+      ? messageDto.inReplyTo
+      : (
+          await this.messageService.findLastMessages(
+            { id: thread.id } as Thread,
+            1,
+          )
+        ).at(0)?.mid;
     const channelHandler = this.channelService.getChannelHandler(
       channelData.name,
     );
     const event = new GenericEventWrapper(channelHandler, {
       senderId: subscriber.foreignId,
-      messageId: messageDto.inReplyTo,
+      messageId: latestMessageId ?? randomUUID(),
     });
 
     event.setInitiator(subscriber);
+    event.setThreadId(thread.id);
     try {
       const { mid } = await channelHandler.sendMessage(event, envelope, {});
       // Trigger sent message event
       const sentMessage: Omit<OutgoingMessage, keyof BaseOrmEntity> = {
         mid,
         recipient: subscriber.id,
+        thread: thread.id,
         message: messageDto.message as StdOutgoingMessage,
         sentBy: req.session.passport?.user?.id,
         read: false,
         delivery: false,
         handover: false,
       };
-      this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+      this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
 
       return {
         success: true,

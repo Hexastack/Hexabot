@@ -28,17 +28,13 @@ export const Menu = () => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { data: menus, refetch } = useFind(
+  const { data: menus } = useFind(
     { entity: EntityType.MENUTREE },
     {
       hasCount: false,
     },
   );
-  const { mutate: deleteMenu } = useDelete(EntityType.MENU, {
-    onSuccess: () => {
-      refetch();
-    },
-  });
+  const { mutate: deleteMenu } = useDelete(EntityType.MENU);
   const [position, setPosition] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const [shadowVisible, setShadowVisible] = useState(false);

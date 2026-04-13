@@ -8,7 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsDefined, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 @Exclude()
 export class SettingStub extends BaseStub {
@@ -55,10 +55,10 @@ export class SettingUpdateDto {
   value: null | string | number | boolean | string[] | Record<string, any>;
 }
 
-export type SettingDto = BuildDtoType<
+export type SettingDto = TDto<
   {
-    PlainCls: typeof Setting;
-    FullCls: typeof Setting;
+    plain: typeof Setting;
+    full: typeof Setting;
   },
   {
     create: SettingCreateDto;

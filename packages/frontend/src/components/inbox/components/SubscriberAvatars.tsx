@@ -24,13 +24,14 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
   return (
     <AvatarGroup
       max={2}
+      spacing="small"
       sx={{
-        width: 90,
-        justifyContent: "center",
+        width: "fit-content",
+        justifyContent: "flex-start",
         "& .MuiAvatar-root": {
-          width: 34,
-          height: 34,
-          fontSize: "0.875rem",
+          width: 26,
+          height: 26,
+          fontSize: "0.7rem",
           transition: (theme) =>
             theme.transitions.create(["transform", "opacity"], {
               duration: theme.transitions.duration.shortest,

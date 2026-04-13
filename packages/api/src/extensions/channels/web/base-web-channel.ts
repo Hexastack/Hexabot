@@ -29,9 +29,11 @@ import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { Thread } from '@/chat/dto/thread.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
+import { ThreadService } from '@/chat/services/thread.service';
 import { AttachmentRef } from '@/chat/types/attachment';
 import { Button, ButtonType, PayloadType } from '@/chat/types/button';
 import {
@@ -95,6 +97,9 @@ export default abstract class BaseWebChannelHandler<
   @Inject(WebsocketGateway)
   protected readonly websocketGateway: WebsocketGateway;
 
+  @Inject(ThreadService)
+  protected readonly threadService: ThreadService;
+
   constructor(name: N) {
     super(name);
   }
@@ -125,14 +130,32 @@ export default abstract class BaseWebChannelHandler<
       }
 
       let messages: Web.Message[] | undefined;
+      let threadId: string | undefined;
 
       if (profile?.foreignId) {
         await client.join(profile.foreignId);
-        const messagesHistory =
-          await this.messageService.findHistoryUntilDate(profile);
-        messages = await this.formatMessages(
-          messagesHistory.reverse() as AnyMessage[],
-        );
+        const thread = await this.threadService.resolveThread({
+          subscriberId: profile.id,
+          explicitThreadId: client.request.session.web?.threadId,
+        });
+        threadId = thread?.id;
+        const currentWebSession = client.request.session.web;
+        client.request.session.web = {
+          profile: currentWebSession?.profile,
+          threadId,
+          isSocket: currentWebSession?.isSocket ?? true,
+          messageQueue: currentWebSession?.messageQueue ?? [],
+          polling: currentWebSession?.polling ?? false,
+        };
+        if (thread) {
+          const messagesHistory =
+            await this.messageService.findHistoryUntilDate(thread);
+          messages = await this.formatMessages(
+            messagesHistory.reverse() as AnyMessage[],
+          );
+        } else {
+          messages = [];
+        }
       }
 
       this.logger.debug('WS connected .. sending settings');
@@ -144,12 +167,18 @@ export default abstract class BaseWebChannelHandler<
         client.emit('settings', {
           menu,
           profile,
+          thread_id: threadId ?? null,
           messages,
           ...settings,
         });
       } catch (err) {
         this.logger.warn('Unable to retrieve menu ', err);
-        client.emit('settings', { profile, messages, ...settings });
+        client.emit('settings', {
+          profile,
+          thread_id: threadId ?? null,
+          messages,
+          ...settings,
+        });
       }
     } catch (err) {
       this.logger.error('Unable to initiate websocket connection', err);
@@ -301,6 +330,54 @@ export default abstract class BaseWebChannelHandler<
     return formattedMessages;
   }
 
+  private normalizeThreadId(raw: unknown): string | undefined {
+    if (typeof raw !== 'string') {
+      return undefined;
+    }
+    const value = raw.trim();
+
+    return value.length > 0 ? value : undefined;
+  }
+
+  private getThreadIdFromQuery(
+    req: Request | SocketRequest,
+  ): string | undefined {
+    const raw = req.query.thread_id;
+    const candidate = Array.isArray(raw) ? raw[0] : raw;
+
+    return this.normalizeThreadId(candidate);
+  }
+
+  private getThreadIdFromBody(
+    req: Request | SocketRequest,
+  ): string | undefined {
+    const body = req.body as { thread_id?: unknown } | undefined;
+
+    return this.normalizeThreadId(body?.thread_id);
+  }
+
+  private async resolveThreadForHistory(
+    req: Request | SocketRequest,
+  ): Promise<Thread | null> {
+    const profile = req.session.web?.profile;
+    if (!profile?.id) {
+      return null;
+    }
+
+    const explicitThreadId =
+      this.getThreadIdFromQuery(req) ?? this.getThreadIdFromBody(req);
+    const thread = await this.threadService.resolveThread({
+      subscriberId: profile.id,
+      explicitThreadId,
+    });
+
+    if (req.session.web) {
+      req.session.web.threadId = thread?.id;
+    }
+
+    return thread;
+  }
+
   /**
    * Fetches the messaging history from the DB.
    * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
@@ -314,10 +391,10 @@ export default abstract class BaseWebChannelHandler<
     until: Date = new Date(),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session.web?.profile;
-    if (profile) {
+    const thread = await this.resolveThreadForHistory(req);
+    if (thread) {
       const messages = await this.messageService.findHistoryUntilDate(
-        profile,
+        thread,
         until,
         n,
       );
@@ -341,10 +418,10 @@ export default abstract class BaseWebChannelHandler<
     since: Date = new Date(10e14),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session.web?.profile;
-    if (profile) {
+    const thread = await this.resolveThreadForHistory(req);
+    if (thread) {
       const messages = await this.messageService.findHistorySinceDate(
-        profile,
+        thread,
         since,
         n,
       );
@@ -493,7 +570,12 @@ export default abstract class BaseWebChannelHandler<
       if (!subscriber || !req.session.web) {
         throw new Error('Subscriber session was not persisted in DB');
       }
+      const thread = await this.threadService.resolveThread({
+        subscriberId: subscriber.id,
+        explicitThreadId: req.session.web.threadId,
+      });
       req.session.web.profile = subscriber;
+      req.session.web.threadId = thread?.id;
 
       return subscriber;
     }
@@ -626,7 +708,11 @@ export default abstract class BaseWebChannelHandler<
           : req.body?.since || undefined; // Websocket case
       const messages = await this.fetchHistory(req, criteria);
 
-      return res.status(200).json({ profile, messages });
+      return res.status(200).json({
+        profile,
+        messages,
+        thread_id: req.session.web?.threadId ?? null,
+      });
     } catch (err) {
       this.logger.warn('Unable to subscribe ', err);
 
@@ -820,6 +906,13 @@ export default abstract class BaseWebChannelHandler<
       const body: Web.IncomingMessage = req.body;
       const channelAttrs = this.getChannelAttributes(req);
       const event = new WebEventWrapper<N>(this, body, channelAttrs);
+      const explicitThreadId =
+        this.getThreadIdFromBody(req) ??
+        this.getThreadIdFromQuery(req) ??
+        req.session.web?.threadId;
+      if (explicitThreadId) {
+        event.setThreadId(explicitThreadId);
+      }
       if (event._adapter.eventType === StdEventType.message) {
         // Handle upload when files are provided
         if (event._adapter.messageType === IncomingMessageType.attachments) {
@@ -843,10 +936,25 @@ export default abstract class BaseWebChannelHandler<
 
         // Handler sync message sent by chatbot
         if (body.sync && body.author === 'chatbot') {
+          const thread = await this.threadService.resolveThread({
+            subscriberId: profile.id,
+            explicitThreadId,
+          });
+          if (!thread) {
+            return res.status(409).json({
+              err: 'Web Channel Handler : No thread available before first user message',
+            });
+          }
+
+          event.setThreadId(thread.id);
+          if (req.session.web) {
+            req.session.web.threadId = thread.id;
+          }
           const sentMessage: MessageCreateDto = {
             mid: event.getId(),
             message: event.getMessage() as StdOutgoingMessage,
             recipient: profile.id,
+            thread: thread.id,
             read: true,
             delivery: true,
           };
@@ -858,16 +966,34 @@ export default abstract class BaseWebChannelHandler<
           event._adapter.raw.mid = this.generateId();
           // Force author id from session
           event._adapter.raw.author = profile.foreignId;
+          // Use a server-side timestamp so realtime clients can sort deterministically.
+          event._adapter.raw.createdAt = new Date();
         }
       }
 
       event.setInitiator(profile);
       event.setWorkflowId(workflowId);
-
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile, type, event._adapter.raw);
-        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+        if (type === StdEventType.message) {
+          this.broadcast(profile, type, event._adapter.raw);
+          await this.eventEmitter.emitAsync(`hook:chatbot:${type}`, event);
+          const resolvedThreadId = event.getThreadId();
+          if (resolvedThreadId) {
+            (event._adapter.raw as { thread_id?: string }).thread_id =
+              resolvedThreadId;
+            if (req.session.web) {
+              req.session.web.threadId = resolvedThreadId;
+            }
+          }
+        } else {
+          const threadId = event.getThreadId();
+          if (threadId) {
+            (event._adapter.raw as { thread_id?: string }).thread_id = threadId;
+          }
+          this.broadcast(profile, type, event._adapter.raw);
+          this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+        }
       } else {
         this.logger.error('Webhook received unknown event ', event);
       }
@@ -1294,6 +1420,7 @@ export default abstract class BaseWebChannelHandler<
       ...messageBase,
       mid: this.generateId(),
       author: 'chatbot',
+      thread_id: event.getThreadId(),
       createdAt: new Date(),
       handover: !!(options && options.assignTo),
     };

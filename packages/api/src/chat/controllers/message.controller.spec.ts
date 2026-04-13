@@ -136,5 +136,89 @@ describe('MessageController (TypeORM)', () => {
       expect(populateSpy).toHaveBeenCalledWith(defaultOrder);
       expect(result).toEqualPayload(populatedMessages);
     });
+
+    it('should filter messages by thread id', async () => {
+      const threadId = referencePlain.thread;
+      const result = await messageController.findMessages([], {
+        where: {
+          thread: { id: threadId },
+        },
+      } as any);
+
+      expect(result.every((message) => message.thread === threadId)).toBe(true);
+    });
+  });
+
+  describe('create', () => {
+    it('requires thread id in send payload', async () => {
+      const req = {
+        session: {
+          passport: {
+            user: { id: 'user-1' },
+          },
+        },
+      } as any;
+
+      await expect(
+        messageController.create(
+          {
+            message: { text: 'Hello' } as any,
+          } as any,
+          req,
+        ),
+      ).rejects.toThrow('MessageController send : thread id is required');
+    });
+
+    it('sends message using thread-first payload and emits sent event', async () => {
+      const thread = referencePopulated.thread;
+      const subscriber =
+        referencePopulated.sender ?? referencePopulated.recipient;
+      if (!thread || !subscriber) {
+        throw new Error(
+          'Expected reference message to include thread and subscriber',
+        );
+      }
+      const sendMessage = jest.fn().mockResolvedValue({ mid: 'mid-created' });
+      const emitSpy = jest.spyOn(
+        (messageController as any).eventEmitter,
+        'emit',
+      );
+      const req = {
+        session: {
+          passport: {
+            user: { id: 'user-1' },
+          },
+        },
+      } as any;
+
+      (subscriberServiceMock.findOne as jest.Mock).mockResolvedValue(
+        subscriber,
+      );
+      (channelServiceMock.findChannel as jest.Mock).mockReturnValue(true);
+      (channelServiceMock.getChannelHandler as jest.Mock).mockReturnValue({
+        sendMessage,
+      });
+
+      const result = await messageController.create(
+        {
+          thread: thread.id,
+          inReplyTo: referencePlain.mid ?? undefined,
+          message: { text: 'Hello from thread API' } as any,
+        } as any,
+        req,
+      );
+
+      expect(result).toEqual({ success: true });
+      expect(sendMessage).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:chatbot:sent',
+        expect.objectContaining({
+          mid: 'mid-created',
+          recipient: subscriber.id,
+          thread: thread.id,
+        }),
+        expect.anything(),
+      );
+    });
   });
 });

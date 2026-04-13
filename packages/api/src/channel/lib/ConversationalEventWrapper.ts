@@ -249,13 +249,17 @@ export default abstract class ConversationalEventWrapper<
    * @returns The event metadata
    */
   getMetadata() {
-    return { channel: this.getChannelData() };
+    return {
+      channel: this.getChannelData(),
+      thread_id: this.getThreadId() ?? null,
+    };
   }
 
   getContextData() {
     return {
       channel: this.getChannelData(),
       initiator: this.getInitiator(),
+      threadId: this.getThreadId() ?? null,
     };
   }
 
@@ -265,6 +269,7 @@ export default abstract class ConversationalEventWrapper<
       payload: this.getPayload(),
       message: this.getMessage(),
       text: this.getText(),
+      thread_id: this.getThreadId() ?? '',
     };
     const id = this.getId();
     if (id) {

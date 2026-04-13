@@ -93,7 +93,7 @@
     "csrf-sync": "^4.2.1",
     "dotenv": "^16.3.1",
     "express-session": "^1.18.2",
-    "handlebars": "^4.7.8",
+    "handlebars": "^4.7.9",
     "keyv": "^5.5.3",
     "llamaindex": "0.12.1",
     "mime": "^1.6.0",

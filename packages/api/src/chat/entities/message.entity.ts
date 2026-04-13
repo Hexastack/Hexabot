@@ -13,6 +13,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
@@ -22,17 +23,15 @@ import { Message, MessageDto, MessageFull } from '../dto/message.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
+import { ThreadOrmEntity } from './thread.entity';
 
 @Check(
   'CHK_MESSAGES_SENDER_OR_RECIPIENT',
   '"sender_id" IS NOT NULL OR "recipient_id" IS NOT NULL',
 )
 @Entity({ name: 'messages' })
+@EntityDto<MessageDto>({ plain: Message, full: MessageFull })
 export class MessageOrmEntity extends BaseOrmEntity<MessageDto> {
-  plainCls = Message;
-
-  fullCls = MessageFull;
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;
 
@@ -68,6 +67,17 @@ export class MessageOrmEntity extends BaseOrmEntity<MessageDto> {
 
   @RelationId((message: MessageOrmEntity) => message.sentBy)
   private readonly sentById?: string | null;
+
+  @ManyToOne(() => ThreadOrmEntity, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'thread_id' })
+  @AsRelation()
+  thread!: ThreadOrmEntity;
+
+  @RelationId((message: MessageOrmEntity) => message.thread)
+  private readonly threadId!: string;
 
   @JsonColumn()
   message!: StdOutgoingMessage | StdIncomingMessage;

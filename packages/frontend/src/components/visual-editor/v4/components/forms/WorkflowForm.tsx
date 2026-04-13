@@ -20,6 +20,7 @@ import {
 } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -147,6 +148,7 @@ export const WorkflowForm: FC<
   translateRef.current = t;
 
   const { toast } = useToast();
+  const { refetchUser } = useAuth();
   const { definition, definitionYaml, onCreated, onUpdated } =
     presetValues ?? {};
   const isEditing = Boolean(workflow?.id);
@@ -225,7 +227,10 @@ export const WorkflowForm: FC<
     },
   });
   const options = {
-    onError: (error: Error) => {
+    onError: (error: Error & { statusCode?: number }) => {
+      if (error.statusCode === 403) {
+        void refetchUser();
+      }
       rest.onError?.();
       toast.error(error);
     },

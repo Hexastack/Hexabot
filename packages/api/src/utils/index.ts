@@ -42,9 +42,9 @@ export * from './helpers/clone';
 
 export * from './helpers/flatten';
 
-export * from './helpers/fs';
-
 export * from './helpers/misc';
+
+export * from './helpers/object';
 
 export * from './helpers/safeRandom';
 

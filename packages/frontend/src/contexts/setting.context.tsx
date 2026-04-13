@@ -8,7 +8,6 @@ import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { useLoadSettings } from "@/hooks/entities/auth-hooks";
-import { useRemoteI18n } from "@/hooks/useRemoteI18n";
 import { ISetting } from "@/types/setting.types";
 
 export const SettingsContext = createContext<{
@@ -25,9 +24,6 @@ export const SettingsProvider = ({
   children,
 }: SettingsProviderProps): JSX.Element => {
   const { data, isLoading } = useLoadSettings();
-
-  // Load API i18n Translations (extensions, ...)
-  useRemoteI18n();
 
   if (isLoading) return <Progress />;
 

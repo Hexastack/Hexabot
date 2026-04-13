@@ -83,5 +83,23 @@ describe('ValidateAccountService (TypeORM)', () => {
       expect(sendMailSpy).toHaveBeenCalled();
       expect(signSpy).toHaveBeenCalled();
     });
+
+    it('should warn and resolve when sending email fails', async () => {
+      jest
+        .spyOn(mailerService, 'sendMail')
+        .mockRejectedValueOnce(new Error('Email Service is not enabled'));
+      const warnSpy = jest.spyOn(
+        (validateAccountService as any).logger,
+        'warn',
+      );
+
+      await expect(
+        validateAccountService.sendConfirmationEmail({
+          email: adminUser.email,
+          firstName: adminUser.firstName,
+        }),
+      ).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalled();
+    });
   });
 });

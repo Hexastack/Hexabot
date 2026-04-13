@@ -7,6 +7,7 @@
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -20,11 +21,8 @@ import { ContentOrmEntity } from './content.entity';
 
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
+@EntityDto<ContentTypeDto>({ plain: ContentType, full: ContentTypeFull })
 export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeDto> {
-  plainCls = ContentType;
-
-  fullCls = ContentTypeFull;
-
   @Column({ unique: true })
   name!: string;
 

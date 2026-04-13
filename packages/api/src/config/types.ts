@@ -125,9 +125,6 @@ export type Config = {
   authentication: {
     jwtOptions: JwtConfigOptions;
   };
-  invitation: {
-    jwtOptions: JwtConfigOptions;
-  };
   password_reset: {
     jwtOptions: JwtConfigOptions;
   };

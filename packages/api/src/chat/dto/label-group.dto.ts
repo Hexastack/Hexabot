@@ -8,7 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { Label } from './label.dto';
 
@@ -40,10 +40,10 @@ export class LabelGroupCreateDto {
 
 export class LabelGroupUpdateDto extends LabelGroupCreateDto {}
 
-export type LabelGroupDto = BuildDtoType<
+export type LabelGroupDto = TDto<
   {
-    PlainCls: typeof LabelGroup;
-    FullCls: typeof LabelGroupFull;
+    plain: typeof LabelGroup;
+    full: typeof LabelGroupFull;
   },
   {
     create: LabelGroupCreateDto;

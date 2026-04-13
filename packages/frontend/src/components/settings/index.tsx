@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
-import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import type { RJSFSchema } from "@rjsf/utils";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -25,15 +25,21 @@ import { useTanstackQuery } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, QueryType, RouterType } from "@/services/types";
 import { ISetting, ISettingSchemasMap } from "@/types/setting.types";
 
-import { extractUiSchema } from "../visual-editor/v4/utils/schema-defaults.utils";
+import LicenseActivatedModal from "../license/LicenseActivatedModal";
 
-const StyledForm = styled("form")();
+import {
+  buildSettingsUiSchema,
+  resolveSettingsGroupTitle,
+} from "./settings.utils";
+
+const StyledFormContainer = styled("div")();
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
 const toGroupedSettings = (settings: ISetting[]) => {
   return settings.reduce(
@@ -78,27 +84,16 @@ const toSettingsByGroupAndLabel = (settings: ISetting[]) => {
 const areSettingValuesEqual = (left: unknown, right: unknown): boolean => {
   return JSON.stringify(left) === JSON.stringify(right);
 };
-const buildSettingsUiSchema = (schema: RJSFSchema): UiSchema => {
-  const extracted = extractUiSchema(schema);
-  const order = Object.keys(schema.properties || {});
-
-  if (!order.length) {
-    return extracted;
-  }
-
-  return {
-    ...extracted,
-    "ui:order": order,
-  };
-};
 
 export const Settings = () => {
   const { t } = useTranslate();
+  const { refetchUser } = useAuth();
   const router = useAppRouter();
   const rawGroup = router.query.group;
   const group = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
   const { toast } = useToast();
   const { apiClient } = useApiClient();
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState(
     group || DEFAULT_SETTINGS_GROUP,
   );
@@ -118,10 +113,33 @@ export const Settings = () => {
     },
   });
   const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
+      if (data.group === "chatbot_settings" && data.label === "license_key") {
+        const hasLicenseValue =
+          typeof data.value === "string"
+            ? data.value.trim().length > 0
+            : Boolean(data.value);
+        const refreshedUser = await refetchUser();
+        const licenseStatus = refreshedUser?.license?.status;
+
+        if (hasLicenseValue && licenseStatus === "active") {
+          setIsLicenseModalOpen(true);
+
+          return;
+        }
+
+        if (hasLicenseValue && licenseStatus !== "active") {
+          toast.error(
+            refreshedUser?.license?.lastError || t("message.internal_server_error"),
+          );
+
+          return;
+        }
+      }
+
       toast.success(t("message.success_save"));
     },
   });
@@ -215,6 +233,10 @@ export const Settings = () => {
   return (
     <Grid container gap={3} flexDirection="column">
       <PageHeader icon={SettingsIcon} title={t("title.settings")} />
+      <LicenseActivatedModal
+        open={isLicenseModalOpen}
+        onClose={() => setIsLicenseModalOpen(false)}
+      />
       <Grid size={12}>
         <Paper variant="spaced">
           <Grid sx={{ display: "flex", maxWidth: "md" }}>
@@ -228,15 +250,12 @@ export const Settings = () => {
                 <Tab
                   value={group}
                   key={group}
-                  label={t(`title.${group}`, {
-                    ns: group,
-                    defaultValue: group,
-                  })}
+                  label={resolveSettingsGroupTitle(group, schemas, t)}
                   {...a11yProps(index)}
                 />
               ))}
             </Tabs>
-            <StyledForm sx={{ width: "100%", px: 3, paddingY: 2 }}>
+            <StyledFormContainer sx={{ width: "100%", px: 3, paddingY: 2 }}>
               {groups.map((groupName) => {
                 const definition = schemas[groupName];
                 const schema = definition?.schema as RJSFSchema | undefined;
@@ -274,7 +293,7 @@ export const Settings = () => {
                   </TabPanel>
                 );
               })}
-            </StyledForm>
+            </StyledFormContainer>
           </Grid>
         </Paper>
       </Grid>

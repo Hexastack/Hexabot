@@ -19,7 +19,7 @@ import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, BuildDtoType } from '@/utils/types/dto.types';
+import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { MemoryScope } from '../types';
 
@@ -95,10 +95,10 @@ export class MemoryDefinitionUpdateDto extends PartialType(
   MemoryDefinitionCreateDto,
 ) {}
 
-export type MemoryDefinitionDto = BuildDtoType<
+export type MemoryDefinitionDto = TDto<
   {
-    PlainCls: typeof MemoryDefinition;
-    FullCls: typeof MemoryDefinitionFull;
+    plain: typeof MemoryDefinition;
+    full: typeof MemoryDefinitionFull;
   },
   {
     create: MemoryDefinitionCreateDto;

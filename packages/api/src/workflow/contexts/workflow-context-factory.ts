@@ -66,6 +66,7 @@ export class WorkflowContextFactory {
       {
         ownerId: run.triggeredBy.id,
         workflowId: run.workflow.id,
+        threadId: run.thread?.id ?? null,
         runId: run.id,
         memoryDefinitionIds,
       },

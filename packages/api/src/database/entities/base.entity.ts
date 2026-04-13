@@ -10,27 +10,10 @@ import { plainToInstance } from 'class-transformer';
 import { BeforeInsert, BeforeUpdate, PrimaryColumn } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import { DtoActionConfig, InferTransformDto } from '@/utils';
+import { getDtoClassesMetadata } from '@/database/decorators/dto-transforms.decorator';
+import { InferTransformDto, TDto } from '@/utils';
 
-export abstract class BaseOrmEntity<
-  Dto extends {
-    transformers: {
-      FullCls: unknown;
-      PlainCls: unknown;
-    };
-    actions: DtoActionConfig;
-  } = {
-    transformers: {
-      FullCls: unknown;
-      PlainCls: unknown;
-    };
-    actions: DtoActionConfig;
-  },
-> {
-  abstract plainCls: Dto['transformers']['PlainCls'];
-
-  abstract fullCls: Dto['transformers']['FullCls'];
-
+export abstract class BaseOrmEntity<Dto extends TDto = TDto> {
   declare readonly __dtoType: Dto;
 
   @PrimaryColumn()
@@ -57,13 +40,35 @@ export abstract class BaseOrmEntity<
     this.updatedAt = new Date();
   }
 
-  public toPlainCls(): InferTransformDto<Dto['transformers']['PlainCls']> {
+  public get plainCls(): Dto['transformers']['plain'] {
+    const metadata = getDtoClassesMetadata(this.constructor);
+    if (!metadata) {
+      throw new Error(
+        `Missing @DtoClasses metadata on entity "${this.constructor.name}".`,
+      );
+    }
+
+    return metadata.plain as Dto['transformers']['plain'];
+  }
+
+  public get fullCls(): Dto['transformers']['full'] {
+    const metadata = getDtoClassesMetadata(this.constructor);
+    if (!metadata) {
+      throw new Error(
+        `Missing @DtoClasses metadata on entity "${this.constructor.name}".`,
+      );
+    }
+
+    return metadata.full as Dto['transformers']['full'];
+  }
+
+  public toPlainCls(): InferTransformDto<Dto['transformers']['plain']> {
     return plainToInstance(this.plainCls as any, this, {
       exposeUnsetFields: false,
     });
   }
 
-  public toFullCls(): InferTransformDto<Dto['transformers']['FullCls']> {
+  public toFullCls(): InferTransformDto<Dto['transformers']['full']> {
     return plainToInstance(this.fullCls as any, this, {
       exposeUnsetFields: false,
     });

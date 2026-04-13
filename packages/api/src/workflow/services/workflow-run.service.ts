@@ -138,11 +138,13 @@ export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
    */
   async findSuspendedRunByInitiator(
     triggeredById: string,
+    threadId?: string,
     workflowId?: string,
   ): Promise<WorkflowRunFull | null> {
     return await this.findOneAndPopulate({
       where: {
         triggeredBy: { id: triggeredById },
+        ...(threadId ? { thread: { id: threadId } } : {}),
         status: 'suspended',
         ...(workflowId ? { workflow: { id: workflowId } } : {}),
       },

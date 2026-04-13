@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { useRoutes } from "react-router-dom";
 
 import { Progress } from "@/app-components/displays/Progress";
@@ -21,7 +21,7 @@ import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { routes } from "@/routes";
-import { RouterType } from "@/services/types";
+import { EntityType, QueryType, RouterType } from "@/services/types";
 import { type IUser } from "@/types/user.types";
 import { hasPublicPath, isLoginPath } from "@/utils/URL";
 
@@ -36,12 +36,32 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const { handle } = match.route;
   const { i18n } = useTranslate();
   const queryClient = useTanstackQueryClient();
-  const updateLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-  };
+  const updateLanguage = useCallback(
+    async (lang: string) => {
+      const activeLanguage = i18n.resolvedLanguage || i18n.language;
+
+      if (!lang || activeLanguage === lang) {
+        return;
+      }
+
+      await i18n.changeLanguage(lang);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.item, EntityType.SETTING, "schemas"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [QueryType.collection, EntityType.WORKFLOW_ACTIONS],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["workflow-bindings"],
+        }),
+      ]);
+    },
+    [i18n, queryClient],
+  );
   const { mutate: logoutSession } = useLogout();
   const logout = async () => {
-    updateLanguage(runtimeConfig.lang.default);
+    await updateLanguage(runtimeConfig.lang.default);
     logoutSession();
   };
   const authRedirection = async (isAuthenticated: boolean) => {
@@ -67,21 +87,33 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     data: user,
     error,
     isLoading,
+    refetch,
   } = useTanstackQuery<IUser, Error>({
     queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
-    onSuccess: (data) => {
-      updateLanguage(data.language);
-      authRedirection(!!data.id);
+    onSuccess: (sessionUser) => {
+      authRedirection(!!sessionUser.id);
     },
   });
+
+  useEffect(() => {
+    if (user?.language) {
+      void updateLanguage(user.language);
+    }
+  }, [updateLanguage, user?.language]);
+
   const setUser = (data?: IUser) => {
     queryClient.setQueryData([CURRENT_USER_KEY], data);
   };
   const authenticate = (user: IUser) => {
-    updateLanguage(user.language);
+    void updateLanguage(user.language);
     setUser(user);
   };
+  const refetchUser = useCallback(async () => {
+    const result = await refetch();
+
+    return result.data;
+  }, [refetch]);
   const isAuthenticated = !!user;
 
   useSubscribeBroadcastChannel("login", () => {
@@ -104,6 +136,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
         error,
         setUser,
         authenticate,
+        refetchUser,
         logout,
       }}
     >

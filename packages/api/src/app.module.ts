@@ -37,6 +37,8 @@ import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
+import { ExtensionJsonLoader } from './i18n/loaders/extension-json.loader';
+import { LicenseModule } from './license/license.module';
 import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
@@ -56,8 +58,14 @@ const frontendStaticPath = existsSync(compiledFrontendPath)
 // I18N options
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
+  loader: ExtensionJsonLoader,
   loaderOptions: {
     path: path.join(__dirname, '/config/i18n/'),
+    extensionPaths: [
+      path.join(__dirname, '/extensions/actions/'),
+      path.join(__dirname, '/extensions/helpers/'),
+      path.join(__dirname, '/extensions/channels/'),
+    ],
     watch: true,
   },
   resolvers: [
@@ -83,6 +91,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   CmsModule,
   UserModule,
   SettingModule,
+  LicenseModule,
   AttachmentModule,
   AnalyticsModule,
   ChatModule,

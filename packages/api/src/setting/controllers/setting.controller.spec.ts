@@ -5,11 +5,14 @@
  */
 
 import { TestingModule } from '@nestjs/testing';
+import { I18nContext } from 'nestjs-i18n';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import {
   installSettingFixturesTypeOrm,
   settingFixtures,
 } from '@/utils/test/fixtures/setting';
+import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
@@ -32,22 +35,25 @@ describe('SettingController', () => {
   let settingController: SettingController;
   let settingService: SettingService;
   let runtimeSettingsService: RuntimeSettingsService;
+  let i18nService: I18nService<unknown>;
   let module: TestingModule;
 
   beforeAll(async () => {
     const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [SettingController],
+      providers: [I18nServiceProvider],
       typeorm: {
         fixtures: installSettingFixturesTypeOrm,
       },
     });
     module = testingModule;
-    [settingController, settingService, runtimeSettingsService] =
+    [settingController, settingService, runtimeSettingsService, i18nService] =
       await getMocks([
         SettingController,
         SettingService,
         RuntimeSettingsService,
+        I18nService,
       ]);
   });
 
@@ -70,6 +76,14 @@ describe('SettingController', () => {
   afterEach(jest.clearAllMocks);
 
   describe('findSchemas', () => {
+    beforeEach(() => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (key: string, options?: { defaultValue?: string }) => {
+          return options?.defaultValue ?? key;
+        },
+      );
+    });
+
     it('returns runtime settings schema definitions', () => {
       const getAllSchemaDefinitionsSpy = jest.spyOn(
         settingService,
@@ -83,6 +97,86 @@ describe('SettingController', () => {
       expect(result.contact.schema.$schema).toBe(
         'http://json-schema.org/draft-07/schema#',
       );
+      expect((result.contact.schema as { title?: string }).title).toBe(
+        'Contact',
+      );
+    });
+
+    it('localizes settings schema metadata using the request language', () => {
+      (i18nService.t as jest.Mock).mockImplementation(
+        (
+          key: string,
+          options?: { ns?: string; lang?: string; defaultValue?: string },
+        ) => {
+          if (options?.lang === 'fr' && options?.ns === 'contact') {
+            if (key === 'Contact') {
+              return 'FR Contact';
+            }
+            if (key === 'Contact recipient email') {
+              return 'FR Contact recipient email';
+            }
+            if (
+              key === 'Email address that receives contact form submissions.'
+            ) {
+              return 'FR Contact recipient help';
+            }
+          }
+
+          return options?.defaultValue ?? key;
+        },
+      );
+      const currentSpy = jest
+        .spyOn(I18nContext, 'current')
+        .mockReturnValue({ lang: 'fr' } as unknown as I18nContext<unknown>);
+      const result = settingController.findSchemas();
+      const schema = result.contact.schema as
+        | {
+            properties?: Record<
+              string,
+              { title?: string; description?: string; default?: string }
+            >;
+          }
+        | undefined;
+
+      expect(schema?.properties?.contact_email_recipient?.title).toBe(
+        'FR Contact recipient email',
+      );
+      expect(schema?.properties?.contact_email_recipient?.description).toBe(
+        'FR Contact recipient help',
+      );
+      expect(schema?.properties?.contact_email_recipient?.default).toBe(
+        'admin@example.com',
+      );
+      expect((result.contact.schema as { title?: string }).title).toBe(
+        'FR Contact',
+      );
+
+      currentSpy.mockRestore();
+    });
+
+    it('falls back to original schema metadata when translation is missing', () => {
+      const currentSpy = jest
+        .spyOn(I18nContext, 'current')
+        .mockReturnValue({ lang: 'fr' } as unknown as I18nContext<unknown>);
+      const result = settingController.findSchemas();
+      const schema = result.contact.schema as
+        | {
+            properties?: Record<
+              string,
+              { title?: string; description?: string }
+            >;
+          }
+        | undefined;
+
+      expect(schema?.properties?.company_name?.title).toBe('Company name');
+      expect(schema?.properties?.company_name?.description).toBe(
+        'Company name displayed to end users.',
+      );
+      expect((result.contact.schema as { title?: string }).title).toBe(
+        'Contact',
+      );
+
+      currentSpy.mockRestore();
     });
   });
 

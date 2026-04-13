@@ -19,6 +19,7 @@ import {
 } from '@/channel/lib/__test__/common.mock';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
+import { ThreadService } from '@/chat/services/thread.service';
 import { OutgoingMessageFormat } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
@@ -64,6 +65,7 @@ describe('WebChannelHandler', () => {
       providers: [
         ChannelService,
         MessageService,
+        ThreadService,
         JwtService,
         WebChannelHandler,
         I18nServiceProvider,
@@ -310,6 +312,233 @@ describe('WebChannelHandler', () => {
       });
     await handler['subscribe'](req, res);
     expect(joinedSocket).toBe(true);
+    clearMock.mockRestore();
+  });
+
+  it('subscribes a fresh session with no thread and returns empty history', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Fresh', last_name: 'User' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-empty-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const res = {
+      status: (code: number) => {
+        expect(code).toEqual(200);
+
+        return res;
+      },
+      json: (payload: any) => {
+        expect(payload.thread_id).toBeNull();
+        expect(payload.messages).toEqual([]);
+      },
+    } as any as SocketResponse;
+
+    await handler['subscribe'](req, res);
+
+    expect(req.session.web?.threadId).toBeUndefined();
+    clearMock.mockRestore();
+  });
+
+  it('returns thread id in first incoming message response and stores it in session', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Realtime', last_name: 'User' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-realtime-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+    expect(req.session.web?.threadId).toBeUndefined();
+
+    req.body = {
+      type: 'text',
+      data: {
+        text: 'Hello there',
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: false,
+      messageQueue: [],
+      polling: false,
+    };
+
+    const emitAsyncSpy = jest
+      .spyOn(handler['eventEmitter'], 'emitAsync')
+      .mockImplementation(async (eventName: string, event: any) => {
+        if (eventName === 'hook:chatbot:message') {
+          event.setThreadId('thread-created-1');
+        }
+
+        return [];
+      });
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for message response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload.thread_id).toBe('thread-created-1');
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(emitAsyncSpy).toHaveBeenCalledWith(
+      'hook:chatbot:message',
+      expect.anything(),
+    );
+    expect(req.session.web?.threadId).toBe('thread-created-1');
+    clearMock.mockRestore();
+    emitAsyncSpy.mockRestore();
+  });
+
+  it('broadcasts incoming user messages before async handlers finish', async () => {
+    websocketGatewayMock.broadcast.mockClear();
+    const req = {
+      isSocket: true,
+      query: { first_name: 'Order', last_name: 'Check' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
+      user: {},
+    } as any as SocketRequest;
+    const generatedId = `web-order-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+
+    req.body = {
+      type: 'text',
+      data: {
+        text: 'Ordering check',
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: true,
+      messageQueue: [],
+      polling: false,
+    };
+
+    const emitAsyncSpy = jest
+      .spyOn(handler['eventEmitter'], 'emitAsync')
+      .mockResolvedValue([]);
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for message response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (_payload: any) => {
+          clearTimeout(timeout);
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(websocketGatewayMock.broadcast).toHaveBeenCalled();
+    expect(emitAsyncSpy).toHaveBeenCalledWith(
+      'hook:chatbot:message',
+      expect.anything(),
+    );
+    const [broadcastCallOrder] = websocketGatewayMock.broadcast.mock
+      .invocationCallOrder as number[];
+    const [emitAsyncCallOrder] = emitAsyncSpy.mock.invocationCallOrder;
+
+    expect(broadcastCallOrder).toBeLessThan(emitAsyncCallOrder);
+    clearMock.mockRestore();
+    emitAsyncSpy.mockRestore();
+  });
+
+  it('rejects chatbot sync before first user message when no thread exists', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Sync', last_name: 'User' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-sync-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+
+    req.body = {
+      type: 'text',
+      mid: 'sync-mid-1',
+      author: 'chatbot',
+      sync: true,
+      data: {
+        text: 'Synthetic bot sync message',
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: false,
+      messageQueue: [],
+      polling: false,
+    };
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for sync response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(409);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload.err).toMatch(
+            /No thread available before first user message/i,
+          );
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(req.session.web?.threadId).toBeUndefined();
     clearMock.mockRestore();
   });
 });

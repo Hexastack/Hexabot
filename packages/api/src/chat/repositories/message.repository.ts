@@ -6,12 +6,12 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
 import { Message } from '../dto/message.dto';
-import { SubscriberStub } from '../dto/subscriber.dto';
+import { ThreadStub } from '../dto/thread.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 
 @Injectable()
@@ -20,37 +20,27 @@ export class MessageRepository extends BaseOrmRepository<MessageOrmEntity> {
     @InjectRepository(MessageOrmEntity)
     repository: Repository<MessageOrmEntity>,
   ) {
-    super(repository, ['sender', 'recipient', 'sentBy']);
+    super(repository, ['sender', 'recipient', 'sentBy', 'thread']);
   }
 
   /**
    * Retrieves the message history for a given subscriber, with messages sent or received
    * before the specified date. Results are limited and sorted by creation date.
    *
-   * @param subscriber - The subscriber whose message history is being retrieved.
+   * @param thread - The thread whose message history is being retrieved.
    * @param until - Optional date to retrieve messages sent before (default: current date).
    * @param limit - Optional limit on the number of messages to retrieve (default: 30).
    *
    * @returns The message history until the specified date.
    */
-  async findHistoryUntilDate<S extends SubscriberStub>(
-    subscriber: S,
+  async findHistoryUntilDate<S extends ThreadStub>(
+    thread: S,
     until = new Date(),
     limit: number = 30,
   ): Promise<Message[]> {
     const qb = this.repository
       .createQueryBuilder('message')
-      .where(
-        new Brackets((where) => {
-          where
-            .where('message.sender_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            })
-            .orWhere('message.recipient_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            });
-        }),
-      )
+      .where('message.thread_id = :threadId', { threadId: thread.id })
       .andWhere('message.created_at < :until', { until })
       .orderBy('message.created_at', 'DESC')
       .limit(limit);
@@ -63,30 +53,20 @@ export class MessageRepository extends BaseOrmRepository<MessageOrmEntity> {
    * Retrieves the message history for a given subscriber, with messages sent or received
    * after the specified date. Results are limited and sorted by creation date.
    *
-   * @param subscriber The subscriber whose message history is being retrieved.
+   * @param thread The thread whose message history is being retrieved.
    * @param since Optional date to retrieve messages sent after (default: current date).
    * @param limit Optional limit on the number of messages to retrieve (default: 30).
    *
    * @returns The message history since the specified date.
    */
-  async findHistorySinceDate<S extends SubscriberStub>(
-    subscriber: S,
+  async findHistorySinceDate<S extends ThreadStub>(
+    thread: S,
     since = new Date(),
     limit: number = 30,
   ): Promise<Message[]> {
     const qb = this.repository
       .createQueryBuilder('message')
-      .where(
-        new Brackets((where) => {
-          where
-            .where('message.sender_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            })
-            .orWhere('message.recipient_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            });
-        }),
-      )
+      .where('message.thread_id = :threadId', { threadId: thread.id })
       .andWhere('message.created_at > :since', { since })
       .orderBy('message.created_at', 'ASC')
       .limit(limit);
@@ -98,13 +78,13 @@ export class MessageRepository extends BaseOrmRepository<MessageOrmEntity> {
   /**
    * Retrieves the most recent messages exchanged with the provided subscriber and returns them in chronological order.
    *
-   * @param subscriber - The subscriber whose messages are being retrieved.
+   * @param thread - The thread whose messages are being retrieved.
    * @param limit - Maximum number of messages to return.
    *
    * @returns The latest messages ordered from oldest to newest.
    */
-  async findLastMessagesForSubscriber<S extends SubscriberStub>(
-    subscriber: S,
+  async findLastMessagesForThread<S extends ThreadStub>(
+    thread: S,
     limit: number = 5,
   ): Promise<Message[]> {
     const normalizedLimit = Math.max(0, limit ?? 0);
@@ -115,17 +95,7 @@ export class MessageRepository extends BaseOrmRepository<MessageOrmEntity> {
 
     const results = await this.repository
       .createQueryBuilder('message')
-      .where(
-        new Brackets((where) => {
-          where
-            .where('message.sender_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            })
-            .orWhere('message.recipient_id = :subscriberId', {
-              subscriberId: subscriber.id,
-            });
-        }),
-      )
+      .where('message.thread_id = :threadId', { threadId: thread.id })
       .orderBy('message.created_at', 'DESC')
       .limit(limit)
       .getMany();
