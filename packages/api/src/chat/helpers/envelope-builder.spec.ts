@@ -14,7 +14,6 @@ import {
   stdOutgoingTextEnvelopeSchema,
   stdOutgoingTextMessageSchema,
 } from '../types/message';
-import { QuickReplyType } from '../types/quick-reply';
 
 import { EnvelopeBuilder, getEnvelopeBuilder } from './envelope-builder';
 
@@ -58,12 +57,10 @@ describe('EnvelopeBuilder', () => {
 
     builder.setText('Choose an option');
     builder.appendToQuickReplies({
-      content_type: QuickReplyType.text,
       title: 'Yes',
       payload: 'yes',
     });
     builder.appendToQuickReplies({
-      content_type: QuickReplyType.text,
       title: 'No',
       payload: 'no',
     });
@@ -74,8 +71,8 @@ describe('EnvelopeBuilder', () => {
       message: {
         text: 'Choose an option',
         quickReplies: [
-          { content_type: QuickReplyType.text, title: 'Yes', payload: 'yes' },
-          { content_type: QuickReplyType.text, title: 'No', payload: 'no' },
+          { title: 'Yes', payload: 'yes' },
+          { title: 'No', payload: 'no' },
         ],
       },
     });
@@ -106,7 +103,6 @@ describe('getEnvelopeBuilder', () => {
     const builder = getEnvelopeBuilder(OutgoingMessageFormat.quickReplies);
     builder.setText('Pick an option');
     builder.appendToQuickReplies({
-      content_type: QuickReplyType.text,
       title: 'Option A',
       payload: 'a',
     });

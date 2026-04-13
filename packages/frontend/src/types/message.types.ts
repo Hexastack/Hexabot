@@ -74,16 +74,7 @@ export enum ButtonType {
   web_url = "web_url",
 }
 
-export enum QuickReplyType {
-  text = "text",
-  location = "location",
-  // @TODO : The following are not in use anymore
-  // user_phone_number = "user_phone_number",
-  // user_email = "user_email",
-}
-
 export interface StdQuickReply {
-  content_type: QuickReplyType;
   title?: string;
   payload?: string;
 }

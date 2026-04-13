@@ -7,7 +7,6 @@
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import { useSettings } from "../../providers/SettingsProvider";
 import {
   TButton,
   TMessage,
@@ -21,8 +20,7 @@ interface ButtonsMessageProps {
 }
 
 const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
-  const { setPayload, send, setWebviewUrl } = useChat();
-  const settings = useSettings();
+  const { send, setWebviewUrl } = useChat();
   const handleClick = (
     event: React.MouseEvent<HTMLButtonElement>,
     button: TButton,
@@ -34,7 +32,6 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
         window.open(button.url, "_blank");
       }
     } else if (button.type === "postback") {
-      setPayload({ text: button.title, payload: button.payload });
       send({
         event,
         source: "post-back",
@@ -46,9 +43,6 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
           },
         },
       });
-      if (settings.autoFlush) {
-        setPayload(null);
-      }
     }
   };
 
