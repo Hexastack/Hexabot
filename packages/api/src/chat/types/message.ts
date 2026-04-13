@@ -13,10 +13,6 @@ import { buttonSchema, PayloadType } from './button';
 import { contentOptionsSchema } from './options';
 import { stdQuickReplySchema } from './quick-reply';
 
-/**
- * StdEventType enum is declared, and currently not used
- */
-
 export enum StdEventType {
   message = 'message',
   delivery = 'delivery',
@@ -28,9 +24,6 @@ export enum StdEventType {
   unknown = '',
 }
 
-/**
- * IncomingMessageType enum is declared, and currently not used
- */
 export enum IncomingMessageType {
   message = 'message',
   postback = 'postback',

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { z } from 'zod';
+
 import { SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { FileType } from '@/chat/types/attachment';
 import { Button, WebUrlButton } from '@/chat/types/button';
@@ -45,103 +47,182 @@ export namespace Web {
     carousel = 'carousel',
   }
 
-  export type IncomingTextMessageData = { text: string };
-
-  export type IncomingPayloadMessageData = IncomingTextMessageData & {
-    payload: string; // Quick reply and button payload are the same
-  };
-
-  export type IncomingLocationMessageData = {
-    coordinates: {
-      lat: number;
-      lng: number;
-    };
-  };
-
-  export type IncomingAttachmentMessageData =
-    // When it's a incoming history message
-    | {
-        type: FileType;
-        url: string; // file download url
-      }
-    // When it's a file upload message
-    | {
-        type: string; // mime type
-        size: number; // file size
-        name: string;
-        file: Buffer;
-      };
-
-  export type IncomingMessageData =
-    | IncomingTextMessageData
-    | IncomingPayloadMessageData
-    | IncomingLocationMessageData
-    | IncomingAttachmentMessageData;
-
-  export type StatusDeliveryEvent = {
-    type: StatusEventType.delivery;
-    mid: string;
-  };
-
-  export type StatusReadEvent = {
-    type: StatusEventType.read;
-    watermark: number;
-  };
-
-  export type StatusTypingEvent = {
-    type: StatusEventType.typing;
-  };
-
-  export type StatusEvent =
-    | StatusDeliveryEvent
-    | StatusReadEvent
-    | StatusTypingEvent;
-
-  export type IncomingTextMessage = {
-    type: IncomingMessageType.text;
-    data: IncomingTextMessageData;
-  };
-
-  export type IncomingPayloadMessage = {
-    type: IncomingMessageType.postback | IncomingMessageType.quick_reply;
-    data: IncomingPayloadMessageData;
-  };
-
-  export type IncomingLocationMessage = {
-    type: IncomingMessageType.location;
-    data: IncomingLocationMessageData;
-  };
-
-  export type IncomingAttachmentMessage = {
-    type: IncomingMessageType.file;
-    data: IncomingAttachmentMessageData;
-  };
-
-  export type IncomingMessageBase =
-    | IncomingTextMessage
-    | IncomingPayloadMessage
-    | IncomingLocationMessage
-    | IncomingAttachmentMessage;
-
-  export type IncomingMessage<
-    T =
-      | IncomingTextMessage
-      | IncomingPayloadMessage
-      | IncomingLocationMessage
-      | IncomingAttachmentMessage,
-  > = T & {
-    mid?: string;
-    author?: string;
-    thread_id?: string;
-    read?: boolean;
-    delivery?: boolean;
+  export const incomingEventMetadataSchema = z.strictObject({
+    mid: z.string().optional(),
+    author: z.string().optional(),
+    thread_id: z.string().optional(),
+    read: z.boolean().optional(),
+    delivery: z.boolean().optional(),
     // Whether it's a synchronization
     // This is used when message sent by the chatbot from the client side
-    sync?: boolean;
-    createdAt?: Date;
-  };
+    sync: z.boolean().optional(),
+    createdAt: z.date().optional(),
+  });
 
-  export type Event = IncomingMessage | StatusEvent;
+  export type IncomingEventMetadata = z.infer<
+    typeof incomingEventMetadataSchema
+  >;
+
+  export const incomingTextMessageDataSchema = z.strictObject({
+    text: z.string(),
+  });
+
+  export type IncomingTextMessageData = z.infer<
+    typeof incomingTextMessageDataSchema
+  >;
+
+  export const incomingPayloadMessageDataSchema = z.strictObject({
+    text: z.string(),
+    payload: z.string(), // Quick reply and button payload are the same
+  });
+
+  export type IncomingPayloadMessageData = z.infer<
+    typeof incomingPayloadMessageDataSchema
+  >;
+
+  export const incomingLocationMessageDataSchema = z.strictObject({
+    coordinates: z.strictObject({
+      lat: z.number(),
+      lng: z.number(),
+    }),
+  });
+
+  export type IncomingLocationMessageData = z.infer<
+    typeof incomingLocationMessageDataSchema
+  >;
+
+  export const incomingAttachmentHistoryMessageDataSchema = z.strictObject({
+    type: z.enum(FileType),
+    url: z.string(), // file download url
+  });
+
+  export const incomingAttachmentUploadMessageDataSchema = z.strictObject({
+    type: z.string(), // mime type
+    size: z.number(), // file size
+    name: z.string(),
+    file: z.instanceof(Buffer).optional(),
+  });
+
+  export const incomingAttachmentMessageDataSchema = z.union([
+    incomingAttachmentHistoryMessageDataSchema,
+    incomingAttachmentUploadMessageDataSchema,
+  ]);
+
+  export type IncomingAttachmentMessageData = z.infer<
+    typeof incomingAttachmentMessageDataSchema
+  >;
+
+  export const incomingMessageDataSchema = z.union([
+    incomingTextMessageDataSchema,
+    incomingPayloadMessageDataSchema,
+    incomingLocationMessageDataSchema,
+    incomingAttachmentMessageDataSchema,
+  ]);
+
+  export type IncomingMessageData = z.infer<typeof incomingMessageDataSchema>;
+
+  export const statusDeliveryEventSchema = z.strictObject({
+    type: z.literal(StatusEventType.delivery),
+    mid: z.string(),
+  });
+
+  export type StatusDeliveryEvent = z.infer<typeof statusDeliveryEventSchema>;
+
+  export const statusReadEventSchema = z.strictObject({
+    type: z.literal(StatusEventType.read),
+    watermark: z.number(),
+  });
+
+  export type StatusReadEvent = z.infer<typeof statusReadEventSchema>;
+
+  export const statusTypingEventSchema = z.strictObject({
+    type: z.literal(StatusEventType.typing),
+  });
+
+  export type StatusTypingEvent = z.infer<typeof statusTypingEventSchema>;
+
+  export const statusEventSchema = z.union([
+    statusDeliveryEventSchema,
+    statusReadEventSchema,
+    statusTypingEventSchema,
+  ]);
+
+  export type StatusEvent = z.infer<typeof statusEventSchema>;
+
+  export const incomingTextMessageSchema = z.strictObject({
+    type: z.literal(IncomingMessageType.text),
+    data: incomingTextMessageDataSchema,
+    ...incomingEventMetadataSchema.shape,
+  });
+
+  export type IncomingTextMessage = z.infer<typeof incomingTextMessageSchema>;
+
+  export const incomingPostbackMessageSchema = z.strictObject({
+    type: z.literal(IncomingMessageType.postback),
+    data: incomingPayloadMessageDataSchema,
+    ...incomingEventMetadataSchema.shape,
+  });
+
+  export const incomingQuickReplyMessageSchema = z.strictObject({
+    type: z.literal(IncomingMessageType.quick_reply),
+    data: incomingPayloadMessageDataSchema,
+    ...incomingEventMetadataSchema.shape,
+  });
+
+  export const incomingPayloadMessageSchema = z.union([
+    incomingPostbackMessageSchema,
+    incomingQuickReplyMessageSchema,
+  ]);
+
+  export type IncomingPayloadMessage = z.infer<
+    typeof incomingPayloadMessageSchema
+  >;
+
+  export const incomingLocationMessageSchema = z.strictObject({
+    type: z.literal(IncomingMessageType.location),
+    data: incomingLocationMessageDataSchema,
+    ...incomingEventMetadataSchema.shape,
+  });
+
+  export type IncomingLocationMessage = z.infer<
+    typeof incomingLocationMessageSchema
+  >;
+
+  export const incomingAttachmentMessageSchema = z.strictObject({
+    type: z.literal(IncomingMessageType.file),
+    data: incomingAttachmentMessageDataSchema,
+    ...incomingEventMetadataSchema.shape,
+  });
+
+  export type IncomingAttachmentMessage = z.infer<
+    typeof incomingAttachmentMessageSchema
+  >;
+
+  export const incomingMessageBaseSchema = z.union([
+    incomingTextMessageSchema,
+    incomingPayloadMessageSchema,
+    incomingLocationMessageSchema,
+    incomingAttachmentMessageSchema,
+  ]);
+
+  export type IncomingMessageBase = z.infer<typeof incomingMessageBaseSchema>;
+
+  export type IncomingMessage<
+    T extends IncomingMessageBase = IncomingMessageBase,
+  > = T;
+
+  export const eventSchema = z.discriminatedUnion('type', [
+    statusDeliveryEventSchema,
+    statusReadEventSchema,
+    statusTypingEventSchema,
+    incomingTextMessageSchema,
+    incomingPostbackMessageSchema,
+    incomingQuickReplyMessageSchema,
+    incomingLocationMessageSchema,
+    incomingAttachmentMessageSchema,
+  ]);
+
+  export type Event = z.infer<typeof eventSchema>;
 
   export interface MessageElement {
     title: string;

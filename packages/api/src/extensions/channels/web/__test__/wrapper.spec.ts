@@ -21,6 +21,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
+import { Web } from '../types';
 import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 import WebEventWrapper from '../wrapper';
 
@@ -157,5 +158,23 @@ describe(`Web event wrapper`, () => {
     expect(event.getWorkflowId()).toBe(workflowId);
     expect(event.buildInput()).not.toHaveProperty('workflowId');
     expect(event.getContextData()).not.toHaveProperty('workflowId');
+  });
+
+  it('throws when payload does not match incoming event schema', () => {
+    expect(
+      () =>
+        new WebEventWrapper(
+          handler as unknown as WebChannelHandler,
+          {
+            type: Web.IncomingMessageType.text,
+            data: {},
+          },
+          {
+            isSocket: false,
+            ipAddress: '0.0.0.0',
+            agent: 'browser',
+          },
+        ),
+    ).toThrow();
   });
 });

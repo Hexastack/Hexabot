@@ -9,13 +9,6 @@ import { z } from 'zod';
 import { attachmentPayloadSchema } from './attachment';
 import { PayloadType } from './button';
 
-export enum QuickReplyType {
-  text = 'text',
-  location = 'location',
-  user_phone_number = 'user_phone_number',
-  user_email = 'user_email',
-}
-
 export const cordinatesSchema = z.object({
   lat: z.number(),
   lon: z.number(),
@@ -33,10 +26,6 @@ export const payloadSchema = z.discriminatedUnion('type', [
 ]);
 
 export const stdQuickReplySchema = z.object({
-  content_type: z.enum(QuickReplyType).meta({
-    title: 'Content type',
-    description: 'The type of quick reply to render.',
-  }),
   title: z.string().meta({
     title: 'Title',
     description: 'The label shown to the user.',

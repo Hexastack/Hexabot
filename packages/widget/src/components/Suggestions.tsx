@@ -7,19 +7,16 @@
 import React from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useSettings } from "../providers/SettingsProvider";
 import { ISuggestion, TOutgoingMessageType } from "../types/message.types";
 
 import "./Suggestions.scss";
 
 const Suggestions: React.FC = () => {
-  const { setPayload, send, suggestions } = useChat();
-  const settings = useSettings();
+  const { send, suggestions } = useChat();
   const sendSuggestion = (
     event: React.MouseEvent<HTMLButtonElement>,
     suggestion: ISuggestion,
   ) => {
-    setPayload(suggestion);
     send({
       event,
       source: "quick-reply",
@@ -28,9 +25,6 @@ const Suggestions: React.FC = () => {
         data: suggestion,
       },
     });
-    if (settings.autoFlush) {
-      setPayload(null);
-    }
   };
 
   return (

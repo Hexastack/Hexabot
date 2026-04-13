@@ -11,11 +11,6 @@ export enum Direction {
   received = "received",
 }
 
-export enum QuickReplyType {
-  text = "text",
-  location = "location",
-}
-
 export interface IQuickReply {
   title?: string;
   payload?: string;

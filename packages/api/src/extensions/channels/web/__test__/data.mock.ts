@@ -8,7 +8,6 @@ import { textMessage } from '@/channel/lib/__test__/common.mock';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { FileType } from '@/chat/types/attachment';
 import { ButtonType } from '@/chat/types/button';
-import { QuickReplyType } from '@/chat/types/quick-reply';
 
 import { Web } from '../types';
 
@@ -21,12 +20,10 @@ export const webQuickReplies: Web.OutgoingMessageBase = {
   data: {
     quick_replies: [
       {
-        content_type: QuickReplyType.text,
         title: 'First option',
         payload: 'first_option',
       },
       {
-        content_type: QuickReplyType.text,
         title: 'Second option',
         payload: 'second_option',
       },
@@ -132,7 +129,6 @@ export const webAttachment: Web.OutgoingMessageBase = {
   data: {
     quick_replies: [
       {
-        content_type: QuickReplyType.text,
         payload: 'NEXT',
         title: 'Next >',
       },

@@ -92,12 +92,10 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  * const env3 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
  *   .setText('Are you interested?')
  *   .appendToQuickReplies({
- *     content_type: QuickReplyType.text,
  *     title: 'Yes',
  *     payload: 'yes',
  *   })
  *   .appendToQuickReplies({
- *     content_type: QuickReplyType.text,
  *     title: 'No',
  *     payload: 'no',
  *   })
