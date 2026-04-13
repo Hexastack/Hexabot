@@ -8,8 +8,7 @@ import type { Monaco } from "@monaco-editor/react";
 import type { IDisposable, editor } from "monaco-editor";
 import { useCallback, useEffect, useRef } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
-import { EntityType } from "@/services/types";
+import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 
 import { useWorkflow } from "../../hooks/useWorkflow";
 
@@ -28,19 +27,12 @@ export function useYamlEditorController({
   errorLine,
   errorMessage,
 }: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
-  const { yaml, updateDefinitionState, workflow, taskIds } = useWorkflow();
+  const { yaml, updateDefinitionState, taskIds } = useWorkflow();
   const {
-    data: actions = [],
+    actions = [],
     isLoading: actionsLoading,
     isError: actionsError,
-  } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-    {
-      routeParams: workflow?.type ? { type: workflow?.type } : undefined,
-      enabled: !!workflow?.type,
-    },
-  );
+  } = useWorkflowActionsCatalog();
   const availableActions = actionsLoading || actionsError ? undefined : actions;
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
