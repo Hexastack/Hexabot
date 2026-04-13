@@ -15,6 +15,7 @@ type WorkflowActionsCatalogContextValue = {
   actionsByName: Map<string, IAction>;
   isLoading: boolean;
   isFetching: boolean;
+  isError: boolean;
 };
 
 const WorkflowActionsCatalogContext =
@@ -32,6 +33,7 @@ export const WorkflowActionsProvider = ({
     data: actions = [],
     isLoading,
     isFetching,
+    isError,
   } = useFind(
     { entity: EntityType.WORKFLOW_ACTIONS },
     { hasCount: false },
@@ -46,8 +48,8 @@ export const WorkflowActionsProvider = ({
     [actions],
   );
   const value = useMemo(
-    () => ({ actions, actionsByName, isLoading, isFetching }),
-    [actions, actionsByName, isLoading, isFetching],
+    () => ({ actions, actionsByName, isLoading, isFetching, isError }),
+    [actions, actionsByName, isLoading, isFetching, isError],
   );
 
   return (
