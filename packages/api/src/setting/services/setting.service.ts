@@ -11,7 +11,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import {
+  IHookSettingsGroupLabelOperationMap,
+  OnEvent,
+} from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { FindOneOptions } from 'typeorm';
 
@@ -24,6 +27,7 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { UpdateEntityEvent } from '@/utils/types/entity-event.types';
 
 import {
   Setting,
@@ -299,5 +303,23 @@ export class SettingService extends BaseOrmService<SettingOrmEntity> {
 
   getAllSchemaDefinitions() {
     return this.runtimeSettingsService.getAllSchemaDefinitions();
+  }
+
+  /**
+   * Emits an event after a `Setting` has been updated.
+   *
+   * This method is used to synchronize global settings by emitting an event
+   * based on the `group` and `label` of the `Setting`.
+   */
+  @OnEvent('hook:setting:postUpdate')
+  async emitSettingEvents(
+    event: UpdateEntityEvent<SettingOrmEntity>,
+  ): Promise<void> {
+    if (event.entity) {
+      const setting = event.entity.toPlainCls();
+      const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
+      const label = setting.label as '*';
+      this.eventEmitter?.emit(`hook:${group}:${label}`, setting);
+    }
   }
 }

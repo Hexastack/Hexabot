@@ -18,7 +18,6 @@ import type {
 } from 'eventemitter2';
 import type { Session as ExpressSession } from 'express-session';
 import type { Socket } from 'socket.io';
-import type { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import type {
   StatsOrmEntity,
@@ -48,7 +47,14 @@ import type { ModelOrmEntity } from '@/user/entities/model.entity';
 import type { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import type { RoleOrmEntity } from '@/user/entities/role.entity';
 import type { UserOrmEntity } from '@/user/entities/user.entity';
+import type { EmitEventProps, EventProps } from '@/utils';
 import type { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
+import type { DtoActionConfig } from '@/utils/types/dto.types';
+import type {
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
+} from '@/utils/types/entity-event.types';
 import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
@@ -69,9 +75,9 @@ type UnionToIntersection<U> = (
   : never;
 
 type OrmLifecycleEvent<Entity> =
-  | InsertEvent<Entity>
-  | UpdateEvent<Entity>
-  | RemoveEvent<Entity>;
+  | InsertEntityEvent<Entity>
+  | UpdateEntityEvent<Entity>
+  | DeleteEntityEvent<Entity>;
 
 type InsertHook =
   | 'preCreateValidate'
@@ -89,15 +95,34 @@ type UpdateHook =
 
 type DeleteHook = 'preDelete' | 'postDelete';
 
+type HookAction = Extract<
+  Exclude<TNormalizedEvents, '*'>,
+  EventProps<any, DtoActionConfig>['action']
+>;
+
+type HookEventProps<
+  Entity,
+  Hook extends Exclude<TNormalizedEvents, '*'>,
+> = Hook extends HookAction
+  ? Extract<EventProps<Entity, DtoActionConfig>, { action: Hook }>
+  : never;
+
+type HookEmitEventPayload<
+  Entity,
+  Hook extends Exclude<TNormalizedEvents, '*'>,
+> = Hook extends HookAction
+  ? EmitEventProps<Entity, Hook, DtoActionConfig> & HookEventProps<Entity, Hook>
+  : never;
+
 type HookEventPayload<
   Entity,
   Hook extends Exclude<TNormalizedEvents, '*'>,
 > = Hook extends InsertHook
-  ? [InsertEvent<Entity>]
+  ? [InsertEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
   : Hook extends UpdateHook
-    ? [UpdateEvent<Entity>]
+    ? [UpdateEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
     : Hook extends DeleteHook
-      ? [RemoveEvent<Entity>]
+      ? [DeleteEntityEvent<Entity> | HookEmitEventPayload<Entity, Hook>]
       : never;
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];
@@ -185,7 +210,6 @@ declare module '@nestjs/event-emitter' {
   >;
 
   interface CustomEventMap {
-    'hook:analytics:passation': [Subscriber, boolean];
     'hook:chatbot:echo': [AnyEventWrapper];
     'hook:chatbot:delivery': [AnyEventWrapper];
     'hook:chatbot:message': [AnyEventWrapper];

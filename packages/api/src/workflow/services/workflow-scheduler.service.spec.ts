@@ -9,9 +9,10 @@ import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TestingModule } from '@nestjs/testing';
-import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import { FindOneOptions } from 'typeorm';
 
 import { UserService } from '@/user';
+import { EHook, InferActionsDto } from '@/utils';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import {
@@ -19,6 +20,11 @@ import {
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import {
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
+} from '@/utils/types/entity-event.types';
 import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
@@ -181,16 +187,20 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
 
   it('ignores create events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postCreate', {
+      action: EHook.postCreate,
+      payload: {} as InferActionsDto<WorkflowOrmEntity>['create'],
       entity: {} as WorkflowOrmEntity,
-    } as InsertEvent<WorkflowOrmEntity>);
+    } as InsertEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
 
   it('ignores update events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postUpdate', {
-      databaseEntity: {} as WorkflowOrmEntity,
-    } as UpdateEvent<WorkflowOrmEntity>);
+      action: EHook.postUpdate,
+      payload: {} as InferActionsDto<WorkflowOrmEntity>['update'],
+      entity: {} as WorkflowOrmEntity,
+    } as UpdateEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });
@@ -233,8 +243,10 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
 
   it('ignores delete events without an identifier', async () => {
     await eventEmitter.emitAsync('hook:workflow:postDelete', {
-      databaseEntity: {} as WorkflowOrmEntity,
-    } as RemoveEvent<WorkflowOrmEntity>);
+      action: EHook.postDelete,
+      payload: {} as string | FindOneOptions<WorkflowOrmEntity>,
+      entity: {} as WorkflowOrmEntity,
+    } as DeleteEntityEvent<WorkflowOrmEntity>);
 
     expect(schedulerRegistry.getCronJobs().size).toBe(0);
   });

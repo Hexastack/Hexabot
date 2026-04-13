@@ -6,9 +6,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
-import { UpdateEvent } from 'typeorm';
 
-import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import {
   installStatsFixturesTypeOrm,
@@ -154,56 +152,24 @@ describe('StatsService', () => {
     });
   });
 
-  describe('handleSubscriberPreUpdate', () => {
-    const buildSubscriber = (
-      partial: Partial<SubscriberOrmEntity>,
-    ): SubscriberOrmEntity =>
-      ({
-        id: 'subscriber-id',
-        first_name: 'John',
-        last_name: 'Doe',
-        channel: {} as any,
-        assignedTo: null,
-        assignedToId: null,
-        ...partial,
-      }) as unknown as SubscriberOrmEntity;
-    const buildEvent = ({
-      entity,
-      databaseEntity,
-      updatedColumns = ['assignedTo'],
-    }: {
-      entity: Partial<SubscriberOrmEntity>;
-      databaseEntity: Partial<SubscriberOrmEntity>;
-      updatedColumns?: string[];
-    }): UpdateEvent<SubscriberOrmEntity> =>
-      ({
-        entity: buildSubscriber(entity),
-        databaseEntity: buildSubscriber(databaseEntity),
-        updatedColumns: updatedColumns.map(
-          (propertyName) =>
-            ({
-              propertyName,
-            }) as any,
-        ),
-        updatedRelations: [],
-      }) as unknown as UpdateEvent<SubscriberOrmEntity>;
-
-    it('should emit passation analytics when subscriber gets newly assigned', () => {
-      const emitSpy = jest.spyOn(eventEmitter, 'emit');
-      const event = buildEvent({
+  describe('handleSubscriberPreCreate', () => {
+    it('should emit new users stat entry', () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
+      const subscriber = { id: 'subscriber-id', first_name: 'John' };
+      const event = {
         entity: {
-          assignedTo: { id: 'user-id' } as any,
+          toPlainCls: () => subscriber,
         },
-        databaseEntity: { assignedTo: null },
-      });
+      } as any;
 
-      statsService.handleSubscriberPreUpdate(event);
+      statsService.handleSubscriberPreCreate(event);
 
       expect(emitSpy).toHaveBeenCalledTimes(1);
       expect(emitSpy).toHaveBeenCalledWith(
-        'hook:analytics:passation',
-        expect.objectContaining({ id: 'subscriber-id' }),
-        true,
+        'hook:stats:entry',
+        StatsType.new_users,
+        'New users',
+        subscriber,
       );
     });
   });

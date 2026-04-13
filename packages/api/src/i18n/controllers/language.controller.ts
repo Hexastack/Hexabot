@@ -17,10 +17,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
-import { DeleteResult } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {

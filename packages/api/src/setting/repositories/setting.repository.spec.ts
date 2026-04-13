@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { In, Repository, UpdateEvent } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { getRandom } from '@/utils/helpers/safeRandom';
 import {
@@ -18,7 +18,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 
 import { SettingRepository } from './setting.repository';
@@ -173,40 +172,6 @@ describe('SettingRepository (TypeORM)', () => {
         expect(created.value).toEqual(value);
       },
     );
-  });
-
-  describe('afterUpdate', () => {
-    it('emits hook events with the transformed setting payload', async () => {
-      const eventEmitter = settingRepository.getEventEmitter();
-      expect(eventEmitter).toBeDefined();
-
-      const emitSpy = jest.spyOn(eventEmitter!, 'emit');
-      try {
-        const databaseEntity = Object.assign(new SettingOrmEntity(), {
-          group: 'chatbot_settings',
-          label: 'locale',
-          value: 'en',
-        });
-        const updateEvent = {
-          databaseEntity,
-          metadata: repository.metadata,
-        } as unknown as UpdateEvent<SettingOrmEntity>;
-
-        await settingRepository.afterUpdate(updateEvent);
-
-        expect(emitSpy).toHaveBeenCalledTimes(1);
-        const [eventName, payload] = emitSpy.mock.calls[0];
-        expect(eventName).toBe('hook:chatbot_settings:locale');
-        expect(payload).toBeInstanceOf(Setting);
-        expect(payload).toMatchObject({
-          group: 'chatbot_settings',
-          label: 'locale',
-          value: 'en',
-        });
-      } finally {
-        emitSpy.mockRestore();
-      }
-    });
   });
 
   describe('deleteMany', () => {

@@ -11,6 +11,7 @@ import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
 import { Action } from './user/types/action.type';
+import { EHook } from './utils';
 import { WebsocketGateway } from './websocket';
 
 type SubscriptionRequest = {
@@ -248,8 +249,9 @@ describe('AppService', () => {
     it('broadcasts create events to the derived entity room', () => {
       const entity = buildEntity({ id: 'workflow-id' });
 
-      appService.handleEntityCreated({
-        metadata: { name: 'WorkflowOrmEntity' },
+      appService.handleEntityPostEvents({
+        action: EHook.postCreate,
+        entityName: 'workflow',
         entity,
       } as any);
 
@@ -268,8 +270,9 @@ describe('AppService', () => {
         lastName: 'Doe',
       });
 
-      appService.handleEntityUpdated({
-        metadata: { name: 'SubscriberOrmEntity' },
+      appService.handleEntityPostEvents({
+        action: EHook.postUpdate,
+        entityName: 'subscriber',
         entity,
       } as any);
 
@@ -287,8 +290,9 @@ describe('AppService', () => {
         message: { text: 'Hello' },
       });
 
-      appService.handleEntityDeleted({
-        metadata: { name: 'MessageOrmEntity' },
+      appService.handleEntityPostEvents({
+        action: EHook.postDelete,
+        entityName: 'message',
         entity,
       } as any);
 
@@ -300,11 +304,12 @@ describe('AppService', () => {
       });
     });
 
-    it('supports metadata names without the OrmEntity suffix', () => {
+    it('uses entityName payload to select the broadcast room', () => {
       const entity = buildEntity({ id: 'user-id' });
 
-      appService.handleEntityCreated({
-        metadata: { name: 'User' },
+      appService.handleEntityPostEvents({
+        action: EHook.postCreate,
+        entityName: 'user',
         entity,
       } as any);
 
@@ -316,19 +321,11 @@ describe('AppService', () => {
       });
     });
 
-    it('ignores events with missing metadata', () => {
-      appService.handleEntityCreated({
-        entity: { id: 'ignored' },
-      } as any);
-
-      expect(to).not.toHaveBeenCalled();
-      expect(emit).not.toHaveBeenCalled();
-    });
-
     it('throws when event entity is missing', () => {
       expect(() =>
-        appService.handleEntityUpdated({
-          metadata: { name: 'WorkflowOrmEntity' },
+        appService.handleEntityPostEvents({
+          action: EHook.postUpdate,
+          entityName: 'workflow',
         } as any),
       ).toThrow('Unable to extract entity event data');
       expect(to).not.toHaveBeenCalled();

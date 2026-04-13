@@ -6,10 +6,15 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { UserOrmEntity } from '@/user';
+import {
+  DeleteEntityEvent,
+  InsertEntityEvent,
+  UpdateEntityEvent,
+} from '@/utils/types/entity-event.types';
 
 import { ContentOrmEntity } from '../entities/content.entity';
 import { RagHit, RagQueryOptions } from '../types/rag';
@@ -120,7 +125,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postCreate')
   async handleContentCreated(
-    event: InsertEvent<ContentOrmEntity>,
+    event: InsertEntityEvent<UserOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -143,7 +148,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postUpdate')
   async handleContentUpdated(
-    event: UpdateEvent<ContentOrmEntity>,
+    event: UpdateEntityEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -166,7 +171,7 @@ export class RagService {
    */
   @OnEvent('hook:content:postDelete')
   async handleContentDeleted(
-    event: RemoveEvent<ContentOrmEntity>,
+    event: DeleteEntityEvent<ContentOrmEntity>,
   ): Promise<void> {
     const contentId = event.entity?.id;
     if (!contentId) {
@@ -210,6 +215,7 @@ export class RagService {
    */
   private async performRagSettingsReindex(): Promise<void> {
     const settings = await this.settingService.getSettings();
+
     if (!settings.rag_settings.enabled) {
       return;
     }
