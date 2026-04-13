@@ -1,0 +1,55 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+
+import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
+import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
+import { EnumColumn } from '@/database/decorators/enum-column.decorator';
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
+
+import { Thread, ThreadDto, ThreadFull } from '../dto/thread.dto';
+
+import { SubscriberOrmEntity } from './subscriber.entity';
+
+export const THREAD_STATUSES = ['open', 'closed'] as const;
+
+export type ThreadStatus = (typeof THREAD_STATUSES)[number];
+
+export const THREAD_CLOSE_REASONS = ['manual', 'inactivity'] as const;
+
+export type ThreadCloseReason = (typeof THREAD_CLOSE_REASONS)[number];
+
+@Entity({ name: 'threads' })
+@EntityDto<ThreadDto>({ plain: Thread, full: ThreadFull })
+export class ThreadOrmEntity extends BaseOrmEntity<ThreadDto> {
+  @ManyToOne(() => SubscriberOrmEntity, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'subscriber_id' })
+  @AsRelation()
+  subscriber!: SubscriberOrmEntity;
+
+  @RelationId((thread: ThreadOrmEntity) => thread.subscriber)
+  private readonly subscriberId!: string;
+
+  @EnumColumn({ enum: THREAD_STATUSES, default: 'open' })
+  status!: ThreadStatus;
+
+  @DatetimeColumn({ name: 'last_message_at', nullable: true })
+  lastMessageAt?: Date | null;
+
+  @DatetimeColumn({ name: 'closed_at', nullable: true })
+  closedAt?: Date | null;
+
+  @EnumColumn({ enum: THREAD_CLOSE_REASONS, nullable: true })
+  closeReason?: ThreadCloseReason | null;
+
+  @Column({ name: 'title', type: 'varchar', length: 255, nullable: true })
+  title?: string | null;
+}

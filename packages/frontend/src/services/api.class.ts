@@ -96,6 +96,7 @@ export const ROUTES = {
   [EntityType.MCP_SERVER]: "/mcpserver",
   [EntityType.MCP_SERVER_TOOL]: "/mcpserver/:id/tools",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
+  [EntityType.THREAD]: "/thread",
 } as const;
 
 export class ApiClient {

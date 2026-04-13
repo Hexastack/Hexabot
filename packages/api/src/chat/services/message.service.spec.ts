@@ -7,7 +7,7 @@
 import { TestingModule } from '@nestjs/testing';
 
 import { Message, MessageFull } from '@/chat/dto/message.dto';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Thread } from '@/chat/dto/thread.dto';
 import { MessageRepository } from '@/chat/repositories/message.repository';
 import { MessageService } from '@/chat/services/message.service';
 import {
@@ -26,8 +26,8 @@ describe('MessageService (TypeORM)', () => {
   let populatedMessages: MessageFull[];
   let referencePlain: Message;
   let referencePopulated: MessageFull;
-  let referenceSubscriber: Subscriber;
-  let subscriberMessagesAsc: Message[];
+  let referenceThread: Thread;
+  let threadMessagesDesc: Message[];
 
   const orderByCreatedAtAsc = { order: { createdAt: 'ASC' as const } };
 
@@ -67,14 +67,14 @@ describe('MessageService (TypeORM)', () => {
       throw new Error('Unable to resolve a reference message from fixtures');
     }
 
-    if (!referencePopulated.sender) {
-      throw new Error('Expected reference message to include a sender');
+    if (!referencePopulated.thread) {
+      throw new Error('Expected reference message to include a thread');
     }
 
-    referenceSubscriber = referencePopulated.sender;
-    subscriberMessagesAsc = (messageFixtures as Message[]).sort(
-      (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime(),
-    );
+    referenceThread = referencePopulated.thread;
+    threadMessagesDesc = plainMessages
+      .filter((message) => message.thread === referenceThread.id)
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
   });
 
   afterEach(() => {
@@ -117,11 +117,11 @@ describe('MessageService (TypeORM)', () => {
     it('returns history until the specified date ordered from newest to oldest', async () => {
       const until = new Date('2024-12-31T23:59:59.999Z');
       const result = await messageService.findHistoryUntilDate(
-        referenceSubscriber,
+        referenceThread,
         until,
         30,
       );
-      const expected = subscriberMessagesAsc
+      const expected = threadMessagesDesc
         .filter((message) => message.createdAt! < until)
         .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
 
@@ -131,15 +131,15 @@ describe('MessageService (TypeORM)', () => {
 
   describe('findHistorySinceDate', () => {
     it('returns history since the specified date ordered from oldest to newest', async () => {
-      const since = subscriberMessagesAsc[0].createdAt;
+      const since = threadMessagesDesc[threadMessagesDesc.length - 1].createdAt;
       const result = await messageService.findHistorySinceDate(
-        referenceSubscriber,
+        referenceThread,
         since,
         30,
       );
-      const expected = subscriberMessagesAsc.filter(
-        (message) => message.createdAt! > since,
-      );
+      const expected = threadMessagesDesc
+        .filter((message) => message.createdAt! > since)
+        .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
 
       expect(result).toEqualPayload(expected, [
         'id',
@@ -156,10 +156,10 @@ describe('MessageService (TypeORM)', () => {
     it('returns the most recent messages for a subscriber in chronological order', async () => {
       const limit = 2;
       const result = await messageService.findLastMessages(
-        referenceSubscriber,
+        referenceThread,
         limit,
       );
-      const expected = subscriberMessagesAsc.slice(0, limit);
+      const expected = threadMessagesDesc.slice(0, limit);
 
       expect(result).toEqualPayload(expected, [
         'id',

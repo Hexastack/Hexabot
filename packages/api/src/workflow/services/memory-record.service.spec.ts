@@ -126,6 +126,29 @@ describe('MemoryRecordService (TypeORM)', () => {
       expect(workflowEntry?.value).toEqual(workflowRecord.value);
       expect(runEntry?.value).toEqual(runRecord.value);
     });
+
+    it('builds thread-scoped filters when thread id is provided', async () => {
+      const findAndPopulateSpy = jest
+        .spyOn(memoryRecordService, 'findAndPopulate')
+        .mockResolvedValue([]);
+
+      await memoryRecordService.findActiveByScope({
+        ownerId: userFixtureIds.admin,
+        threadId: 'thread-1',
+      });
+
+      expect(findAndPopulateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.arrayContaining([
+            expect.objectContaining({
+              owner: { id: userFixtureIds.admin },
+              definition: { scope: MemoryScope.thread },
+              thread: { id: 'thread-1' },
+            }),
+          ]),
+        }),
+      );
+    });
   });
 
   describe('upsertScopedRecord', () => {
@@ -228,6 +251,34 @@ describe('MemoryRecordService (TypeORM)', () => {
       expect(stored!.expiresAt?.getTime()).toBe(expectedExpiresAt?.getTime());
       expect(stored!.workflow).toBeUndefined();
       expect(stored!.run).toBeUndefined();
+    });
+
+    it('creates thread-scoped record with thread relation', async () => {
+      const createSpy = jest
+        .spyOn(memoryRecordService, 'create')
+        .mockResolvedValue({} as any);
+      jest.spyOn(memoryRecordService, 'findOne').mockResolvedValue(null);
+
+      await memoryRecordService.upsertScopedRecord({
+        definition: {
+          id: globalDefinition.id,
+          scope: MemoryScope.thread,
+          ttlSeconds: null,
+        },
+        ownerId: userFixtureIds.admin,
+        threadId: 'thread-1',
+        value: { step: 'threaded' },
+      });
+
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: userFixtureIds.admin,
+          workflow: null,
+          thread: 'thread-1',
+          run: null,
+          value: { step: 'threaded' },
+        }),
+      );
     });
   });
 });

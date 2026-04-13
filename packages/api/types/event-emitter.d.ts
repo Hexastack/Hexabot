@@ -34,6 +34,7 @@ import type { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import type { LabelOrmEntity } from '@/chat/entities/label.entity';
 import type { MessageOrmEntity } from '@/chat/entities/message.entity';
 import type { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
+import type { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import type { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import type { ContentOrmEntity } from '@/cms/entities/content.entity';
 import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
@@ -159,6 +160,7 @@ declare module '@nestjs/event-emitter' {
     role: RoleOrmEntity;
     setting: SettingOrmEntity;
     subscriber: SubscriberOrmEntity;
+    thread: ThreadOrmEntity;
     translation: TranslationOrmEntity;
     user: UserOrmEntity;
     workflow: WorkflowOrmEntity;

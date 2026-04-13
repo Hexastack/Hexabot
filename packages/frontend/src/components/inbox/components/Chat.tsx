@@ -44,8 +44,14 @@ export function Chat() {
   const { subscriber } = useChat();
   const { user } = useAuth();
   const { mutate: createMessage } = useCreate(EntityType.MESSAGE);
-  const { replyTo, messages, fetchNextPage, hasNextPage, isFetching } =
-    useInfinitedLiveMessages();
+  const {
+    replyTo,
+    messages,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    activeThreadId,
+  } = useInfinitedLiveMessages();
 
   if (!subscriber) {
     return (
@@ -171,11 +177,12 @@ export function Chat() {
         onSend={(_, message) =>
           user &&
           replyTo &&
+          activeThreadId &&
           createMessage({
             message: { text: message },
             sentBy: user.id,
             inReplyTo: replyTo,
-            recipient: subscriber.id,
+            thread: activeThreadId,
           })
         }
       />

@@ -270,6 +270,29 @@ describe('MemoryStore', () => {
       ).rejects.toThrow('Run id is required to update run-scoped memory.');
     });
 
+    it('throws when thread-scoped memory lacks thread id', async () => {
+      const definition = createDefinition({
+        slug: 'profile',
+        scope: MemoryScope.thread,
+      });
+      const context = createContext();
+      const store = MemoryStore.createStore(
+        {
+          identifiers: { ownerId: 'owner-1' },
+          definitionCache: new Map([[definition.slug, definition]]),
+          records: [],
+          upsertRecord: jest.fn(),
+        },
+        context,
+      );
+
+      await expect(
+        store.updateRecord('profile', { name: 'Ada' }),
+      ).rejects.toThrow(
+        'Thread id is required to update thread-scoped memory.',
+      );
+    });
+
     it('validates values against the schema', async () => {
       const definition = createDefinition({ slug: 'profile' });
       const context = createContext();
@@ -318,6 +341,41 @@ describe('MemoryStore', () => {
       expect(store.instances.profile.data).toEqual(value);
       expect(result).toEqual(value);
       expect(context.state.memory).toEqual({ profile: value });
+    });
+
+    it('persists thread-scoped memory with thread identifier', async () => {
+      const definition = createDefinition({
+        slug: 'conversation',
+        scope: MemoryScope.thread,
+      });
+      const persistRecord = jest.fn().mockResolvedValue(undefined);
+      const context = createContext();
+      const store = MemoryStore.createStore(
+        {
+          identifiers: {
+            ownerId: 'owner-1',
+            threadId: 'thread-1',
+          },
+          definitionCache: new Map([[definition.slug, definition]]),
+          records: [],
+          upsertRecord: persistRecord,
+        },
+        context,
+      );
+      const value = { name: 'Thread Memory' };
+      const result = await store.updateRecord('conversation', value);
+
+      expect(persistRecord).toHaveBeenCalledWith({
+        definition,
+        ownerId: 'owner-1',
+        workflowId: undefined,
+        threadId: 'thread-1',
+        runId: undefined,
+        value,
+      });
+      expect(result).toEqual(value);
+      expect(store.raw.conversation).toEqual(value);
+      expect(context.state.memory).toEqual({ conversation: value });
     });
   });
 

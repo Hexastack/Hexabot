@@ -161,10 +161,15 @@ export abstract class MessageAction<
       format: envelope.format,
       envelope: envelope.message,
     };
+    const threadId = event.getThreadId();
+    if (!threadId) {
+      throw new Error('Missing thread id on conversational event');
+    }
     const sentMessage: MessageCreateDto = {
       mid: mid ?? '',
       message: envelope.message,
       recipient: recipient.id,
+      thread: threadId,
       handover: false,
       read: false,
       delivery: false,

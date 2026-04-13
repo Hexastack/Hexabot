@@ -95,9 +95,21 @@ SubscriberEntity.define({
   labels: [LabelEntity],
 });
 
+export const ThreadEntity = new schema.Entity(
+  EntityType.THREAD,
+  {
+    subscriber: SubscriberEntity,
+  },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const MessageEntity = new schema.Entity(
   EntityType.MESSAGE,
   {
+    thread: ThreadEntity,
     sender: SubscriberEntity,
     recipient: SubscriberEntity,
     sentBy: UserEntity,
@@ -317,6 +329,7 @@ export const WorkflowRunEntity = new schema.Entity(
     workflow: WorkflowEntity,
     workflowVersion: WorkflowVersionEntity,
     triggeredBy: UserEntity,
+    thread: ThreadEntity,
   },
   {
     idAttribute: ({ id }) => id,
@@ -347,6 +360,7 @@ export const ENTITY_MAP = {
   [EntityType.MCP_SERVER]: McpServerEntity,
   [EntityType.MCP_SERVER_TOOL]: McpServerToolEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
+  [EntityType.THREAD]: ThreadEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,
   [EntityType.LABEL_GROUP]: LabelGroupEntity,

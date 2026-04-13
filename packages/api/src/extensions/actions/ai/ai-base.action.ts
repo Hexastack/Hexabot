@@ -20,7 +20,7 @@ import { BaseAction } from '@/actions/base-action';
 import { ActionMetadata, ActionName } from '@/actions/types';
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
 import { Message } from '@/chat/dto/message.dto';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
+import { Thread } from '@/chat/dto/thread.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { McpToolBindingDefinitions } from '@/workflow/types';
@@ -450,6 +450,12 @@ export abstract class AiBaseAction<
           'A subscriber id is required to load previous messages for this action.',
         );
       }
+      const threadId = context.threadId;
+      if (!threadId) {
+        throw new Error(
+          'A thread id is required to load previous messages for this action.',
+        );
+      }
 
       const messageService = context.services.message;
       if (!messageService) {
@@ -459,7 +465,7 @@ export abstract class AiBaseAction<
       }
 
       const history = await messageService.findLastMessages(
-        { id: subscriberId } as Subscriber,
+        { id: threadId } as Thread,
         messagesLimit,
       );
       const messages = this.normalizeMessagesForModel(history, subscriberId);

@@ -24,7 +24,13 @@ export class MemoryService {
    * Build a structured memory store for a given owner, keyed by slug.
    */
   async buildStore(
-    { ownerId, workflowId, runId, memoryDefinitionIds }: MemoryStoreIdentifier,
+    {
+      ownerId,
+      workflowId,
+      threadId,
+      runId,
+      memoryDefinitionIds,
+    }: MemoryStoreIdentifier,
     context: WorkflowRuntimeContext,
   ): Promise<MemoryStore> {
     const definitionCache =
@@ -39,7 +45,7 @@ export class MemoryService {
 
     return MemoryStore.createStore(
       {
-        identifiers: { ownerId, workflowId, runId },
+        identifiers: { ownerId, workflowId, threadId, runId },
         definitionCache,
         records,
         upsertRecord: (params) =>

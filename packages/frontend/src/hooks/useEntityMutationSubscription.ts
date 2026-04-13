@@ -32,6 +32,33 @@ const getAffectedEntityTypes = (entityType: EntityType): EntityType[] => {
 const transformEntityPayload = (entityType: EntityType, payload: unknown) =>
   PAYLOAD_TRANSFORMERS_BY_ENTITY_TYPE[entityType]?.(payload) ?? payload;
 
+type CacheRecord = Record<string, unknown>;
+
+export const mergeEntityCachePayload = (
+  entityType: EntityType,
+  previousData: CacheRecord | undefined,
+  nextEntityData: CacheRecord,
+) => {
+  const mergedPayload = {
+    ...previousData,
+    ...nextEntityData,
+  };
+
+  if (
+    entityType === EntityType.THREAD &&
+    typeof previousData?.subscriber === "object" &&
+    previousData.subscriber !== null &&
+    typeof nextEntityData.subscriber === "string"
+  ) {
+    return {
+      ...mergedPayload,
+      subscriber: previousData.subscriber,
+    };
+  }
+
+  return mergedPayload;
+};
+
 type EntityMutationEvent<E extends IBaseSchema = IBaseSchema> = {
   entity: string;
   op: "create" | "update" | "delete";
@@ -115,9 +142,9 @@ const prependInfiniteFirstPage = (result: unknown) => (oldData: unknown) => {
     pages: [[result, ...firstPage], ...remainingPages],
   };
 };
-// Extracts a subscriber id from message payload recipient/sender references.
-const getMessageSubscriberId = (data: IBaseSchema) => {
-  const payload = data as unknown as { recipient?: unknown; sender?: unknown };
+// Extracts a thread id from a message payload.
+const getMessageThreadId = (data: IBaseSchema) => {
+  const payload = data as unknown as { thread?: unknown };
   // Supports both plain string refs and normalized object refs with `id`.
   const getId = (value: unknown) => {
     if (typeof value === "string") {
@@ -133,7 +160,13 @@ const getMessageSubscriberId = (data: IBaseSchema) => {
     return "";
   };
 
-  return getId(payload.recipient) || getId(payload.sender);
+  return getId(payload.thread);
+};
+
+export const isThreadInfiniteQuery = (queryKey: readonly unknown[]) => {
+  const [qType, qEntity] = queryKey;
+
+  return qType === QueryType.infinite && isSameEntity(qEntity, EntityType.THREAD);
 };
 
 export const useEntityMutationSubscription = () => {
@@ -190,11 +223,15 @@ export const useEntityMutationSubscription = () => {
           affectedEntityTypes.forEach((affectedEntityType) => {
             queryClient.setQueryData(
               [QueryType.item, affectedEntityType, id],
-              (previousData: Record<string, unknown> | undefined) => {
-                return transformEntityPayload(affectedEntityType, {
-                  ...previousData,
-                  ...nextEntityData,
-                });
+              (previousData: CacheRecord | undefined) => {
+                return transformEntityPayload(
+                  affectedEntityType,
+                  mergeEntityCachePayload(
+                    affectedEntityType,
+                    previousData,
+                    nextEntityData as CacheRecord,
+                  ),
+                );
               },
             );
           });
@@ -236,9 +273,9 @@ export const useEntityMutationSubscription = () => {
             return !params.where || channelFilter?.["$in"]?.length === 0;
           });
         } else if (entityType === EntityType.MESSAGE) {
-          const subscriberId = getMessageSubscriberId(data);
+          const threadId = getMessageThreadId(data);
 
-          if (subscriberId) {
+          if (threadId) {
             updateInfiniteQuery((queryKey) => {
               const [qType, qEntity, qParams] = queryKey;
 
@@ -250,16 +287,15 @@ export const useEntityMutationSubscription = () => {
               }
 
               const params = parseQueryParams(qParams);
-              const filters = params.where?.["or"] as
-                | Array<Record<string, string>>
-                | undefined;
+              const threadFilter = params.where?.["thread.id"];
 
-              return (
-                filters?.[0]?.["recipient.id"] === subscriberId &&
-                filters?.[1]?.["sender.id"] === subscriberId
-              );
+              return threadFilter === threadId;
             });
           }
+        } else if (entityType === EntityType.THREAD) {
+          queryClient.refetchQueries({
+            predicate: ({ queryKey }) => isThreadInfiniteQuery(queryKey),
+          });
         }
       } else {
         affectedEntityTypes.forEach((affectedEntityType) => {

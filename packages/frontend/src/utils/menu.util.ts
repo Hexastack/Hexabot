@@ -72,7 +72,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
   },
   {
     text: "menu.inbox",
-    href: "/inbox",
+    href: "/inbox/threads",
     Icon: MessagesSquare,
     requires: {
       [EntityType.MESSAGE]: [PermissionAction.READ],

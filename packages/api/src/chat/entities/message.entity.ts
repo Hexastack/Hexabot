@@ -23,6 +23,7 @@ import { Message, MessageDto, MessageFull } from '../dto/message.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
+import { ThreadOrmEntity } from './thread.entity';
 
 @Check(
   'CHK_MESSAGES_SENDER_OR_RECIPIENT',
@@ -66,6 +67,17 @@ export class MessageOrmEntity extends BaseOrmEntity<MessageDto> {
 
   @RelationId((message: MessageOrmEntity) => message.sentBy)
   private readonly sentById?: string | null;
+
+  @ManyToOne(() => ThreadOrmEntity, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'thread_id' })
+  @AsRelation()
+  thread!: ThreadOrmEntity;
+
+  @RelationId((message: MessageOrmEntity) => message.thread)
+  private readonly threadId!: string;
 
   @JsonColumn()
   message!: StdOutgoingMessage | StdIncomingMessage;

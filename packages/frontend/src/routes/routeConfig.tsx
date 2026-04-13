@@ -105,7 +105,7 @@ export const routes: RouteObjectItem[] = [
     },
   },
   {
-    path: "/inbox/subscribers?/:subscriber?",
+    path: "/inbox/threads/:thread?",
     Component: Inbox,
     handle: { hasNoPadding: true },
   },
