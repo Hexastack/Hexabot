@@ -93,21 +93,20 @@ const getTaskOutputSchema = ({
 const getMemoryContextSchema = (
   memoryDefinitions: IMemoryDefinition[] = [],
 ): JsonSchemaLike => {
-  const memoryProperties = memoryDefinitions.reduce<Record<string, JsonSchemaLike>>(
-    (acc, memoryDefinition) => {
-      const memorySchema = memoryDefinition?.schema;
+  const memoryProperties = memoryDefinitions.reduce<
+    Record<string, JsonSchemaLike>
+  >((acc, memoryDefinition) => {
+    const memorySchema = memoryDefinition?.schema;
 
-      if (!memoryDefinition?.slug) {
-        return acc;
-      }
-      acc[memoryDefinition.slug] = isJsonSchemaLike(memorySchema)
-        ? memorySchema
-        : createOpenObjectSchema();
-
+    if (!memoryDefinition?.slug) {
       return acc;
-    },
-    {},
-  );
+    }
+    acc[memoryDefinition.slug] = isJsonSchemaLike(memorySchema)
+      ? memorySchema
+      : createOpenObjectSchema();
+
+    return acc;
+  }, {});
 
   return {
     type: "object",

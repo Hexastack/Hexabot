@@ -41,7 +41,10 @@ type WorkflowTypeCardContent = {
   isSchemaEditable: boolean;
 };
 
-const WORKFLOW_TYPE_CARD_CONTENT: Record<WorkflowType, WorkflowTypeCardContent> = {
+const WORKFLOW_TYPE_CARD_CONTENT: Record<
+  WorkflowType,
+  WorkflowTypeCardContent
+> = {
   [WorkflowType.conversational]: {
     triggerLabelKey: "message.workflow_type_conversational_trigger",
     triggerDefaultValue: "Triggered by chat messages and events.",
@@ -54,7 +57,8 @@ const WORKFLOW_TYPE_CARD_CONTENT: Record<WorkflowType, WorkflowTypeCardContent> 
   [WorkflowType.manual]: {
     triggerLabelKey: "message.workflow_type_manual_trigger",
     triggerDefaultValue: "Triggered via API or manual calls.",
-    schemaEditabilityLabelKey: "message.workflow_type_manual_schema_editability",
+    schemaEditabilityLabelKey:
+      "message.workflow_type_manual_schema_editability",
     schemaEditabilityDefaultValue:
       "You can edit input schema. You define the input schema.",
     isSchemaEditable: true,
@@ -143,7 +147,9 @@ export const WorkflowTypeSelector = ({
                 "&:hover": disabled
                   ? undefined
                   : {
-                      borderColor: isSelected ? "primary.main" : "text.secondary",
+                      borderColor: isSelected
+                        ? "primary.main"
+                        : "text.secondary",
                     },
               })}
             >
@@ -196,7 +202,11 @@ export const WorkflowTypeSelector = ({
                     <Typography
                       variant="caption"
                       fontWeight={500}
-                      color={details.isSchemaEditable ? "success.main" : "text.secondary"}
+                      color={
+                        details.isSchemaEditable
+                          ? "success.main"
+                          : "text.secondary"
+                      }
                     >
                       {t(details.schemaEditabilityLabelKey, {
                         defaultValue: details.schemaEditabilityDefaultValue,

@@ -118,7 +118,10 @@ export const Carousel = (props: StdOutgoingListMessage) => {
   const decrementScroll = () => {
     setScrollTo((current) => Math.max(current - 1, 0));
   };
-  const handleScrollEnd = useCallback(function (this: HTMLDivElement, _: Event) {
+  const handleScrollEnd = useCallback(function (
+    this: HTMLDivElement,
+    _: Event,
+  ) {
     setScrollTo(Math.floor(this.scrollLeft / CARD_WIDTH));
   }, []);
 

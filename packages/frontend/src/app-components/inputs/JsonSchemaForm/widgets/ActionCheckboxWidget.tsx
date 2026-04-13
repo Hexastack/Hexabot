@@ -53,7 +53,11 @@ export const ActionCheckboxWidget = ({
           aria-describedby={ariaDescribedByIds(id)}
         />
       }
-      label={labelValue(labelWithTooltip as unknown as string, hideLabel, false)}
+      label={labelValue(
+        labelWithTooltip as unknown as string,
+        hideLabel,
+        false,
+      )}
     />
   );
 };

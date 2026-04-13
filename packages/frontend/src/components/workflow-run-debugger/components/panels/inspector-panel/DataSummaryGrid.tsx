@@ -24,10 +24,12 @@ export const DataSummaryGrid = ({
   contextSummary,
   outputSummary,
 }: DataSummaryGridProps) => (
-  <SummaryGrid columns={{
-    xs: "1fr",
-    sm: "repeat(3, minmax(0, 1fr))",
-  }}>
+  <SummaryGrid
+    columns={{
+      xs: "1fr",
+      sm: "repeat(3, minmax(0, 1fr))",
+    }}
+  >
     <SummaryItem label={inputLabel} value={inputSummary} />
     <SummaryItem label={contextLabel} value={contextSummary} />
     <SummaryItem label={outputLabel} value={outputSummary} />

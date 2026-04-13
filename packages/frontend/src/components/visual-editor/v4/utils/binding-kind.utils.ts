@@ -7,10 +7,7 @@
 import type { WorkflowBindingDefinition } from "@/contexts/workflow-bindings.context";
 
 export const humanizeBindingKind = (kind: string): string => {
-  const normalized = kind
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ");
+  const normalized = kind.trim().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 
   if (!normalized) {
     return "Binding";

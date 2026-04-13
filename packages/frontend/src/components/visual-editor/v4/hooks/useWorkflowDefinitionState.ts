@@ -187,13 +187,7 @@ export const useWorkflowDefinitionState = ({
     } catch (error) {
       return { definition: undefined, flow: undefined, error: error as Error };
     }
-  }, [
-    actionsByName,
-    compileActionsByName,
-    bindingKinds,
-    yaml,
-    workflow?.id,
-  ]);
+  }, [actionsByName, compileActionsByName, bindingKinds, yaml, workflow?.id]);
   // New definition version not yet saved ?
   const isDefinitionDirty = useMemo(() => {
     if (workflow?.currentVersion && !currentVersion) {
@@ -255,9 +249,8 @@ export const useWorkflowDefinitionState = ({
       return;
     }
 
-    definitionSignatureRef.current = WorkflowHelper.stringifyDefinition(
-      definition,
-    );
+    definitionSignatureRef.current =
+      WorkflowHelper.stringifyDefinition(definition);
     debouncedDefinitionUpdate.clear();
     commitVersion({
       action: WorkflowVersionAction.update,
@@ -271,33 +264,39 @@ export const useWorkflowDefinitionState = ({
     isDefinitionDirty,
     commitVersion,
   ]);
-  const publishVersion = useCallback((versionId?: string) => {
-    if (!workflow?.id) {
-      return;
-    }
+  const publishVersion = useCallback(
+    (versionId?: string) => {
+      if (!workflow?.id) {
+        return;
+      }
 
-    if (
-      versionId &&
-      versionId !== workflow.currentVersion &&
-      versionId !== workflow.publishedVersion
-    ) {
-      publishByVersionId(versionId);
+      if (
+        versionId &&
+        versionId !== workflow.currentVersion &&
+        versionId !== workflow.publishedVersion
+      ) {
+        publishByVersionId(versionId);
 
-      return;
-    }
+        return;
+      }
 
-    if (!workflow.currentVersion || workflow.currentVersion === workflow.publishedVersion) {
-      return;
-    }
+      if (
+        !workflow.currentVersion ||
+        workflow.currentVersion === workflow.publishedVersion
+      ) {
+        return;
+      }
 
-    publish();
-  }, [
-    publish,
-    publishByVersionId,
-    workflow?.id,
-    workflow?.currentVersion,
-    workflow?.publishedVersion,
-  ]);
+      publish();
+    },
+    [
+      publish,
+      publishByVersionId,
+      workflow?.id,
+      workflow?.currentVersion,
+      workflow?.publishedVersion,
+    ],
+  );
   const unpublishVersion = useCallback(() => {
     if (!workflow?.id || !workflow.publishedVersion) {
       return;

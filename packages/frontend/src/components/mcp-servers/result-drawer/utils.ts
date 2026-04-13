@@ -12,7 +12,10 @@ const toErrorMessage = (value: unknown): string => {
   }
 
   if (Array.isArray(value)) {
-    return value.map((entry) => toErrorMessage(entry)).filter(Boolean).join("\n");
+    return value
+      .map((entry) => toErrorMessage(entry))
+      .filter(Boolean)
+      .join("\n");
   }
 
   if (typeof value === "number" || typeof value === "boolean") {
@@ -56,7 +59,10 @@ export const formatErrorMessage = (message: string) => {
     .replace(/\\+t/g, "\t");
 };
 
-export const getConnectionLabel = (server: IMcpServerInfo, noneLabel: string): string => {
+export const getConnectionLabel = (
+  server: IMcpServerInfo,
+  noneLabel: string,
+): string => {
   if (server.transport === McpServerTransport.http) {
     return server.url || noneLabel;
   }

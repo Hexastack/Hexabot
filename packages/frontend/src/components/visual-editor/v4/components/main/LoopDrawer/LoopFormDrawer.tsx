@@ -297,9 +297,8 @@ export const LoopFormDrawer = () => {
 
     return isLoopStep(stepAtPath) ? stepAtPath : undefined;
   }, [definition, stepPath]);
-  const [formValues, setFormValues] = useState<LoopFormValues>(
-    getLoopFormValues(),
-  );
+  const [formValues, setFormValues] =
+    useState<LoopFormValues>(getLoopFormValues());
   const open = Boolean(selectedOperatorNode && selectedNodeId);
 
   useEffect(() => {
@@ -339,7 +338,9 @@ export const LoopFormDrawer = () => {
     return parseJsonValue(normalizedValues.accumulateInitial);
   }, [formValues.accumulateEnabled, normalizedValues.accumulateInitial]);
   const errors = useMemo<LoopFormErrors>(() => {
-    const requiredErrorLabel = t("visual_editor.loop_drawer.form.errors.required");
+    const requiredErrorLabel = t(
+      "visual_editor.loop_drawer.form.errors.required",
+    );
     const jsonataRequiredErrorLabel = t(
       "visual_editor.loop_drawer.form.errors.jsonata_required",
     );
@@ -367,7 +368,9 @@ export const LoopFormDrawer = () => {
       formValues.accumulateEnabled && parsedAccumulateInitial === undefined;
 
     return {
-      forEachItem: normalizedValues.forEachItem ? undefined : requiredErrorLabel,
+      forEachItem: normalizedValues.forEachItem
+        ? undefined
+        : requiredErrorLabel,
       forEachIn: !normalizedValues.forEachIn
         ? requiredErrorLabel
         : !normalizedValues.forEachIn.startsWith("=")

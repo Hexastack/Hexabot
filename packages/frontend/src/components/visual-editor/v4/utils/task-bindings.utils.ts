@@ -75,7 +75,10 @@ export const mountDefBindingRef = <TDefDefinition extends DefDefinition>(
   bindingRef: string,
   multiple: boolean,
 ): TDefDefinition => {
-  const currentRefs = toBindingRefs(defDefinition.bindings?.[bindingKind], multiple);
+  const currentRefs = toBindingRefs(
+    defDefinition.bindings?.[bindingKind],
+    multiple,
+  );
 
   if (multiple) {
     if (currentRefs.includes(bindingRef)) {
@@ -103,7 +106,10 @@ export const unmountDefBindingRef = <TDefDefinition extends DefDefinition>(
   bindingRef: string,
   multiple: boolean,
 ): TDefDefinition => {
-  const currentRefs = toBindingRefs(defDefinition.bindings?.[bindingKind], multiple);
+  const currentRefs = toBindingRefs(
+    defDefinition.bindings?.[bindingKind],
+    multiple,
+  );
 
   if (!currentRefs.includes(bindingRef)) {
     return defDefinition;

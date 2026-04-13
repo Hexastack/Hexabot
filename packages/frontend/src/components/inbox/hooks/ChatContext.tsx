@@ -44,7 +44,9 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
       enabled: threadId !== null,
     },
   );
-  const thread = (threadId && threadData ? threadData : null) as IThreadFull | null;
+  const thread = (
+    threadId && threadData ? threadData : null
+  ) as IThreadFull | null;
   const subscriberId = useMemo(() => {
     if (!thread?.subscriber) {
       return null;

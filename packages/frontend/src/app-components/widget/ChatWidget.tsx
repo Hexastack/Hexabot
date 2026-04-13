@@ -94,9 +94,7 @@ const ChatWidgetComponent = ({
   }
 
   return (
-    <Box
-      sx={containerSx}
-    >
+    <Box sx={containerSx}>
       <UiChatWidget
         config={widgetConfig}
         CustomAvatar={renderAvatar}

@@ -79,7 +79,8 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
 export interface MessageCustomContentProps
   extends React.HTMLAttributes<HTMLDivElement> {}
 
-export interface MessageFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface MessageFooterProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   sender?: string;
   sentTime?: string;
   sx?: SxProps<Theme>;

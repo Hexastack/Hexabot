@@ -202,7 +202,9 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
               aria-disabled={disabled}
               contentEditable={!disabled}
               suppressContentEditableWarning
-              data-placeholder={typeof placeholder === "string" ? placeholder : ""}
+              data-placeholder={
+                typeof placeholder === "string" ? placeholder : ""
+              }
               onInput={emitChange}
               onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
                 if (
@@ -237,7 +239,11 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
 
         {sendButton && (
           <Box sx={{ display: "flex", alignItems: "flex-end" }}>
-            <IconButton size="small" disabled={effectiveSendDisabled} onClick={send}>
+            <IconButton
+              size="small"
+              disabled={effectiveSendDisabled}
+              onClick={send}
+            >
               <SendRoundedIcon />
             </IconButton>
           </Box>

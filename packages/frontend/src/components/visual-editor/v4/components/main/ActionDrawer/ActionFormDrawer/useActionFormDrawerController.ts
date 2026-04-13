@@ -124,7 +124,8 @@ export const useActionFormDrawerController = ({
   const isCreateMode = Boolean(target);
   const actionName = target?.action.name ?? selectedActionNode?.actionName;
   const taskName = target?.initialTaskName ?? selectedActionNode?.taskName;
-  const actionSchema = target?.action ?? (actionName ? actionsByName.get(actionName) : undefined);
+  const actionSchema =
+    target?.action ?? (actionName ? actionsByName.get(actionName) : undefined);
   const taskDefinition =
     !isCreateMode && taskName ? taskDefinitions[taskName] : undefined;
   const [inputData, setInputData] = useState<Record<string, unknown>>({});
@@ -134,13 +135,17 @@ export const useActionFormDrawerController = ({
   const [executionSettingsData, setExecutionSettingsData] = useState<
     Record<string, unknown>
   >({});
-  const [isUsingWorkflowExecutionDefaults, setIsUsingWorkflowExecutionDefaults] =
-    useState(true);
+  const [
+    isUsingWorkflowExecutionDefaults,
+    setIsUsingWorkflowExecutionDefaults,
+  ] = useState(true);
   const [hasInputVisibleErrors, setHasInputVisibleErrors] = useState(false);
   const [hasActionSettingsVisibleErrors, setHasActionSettingsVisibleErrors] =
     useState(false);
-  const [hasExecutionSettingsVisibleErrors, setHasExecutionSettingsVisibleErrors] =
-    useState(false);
+  const [
+    hasExecutionSettingsVisibleErrors,
+    setHasExecutionSettingsVisibleErrors,
+  ] = useState(false);
   const open = Boolean(target || (selectedActionNode && selectedNodeId));
   const panelKeyBase = target
     ? `action-create-${target.initialTaskName}-${target.action.name}`
@@ -182,7 +187,8 @@ export const useActionFormDrawerController = ({
     open,
     actionName,
     taskName,
-    taskDescription: target?.initialTaskDescription ?? taskDefinition?.description,
+    taskDescription:
+      target?.initialTaskDescription ?? taskDefinition?.description,
     tasks: taskDefinitions,
   });
   const handleSaveClose = useStepDrawerClose(() => {
@@ -199,9 +205,9 @@ export const useActionFormDrawerController = ({
     }
 
     if (isCreateMode && target) {
-      const inputDefaults =
-        (getSchemaDefaults<Record<string, JsonValue>>(target.action.inputSchema) ??
-          {}) as Record<string, unknown>;
+      const inputDefaults = (getSchemaDefaults<Record<string, JsonValue>>(
+        target.action.inputSchema,
+      ) ?? {}) as Record<string, unknown>;
       const { actionSettings, executionSettings, hasExecutionOverride } =
         splitTaskSettings(
           getSchemaDefaults<Record<string, JsonValue>>(
@@ -338,7 +344,9 @@ export const useActionFormDrawerController = ({
       const nextTask: TaskDefinition = {
         kind: "task",
         action: actionSchema.name,
-        ...(normalizedDescription ? { description: normalizedDescription } : {}),
+        ...(normalizedDescription
+          ? { description: normalizedDescription }
+          : {}),
         ...(hasInputValues
           ? { inputs: inputData as Record<string, JsonValue> }
           : {}),
@@ -389,7 +397,8 @@ export const useActionFormDrawerController = ({
       return;
     }
 
-    const shouldIncludeInputs = hasInputValues || currentTask.inputs !== undefined;
+    const shouldIncludeInputs =
+      hasInputValues || currentTask.inputs !== undefined;
     const shouldIncludeSettings =
       hasSettingValues || currentTask.settings !== undefined;
     const nextTask: TaskDefinition = {
@@ -441,7 +450,10 @@ export const useActionFormDrawerController = ({
     (isCreateMode
       ? !target ||
         !normalizedTaskName ||
-        Object.prototype.hasOwnProperty.call(taskDefinitions, normalizedTaskName)
+        Object.prototype.hasOwnProperty.call(
+          taskDefinitions,
+          normalizedTaskName,
+        )
       : !selectedActionNode || !taskDefinition);
 
   return {

@@ -133,7 +133,8 @@ export const Settings = () => {
 
         if (hasLicenseValue && licenseStatus !== "active") {
           toast.error(
-            refreshedUser?.license?.lastError || t("message.internal_server_error"),
+            refreshedUser?.license?.lastError ||
+              t("message.internal_server_error"),
           );
 
           return;

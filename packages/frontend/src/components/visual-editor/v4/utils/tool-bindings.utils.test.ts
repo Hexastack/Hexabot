@@ -152,7 +152,9 @@ describe("tool-bindings.utils", () => {
     expect(nextDefinition.defs.ai_generate_reply.bindings?.tools).toEqual([
       "search_tool",
     ]);
-    expect(nextDefinition.defs.summarize.bindings?.tools).toEqual(["search_tool"]);
+    expect(nextDefinition.defs.summarize.bindings?.tools).toEqual([
+      "search_tool",
+    ]);
     expect(nextDefinition.defs.tool_router.bindings?.tools).toEqual([
       "search_tool",
     ]);

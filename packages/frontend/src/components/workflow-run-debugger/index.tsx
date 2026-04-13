@@ -30,10 +30,7 @@ export const WorkflowRunDebuggerPage = () => {
 
   return (
     <WorkflowActionsProvider workflowType={workflow?.type}>
-      <WorkflowRunDebugger
-        initiatorId={initiatorId}
-        workflow={workflow}
-      />
+      <WorkflowRunDebugger initiatorId={initiatorId} workflow={workflow} />
     </WorkflowActionsProvider>
   );
 };
