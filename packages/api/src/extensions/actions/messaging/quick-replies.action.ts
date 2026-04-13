@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
-import { QuickReplyType, stdQuickReplySchema } from '@/chat/types/quick-reply';
+import { stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
@@ -28,8 +28,8 @@ const quickRepliesInputSchema = z.object({
     .array(stdQuickReplySchema)
     .min(1, 'Provide at least one quick reply')
     .default([
-      { content_type: QuickReplyType.text, payload: 'yes', title: 'Yes' },
-      { content_type: QuickReplyType.text, payload: 'no', title: 'No' },
+      { payload: 'yes', title: 'Yes' },
+      { payload: 'no', title: 'No' },
     ])
     .meta({
       title: 'Options',

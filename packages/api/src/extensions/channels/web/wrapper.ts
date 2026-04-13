@@ -84,10 +84,12 @@ export default class WebEventWrapper<
    */
   constructor(
     handler: BaseWebChannelHandler<N>,
-    event: Web.Event,
+    event: unknown,
     channelAttrs: SubscriberChannelDict[typeof WEB_CHANNEL_NAME],
   ) {
-    super(handler, event, channelAttrs);
+    const parsedEvent = Web.eventSchema.parse(event);
+
+    super(handler, parsedEvent, channelAttrs);
   }
 
   /**

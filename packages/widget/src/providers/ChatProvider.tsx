@@ -22,7 +22,6 @@ import {
   IPayload,
   ISubscriber,
   ISuggestion,
-  QuickReplyType,
   SocketErrorHandlers,
   SocketErrorResponse,
   SubscribeResponse,
@@ -50,7 +49,6 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
     ? (message.data.quick_replies || []).map(
         (qr) =>
           ({
-            content_type: QuickReplyType.text,
             text: qr.title,
             payload: qr.payload,
           }) as ISuggestion,

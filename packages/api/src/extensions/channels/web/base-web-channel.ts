@@ -887,25 +887,37 @@ export default abstract class BaseWebChannelHandler<
     res: Response | SocketResponse,
     workflowId?: string,
   ): void {
-    // @TODO: perform payload validation
     if (!req.body) {
       this.logger.debug('Empty body');
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
 
       return;
-    } else {
+    } else if (
+      typeof req.body === 'object' &&
+      req.body !== null &&
+      'data' in req.body
+    ) {
       // Parse json form data (in case of content-type multipart/form-data)
-      req.body.data =
-        typeof req.body.data === 'string'
-          ? JSON.parse(req.body.data)
-          : req.body.data;
+      const payload = req.body as { data?: unknown };
+      payload.data =
+        typeof payload.data === 'string'
+          ? JSON.parse(payload.data)
+          : payload.data;
     }
 
     this.validateSession(req, res, async (profile) => {
-      // Set data in file upload case
-      const body: Web.IncomingMessage = req.body;
       const channelAttrs = this.getChannelAttributes(req);
-      const event = new WebEventWrapper<N>(this, body, channelAttrs);
+      let event: WebEventWrapper<N>;
+      try {
+        event = new WebEventWrapper<N>(this, req.body, channelAttrs);
+      } catch (err) {
+        this.logger.warn('Invalid event payload', err);
+
+        return res
+          .status(400)
+          .json({ err: 'Web Channel Handler : Bad Request!' });
+      }
+
       const explicitThreadId =
         this.getThreadIdFromBody(req) ??
         this.getThreadIdFromQuery(req) ??
@@ -935,7 +947,10 @@ export default abstract class BaseWebChannelHandler<
         }
 
         // Handler sync message sent by chatbot
-        if (body.sync && body.author === 'chatbot') {
+        if (
+          event._adapter.raw.sync &&
+          event._adapter.raw.author === 'chatbot'
+        ) {
           const thread = await this.threadService.resolveThread({
             subscriberId: profile.id,
             explicitThreadId,

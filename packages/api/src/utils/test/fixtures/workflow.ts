@@ -7,7 +7,6 @@
 import { Workflow, WorkflowDefinition } from '@hexabot-ai/agentic';
 import { DataSource } from 'typeorm';
 
-import { QuickReplyType } from '@/chat/types/quick-reply';
 import {
   installUserFixturesTypeOrm,
   userFixtureIds,
@@ -48,12 +47,10 @@ export const messagingWorkflowDefinition: WorkflowDefinition = {
         text: '="What would you like to do next?"',
         quick_replies: [
           {
-            content_type: QuickReplyType.text,
             title: 'Get help',
             payload: 'help',
           },
           {
-            content_type: QuickReplyType.text,
             title: 'Talk to agent',
             payload: 'agent',
           },
