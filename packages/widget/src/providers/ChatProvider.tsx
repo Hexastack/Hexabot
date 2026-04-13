@@ -19,10 +19,8 @@ import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
-  IPayload,
   ISubscriber,
   ISuggestion,
-  QuickReplyType,
   SocketErrorHandlers,
   SocketErrorResponse,
   SubscribeResponse,
@@ -50,7 +48,6 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
     ? (message.data.quick_replies || []).map(
         (qr) =>
           ({
-            content_type: QuickReplyType.text,
             text: qr.title,
             payload: qr.payload,
           }) as ISuggestion,
@@ -169,12 +166,6 @@ interface ChatContextType {
   setMessage: (message: string) => void;
 
   /**
-   * @TODO: Payload is only being set but not read anywhere. Why?
-   */
-  payload: IPayload | null;
-  setPayload: (p: IPayload | null) => void;
-
-  /**
    * The file attached to the message, if any.
    */
   file: File | null;
@@ -240,8 +231,6 @@ const defaultCtx: ChatContextType = {
   setWebviewUrl: () => {},
   message: "",
   setMessage: () => {},
-  payload: null,
-  setPayload: () => {},
   file: null,
   setFile: () => {},
   send: () => {},
@@ -290,7 +279,6 @@ const ChatProvider: React.FC<{
   const [message, setMessage] = useState<string>(defaultCtx.message);
   const [outgoingMessageState, setOutgoingMessageState] =
     useState<OutgoingMessageState>(defaultCtx.outgoingMessageState);
-  const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
   const [profile, setProfile] = useState<undefined | ISubscriber>();
@@ -560,8 +548,6 @@ const ChatProvider: React.FC<{
     setSuggestions,
     webviewUrl,
     setWebviewUrl: updateWebviewUrl,
-    payload,
-    setPayload,
     file,
     setFile,
     message,

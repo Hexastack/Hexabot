@@ -84,10 +84,12 @@ export default class WebEventWrapper<
    */
   constructor(
     handler: BaseWebChannelHandler<N>,
-    event: Web.Event,
+    event: unknown,
     channelAttrs: SubscriberChannelDict[typeof WEB_CHANNEL_NAME],
   ) {
-    super(handler, event, channelAttrs);
+    const parsedEvent = Web.eventSchema.parse(event);
+
+    super(handler, parsedEvent, channelAttrs);
   }
 
   /**
@@ -128,10 +130,6 @@ export default class WebEventWrapper<
       case Web.IncomingMessageType.file:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.attachments;
-        break;
-
-      default:
-        this._adapter.eventType = StdEventType.unknown;
         break;
     }
     this._adapter.raw = event;

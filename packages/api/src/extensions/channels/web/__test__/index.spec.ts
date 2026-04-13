@@ -541,4 +541,219 @@ describe('WebChannelHandler', () => {
     expect(req.session.web?.threadId).toBeUndefined();
     clearMock.mockRestore();
   });
+
+  it('returns 400 for invalid incoming event payload', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Invalid', last_name: 'Payload' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-invalid-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+
+    req.body = {
+      type: 'text',
+      data: {},
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: false,
+      messageQueue: [],
+      polling: false,
+    };
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for bad request response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(400);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload).toEqual({
+            err: 'Web Channel Handler : Bad Request!',
+          });
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    clearMock.mockRestore();
+  });
+
+  it('accepts websocket file events with binary data', async () => {
+    const req = {
+      isSocket: true,
+      query: { first_name: 'Ws', last_name: 'Upload' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
+      user: {},
+    } as any as SocketRequest;
+    const generatedId = `web-ws-upload-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+    const fileBuffer = Buffer.from('ws-file');
+    attachmentServiceMock.store.mockResolvedValueOnce({
+      id: 'ws-attachment-id',
+      type: 'image/png',
+      name: 'ws-file.png',
+      size: fileBuffer.byteLength,
+    } as any);
+
+    req.body = {
+      type: 'file',
+      data: {
+        type: 'image/png',
+        size: fileBuffer.byteLength,
+        name: 'ws-file.png',
+        file: fileBuffer,
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: true,
+      messageQueue: [],
+      polling: false,
+    };
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for websocket upload response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload.type).toEqual('file');
+          expect(payload.data).toEqual(
+            expect.objectContaining({
+              type: 'image',
+              url: expect.any(String),
+            }),
+          );
+          expect(payload.data).not.toHaveProperty('file');
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(attachmentServiceMock.store).toHaveBeenCalledWith(
+      fileBuffer,
+      expect.objectContaining({
+        name: 'ws-file.png',
+        type: 'image/png',
+        size: fileBuffer.byteLength,
+      }),
+    );
+    clearMock.mockRestore();
+  });
+
+  it('accepts multipart file metadata events without binary payload in body', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Http', last_name: 'Upload' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-http-upload-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+    const reqFile = {
+      originalname: 'multipart-file.png',
+      size: 12,
+      mimetype: 'image/png',
+      buffer: Buffer.from('multipart'),
+    };
+    attachmentServiceMock.store.mockResolvedValueOnce({
+      id: 'http-attachment-id',
+      type: 'image/png',
+      name: reqFile.originalname,
+      size: reqFile.size,
+    } as any);
+
+    req.body = {
+      type: 'file',
+      data: {
+        type: 'image/png',
+        size: reqFile.size,
+        name: reqFile.originalname,
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: false,
+      messageQueue: [],
+      polling: false,
+    };
+    (req as any).file = reqFile;
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(
+          new Error('Timed out waiting for multipart metadata upload response'),
+        );
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload.type).toEqual('file');
+          expect(payload.data).toEqual(
+            expect.objectContaining({
+              type: 'image',
+              url: expect.any(String),
+            }),
+          );
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(attachmentServiceMock.store).toHaveBeenCalledWith(
+      reqFile,
+      expect.objectContaining({
+        name: reqFile.originalname,
+        size: reqFile.size,
+        type: reqFile.mimetype,
+      }),
+    );
+    clearMock.mockRestore();
+  });
 });

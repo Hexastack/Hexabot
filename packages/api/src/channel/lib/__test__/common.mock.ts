@@ -20,7 +20,6 @@ import {
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
 } from '@/chat/types/message';
-import { QuickReplyType } from '@/chat/types/quick-reply';
 
 export const textMessage: StdOutgoingTextMessage = {
   text: 'Hello World',
@@ -30,12 +29,10 @@ export const quickRepliesMessage: StdOutgoingQuickRepliesMessage = {
   text: 'Choose one option',
   quickReplies: [
     {
-      content_type: QuickReplyType.text,
       title: 'First option',
       payload: 'first_option',
     },
     {
-      content_type: QuickReplyType.text,
       title: 'Second option',
       payload: 'second_option',
     },
@@ -168,7 +165,6 @@ export const attachmentMessage: StdOutgoingAttachmentMessage = {
   },
   quickReplies: [
     {
-      content_type: QuickReplyType.text,
       title: 'Next >',
       payload: 'NEXT',
     },

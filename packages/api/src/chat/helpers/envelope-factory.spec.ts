@@ -12,7 +12,7 @@ import {
   OutgoingMessageFormat,
 } from '../types/message';
 import { ContentOptions } from '../types/options';
-import { QuickReplyType, StdQuickReply } from '../types/quick-reply';
+import { StdQuickReply } from '../types/quick-reply';
 
 import { EnvelopeFactory } from './envelope-factory';
 
@@ -56,12 +56,10 @@ describe('EnvelopeFactory', () => {
       const input = 'Choose an option';
       const quickReplies = [
         {
-          content_type: QuickReplyType.text,
           title: 'Yes',
           payload: 'do_123',
         },
         {
-          content_type: QuickReplyType.text,
           title: 'No',
           payload: 'dont_123',
         },
@@ -117,7 +115,6 @@ describe('EnvelopeFactory', () => {
       } as AttachmentPayload;
       const quickReplies = [
         {
-          content_type: QuickReplyType.text,
           title: 'Yes company',
           payload: 'do_123',
         },
