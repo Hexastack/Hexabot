@@ -7,14 +7,14 @@
 import { Grid } from "@mui/material";
 import { Activity, Layers, MessageSquare, TrendingUp } from "lucide-react";
 
-import { useStatsSummary } from "@/hooks/entities/bot-stat-hooks";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useTranslate } from "@/hooks/useTranslate";
 
 import { KPICard } from "../components/KPICard";
 
 export const KPICards = () => {
   const { t } = useTranslate();
-  const { data: summary } = useStatsSummary();
+  const { data: summary } = useApiClientQuery("getStatsSummary");
   const loadingLabel = t("dashboard.kpi.loading");
   const last24hLabel = t("dashboard.kpi.last_24h");
   const formatNumber = (value?: number) =>

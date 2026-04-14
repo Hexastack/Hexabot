@@ -71,9 +71,7 @@ const normalizeEntityKey = (entity: string) => {
 };
 // Precomputes websocket entity aliases to frontend EntityType values.
 const ENTITY_TYPE_BY_WS_KEY = (() => {
-  const entityMap: Record<string, EntityType> = {
-    stats: EntityType.BOTSTATS,
-  };
+  const entityMap: Record<string, EntityType> = {};
 
   Object.values(EntityType).forEach((entityType) => {
     entityMap[normalizeEntityKey(entityType)] = entityType;

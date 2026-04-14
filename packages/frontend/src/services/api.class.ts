@@ -10,11 +10,11 @@ import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
 import { THook } from "@/types/base.types";
-import { StatsType } from "@/types/bot-stat.types";
 import { ICsrf } from "@/types/csrf.types";
 import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
+import { StatsSummary } from "@/types/stat.types";
 import { IProfileAttributes, IUser, IUserStub } from "@/types/user.types";
 import { IWorkflow } from "@/types/workfow.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
@@ -51,7 +51,6 @@ export const ROUTES = {
   PROFILE: "/user/edit",
   USER_PERMISSIONS: "/user/permissions",
   CSRF: "/csrftoken",
-  BOTSTATS: "/botstats",
   REFRESH_TRANSLATIONS: "/translation/refresh",
   RESET: "/user/reset",
   CONTENT_IMPORT: "/content/import",
@@ -74,7 +73,6 @@ export const ROUTES = {
   [EntityType.CONTENT]: "/content",
   [EntityType.CONTENT_TYPE]: "/contenttype",
   [EntityType.SETTING]: "/setting",
-  [EntityType.BOTSTATS]: "/botstats",
   [EntityType.MESSAGE]: "/message",
   [EntityType.LANGUAGE]: "/language",
   [EntityType.TRANSLATION]: "/translation",
@@ -175,7 +173,7 @@ export class ApiClient {
 
     return data;
   }
-  async requestReset(payload: IResetRequest) {
+  async requestResetPassword(payload: IResetRequest) {
     const { data } = await this.request.post<
       IResetRequest,
       AxiosResponse<void>,
@@ -185,14 +183,8 @@ export class ApiClient {
     return data;
   }
 
-  async getBotStats<T>(type: StatsType) {
-    const { data } = await this.request.get<T[]>(`${ROUTES.BOTSTATS}/${type}`);
-
-    return data;
-  }
-
-  async getStatsSummary<T>() {
-    const { data } = await this.request.get<T>(ROUTES.STATS_SUMMARY);
+  async getStatsSummary() {
+    const { data } = await this.request.get<StatsSummary>(ROUTES.STATS_SUMMARY);
 
     return data;
   }
@@ -207,7 +199,7 @@ export class ApiClient {
     return data;
   }
 
-  async reset(token: string, payload: IResetPayload) {
+  async resetPassword(token: string, payload: IResetPayload) {
     const { data } = await this.request.post<
       IResetPayload,
       AxiosResponse<void>,

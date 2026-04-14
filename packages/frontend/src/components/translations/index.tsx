@@ -16,7 +16,7 @@ import {
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -46,8 +46,8 @@ export const Translations = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutate: checkRefreshTranslations, isPending } =
-    useRefreshTranslations({
+  const { mutateAsync: checkRefreshTranslations, isPending } =
+    useApiClientMutation("refreshTranslations", {
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
@@ -129,7 +129,9 @@ export const Translations = () => {
           permissionAction: PermissionAction.CREATE,
           children: t("button.refresh"),
           startIcon: <RefreshCw />,
-          onClick: checkRefreshTranslations,
+          onClick: () => {
+            checkRefreshTranslations([]);
+          },
           disabled: isPending,
         },
       ]}

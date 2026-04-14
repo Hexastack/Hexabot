@@ -7,7 +7,7 @@
 import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
-import { IProfileAttributes, IUser, IUserStub } from "@/types/user.types";
+import { IUser } from "@/types/user.types";
 import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
@@ -85,19 +85,6 @@ export const useUserPermissions = () => {
   });
 };
 
-export const useConfirmAccount = (
-  options?: TMutationOptions<never, Error, { token: string }>,
-) => {
-  const { apiClient } = useApiClient();
-
-  return useTanstackMutation({
-    ...options,
-    async mutationFn(payload) {
-      return await apiClient.confirmAccount(payload);
-    },
-  });
-};
-
 export const useLoadSettings = () => {
   const { isAuthenticated } = useAuth();
   const { data: settings, ...rest } = useFind(
@@ -122,18 +109,4 @@ export const useLoadSettings = () => {
         return acc;
       }, {}) || {},
   };
-};
-
-export const useUpdateProfile = (
-  options?: TMutationOptions<IUserStub, Error, Partial<IProfileAttributes>>,
-) => {
-  const { apiClient } = useApiClient();
-  const { user } = useAuth();
-
-  return useTanstackMutation({
-    ...options,
-    async mutationFn(payload) {
-      return await apiClient.updateProfile(user?.id as string, payload);
-    },
-  });
 };
