@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
 import { stringify } from "qs";
 import { useContext, useMemo } from "react";
@@ -11,8 +12,10 @@ import { useContext, useMemo } from "react";
 import { ApiClientContext } from "@/contexts/apiClient.context";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
+import { QueryType, TMutationOptions } from "@/services/types";
 import { THook } from "@/types/base.types";
 
+import { useTanstackMutation, useTanstackQuery } from "./crud/useTanstack";
 import { useLogoutRedirection } from "./useAuth";
 import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
@@ -110,4 +113,37 @@ export const useEntityApiClient = <TE extends THook["entity"]>(entity: TE) => {
   const { getApiClientByEntity } = useApiClient();
 
   return getApiClientByEntity(entity);
+};
+
+export const useApiClientQuery = <
+  N extends keyof ApiClient,
+  F extends ApiClient[N],
+>(
+  methodName: N,
+  options?: UseQueryOptions<Awaited<ReturnType<F>>, Error>,
+) => {
+  const { apiClient } = useApiClient();
+
+  return useTanstackQuery({
+    ...options,
+    queryKey: [QueryType.item, methodName],
+    queryFn: () => (apiClient[methodName] as Function)(),
+  });
+};
+
+export const useApiClientMutation = <
+  N extends keyof ApiClient,
+  F extends ApiClient[N],
+>(
+  methodName: N,
+  options?: TMutationOptions<Awaited<ReturnType<F>>, Error, Parameters<F>>,
+) => {
+  const { apiClient } = useApiClient();
+
+  return useTanstackMutation({
+    ...options,
+    mutationKey: [QueryType.item, methodName],
+    mutationFn: (variables) =>
+      (apiClient[methodName] as Function)(...variables),
+  });
 };

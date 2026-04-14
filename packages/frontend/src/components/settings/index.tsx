@@ -21,16 +21,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
-import { useTanstackQuery } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useApiClient } from "@/hooks/useApiClient";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, QueryType, RouterType } from "@/services/types";
-import { ISetting, ISettingSchemasMap } from "@/types/setting.types";
+import { EntityType, RouterType } from "@/services/types";
+import { ISetting } from "@/types/setting.types";
 
 import LicenseActivatedModal from "../license/LicenseActivatedModal";
 
@@ -92,7 +91,6 @@ export const Settings = () => {
   const rawGroup = router.query.group;
   const group = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
   const { toast } = useToast();
-  const { apiClient } = useApiClient();
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState(
     group || DEFAULT_SETTINGS_GROUP,
@@ -106,12 +104,7 @@ export const Settings = () => {
       hasCount: false,
     },
   );
-  const { data: schemas = {} } = useTanstackQuery<ISettingSchemasMap>({
-    queryKey: [QueryType.item, EntityType.SETTING, "schemas"],
-    queryFn: async () => {
-      return await apiClient.getSettingSchemas();
-    },
-  });
+  const { data: schemas = {} } = useApiClientQuery("getSettingSchemas");
   const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
     onError: (error) => {
       toast.error(error);

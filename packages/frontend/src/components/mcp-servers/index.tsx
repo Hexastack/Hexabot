@@ -19,7 +19,7 @@ import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useTestMcpServer } from "@/hooks/entities/mcp-server-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
@@ -28,8 +28,8 @@ import { EntityType } from "@/services/types";
 import {
   IMcpServer,
   IMcpServerDiagnostics,
-  IMcpServerToolsDiscovery,
   IMcpServerTool,
+  IMcpServerToolsDiscovery,
   McpServerTransport,
 } from "@/types/mcp-server.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -75,7 +75,7 @@ export const McpServers = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: testMcpServer } = useTestMcpServer();
+  const { mutateAsync: testMcpServer } = useApiClientMutation("testMcpServer");
   const {
     data: tools = [],
     isLoading: isToolsLoading,
@@ -109,7 +109,7 @@ export const McpServers = () => {
     });
 
     try {
-      const data = await testMcpServer(row.id);
+      const data = await testMcpServer([row.id]);
 
       setTestDrawerState({
         status: "success",

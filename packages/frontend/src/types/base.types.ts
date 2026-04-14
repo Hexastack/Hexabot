@@ -127,7 +127,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTENT_TYPE]: [],
   [EntityType.CONTENT]: ["entity"],
   [EntityType.SETTING]: [],
-  [EntityType.BOTSTATS]: [],
   [EntityType.MESSAGE]: ["sender", "recipient", "sentBy", "thread"],
   [EntityType.MENU]: ["parent"],
   [EntityType.MENUTREE]: [],

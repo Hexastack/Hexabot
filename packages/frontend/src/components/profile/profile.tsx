@@ -16,7 +16,7 @@ import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { PasswordStrengthInput } from "@/app-components/inputs/PasswordStrengthInput";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -30,29 +30,32 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { t } = useTranslate();
   const queryClient = useTanstackQueryClient();
   const { toast } = useToast();
-  const { mutate: updateProfile, isPending } = useUpdateProfile({
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData<IUser>(
-        [CURRENT_USER_KEY],
-        (previousSessionUser) => {
-          if (!previousSessionUser) {
-            return data as IUser;
-          }
+  const { mutate: updateProfile, isPending } = useApiClientMutation(
+    "updateProfile",
+    {
+      onError: () => {
+        toast.error(t("message.internal_server_error"));
+      },
+      onSuccess: (data) => {
+        queryClient.setQueryData<IUser>(
+          [CURRENT_USER_KEY],
+          (previousSessionUser) => {
+            if (!previousSessionUser) {
+              return data as IUser;
+            }
 
-          return {
-            ...previousSessionUser,
-            ...data,
-            // `updateProfile` payload may omit license fields.
-            license: data.license ?? previousSessionUser.license,
-          };
-        },
-      );
-      toast.success(t("message.account_update_success"));
+            return {
+              ...previousSessionUser,
+              ...data,
+              // `updateProfile` payload may omit license fields.
+              license: data.license ?? previousSessionUser.license,
+            };
+          },
+        );
+        toast.success(t("message.account_update_success"));
+      },
     },
-  });
+  );
   const {
     watch,
     trigger,
@@ -94,10 +97,13 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     password2: _password2,
     ...rest
   }: IProfileAttributes) => {
-    updateProfile({
-      ...rest,
-      password: password || undefined,
-    });
+    updateProfile([
+      user.id,
+      {
+        ...rest,
+        password: password || undefined,
+      },
+    ]);
   };
 
   return (

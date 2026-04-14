@@ -14,7 +14,7 @@ import {
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
-import { useResetPassword } from "@/hooks/entities/reset-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -56,7 +56,7 @@ export const ResetPassword = () => {
   const queryToken = Array.isArray(query.token)
     ? query.token.at(-1)
     : query.token;
-  const { mutate: resetPassword } = useResetPassword(queryToken || "", {
+  const { mutate: resetPassword } = useApiClientMutation("resetPassword", {
     onSuccess: () => {
       toast.success(t("message.reset_newpass_success"));
       replace("/login");
@@ -66,7 +66,7 @@ export const ResetPassword = () => {
     },
   });
   const onSubmitForm = (data: ResetPasswordAttributes) => {
-    resetPassword(data);
+    queryToken && resetPassword([queryToken, data]);
   };
 
   return (

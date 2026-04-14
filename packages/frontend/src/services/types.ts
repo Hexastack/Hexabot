@@ -22,7 +22,6 @@ export enum EntityType {
   CONTENT = "Content",
   CONTENT_TYPE = "ContentType",
   SETTING = "Setting",
-  BOTSTATS = "BotStats",
   MESSAGE = "Message",
   MENU = "Menu",
   LANGUAGE = "Language",

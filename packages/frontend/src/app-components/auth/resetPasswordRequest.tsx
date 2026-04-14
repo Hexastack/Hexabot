@@ -14,7 +14,7 @@ import {
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
-import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
@@ -36,16 +36,19 @@ export const ResetPasswordRequest = () => {
   } = useForm<ResetPasswordRequestAttributes>({
     defaultValues: { email: "" },
   });
-  const { mutate: requestReset } = useRequestResetPassword({
-    onSuccess: () => {
-      toast.success(t("message.reset_success"));
+  const { mutate: requestReset } = useApiClientMutation(
+    "requestResetPassword",
+    {
+      onSuccess: () => {
+        toast.success(t("message.reset_success"));
+      },
+      onError: () => {
+        toast.error(t("message.server_error"));
+      },
     },
-    onError: () => {
-      toast.error(t("message.server_error"));
-    },
-  });
+  );
   const onSubmitForm = (data: ResetPasswordRequestAttributes) => {
-    requestReset(data);
+    requestReset([data]);
   };
 
   return (

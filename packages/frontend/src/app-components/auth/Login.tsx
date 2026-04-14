@@ -15,7 +15,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
-import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
+import { useLogin } from "@/hooks/entities/auth-hooks";
+import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
@@ -50,7 +51,7 @@ export const Login = () => {
       toast.error(t("message.login_failure"));
     },
   });
-  const { mutate: confirmAccount } = useConfirmAccount({
+  const { mutate: confirmAccount } = useApiClientMutation("confirmAccount", {
     onSuccess: () => {
       toast.success(t("message.reset_confirm_success"));
     },
@@ -86,9 +87,11 @@ export const Login = () => {
     const queryToken = Array.isArray(rawToken) ? rawToken.at(-1) : rawToken;
 
     if (queryToken) {
-      confirmAccount({
-        token: String(queryToken),
-      });
+      confirmAccount([
+        {
+          token: String(queryToken),
+        },
+      ]);
     }
   }, [confirmAccount, router.query.token]);
 
