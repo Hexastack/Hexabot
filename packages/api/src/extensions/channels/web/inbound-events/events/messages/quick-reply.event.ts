@@ -1,0 +1,31 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
+import { ChannelName } from '@/channel/types';
+import { IncomingMessageType } from '@/chat/types/message';
+
+import { Web } from '../../../types';
+
+import PayloadMessageInboundEvent from './payload.event';
+
+export class QuickReplyInboundEvent<
+  N extends ChannelName = ChannelName,
+> extends PayloadMessageInboundEvent<N> {
+  constructor(
+    context: ChannelInboundEventContext<
+      N,
+      Web.IncomingMessage<Web.IncomingPayloadMessage>,
+      SubscriberChannelDict[N]
+    >,
+    payloadValue: string,
+    text: string,
+  ) {
+    super(context, IncomingMessageType.quick_reply, payloadValue, text);
+  }
+}
+
+export default QuickReplyInboundEvent;

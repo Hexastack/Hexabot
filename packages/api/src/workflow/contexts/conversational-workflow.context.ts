@@ -6,13 +6,11 @@
 
 import { Injectable, Scope } from '@nestjs/common';
 
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 
 import { WorkflowRuntimeContext } from './workflow-runtime.context';
 
 @Injectable({ scope: Scope.TRANSIENT })
-export class ConversationalWorkflowContext extends WorkflowRuntimeContext<
-  ConversationalEventWrapper<any, any>
-> {
-  event: ConversationalEventWrapper<any, any>;
+export class ConversationalWorkflowContext extends WorkflowRuntimeContext<MessageInboundEvent> {
+  event: MessageInboundEvent;
 }

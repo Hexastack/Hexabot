@@ -9,8 +9,12 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { In } from 'typeorm';
 
 import { StatsType } from '@/analytics/entities/stats.entity';
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { config } from '@/config';
+import {
+  DeliveryNotificationInboundEvent,
+  ReadNotificationInboundEvent,
+} from '@/extensions/channels/web/inbound-events';
 import { LoggerService } from '@/logger/logger.service';
 import { AgenticService } from '@/workflow/services/agentic.service';
 
@@ -34,7 +38,7 @@ export class ChatService {
 
   private async ensureThreadTitle(
     thread: { id: string; title?: string | null },
-    event: ConversationalEventWrapper<any, any>,
+    event: MessageInboundEvent,
   ) {
     if (!!thread.title?.trim()) {
       return;
@@ -95,7 +99,7 @@ export class ChatService {
    * @param event - The received event
    */
   @OnEvent('hook:chatbot:received')
-  async handleReceivedMessage(event: ConversationalEventWrapper<any, any>) {
+  async handleReceivedMessage(event: MessageInboundEvent) {
     let messageId = '';
     this.logger.debug('Received message');
     try {
@@ -150,7 +154,7 @@ export class ChatService {
    * @param event - The received event
    */
   @OnEvent('hook:chatbot:delivery')
-  async handleMessageDelivery(event: ConversationalEventWrapper<any, any>) {
+  async handleMessageDelivery(event: DeliveryNotificationInboundEvent) {
     if (config.chatbot.messages.track_delivery) {
       const deliveredMessages = event.getDeliveredMessages();
       try {
@@ -170,7 +174,7 @@ export class ChatService {
    * @param event - The received event
    */
   @OnEvent('hook:chatbot:read')
-  async handleMessageRead(event: ConversationalEventWrapper<any, any>) {
+  async handleMessageRead(event: ReadNotificationInboundEvent) {
     if (config.chatbot.messages.track_read) {
       const subscriber = event.getInitiator();
       const watermark = new Date(event.getWatermark());
@@ -200,8 +204,8 @@ export class ChatService {
    * @param event - The received event
    */
   @OnEvent('hook:chatbot:echo')
-  async handleEchoMessage(event: ConversationalEventWrapper<any, any>) {
-    this.logger.verbose('Message echo received', event._adapter.raw);
+  async handleEchoMessage(event: MessageInboundEvent) {
+    this.logger.verbose('Message echo received', event.getRaw());
     const foreignId = event.getRecipientForeignId();
 
     if (foreignId) {
@@ -242,8 +246,8 @@ export class ChatService {
    * @param event - The received event
    */
   @OnEvent('hook:chatbot:message', { promisify: true })
-  async handleNewMessage(event: ConversationalEventWrapper<any, any>) {
-    this.logger.debug('New message received', event._adapter.raw);
+  async handleNewMessage(event: MessageInboundEvent) {
+    this.logger.debug('New message received', event.getRaw());
 
     const foreignId = event.getSenderForeignId();
     const handler = event.getHandler();

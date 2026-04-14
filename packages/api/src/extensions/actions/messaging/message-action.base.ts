@@ -10,7 +10,7 @@ import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ActionMetadata } from '@/actions/types';
 import { StatsType } from '@/analytics/entities/stats.entity';
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
@@ -60,7 +60,7 @@ export const messageActionOutputSchema = z.object({
 });
 
 interface PreparedMessageContext {
-  event: ConversationalEventWrapper<any, any>;
+  event: MessageInboundEvent;
   recipient: Subscriber;
   envelopeFactory: EnvelopeFactory;
 }

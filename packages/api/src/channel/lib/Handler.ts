@@ -26,14 +26,10 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/types/attachment';
-import {
-  IncomingMessageType,
-  StdEventType,
-  StdOutgoingEnvelope,
-  StdOutgoingMessage,
-} from '@/chat/types/message';
+import { StdOutgoingEnvelope, StdOutgoingMessage } from '@/chat/types/message';
 import { config } from '@/config';
 import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
@@ -45,8 +41,6 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import { ChannelService } from '../channel.service';
 import { ChannelName } from '../types';
-
-import ConversationalEventWrapper from './ConversationalEventWrapper';
 
 @Injectable()
 export default abstract class ChannelHandler<
@@ -200,7 +194,7 @@ export default abstract class ChannelHandler<
    
    */
   abstract sendMessage(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N>,
     envelope: StdOutgoingEnvelope,
     options: any,
   ): Promise<{ mid: string }>;
@@ -212,7 +206,7 @@ export default abstract class ChannelHandler<
    * @returns An attachment array
    */
   getMessageAttachments?(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N>,
   ): Promise<AttachmentFile[]>;
 
   /**
@@ -221,7 +215,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   getSubscriberAvatar?(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N>,
   ): Promise<AttachmentFile | undefined>;
 
   /**
@@ -232,7 +226,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   async getUserData(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N>,
   ): Promise<SubscriberCreateDto> {
     return await this.getSubscriberData(event);
   }
@@ -244,7 +238,7 @@ export default abstract class ChannelHandler<
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */
   abstract getSubscriberData(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N>,
   ): Promise<SubscriberCreateDto>;
 
   /**
@@ -253,29 +247,31 @@ export default abstract class ChannelHandler<
    * @returns Resolves the promise once attachments are fetched and stored
    */
   async persistMessageAttachments(
-    event: ConversationalEventWrapper<any, any, N>,
+    event: MessageInboundEvent<N> & {
+      setPersistedAttachments(attachments: Attachment[]): void;
+    },
   ) {
-    if (
-      event._adapter.eventType === StdEventType.message &&
-      event._adapter.messageType === IncomingMessageType.attachments &&
-      this.getMessageAttachments
-    ) {
-      const metadatas = await this.getMessageAttachments(event);
-      const subscriber = event.getInitiator();
-      event._adapter.attachments = await Promise.all(
-        metadatas.map(({ file, name, type, size }) => {
-          return this.attachmentService.store(file, {
-            name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
-            type,
-            size,
-            resourceRef: AttachmentResourceRef.MessageAttachment,
-            access: AttachmentAccess.Private,
-            createdByRef: AttachmentCreatedByRef.Subscriber,
-            createdBy: subscriber.id,
-          });
-        }),
-      );
+    if (!this.getMessageAttachments) {
+      return;
     }
+
+    const metadatas = await this.getMessageAttachments(event);
+    const subscriber = event.getInitiator();
+    const attachments = await Promise.all(
+      metadatas.map(({ file, name, type, size }) => {
+        return this.attachmentService.store(file, {
+          name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
+          type,
+          size,
+          resourceRef: AttachmentResourceRef.MessageAttachment,
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.Subscriber,
+          createdBy: subscriber.id,
+        });
+      }),
+    );
+
+    event.setPersistedAttachments(attachments);
   }
 
   /**

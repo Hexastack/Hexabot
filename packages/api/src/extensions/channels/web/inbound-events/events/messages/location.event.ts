@@ -1,0 +1,60 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
+import { ChannelName } from '@/channel/types';
+import { PayloadType } from '@/chat/types/button';
+import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
+import { Payload } from '@/chat/types/quick-reply';
+
+import { Web } from '../../../types';
+
+import WebMessageInboundEvent from './web-message.event';
+
+export class LocationMessageInboundEvent<
+  N extends ChannelName = ChannelName,
+> extends WebMessageInboundEvent<
+  N,
+  Web.IncomingMessage<Web.IncomingLocationMessage>
+> {
+  constructor(
+    context: ChannelInboundEventContext<
+      N,
+      Web.IncomingMessage<Web.IncomingLocationMessage>,
+      SubscriberChannelDict[N]
+    >,
+    private readonly latitude: number,
+    private readonly longitude: number,
+  ) {
+    super(context);
+  }
+
+  override getMessageType(): IncomingMessageType {
+    return IncomingMessageType.location;
+  }
+
+  override getPayload(): Payload {
+    return {
+      type: PayloadType.location,
+      coordinates: {
+        lat: this.latitude,
+        lon: this.longitude,
+      },
+    };
+  }
+
+  override toStdIncomingMessage(): StdIncomingMessage {
+    return {
+      type: PayloadType.location,
+      coordinates: {
+        lat: this.latitude,
+        lon: this.longitude,
+      },
+    };
+  }
+}
+
+export default LocationMessageInboundEvent;

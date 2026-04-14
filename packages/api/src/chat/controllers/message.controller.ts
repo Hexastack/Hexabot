@@ -20,7 +20,11 @@ import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
 import { ChannelService } from '@/channel/channel.service';
-import { GenericEventWrapper } from '@/channel/lib/ConversationalEventWrapper';
+import {
+  ChannelInboundEventContext,
+  SyntheticMessageInboundEvent,
+} from '@/channel/lib/inbound-events';
+import { ChannelName } from '@/channel/types';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -34,6 +38,7 @@ import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 import { ThreadService } from '../services/thread.service';
 import {
+  IncomingMessageType,
   OutgoingMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
@@ -155,13 +160,27 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
             1,
           )
         ).at(0)?.mid;
-    const channelHandler = this.channelService.getChannelHandler(
-      channelData.name,
+    const channelName = channelData.name as ChannelName;
+    const channelHandler = this.channelService.getChannelHandler(channelName);
+    const eventContext = new ChannelInboundEventContext<
+      ChannelName,
+      Record<string, unknown>,
+      Record<string, unknown>
+    >(
+      channelName,
+      {
+        source: 'message-controller',
+      },
+      (channelData.data ?? {}) as Record<string, unknown>,
+      new Date(),
+      latestMessageId ?? randomUUID(),
+      subscriber.foreignId,
+      null,
     );
-    const event = new GenericEventWrapper(channelHandler, {
-      senderId: subscriber.foreignId,
-      messageId: latestMessageId ?? randomUUID(),
-    });
+    const event = new SyntheticMessageInboundEvent<
+      ChannelName,
+      Record<string, unknown>
+    >(eventContext, { text: '' }, IncomingMessageType.message, channelHandler);
 
     event.setInitiator(subscriber);
     event.setThreadId(thread.id);

@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { StatsType } from '@/analytics/entities/stats.entity';
-import ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import {
   OutgoingMessageFormat,
@@ -41,7 +41,7 @@ class TestMessageAction extends MessageAction<any> {
   }
 }
 
-type MockEvent = jest.Mocked<ConversationalEventWrapper<any, any>>;
+type MockEvent = jest.Mocked<MessageInboundEvent>;
 
 describe('MessageAction base', () => {
   let actionService: ActionService;
