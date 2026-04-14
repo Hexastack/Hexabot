@@ -6,7 +6,6 @@
 
 import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
 
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Role, RoleDto, RoleFull } from '../dto/role.dto';
@@ -18,8 +17,11 @@ export type TRole = 'admin' | 'public';
 
 @Entity({ name: 'roles' })
 @Index(['name'], { unique: true })
-@EntityDto<RoleDto>({ plain: Role, full: RoleFull })
 export class RoleOrmEntity extends BaseOrmEntity<RoleDto> {
+  plainCls = Role;
+
+  fullCls = RoleFull;
+
   @Column()
   name!: string;
 

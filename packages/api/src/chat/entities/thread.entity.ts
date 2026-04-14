@@ -7,7 +7,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -25,8 +24,11 @@ export const THREAD_CLOSE_REASONS = ['manual', 'inactivity'] as const;
 export type ThreadCloseReason = (typeof THREAD_CLOSE_REASONS)[number];
 
 @Entity({ name: 'threads' })
-@EntityDto<ThreadDto>({ plain: Thread, full: ThreadFull })
 export class ThreadOrmEntity extends BaseOrmEntity<ThreadDto> {
+  plainCls = Thread;
+
+  fullCls = ThreadFull;
+
   @ManyToOne(() => SubscriberOrmEntity, {
     nullable: false,
     onDelete: 'CASCADE',

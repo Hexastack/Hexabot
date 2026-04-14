@@ -13,7 +13,6 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
@@ -30,8 +29,11 @@ import { ThreadOrmEntity } from './thread.entity';
   '"sender_id" IS NOT NULL OR "recipient_id" IS NOT NULL',
 )
 @Entity({ name: 'messages' })
-@EntityDto<MessageDto>({ plain: Message, full: MessageFull })
 export class MessageOrmEntity extends BaseOrmEntity<MessageDto> {
+  plainCls = Message;
+
+  fullCls = MessageFull;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;
 

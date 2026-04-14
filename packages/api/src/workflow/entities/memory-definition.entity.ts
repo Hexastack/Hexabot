@@ -7,7 +7,6 @@
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index } from 'typeorm';
 
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -22,11 +21,11 @@ import { MemoryScope } from '../types';
 @Entity({ name: 'memory_definitions' })
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
-@EntityDto<MemoryDefinitionDto>({
-  plain: MemoryDefinition,
-  full: MemoryDefinitionFull,
-})
 export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionDto> {
+  plainCls = MemoryDefinition;
+
+  fullCls = MemoryDefinitionFull;
+
   /** Human-friendly label for the memory definition. */
   @Column({ type: 'varchar', length: 255 })
   name!: string;
