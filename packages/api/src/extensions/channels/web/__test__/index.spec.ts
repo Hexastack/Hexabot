@@ -594,6 +594,91 @@ describe('WebChannelHandler', () => {
     clearMock.mockRestore();
   });
 
+  it('processes adapter fanout sequentially and keeps a single raw HTTP response body', async () => {
+    const req = {
+      isSocket: false,
+      query: { first_name: 'Fanout', last_name: 'User' },
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      user: {},
+    } as any as Request;
+    const generatedId = `web-fanout-${Date.now()}`;
+    const clearMock = jest
+      .spyOn(handler, 'generateId')
+      .mockImplementation(() => generatedId);
+    const profile = await handler['getOrCreateSession'](req as any);
+    req.body = {
+      type: 'text',
+      data: {
+        text: 'Fanout test',
+      },
+    };
+    req.query = {};
+    req.session.web = {
+      ...req.session.web,
+      profile,
+      isSocket: false,
+      messageQueue: [],
+      polling: false,
+    };
+
+    const channelAttrs = handler.getChannelAttributes(req as any);
+    const [messageEvent] = handler['inboundEventAdapter'].createEvents(
+      req.body,
+      channelAttrs,
+    );
+    const [typingEvent] = handler['inboundEventAdapter'].createEvents(
+      { type: 'typing' },
+      channelAttrs,
+    );
+    const createEventsSpy = jest
+      .spyOn(handler['inboundEventAdapter'], 'createEvents')
+      .mockReturnValueOnce([messageEvent, typingEvent]);
+    const emitAsyncSpy = jest
+      .spyOn(handler['eventEmitter'], 'emitAsync')
+      .mockResolvedValue([]);
+    const emitSpy = jest.spyOn(handler['eventEmitter'], 'emit');
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for fanout response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(Array.isArray(payload)).toBe(false);
+          expect(payload).toEqual(
+            expect.objectContaining({
+              type: 'text',
+            }),
+          );
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['_handleEvent'](req as any, res);
+    });
+
+    expect(createEventsSpy).toHaveBeenCalledTimes(1);
+    expect(emitAsyncSpy).toHaveBeenCalledWith(
+      'hook:chatbot:message',
+      expect.anything(),
+    );
+    expect(emitSpy).toHaveBeenCalledWith(
+      'hook:chatbot:typing',
+      expect.anything(),
+    );
+    clearMock.mockRestore();
+    createEventsSpy.mockRestore();
+    emitAsyncSpy.mockRestore();
+    emitSpy.mockRestore();
+  });
+
   it('accepts websocket file events with binary data', async () => {
     const req = {
       isSocket: true,

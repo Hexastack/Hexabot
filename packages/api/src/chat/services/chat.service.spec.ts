@@ -88,7 +88,7 @@ describe('ChatService', () => {
     const handler = { getSettings: jest.fn().mockResolvedValue({}) };
     subscriberService.findOne.mockResolvedValue(subscriber as any);
     const event = {
-      _adapter: { raw: { type: 'text' } },
+      getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
       getHandler: jest.fn().mockReturnValue(handler),
       getWorkflowId: jest.fn().mockReturnValue(workflowId),
@@ -154,7 +154,7 @@ describe('ChatService', () => {
     } as any);
 
     const event = {
-      _adapter: { raw: { type: 'text' } },
+      getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
       getHandler: jest.fn().mockReturnValue(handler),
       getThreadId: jest.fn().mockReturnValue(undefined),

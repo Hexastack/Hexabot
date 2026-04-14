@@ -24,7 +24,10 @@ import type {
   StatsType,
 } from '@/analytics/entities/stats.entity';
 import type { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
-import type ConversationalEventWrapper from '@/channel/lib/ConversationalEventWrapper';
+import type {
+  ChannelInboundEvent,
+  MessageInboundEvent,
+} from '@/channel/lib/inbound-events';
 import type { Message, MessageCreateDto } from '@/chat/dto/message.dto';
 import type {
   Subscriber,
@@ -38,6 +41,10 @@ import type { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import type { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import type { ContentOrmEntity } from '@/cms/entities/content.entity';
 import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
+import type {
+  DeliveryNotificationInboundEvent,
+  ReadNotificationInboundEvent,
+} from '@/extensions/channels/web/inbound-events';
 import type { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { Setting } from '@/setting/dto/setting.dto';
@@ -59,7 +66,8 @@ import type { THydratedDocument } from '@/utils/types/filter.types';
 import type { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import type { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 
-type AnyEventWrapper = ConversationalEventWrapper<any, any>;
+type AnyInboundEvent = ChannelInboundEvent<any>;
+type AnyMessageInboundEvent = MessageInboundEvent<any>;
 
 type DefaultHookSettingsMap = {
   [Group in keyof Settings & string]: Record<
@@ -210,12 +218,12 @@ declare module '@nestjs/event-emitter' {
   >;
 
   interface CustomEventMap {
-    'hook:chatbot:echo': [AnyEventWrapper];
-    'hook:chatbot:delivery': [AnyEventWrapper];
-    'hook:chatbot:message': [AnyEventWrapper];
-    'hook:chatbot:read': [AnyEventWrapper];
-    'hook:chatbot:received': [AnyEventWrapper];
-    'hook:chatbot:sent': [MessageCreateDto, AnyEventWrapper?];
+    'hook:chatbot:echo': [AnyMessageInboundEvent];
+    'hook:chatbot:delivery': [DeliveryNotificationInboundEvent];
+    'hook:chatbot:message': [AnyMessageInboundEvent];
+    'hook:chatbot:read': [ReadNotificationInboundEvent];
+    'hook:chatbot:received': [AnyMessageInboundEvent];
+    'hook:chatbot:sent': [MessageCreateDto, AnyInboundEvent?];
     'hook:message:preCreate': [THydratedDocument<Message>];
     'hook:stats:entry': [StatsType, string, Subscriber?];
     'hook:subscriber:assign': [SubscriberUpdateDto, Subscriber];

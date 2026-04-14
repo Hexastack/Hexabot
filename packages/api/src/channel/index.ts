@@ -12,7 +12,7 @@ export * from './channel.module';
 
 export * from './channel.service';
 
-export * from './lib/ConversationalEventWrapper';
+export * from './lib/inbound-events';
 
 export * from './lib/Handler';
 

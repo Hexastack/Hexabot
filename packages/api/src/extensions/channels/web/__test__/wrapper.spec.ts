@@ -1,155 +1,265 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { JwtService } from '@nestjs/jwt';
-import { TestingModule } from '@nestjs/testing';
-
 import { Attachment } from '@/attachment/dto/attachment.dto';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { MessageService } from '@/chat/services/message.service';
-import { ThreadService } from '@/chat/services/thread.service';
+import { FileType } from '@/chat/types/attachment';
 import { IncomingMessageType, StdEventType } from '@/chat/types/message';
-import { MenuService } from '@/cms/services/menu.service';
-import { installSubscriberFixturesTypeOrm } from '@/utils/test/fixtures/subscriber';
-import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import WebChannelHandler from '../index.channel';
+import {
+  AttachmentMessageInboundEvent,
+  DeliveryNotificationInboundEvent,
+  LocationMessageInboundEvent,
+  PostbackInboundEvent,
+  QuickReplyInboundEvent,
+  ReadNotificationInboundEvent,
+  TextMessageInboundEvent,
+  TypingNotificationInboundEvent,
+  WebInboundEventAdapter,
+  WebMessageInboundEvent,
+} from '../inbound-events';
 import { Web } from '../types';
 import { WEB_CHANNEL_NAME } from '../web-channel.settings';
-import WebEventWrapper from '../wrapper';
-
-import { webEvents } from './events.mock';
 
 const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
+const channelData = {
+  isSocket: false,
+  ipAddress: '127.0.0.1',
+  agent: 'browser',
+};
 
-describe(`Web event wrapper`, () => {
-  let module: TestingModule;
-  let handler: WebChannelHandler;
-  const menuServiceMock = {
-    getTree: jest.fn().mockResolvedValue([]),
-  } as jest.Mocked<Pick<MenuService, 'getTree'>>;
-  const attachmentServiceMock = {
-    findOne: jest.fn(),
-    store: jest.fn(),
-    create: jest.fn(),
-  } as jest.Mocked<Pick<AttachmentService, 'findOne' | 'store' | 'create'>>;
-  const websocketGatewayMock = {
-    broadcast: jest.fn(),
-  } as jest.Mocked<Pick<WebsocketGateway, 'broadcast'>>;
-  const messageServiceMock = {
-    findHistoryUntilDate: jest.fn(),
-    findHistorySinceDate: jest.fn(),
-    findLastMessages: jest.fn(),
-  } as jest.Mocked<
-    Pick<
-      MessageService,
-      'findHistoryUntilDate' | 'findHistorySinceDate' | 'findLastMessages'
-    >
-  >;
+describe('Web inbound events adapter', () => {
+  const adapter = new WebInboundEventAdapter(WEB_CHANNEL_NAME);
 
-  beforeAll(async () => {
-    const testing = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      providers: [
-        ChannelService,
-        JwtService,
-        ThreadService,
-        WebChannelHandler,
-        I18nServiceProvider,
-        {
-          provide: MenuService,
-          useValue: menuServiceMock,
-        },
-        {
-          provide: AttachmentService,
-          useValue: attachmentServiceMock,
-        },
-        {
-          provide: WebsocketGateway,
-          useValue: websocketGatewayMock,
-        },
-        {
-          provide: MessageService,
-          useValue: messageServiceMock,
-        },
-      ],
-      typeorm: {
-        fixtures: installSubscriberFixturesTypeOrm,
+  it.each([
+    [
+      'text',
+      {
+        type: Web.IncomingMessageType.text,
+        data: { text: 'Hello' },
+        author: 'web-user',
+        mid: 'msg-1',
       },
-    });
-    module = testing.module;
-    [handler] = await testing.getMocks([WebChannelHandler]);
-  });
+      TextMessageInboundEvent,
+      StdEventType.message,
+      IncomingMessageType.message,
+    ],
+    [
+      'quick reply',
+      {
+        type: Web.IncomingMessageType.quick_reply,
+        data: { text: 'Choose', payload: 'CHOICE' },
+        author: 'web-user',
+        mid: 'msg-2',
+      },
+      QuickReplyInboundEvent,
+      StdEventType.message,
+      IncomingMessageType.quick_reply,
+    ],
+    [
+      'postback',
+      {
+        type: Web.IncomingMessageType.postback,
+        data: { text: 'Go', payload: 'START' },
+        author: 'web-user',
+        mid: 'msg-3',
+      },
+      PostbackInboundEvent,
+      StdEventType.message,
+      IncomingMessageType.postback,
+    ],
+    [
+      'location',
+      {
+        type: Web.IncomingMessageType.location,
+        data: { coordinates: { lat: 1.2, lng: 3.4 } },
+        author: 'web-user',
+        mid: 'msg-4',
+      },
+      LocationMessageInboundEvent,
+      StdEventType.message,
+      IncomingMessageType.location,
+    ],
+    [
+      'attachment',
+      {
+        type: Web.IncomingMessageType.file,
+        data: {
+          type: 'image/png',
+          size: 10,
+          name: 'photo.png',
+          file: Buffer.from('photo'),
+        },
+        author: 'web-user',
+        mid: 'msg-5',
+      },
+      AttachmentMessageInboundEvent,
+      StdEventType.message,
+      IncomingMessageType.attachments,
+    ],
+    [
+      'delivery',
+      {
+        type: Web.StatusEventType.delivery,
+        mid: 'msg-6',
+      },
+      DeliveryNotificationInboundEvent,
+      StdEventType.delivery,
+      null,
+    ],
+    [
+      'read',
+      {
+        type: Web.StatusEventType.read,
+        watermark: 12000,
+      },
+      ReadNotificationInboundEvent,
+      StdEventType.read,
+      null,
+    ],
+    [
+      'typing',
+      {
+        type: Web.StatusEventType.typing,
+      },
+      TypingNotificationInboundEvent,
+      StdEventType.typing,
+      null,
+    ],
+  ])(
+    'classifies %s event payload',
+    (
+      _caseName,
+      payload,
+      eventClass,
+      expectedEventType,
+      expectedMessageType,
+    ) => {
+      const events = adapter.createEvents(payload, channelData);
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+      expect(Array.isArray(events)).toBe(true);
+      expect(events).toHaveLength(1);
 
-  afterAll(async () => {
-    if (module) {
-      await module.close();
-    }
-    await closeTypeOrmConnections();
-  });
+      const [event] = events;
 
-  test.each(webEvents)('should wrap event : %s', (_testCase, e, expected) => {
-    const event = new WebEventWrapper(
-      handler as unknown as WebChannelHandler,
-      e,
-      expected.channelData,
+      expect(event).toBeInstanceOf(eventClass);
+      expect(event.getEventType()).toBe(expectedEventType);
+
+      if (event instanceof WebMessageInboundEvent) {
+        expect(event.getMessageType()).toBe(expectedMessageType);
+      }
+    },
+  );
+
+  it('keeps message logic polymorphic and attachment state local', () => {
+    const [textEvent] = adapter.createEvents(
+      {
+        type: Web.IncomingMessageType.text,
+        data: { text: 'Hello' },
+        author: 'web-user',
+        mid: 'msg-100',
+      },
+      channelData,
     );
 
-    if (
-      event._adapter.eventType === StdEventType.message &&
-      event._adapter.messageType === IncomingMessageType.attachments
-    ) {
-      event._adapter.attachment = {
-        id: ATTACHMENT_ID,
-        type: 'image/png',
-        name: 'filename.extension',
-      } as Attachment;
+    expect(textEvent).toBeInstanceOf(WebMessageInboundEvent);
+    expect(textEvent).toBeInstanceOf(TextMessageInboundEvent);
+
+    const [attachmentEvent] = adapter.createEvents(
+      {
+        type: Web.IncomingMessageType.file,
+        data: {
+          type: 'image/png',
+          size: 10,
+          name: 'photo.png',
+          file: Buffer.from('photo'),
+        },
+        author: 'web-user',
+        mid: 'msg-101',
+      },
+      channelData,
+    );
+
+    expect(attachmentEvent).toBeInstanceOf(WebMessageInboundEvent);
+    expect(attachmentEvent).toBeInstanceOf(AttachmentMessageInboundEvent);
+    if (!(attachmentEvent instanceof AttachmentMessageInboundEvent)) {
+      throw new Error('Expected attachment inbound event');
+    }
+
+    expect(() => attachmentEvent.getPayload()).toThrow(
+      'Attachment has not been processed',
+    );
+
+    attachmentEvent.setUploadedAttachment({
+      id: ATTACHMENT_ID,
+      type: 'image/png',
+      name: 'photo.png',
+    } as Attachment);
+
+    expect(attachmentEvent.getPayload()).toEqual({
+      type: IncomingMessageType.attachments,
+      attachment: {
+        type: FileType.image,
+        payload: {
+          id: ATTACHMENT_ID,
+        },
+      },
+    });
+  });
+
+  it('maps message payloads and normalized channel data', () => {
+    const [event] = adapter.createEvents(
+      {
+        type: Web.IncomingMessageType.postback,
+        data: {
+          text: 'Get Started',
+          payload: 'GET_STARTED',
+        },
+        author: 'web-user',
+        mid: 'msg-200',
+      },
+      channelData,
+    );
+
+    if (!(event instanceof PostbackInboundEvent)) {
+      throw new Error('Expected postback inbound event');
     }
 
     expect(event.getChannelData()).toEqual({
-      ...expected.channelData,
+      ...channelData,
       name: WEB_CHANNEL_NAME,
     });
-    expect(event.getId()).toEqual(expected.id);
-    expect(event.getEventType()).toEqual(expected.eventType);
-    expect(event.getMessageType()).toEqual(expected.messageType);
-    expect(event.getPayload()).toEqual(expected.payload);
-    expect(event.getMessage()).toEqual(expected.message);
-    expect(event.getDeliveredMessages()).toEqual([]);
-    expect(event.buildInput()).not.toHaveProperty('channel');
-    expect(event.buildInput()).not.toHaveProperty('sender');
-    expect(event.getContextData()).toEqual(
+    expect(event.getId()).toBe('msg-200');
+    expect(event.getPayload()).toBe('GET_STARTED');
+    expect(event.getMessage()).toEqual({
+      postback: 'GET_STARTED',
+      text: 'Get Started',
+    });
+    expect(event.buildInput()).toEqual(
       expect.objectContaining({
-        channel: {
-          ...expected.channelData,
-          name: WEB_CHANNEL_NAME,
-        },
+        message_type: IncomingMessageType.postback,
+        mid: 'msg-200',
       }),
     );
-    expect(event.getContextData()).not.toHaveProperty('messageId');
-    expect(event.getContextData()).not.toHaveProperty('eventType');
-    expect(event.getContextData()).not.toHaveProperty('messageType');
   });
 
   it('keeps workflow id as transient event state', () => {
-    const [_testCase, e, expected] = webEvents[0];
-    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-    const event = new WebEventWrapper(
-      handler as unknown as WebChannelHandler,
-      e,
-      expected.channelData,
+    const [event] = adapter.createEvents(
+      {
+        type: Web.IncomingMessageType.text,
+        data: { text: 'Workflow test' },
+        author: 'web-user',
+        mid: 'msg-300',
+      },
+      channelData,
     );
+
+    if (!(event instanceof TextMessageInboundEvent)) {
+      throw new Error('Expected text inbound event');
+    }
+    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
     expect(event.getWorkflowId()).toBeUndefined();
 
@@ -160,21 +270,42 @@ describe(`Web event wrapper`, () => {
     expect(event.getContextData()).not.toHaveProperty('workflowId');
   });
 
+  it('exposes delivery and read behavior only on matching event classes', () => {
+    const [deliveryEvent] = adapter.createEvents(
+      {
+        type: Web.StatusEventType.delivery,
+        mid: 'mid-delivered',
+      },
+      channelData,
+    );
+    const [readEvent] = adapter.createEvents(
+      {
+        type: Web.StatusEventType.read,
+        watermark: 24000,
+      },
+      channelData,
+    );
+
+    if (!(deliveryEvent instanceof DeliveryNotificationInboundEvent)) {
+      throw new Error('Expected delivery inbound event');
+    }
+    if (!(readEvent instanceof ReadNotificationInboundEvent)) {
+      throw new Error('Expected read inbound event');
+    }
+
+    expect(deliveryEvent.getDeliveredMessages()).toEqual(['mid-delivered']);
+    expect(readEvent.getWatermark()).toBe(24);
+  });
+
   it('throws when payload does not match incoming event schema', () => {
-    expect(
-      () =>
-        new WebEventWrapper(
-          handler as unknown as WebChannelHandler,
-          {
-            type: Web.IncomingMessageType.text,
-            data: {},
-          },
-          {
-            isSocket: false,
-            ipAddress: '0.0.0.0',
-            agent: 'browser',
-          },
-        ),
+    expect(() =>
+      adapter.createEvents(
+        {
+          type: Web.IncomingMessageType.text,
+          data: {},
+        },
+        channelData,
+      ),
     ).toThrow();
   });
 });
