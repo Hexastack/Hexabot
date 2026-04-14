@@ -13,7 +13,6 @@ import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -39,8 +38,11 @@ export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
 ];
 
 @Entity({ name: 'workflow_runs' })
-@EntityDto<WorkflowRunDto>({ plain: WorkflowRun, full: WorkflowRunFull })
 export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
+  plainCls = WorkflowRun;
+
+  fullCls = WorkflowRunFull;
+
   /** Workflow definition executed by this run. */
   @ManyToOne(() => WorkflowOrmEntity, {
     nullable: false,

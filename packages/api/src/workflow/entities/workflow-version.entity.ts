@@ -16,7 +16,6 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import {
   OnAfterInsert,
@@ -37,11 +36,11 @@ import { WorkflowOrmEntity } from './workflow.entity';
 
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
-@EntityDto<WorkflowVersionDto>({
-  plain: WorkflowVersion,
-  full: WorkflowVersionFull,
-})
 export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionDto> {
+  plainCls = WorkflowVersion;
+
+  fullCls = WorkflowVersionFull;
+
   /** Workflow that owns this version snapshot. */
   @ManyToOne(() => WorkflowOrmEntity, {
     nullable: false,

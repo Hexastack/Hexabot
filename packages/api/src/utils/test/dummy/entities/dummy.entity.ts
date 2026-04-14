@@ -6,15 +6,17 @@
 
 import { Column, Entity } from 'typeorm';
 
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { Dummy, DummyDto } from '../dto/dummy.dto';
 
 @Entity({ name: 'dummy' })
-@EntityDto<DummyDto>({ plain: Dummy, full: Dummy })
 export class DummyOrmEntity extends BaseOrmEntity<DummyDto> {
+  plainCls = Dummy;
+
+  fullCls = Dummy;
+
   @Column()
   dummy!: string;
 

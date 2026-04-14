@@ -16,7 +16,6 @@ import {
 } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
@@ -41,10 +40,13 @@ export class SubscriberChannel {
 }
 
 @ChildEntity()
-@EntityDto<SubscriberDto>({ plain: Subscriber, full: SubscriberFull })
 export class SubscriberOrmEntity<
   Dto extends TDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
+  plainCls = Subscriber;
+
+  fullCls = SubscriberFull;
+
   @Column({ type: 'varchar', length: 5, nullable: true })
   locale: string | null;
 

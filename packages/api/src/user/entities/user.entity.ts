@@ -14,7 +14,6 @@ import {
 } from 'typeorm';
 
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
-import { EntityDto } from '@/database/decorators/dto-transforms.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
   OnBeforeInsert,
@@ -31,8 +30,11 @@ import { RoleOrmEntity } from './role.entity';
 @ChildEntity()
 @Index(['username'], { unique: true })
 @Index(['email'], { unique: true })
-@EntityDto<UserDto>({ plain: User, full: UserFull })
 export class UserOrmEntity extends SubscriberOrmEntity<UserDto> {
+  plainCls = User;
+
+  fullCls = UserFull;
+
   @Column()
   username!: string;
 
