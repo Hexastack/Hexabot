@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
@@ -13,24 +12,15 @@ import Typography from "@mui/material/Typography";
 import debounce from "@mui/utils/debounce";
 import { MessageSquare } from "lucide-react";
 
+import { Avatar } from "@/app-components/displays/Avatar";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
-import {
-  Avatar as ChatAvatar,
-  Message,
-  MessageInput,
-  MessageList,
-} from "../chat-ui-kit";
-import {
-  getAvatarSrc,
-  getMessageContent,
-  getMessagePosition,
-} from "../helpers/mapMessages";
+import { Message, MessageInput, MessageList } from "../chat-ui-kit";
+import { getMessageContent, getMessagePosition } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
 import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
 
@@ -39,7 +29,6 @@ import { ChatHeader } from "./ChatHeader";
 
 export function Chat() {
   const theme = useTheme();
-  const { apiUrl } = useConfig();
   const { t, i18n } = useTranslate();
   const { subscriber } = useChat();
   const { user } = useAuth();
@@ -96,10 +85,7 @@ export function Chat() {
           alignItems="center"
           flexWrap="wrap"
         >
-          <Avatar
-            alt={subscriber.firstName || ""}
-            src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
-          />
+          <Avatar alt={subscriber.fullName} subscriberId={subscriber.id} />
           <ChatHeader />
           <ChatActions />
         </Stack>
@@ -137,18 +123,12 @@ export function Chat() {
                   children={[
                     ...(position === "last" || position === "single"
                       ? [
-                          <ChatAvatar
+                          <Avatar
                             key={message.id}
-                            title={`${subscriber.firstName} ${subscriber.lastName}`}
-                            src={getAvatarSrc(
-                              apiUrl,
-                              message.sender
-                                ? EntityType.SUBSCRIBER
-                                : EntityType.USER,
-                              (message.sender
-                                ? subscriber.id
-                                : message.sentBy) || "",
-                            )}
+                            title={subscriber.fullName}
+                            subscriberId={
+                              message.sender ? subscriber.id : message.sentBy
+                            }
                           />,
                         ]
                       : []),

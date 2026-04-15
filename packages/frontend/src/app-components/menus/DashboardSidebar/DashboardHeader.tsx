@@ -6,7 +6,6 @@
 
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { Avatar } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
@@ -17,14 +16,12 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
 
-import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { Avatar } from "@/app-components/displays/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import ColorModeIconDropdown from "@/layout/ColorModeIconDropdown";
 import LicenseBadge from "@/layout/LicenseBadge";
-import { EntityType } from "@/services/types";
-import { getRandom } from "@/utils/safeRandom";
 
 import { PopoverMenu } from "../PopoverMenu";
 
@@ -40,15 +37,10 @@ export const DashboardHeader = ({
   onToggleMenu,
 }: DashboardHeaderProps) => {
   const { user, logout } = useAuth();
-  const { apiUrl, ssoEnabled } = useConfig();
+  const { ssoEnabled } = useConfig();
   const { t } = useTranslate();
   const anchorRef = React.useRef(null);
   const [isMenuPopoverOpen, setIsMenuPopoverOpen] = React.useState(false);
-  const [randomSeed, setRandomSeed] = React.useState("seed");
-
-  React.useEffect(() => {
-    setRandomSeed(getRandom().toString());
-  }, [user]);
   const label = menuOpen ? "Collapse" : "Expand";
 
   return (
@@ -103,9 +95,7 @@ export const DashboardHeader = ({
                   {user?.email}
                 </Typography>
               </Box>
-              <Avatar
-                src={`${getAvatarSrc(apiUrl, EntityType.USER, user?.id)}?${randomSeed}`}
-              />
+              <Avatar subscriberId={user?.id} />
             </Box>
           </Box>
 

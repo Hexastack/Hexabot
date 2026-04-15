@@ -10,6 +10,7 @@ import { useRoutes } from "react-router-dom";
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
 import { AuthContext } from "@/contexts/auth.context";
+import { useGet } from "@/hooks/crud/useGet";
 import {
   useTanstackQuery,
   useTanstackQueryClient,
@@ -83,18 +84,18 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     }
   };
   const { apiClient } = useApiClient();
-  const {
-    data: user,
-    error,
-    isLoading,
-    refetch,
-  } = useTanstackQuery<IUser, Error>({
+  const { data, error, isLoading, refetch } = useTanstackQuery<IUser, Error>({
     queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
     onSuccess: (sessionUser) => {
       authRedirection(!!sessionUser.id);
     },
   });
+  const { data: user } = useGet(
+    data?.id || "",
+    { entity: EntityType.USER },
+    { enabled: !!data?.id },
+  );
 
   useEffect(() => {
     if (user?.language) {

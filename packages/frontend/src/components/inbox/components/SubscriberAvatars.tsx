@@ -4,23 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { FC } from "react";
 
-import { useConfig } from "@/hooks/useConfig";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { Avatar } from "@/app-components/displays/Avatar";
 import { ISubscriber } from "@/types/subscriber.types";
-
-import { getAvatarSrc } from "../helpers/mapMessages";
 
 export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
   subscriber,
 }) => {
-  const { apiUrl } = useConfig();
-  const { t } = useTranslate();
-
   return (
     <AvatarGroup
       max={2}
@@ -29,8 +21,6 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
         width: "fit-content",
         justifyContent: "flex-start",
         "& .MuiAvatar-root": {
-          width: 26,
-          height: 26,
           fontSize: "0.7rem",
           transition: (theme) =>
             theme.transitions.create(["transform", "opacity"], {
@@ -56,15 +46,9 @@ export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
         },
       }}
     >
-      <Avatar
-        src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
-        alt={subscriber.fullName}
-      />
+      <Avatar size={26} subscriberId={subscriber.id} />
       {subscriber.assignedTo && (
-        <Avatar
-          src={getAvatarSrc(apiUrl, EntityType.USER, subscriber.assignedTo)}
-          alt={t("label.assigned_to")}
-        />
+        <Avatar size={26} subscriberId={subscriber.assignedTo} />
       )}
     </AvatarGroup>
   );

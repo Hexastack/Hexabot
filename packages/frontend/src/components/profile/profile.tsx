@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
+import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { Check, Key, Languages, Mail } from "lucide-react";
-import { FC } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -56,6 +56,15 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       },
     },
   );
+  const defaultValues = useMemo(
+    () => ({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      language: user.language,
+    }),
+    [user],
+  );
   const {
     watch,
     trigger,
@@ -64,13 +73,9 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     formState: { errors },
     register,
     setValue,
+    reset,
   } = useForm<IProfileAttributes>({
-    defaultValues: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      language: user.language,
-    },
+    defaultValues,
   });
   const rules = useValidationRules();
   const validationRules = {
@@ -106,24 +111,26 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     ]);
   };
 
+  useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues]);
+
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <Grid container gap={8} alignContent="center" justifyContent="center">
-        <Grid size={4}>
+        <Grid width={256} size={4}>
           <Controller
             name="avatar"
             control={control}
             render={({ field }) => (
               <>
-                <Box sx={{ position: "relative" }}>
-                  <AvatarInput
-                    label={t("label.avatar")}
-                    accept={MIME_TYPES["images"].join(",")}
-                    size={256}
-                    {...field}
-                    onChange={(file) => setValue("avatar", file)}
-                  />
-                </Box>
+                <AvatarInput
+                  label={t("label.avatar")}
+                  accept={MIME_TYPES["images"].join(",")}
+                  size={256}
+                  {...field}
+                  onChange={(file) => setValue("avatar", file)}
+                />
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -136,7 +143,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
           />
         </Grid>
         <Grid container flexDirection="column" size={6} gap={2}>
-          <ContentContainer gap={0}>
+          <ContentContainer>
             <ContentItem>
               <TextField
                 label={t("label.user_first_name")}

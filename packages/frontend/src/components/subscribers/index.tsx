@@ -8,12 +8,12 @@ import { GridColDef } from "@mui/x-data-grid";
 import { UserCircle } from "lucide-react";
 import { useMemo } from "react";
 
+import { Avatar } from "@/app-components/displays/Avatar";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -51,7 +51,7 @@ export const Subscribers = () => {
       headerName: "",
       sortable: false,
       disableColumnMenu: true,
-      renderCell: buildRenderPicture(EntityType.SUBSCRIBER),
+      renderCell: ({ row }) => <Avatar subscriberId={row.id} size={36} />,
     },
     {
       flex: 1,
