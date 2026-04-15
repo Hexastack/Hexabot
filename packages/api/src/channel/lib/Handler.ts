@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
@@ -53,6 +54,9 @@ export default abstract class ChannelHandler<
   @Inject(ChannelService)
   protected readonly channelService: ChannelService;
 
+  @Inject(ModuleRef)
+  private readonly moduleRef: ModuleRef;
+
   constructor(name: N) {
     super(name);
   }
@@ -67,6 +71,10 @@ export default abstract class ChannelHandler<
       this.getName(),
       this as unknown as ChannelHandler<N>,
     );
+  }
+
+  protected async createModuleRef<T>(provider: Type<T>): Promise<T> {
+    return await this.moduleRef.create(provider);
   }
 
   /**

@@ -12,7 +12,6 @@ import {
   Injectable,
   OnModuleInit,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -112,9 +111,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   @Inject(ChannelAttachmentService)
   protected readonly channelAttachmentService: ChannelAttachmentService;
 
-  @Inject(ModuleRef)
-  private readonly moduleRef: ModuleRef;
-
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
 
   private inboundEventDecoder!: WebInboundEventDecoder<N>;
@@ -133,8 +129,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     );
     [this.outboundMessageEncoder, this.inboundEventDecoder] = await Promise.all(
       [
-        this.moduleRef.create(OutboundMessageEncoderProvider),
-        this.moduleRef.create(InboundEventDecoderProvider) as Promise<
+        this.createModuleRef(OutboundMessageEncoderProvider),
+        this.createModuleRef(InboundEventDecoderProvider) as Promise<
           WebInboundEventDecoder<N>
         >,
       ],
